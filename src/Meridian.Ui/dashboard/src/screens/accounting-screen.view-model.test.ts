@@ -9,6 +9,7 @@ import {
   buildAccountingReportingViewState,
   buildAccountingWorkflowLaunchViewState,
   buildCloseCommandCenterViewState,
+  buildAccountingLedgerJournalEvidenceViewState,
   buildAccountingTrialBalanceViewState,
   buildSecurityScheduleRows,
   buildSecuritySchedulesViewState,
@@ -69,6 +70,7 @@ import type {
   RuleDryRunResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
+  LedgerJournalLine,
   LedgerTrialBalanceLine,
   MultiAssetCoverageSummary,
   OperationsContinuityWorkflow,
@@ -626,6 +628,34 @@ const trialBalanceLines: LedgerTrialBalanceLine[] = [
     balance: -500,
     entryCount: 2,
     security: null
+  }
+];
+
+const journalLines: LedgerJournalLine[] = [
+  {
+    journalEntryId: "journal-cash-1",
+    timestamp: "2026-06-30T14:30:00Z",
+    description: "Cash close journal",
+    totalDebits: 120500,
+    totalCredits: 120500,
+    lineCount: 2,
+    dimensions: {
+      fundId: "fund-alpha",
+      entityId: "entity-alpha",
+      sleeveId: "sleeve-credit",
+      costCenterId: "ops-close",
+      externalGlDimensions: {
+        class: "private-fund"
+      }
+    }
+  },
+  {
+    journalEntryId: "journal-unscoped",
+    timestamp: "2026-06-30T15:00:00Z",
+    description: "Legacy unscoped journal",
+    totalDebits: 500,
+    totalCredits: 500,
+    lineCount: 2
   }
 ];
 
@@ -5236,6 +5266,43 @@ describe("accounting-screen view model", () => {
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
       { label: "Dimensions", value: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund | External department: finance" }
     ]));
+  });
+
+  it("derives ledger journal evidence rows with retained dimensional scope", () => {
+    const state = buildAccountingLedgerJournalEvidenceViewState({
+      runId: "run-42",
+      rows: journalLines
+    });
+
+    expect(state).toMatchObject({
+      title: "Journal evidence dimensions",
+      filteredRowCountLabel: "2 GL account rows",
+      hasRows: true
+    });
+    expect(state.rows[0]).toMatchObject({
+      rowId: "journal-cash-1",
+      timestampLabel: "Jun 30, 14:30 UTC",
+      amountLabel: "$120,500 debit / $120,500 credit",
+      lineCountLabel: "2 lines",
+      dimensionLabel: "Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +2",
+      dimensionDetailLabel: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund",
+      ariaLabel: "Journal journal-cash-1. Cash close journal. $120,500 debit / $120,500 credit. 2 lines. Dimensions Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +2"
+    });
+    expect(state.rows[1]).toMatchObject({
+      rowId: "journal-unscoped",
+      dimensionLabel: "No dimensions",
+      dimensionDetailLabel: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached."
+    });
+
+    const filtered = buildAccountingLedgerJournalEvidenceViewState({
+      runId: "run-42",
+      rows: journalLines,
+      dimensionFilter: "private-fund"
+    });
+
+    expect(filtered.filteredRowCountLabel).toBe("1 of 2 GL account rows");
+    expect(filtered.rows).toHaveLength(1);
+    expect(filtered.rows[0].journalEntryId).toBe("journal-cash-1");
   });
 
   it("adds source-event and approval drill-through details to legacy and array trial-balance selections", () => {

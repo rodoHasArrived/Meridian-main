@@ -110,6 +110,7 @@ import type {
   ReviewLateAdjustmentRequest,
   SignOffCloseTaskRequest,
   LedgerBook,
+  LedgerJournalLine,
   LedgerTrialBalanceLine,
   LateAdjustmentRequest,
   MultiAssetCoverageSummary,
@@ -1932,6 +1933,25 @@ export interface AccountingTrialBalanceDetailViewState {
   supportingDocumentsTitle: string;
   supportingDocuments: AccountingSupportingDocumentViewModel[];
   supportingDocumentsEmptyText: string;
+}
+
+export interface AccountingLedgerJournalEvidenceViewState {
+  title: string;
+  description: string;
+  rows: AccountingLedgerJournalEvidenceRowViewModel[];
+  filteredRowCountLabel: string;
+  hasRows: boolean;
+  emptyText: string;
+}
+
+export interface AccountingLedgerJournalEvidenceRowViewModel extends LedgerJournalLine {
+  rowId: string;
+  timestampLabel: string;
+  amountLabel: string;
+  lineCountLabel: string;
+  dimensionLabel: string;
+  dimensionDetailLabel: string;
+  ariaLabel: string;
 }
 
 export interface AccountingLedgerAccountFilterOption {
@@ -11300,6 +11320,76 @@ export function buildAccountingTrialBalanceViewState({
   };
 }
 
+export function buildAccountingLedgerJournalEvidenceViewState({
+  runId,
+  rows,
+  dimensionFilter = ""
+}: {
+  runId: string | null;
+  rows: LedgerJournalLine[];
+  dimensionFilter?: string | null;
+}): AccountingLedgerJournalEvidenceViewState {
+  const runLabel = runId ?? "selected run";
+  const normalizedFilter = normalizeLedgerAccountFilter(dimensionFilter);
+  const journalRows = rows
+    .map(buildLedgerJournalEvidenceRow)
+    .filter((row) => ledgerJournalRowMatchesDimensionFilter(row, normalizedFilter));
+
+  return {
+    title: "Journal evidence dimensions",
+    description: `Retained journal rows for ${runLabel} with canonical dimensional scope preserved from the shared ledger journal endpoint.`,
+    rows: journalRows,
+    filteredRowCountLabel: buildLedgerAccountFilteredCountLabel(journalRows.length, rows.length, normalizedFilter),
+    hasRows: journalRows.length > 0,
+    emptyText: normalizedFilter
+      ? `No journal rows match dimensional scope "${dimensionFilter ?? ""}".`
+      : `No journal rows are retained for ${runLabel}.`
+  };
+}
+
+function buildLedgerJournalEvidenceRow(line: LedgerJournalLine): AccountingLedgerJournalEvidenceRowViewModel {
+  const dimensionLabels = buildLedgerDimensionLabels(line);
+  const amountLabel = `${formatCurrency(line.totalDebits)} debit / ${formatCurrency(line.totalCredits)} credit`;
+  const lineCountLabel = line.lineCount === 1 ? "1 line" : `${line.lineCount.toLocaleString()} lines`;
+
+  return {
+    ...line,
+    rowId: line.journalEntryId,
+    timestampLabel: formatDateTimeLabel(line.timestamp),
+    amountLabel,
+    lineCountLabel,
+    dimensionLabel: dimensionLabels.summary,
+    dimensionDetailLabel: dimensionLabels.detail,
+    ariaLabel: [
+      `Journal ${line.journalEntryId}`,
+      line.description,
+      amountLabel,
+      lineCountLabel,
+      dimensionLabels.summary !== "No dimensions" ? `Dimensions ${dimensionLabels.summary}` : null
+    ].filter(Boolean).join(". ")
+  };
+}
+
+function ledgerJournalRowMatchesDimensionFilter(
+  row: AccountingLedgerJournalEvidenceRowViewModel,
+  normalizedFilter: string
+): boolean {
+  if (!normalizedFilter) {
+    return true;
+  }
+
+  return [
+    row.journalEntryId,
+    row.description,
+    row.dimensionLabel,
+    row.dimensionDetailLabel
+  ]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .join(" ")
+    .toLocaleLowerCase()
+    .includes(normalizedFilter);
+}
+
 type BasisAwareLedgerTrialBalanceLine = LedgerTrialBalanceLine & {
   accountingBasis: AccountingBasisKind;
   accountingPolicyId: string;
@@ -11318,7 +11408,7 @@ function buildTrialBalanceRow(
   const balanceLabel = formatCurrency(line.balance);
   const entryCountLabel = line.entryCount.toLocaleString();
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
-  const dimensionLabels = buildTrialBalanceDimensionLabels(line);
+  const dimensionLabels = buildLedgerDimensionLabels(line);
   const dimensionLabel = dimensionLabels.summary;
   const dimensionDetailLabel = dimensionLabels.detail;
   const rowId = [
@@ -11358,7 +11448,7 @@ function buildTrialBalanceRow(
   };
 }
 
-function buildTrialBalanceDimensionLabels(line: LedgerTrialBalanceLine): { summary: string; detail: string } {
+function buildLedgerDimensionLabels(line: Pick<LedgerTrialBalanceLine, "dimensions" | "accountScopeId" | "accountScopeDisplayName" | "entityScopeId" | "entityScopeDisplayName" | "sleeveScopeId" | "sleeveScopeDisplayName">): { summary: string; detail: string } {
   const dimensions = line.dimensions ?? null;
   const labels: string[] = [];
 

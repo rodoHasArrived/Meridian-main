@@ -7034,6 +7034,15 @@ export interface LedgerJournalLine {
   totalDebits: number;
   totalCredits: number;
   lineCount: number;
+  accountScopeId?: string | null;
+  accountScopeDisplayName?: string | null;
+  entityScopeId?: string | null;
+  entityScopeDisplayName?: string | null;
+  sleeveScopeId?: string | null;
+  sleeveScopeDisplayName?: string | null;
+  vehicleScopeId?: string | null;
+  vehicleScopeDisplayName?: string | null;
+  dimensions?: LedgerDimensionSet | null;
 }
 
 export interface LedgerSummary {

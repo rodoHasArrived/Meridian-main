@@ -750,6 +750,10 @@ Trial-balance rows also render and search retained dimensional scope when the sh
 `LedgerDimensionSetDto` data, including fund, entity, sleeve, strategy, investor, capital account,
 instrument, tax lot, cost center, counterparty, and external GL dimensions; dimensionless legacy
 rows remain explicit rather than being inferred from account names.
+The browser type mirror for retained ledger journal rows carries the same dimensional fields, and
+the Accounting view-model exposes a reusable journal-evidence dimension projection for rows returned
+by `/api/workstation/runs/{runId}/ledger/journal` so journal review surfaces do not discard scoped
+fund/entity/sleeve/cost-center or external-GL evidence.
 The same `/accounting/ledger` route is the first browser implementation of the shared Financial
 Record Explorer pattern from the design document. It wraps the existing shared trial-balance,
 ledger-line, reconciliation, evidence-packet, audit-packet, and report-usage read models with
