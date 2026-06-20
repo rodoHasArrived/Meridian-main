@@ -4132,7 +4132,9 @@ export function SettingsScreen({
           </div>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showBrokerageSection ? (
       <Card
         id="alpaca-provider-setup"
         className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}
@@ -4377,7 +4379,9 @@ export function SettingsScreen({
           </div>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showDiagnosticsSection ? (
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card id="diagnostic-endpoints" className="panel-surface scroll-mt-6">
           <CardHeader>
@@ -4504,7 +4508,9 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
+      {showRuntimeSection ? (
       <Card id="runtime-feature-capabilities" className="panel-surface scroll-mt-6">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -4566,7 +4572,9 @@ export function SettingsScreen({
           )}
         </CardContent>
       </Card>
+      ) : null}
 
+      {showBackendCapabilitySection ? (
       <Card id="backend-capability-coverage" className="panel-surface scroll-mt-6">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
