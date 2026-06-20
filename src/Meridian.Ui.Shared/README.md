@@ -1319,7 +1319,9 @@ closed-period summaries across a selected book, fund, node, accounting basis, an
 regulatory, investor, and internal reporting surfaces. The cross-period report routes also accept
 line-dimension filters such as `entityId`, `costCenterId`, `instrumentId`, and `externalGl.<name>`
 so browser and WPF reporting surfaces can request fund/entity/cost-center/external-GL scoped
-ledger slices without recomputing dimensional accounting totals locally.
+ledger slices without recomputing dimensional accounting totals locally. They also fail closed when
+a retained closed-period summary is scoped to a different ledger book than the period metadata,
+preventing stale summary drift from leaking another book's totals into a selected-book report.
 Manual journal entry workbench routes under `/api/ledger/journal-entry-workbench*` persist draft
 and submitted approval records under the resolved workstation data root. The shared service
 validates GL account, balance, currency, Security Master, typed evidence attachments, private-capital

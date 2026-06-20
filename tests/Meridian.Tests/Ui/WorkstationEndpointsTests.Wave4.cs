@@ -17,6 +17,67 @@ namespace Meridian.Tests.Ui;
 public sealed partial class WorkstationEndpointsTests
 {
     [Fact]
+    public async Task LedgerCrossPeriodReports_WhenSummaryLedgerBookDrifts_ShouldFailClosed()
+    {
+        var periodId = Guid.Parse("aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa");
+        var periodLedgerBookId = Guid.Parse("11111111-1111-4111-8111-111111111111");
+        var driftedSummaryLedgerBookId = Guid.Parse("22222222-2222-4222-8222-222222222222");
+        var period = new LedgerPeriodDto(
+            periodId,
+            periodLedgerBookId,
+            FiscalYear: 2026,
+            PeriodNo: 12,
+            Label: "December 2026",
+            StartDate: new DateOnly(2026, 12, 1),
+            EndDate: new DateOnly(2026, 12, 31),
+            Status: LedgerPeriodStatusDto.HardClosed,
+            OpenedAt: new DateTimeOffset(2026, 12, 1, 0, 0, 0, TimeSpan.Zero),
+            ClosedAt: new DateTimeOffset(2027, 1, 3, 18, 0, 0, TimeSpan.Zero),
+            Version: 4);
+        var summary = new LedgerPeriodSummaryDto(
+            periodId,
+            driftedSummaryLedgerBookId,
+            FiscalYear: 2026,
+            PeriodNo: 12,
+            Label: "December 2026",
+            TrialBalance:
+            [
+                new LedgerPeriodTrialBalanceLineDto(
+                    "Cash",
+                    "Asset",
+                    Symbol: null,
+                    FinancialAccountId: "gl-cash",
+                    DebitTotal: 1_000m,
+                    CreditTotal: 0m,
+                    Balance: 1_000m,
+                    EntryCount: 1)
+            ],
+            TotalDebits: 1_000m,
+            TotalCredits: 1_000m,
+            NetIncome: 0m,
+            PeriodOnPeriodVariance: null,
+            OpenBreakCount: 0,
+            SignoffStatus: LedgerPeriodSignoffStatusDto.SignedOff,
+            CompletedAt: new DateTimeOffset(2027, 1, 3, 18, 0, 0, TimeSpan.Zero));
+
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<ILedgerBookService>(new DriftedLedgerBookReportService(period, summary)),
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        foreach (var route in new[] { UiApiRoutes.LedgerReportsTrialBalance, UiApiRoutes.LedgerReportsPnlSummary })
+        {
+            using var response = await client.GetAsync($"{route}?ledgerBookId={periodLedgerBookId:D}&fundProfileId=fund-alpha");
+
+            response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().Contain("Closed-period summary");
+            body.Should().Contain(driftedSummaryLedgerBookId.ToString("D"));
+            body.Should().Contain(periodLedgerBookId.ToString("D"));
+        }
+    }
+
+    [Fact]
     public async Task OperationsContinuityEndpoints_ApprovalPolicyMatrix_ExposesServerOwnedRules()
     {
         await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
@@ -1773,5 +1834,40 @@ public sealed partial class WorkstationEndpointsTests
             _captured?.Add((fundProfileId, ledgerBookId, fundAccountId, periodId, entityId));
             return Task.FromResult(_cockpit);
         }
+    }
+
+    private sealed class DriftedLedgerBookReportService(
+        LedgerPeriodDto period,
+        LedgerPeriodSummaryDto summary) : ILedgerBookService
+    {
+        public Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<LedgerBookDto?> GetBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+            => Task.FromResult<LedgerBookDto?>(null);
+
+        public Task<IReadOnlyList<LedgerBookDto>> ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerBookDto>>([]);
+
+        public Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<LedgerPeriodDto>> ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerPeriodDto>>(
+                query.LedgerBookId is null || query.LedgerBookId == period.LedgerBookId
+                    ? [period]
+                    : []);
+
+        public Task<IReadOnlyList<LedgerPeriodDto>> ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerPeriodDto>>([]);
+
+        public Task<LedgerPeriodSummaryDto?> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default)
+            => Task.FromResult<LedgerPeriodSummaryDto?>(periodId == period.PeriodId ? summary : null);
+
+        public Task<LedgerPeriodCloseResultDto> ClosePeriodAsync(
+            Guid periodId,
+            CloseLedgerPeriodRequest request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
     }
 }

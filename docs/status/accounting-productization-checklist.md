@@ -50,6 +50,9 @@ the requirement end to end.
 - [x] Financial Operations accounting-close trial-balance projection now preserves line dimensions,
   buckets same-account activity by dimensional scope, and supports scoped close/report filters over
   the canonical dimension set plus external-GL dimensions.
+- [x] Cross-period ledger trial-balance and P&L report endpoints now fail closed when retained
+  closed-period summary metadata belongs to a different ledger book than the selected period,
+  preventing stale summary drift from leaking totals across parallel books.
 - [x] Ledger period close summaries now count open reconciliation breaks only when the operator
   work item carries explicit ledger-book or ledger-period scope, preventing unrelated accounting
   inbox breaks from leaking across parallel books during close.

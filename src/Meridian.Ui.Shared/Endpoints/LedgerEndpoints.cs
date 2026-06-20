@@ -429,7 +429,7 @@ public static class LedgerEndpoints
             }
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
 
-            var summaries = await LoadClosedPeriodSummariesAsync(
+            var summaryLoad = await LoadClosedPeriodSummariesAsync(
                 service,
                 ledgerBookId,
                 fundProfileId,
@@ -438,10 +438,14 @@ public static class LedgerEndpoints
                 startDate,
                 endDate,
                 context.RequestAborted).ConfigureAwait(false);
+            if (summaryLoad.Error is not null)
+            {
+                return summaryLoad.Error;
+            }
 
             return Results.Json(
                 BuildTrialBalanceReport(
-                    summaries,
+                    summaryLoad.Summaries,
                     ledgerBookId,
                     fundProfileId,
                     fundStructureNodeId,
@@ -483,7 +487,7 @@ public static class LedgerEndpoints
             }
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
 
-            var summaries = await LoadClosedPeriodSummariesAsync(
+            var summaryLoad = await LoadClosedPeriodSummariesAsync(
                 service,
                 ledgerBookId,
                 fundProfileId,
@@ -492,10 +496,14 @@ public static class LedgerEndpoints
                 startDate,
                 endDate,
                 context.RequestAborted).ConfigureAwait(false);
+            if (summaryLoad.Error is not null)
+            {
+                return summaryLoad.Error;
+            }
 
             return Results.Json(
                 BuildPnlReport(
-                    summaries,
+                    summaryLoad.Summaries,
                     ledgerBookId,
                     fundProfileId,
                     fundStructureNodeId,
@@ -2748,7 +2756,7 @@ public static class LedgerEndpoints
                retainedJournalEntryIds.Contains(targetId);
     }
 
-    private static async Task<IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)>> LoadClosedPeriodSummariesAsync(
+    private static async Task<LedgerPeriodSummaryLoadResult> LoadClosedPeriodSummariesAsync(
         ILedgerBookService service,
         Guid? ledgerBookId,
         string? fundProfileId,
@@ -2782,14 +2790,38 @@ public static class LedgerEndpoints
         foreach (var period in closedPeriods)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (ledgerBookId.HasValue && period.LedgerBookId != ledgerBookId.Value)
+            {
+                return LedgerPeriodSummaryLoadResult.Conflict(
+                    $"Ledger period '{period.PeriodId:D}' belongs to ledger book '{period.LedgerBookId:D}', not requested ledger book '{ledgerBookId.Value:D}'.");
+            }
+
             var summary = await service.GetPeriodSummaryAsync(period.PeriodId, cancellationToken).ConfigureAwait(false);
             if (summary is not null)
             {
+                if (summary.LedgerBookId != period.LedgerBookId)
+                {
+                    return LedgerPeriodSummaryLoadResult.Conflict(
+                        $"Closed-period summary for period '{period.PeriodId:D}' belongs to ledger book '{summary.LedgerBookId:D}', but the period belongs to ledger book '{period.LedgerBookId:D}'.");
+                }
+
                 summaries.Add((period, summary));
             }
         }
 
-        return summaries;
+        return LedgerPeriodSummaryLoadResult.Success(summaries);
+    }
+
+    private sealed record LedgerPeriodSummaryLoadResult(
+        IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> Summaries,
+        IResult? Error)
+    {
+        public static LedgerPeriodSummaryLoadResult Success(
+            IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> summaries)
+            => new(summaries, Error: null);
+
+        public static LedgerPeriodSummaryLoadResult Conflict(string message)
+            => new([], Results.Conflict(new { error = message }));
     }
 
     private static LedgerCrossPeriodTrialBalanceReportDto BuildTrialBalanceReport(
