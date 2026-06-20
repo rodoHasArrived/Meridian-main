@@ -4642,6 +4642,7 @@ export function SettingsScreen({
           </div>
         </CardContent>
       </Card>
+      ) : null}
     </div>
   );
 }
