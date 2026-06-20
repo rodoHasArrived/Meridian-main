@@ -86,11 +86,23 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Code == "external-gl.certified-mapping-missing" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.ledger-book-scope-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.dimensional-backfill-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
             issue.Code == "external-gl.live-posting-disabled" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.RulesStudio &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Summary.Contains("migration control", StringComparison.OrdinalIgnoreCase));
         readiness.ExternalGlProviderCount.Should().BeGreaterThan(0);
         readiness.CertifiedExternalGlMappingProfileCount.Should().Be(0);
         readiness.ExternalGlLivePostingEnabled.Should().BeFalse();
@@ -1527,6 +1539,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.Status.Should().Be(AccountingProductionReadinessStatusDto.Blocked);
         readiness.Components.Should().Contain(component => component.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
         readiness.Components.Should().Contain(component => component.Area == AccountingProductionReadinessAreaDto.ExternalGl);
+        readiness.Components.Should().Contain(component => component.Area == AccountingProductionReadinessAreaDto.MigrationRollout);
+        readiness.Issues.Should().Contain(issue => issue.Code == "migration.historical-journal-backfill-not-certified");
         readiness.Issues.Should().Contain(issue => issue.Code == "external-gl.live-posting-disabled");
     }
 

@@ -3550,9 +3550,9 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
   fundProfileId: "default-fund",
   ledgerBookId: null,
   status: "ReviewRequired",
-  score: 72,
+  score: 70,
   criticalIssueCount: 0,
-  warningIssueCount: 3,
+  warningIssueCount: 4,
   externalGlProviderCount: fixtureAccountingSystemProviders.length,
   certifiedExternalGlMappingProfileCount: fixtureAccountingSystemMappingProfiles.filter((profile) => profile.certificationState === "Certified").length,
   externalGlLivePostingEnabled: false,
@@ -3671,6 +3671,25 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
       route: "/accounting/close"
     },
     {
+      area: "MigrationRollout",
+      label: "Migration rollout",
+      status: "ReviewRequired",
+      score: 75,
+      summary: "Fixture rollout retains ledger-book and dimensional backfill evidence, but close/report evidence migration still needs certification.",
+      issues: [
+        {
+          code: "migration.close-reporting-evidence-not-certified",
+          area: "MigrationRollout",
+          severity: "Warning",
+          message: "Close and reporting evidence migration has not been certified.",
+          suggestedAction: "Retain close checklist, report package, certification, and restatement evidence migration proof before production close.",
+          evidenceReferences: ["fixture:migration:ledger-book", "fixture:migration:dimensions"]
+        }
+      ],
+      evidenceReferences: ["fixture:migration:ledger-book", "fixture:migration:dimensions"],
+      route: "/accounting/configure"
+    },
+    {
       area: "TenantAdministration",
       label: "Tenant administration",
       status: "ReviewRequired",
@@ -3698,6 +3717,14 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
       message: "Generated posting lines do not fully prove external-GL dimensions.",
       suggestedAction: "Map generated postings to external GL dimensions before production export certification.",
       evidenceReferences: ["fixture:posting-rule:trade-buy"]
+    },
+    {
+      code: "migration.close-reporting-evidence-not-certified",
+      area: "MigrationRollout",
+      severity: "Warning",
+      message: "Close and reporting evidence migration has not been certified.",
+      suggestedAction: "Retain close checklist, report package, certification, and restatement evidence migration proof before production close.",
+      evidenceReferences: ["fixture:migration:ledger-book", "fixture:migration:dimensions"]
     },
     {
       code: "tenant-admin.operator-surface-required",

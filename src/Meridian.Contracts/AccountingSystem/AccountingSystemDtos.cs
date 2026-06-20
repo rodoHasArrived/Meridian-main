@@ -84,7 +84,8 @@ public enum AccountingProductionReadinessAreaDto
     DimensionalAccounting = 4,
     ExternalGl = 5,
     CloseReporting = 6,
-    TenantAdministration = 7
+    TenantAdministration = 7,
+    MigrationRollout = 8
 }
 
 public sealed record AccountingProductionReadinessRequestDto(
@@ -92,10 +93,19 @@ public sealed record AccountingProductionReadinessRequestDto(
     Guid? LedgerBookId = null,
     AccountingBasisKindDto? AccountingBasis = null,
     string? ProviderId = null,
-    IReadOnlyList<LedgerBookRequiredScopeDto>? RequiredLedgerBookScopes = null)
+    IReadOnlyList<LedgerBookRequiredScopeDto>? RequiredLedgerBookScopes = null,
+    bool LedgerBookMigrationCertified = false,
+    bool HistoricalJournalBackfillCertified = false,
+    bool DimensionalBackfillCertified = false,
+    bool AccountingConfigurationPromotionCertified = false,
+    bool CloseReportingEvidenceMigrationCertified = false,
+    IReadOnlyList<string>? MigrationEvidenceLinks = null)
 {
     public IReadOnlyList<LedgerBookRequiredScopeDto> RequiredLedgerBookScopes { get; init; } =
         RequiredLedgerBookScopes ?? [];
+
+    public IReadOnlyList<string> MigrationEvidenceLinks { get; init; } =
+        MigrationEvidenceLinks ?? [];
 }
 
 public sealed record AccountingProductionReadinessIssueDto(

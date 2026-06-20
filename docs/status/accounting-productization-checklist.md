@@ -59,9 +59,12 @@ the requirement end to end.
   excluding unscoped legacy queue items.
 - [x] Shared accounting production-readiness assessment now aggregates ledger-book rollout,
   Rules Studio, posting-rule execution, dimensional coverage, external-GL mapping/posting posture,
-  journal lifecycle service registration, close/report service registration, and tenant-admin
-  rollout blockers into one read-only fail-closed contract and endpoint for browser, WPF, and admin
-  setup surfaces.
+  journal lifecycle service registration, close/report service registration, migration-rollout
+  certification blockers, and tenant-admin rollout blockers into one read-only fail-closed contract
+  and endpoint for browser, WPF, and admin setup surfaces.
+  Migration readiness now accepts retained evidence flags for ledger-book migration, historical
+  journal backfill, dimensional backfill, configuration promotion, and close/reporting evidence
+  migration, and returns blocking shared issue codes when those controls are not certified.
 
 ## Still To Complete
 
@@ -82,7 +85,9 @@ the requirement end to end.
   paths, and transition audit coverage.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
-  evidence migration.
+  evidence migration. The shared readiness contract now exposes fail-closed certification inputs and
+  blocker codes for these controls, but it does not yet execute migration jobs, backfill data, or
+  retain migration run artifacts.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, but live credentialed import adapters, richer mapping fixtures, and controlled
   export certification still need provider-specific coverage before any separately approved live

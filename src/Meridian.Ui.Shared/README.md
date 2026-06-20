@@ -210,9 +210,11 @@ Accounting-system endpoints are also registered as a shared endpoint group from 
 assessment. `AccountingProductionReadinessService` composes ledger-book rollout, accounting
 configuration and Rules Studio, generated posting and dimensional coverage, manual journal
 lifecycle registration, close/report service registration, external-GL provider and certified
-mapping posture, and tenant-admin rollout guidance into one shared fail-closed payload for browser,
-WPF, and admin setup surfaces. The route does not create ledger books, import external GL data,
-post journals, certify exports, or close periods.
+mapping posture, migration-rollout certification for ledger-book scoping, historical journal
+backfill, dimensional backfill, accounting configuration promotion, close/reporting evidence
+migration, and tenant-admin rollout guidance into one shared fail-closed payload for browser, WPF,
+and admin setup surfaces. The route does not create ledger books, import external GL data, post
+journals, certify exports, or close periods.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers

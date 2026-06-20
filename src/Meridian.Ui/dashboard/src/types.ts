@@ -5431,7 +5431,8 @@ export type AccountingProductionReadinessArea =
   | "DimensionalAccounting"
   | "ExternalGl"
   | "CloseReporting"
-  | "TenantAdministration";
+  | "TenantAdministration"
+  | "MigrationRollout";
 export type LedgerBookRolloutIssueSeverity = "Info" | "Warning" | "Critical";
 export type AccountingTemplateLineSide = "Debit" | "Credit";
 export type ManualJournalEntryStatus = "Draft" | "NeedsFix" | "Submitted" | "Approved" | "Rejected" | "Posted" | "Reversed" | "Rebooked" | "CloseLocked";
@@ -5575,6 +5576,12 @@ export interface AccountingProductionReadinessRequest {
   accountingBasis?: AccountingBasisKind | null;
   providerId?: string | null;
   requiredLedgerBookScopes?: LedgerBookRequiredScope[] | null;
+  ledgerBookMigrationCertified?: boolean;
+  historicalJournalBackfillCertified?: boolean;
+  dimensionalBackfillCertified?: boolean;
+  accountingConfigurationPromotionCertified?: boolean;
+  closeReportingEvidenceMigrationCertified?: boolean;
+  migrationEvidenceLinks?: string[] | null;
 }
 
 export interface AccountingProductionReadinessIssue {
