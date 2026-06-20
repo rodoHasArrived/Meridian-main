@@ -1001,6 +1001,90 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntryLifecycle_RequiresIndependentLifecycleActor()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+
+        var selfPrepared = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "controller"));
+        var selfSubmitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            selfPrepared.JournalEntryId,
+            selfPrepared.FundProfileId,
+            "controller",
+            selfPrepared.Version,
+            Notes: "Submit own prepared draft for review."));
+        var selfApprove = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            selfSubmitted.JournalEntryId,
+            selfSubmitted.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            selfSubmitted.Version,
+            Notes: "Attempt to approve own prepared journal.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(selfSubmitted)]));
+
+        await selfApprove.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*requires an independent actor*prepared the journal entry*");
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
+        var submitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version,
+            Notes: "Submit for independent review."));
+        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntryId,
+            submitted.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.Version,
+            Notes: "Controller approved with retained evidence.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted)]));
+        var selfPost = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "ops-user",
+            approved.JournalEntry.Version,
+            Notes: "Attempt to post own prepared journal.",
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
+
+        await selfPost.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*requires an independent actor*prepared the journal entry*");
+
+        var posted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Controller posted after approval evidence.",
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
+        var selfReverse = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            posted.JournalEntry.JournalEntryId,
+            posted.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Reverse,
+            "ops-user",
+            posted.JournalEntry.Version,
+            Notes: "Attempt to reverse own prepared journal.",
+            EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-record/reversal/{posted.JournalEntry.PeriodId}"]));
+
+        await selfReverse.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*requires an independent actor*prepared the journal entry*");
+
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+        workbench.AuditTrail.Should().NotContain(item =>
+            (item.Action == "manual-je.approve" ||
+                item.Action == "manual-je.post" ||
+                item.Action == "manual-je.reverse") &&
+            item.Actor == "ops-user");
+        workbench.Drafts.Should().ContainSingle(item =>
+            item.JournalEntryId == posted.JournalEntry.JournalEntryId &&
+            item.Status == ManualJournalEntryStatusDto.Posted);
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntry_DraftSaveHonorsLifecycleMutability()
     {
         var configuration = CreateService();

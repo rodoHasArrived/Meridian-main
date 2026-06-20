@@ -1343,6 +1343,10 @@ late-adjustment or restatement governance. Lifecycle commands with a retained co
 also replay-safe: repeated submit, approval, posting, close-lock, reversal, or rebook requests from
 the same actor return the existing transition, and correction replays return any existing generated
 draft, instead of appending duplicate transitions or audit events after a stale client retry.
+Approval, rejection, posting, close-lock, reversal, and rebook actions also require an actor
+independent from the draft preparer before the shared service writes a transition, so browser and
+WPF callers cannot promote a prepared manual journal with the same operator identity that authored
+it.
 Closed Operations Continuity workflow detail payloads include the governed close-package
 publication manifest metadata produced by the close command: signer, sign-off rationale, retained
 manifest id/route, evidence hash, report pack id, linked evidence, and checklist approvals.

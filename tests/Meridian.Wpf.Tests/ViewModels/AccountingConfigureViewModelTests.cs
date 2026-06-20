@@ -626,6 +626,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var reversed = retainedDrafts.Should()
             .ContainSingle(draft => draft.Status == ManualJournalEntryStatusDto.Reversed)
             .Subject;
+        reversed.LifecycleTransitions.Should().Contain(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.Reverse &&
+            transition.Actor == "desktop-controller");
         retainedDrafts.Should().ContainSingle(draft =>
             draft.EntryType == ManualJournalEntryTypeDto.Reversal
             && draft.ReversalOfJournalEntryId == reversed.JournalEntryId

@@ -84,8 +84,9 @@ the requirement end to end.
   checks, evidence requirements, period locks, immutable posted entries, reversal/rebook correction
   paths, lifecycle idempotency, and transition audit coverage. Manual journal lifecycle commands now
   replay retained correlation ids for submit, approve, reject, post, close-lock, reverse, and rebook
-  without appending duplicate transitions or audit events, but broader actor segregation and
-  end-to-end mutation coverage remain open.
+  without appending duplicate transitions or audit events, and approval/rejection/posting/close-lock/
+  correction actions require an actor independent from the draft preparer. Broader authorization
+  policy, role-based segregation, and end-to-end mutation coverage remain open.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
   evidence migration. The shared readiness contract now exposes fail-closed certification inputs and

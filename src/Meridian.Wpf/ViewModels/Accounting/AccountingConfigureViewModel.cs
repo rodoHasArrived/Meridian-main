@@ -16,6 +16,7 @@ namespace Meridian.Wpf.ViewModels.Accounting;
 public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private const string DefaultActor = "desktop-user";
+    private const string DefaultLifecycleActor = "desktop-controller";
 
     private static readonly ManualJournalEntryTypePreset[] ManualJournalEntryTypePresets =
     [
@@ -1696,7 +1697,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             draft.JournalEntryId,
             draft.FundProfileId,
             action,
-            DefaultActor,
+            DefaultLifecycleActor,
             draft.Version,
             notes,
             CorrelationId: $"wpf-manual-je-{action.ToString().ToLowerInvariant()}",

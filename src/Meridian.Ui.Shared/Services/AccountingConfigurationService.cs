@@ -3616,6 +3616,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             throw new InvalidOperationException("Manual journal entry lifecycle action is blocked while critical validation issues remain.");
         }
 
+        EnsureLifecycleActorIndependentFromPreparer(draft, request);
+
         var transition = BuildTransition(draft.Status, toStatus, request, recordedAtUtc);
         var next = draft with
         {
@@ -3662,6 +3664,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         {
             throw new InvalidOperationException("Manual journal reversal and rebook evidence must reference correction intent and the posted journal entry or accounting period on the same evidence artifact.");
         }
+
+        EnsureLifecycleActorIndependentFromPreparer(posted, request);
 
         var correctionId = Guid.NewGuid();
         var correctionLines = request.RebookLines.Count > 0 && !reverseSides
@@ -3770,6 +3774,29 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         }
 
         return draft;
+    }
+
+    private static void EnsureLifecycleActorIndependentFromPreparer(
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionRequestDto request)
+    {
+        if (request.Action is JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.Submit)
+        {
+            return;
+        }
+
+        var actor = RequireText(request.Actor, nameof(request.Actor));
+        var preparedBy = NormalizeOptional(draft.PreparedBy);
+        if (preparedBy is null)
+        {
+            return;
+        }
+
+        if (string.Equals(actor, preparedBy, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Manual journal lifecycle action '{request.Action}' requires an independent actor; '{actor}' prepared the journal entry and cannot approve, reject, post, close-lock, reverse, or rebook it.");
+        }
     }
 
     private async Task<JournalEntryLifecycleActionResultDto?> TryBuildIdempotentLifecycleResultAsync(

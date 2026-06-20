@@ -194,6 +194,10 @@ fields plus capital-account opening/ending net activity, the canonical activity 
 evidence-packet route, approval id/route, the direct private-capital report-output route,
 primary report-output workflow/provenance, readiness reason, and next action from that record
 without introducing WPF-local accounting aggregation.
+Manual journal lifecycle buttons build shared lifecycle requests with a distinct desktop controller
+actor for approval, posting, close-lock, reversal, and rebook decisions, leaving the shared service
+to enforce preparer-independence, evidence, period-lock, idempotency, and correction-draft controls
+instead of letting the desktop view model promote entries with the draft preparer identity.
 Report-output rows also consume the shared report-output readiness label, reason, next action, and
 next-action route, so the desktop grid explains missing evidence, approval, posting, publication,
 and published states without parsing validation issue codes.
