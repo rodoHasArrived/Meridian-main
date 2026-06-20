@@ -6740,6 +6740,7 @@ export interface SaveManualJournalEntryDraftRequest {
   companyId?: string | null;
   reportGroupPrincipalIds?: string[] | null;
   periodIsLocked?: boolean;
+  ledgerBookId?: string | null;
 }
 
 export interface ValidateManualJournalEntryDraftRequest {
@@ -6747,6 +6748,7 @@ export interface ValidateManualJournalEntryDraftRequest {
   actor: string;
   correlationId?: string | null;
   periodIsLocked?: boolean;
+  ledgerBookId?: string | null;
 }
 
 export interface SubmitManualJournalEntryApprovalRequest {

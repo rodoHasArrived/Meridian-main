@@ -741,7 +741,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     BuildManualJournalDraft(),
                     DefaultActor,
                     CorrelationId: "wpf-manual-je-save",
-                    EvidenceLinks: NormalizeEvidenceLink(DraftEvidenceLink)),
+                    EvidenceLinks: NormalizeEvidenceLink(DraftEvidenceLink),
+                    LedgerBookId: _configuration?.LedgerBookId),
                 ct).ConfigureAwait(false);
             _selectedDraft = saved;
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
@@ -766,7 +767,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         try
         {
             var validated = await _manualJournalEntryWorkbenchService.ValidateDraftAsync(
-                new ValidateManualJournalEntryDraftRequest(BuildManualJournalDraft(), DefaultActor, CorrelationId: "wpf-manual-je-validate"),
+                new ValidateManualJournalEntryDraftRequest(
+                    BuildManualJournalDraft(),
+                    DefaultActor,
+                    CorrelationId: "wpf-manual-je-validate",
+                    LedgerBookId: _configuration?.LedgerBookId),
                 ct).ConfigureAwait(false);
             ManualJournalStatusText = BuildManualJournalValidationText(validated);
             ApplyManualJournalValidationRows(validated.ValidationIssues);

@@ -2010,13 +2010,15 @@ public sealed record SaveManualJournalEntryDraftRequest(
     string Actor,
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
-    bool PeriodIsLocked = false);
+    bool PeriodIsLocked = false,
+    Guid? LedgerBookId = null);
 
 public sealed record ValidateManualJournalEntryDraftRequest(
     ManualJournalEntryDraftDto Draft,
     string Actor,
     string? CorrelationId = null,
-    bool PeriodIsLocked = false);
+    bool PeriodIsLocked = false,
+    Guid? LedgerBookId = null);
 
 public sealed record SubmitManualJournalEntryApprovalRequest(
     Guid JournalEntryId,

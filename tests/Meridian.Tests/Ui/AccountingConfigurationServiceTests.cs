@@ -1263,9 +1263,28 @@ public sealed class AccountingConfigurationServiceTests
         var configuration = CreateService();
         await SeedBalancedConfigurationAsync(configuration);
         var service = CreateManualJournalEntryWorkbenchService(configuration);
-        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
-        var savedLedgerBookId = saved.LedgerBookId!.Value;
+        var draft = BalancedManualJournalEntry();
+        var savedLedgerBookId = draft.LedgerBookId!.Value;
         var wrongLedgerBookId = Guid.NewGuid();
+
+        var save = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            draft,
+            "ops-user",
+            LedgerBookId: wrongLedgerBookId));
+        await save.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', not requested ledger book '{wrongLedgerBookId:D}'*");
+
+        var validate = async () => await service.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            draft,
+            "controller",
+            LedgerBookId: wrongLedgerBookId));
+        await validate.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', not requested ledger book '{wrongLedgerBookId:D}'*");
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            draft,
+            "ops-user",
+            LedgerBookId: savedLedgerBookId));
 
         var submit = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,

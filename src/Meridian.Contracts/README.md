@@ -866,12 +866,15 @@ Financial Operations can revalidate the current external-GL mapping and latest r
 before certification.
 `SubmitManualJournalEntryApprovalRequest` carries action-origin metadata because reviewed
 automation may draft journal content, but cannot submit the durable approval record on behalf of a
-human operator. Manual-journal mutation requests also carry period-lock posture so save, submit,
-evidence attachment, and lifecycle mutations can be rejected once close management locks the
-accounting period; validation requests stay non-posting and return `manual-je.period-locked` as a
-critical issue. Shared manual-journal validation also treats GUID-backed `PeriodId` values as
-ledger period references when a ledger store is registered, blocking approval and lifecycle
-promotion if the period is missing, closed, or scoped to a different `LedgerBookId`.
+human operator. Manual-journal save, validation, submit, evidence-attachment, and lifecycle
+requests can also carry requested `LedgerBookId` scope so the shared service rejects cross-book
+draft mutations before normalization, persistence, approval, or correction state changes.
+Manual-journal mutation requests also carry period-lock posture so save, submit, evidence
+attachment, and lifecycle mutations can be rejected once close management locks the accounting
+period; validation requests stay non-posting and return `manual-je.period-locked` as a critical
+issue. Shared manual-journal validation also treats GUID-backed `PeriodId` values as ledger period
+references when a ledger store is registered, blocking approval and lifecycle promotion if the
+period is missing, closed, or scoped to a different `LedgerBookId`.
 Evidence subjects can carry optional `LedgerBookId` scope so shared accounting evidence packets can
 resolve the same ledger book as the initiating accounting surface instead of falling back to
 fund-wide activity.

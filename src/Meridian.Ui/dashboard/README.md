@@ -744,7 +744,8 @@ selection, selected-line Security Master search/picker results, line validation 
 evidence attachments, treasury-context readiness, save draft, validate, attach-evidence API wiring,
 and submit approval commands
 from the shared DTOs while versioning, validation, persistence, private-capital fund-event context,
-evidence gating, dimensional accounting normalization, period-lock enforcement, and approval handoff remain server-owned. The same workstream renders the shared
+evidence gating, dimensional accounting normalization, period-lock enforcement, selected
+ledger-book mutation checks, and approval handoff remain server-owned. The same workstream renders the shared
 private-capital activity projection as fund-event rows, capital-account aggregates, signed net
 activity, ordered capital-account subledger movements with running net activity, posted fund-event
 counts, ledger-impact readiness, published report-output counts, report-output readiness

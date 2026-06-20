@@ -286,7 +286,10 @@ approval submission: effective date, idempotency key, fund-event type/id, and ca
 context, with optional investor, payment-intent, and settlement references. Stronger host
 registrations can still replace those stores, but browser and WPF clients should consume the shared
 services instead of keeping process-local accounting configuration, treasury-context validation, or
-draft state. Manual journal evidence attachment is exposed through
+draft state. Manual journal save, validation, submission, evidence attachment, and lifecycle
+requests can carry the selected `LedgerBookId`; the shared service rejects a requested book that
+does not match the retained draft before normalizing, saving, approving, attaching evidence, or
+applying correction transitions. Manual journal evidence attachment is exposed through
 `/api/ledger/journal-entry-workbench/evidence`; it requires the current draft version, validates
 line-scoped attachments, writes `manual-je.attach-evidence` audit, and refuses posted, reversed,
 rebooked, or close-locked entries so evidence changes happen before posting or through correction

@@ -6019,8 +6019,14 @@ export function useManualJournalEntryWorkbenchViewModel(
   const validate = useCallback(async () => {
     setValidateBusy(true);
     setError(null);
+    const draftForValidation = withManualJournalTotals(draft);
     try {
-      applyServerDraft(await services.validateDraft({ draft: withManualJournalTotals(draft), actor: "browser-user", correlationId: "manual-je-validate" }));
+      applyServerDraft(await services.validateDraft({
+        draft: draftForValidation,
+        actor: "browser-user",
+        correlationId: "manual-je-validate",
+        ledgerBookId: draftForValidation.ledgerBookId ?? null
+      }));
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry validation failed."));
     } finally {
@@ -6031,8 +6037,14 @@ export function useManualJournalEntryWorkbenchViewModel(
   const save = useCallback(async () => {
     setSaveBusy(true);
     setError(null);
+    const draftForSave = withManualJournalTotals(draft);
     try {
-      applyServerDraft(await services.saveDraft({ draft: withManualJournalTotals(draft), actor: "browser-user", correlationId: "manual-je-save" }));
+      applyServerDraft(await services.saveDraft({
+        draft: draftForSave,
+        actor: "browser-user",
+        correlationId: "manual-je-save",
+        ledgerBookId: draftForSave.ledgerBookId ?? null
+      }));
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry draft could not be saved."));
     } finally {

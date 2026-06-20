@@ -24,7 +24,8 @@ the requirement end to end.
   generated multi-line postings, dimensions, evidence links, and approval-gated posting commands;
   source-event candidates without a ledger book fail closed before draft/write creation.
 - [x] Manual journal drafts carry dimensions, evidence, ledger-book scope, lifecycle transitions,
-  reversal/rebook links, and validation issues.
+  reversal/rebook links, and validation issues; save, validate, submit, evidence attachment, and
+  lifecycle mutation requests reject a requested ledger book that does not match the retained draft.
 - [x] External GL remains guarded and import-first: QuickBooks fixture/import evidence,
   Xero and NetSuite fixture import evidence, provider-neutral mapping profiles,
   ledger-book-scoped reconciliation, and controlled export package certification exist while live

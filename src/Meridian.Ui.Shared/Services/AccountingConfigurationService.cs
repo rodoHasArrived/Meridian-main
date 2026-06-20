@@ -3255,6 +3255,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsurePeriodUnlocked(request.PeriodIsLocked, "save manual journal entry drafts");
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, request.Draft);
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft, allowIncomplete: true, ct).ConfigureAwait(false);
         var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct).ConfigureAwait(false);
         if (existing is not null && existing.Version != request.Draft.Version)
@@ -3315,6 +3316,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, request.Draft);
         return NormalizeAndValidateAsync(request.Draft, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked);
     }
 

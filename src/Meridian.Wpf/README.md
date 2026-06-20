@@ -52,7 +52,8 @@ instead of a generic ledger page. The page opens on compact action chrome instea
 hero, preserving status, storage posture, active-fund context, and command readiness beside the
 primary configure actions. The workbench reads and mutates shared accounting configuration DTOs,
 surfaces selected ledger-book setup readiness, chart accounts, templates, posting rules, validation, and audit rows, saves manual journal
-entry drafts through the shared workbench service, shows the shared Rules Studio projection for
+entry drafts through the shared workbench service with selected ledger-book scope on save,
+validation, submit, and lifecycle actions, shows the shared Rules Studio projection for
 effective-dated rule versions, generated posting readiness, saved regression tests, and promotion
 approval queues, runs saved rule-test suites, and approves promotion-gated posting-rule versions
 through the shared accounting configuration service, offers type-specific draft presets for accrued

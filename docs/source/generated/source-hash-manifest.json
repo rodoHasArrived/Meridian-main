@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "643812ca57e8dcacb77ceb5ed269303f6a4fe506b195ded07300d167ff253595",
-      "source_hash": "fbb00c7ed30363180aee68c40decbc67536d9b5a076c83a32181d31c039a3832"
+      "readme_hash": "c9abb4c9f434e0d57443c88b33a1739c138bedc7c18e920cd05aab790746fda5",
+      "source_hash": "2a709af8a90f5e275cd76dc835e4c5946cd294c6fedfc0985c0bac7617d1403a"
     },
     {
       "id": "SRC-CORE",
@@ -254,8 +254,8 @@
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "f1f7435cc02dcc5b6df047283e4ac880f2eca2323716ed0db198db6ede93bf3e",
-      "source_hash": "43df49f4d175c33d3b47ce8fa3ca9bbe5d35a1b6b82ec849557179c45f6b1335"
+      "readme_hash": "e17d2c01559521e2c3351f9febcf8f2fe4ec70d02b75bb1855e8bf84043a4199",
+      "source_hash": "ff188f76bd80eedf47fba8c12fa7f0395a65d4a5372c503add3bcc0697a89418"
     },
     {
       "id": "SRC-UI-SERVICES",
@@ -268,15 +268,15 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "078d50ac8d3e37d0dd54d68a8a4ccd86d0ac07e0e17bb2935700878e41959621",
-      "source_hash": "6bd33fa370237d9ec39d9323af689d0ac8265e08725da15e534a4dfc5a56b1ae"
+      "readme_hash": "f7ad1279829d9c12805ec094498339dde17cf166a2c2fadbebc7e63889a9f244",
+      "source_hash": "4c0cd98d2ffaee312edd9c5c0264e701921c5acfa8d6b33f4335b483b5dba8b7"
     },
     {
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "c5ac6ccf6475374705621df94fec02ae9645f4a558351375405b591fbecb3ba2",
-      "source_hash": "f8ca7d3aceaa2ac3c44822780022dae3af578334d7922abcee7181c304627ffc"
+      "readme_hash": "dd99c011d982180fec5448b4f1b963c50d27ad78b6a79d9944c88a02a02f87d6",
+      "source_hash": "ada85713fb631e9b5201c53a9dd09f303f032321b96313ac092fe30662a32552"
     }
   ],
   "schema": {
