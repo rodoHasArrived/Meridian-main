@@ -83,6 +83,57 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task AssessRolloutAsync_ReportsMissingRequiredScopesAndPeriodReadiness()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var fundNodeId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var requiredGaapNodeId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            fundNodeId,
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund Primary",
+            "USD",
+            AccountingPolicyId: "primary-policy",
+            AccountingPolicyVersion: "v2"));
+        await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            1,
+            "2026-P01",
+            new DateOnly(2026, 1, 1),
+            new DateOnly(2026, 1, 31)));
+
+        var assessment = await service.AssessRolloutAsync(new LedgerBookRolloutAssessmentRequest(
+            FundProfileId: "alpha-fund",
+            RequiredScopes:
+            [
+                new LedgerBookRequiredScopeDto(fundNodeId, FundStructureNodeKindDto.Fund),
+                new LedgerBookRequiredScopeDto(requiredGaapNodeId, FundStructureNodeKindDto.Fund, AccountingBasisKindDto.Gaap, "Alpha Fund GAAP")
+            ]));
+
+        assessment.IsReady.Should().BeFalse();
+        assessment.BookCount.Should().Be(1);
+        assessment.OpenPeriodCount.Should().Be(1);
+        assessment.Books.Should().ContainSingle(status =>
+            status.LedgerBookId == book.LedgerBookId &&
+            status.PeriodCount == 1 &&
+            status.OpenPeriodCount == 1 &&
+            status.AccountingPolicyId == "primary-policy");
+        assessment.Issues.Should().Contain(issue =>
+            issue.Code == "LedgerBookRequiredScopeMissing" &&
+            issue.Severity == LedgerBookRolloutIssueSeverityDto.Critical &&
+            issue.FundStructureNodeId == requiredGaapNodeId &&
+            issue.AccountingBasis == AccountingBasisKindDto.Gaap);
+        assessment.Issues.Should().Contain(issue =>
+            issue.Code == "LedgerBookNoHardClosedPeriods" &&
+            issue.Severity == LedgerBookRolloutIssueSeverityDto.Warning &&
+            issue.LedgerBookId == book.LedgerBookId);
+        assessment.Issues.Should().NotContain(issue => issue.Code == "LedgerBookLegacyAccountingPolicy");
+    }
+
+    [Fact]
     public async Task AppendAsync_WhenJournalBasisDiffersFromBookBasis_RejectsEntry()
     {
         var store = new InMemoryLedgerJournalStore();
@@ -411,6 +462,47 @@ public sealed class LedgerBookServiceTests
             item.TargetPageTag == "FundReconciliation" &&
             item.RequiredSignoffRole == "Fund Controller" &&
             item.ToleranceProfileId == "close-tolerance-v1");
+    }
+
+    [Fact]
+    public async Task LedgerEndpoints_RolloutAssessment_ReturnsReadOnlyMigrationReadiness()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var nodeId = Guid.Parse("59f045cb-f681-4b0c-943d-44c946f78214");
+        var missingNodeId = Guid.Parse("77f045cb-f681-4b0c-943d-44c946f78214");
+
+        var book = await PostJsonAsync<LedgerBookDto>(
+            client,
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                nodeId,
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD"));
+
+        var assessment = await PostJsonAsync<LedgerBookRolloutAssessmentDto>(
+            client,
+            UiApiRoutes.LedgerBookRolloutAssessment,
+            new LedgerBookRolloutAssessmentRequest(
+                FundProfileId: "alpha-fund",
+                RequiredScopes:
+                [
+                    new LedgerBookRequiredScopeDto(nodeId, FundStructureNodeKindDto.Fund),
+                    new LedgerBookRequiredScopeDto(missingNodeId, FundStructureNodeKindDto.Fund, AccountingBasisKindDto.Gaap, "Alpha Fund GAAP")
+                ]));
+
+        assessment.BookCount.Should().Be(1);
+        assessment.Books.Should().ContainSingle(status => status.LedgerBookId == book.LedgerBookId);
+        assessment.Issues.Should().Contain(issue =>
+            issue.Code == "LedgerBookMissingPeriods" &&
+            issue.Severity == LedgerBookRolloutIssueSeverityDto.Critical &&
+            issue.LedgerBookId == book.LedgerBookId);
+        assessment.Issues.Should().Contain(issue =>
+            issue.Code == "LedgerBookRequiredScopeMissing" &&
+            issue.Severity == LedgerBookRolloutIssueSeverityDto.Critical &&
+            issue.FundStructureNodeId == missingNodeId);
     }
 
     [Fact]

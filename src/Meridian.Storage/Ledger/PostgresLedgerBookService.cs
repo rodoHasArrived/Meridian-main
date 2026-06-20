@@ -98,6 +98,120 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return records.Select(MapBook).ToArray();
     }
 
+    public async Task<LedgerBookRolloutAssessmentDto> AssessRolloutAsync(
+        LedgerBookRolloutAssessmentRequest request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+
+        var fundProfileId = NormalizeOptional(request.FundProfileId);
+        var records = await _store
+            .ListLedgerBooksAsync(
+                fundProfileId,
+                request.FundStructureNodeId,
+                request.FundStructureNodeKind,
+                ct)
+            .ConfigureAwait(false);
+        if (request.AccountingBasis.HasValue)
+        {
+            records = records.Where(book => book.AccountingBasis == request.AccountingBasis.Value).ToArray();
+        }
+
+        var issues = new List<LedgerBookRolloutIssueDto>();
+        var statuses = new List<LedgerBookRolloutBookStatusDto>();
+        foreach (var book in records.OrderBy(static book => book.FundProfileId, StringComparer.OrdinalIgnoreCase)
+                     .ThenBy(static book => book.FundStructureNodeId)
+                     .ThenBy(static book => book.AccountingBasis)
+                     .ThenBy(static book => book.DisplayName, StringComparer.OrdinalIgnoreCase))
+        {
+            var periods = await _store
+                .ListPeriodsAsync(book.LedgerBookId, status: null, fundProfileId: null, fundStructureNodeId: null, ct)
+                .ConfigureAwait(false);
+            var orderedPeriods = periods.OrderBy(static period => period.StartDate).ToArray();
+            var status = new LedgerBookRolloutBookStatusDto(
+                book.LedgerBookId,
+                book.FundProfileId,
+                book.FundStructureNodeId,
+                book.FundStructureNodeKind,
+                book.AccountingBasis,
+                book.AccountingPolicyId,
+                book.AccountingPolicyVersion,
+                orderedPeriods.Length,
+                orderedPeriods.Count(static period => string.Equals(period.Status, OpenStatus, StringComparison.Ordinal)),
+                orderedPeriods.Count(static period => string.Equals(period.Status, SoftClosedStatus, StringComparison.Ordinal)),
+                orderedPeriods.Count(static period => string.Equals(period.Status, HardClosedStatus, StringComparison.Ordinal)),
+                orderedPeriods.FirstOrDefault()?.StartDate,
+                orderedPeriods.LastOrDefault()?.EndDate);
+            statuses.Add(status);
+
+            if (status.PeriodCount == 0)
+            {
+                issues.Add(new LedgerBookRolloutIssueDto(
+                    "LedgerBookMissingPeriods",
+                    LedgerBookRolloutIssueSeverityDto.Critical,
+                    $"Ledger book '{book.DisplayName}' has no accounting periods; migration cannot prove close/reporting readiness.",
+                    Scope: BuildRolloutScope(book),
+                    LedgerBookId: book.LedgerBookId,
+                    FundStructureNodeId: book.FundStructureNodeId,
+                    AccountingBasis: book.AccountingBasis));
+            }
+
+            if (string.Equals(book.AccountingPolicyId, "legacy-v1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(book.AccountingPolicyVersion, "legacy-v1", StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(new LedgerBookRolloutIssueDto(
+                    "LedgerBookLegacyAccountingPolicy",
+                    LedgerBookRolloutIssueSeverityDto.Warning,
+                    $"Ledger book '{book.DisplayName}' still uses legacy accounting policy metadata; promote a governed policy before production cutover.",
+                    Scope: BuildRolloutScope(book),
+                    LedgerBookId: book.LedgerBookId,
+                    FundStructureNodeId: book.FundStructureNodeId,
+                    AccountingBasis: book.AccountingBasis));
+            }
+
+            if (status.PeriodCount > 0 && status.HardClosedPeriodCount == 0)
+            {
+                issues.Add(new LedgerBookRolloutIssueDto(
+                    "LedgerBookNoHardClosedPeriods",
+                    LedgerBookRolloutIssueSeverityDto.Warning,
+                    $"Ledger book '{book.DisplayName}' has no hard-closed periods; production reporting certification has not been proven.",
+                    Scope: BuildRolloutScope(book),
+                    LedgerBookId: book.LedgerBookId,
+                    FundStructureNodeId: book.FundStructureNodeId,
+                    AccountingBasis: book.AccountingBasis));
+            }
+        }
+
+        AddMissingRequiredScopeIssues(request, records, issues);
+        AddUnscopedPeriodIssues(records, issues, await _store
+            .ListPeriodsAsync(ledgerBookId: null, status: null, fundProfileId: null, fundStructureNodeId: null, ct)
+            .ConfigureAwait(false));
+
+        if (records.Count == 0)
+        {
+            issues.Add(new LedgerBookRolloutIssueDto(
+                "LedgerBookScopeMissing",
+                LedgerBookRolloutIssueSeverityDto.Critical,
+                "No ledger books match the requested rollout scope.",
+                Scope: BuildRolloutScope(fundProfileId, request.FundStructureNodeId, request.FundStructureNodeKind, request.AccountingBasis),
+                FundStructureNodeId: request.FundStructureNodeId,
+                AccountingBasis: request.AccountingBasis));
+        }
+
+        return new LedgerBookRolloutAssessmentDto(
+            DateTimeOffset.UtcNow,
+            fundProfileId,
+            request.FundStructureNodeId,
+            request.FundStructureNodeKind,
+            request.AccountingBasis,
+            statuses,
+            issues.OrderByDescending(static issue => issue.Severity)
+                .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static issue => issue.Scope, StringComparer.OrdinalIgnoreCase)
+                .ToArray());
+    }
+
     public async Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
@@ -432,6 +546,105 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         => !string.IsNullOrWhiteSpace(value)
            && (value.Contains(id.ToString("D"), StringComparison.OrdinalIgnoreCase)
                || value.Contains(id.ToString("N"), StringComparison.OrdinalIgnoreCase));
+
+    private static void AddMissingRequiredScopeIssues(
+        LedgerBookRolloutAssessmentRequest request,
+        IReadOnlyList<LedgerBookRecord> books,
+        ICollection<LedgerBookRolloutIssueDto> issues)
+    {
+        var fundProfileId = NormalizeOptional(request.FundProfileId);
+        foreach (var required in request.RequiredScopes)
+        {
+            if (required.FundStructureNodeId == Guid.Empty)
+            {
+                issues.Add(new LedgerBookRolloutIssueDto(
+                    "LedgerBookRequiredScopeInvalid",
+                    LedgerBookRolloutIssueSeverityDto.Critical,
+                    "Required ledger-book scope includes an empty fund-structure node id.",
+                    AccountingBasis: required.AccountingBasis));
+                continue;
+            }
+
+            var exists = books.Any(book =>
+                book.FundStructureNodeId == required.FundStructureNodeId &&
+                book.FundStructureNodeKind == required.FundStructureNodeKind &&
+                book.AccountingBasis == required.AccountingBasis &&
+                (fundProfileId is null || string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)));
+            if (exists)
+            {
+                continue;
+            }
+
+            var displayName = NormalizeOptional(required.DisplayName) ?? required.FundStructureNodeId.ToString("D");
+            issues.Add(new LedgerBookRolloutIssueDto(
+                "LedgerBookRequiredScopeMissing",
+                LedgerBookRolloutIssueSeverityDto.Critical,
+                $"Required ledger-book scope '{displayName}' for {required.AccountingBasis} basis is missing.",
+                Scope: BuildRolloutScope(fundProfileId, required.FundStructureNodeId, required.FundStructureNodeKind, required.AccountingBasis),
+                FundStructureNodeId: required.FundStructureNodeId,
+                AccountingBasis: required.AccountingBasis));
+        }
+    }
+
+    private static void AddUnscopedPeriodIssues(
+        IReadOnlyList<LedgerBookRecord> scopedBooks,
+        ICollection<LedgerBookRolloutIssueDto> issues,
+        IReadOnlyList<LedgerAccountingPeriod> allPeriods)
+    {
+        var unscopedPeriods = allPeriods.Where(static period => !period.LedgerBookId.HasValue).ToArray();
+        if (unscopedPeriods.Length == 0)
+        {
+            return;
+        }
+
+        var relevantPeriodCount = scopedBooks.Count == 0
+            ? unscopedPeriods.Length
+            : unscopedPeriods.Count(period => scopedBooks.Any(book =>
+                book.FundStructureNodeId == Guid.Empty ||
+                period.Label.Contains(book.FundProfileId, StringComparison.OrdinalIgnoreCase)));
+        if (relevantPeriodCount == 0)
+        {
+            return;
+        }
+
+        issues.Add(new LedgerBookRolloutIssueDto(
+            "LedgerPeriodsMissingLedgerBookScope",
+            LedgerBookRolloutIssueSeverityDto.Critical,
+            $"{relevantPeriodCount} retained ledger period(s) are missing ledger-book scope and require migration/backfill before production cutover."));
+    }
+
+    private static string BuildRolloutScope(LedgerBookRecord book)
+        => BuildRolloutScope(book.FundProfileId, book.FundStructureNodeId, book.FundStructureNodeKind, book.AccountingBasis);
+
+    private static string BuildRolloutScope(
+        string? fundProfileId,
+        Guid? fundStructureNodeId,
+        FundStructureNodeKindDto? fundStructureNodeKind,
+        AccountingBasisKindDto? accountingBasis)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            parts.Add($"fund:{fundProfileId.Trim()}");
+        }
+
+        if (fundStructureNodeId.HasValue)
+        {
+            parts.Add($"node:{fundStructureNodeId.Value:D}");
+        }
+
+        if (fundStructureNodeKind.HasValue)
+        {
+            parts.Add($"kind:{fundStructureNodeKind.Value}");
+        }
+
+        if (accountingBasis.HasValue)
+        {
+            parts.Add($"basis:{accountingBasis.Value}");
+        }
+
+        return parts.Count == 0 ? "ledger-book-rollout" : string.Join(";", parts);
+    }
 
     private static LedgerPeriodFinancials CalculateFinancials(IReadOnlyList<LedgerJournalEntryRecord> entries)
     {

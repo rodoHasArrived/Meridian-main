@@ -100,6 +100,41 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        app.MapPost(UiApiRoutes.LedgerBookRolloutAssessment, async (
+            LedgerBookRolloutAssessmentRequest request,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var assessment = await service.AssessRolloutAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(assessment, jsonOptions);
+            }
+            catch (LedgerBookServiceException ex)
+            {
+                return MapServiceException(ex);
+            }
+            catch (NotSupportedException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status501NotImplemented);
+            }
+        })
+        .WithName("AssessLedgerBookRollout")
+        .Produces<LedgerBookRolloutAssessmentDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapGet(UiApiRoutes.LedgerPeriods, async (
             Guid? ledgerBookId,
             string? fundProfileId,
