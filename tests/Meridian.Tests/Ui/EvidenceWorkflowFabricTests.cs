@@ -694,6 +694,61 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task EvidenceGraphService_DuringPrivateCapitalFundEventReview_PreservesLedgerBookScope()
+    {
+        var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+        var activity = PrivateCapitalActivityProjection(ledgerBookId);
+        var manualJournalService = new StubManualJournalEntryWorkbenchService(activity);
+        var provider = new ServiceCollection()
+            .AddSingleton<IManualJournalEntryWorkbenchService>(manualJournalService)
+            .BuildServiceProvider();
+        var resolver = new EvidenceSubjectResolver(provider);
+        var graph = new EvidenceGraphService(
+            resolver,
+            new EvidenceTemplateRegistry(),
+            [new PrivateCapitalFundEventEvidenceContributor(provider), new PaymentIntentEvidenceContributor(provider)],
+            NullLogger<EvidenceGraphService>.Instance);
+
+        var subjects = await resolver.ListAsync();
+        var fundEventSubject = subjects.Single(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.PrivateCapitalFundEventKind &&
+            subject.SubjectId == "fund-event:fund-alpha:capital-call:20260630");
+        fundEventSubject.LedgerBookId.Should().Be(ledgerBookId);
+        fundEventSubject.Route.Should().Contain($"ledgerBookId={ledgerBookId:D}");
+        manualJournalService.RequiredLedgerBookId = ledgerBookId;
+        manualJournalService.PrivateCapitalActivityLedgerBookRequests.Clear();
+
+        var fundEventPacket = await graph.GetPacketAsync(
+            EvidenceSubjectResolver.PrivateCapitalFundEventKind,
+            fundEventSubject.SubjectId,
+            ledgerBookId: ledgerBookId);
+        var paymentPacket = await graph.GetPacketAsync(
+            EvidenceSubjectResolver.PaymentIntentKind,
+            "payment:fund-alpha:capital-call:20260630",
+            ledgerBookId: ledgerBookId);
+
+        fundEventPacket.Should().NotBeNull();
+        paymentPacket.Should().NotBeNull();
+        fundEventPacket!.Subject.LedgerBookId.Should().Be(ledgerBookId);
+        paymentPacket!.Subject.LedgerBookId.Should().Be(ledgerBookId);
+        manualJournalService.PrivateCapitalActivityLedgerBookRequests.Should().OnlyContain(item => item == ledgerBookId);
+
+        manualJournalService.PrivateCapitalActivityLedgerBookRequests.Clear();
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-book-scope", Guid.NewGuid().ToString("N"));
+        await using var app = await CreateEvidenceAppAsync(root, manualJournalService: manualJournalService);
+        var client = app.GetTestClient();
+        var encodedSubjectId = Uri.EscapeDataString(fundEventSubject.SubjectId);
+        var packetResponse = await client.GetAsync(
+            $"/api/workstation/evidence/subjects/private-capital-fund-event/{encodedSubjectId}/packet?ledgerBookId={ledgerBookId:D}");
+
+        packetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var endpointPacket = await packetResponse.Content.ReadFromJsonAsync<EvidencePacketDto>(ServerJsonOptions);
+        endpointPacket.Should().NotBeNull();
+        endpointPacket!.Subject.LedgerBookId.Should().Be(ledgerBookId);
+        manualJournalService.PrivateCapitalActivityLedgerBookRequests.Should().OnlyContain(item => item == ledgerBookId);
+    }
+
+    [Fact]
     public async Task MapEvidenceEndpoints_DuringPaymentIntentCashEvidenceReview_ReturnsPacketValidationAndManifest()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-payment-intent", Guid.NewGuid().ToString("N"));
@@ -2444,7 +2499,7 @@ public sealed class EvidenceWorkflowFabricTests
             AccountingRecordSummary: BuildAccountingRecordSummary(workflowId, now, accountingRecordAuditReady));
     }
 
-    private static PrivateCapitalActivityProjectionDto PrivateCapitalActivityProjection()
+    private static PrivateCapitalActivityProjectionDto PrivateCapitalActivityProjection(Guid? ledgerBookId = null)
     {
         var now = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
         var journalEntryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -2547,7 +2602,7 @@ public sealed class EvidenceWorkflowFabricTests
             [reportOutput]);
         var subledgers = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
             "fund-alpha",
-            ledgerBookId: null,
+            ledgerBookId,
             now,
             [capitalAccount],
             records,
@@ -2560,7 +2615,7 @@ public sealed class EvidenceWorkflowFabricTests
             fundEvent.PaymentIntentId!,
             fundEvent.SettlementReference,
             "fund-alpha",
-            null,
+            ledgerBookId,
             fundEvent.FundEventId,
             journalEntryId,
             "fund-controller",
@@ -2587,7 +2642,7 @@ public sealed class EvidenceWorkflowFabricTests
                 "Controller approval retained before execution-deferred reliance",
                 ["/evidence/fund-alpha/bank-cash-capital-call.pdf"]),
             PrivateCapitalActivityRoutes.BuildPaymentIntentEvidenceRoute(fundEvent.PaymentIntentId!),
-            PrivateCapitalActivityRoutes.BuildPaymentIntentWorkbenchRoute("fund-alpha", null, fundEvent.PaymentIntentId!),
+            PrivateCapitalActivityRoutes.BuildPaymentIntentWorkbenchRoute("fund-alpha", ledgerBookId, fundEvent.PaymentIntentId!),
             ApprovalChain:
             [
                 new PaymentIntentApprovalStepDto(
@@ -2649,7 +2704,7 @@ public sealed class EvidenceWorkflowFabricTests
 
         return new PrivateCapitalActivityProjectionDto(
             "fund-alpha",
-            null,
+            ledgerBookId,
             now,
             FundEventCount: 1,
             CapitalAccountCount: 1,
@@ -3072,6 +3127,10 @@ public sealed class EvidenceWorkflowFabricTests
             _activity = activity;
         }
 
+        public Guid? RequiredLedgerBookId { get; set; }
+
+        public List<Guid?> PrivateCapitalActivityLedgerBookRequests { get; } = [];
+
         public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
@@ -3096,7 +3155,16 @@ public sealed class EvidenceWorkflowFabricTests
             string? fundProfileId = null,
             Guid? ledgerBookId = null,
             CancellationToken ct = default)
-            => Task.FromResult(_activity);
+        {
+            PrivateCapitalActivityLedgerBookRequests.Add(ledgerBookId);
+            if (RequiredLedgerBookId.HasValue && ledgerBookId != RequiredLedgerBookId)
+            {
+                throw new InvalidOperationException(
+                    $"Expected ledger book '{RequiredLedgerBookId:D}' but received '{ledgerBookId?.ToString("D") ?? "null"}'.");
+            }
+
+            return Task.FromResult(_activity);
+        }
 
         public Task<ManualJournalEntryDraftDto> SaveDraftAsync(
             SaveManualJournalEntryDraftRequest request,

@@ -7,6 +7,33 @@ namespace Meridian.Tests.Ui;
 
 public sealed class AccountingReportPackageServiceTests
 {
+    private static readonly Guid DefaultLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid AlternateLedgerBookId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+    [Fact]
+    public async Task BuildPackageAsync_BlocksStandaloneCertificationWithoutLedgerBook()
+    {
+        var service = new AccountingReportPackageService();
+
+        var package = await service.BuildPackageAsync(new AccountingReportPackageRequestDto(
+            FundProfileId: "fund-unbooked",
+            PeriodId: "2027-01",
+            Actor: "controller",
+            EvidenceLinks:
+            [
+                "evidence:ledger:trial-balance:2027-01",
+                "evidence:reconciliation:gl-tie-out:2027-01",
+                "evidence:report-render:financial-statements:2027-01",
+                "evidence:nav:support-package:2027-01"
+            ]));
+
+        package.FinancialStatements.LedgerBookId.Should().BeNull();
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportPackageLedgerBookMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
     [Fact]
     public async Task BuildPackageAsync_BlocksCloseBackedCertificationUntilPeriodLock()
     {
@@ -81,6 +108,72 @@ public sealed class AccountingReportPackageServiceTests
     }
 
     [Fact]
+    public async Task BuildPackageAsync_InheritsClosePlanLedgerBookAndBlocksMismatch()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var closeLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var mismatchedLedgerBookId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: closeLedgerBookId)));
+
+        var inherited = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-02",
+            CloseWorkflowId: workflowId));
+
+        inherited.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        inherited.FinancialStatements.LedgerBookId.Should().Be(closeLedgerBookId);
+        inherited.RealizedGainLoss.LedgerBookId.Should().Be(closeLedgerBookId);
+        inherited.NavPackage.LedgerBookId.Should().Be(closeLedgerBookId);
+        inherited.FinancialStatements.LineProvenance.Should().OnlyContain(row =>
+            row.Dimensions.BookId == closeLedgerBookId.ToString("D"));
+
+        var mismatched = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: mismatchedLedgerBookId));
+
+        mismatched.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        mismatched.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportPackageLedgerBookMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == $"close-plan-{workflowId:D}");
+    }
+
+    [Fact]
+    public async Task CertifyPackageAsync_RevalidatesCurrentClosePlanLedgerBookBeforeCertification()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var originalLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var driftedLedgerBookId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var closePlan = BuildSignedOffClosePlan(
+            workflowId,
+            isPeriodLocked: true,
+            ledgerBookId: originalLedgerBookId);
+        var closeManagement = new MutableStubCloseManagementService(workflowId, closePlan);
+        var service = new AccountingReportPackageService(closeManagement);
+
+        var package = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-02",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: originalLedgerBookId));
+
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        closeManagement.ClosePlan = closePlan with { LedgerBookId = driftedLedgerBookId };
+
+        var certify = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            package.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification after close workflow book drift.",
+            [CertificationEvidence(package)]));
+
+        await certify.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*current close-plan blockers*ReportPackageLedgerBookMismatch*");
+    }
+
+    [Fact]
     public async Task CertifyPackageAsync_RequiresRetainedCertificationApprovalEvidence()
     {
         var service = new AccountingReportPackageService();
@@ -88,6 +181,7 @@ public sealed class AccountingReportPackageServiceTests
             FundProfileId: "fund-alpha",
             PeriodId: "2027-03",
             Actor: "controller",
+            LedgerBookId: DefaultLedgerBookId,
             BeginningCapital: 200_000m,
             Contributions: 25_000m,
             Distributions: 5_000m,
@@ -341,17 +435,42 @@ public sealed class AccountingReportPackageServiceTests
         certified!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
     }
 
+    [Fact]
+    public async Task ListPackagesAsync_FiltersRetainedHistoryByLedgerBook()
+    {
+        var service = new AccountingReportPackageService();
+        var primary = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-06",
+            LedgerBookId: DefaultLedgerBookId));
+        var gaap = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-06",
+            LedgerBookId: AlternateLedgerBookId));
+
+        var all = await service.ListPackagesAsync("fund-alpha", "2027-06");
+        var primaryOnly = await service.ListPackagesAsync("fund-alpha", "2027-06", DefaultLedgerBookId);
+        var gaapOnly = await service.ListPackagesAsync("fund-alpha", "2027-06", AlternateLedgerBookId);
+
+        all.Should().Contain(row => row.FinancialStatements.LedgerBookId == primary.FinancialStatements.LedgerBookId);
+        all.Should().Contain(row => row.FinancialStatements.LedgerBookId == gaap.FinancialStatements.LedgerBookId);
+        primaryOnly.Should().ContainSingle(row => row.FinancialStatements.LedgerBookId == DefaultLedgerBookId);
+        gaapOnly.Should().ContainSingle(row => row.FinancialStatements.LedgerBookId == AlternateLedgerBookId);
+    }
+
     private static AccountingReportPackageRequestDto CompletePackageRequest(
         string fundProfileId,
         string periodId,
         string? RestatementReasonCode = null,
         string? PriorPackageId = null,
         Guid? CloseWorkflowId = null,
+        Guid? LedgerBookId = null,
         IReadOnlyList<string>? EvidenceLinks = null)
         => new(
             FundProfileId: fundProfileId,
             PeriodId: periodId,
             Actor: "controller",
+            LedgerBookId: LedgerBookId ?? DefaultLedgerBookId,
             CloseWorkflowId: CloseWorkflowId,
             BeginningCapital: 200_000m,
             Contributions: 25_000m,
@@ -373,7 +492,10 @@ public sealed class AccountingReportPackageServiceTests
         string approvalLabel = "controller-approval")
         => $"evidence:report-certification:{approvalLabel}:{package.FinancialStatements.PackageId}:{package.Certification.CertificationId}:{package.FinancialStatements.PeriodId}";
 
-    private static ClosePeriodPlanDto BuildSignedOffClosePlan(Guid workflowId, bool isPeriodLocked)
+    private static ClosePeriodPlanDto BuildSignedOffClosePlan(
+        Guid workflowId,
+        bool isPeriodLocked,
+        Guid? ledgerBookId = null)
     {
         var periodStart = new DateOnly(2027, 2, 1);
         var periodEnd = new DateOnly(2027, 2, 28);
@@ -412,7 +534,7 @@ public sealed class AccountingReportPackageServiceTests
         return new ClosePeriodPlanDto(
             $"close-plan-{workflowId:D}",
             "fund-alpha",
-            LedgerBookId: null,
+            LedgerBookId: ledgerBookId,
             "2027-02",
             periodStart,
             periodEnd,

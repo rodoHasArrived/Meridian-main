@@ -6456,6 +6456,16 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         ))}
       </div>
 
+      <div className="grid gap-4 md:grid-cols-2">
+        {view.setupReadinessRows.map((row) => (
+          <div key={row.id} className="rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{row.label}</div>
+            <div className={cn("mt-2 text-sm font-semibold", cashFlowTextClass(row.tone))}>{row.value}</div>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.detail}</p>
+          </div>
+        ))}
+      </div>
+
       <Card className="panel-surface">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">

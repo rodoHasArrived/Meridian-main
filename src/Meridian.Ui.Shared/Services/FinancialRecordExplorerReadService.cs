@@ -2,6 +2,7 @@ using System.Globalization;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 
@@ -185,6 +186,10 @@ public sealed class FinancialRecordExplorerReadService
                 new("symbol", "Symbol", Width: 90),
                 new("balance", "Balance", "money", 120, IsRightAligned: true),
                 new("entryCount", "Entries", "number", 90, IsRightAligned: true),
+                new("fundId", "Fund", Width: 130),
+                new("entityId", "Entity", Width: 130),
+                new("bookId", "Book", Width: 130),
+                new("accountId", "Account Scope", Width: 150),
                 new("source", "Source", Width: 140)
             ],
             rows,
@@ -645,11 +650,20 @@ public sealed class FinancialRecordExplorerReadService
     private static IReadOnlyList<FinancialRecordExplorerFilterDto> BuildLedgerFilters(
         StrategyRunSummary run,
         LedgerSummary ledger)
-        =>
-        [
+    {
+        var filters = new List<FinancialRecordExplorerFilterDto>
+        {
             new("run", "Run", run.RunId, Tone: FinancialRecordExplorerTone.Info),
             new("ledger", "Ledger", ledger.LedgerReference, Tone: FinancialRecordExplorerTone.Info)
-        ];
+        };
+
+        var dimensions = ledger.TrialBalance
+            .Select(static line => line.Dimensions)
+            .Append(ledger.Dimensions);
+
+        AddDimensionFilters(filters, dimensions);
+        return filters;
+    }
 
     private static IReadOnlyList<FinancialRecordExplorerFilterDto> BuildPortfolioFilters(
         StrategyRunSummary run,
@@ -677,6 +691,7 @@ public sealed class FinancialRecordExplorerReadService
         int index)
     {
         var recordId = $"ledger:{run.RunId}:{index}";
+        var dimensionFields = BuildDimensionFields(line.Dimensions);
         var detail = new FinancialRecordExplorerSelectedRecordDto(
             recordId,
             "Ledger account",
@@ -690,7 +705,8 @@ public sealed class FinancialRecordExplorerReadService
                 new("Balance", FormatCurrency(line.Balance)),
                 new("Entries", line.EntryCount.ToString(CultureInfo.InvariantCulture)),
                 new("Symbol", line.Symbol ?? "None"),
-                new("Financial Account", line.FinancialAccountId ?? "None")
+                new("Financial Account", line.FinancialAccountId ?? "None"),
+                .. dimensionFields
             ],
             ProofActions: BuildExplorerProofActions(run, UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", run.RunId)),
             UsedIn:
@@ -718,10 +734,114 @@ public sealed class FinancialRecordExplorerReadService
                 new("symbol", line.Symbol ?? "-"),
                 new("balance", FormatCurrency(line.Balance), line.Balance.ToString(CultureInfo.InvariantCulture), ToneFromBalance(line.Balance)),
                 new("entryCount", line.EntryCount.ToString(CultureInfo.InvariantCulture)),
+                new("fundId", DisplayDimension(line.Dimensions?.FundId), line.Dimensions?.FundId ?? string.Empty),
+                new("entityId", DisplayDimension(line.Dimensions?.EntityId), line.Dimensions?.EntityId ?? string.Empty),
+                new("bookId", DisplayDimension(line.Dimensions?.BookId), line.Dimensions?.BookId ?? string.Empty),
+                new("accountId", DisplayDimension(line.Dimensions?.AccountId), line.Dimensions?.AccountId ?? string.Empty),
                 new("source", ledger.LedgerReference)
             ],
             detail);
     }
+
+    private static void AddDimensionFilters(
+        ICollection<FinancialRecordExplorerFilterDto> filters,
+        IEnumerable<LedgerDimensionSetDto?> dimensionSets)
+    {
+        var dimensions = dimensionSets
+            .Where(static dimensions => dimensions is not null)
+            .Cast<LedgerDimensionSetDto>()
+            .ToArray();
+
+        AddDimensionFilter(filters, "fund", "Fund", dimensions.Select(static value => value.FundId));
+        AddDimensionFilter(filters, "entity", "Entity", dimensions.Select(static value => value.EntityId));
+        AddDimensionFilter(filters, "sleeve", "Sleeve", dimensions.Select(static value => value.SleeveId));
+        AddDimensionFilter(filters, "strategy", "Strategy", dimensions.Select(static value => value.StrategyId));
+        AddDimensionFilter(filters, "portfolio", "Portfolio", dimensions.Select(static value => value.PortfolioId));
+        AddDimensionFilter(filters, "book", "Book", dimensions.Select(static value => value.BookId));
+        AddDimensionFilter(filters, "account", "Account Scope", dimensions.Select(static value => value.AccountId));
+        AddDimensionFilter(filters, "investor", "Investor", dimensions.Select(static value => value.InvestorId));
+        AddDimensionFilter(filters, "capital-account", "Capital Account", dimensions.Select(static value => value.CapitalAccountId));
+        AddDimensionFilter(filters, "instrument", "Instrument", dimensions.Select(static value => value.InstrumentId?.ToString("D")));
+        AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
+        AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
+        AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));
+
+        var externalGlDimensions = dimensions
+            .SelectMany(static value => value.ExternalGlDimensions)
+            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            .GroupBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in externalGlDimensions)
+        {
+            AddDimensionFilter(filters, $"external-gl-{Slugify(group.Key)}", $"External GL: {group.Key}", group.Select(static pair => pair.Value));
+        }
+    }
+
+    private static void AddDimensionFilter(
+        ICollection<FinancialRecordExplorerFilterDto> filters,
+        string filterPrefix,
+        string label,
+        IEnumerable<string?> values)
+    {
+        foreach (var value in values
+            .Select(static value => value?.Trim())
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase))
+        {
+            filters.Add(new FinancialRecordExplorerFilterDto(
+                $"dimension-{filterPrefix}-{Slugify(value!)}",
+                label,
+                value!,
+                Tone: FinancialRecordExplorerTone.Info));
+        }
+    }
+
+    private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildDimensionFields(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return [];
+        }
+
+        var fields = new List<FinancialRecordExplorerSummaryItemDto>();
+        AddDimensionField(fields, "Fund", dimensions.FundId);
+        AddDimensionField(fields, "Entity", dimensions.EntityId);
+        AddDimensionField(fields, "Sleeve", dimensions.SleeveId);
+        AddDimensionField(fields, "Strategy", dimensions.StrategyId);
+        AddDimensionField(fields, "Portfolio", dimensions.PortfolioId);
+        AddDimensionField(fields, "Book", dimensions.BookId);
+        AddDimensionField(fields, "Account Scope", dimensions.AccountId);
+        AddDimensionField(fields, "Investor", dimensions.InvestorId);
+        AddDimensionField(fields, "Capital Account", dimensions.CapitalAccountId);
+        AddDimensionField(fields, "Instrument", dimensions.InstrumentId?.ToString("D"));
+        AddDimensionField(fields, "Tax Lot", dimensions.TaxLotId);
+        AddDimensionField(fields, "Cost Center", dimensions.CostCenterId);
+        AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);
+
+        foreach (var pair in dimensions.ExternalGlDimensions
+            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            AddDimensionField(fields, $"External GL: {pair.Key}", pair.Value);
+        }
+
+        return fields;
+    }
+
+    private static void AddDimensionField(
+        ICollection<FinancialRecordExplorerSummaryItemDto> fields,
+        string label,
+        string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            fields.Add(new FinancialRecordExplorerSummaryItemDto(label, value, Tone: FinancialRecordExplorerTone.Info));
+        }
+    }
+
+    private static string DisplayDimension(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     private static FinancialRecordExplorerRowDto BuildPortfolioRow(
         StrategyRunSummary run,

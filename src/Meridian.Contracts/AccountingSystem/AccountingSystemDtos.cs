@@ -188,7 +188,8 @@ public sealed record AccountingSystemReconciliationSummaryDto(
     bool PostingEnabled,
     string PostingDisabledReason,
     IReadOnlyList<AccountingSystemReconciliationRowDto> Rows,
-    IReadOnlyList<string> EvidenceReferences)
+    IReadOnlyList<string> EvidenceReferences,
+    Guid? LedgerBookId = null)
 {
     public IReadOnlyList<AccountingSystemReconciliationEvidencePackageDto> EvidencePackages { get; init; } = [];
 }

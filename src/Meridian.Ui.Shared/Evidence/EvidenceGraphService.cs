@@ -37,9 +37,10 @@ public sealed class EvidenceGraphService
     public async Task<EvidencePacketDto?> GetPacketAsync(
         string subjectKind,
         string subjectId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
-        var subject = await _subjectResolver.ResolveAsync(subjectKind, subjectId, ct).ConfigureAwait(false);
+        var subject = await _subjectResolver.ResolveAsync(subjectKind, subjectId, ct, ledgerBookId).ConfigureAwait(false);
         if (subject is null)
         {
             return null;
@@ -152,9 +153,10 @@ public sealed class EvidenceGraphService
     public async Task<EvidenceGraphDto?> GetGraphAsync(
         string subjectKind,
         string subjectId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
-        var packet = await GetPacketAsync(subjectKind, subjectId, ct).ConfigureAwait(false);
+        var packet = await GetPacketAsync(subjectKind, subjectId, ct, ledgerBookId).ConfigureAwait(false);
         return packet is null
             ? null
             : new EvidenceGraphDto(packet.Subject, packet.GeneratedAt, packet.Nodes, packet.Edges, packet.Warnings)

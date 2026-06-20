@@ -176,6 +176,7 @@ public sealed class LoanAccountingProjector
         var securityLineage = await ResolveSecurityMasterPostingLineageAsync(securityReference, eventType, ct).ConfigureAwait(false);
         instrumentSymbol = securityLineage.Symbol;
         lines = ApplyAuthoritativeInstrumentSymbol(lines, instrumentSymbol);
+        lines = ApplyLineDimensions(lines, contract, loanId, securityLineage.SecurityId, period.LedgerBookId);
         var postingCommandId = metadata.CommandId.GetValueOrDefault(sourceEventId);
         var idempotencyKey = $"direct-lending:{loanId:N}:{eventType}:{sourceEventId:N}";
         var sourceEvidence = new JournalEvidenceReference(
@@ -228,6 +229,7 @@ public sealed class LoanAccountingProjector
                 SourceEventId: sourceEventId,
                 PostingKind: postingKind,
                 AdjustmentApproval: adjustmentApproval,
+                LedgerBookId: period.LedgerBookId,
                 PostingCommand: new AccountingPostingCommandDto(
                     postingCommandId,
                     loanId,
@@ -246,6 +248,7 @@ public sealed class LoanAccountingProjector
                         ? AccountingPostingApprovalStateDto.Approved
                         : AccountingPostingApprovalStateDto.NotRequired,
                     ApprovalId: adjustmentApproval?.ApprovalId,
+                    LedgerBookId: period.LedgerBookId,
                     Evidence:
                     [
                         new AccountingPostingEvidenceReferenceDto(
@@ -314,8 +317,36 @@ public sealed class LoanAccountingProjector
                 },
                 line.Debit,
                 line.Credit,
-                line.Description))
+                line.Description,
+                line.Dimensions))
             .ToList();
+
+    private static List<LedgerEntry> ApplyLineDimensions(
+        IReadOnlyList<LedgerEntry> lines,
+        LoanContractDetailDto contract,
+        Guid loanId,
+        Guid securityId,
+        Guid? ledgerBookId)
+    {
+        var dimensions = new LedgerLineDimensionSet(
+            EntityId: contract.Borrower.LegalEntityId?.ToString("D"),
+            InstrumentId: securityId,
+            CounterpartyId: contract.Borrower.BorrowerId.ToString("D"),
+            BookId: ledgerBookId?.ToString("D"),
+            AccountId: loanId.ToString("D"));
+
+        return lines
+            .Select(line => new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                line.Timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                line.Description,
+                dimensions))
+            .ToList();
+    }
 
     private async Task<(Guid SecurityId, string Symbol, string Provenance, string Lineage)> ResolveSecurityMasterPostingLineageAsync(
         DirectLendingSecurityMasterReferenceDto? reference,

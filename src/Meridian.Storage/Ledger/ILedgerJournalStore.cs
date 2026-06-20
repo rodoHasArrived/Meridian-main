@@ -88,7 +88,8 @@ public sealed record LedgerJournalEntryWrite(
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
-    AccountingPostingCommandDto? PostingCommand = null);
+    AccountingPostingCommandDto? PostingCommand = null,
+    Guid? LedgerBookId = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,

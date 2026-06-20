@@ -3148,6 +3148,59 @@ const fixtureAccountingConfiguration: AccountingConfigurationWorkspace = {
     }
   ],
   validationIssues: [],
+  rulesStudio: {
+    summary: {
+      totalRules: 1,
+      activeRules: 1,
+      archivedRules: 0,
+      effectiveDatedRules: 1,
+      generatedPostingRules: 1,
+      templateMappingRules: 0,
+      rulesWithConditions: 1,
+      rulesWithFormulas: 1,
+      rulesWithAllocations: 1,
+      rulesRequiringPromotionApproval: 1,
+      approvedPromotionRules: 1,
+      pendingPromotionApprovalRules: 0,
+      savedTestCaseCount: 1,
+      rulesWithSavedRegressionTests: 1,
+      rulesMissingCurrentVersionRegressionTests: 0,
+      criticalIssueCount: 0,
+      warningIssueCount: 0
+    },
+    rules: [
+      {
+        ruleId: "posting-rule-paper-fill",
+        displayName: "Paper fill posting",
+        sourceEventType: "PaperFill",
+        ruleVersion: "1",
+        priority: 50,
+        effectiveFrom: "2026-01-01",
+        effectiveTo: null,
+        templateId: "journal-template-paper-fill",
+        isArchived: false,
+        usesGeneratedPostings: true,
+        conditionCount: 3,
+        conditionGroupCount: 0,
+        formulaCount: 2,
+        allocationCount: 1,
+        generatedPostingLineCount: 2,
+        versionCount: 1,
+        savedTestCaseCount: 1,
+        savedTestEvidenceLinkCount: 1,
+        requiresPromotionApproval: true,
+        isPromotionApproved: true,
+        promotionApprovalState: "Approved",
+        promotionApprovalId: "rule-promotion-paper-fill-v1",
+        criticalIssueCount: 0,
+        warningIssueCount: 0,
+        canDryRun: true,
+        canRequestPromotion: false,
+        canActivate: true
+      }
+    ],
+    promotionQueue: []
+  },
   auditTrail: [
     {
       auditEventId: "accounting-config-fixture-audit-1",

@@ -761,6 +761,81 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_AccountingRulesStudio_DryRunUsesRequestedLedgerBookConfiguration()
+    {
+        var service = CreateService();
+        var primaryBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var gaapBookId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+        await SeedBookScopedRuleAsync(service, primaryBookId, "primary", "Primary interest rule");
+        await SeedBookScopedRuleAsync(service, gaapBookId, "gaap", "GAAP interest rule");
+
+        var primaryDryRun = await service.DryRunPostingRuleAsync(new RuleDryRunRequestDto(
+            "fund-alpha",
+            "InterestAccrual",
+            100m,
+            "USD",
+            new DateOnly(2026, 6, 30),
+            "controller",
+            LedgerBookId: primaryBookId));
+        var gaapDryRun = await service.DryRunPostingRuleAsync(new RuleDryRunRequestDto(
+            "fund-alpha",
+            "InterestAccrual",
+            100m,
+            "USD",
+            new DateOnly(2026, 6, 30),
+            "controller",
+            LedgerBookId: gaapBookId));
+
+        primaryDryRun.LedgerBookId.Should().Be(primaryBookId);
+        primaryDryRun.SelectedRuleId.Should().Be("rule-primary");
+        primaryDryRun.RuleMatches.Should().ContainSingle(match => match.RuleId == "rule-primary");
+        primaryDryRun.RuleMatches.Should().NotContain(match => match.RuleId == "rule-gaap");
+
+        gaapDryRun.LedgerBookId.Should().Be(gaapBookId);
+        gaapDryRun.SelectedRuleId.Should().Be("rule-gaap");
+        gaapDryRun.RuleMatches.Should().ContainSingle(match => match.RuleId == "rule-gaap");
+        gaapDryRun.RuleMatches.Should().NotContain(match => match.RuleId == "rule-primary");
+
+        var primaryAudit = await service.ListAuditAsync("fund-alpha", primaryBookId);
+        var gaapAudit = await service.ListAuditAsync("fund-alpha", gaapBookId);
+        primaryAudit.Should().OnlyContain(item => item.LedgerBookId == primaryBookId);
+        gaapAudit.Should().OnlyContain(item => item.LedgerBookId == gaapBookId);
+    }
+
+    [Fact]
+    public async Task Scenario_AccountingRulesStudio_BookScopedWorkspaceRequiresConfiguredLedgerBook()
+    {
+        var missingBookId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var configuredBookId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var service = CreateService(new StaticLedgerBookService(LedgerBook(configuredBookId, "fund-alpha")));
+
+        await SeedBookScopedRuleAsync(service, missingBookId, "missing-book", "Missing book interest rule");
+
+        var workspace = await service.GetWorkspaceAsync("fund-alpha", missingBookId);
+
+        workspace.LedgerBooks.Should().BeEmpty();
+        workspace.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == "configuration.ledger-book-missing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == missingBookId.ToString("D"));
+        workspace.RulesStudio!.Summary.CriticalIssueCount.Should().BeGreaterThan(0);
+
+        var activate = async () => await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
+            "fund-alpha",
+            "controller",
+            LedgerBookId: missingBookId,
+            CorrelationId: "activate-missing-ledger-book",
+            EvidenceLinks: [$"evidence://accounting/configuration/activation-approval/{missingBookId:D}"]));
+
+        await activate.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Accounting configuration cannot be activated while critical validation issues remain.");
+
+        var audit = await service.ListAuditAsync("fund-alpha", missingBookId);
+        audit.Should().NotContain(item => item.Action == "configuration.activate");
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntry_BalancedDraftSavesAndSubmitsApproval()
     {
         var configuration = CreateService();
@@ -1120,6 +1195,66 @@ public sealed class AccountingConfigurationServiceTests
         lifecycleValidate.JournalEntry.ValidationIssues.Should().ContainSingle(issue =>
             issue.Code == "manual-je.period-locked" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntry_LedgerBookNativePeriodValidationBlocksMismatchedBook()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var selectedBookId = Guid.NewGuid();
+        var periodBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var book = new LedgerBookRecord(
+            selectedBookId,
+            "fund-alpha",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "GAAP close book",
+            "USD",
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow,
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-close-v1",
+            AccountingPolicyVersion: "v1");
+        var period = new LedgerAccountingPeriod(
+            periodId,
+            periodBookId,
+            2026,
+            6,
+            "2026-06",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30),
+            "Open",
+            DateTimeOffset.UtcNow,
+            null,
+            1);
+        var service = CreateManualJournalEntryWorkbenchService(
+            configuration,
+            journalStore: new PostedPrivateCapitalLedgerJournalStore(book, period));
+        var draft = BalancedManualJournalEntry() with
+        {
+            LedgerBookId = selectedBookId,
+            PeriodId = periodId.ToString("D")
+        };
+
+        var validated = await service.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            draft,
+            "controller"));
+
+        validated.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == "manual-je.period-book-mismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == "periodId");
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var submit = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version));
+        await submit.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Manual journal entry cannot be submitted while critical validation issues remain.");
     }
 
     [Fact]
@@ -5981,11 +6116,12 @@ public sealed class AccountingConfigurationServiceTests
             })
             .ToArray();
 
-    private static AccountingConfigurationService CreateService()
+    private static AccountingConfigurationService CreateService(ILedgerBookService? ledgerBookService = null)
     {
         return new AccountingConfigurationService(
             new InMemoryAccountingConfigurationStore(),
-            new InMemoryAccountingActionAuditStore());
+            new InMemoryAccountingActionAuditStore(),
+            ledgerBookService);
     }
 
     private static AccountingConfigurationService CreateFileBackedService(string snapshotPath)
@@ -5993,6 +6129,20 @@ public sealed class AccountingConfigurationServiceTests
         var store = new FileAccountingConfigurationStore(snapshotPath);
         return new AccountingConfigurationService(store, store);
     }
+
+    private static LedgerBookDto LedgerBook(Guid ledgerBookId, string fundProfileId)
+        => new(
+            ledgerBookId,
+            fundProfileId,
+            Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            FundStructureNodeKindDto.Fund,
+            "GAAP close book",
+            "USD",
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow,
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-close-v1",
+            AccountingPolicyVersion: "v1");
 
     private static ManualJournalEntryWorkbenchService CreateManualJournalEntryWorkbenchService(
         IAccountingConfigurationService configurationService,
@@ -6106,6 +6256,58 @@ public sealed class AccountingConfigurationServiceTests
             throw new NotSupportedException("Test store is read-only.");
     }
 
+    private sealed class StaticLedgerBookService(params LedgerBookDto[] books) : ILedgerBookService
+    {
+        public Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default) =>
+            throw new NotSupportedException("Test service is read-only.");
+
+        public Task<LedgerBookDto?> GetBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(books.FirstOrDefault(book => book.LedgerBookId == ledgerBookId));
+        }
+
+        public Task<IReadOnlyList<LedgerBookDto>> ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var rows = books
+                .Where(book => string.IsNullOrWhiteSpace(query.FundProfileId) ||
+                    string.Equals(book.FundProfileId, query.FundProfileId, StringComparison.OrdinalIgnoreCase))
+                .Where(book => !query.FundStructureNodeId.HasValue || book.FundStructureNodeId == query.FundStructureNodeId.Value)
+                .Where(book => !query.FundStructureNodeKind.HasValue || book.FundStructureNodeKind == query.FundStructureNodeKind.Value)
+                .Where(book => !query.AccountingBasis.HasValue || book.AccountingBasis == query.AccountingBasis.Value)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<LedgerBookDto>>(rows);
+        }
+
+        public Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default) =>
+            throw new NotSupportedException("Test service is read-only.");
+
+        public Task<IReadOnlyList<LedgerPeriodDto>> ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerPeriodDto>>([]);
+        }
+
+        public Task<IReadOnlyList<LedgerPeriodDto>> ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerPeriodDto>>([]);
+        }
+
+        public Task<LedgerPeriodSummaryDto?> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerPeriodSummaryDto?>(null);
+        }
+
+        public Task<LedgerPeriodCloseResultDto> ClosePeriodAsync(
+            Guid periodId,
+            CloseLedgerPeriodRequest request,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException("Test service is read-only.");
+    }
+
     private sealed class StaticReportPackWorkflowRecordStore(params ReportPackWorkflowRecordDto[] records) : IReportPackWorkflowRecordStore
     {
         private IReadOnlyList<ReportPackWorkflowRecordDto> _records = records;
@@ -6153,6 +6355,47 @@ public sealed class AccountingConfigurationServiceTests
             FundProfileId: "fund-alpha",
             Node: new ChartOfAccountsNodeDto("distributions", "Equity:Distributions", "Distributions", "Equity"),
             Actor: "ops-user"));
+    }
+
+    private static async Task SeedBookScopedRuleAsync(
+        AccountingConfigurationService service,
+        Guid ledgerBookId,
+        string suffix,
+        string displayName)
+    {
+        var cashPath = $"Assets:Cash:{suffix}";
+        var incomePath = $"Income:Interest:{suffix}";
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto($"cash-{suffix}", cashPath, $"Cash {suffix}", "Asset"),
+            Actor: "ops-user",
+            LedgerBookId: ledgerBookId));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto($"income-{suffix}", incomePath, $"Interest {suffix}", "Revenue"),
+            Actor: "ops-user",
+            LedgerBookId: ledgerBookId));
+        await service.UpsertTemplateAsync(new UpsertJournalEntryTemplateRequest(
+            FundProfileId: "fund-alpha",
+            Template: new JournalEntryTemplateDto(
+                $"template-{suffix}",
+                displayName,
+                "Book-scoped interest accrual.",
+                [
+                    new JournalEntryTemplateLineDto($"debit-{suffix}", cashPath, AccountingTemplateLineSideDto.Debit, 100m),
+                    new JournalEntryTemplateLineDto($"credit-{suffix}", incomePath, AccountingTemplateLineSideDto.Credit, 100m)
+                ]),
+            Actor: "ops-user",
+            LedgerBookId: ledgerBookId));
+        await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: new PostingRuleDto(
+                $"rule-{suffix}",
+                displayName,
+                "InterestAccrual",
+                $"template-{suffix}"),
+            Actor: "ops-user",
+            LedgerBookId: ledgerBookId));
     }
 
     private static ManualJournalEntryDraftDto BalancedManualJournalEntry()

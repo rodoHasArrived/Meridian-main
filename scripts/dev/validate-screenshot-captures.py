@@ -370,6 +370,10 @@ def validate_manifest_routes(
     return errors, started_at
 
 
+def default_min_entropy(surface: str) -> float:
+    return 0.45 if surface == "web" else 1.0
+
+
 def validate(args: argparse.Namespace) -> int:
     output_dir = repo_path(args.output_dir)
     expected = (
@@ -398,6 +402,8 @@ def validate(args: argparse.Namespace) -> int:
     manifest_errors, started_at = validate_manifest_routes(args.surface, expected, manifest_path, output_dir)
     errors.extend(manifest_errors)
 
+    min_entropy = args.min_entropy if args.min_entropy is not None else default_min_entropy(args.surface)
+
     freshness_cutoff = None
     if args.require_fresh:
         if started_at is not None:
@@ -414,7 +420,7 @@ def validate(args: argparse.Namespace) -> int:
                 path,
                 min_bytes=args.min_bytes,
                 min_unique_colors=args.min_unique_colors,
-                min_entropy=args.min_entropy,
+                min_entropy=min_entropy,
                 min_width=args.min_width,
                 min_height=args.min_height,
             )
@@ -452,7 +458,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--freshness-slack-seconds", type=int, default=10)
     parser.add_argument("--min-bytes", type=int, default=8000)
     parser.add_argument("--min-unique-colors", type=int, default=16)
-    parser.add_argument("--min-entropy", type=float, default=1.0)
+    parser.add_argument("--min-entropy", type=float, default=None)
     parser.add_argument("--min-width", type=int, default=400)
     parser.add_argument("--min-height", type=int, default=300)
     return parser

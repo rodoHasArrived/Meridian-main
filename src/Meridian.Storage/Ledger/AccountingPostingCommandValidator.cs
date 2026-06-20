@@ -31,6 +31,11 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Accounting posting command period id must match the ledger write period id.");
         }
 
+        if (write.LedgerBookId.HasValue && command.LedgerBookId.HasValue && write.LedgerBookId.Value != command.LedgerBookId.Value)
+        {
+            throw new LedgerValidationException("Ledger write ledger book id conflicts with the accounting posting command ledger book id.");
+        }
+
         if (write.CommandId.HasValue && write.CommandId.Value != command.CommandId)
         {
             throw new LedgerValidationException("Ledger write command id conflicts with the accounting posting command id.");
@@ -92,6 +97,7 @@ public static class AccountingPostingCommandValidator
             CorrelationId = command.CorrelationId ?? write.CorrelationId,
             SourceEventId = command.SourceEventId ?? write.SourceEventId,
             SourceJournalEntryId = command.SourceJournalEntryId ?? write.SourceJournalEntryId,
+            LedgerBookId = command.LedgerBookId ?? write.LedgerBookId,
             PostingKind = command.Intent == AccountingPostingIntentDto.Adjustment
                 ? LedgerPostingKindDto.Adjustment
                 : write.PostingKind
@@ -121,6 +127,7 @@ public static class AccountingPostingCommandValidator
         var normalizedMetadata = metadata with
         {
             EffectiveDate = metadata.EffectiveDate ?? treasury?.EffectiveDate ?? command.EffectiveDate,
+            LedgerBook = FirstText(metadata.LedgerBook, command.LedgerBookId?.ToString("D")),
             IdempotencyKey = FirstText(metadata.IdempotencyKey, treasury?.IdempotencyKey, command.IdempotencyKey),
             FundEventId = FirstText(metadata.FundEventId, treasury?.FundEventId),
             FundEventType = FirstText(metadata.FundEventType, treasury?.FundEventType, command.SourceEventType),

@@ -162,6 +162,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _storagePostureText = "Storage has not been inspected.";
     private string _configurationStatusText = "Not loaded";
     private string _configurationDetailText = "Configuration readiness loads from shared accounting DTOs.";
+    private string _rulesStudioStatusText = "Rules Studio has not loaded.";
+    private string _rulesStudioDetailText = "Rule versions, tests, generated postings, and promotion approvals load from shared accounting configuration.";
+    private string _rulesStudioActionText = "Rules Studio actions have not run.";
     private string _manualJournalStatusText = "Manual journal workbench has not loaded.";
     private string _capitalAccountWorkbenchStatusText = "Capital Account Workbench has not loaded.";
     private string _externalGlStatusText = "External GL evidence has not loaded.";
@@ -220,6 +223,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         RefreshExternalGlCommand = new AsyncRelayCommand(() => RefreshExternalGlAsync());
         CreateFundScopedPolicyCommand = new AsyncRelayCommand(() => CreateFundScopedPolicyAsync());
         BuildPostingCandidateCommand = new AsyncRelayCommand(() => BuildPostingCandidateAsync());
+        ExecuteRulesStudioTestsCommand = new AsyncRelayCommand(() => ExecuteRulesStudioTestsAsync());
+        ApproveRulesStudioPromotionCommand = new AsyncRelayCommand(() => ApproveRulesStudioPromotionAsync());
         ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve));
         PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post));
         ReverseManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse));
@@ -248,6 +253,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public IAsyncRelayCommand RefreshExternalGlCommand { get; }
     public IAsyncRelayCommand CreateFundScopedPolicyCommand { get; }
     public IAsyncRelayCommand BuildPostingCandidateCommand { get; }
+    public IAsyncRelayCommand ExecuteRulesStudioTestsCommand { get; }
+    public IAsyncRelayCommand ApproveRulesStudioPromotionCommand { get; }
     public IAsyncRelayCommand ApproveManualJournalCommand { get; }
     public IAsyncRelayCommand PostManualJournalCommand { get; }
     public IAsyncRelayCommand ReverseManualJournalCommand { get; }
@@ -258,6 +265,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ChartRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> TemplateRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> PostingRuleRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> RulesStudioRuleRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> RulesStudioPromotionRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> RulesStudioActionRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> SetupReadinessRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> AuditRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProviderRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ExternalGlEvidencePackageRows { get; } = [];
@@ -325,6 +336,24 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _configurationDetailText;
         private set => SetProperty(ref _configurationDetailText, value);
+    }
+
+    public string RulesStudioStatusText
+    {
+        get => _rulesStudioStatusText;
+        private set => SetProperty(ref _rulesStudioStatusText, value);
+    }
+
+    public string RulesStudioDetailText
+    {
+        get => _rulesStudioDetailText;
+        private set => SetProperty(ref _rulesStudioDetailText, value);
+    }
+
+    public string RulesStudioActionText
+    {
+        get => _rulesStudioActionText;
+        private set => SetProperty(ref _rulesStudioActionText, value);
     }
 
     public string ManualJournalStatusText
@@ -523,6 +552,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ActiveFundText = $"{_activeFundProfile.DisplayName} | {_activeFundProfile.BaseCurrency}";
             DraftCurrency = _activeFundProfile.BaseCurrency;
             _configuration = await _configurationService.GetWorkspaceAsync(_activeFundProfile.FundProfileId, ct: ct).ConfigureAwait(false);
+            var activeLedgerBookId = ResolveActiveLedgerBook(_configuration)?.LedgerBookId ?? _configuration.LedgerBookId;
+            if (activeLedgerBookId.HasValue && _configuration.LedgerBookId != activeLedgerBookId)
+            {
+                _configuration = await _configurationService.GetWorkspaceAsync(
+                    _activeFundProfile.FundProfileId,
+                    activeLedgerBookId,
+                    ct).ConfigureAwait(false);
+            }
+
             ApplyConfiguration(_configuration);
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
             await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
@@ -552,13 +590,16 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var evidence = new[] { $"accounting-config://{fundProfileId}/desktop-baseline" };
         try
         {
+            _configuration ??= await _configurationService.GetWorkspaceAsync(fundProfileId, ct: ct).ConfigureAwait(false);
+            var ledgerBookId = ResolveActiveLedgerBook(_configuration)?.LedgerBookId;
             await _configurationService.UpsertChartNodeAsync(
                 new UpsertChartOfAccountsNodeRequest(
                     fundProfileId,
                     new ChartOfAccountsNodeDto("assets-cash", "Assets:Cash", "Cash", "Asset"),
                     DefaultActor,
                     CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence),
+                    EvidenceLinks: evidence,
+                    LedgerBookId: ledgerBookId),
                 ct).ConfigureAwait(false);
             await _configurationService.UpsertChartNodeAsync(
                 new UpsertChartOfAccountsNodeRequest(
@@ -566,7 +607,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     new ChartOfAccountsNodeDto("income-investment", "Income:Investment Income", "Investment Income", "Revenue"),
                     DefaultActor,
                     CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence),
+                    EvidenceLinks: evidence,
+                    LedgerBookId: ledgerBookId),
                 ct).ConfigureAwait(false);
             await _configurationService.UpsertChartNodeAsync(
                 new UpsertChartOfAccountsNodeRequest(
@@ -574,7 +616,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     new ChartOfAccountsNodeDto("expenses-investment-fees", "Expenses:Investment Fees", "Investment Fees", "Expense"),
                     DefaultActor,
                     CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence),
+                    EvidenceLinks: evidence,
+                    LedgerBookId: ledgerBookId),
                 ct).ConfigureAwait(false);
             foreach (var node in BuildManualJournalEntryTypeChartNodes())
             {
@@ -584,7 +627,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         node,
                         DefaultActor,
                         CorrelationId: "wpf-accounting-config-seed",
-                        EvidenceLinks: evidence),
+                        EvidenceLinks: evidence,
+                        LedgerBookId: ledgerBookId),
                     ct).ConfigureAwait(false);
             }
 
@@ -601,7 +645,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         ]),
                     DefaultActor,
                     CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence),
+                    EvidenceLinks: evidence,
+                    LedgerBookId: ledgerBookId),
                 ct).ConfigureAwait(false);
             foreach (var template in BuildManualJournalEntryTypeTemplates(_activeFundProfile.BaseCurrency))
             {
@@ -611,7 +656,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         template,
                         DefaultActor,
                         CorrelationId: "wpf-accounting-config-seed",
-                        EvidenceLinks: evidence),
+                        EvidenceLinks: evidence,
+                        LedgerBookId: ledgerBookId),
                     ct).ConfigureAwait(false);
             }
 
@@ -626,7 +672,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         Description: "Fund/book configurable WPF policy route for manual accounting adjustments."),
                     DefaultActor,
                     CorrelationId: "wpf-accounting-config-seed",
-                    EvidenceLinks: evidence),
+                    EvidenceLinks: evidence,
+                    LedgerBookId: ledgerBookId),
                 ct).ConfigureAwait(false);
             foreach (var rule in BuildManualJournalEntryTypePostingRules())
             {
@@ -636,11 +683,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         rule,
                         DefaultActor,
                         CorrelationId: "wpf-accounting-config-seed",
-                        EvidenceLinks: evidence),
+                        EvidenceLinks: evidence,
+                        LedgerBookId: ledgerBookId),
                     ct).ConfigureAwait(false);
             }
 
-            _configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, ct: ct).ConfigureAwait(false);
+            _configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
             ApplyConfiguration(_configuration);
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
             StatusText = "Baseline chart, template, and posting policy were saved with audit evidence.";
@@ -795,6 +843,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         catch (Exception ex)
         {
             ManualJournalLifecycleStatusText = $"Manual journal lifecycle action {action} is blocked: {ex.Message}";
+            ManualJournalLifecycleRows.ReplaceWith(
+            [
+                new AccountingWorkbenchRow(
+                    action.ToString(),
+                    "Blocked",
+                    ex.Message,
+                    "No lifecycle transition was written; approval, posting, correction, and close-lock controls remain enforced.",
+                    _selectedDraft.JournalEntryId.ToString("D"))
+            ]);
         }
     }
 
@@ -909,6 +966,155 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         }
     }
 
+    public async Task ExecuteRulesStudioTestsAsync(CancellationToken ct = default)
+    {
+        RulesStudioActionRows.Clear();
+        if (_activeFundProfile is null || _configuration is null)
+        {
+            RulesStudioActionText = "Load a fund-linked accounting configuration before executing rule tests.";
+            return;
+        }
+
+        try
+        {
+            var result = await _configurationService.ExecuteRuleTestCasesAsync(
+                new ExecuteAccountingRuleTestCasesRequestDto(
+                    _activeFundProfile.FundProfileId,
+                    DefaultActor,
+                    TestCases: [],
+                    LedgerBookId: _configuration.LedgerBookId),
+                ct).ConfigureAwait(false);
+
+            ApplyRulesStudioTestResult(result);
+            RulesStudioActionText =
+                $"Executed {result.Results.Count} saved rule test case(s): {result.PassedCount} passed, {result.FailedCount} failed.";
+        }
+        catch (Exception ex)
+        {
+            RulesStudioActionText = $"Rules Studio test execution is blocked: {ex.Message}";
+            RulesStudioActionRows.ReplaceWith(
+            [
+                new AccountingWorkbenchRow(
+                    "Run saved tests",
+                    "Blocked",
+                    ex.Message,
+                    "No rule state was changed.",
+                    _configuration.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund")
+            ]);
+        }
+    }
+
+    public async Task ApproveRulesStudioPromotionAsync(CancellationToken ct = default)
+    {
+        if (_activeFundProfile is null || _configuration?.RulesStudio is null)
+        {
+            RulesStudioActionText = "Load a fund-linked Rules Studio workspace before approving promotion.";
+            return;
+        }
+
+        var queueItem = _configuration.RulesStudio.PromotionQueue
+            .OrderBy(static item => item.CriticalIssueCount)
+            .ThenBy(static item => item.MissingRegressionEvidenceCount)
+            .ThenBy(static item => item.RuleId, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+        if (queueItem is null)
+        {
+            RulesStudioActionText = "No posting-rule promotions are waiting for approval.";
+            RulesStudioActionRows.ReplaceWith(
+            [
+                new AccountingWorkbenchRow(
+                    "Promotion approval",
+                    "No queue",
+                    "The shared Rules Studio promotion queue is empty.",
+                    "Seed or edit a promotion-gated rule before approval.",
+                    string.Empty)
+            ]);
+            return;
+        }
+
+        try
+        {
+            var approvalId = string.IsNullOrWhiteSpace(queueItem.ApprovalId)
+                ? $"wpf-approval-{queueItem.RuleId}-{queueItem.RuleVersion}"
+                : queueItem.ApprovalId;
+            var evidenceLink = $"evidence://accounting/rules/{queueItem.RuleId}/{queueItem.RuleVersion}/desktop-approval/{approvalId}";
+            _configuration = await _configurationService.ApprovePostingRulePromotionAsync(
+                new ApprovePostingRulePromotionRequest(
+                    _activeFundProfile.FundProfileId,
+                    queueItem.RuleId,
+                    queueItem.RuleVersion,
+                    DefaultActor,
+                    approvalId,
+                    "Desktop controller approved the posting rule after Rules Studio regression review.",
+                    EvidenceLinks: [evidenceLink],
+                    RequestedBy: queueItem.RequestedBy,
+                    RequestedAtUtc: queueItem.RequestedAtUtc,
+                    CorrelationId: "wpf-rules-studio-promotion-approve",
+                    LedgerBookId: _configuration.LedgerBookId),
+                ct).ConfigureAwait(false);
+
+            ApplyConfiguration(_configuration);
+            RulesStudioActionText = $"Approved posting-rule promotion {queueItem.RuleId}/{queueItem.RuleVersion}.";
+            RulesStudioActionRows.ReplaceWith(
+            [
+                new AccountingWorkbenchRow(
+                    queueItem.RuleId,
+                    "Approved",
+                    $"{queueItem.DisplayName} | {queueItem.RuleVersion}",
+                    evidenceLink,
+                    approvalId)
+            ]);
+        }
+        catch (Exception ex)
+        {
+            RulesStudioActionText = $"Posting-rule promotion approval is blocked: {ex.Message}";
+            RulesStudioActionRows.ReplaceWith(
+            [
+                new AccountingWorkbenchRow(
+                    queueItem.RuleId,
+                    "Blocked",
+                    ex.Message,
+                    queueItem.SuggestedAction,
+                    queueItem.ApprovalId ?? string.Empty)
+            ]);
+        }
+    }
+
+    private void ApplyRulesStudioTestResult(AccountingRuleTestSuiteResultDto result)
+    {
+        var rows = new List<AccountingWorkbenchRow>
+        {
+            new(
+                "Regression suite",
+                $"{result.PassedCount}/{result.TotalCount} passed",
+                $"Executed by {result.Actor} at {result.ExecutedAtUtc:yyyy-MM-dd HH:mm:ss} UTC.",
+                result.FailedCount == 0
+                    ? "All saved rule tests passed."
+                    : $"{result.FailedCount} saved rule test(s) failed and block promotion or activation.",
+                result.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund")
+        };
+
+        rows.AddRange(result.Results.Select(testCase =>
+        {
+            var issueText = testCase.AssertionIssues.Count == 0
+                ? "No assertion issues."
+                : string.Join("; ", testCase.AssertionIssues.Select(static issue => issue.Code).Take(4));
+            var selectedMatch = testCase.DryRunResult.RuleMatches.FirstOrDefault(match =>
+                string.Equals(match.RuleId, testCase.DryRunResult.SelectedRuleId, StringComparison.OrdinalIgnoreCase));
+            var selectedRule = testCase.DryRunResult.SelectedRuleId is null
+                ? "No selected rule"
+                : $"{testCase.DryRunResult.SelectedRuleId}/{selectedMatch?.RuleVersion ?? "unknown"}";
+            return new AccountingWorkbenchRow(
+                testCase.TestCaseId,
+                testCase.Passed ? "Passed" : "Failed",
+                $"{testCase.DisplayName} | {selectedRule}",
+                issueText,
+                $"{testCase.DryRunResult.FundProfileId}:{testCase.DryRunResult.SourceEventType}");
+        }));
+
+        RulesStudioActionRows.ReplaceWith(rows);
+    }
+
     public async Task BuildPostingCandidateAsync(CancellationToken ct = default)
     {
         PostingCandidateRows.Clear();
@@ -992,6 +1198,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ActiveFundText = "No fund selected";
         ConfigurationStatusText = "Locked";
         ConfigurationDetailText = "Select a fund-linked context before configuring chart accounts, templates, rules, or manual journal entries.";
+        RulesStudioStatusText = "Locked";
+        RulesStudioDetailText = "Select a fund-linked context before reviewing effective-dated rules, tests, and promotion approvals.";
         ManualJournalStatusText = "Locked until a fund context is selected.";
         CapitalAccountWorkbenchStatusText = "Locked until a fund context is selected.";
         ExternalGlStatusText = "Locked until a fund context is selected.";
@@ -1021,6 +1229,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             new AccountingWorkbenchRow(rule.RuleId, rule.SourceEventType, rule.DisplayName, rule.TemplateId)));
         AuditRows.ReplaceWith(workspace.AuditTrail.Take(20).Select(audit =>
             new AccountingWorkbenchRow(audit.Action, audit.Actor, audit.RecordedAtUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture), audit.CorrelationId ?? string.Empty)));
+        ApplySetupReadinessRows(workspace);
         ApplyManualJournalValidationRows(workspace.ValidationIssues);
 
         var critical = workspace.ValidationIssues.Count(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
@@ -1028,6 +1237,92 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ConfigurationDetailText = critical > 0
             ? $"{critical} critical configuration issue(s) block activation."
             : "Chart, templates, posting rules, validation, and audit are shared-contract backed.";
+        ApplyRulesStudio(workspace.RulesStudio);
+    }
+
+    private void ApplySetupReadinessRows(AccountingConfigurationWorkspaceDto workspace)
+    {
+        var selectedBook = ResolveActiveLedgerBook(workspace);
+        var missingLedgerBookIssue = workspace.ValidationIssues.FirstOrDefault(issue =>
+            string.Equals(issue.Code, "configuration.ledger-book-missing", StringComparison.OrdinalIgnoreCase));
+        var criticalCount = workspace.ValidationIssues.Count(issue =>
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        var selectedBookStatus = missingLedgerBookIssue is not null
+            ? "Missing"
+            : selectedBook is not null
+                ? selectedBook.DisplayName
+                : workspace.LedgerBookId.HasValue
+                    ? "Scoped"
+                    : "Fund scope";
+        var selectedBookDetail = missingLedgerBookIssue?.Message
+            ?? (selectedBook is not null
+                ? $"{selectedBook.AccountingBasis} basis; policy {selectedBook.AccountingPolicyId}/{selectedBook.AccountingPolicyVersion}."
+                : workspace.LedgerBookId.HasValue
+                    ? $"Ledger book {workspace.LedgerBookId.Value:D} is selected; setup details are not loaded."
+                    : "Configuration is using the fund-level setup scope.");
+        var selectedBookAction = missingLedgerBookIssue?.SuggestedAction
+            ?? (workspace.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund");
+        var activationDetail = criticalCount > 0
+            ? $"{criticalCount} critical shared validation issue(s) must be resolved before activation."
+            : "Shared accounting configuration validation has no critical blockers.";
+
+        SetupReadinessRows.ReplaceWith(
+        [
+            new AccountingWorkbenchRow(
+                "Selected ledger book",
+                selectedBookStatus,
+                selectedBookDetail,
+                selectedBookAction,
+                workspace.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund"),
+            new AccountingWorkbenchRow(
+                "Activation readiness",
+                criticalCount > 0 ? "Blocked" : "Ready",
+                activationDetail,
+                missingLedgerBookIssue?.SuggestedAction ?? "Activation can use the current shared configuration scope.",
+                $"critical:{criticalCount}")
+        ]);
+    }
+
+    private void ApplyRulesStudio(AccountingRulesStudioDto? rulesStudio)
+    {
+        if (rulesStudio is null)
+        {
+            RulesStudioStatusText = "Rules Studio unavailable";
+            RulesStudioDetailText = "The shared accounting configuration workspace did not include a Rules Studio projection.";
+            RulesStudioRuleRows.Clear();
+            RulesStudioPromotionRows.Clear();
+            RulesStudioActionRows.Clear();
+            return;
+        }
+
+        var summary = rulesStudio.Summary;
+        RulesStudioStatusText =
+            $"{summary.ActiveRules}/{summary.TotalRules} active rule(s), {summary.GeneratedPostingRules} generated posting rule(s), {summary.SavedTestCaseCount} saved test case(s).";
+        RulesStudioDetailText =
+            $"{summary.EffectiveDatedRules} effective-dated; {summary.PendingPromotionApprovalRules} pending promotion approval; {summary.RulesMissingCurrentVersionRegressionTests} missing current-version regression tests; {summary.CriticalIssueCount} critical issue(s).";
+
+        RulesStudioRuleRows.ReplaceWith(rulesStudio.Rules.Select(rule =>
+            new AccountingWorkbenchRow(
+                rule.RuleId,
+                rule.CanActivate ? "Activation-ready" : rule.CanRequestPromotion ? "Promotion-ready" : "Blocked",
+                $"{rule.SourceEventType} | {rule.RuleVersion} | priority {rule.Priority} | {FormatEffectiveWindow(rule.EffectiveFrom, rule.EffectiveTo)}",
+                $"{rule.ConditionCount + rule.ConditionGroupCount} condition set(s); {rule.FormulaCount} formula(s); {rule.AllocationCount} allocation(s); {rule.GeneratedPostingLineCount} generated line(s); {rule.SavedTestCaseCount} test(s)",
+                rule.PromotionApprovalId ?? string.Empty)));
+
+        RulesStudioPromotionRows.ReplaceWith(rulesStudio.PromotionQueue.Select(item =>
+            new AccountingWorkbenchRow(
+                item.RuleId,
+                item.ApprovalState?.ToString() ?? "Not requested",
+                $"{item.DisplayName} | {item.RuleVersion} | requested by {item.RequestedBy}",
+                $"{item.RegressionTestCaseCount} regression test(s); {item.MissingRegressionEvidenceCount} missing evidence; {item.CriticalIssueCount} critical issue(s); {item.SuggestedAction}",
+                item.ApprovalId ?? string.Empty)));
+    }
+
+    private static string FormatEffectiveWindow(DateOnly? effectiveFrom, DateOnly? effectiveTo)
+    {
+        var from = effectiveFrom?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "open";
+        var to = effectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "open";
+        return $"{from} to {to}";
     }
 
     private PostingRuleDto? ResolvePostingCandidateRule(AccountingConfigurationWorkspaceDto workspace)
@@ -1937,6 +2232,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ChartRows.Clear();
         TemplateRows.Clear();
         PostingRuleRows.Clear();
+        RulesStudioRuleRows.Clear();
+        RulesStudioPromotionRows.Clear();
+        RulesStudioActionRows.Clear();
+        SetupReadinessRows.Clear();
         AuditRows.Clear();
         ProviderRows.Clear();
         ExternalGlEvidencePackageRows.Clear();

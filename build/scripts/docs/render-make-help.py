@@ -44,7 +44,7 @@ CATEGORIES: list[tuple[str, str]] = [
         "AI Advisory Tooling",
         r"^(ai-audit|ai-audit-code|ai-audit-docs|ai-audit-tests|"
         r"ai-audit-ai-docs|ai-report|ai-arch-check-summary|"
-        r"ai-arch-check-json|ai-codex-skills-check|ai-docs-freshness|"
+        r"ai-arch-check-json|ai-codex-skills-check|ai-codex-memory-check|ai-docs-freshness|"
         r"ai-docs-drift|ai-docs-sync-report|ai-docs-map|"
         r"ai-docs-map-check|ai-plan-checklists-check)$",
     ),

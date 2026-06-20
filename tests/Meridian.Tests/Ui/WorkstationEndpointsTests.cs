@@ -4002,6 +4002,64 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_AccountingPayload_WithLedgerBookId_ShouldScopeBreakQueueAndOpenBreakMetrics()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var ledgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var otherLedgerBookId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-ledger-book-scope",
+            strategyId: "scope-1",
+            strategyName: "Ledger Book Scope",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 6, 20, 12, 0, 0, TimeSpan.Zero)));
+
+        var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("scope-selected", ledgerBookId));
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("scope-other", otherLedgerBookId));
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("scope-unscoped", ledgerBookId: null));
+
+        var client = app.GetTestClient();
+        using var breakQueueResponse = await client.GetAsync($"{UiApiRoutes.ReconciliationBreakQueue}?ledgerBookId={ledgerBookId:D}");
+        using var accountingResponse = await client.GetAsync($"{UiApiRoutes.WorkstationAccounting}?ledgerBookId={ledgerBookId:D}");
+
+        breakQueueResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        accountingResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var breakQueue = await breakQueueResponse.Content.ReadFromJsonAsync<List<ReconciliationBreakQueueItem>>(ServerJsonOptions);
+        breakQueue.Should().ContainSingle(item => item.BreakId == "scope-selected" && item.LedgerBookId == ledgerBookId);
+        breakQueue.Should().NotContain(item =>
+            string.Equals(item.BreakId, "scope-other", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(item.BreakId, "scope-unscoped", StringComparison.OrdinalIgnoreCase));
+
+        using var accountingJson = await JsonDocument.ParseAsync(await accountingResponse.Content.ReadAsStreamAsync());
+        var root = accountingJson.RootElement;
+        var accountingBreakQueue = root.GetProperty("breakQueue").EnumerateArray().ToArray();
+        root.GetProperty("breakQueue").EnumerateArray()
+            .Should()
+            .ContainSingle(item =>
+                item.GetProperty("breakId").GetString() == "scope-selected" &&
+                item.GetProperty("ledgerBookId").GetGuid() == ledgerBookId);
+        accountingBreakQueue
+            .Should()
+            .NotContain(item =>
+                string.Equals(item.GetProperty("breakId").GetString(), "scope-other", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.GetProperty("breakId").GetString(), "scope-unscoped", StringComparison.OrdinalIgnoreCase));
+        root.GetProperty("metrics").EnumerateArray()
+            .Single(item => item.GetProperty("id").GetString() == "open-breaks")
+            .GetProperty("value")
+            .GetString()
+            .Should()
+            .Be("1");
+        root.GetProperty("workspace").GetProperty("openBreaks").GetInt32().Should().Be(1);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_StatementReconcile_ShouldPublishStatementBreaksOnceWithSourceMetadata()
     {
         var service = new StubReconciliationApiService();
@@ -6913,6 +6971,31 @@ public sealed partial class WorkstationEndpointsTests
         };
     }
 
+    private static ReconciliationBreakQueueItem BuildBreakQueueItem(string breakId, Guid? ledgerBookId)
+    {
+        var detectedAt = new DateTimeOffset(2026, 6, 20, 12, 0, 0, TimeSpan.Zero);
+        return new ReconciliationBreakQueueItem(
+            BreakId: breakId,
+            RunId: $"run-{breakId}",
+            StrategyName: "Ledger Book Scope",
+            Category: ReconciliationBreakCategory.AmountMismatch,
+            Status: ReconciliationBreakQueueStatus.Open,
+            Variance: 25m,
+            Reason: "Scoped ledger-book break.",
+            AssignedTo: null,
+            DetectedAt: detectedAt,
+            LastUpdatedAt: detectedAt,
+            Severity: ReconciliationBreakSeverity.High,
+            ExceptionRoute: "accounting-variance-escalation",
+            FundAccountId: "fund-alpha",
+            SourceType: "provider-ledger",
+            SourceSystem: "provider-ledger-reconciliation",
+            SourceReference: breakId,
+            SourceBreakId: breakId,
+            SourceFingerprint: $"fingerprint-{breakId}",
+            LedgerBookId: ledgerBookId);
+    }
+
     private static StrategyRunEntry BuildActivePaperRun(string runId, bool withBreaks)
     {
         if (withBreaks)
@@ -7758,6 +7841,57 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_LedgerTrialBalanceRoute_ShouldFilterByCanonicalDimensions()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("drilltb-dim") with
+        {
+            FundProfileId = "fund-core",
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountScopeId"] = "acct-ops",
+                ["entityScopeId"] = "entity-book",
+                ["sleeveScopeId"] = "sleeve-alpha",
+                ["externalGl.Department"] = "InvestmentOps"
+            }
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync(
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?fundId=fund-core&entityId=entity-book&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGl.Department=InvestmentOps");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        doc.RootElement.GetArrayLength().Should().BeGreaterThan(0);
+        foreach (var line in doc.RootElement.EnumerateArray())
+        {
+            var dimensions = line.GetProperty("dimensions");
+            dimensions.GetProperty("fundId").GetString().Should().Be("fund-core");
+            dimensions.GetProperty("entityId").GetString().Should().Be("entity-book");
+            dimensions.GetProperty("sleeveId").GetString().Should().Be("sleeve-alpha");
+            dimensions.GetProperty("strategyId").GetString().Should().Be("recon-strategy");
+            dimensions.GetProperty("portfolioId").GetString().Should().Be("recon-portfolio");
+            dimensions.GetProperty("accountId").GetString().Should().Be("acct-ops");
+            dimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
+        }
+
+        var mismatch = await client.GetAsync(
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?entityId=entity-other");
+
+        mismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var mismatchDoc = await JsonDocument.ParseAsync(await mismatch.Content.ReadAsStreamAsync());
+        mismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+
+        var externalGlMismatch = await client.GetAsync(
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?externalGl.Department=FundAccounting");
+
+        externalGlMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var externalGlMismatchDoc = await JsonDocument.ParseAsync(await externalGlMismatch.Content.ReadAsStreamAsync());
+        externalGlMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_LedgerJournalRoute_ShouldReturnAllEntries()
     {
         await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
@@ -7770,6 +7904,57 @@ public sealed partial class WorkstationEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
         doc.RootElement.GetArrayLength().Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_LedgerJournalRoute_ShouldFilterByCanonicalDimensions()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("drillj-dim") with
+        {
+            FundProfileId = "fund-core",
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountScopeId"] = "acct-ops",
+                ["entityScopeId"] = "entity-book",
+                ["sleeveScopeId"] = "sleeve-alpha",
+                ["externalGl.Department"] = "InvestmentOps"
+            }
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync(
+            "/api/workstation/runs/drillj-dim/ledger/journal?fundId=fund-core&entityId=entity-book&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        doc.RootElement.GetArrayLength().Should().BeGreaterThan(0);
+        foreach (var line in doc.RootElement.EnumerateArray())
+        {
+            var dimensions = line.GetProperty("dimensions");
+            dimensions.GetProperty("fundId").GetString().Should().Be("fund-core");
+            dimensions.GetProperty("entityId").GetString().Should().Be("entity-book");
+            dimensions.GetProperty("sleeveId").GetString().Should().Be("sleeve-alpha");
+            dimensions.GetProperty("strategyId").GetString().Should().Be("recon-strategy");
+            dimensions.GetProperty("portfolioId").GetString().Should().Be("recon-portfolio");
+            dimensions.GetProperty("accountId").GetString().Should().Be("acct-ops");
+            dimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
+        }
+
+        var mismatch = await client.GetAsync(
+            "/api/workstation/runs/drillj-dim/ledger/journal?fundId=fund-other");
+
+        mismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var mismatchDoc = await JsonDocument.ParseAsync(await mismatch.Content.ReadAsStreamAsync());
+        mismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+
+        var externalGlMismatch = await client.GetAsync(
+            "/api/workstation/runs/drillj-dim/ledger/journal?externalGlDimensionKey=Department&externalGlDimensionValue=FundAccounting");
+
+        externalGlMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var externalGlMismatchDoc = await JsonDocument.ParseAsync(await externalGlMismatch.Content.ReadAsStreamAsync());
+        externalGlMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
     }
 
     [Fact]

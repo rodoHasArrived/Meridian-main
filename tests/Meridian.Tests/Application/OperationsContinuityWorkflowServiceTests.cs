@@ -1208,6 +1208,17 @@ public sealed class OperationsContinuityWorkflowServiceTests
         journalStore.Appended[0].PeriodId.Should().Be(candidate.PeriodId);
         journalStore.Appended[0].AggregateId.Should().Be(workflow.FundAccountId);
         journalStore.Appended[0].Entry.IsBalanced.Should().BeTrue();
+        journalStore.Appended[0].Entry.Lines.Should().OnlyContain(line => line.Dimensions != null);
+        var cashLine = journalStore.Appended[0].Entry.Lines.Single(static line => line.Account.Name == "Cash");
+        cashLine.Dimensions!.FundId.Should().Be("fund-alpha");
+        cashLine.Dimensions.EntityId.Should().Be("entity-master");
+        cashLine.Dimensions.CostCenterId.Should().Be("cash-ops");
+        cashLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("Treasury");
+        var revenueLine = journalStore.Appended[0].Entry.Lines.Single(static line => line.Account.Name == "Interest income");
+        revenueLine.Dimensions!.FundId.Should().Be("fund-alpha");
+        revenueLine.Dimensions.EntityId.Should().Be("entity-master");
+        revenueLine.Dimensions.CostCenterId.Should().Be("income-review");
+        revenueLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("Accounting");
         result.Workflow!.LedgerPostingState.Should().Be(OperationsLedgerPostingStateDto.Complete);
 
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
@@ -3498,13 +3509,29 @@ public sealed class OperationsContinuityWorkflowServiceTests
                     AccountName: "Cash",
                     AccountType: nameof(LedgerAccountType.Asset),
                     Debit: 100m,
-                    Credit: 0m),
+                    Credit: 0m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        FundId: "fund-alpha",
+                        EntityId: "entity-master",
+                        CostCenterId: "cash-ops",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Department"] = "Treasury"
+                        })),
                 new OperationsLedgerJournalLineDto(
                     EntryId: null,
                     AccountName: "Interest income",
                     AccountType: nameof(LedgerAccountType.Revenue),
                     Debit: 0m,
-                    Credit: 100m)
+                    Credit: 100m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        FundId: "fund-alpha",
+                        EntityId: "entity-master",
+                        CostCenterId: "income-review",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Department"] = "Accounting"
+                        }))
             ],
             CommandId: Guid.NewGuid(),
             SourceEventId: Guid.NewGuid(),

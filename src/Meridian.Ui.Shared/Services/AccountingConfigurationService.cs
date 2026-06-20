@@ -17,10 +17,13 @@ public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurat
 {
     private readonly Dictionary<string, AccountingConfigurationWorkspaceDto> _workspaces = new(StringComparer.OrdinalIgnoreCase);
 
-    public Task<AccountingConfigurationWorkspaceDto?> GetAsync(string fundProfileId, CancellationToken ct = default)
+    public Task<AccountingConfigurationWorkspaceDto?> GetAsync(
+        string fundProfileId,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        _workspaces.TryGetValue(NormalizeFundProfileId(fundProfileId), out var workspace);
+        _workspaces.TryGetValue(Key(fundProfileId, ledgerBookId), out var workspace);
         return Task.FromResult(workspace);
     }
 
@@ -28,9 +31,12 @@ public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurat
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(workspace);
-        _workspaces[NormalizeFundProfileId(workspace.FundProfileId)] = workspace;
+        _workspaces[Key(workspace.FundProfileId, workspace.LedgerBookId)] = workspace;
         return Task.CompletedTask;
     }
+
+    private static string Key(string fundProfileId, Guid? ledgerBookId)
+        => $"{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "fund"}";
 
     private static string NormalizeFundProfileId(string value)
         => string.IsNullOrWhiteSpace(value) ? "default-fund" : value.Trim();
@@ -81,12 +87,16 @@ public sealed class FileAccountingConfigurationStore : IAccountingConfigurationS
             : snapshotPath;
     }
 
-    public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(string fundProfileId, CancellationToken ct = default)
+    public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(
+        string fundProfileId,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default)
     {
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
         return snapshot.Workspaces.FirstOrDefault(item =>
-            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase)) is { } workspace
+            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) &&
+            item.LedgerBookId == ledgerBookId) is { } workspace
             ? workspace with { FundProfileId = normalizedFundProfileId, AuditTrail = [] }
             : null;
     }
@@ -100,9 +110,12 @@ public sealed class FileAccountingConfigurationStore : IAccountingConfigurationS
             var normalizedFundProfileId = NormalizeFundProfileId(workspace.FundProfileId);
             var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
             var workspaces = snapshot.Workspaces
-                .Where(item => !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
+                .Where(item =>
+                    !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) ||
+                    item.LedgerBookId != workspace.LedgerBookId)
                 .Append(workspace with { FundProfileId = normalizedFundProfileId, AuditTrail = [] })
                 .OrderBy(item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(item => item.LedgerBookId?.ToString("D") ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
             await WriteSnapshotAsync(snapshot with { Workspaces = workspaces }, ct).ConfigureAwait(false);
@@ -225,14 +238,22 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         var workspace = await LoadWorkspaceAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var ledgerBooks = await LoadLedgerBooksAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        var validation = Validate(workspace with { LedgerBooks = ledgerBooks });
+        var scopedWorkspace = workspace with
+        {
+            LedgerBookId = ledgerBookId ?? workspace.LedgerBookId,
+            LedgerBooks = ledgerBooks
+        };
+        var validation = Validate(
+            scopedWorkspace,
+            requireLedgerBookSetup: ledgerBookId.HasValue && _ledgerBookService is not null);
 
         return workspace with
         {
-            LedgerBookId = ledgerBookId ?? workspace.LedgerBookId,
+            LedgerBookId = scopedWorkspace.LedgerBookId,
             LedgerBooks = ledgerBooks,
             ValidationIssues = validation,
-            AuditTrail = audit
+            AuditTrail = audit,
+            RulesStudio = BuildRulesStudio(scopedWorkspace, validation)
         };
     }
 
@@ -242,7 +263,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), ledgerBookId: null, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         RequireText(request.Node.NodeId, nameof(request.Node.NodeId));
         RequireText(request.Node.Path, nameof(request.Node.Path));
@@ -262,7 +283,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "chart.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "chart.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertTemplateAsync(
@@ -271,7 +292,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), ledgerBookId: null, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         RequireText(request.Template.TemplateId, nameof(request.Template.TemplateId));
         RequireText(request.Template.DisplayName, nameof(request.Template.DisplayName));
@@ -289,7 +310,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "template.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "template.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertPostingRuleAsync(
@@ -298,7 +319,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), ledgerBookId: null, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         RequireText(request.Rule.RuleId, nameof(request.Rule.RuleId));
         RequireText(request.Rule.SourceEventType, nameof(request.Rule.SourceEventType));
@@ -327,7 +348,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> ApprovePostingRulePromotionAsync(
@@ -336,7 +357,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), ledgerBookId: null, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         var ruleId = RequireText(request.RuleId, nameof(request.RuleId));
         var ruleVersion = RequireText(request.RuleVersion, nameof(request.RuleVersion));
@@ -436,7 +457,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = now
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, actor, "posting-rule.promotion-approve", null, request.CorrelationId, evidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, actor, "posting-rule.promotion-approve", request.LedgerBookId, request.CorrelationId, evidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertRuleTestCaseAsync(
@@ -476,7 +497,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "rule-test-case.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "rule-test-case.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingJournalTemplatePreviewDto> PreviewTemplateAsync(
@@ -811,7 +832,11 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         IReadOnlyList<AccountingConfigurationValidationIssueDto>? validationOverride = null)
     {
         var validation = validationOverride ?? Validate(workspace);
-        var finalWorkspace = workspace with { ValidationIssues = validation };
+        var finalWorkspace = workspace with
+        {
+            ValidationIssues = validation,
+            RulesStudio = BuildRulesStudio(workspace, validation)
+        };
         var afterHash = Hash(finalWorkspace);
         await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
         await _auditStore.AppendAsync(
@@ -839,10 +864,19 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         Guid? ledgerBookId,
         CancellationToken ct)
     {
-        var workspace = await _store.GetAsync(fundProfileId, ct).ConfigureAwait(false);
+        var workspace = await _store.GetAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         if (workspace is not null)
         {
             return workspace with { LedgerBookId = ledgerBookId ?? workspace.LedgerBookId };
+        }
+
+        if (ledgerBookId.HasValue && _ledgerBookService is null)
+        {
+            var fundWorkspace = await _store.GetAsync(fundProfileId, ledgerBookId: null, ct).ConfigureAwait(false);
+            if (fundWorkspace is not null)
+            {
+                return fundWorkspace with { LedgerBookId = ledgerBookId };
+            }
         }
 
         return new AccountingConfigurationWorkspaceDto(
@@ -875,6 +909,140 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             ? books.Where(book => book.LedgerBookId == ledgerBookId.Value).ToArray()
             : books;
     }
+
+    private static AccountingRulesStudioDto BuildRulesStudio(
+        AccountingConfigurationWorkspaceDto workspace,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues)
+    {
+        var rules = workspace.PostingRules;
+        var activeRules = rules.Where(static rule => !rule.IsArchived).ToArray();
+        var rows = rules
+            .Select(rule => BuildRulesStudioRuleRow(rule, workspace.RuleTestCases, validationIssues))
+            .OrderByDescending(static row => row.CriticalIssueCount)
+            .ThenByDescending(static row => row.RequiresPromotionApproval && !row.IsPromotionApproved)
+            .ThenByDescending(static row => row.Priority)
+            .ThenBy(static row => row.RuleId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var promotionQueue = activeRules
+            .Where(static rule => rule.RequiresPromotionApproval && !IsApprovedPromotion(rule))
+            .Select(rule => BuildRulesStudioPromotionQueueItem(rule, workspace.RuleTestCases, validationIssues))
+            .OrderByDescending(static item => item.CriticalIssueCount)
+            .ThenBy(static item => item.RuleId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var summary = new AccountingRulesStudioSummaryDto(
+            TotalRules: rules.Count,
+            ActiveRules: activeRules.Length,
+            ArchivedRules: rules.Count - activeRules.Length,
+            EffectiveDatedRules: rules.Count(rule => rule.EffectiveFrom.HasValue || rule.EffectiveTo.HasValue),
+            GeneratedPostingRules: rules.Count(static rule => rule.GeneratedPostings.Count > 0),
+            TemplateMappingRules: rules.Count(static rule => rule.GeneratedPostings.Count == 0),
+            RulesWithConditions: rules.Count(static rule => rule.Conditions.Count > 0 || rule.ConditionGroups.Count > 0),
+            RulesWithFormulas: rules.Count(static rule => rule.Formulas.Count > 0),
+            RulesWithAllocations: rules.Count(static rule => rule.Allocations.Count > 0),
+            RulesRequiringPromotionApproval: activeRules.Count(static rule => rule.RequiresPromotionApproval),
+            ApprovedPromotionRules: activeRules.Count(IsApprovedPromotion),
+            PendingPromotionApprovalRules: promotionQueue.Length,
+            SavedTestCaseCount: workspace.RuleTestCases.Count,
+            RulesWithSavedRegressionTests: activeRules.Count(rule => HasSavedRegressionTestForRuleVersion(workspace.RuleTestCases, rule)),
+            RulesMissingCurrentVersionRegressionTests: activeRules.Count(rule =>
+                rule.RequiresPromotionApproval &&
+                !HasSavedRegressionTestForRuleVersion(workspace.RuleTestCases, rule)),
+            CriticalIssueCount: validationIssues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical),
+            WarningIssueCount: validationIssues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Warning));
+
+        return new AccountingRulesStudioDto(summary, rows, promotionQueue);
+    }
+
+    private static AccountingRulesStudioRuleRowDto BuildRulesStudioRuleRow(
+        PostingRuleDto rule,
+        IReadOnlyList<AccountingRuleTestCaseDto> testCases,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues)
+    {
+        var ruleVersion = NormalizeOptional(rule.RuleVersion) ?? "v1";
+        var savedTests = GetSavedRegressionTestsForRuleVersion(testCases, rule);
+        var criticalIssueCount = CountRuleIssues(rule.RuleId, validationIssues, AccountingConfigurationValidationSeverityDto.Critical);
+        var warningIssueCount = CountRuleIssues(rule.RuleId, validationIssues, AccountingConfigurationValidationSeverityDto.Warning);
+        var isPromotionApproved = IsApprovedPromotion(rule);
+        var canRequestPromotion = !rule.IsArchived &&
+                                  rule.RequiresPromotionApproval &&
+                                  !isPromotionApproved &&
+                                  savedTests.Count > 0 &&
+                                  criticalIssueCount == 0;
+
+        return new AccountingRulesStudioRuleRowDto(
+            rule.RuleId,
+            rule.DisplayName,
+            rule.SourceEventType,
+            ruleVersion,
+            rule.Priority,
+            rule.EffectiveFrom,
+            rule.EffectiveTo,
+            rule.TemplateId,
+            rule.IsArchived,
+            rule.GeneratedPostings.Count > 0,
+            rule.Conditions.Count,
+            rule.ConditionGroups.Count,
+            rule.Formulas.Count,
+            rule.Allocations.Count,
+            rule.GeneratedPostings.Count,
+            rule.Versions.Count,
+            savedTests.Count,
+            savedTests.Sum(static test => test.EvidenceLinks.Count),
+            rule.RequiresPromotionApproval,
+            isPromotionApproved,
+            rule.PromotionApproval?.ApprovalState,
+            rule.PromotionApproval?.ApprovalId,
+            criticalIssueCount,
+            warningIssueCount,
+            !rule.IsArchived && !string.IsNullOrWhiteSpace(rule.SourceEventType),
+            canRequestPromotion,
+            !rule.IsArchived &&
+            criticalIssueCount == 0 &&
+            (!rule.RequiresPromotionApproval || isPromotionApproved) &&
+            (!rule.RequiresPromotionApproval || savedTests.Count > 0));
+    }
+
+    private static AccountingRulesStudioPromotionQueueItemDto BuildRulesStudioPromotionQueueItem(
+        PostingRuleDto rule,
+        IReadOnlyList<AccountingRuleTestCaseDto> testCases,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues)
+    {
+        var savedTests = GetSavedRegressionTestsForRuleVersion(testCases, rule);
+        var missingEvidenceCount = savedTests.Count(testCase =>
+            !HasRuleTestCaseEvidence(testCase.EvidenceLinks) ||
+            !HasRuleTestCaseEvidenceWithProvenance(testCase, testCase.EvidenceLinks));
+        var criticalIssueCount = CountRuleIssues(rule.RuleId, validationIssues, AccountingConfigurationValidationSeverityDto.Critical);
+        var suggestedAction = criticalIssueCount > 0
+            ? "Resolve critical validation issues before promotion."
+            : savedTests.Count == 0
+                ? "Save at least one regression test for the current rule version."
+                : missingEvidenceCount > 0
+                    ? "Attach retained regression evidence to every current-version test case."
+                    : "Review evidence and approve promotion with a human operator.";
+
+        return new AccountingRulesStudioPromotionQueueItemDto(
+            rule.RuleId,
+            rule.DisplayName,
+            NormalizeOptional(rule.RuleVersion) ?? "v1",
+            rule.PromotionApproval?.RequestedBy ?? string.Empty,
+            rule.PromotionApproval?.RequestedAtUtc,
+            rule.PromotionApproval?.ApprovalState,
+            rule.PromotionApproval?.ApprovalId,
+            savedTests.Count,
+            missingEvidenceCount,
+            criticalIssueCount,
+            suggestedAction);
+    }
+
+    private static int CountRuleIssues(
+        string ruleId,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
+        AccountingConfigurationValidationSeverityDto severity)
+        => validationIssues.Count(issue =>
+            issue.Severity == severity &&
+            string.Equals(issue.TargetId, ruleId, StringComparison.OrdinalIgnoreCase));
 
     private static bool IsEffective(PostingRuleDto rule, DateOnly effectiveDate)
         => (!rule.EffectiveFrom.HasValue || rule.EffectiveFrom.Value <= effectiveDate) &&
@@ -1750,7 +1918,16 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         ActivateAccountingConfigurationRequest request,
         CancellationToken ct)
     {
-        var issues = Validate(workspace).ToList();
+        var scopedLedgerBookId = request.LedgerBookId ?? workspace.LedgerBookId;
+        var ledgerBooks = await LoadLedgerBooksAsync(workspace.FundProfileId, scopedLedgerBookId, ct).ConfigureAwait(false);
+        var workspaceForValidation = workspace with
+        {
+            LedgerBookId = scopedLedgerBookId,
+            LedgerBooks = ledgerBooks
+        };
+        var issues = Validate(
+            workspaceForValidation,
+            requireLedgerBookSetup: scopedLedgerBookId.HasValue && _ledgerBookService is not null).ToList();
         var activeRules = workspace.PostingRules.Where(static rule => !rule.IsArchived).ToArray();
         var savedTestCases = workspace.RuleTestCases;
 
@@ -1870,10 +2047,23 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 static group => group.OrderBy(static item => item.IsArchived).First(),
                 StringComparer.OrdinalIgnoreCase);
 
-    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> Validate(AccountingConfigurationWorkspaceDto workspace)
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> Validate(
+        AccountingConfigurationWorkspaceDto workspace,
+        bool requireLedgerBookSetup = false)
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
+        if (requireLedgerBookSetup && workspace.LedgerBookId is { } ledgerBookId &&
+            !workspace.LedgerBooks.Any(book => book.LedgerBookId == ledgerBookId))
+        {
+            issues.Add(Issue(
+                "configuration.ledger-book-missing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Accounting configuration targets ledger book '{ledgerBookId:D}', but no matching ledger book setup was found.",
+                ledgerBookId.ToString("D", CultureInfo.InvariantCulture),
+                "Create or select the ledger book before activating book-scoped accounting configuration."));
+        }
+
         if (workspace.ChartOfAccounts.Count == 0)
         {
             issues.Add(Issue("chart.empty", AccountingConfigurationValidationSeverityDto.Critical, "No chart-of-accounts nodes are configured.", null, "Create at least one account node."));
@@ -3795,6 +3985,14 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         {
             issues.Add(Issue("manual-je.book-missing", AccountingConfigurationValidationSeverityDto.Critical, "Ledger book is required before a manual journal entry can be approved.", "ledgerBookId", "Select the book that owns this journal entry."));
         }
+        else
+        {
+            await ValidateLedgerBookPeriodScopeAsync(
+                draft,
+                draft.LedgerBookId.Value,
+                issues,
+                ct).ConfigureAwait(false);
+        }
 
         if (string.IsNullOrWhiteSpace(draft.Currency))
         {
@@ -3905,6 +4103,52 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             Dimensions = headerDimensions,
             ValidationIssues = issues.OrderByDescending(issue => issue.Severity).ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase).ToArray()
         };
+    }
+
+    private async Task ValidateLedgerBookPeriodScopeAsync(
+        ManualJournalEntryDraftDto draft,
+        Guid ledgerBookId,
+        List<AccountingConfigurationValidationIssueDto> issues,
+        CancellationToken ct)
+    {
+        if (_journalStore is null ||
+            string.IsNullOrWhiteSpace(draft.PeriodId) ||
+            !Guid.TryParse(draft.PeriodId, out var periodId))
+        {
+            return;
+        }
+
+        var period = await _journalStore.GetPeriodAsync(periodId, ct).ConfigureAwait(false);
+        if (period is null)
+        {
+            issues.Add(Issue(
+                "manual-je.period-missing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Ledger period '{periodId:D}' was not found.",
+                "periodId",
+                "Select an accounting period from the active ledger book before approval submission."));
+            return;
+        }
+
+        if (period.LedgerBookId != ledgerBookId)
+        {
+            issues.Add(Issue(
+                "manual-je.period-book-mismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Ledger period '{periodId:D}' belongs to ledger book '{period.LedgerBookId?.ToString("D") ?? "unscoped"}', not '{ledgerBookId:D}'.",
+                "periodId",
+                "Select a period that belongs to the journal entry ledger book."));
+        }
+
+        if (!string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(Issue(
+                "manual-je.period-closed",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Ledger period '{periodId:D}' is {period.Status} and cannot accept manual journal approval workflow changes.",
+                "periodId",
+                "Create the journal entry in an open adjustment period or use governed late-adjustment workflow."));
+        }
     }
 
     private async Task<bool> SecurityExistsAsync(Guid securityId, CancellationToken ct)

@@ -5624,6 +5624,76 @@ export interface AccountingActionAuditEvent {
   reportGroupPrincipalIds?: string[] | null;
 }
 
+export interface AccountingRulesStudioSummary {
+  totalRules: number;
+  activeRules: number;
+  archivedRules: number;
+  effectiveDatedRules: number;
+  generatedPostingRules: number;
+  templateMappingRules: number;
+  rulesWithConditions: number;
+  rulesWithFormulas: number;
+  rulesWithAllocations: number;
+  rulesRequiringPromotionApproval: number;
+  approvedPromotionRules: number;
+  pendingPromotionApprovalRules: number;
+  savedTestCaseCount: number;
+  rulesWithSavedRegressionTests: number;
+  rulesMissingCurrentVersionRegressionTests: number;
+  criticalIssueCount: number;
+  warningIssueCount: number;
+}
+
+export interface AccountingRulesStudioRuleRow {
+  ruleId: string;
+  displayName: string;
+  sourceEventType: string;
+  ruleVersion: string;
+  priority: number;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  templateId: string;
+  isArchived: boolean;
+  usesGeneratedPostings: boolean;
+  conditionCount: number;
+  conditionGroupCount: number;
+  formulaCount: number;
+  allocationCount: number;
+  generatedPostingLineCount: number;
+  versionCount: number;
+  savedTestCaseCount: number;
+  savedTestEvidenceLinkCount: number;
+  requiresPromotionApproval: boolean;
+  isPromotionApproved: boolean;
+  promotionApprovalState?: ManualJournalEntryStatus | null;
+  promotionApprovalId?: string | null;
+  criticalIssueCount: number;
+  warningIssueCount: number;
+  canDryRun: boolean;
+  canRequestPromotion: boolean;
+  canActivate: boolean;
+}
+
+export interface AccountingRulesStudioPromotionQueueItem {
+  ruleId: string;
+  displayName: string;
+  ruleVersion: string;
+  requestedBy: string;
+  requestedAtUtc?: string | null;
+  approvalState?: ManualJournalEntryStatus | null;
+  approvalId?: string | null;
+  regressionTestCaseCount: number;
+  missingRegressionEvidenceCount: number;
+  criticalIssueCount: number;
+  suggestedAction: string;
+}
+
+export interface AccountingRulesStudio {
+  summary: AccountingRulesStudioSummary;
+  rules: AccountingRulesStudioRuleRow[];
+  promotionQueue: AccountingRulesStudioPromotionQueueItem[];
+}
+
 export interface AccountingConfigurationWorkspace {
   fundProfileId: string;
   ledgerBookId?: string | null;
@@ -5637,6 +5707,7 @@ export interface AccountingConfigurationWorkspace {
   validationIssues: AccountingConfigurationValidationIssue[];
   auditTrail: AccountingActionAuditEvent[];
   ruleTestCases?: AccountingRuleTestCase[] | null;
+  rulesStudio?: AccountingRulesStudio | null;
 }
 
 export interface AccountingJournalPreviewLine {

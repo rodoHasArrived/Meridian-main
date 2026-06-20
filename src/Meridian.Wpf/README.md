@@ -51,8 +51,11 @@ The Accounting workspace includes a dedicated `FundStructureSetupPage` and `Fund
 instead of a generic ledger page. The page opens on compact action chrome instead of a duplicate
 hero, preserving status, storage posture, active-fund context, and command readiness beside the
 primary configure actions. The workbench reads and mutates shared accounting configuration DTOs,
-surfaces chart accounts, templates, posting rules, validation, and audit rows, saves manual journal
-entry drafts through the shared workbench service, offers type-specific draft presets for accrued
+surfaces selected ledger-book setup readiness, chart accounts, templates, posting rules, validation, and audit rows, saves manual journal
+entry drafts through the shared workbench service, shows the shared Rules Studio projection for
+effective-dated rule versions, generated posting readiness, saved regression tests, and promotion
+approval queues, runs saved rule-test suites, and approves promotion-gated posting-rule versions
+through the shared accounting configuration service, offers type-specific draft presets for accrued
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management
 fees, builds governed posting-rule journal draft candidate previews through the shared posting

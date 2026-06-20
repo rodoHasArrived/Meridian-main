@@ -165,10 +165,14 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
                     PolicyId: request.PolicyId,
                     TreatmentKind: request.TreatmentKind,
                     SourceEventType: request.SourceEventType,
+                    LedgerBookId: request.LedgerBookId,
                     PostingKind: request.PostingKind,
                     AdjustmentApproval: request.AdjustmentApproval,
                     TreasuryContext: request.TreasuryContext,
-                    EvidenceLinks: request.EvidenceLinks),
+                    EvidenceLinks: request.EvidenceLinks,
+                    PostingRuleId: dryRun.SelectedRuleId,
+                    PostingRuleVersion: selectedRuleVersion,
+                    DryRunCorrelationId: request.CorrelationId?.ToString("D")),
                 ct)
             .ConfigureAwait(false);
 

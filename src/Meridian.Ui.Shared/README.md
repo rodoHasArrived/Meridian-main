@@ -78,6 +78,10 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
+and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
+portfolio, book, account, investor, capital-account, instrument, tax-lot, cost-center,
+counterparty, and external-GL context without re-inferring accounting scope from display text.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
 reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
@@ -97,11 +101,29 @@ Accounting and Reporting workstation payloads forward `fundProfileId` and `ledge
 into the shared manual-journal workbench when that service is registered, allowing the browser and
 desktop reporting surfaces to render the same private-capital fund-event ledger, capital-account
 subledger, evidence, approval, and report-output projection without a UI-local read model.
+Book-scoped Accounting payloads also apply `ledgerBookId` to reconciliation break queues,
+calibration summaries, open-break metrics, and the accounting control center. Queue items without
+explicit book scope are excluded from book-scoped responses instead of being inferred from fund,
+route, or exception text.
+Accounting configuration workspace responses also include the computed Rules Studio read model from
+`AccountingConfigurationService`, covering rule rows, effective-dated/generated-posting coverage,
+saved regression-test coverage, validation counts, promotion queues, and activation readiness so
+browser and WPF accounting screens can behave like a configuration studio without duplicating rule
+approval logic in clients. Book-scoped configuration reads and activation readiness now also verify
+the selected ledger book against the registered ledger-book service when that service is available,
+returning a critical `configuration.ledger-book-missing` issue instead of letting operators activate
+rules for an unconfigured book.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained
 `report-writer://.../grids/{gridId}` artifacts. This keeps report-run audit/version cards and
 generated no-code grid evidence source-backed across browser and desktop clients.
+Strategy-run ledger trial-balance and journal endpoints accept canonical accounting dimension
+filters for fund, entity, sleeve, strategy, portfolio, account, investor, capital account,
+instrument, tax lot, cost center, counterparty, and external GL scope, including
+`externalGl.<name>` and `externalGlDimensionKey`/`externalGlDimensionValue` query forms. They
+return the shared `LedgerDimensionSetDto` on rows where the source run provides that scope. Filters
+for unavailable dimensions fail closed rather than inferring accounting scope from display text.
 Report-pack delivery package access stays server-owned: email-link manifests use
 `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package`, secure-portal
 manifests use `/portal/reporting/packages/{packageId}`, and retained artifact downloads use the
@@ -202,6 +224,22 @@ the shared certification endpoint can move the artifact to Certified.
 Export-package certification is a governed release gate and requires `AdminMaintenance`;
 fund-structure operators may stage mapping and guarded export artifacts for review, but they cannot
 certify the retained export package.
+Ledger period trial-balance, signed trial-balance report, P&L summary, and cross-period report
+routes share the same dimensional filter query contract for fund, entity, sleeve, strategy,
+investor, capital account, instrument, tax lot, cost center, counterparty, book/account/customer/
+vendor/project, and external GL dimensions so browser and WPF accounting views do not implement
+separate filtering rules. Signed trial-balance report checksums include the normalized dimensional
+filter scope as well as the retained report lines, so two different empty fund/entity/cost-center
+or external-GL scoped reports cannot certify to the same payload hash.
+`/api/ledger/periods/{periodId}/journal-entries` exposes the retained journal entries for one
+ledger-book period through the same dimension filter query contract. The route returns
+ledger-book-scoped journal and line DTOs, and filtered requests return only matching dimensional
+lines so drill-through clients do not show account-only journal evidence beside dimension-filtered
+reports.
+`/api/ledger/aggregates/{aggregateId}/journal-entries` exposes the same retained journal DTOs for
+one operational aggregate, with optional `ledgerBookId` plus the same dimensional filters, so
+operator drill-through can stay book-native even when the entry point is an event or aggregate id
+rather than a closed period.
 Accounting report-package certification follows the same release-gate posture: direct-lending
 operators may build retained ready-for-review report packages, while final certification requires
 `AdminMaintenance`.
@@ -232,7 +270,10 @@ persists draft and submitted manual journal records at
 `ManualJournalEntryTypeDto` so accrual, prepaid expense, expense, amortization, deferral,
 reclassification, reversal, capital-call, distribution, subscription, redemption, LP-transfer,
 management-fee, and general adjustment workflows persist as typed accounting records instead of
-client-local labels. Accounting Rules Studio dry-runs merge rule scope, event dimensions,
+client-local labels. Accounting configuration mutation requests can carry `LedgerBookId`, and the
+shared in-memory/file-backed stores key workspaces by fund profile plus ledger book so book-scoped
+charts, templates, posting rules, saved tests, promotion approvals, and audit rows do not overwrite
+or leak into another book under the same fund. Accounting Rules Studio dry-runs merge rule scope, event dimensions,
 counterparty, generated-line dimensions, allocation target dimensions, and external GL keys into
 generated posting lines before returning preview results, so browser and WPF clients do not
 reconstruct dimensional accounting context locally. Text rule predicates without retained
@@ -250,7 +291,10 @@ line-scoped attachments, writes `manual-je.attach-evidence` audit, and refuses p
 rebooked, or close-locked entries so evidence changes happen before posting or through correction
 drafts. The same workbench service now enforces request-level period-lock posture across save,
 submit, evidence attachment, and lifecycle mutations; validation remains read-only and returns a
-critical `manual-je.period-locked` issue for locked periods. It also normalizes
+critical `manual-je.period-locked` issue for locked periods. When a manual journal uses a
+GUID-backed ledger period id and the ledger journal store is registered, validation also verifies
+that the period exists, remains open, and belongs to the selected ledger book before approval or
+lifecycle promotion can proceed. It also normalizes
 `LedgerDimensionSetDto` on manual journal headers and lines, carrying fund/entity scope and
 external GL dimensions from the header while enriching line dimensions from entity, instrument,
 tax-lot, and cost-center fields. `ManualJournalEntryWorkbenchService` now loads retained manual JE
@@ -278,8 +322,10 @@ The `/api/ledger/reports/accounting-package` route adapts the Financial Operatio
 service, returning the shared financial statement package, investor capital statement, realized
 gain/loss report, NAV package, line-level provenance rows, certification, validation issues, and restatement workflow metadata
 without requiring browser or WPF clients to reconstruct accounting report state locally. The
-companion `/api/ledger/reports/accounting-packages` route lists retained package history by optional
-fund profile and period filters from the same shared service. The
+  companion `/api/ledger/reports/accounting-packages` route lists retained package history by optional
+  fund profile, period, and `ledgerBookId` filters from the same shared service; retained package
+  identifiers include ledger-book scope when available so book-native report packages do not
+  overwrite each other for the same fund period. The
 `/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}` route returns the
 retained controlled export-artifact manifest with evidence, content hash, certification state, and
 live external posting disabled. The
@@ -487,6 +533,9 @@ Evidence packets and graph responses also calculate the v0.18 Operational Eviden
 proof-chain layers server-side, mapping packet nodes to Source, Normalization, Reconciliation,
 Ledger, Capital accounts, Close, Reporting, Delivery, and Audit coverage. Browser and WPF clients
 should render that shared coverage instead of deriving their own lifecycle labels.
+Private-capital fund-event and payment-intent evidence packet, graph, validation, and manifest
+routes honor `ledgerBookId` query scope and propagate it through `EvidenceSubjectDto`, so
+book-scoped accounting surfaces do not fall back to fund-wide activity when loading evidence.
 Generated reporting-run deliveries also retain a `ReportingRunDelivery` evidence packet with
 recipient scope, source report-writer artifacts, delivery artifact checksums, dataset/template
 version, and request history so scheduled no-code report packs have the same audit-facing delivery
@@ -1244,7 +1293,10 @@ metadata; assistant or automation-origin requests are rejected by the shared led
 period-lock state, close event, or operator inbox sign-off item is written.
 `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` aggregate those
 closed-period summaries across a selected book, fund, node, accounting basis, and date range for
-regulatory, investor, and internal reporting surfaces.
+regulatory, investor, and internal reporting surfaces. The cross-period report routes also accept
+line-dimension filters such as `entityId`, `costCenterId`, `instrumentId`, and `externalGl.<name>`
+so browser and WPF reporting surfaces can request fund/entity/cost-center/external-GL scoped
+ledger slices without recomputing dimensional accounting totals locally.
 Manual journal entry workbench routes under `/api/ledger/journal-entry-workbench*` persist draft
 and submitted approval records under the resolved workstation data root. The shared service
 validates GL account, balance, currency, Security Master, typed evidence attachments, private-capital

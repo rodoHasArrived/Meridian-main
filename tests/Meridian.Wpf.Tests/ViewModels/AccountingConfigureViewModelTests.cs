@@ -127,6 +127,15 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         await harness.ViewModel.BuildPostingCandidateAsync();
 
         harness.ViewModel.ConfigurationStatusText.Should().Contain("Draft");
+        harness.ViewModel.SetupReadinessRows.Should().Contain(row =>
+            row.Name == "Selected ledger book"
+            && row.Status == "Alpha Fund primary book"
+            && row.Detail.Contains("Primary basis", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence == "7e0be005-49e1-46eb-9d4f-89d75e2328bd");
+        harness.ViewModel.SetupReadinessRows.Should().Contain(row =>
+            row.Name == "Activation readiness"
+            && row.Status == "Ready"
+            && row.Detail.Contains("no critical blockers", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ChartRows.Select(static row => row.Name)
             .Should()
             .Contain([
@@ -163,6 +172,13 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-capital-call-policy-v1");
         harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-distribution-policy-v1");
         harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-lp-transfer-policy-v1");
+        harness.ViewModel.RulesStudioStatusText.Should().Contain("active rule");
+        harness.ViewModel.RulesStudioDetailText.Should().Contain("effective-dated");
+        harness.ViewModel.RulesStudioRuleRows.Should().Contain(row =>
+            row.Name == "manual-capital-call-policy-v1"
+            && row.Detail.Contains("ManualJournalEntry.CapitalCall", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("generated line", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.RulesStudioPromotionRows.Should().NotBeNull();
         harness.ViewModel.AuditRows.Should().NotBeEmpty();
         harness.ViewModel.ManualJournalDraftRows.Should().ContainSingle(row =>
             row.Name.Contains("Capital call", StringComparison.OrdinalIgnoreCase)
@@ -262,7 +278,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
 
         var reloadedStore = new FileAccountingConfigurationStore(harness.ConfigurationPath);
         var reloadedService = new AccountingConfigurationService(reloadedStore, reloadedStore);
-        var reloadedWorkspace = await reloadedService.GetWorkspaceAsync(profile.FundProfileId);
+        var reloadedWorkspace = await reloadedService.GetWorkspaceAsync(
+            profile.FundProfileId,
+            harness.PostingCandidateService.LastRequest.LedgerBookId);
         reloadedWorkspace.ChartOfAccounts.Should().Contain(node => node.Path == "Assets:Cash");
         reloadedWorkspace.JournalTemplates.Should().Contain(template => template.TemplateId == "desktop-manual-adjustment-v1");
         reloadedWorkspace.JournalTemplates.Should().Contain(template => template.TemplateId == "desktop-amortization-v1");
@@ -283,6 +301,111 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && draft.TreasuryContext.CapitalAccountId == "capital-account:alpha-fund:default"
             && draft.TotalDebits == 250m
             && draft.TotalCredits == 250m);
+    }
+
+    [Fact]
+    public async Task RulesStudioActions_RunSharedRegressionSuiteAndApprovePromotion()
+    {
+        Directory.CreateDirectory(_root);
+        var ledgerBookId = Guid.Parse("7e0be005-49e1-46eb-9d4f-89d75e2328bd");
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            SleeveIds: ["sleeve-credit"],
+            VehicleIds: ["vehicle-master"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(fundContext);
+
+        await harness.ViewModel.LoadAsync();
+        await harness.ViewModel.SeedBaselineConfigurationAsync();
+        await harness.ConfigurationService.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: profile.FundProfileId,
+            Rule: new PostingRuleDto(
+                RuleId: "wpf-promotion-gated-capital-call",
+                DisplayName: "WPF promotion-gated capital call",
+                SourceEventType: "ManualJournalEntry.CapitalCall",
+                TemplateId: "",
+                RuleVersion: "v1",
+                EffectiveFrom: new DateOnly(2026, 1, 1),
+                Priority: 500,
+                Scope: new LedgerDimensionSetDto(FundId: profile.FundProfileId, EntityId: "entity-alpha"),
+                Formulas:
+                [
+                    new AccountingRuleFormulaDto("source-amount", AccountingRuleFormulaKindDto.SourceAmount, 0m)
+                ],
+                GeneratedPostings:
+                [
+                    new GeneratedPostingLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, "source-amount", 0m),
+                    new GeneratedPostingLineDto("credit-capital", "Equity:Capital Contributions", AccountingTemplateLineSideDto.Credit, "source-amount", 0m)
+                ],
+                RequiresPromotionApproval: true),
+            Actor: "controller",
+            CorrelationId: "wpf-rules-studio-promotion-seed",
+            EvidenceLinks: ["evidence://accounting/rules/wpf-promotion-gated-capital-call/v1"],
+            LedgerBookId: ledgerBookId));
+        await harness.ConfigurationService.UpsertRuleTestCaseAsync(new UpsertAccountingRuleTestCaseRequest(
+            FundProfileId: profile.FundProfileId,
+            TestCase: new AccountingRuleTestCaseDto(
+                "wpf-promotion-gated-capital-call-happy-path",
+                "WPF promotion-gated capital call happy path",
+                new RuleDryRunRequestDto(
+                    FundProfileId: profile.FundProfileId,
+                    SourceEventType: "ManualJournalEntry.CapitalCall",
+                    EventAmount: 250m,
+                    Currency: "USD",
+                    EffectiveDate: new DateOnly(2026, 6, 30),
+                    Actor: "controller",
+                    LedgerBookId: ledgerBookId,
+                    Dimensions: new LedgerDimensionSetDto(FundId: profile.FundProfileId, EntityId: "entity-alpha")),
+                ExpectedRuleId: "wpf-promotion-gated-capital-call",
+                ExpectedRuleVersion: "v1",
+                EvidenceLinks: ["evidence://accounting/rule-tests/wpf-promotion-gated-capital-call-happy-path/wpf-promotion-gated-capital-call/v1/regression-evidence"]),
+            Actor: "controller",
+            CorrelationId: "wpf-rules-studio-testcase-seed",
+            LedgerBookId: ledgerBookId));
+
+        await harness.ViewModel.LoadAsync();
+
+        harness.ViewModel.RulesStudioPromotionRows.Should().ContainSingle(row =>
+            row.Name == "wpf-promotion-gated-capital-call" &&
+            row.Status == "Not requested" &&
+            row.Evidence.Contains("1 regression test", StringComparison.OrdinalIgnoreCase));
+
+        await harness.ViewModel.ExecuteRulesStudioTestsAsync();
+
+        harness.ViewModel.RulesStudioActionText.Should().Contain("Executed 1 saved rule test case");
+        harness.ViewModel.RulesStudioActionRows.Should().Contain(row =>
+            row.Name == "Regression suite" &&
+            row.Status == "1/1 passed" &&
+            row.Key == ledgerBookId.ToString("D"));
+        harness.ViewModel.RulesStudioActionRows.Should().Contain(row =>
+            row.Name == "wpf-promotion-gated-capital-call-happy-path" &&
+            row.Status == "Passed" &&
+            row.Detail.Contains("wpf-promotion-gated-capital-call/v1", StringComparison.OrdinalIgnoreCase));
+
+        await harness.ViewModel.ApproveRulesStudioPromotionAsync();
+
+        harness.ViewModel.RulesStudioActionText.Should().Contain("Approved posting-rule promotion wpf-promotion-gated-capital-call/v1");
+        harness.ViewModel.RulesStudioActionRows.Should().ContainSingle(row =>
+            row.Name == "wpf-promotion-gated-capital-call" &&
+            row.Status == "Approved" &&
+            row.Evidence.Contains("/v1/", StringComparison.OrdinalIgnoreCase));
+        var reloaded = await harness.ConfigurationService.GetWorkspaceAsync(profile.FundProfileId, ledgerBookId);
+        reloaded.PostingRules.Should().ContainSingle(rule =>
+            rule.RuleId == "wpf-promotion-gated-capital-call" &&
+            rule.PromotionApproval != null &&
+            rule.PromotionApproval.ApprovalState == ManualJournalEntryStatusDto.Approved);
+        reloaded.AuditTrail.Should().Contain(audit =>
+            audit.Action == "posting-rule.promotion-approve" &&
+            audit.LedgerBookId == ledgerBookId);
     }
 
     [Fact]
@@ -502,6 +625,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
 
         harness.ViewModel.ConfigurationStatusText.Should().Be("Locked");
         harness.ViewModel.ActiveFundText.Should().Be("No fund selected");
+        harness.ViewModel.SetupReadinessRows.Should().BeEmpty();
         harness.ViewModel.ChartRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalDraftRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalCapitalAccountSubledgerRows.Should().BeEmpty();
@@ -519,6 +643,69 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.PostingCandidateRows.Should().BeEmpty();
         harness.ViewModel.PostingCandidateStatusText.Should().Contain("Locked");
         harness.ViewModel.StatusText.ToLowerInvariant().Should().Contain("unlock accounting configure");
+    }
+
+    [Fact]
+    public async Task LoadAsync_WithMissingLedgerBookSetup_SurfacesBlockingSetupReadiness()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            SleeveIds: ["sleeve-credit"],
+            VehicleIds: ["vehicle-master"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+
+        var missingLedgerBookId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        var workspace = new AccountingConfigurationWorkspaceDto(
+            profile.FundProfileId,
+            missingLedgerBookId,
+            AccountingConfigurationStatusDto.Draft,
+            "draft",
+            DateTimeOffset.UtcNow,
+            LedgerBooks: [],
+            ChartOfAccounts: [],
+            JournalTemplates: [],
+            PostingRules: [],
+            ValidationIssues:
+            [
+                new AccountingConfigurationValidationIssueDto(
+                    "configuration.ledger-book-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Accounting configuration targets ledger book '{missingLedgerBookId:D}', but no matching ledger book setup was found.",
+                    missingLedgerBookId.ToString("D", CultureInfo.InvariantCulture),
+                    "Create or select the ledger book before activating book-scoped accounting configuration.")
+            ],
+            AuditTrail: [],
+            RuleTestCases: [],
+            RulesStudio: null);
+        var viewModel = new AccountingConfigureViewModel(
+            fundContext,
+            new StaticAccountingConfigurationService(workspace),
+            new StaticManualJournalEntryWorkbenchService(CreatePostedPrivateCapitalProjection(profile.FundProfileId)));
+
+        await viewModel.LoadAsync();
+
+        viewModel.SetupReadinessRows.Should().Contain(row =>
+            row.Name == "Selected ledger book"
+            && row.Status == "Missing"
+            && row.Detail.Contains(missingLedgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("Create or select the ledger book", StringComparison.OrdinalIgnoreCase)
+            && row.Key == missingLedgerBookId.ToString("D"));
+        viewModel.SetupReadinessRows.Should().Contain(row =>
+            row.Name == "Activation readiness"
+            && row.Status == "Blocked"
+            && row.Detail.Contains("1 critical", StringComparison.OrdinalIgnoreCase)
+            && row.Key == "critical:1");
+        viewModel.ConfigurationDetailText.Should().Contain("1 critical configuration issue");
     }
 
     [Fact]
@@ -544,8 +731,14 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
         xaml.Should().Contain("AccountingPostingCandidateButton");
+        xaml.Should().Contain("AccountingConfigurationSetupReadinessGrid");
+        xaml.Should().Contain("SetupReadinessRows");
         xaml.Should().Contain("AccountingPostingCandidateGrid");
         xaml.Should().Contain("Posting Candidate Preview");
+        xaml.Should().Contain("AccountingRulesStudioRuleGrid");
+        xaml.Should().Contain("AccountingRulesStudioPromotionGrid");
+        xaml.Should().Contain("RulesStudioStatusText");
+        xaml.Should().Contain("RulesStudioDetailText");
         xaml.Should().Contain("ManualJournalDoubleEntryWorkbench");
         xaml.Should().Contain("ManualJournalLifecycleWorkbench");
         xaml.Should().Contain("ManualJournalApproveButton");
@@ -619,13 +812,14 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             capitalAccountWorkbenchService,
             postingCandidateService);
 
-        return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath, postingCandidateService);
+        return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath, configurationService, postingCandidateService);
     }
 
     private sealed record AccountingConfigureHarness(
         AccountingConfigureViewModel ViewModel,
         string ConfigurationPath,
         string DraftsPath,
+        AccountingConfigurationService ConfigurationService,
         TestAccountingPostingCandidateService PostingCandidateService);
 
 
@@ -704,6 +898,55 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
 
         public Task<LedgerPeriodCloseResultDto> ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default)
             => Task.FromException<LedgerPeriodCloseResultDto>(new NotSupportedException("Accounting configure tests do not close ledger periods."));
+    }
+
+    private sealed class StaticAccountingConfigurationService(AccountingConfigurationWorkspaceDto workspace) : IAccountingConfigurationService
+    {
+        public Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
+            string? fundProfileId = null,
+            Guid? ledgerBookId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(workspace with
+            {
+                FundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? workspace.FundProfileId : fundProfileId.Trim(),
+                LedgerBookId = ledgerBookId ?? workspace.LedgerBookId
+            });
+        }
+
+        public Task<AccountingConfigurationWorkspaceDto> UpsertChartNodeAsync(UpsertChartOfAccountsNodeRequest request, CancellationToken ct = default)
+            => Task.FromException<AccountingConfigurationWorkspaceDto>(new NotSupportedException("Static accounting configuration service is read-only."));
+
+        public Task<AccountingConfigurationWorkspaceDto> UpsertTemplateAsync(UpsertJournalEntryTemplateRequest request, CancellationToken ct = default)
+            => Task.FromException<AccountingConfigurationWorkspaceDto>(new NotSupportedException("Static accounting configuration service is read-only."));
+
+        public Task<AccountingConfigurationWorkspaceDto> UpsertPostingRuleAsync(UpsertPostingRuleRequest request, CancellationToken ct = default)
+            => Task.FromException<AccountingConfigurationWorkspaceDto>(new NotSupportedException("Static accounting configuration service is read-only."));
+
+        public Task<AccountingConfigurationWorkspaceDto> ApprovePostingRulePromotionAsync(ApprovePostingRulePromotionRequest request, CancellationToken ct = default)
+            => Task.FromException<AccountingConfigurationWorkspaceDto>(new NotSupportedException("Static accounting configuration service is read-only."));
+
+        public Task<AccountingConfigurationWorkspaceDto> UpsertRuleTestCaseAsync(UpsertAccountingRuleTestCaseRequest request, CancellationToken ct = default)
+            => Task.FromException<AccountingConfigurationWorkspaceDto>(new NotSupportedException("Static accounting configuration service is read-only."));
+
+        public Task<AccountingJournalTemplatePreviewDto> PreviewTemplateAsync(PreviewJournalTemplateRequest request, CancellationToken ct = default)
+            => Task.FromException<AccountingJournalTemplatePreviewDto>(new NotSupportedException("Static accounting configuration service does not preview templates."));
+
+        public Task<RuleDryRunResultDto> DryRunPostingRuleAsync(RuleDryRunRequestDto request, CancellationToken ct = default)
+            => Task.FromException<RuleDryRunResultDto>(new NotSupportedException("Static accounting configuration service does not dry-run rules."));
+
+        public Task<AccountingRuleTestSuiteResultDto> ExecuteRuleTestCasesAsync(ExecuteAccountingRuleTestCasesRequestDto request, CancellationToken ct = default)
+            => Task.FromException<AccountingRuleTestSuiteResultDto>(new NotSupportedException("Static accounting configuration service does not execute rule tests."));
+
+        public Task<AccountingConfigurationWorkspaceDto> ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default)
+            => Task.FromException<AccountingConfigurationWorkspaceDto>(new NotSupportedException("Static accounting configuration service is read-only."));
+
+        public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(workspace.AuditTrail);
+        }
     }
 
     private static PrivateCapitalActivityProjectionDto CreatePostedPrivateCapitalProjection(string fundProfileId)

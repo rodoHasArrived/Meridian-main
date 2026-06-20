@@ -141,6 +141,7 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         var summary = await service.ReconcileLatestAsync("quickbooks", "default-fund", ledgerBookId);
 
+        summary.LedgerBookId.Should().Be(ledgerBookId);
         summary.Rows.Should().OnlyContain(row => row.Status == AccountingSystemReconciliationStatusDto.Matched);
         summary.BreakCount.Should().Be(0);
         summary.EvidenceReferences.Should().Contain("quickbooks:company:9130359087654321:trial-balance:qbo-1000");
@@ -715,6 +716,15 @@ public sealed class AccountingSystemIntegrationServiceTests
         manifest.EvidenceLinks.Should().Contain(certificationEvidence);
         manifest.Payload.Should().Contain(certified.ExportPackageId);
         manifest.Payload.Should().Contain(certificationEvidence);
+
+        var changedLedgerBookId = Guid.Parse("99999999-9999-4999-9999-999999999999");
+        RetainExportPackage(service, certified with { LedgerBookId = changedLedgerBookId });
+        var changedScopeManifest = await service.GetExportPackageManifestAsync(certified.ExportPackageId);
+
+        changedScopeManifest.Should().NotBeNull();
+        changedScopeManifest!.LedgerBookId.Should().Be(changedLedgerBookId);
+        changedScopeManifest.ContentHash.Should().NotBe(manifest.ContentHash);
+        changedScopeManifest.Payload.Should().Contain(changedLedgerBookId.ToString("D"));
     }
 
     [Fact]
@@ -1065,6 +1075,47 @@ public sealed class AccountingSystemIntegrationServiceTests
         package.ValidationIssues.Should().Contain(issue =>
             issue.Code == "MissingGeneratedExternalGlExportLines" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public async Task CreateExportPackageAsync_BlocksReconciliationLedgerBookMismatch()
+    {
+        var exportLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var reconciliationLedgerBookId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var service = CreateService(
+            (ILedgerJournalStore?)null,
+            new WrongBookAccountingSystemProvider(reconciliationLedgerBookId));
+        var profile = CertifiedQuickBooksMappingProfile() with
+        {
+            ProfileId = "wrong-book-export-mapping",
+            ProviderId = WrongBookAccountingSystemProvider.Id
+        };
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            ProviderId: WrongBookAccountingSystemProvider.Id,
+            FundProfileId: "default-fund",
+            LedgerBookId: exportLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:wrong-book-export-mapping"]));
+
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: WrongBookAccountingSystemProvider.Id,
+            FundProfileId: "default-fund",
+            LedgerBookId: exportLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: ["approval:external-gl-export-package:wrong-book-default-fund-2026-01-01-2026-01-31"]));
+
+        package.LedgerBookId.Should().Be(exportLedgerBookId);
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ExternalGlReconciliationLedgerBookMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == package.ReconciliationId);
     }
 
     [Fact]
@@ -1486,6 +1537,37 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ["Expenses:Trading"] = "qbo-6100"
             },
             AccountingCertificationStateDto.Certified);
+
+    private sealed class WrongBookAccountingSystemProvider(Guid ledgerBookId) : IAccountingSystemProvider
+    {
+        public const string Id = "wrong-book-fixture";
+
+        private readonly QuickBooksFixtureAccountingProvider _inner = new();
+
+        public string ProviderId => Id;
+
+        public string DisplayName => "Wrong Book Fixture";
+
+        public AccountingSystemProviderCapabilities Capabilities => _inner.Capabilities;
+
+        public async Task<AccountingSystemImportDetailDto> ImportAsync(
+            AccountingSystemImportRequestDto request,
+            CancellationToken ct = default)
+        {
+            var detail = await _inner.ImportAsync(request with { ProviderId = QuickBooksFixtureAccountingProvider.Id }, ct)
+                .ConfigureAwait(false);
+            return detail with
+            {
+                Summary = detail.Summary with
+                {
+                    ImportId = $"wrong-book-{detail.Summary.ImportId}",
+                    ProviderId = Id,
+                    ProviderDisplayName = DisplayName,
+                    LedgerBookId = ledgerBookId
+                }
+            };
+        }
+    }
 
     private sealed class StaticLedgerJournalStore(
         LedgerBookRecord book,

@@ -682,8 +682,10 @@ public static class UiApiRoutes
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
     public const string LedgerBooks = "/api/ledger/books";
     public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";
+    public const string LedgerAggregateJournalEntries = "/api/ledger/aggregates/{aggregateId:guid}/journal-entries";
     public const string LedgerPeriods = "/api/ledger/periods";
     public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";
+    public const string LedgerPeriodJournalEntries = "/api/ledger/periods/{periodId:guid}/journal-entries";
     public const string LedgerPeriodTrialBalance = "/api/ledger/periods/{periodId:guid}/trial-balance";
     public const string LedgerPeriodTrialBalanceReport = "/api/ledger/periods/{periodId:guid}/trial-balance-report";
     public const string LedgerPeriodPnlSummary = "/api/ledger/periods/{periodId:guid}/pnl-summary";

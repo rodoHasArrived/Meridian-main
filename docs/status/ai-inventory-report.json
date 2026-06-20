@@ -4,13 +4,13 @@
   "repositoryName": "Meridian-main",
   "status": "pass",
   "summary": {
-    "inventoryCount": 304,
+    "inventoryCount": 321,
     "findingCount": 0,
     "bySurface": {
       "agent-skills-compatible-hosts": 18,
       "claude": 46,
-      "codex": 130,
-      "docs-ai": 39,
+      "codex": 145,
+      "docs-ai": 41,
       "github-actions": 2,
       "github-copilot": 44,
       "local-ai-maintenance-tools": 8,
@@ -20,8 +20,8 @@
     },
     "byKind": {
       "agent": 27,
-      "agent-profile": 51,
-      "ai-doc": 39,
+      "agent-profile": 59,
+      "ai-doc": 41,
       "ai-workflow": 1,
       "codex-tool": 9,
       "config": 3,
@@ -33,7 +33,8 @@
       "mcp-prompt": 3,
       "mcp-resource": 3,
       "mcp-tool": 6,
-      "openai-metadata": 33,
+      "memory-index": 1,
+      "openai-metadata": 36,
       "path-instruction": 5,
       "plugin-agent": 3,
       "plugin-manifest": 2,
@@ -42,7 +43,7 @@
       "prompt-documentation": 3,
       "prompt-template": 10,
       "shared-context": 1,
-      "skill": 52,
+      "skill": 55,
       "validation-checklist": 5
     },
     "bySeverity": {}
@@ -751,6 +752,20 @@
     {
       "surface": "codex",
       "kind": "agent-profile",
+      "name": "meridian-accounting-posting-controls.toml",
+      "path": ".codex/agents/meridian-accounting-posting-controls.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
       "name": "meridian-archive-organizer.toml",
       "path": ".codex/agents/meridian-archive-organizer.toml",
       "expected_docs": [
@@ -891,8 +906,106 @@
     {
       "surface": "codex",
       "kind": "agent-profile",
+      "name": "meridian-event-accounting-architecture.toml",
+      "path": ".codex/agents/meridian-event-accounting-architecture.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-feasibility-sketcher.toml",
+      "path": ".codex/agents/meridian-feasibility-sketcher.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-idea-critic.toml",
+      "path": ".codex/agents/meridian-idea-critic.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-idea-to-blueprint-router.toml",
+      "path": ".codex/agents/meridian-idea-to-blueprint-router.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
       "name": "meridian-implementation-assurance.toml",
       "path": ".codex/agents/meridian-implementation-assurance.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-ledger-projection-replay-review.toml",
+      "path": ".codex/agents/meridian-ledger-projection-replay-review.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-opportunity-scout.toml",
+      "path": ".codex/agents/meridian-opportunity-scout.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-persona-signal-scout.toml",
+      "path": ".codex/agents/meridian-persona-signal-scout.toml",
       "expected_docs": [
         "docs/ai/assistant-workflow-contract.md",
         "docs/ai/codex/README.md",
@@ -1572,6 +1685,19 @@
     },
     {
       "surface": "codex",
+      "kind": "memory-index",
+      "name": "index.yml",
+      "path": ".codex/memory/index.yml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/memory/"
+      ]
+    },
+    {
+      "surface": "codex",
       "kind": "openai-metadata",
       "name": "dense-data-grid-inspector-panel",
       "path": ".codex/skills/dense-data-grid-inspector-panel/agents/openai.yaml",
@@ -1591,6 +1717,14 @@
       "kind": "openai-metadata",
       "name": "diagnostics-audit-timeline",
       "path": ".codex/skills/diagnostics-audit-timeline/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-accounting-posting-controls",
+      "path": ".codex/skills/meridian-accounting-posting-controls/agents/openai.yaml",
       "expected_docs": [],
       "alternate_markers": []
     },
@@ -1677,8 +1811,24 @@
     {
       "surface": "codex",
       "kind": "openai-metadata",
+      "name": "meridian-event-accounting-architecture",
+      "path": ".codex/skills/meridian-event-accounting-architecture/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
       "name": "meridian-implementation-assurance",
       "path": ".codex/skills/meridian-implementation-assurance/agents/openai.yaml",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "openai-metadata",
+      "name": "meridian-ledger-projection-replay-review",
+      "path": ".codex/skills/meridian-ledger-projection-replay-review/agents/openai.yaml",
       "expected_docs": [],
       "alternate_markers": []
     },
@@ -1944,6 +2094,17 @@
     {
       "surface": "codex",
       "kind": "skill",
+      "name": "meridian-accounting-posting-controls",
+      "path": ".codex/skills/meridian-accounting-posting-controls/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
       "name": "meridian-archive-organizer",
       "path": ".codex/skills/meridian-archive-organizer/SKILL.md",
       "expected_docs": [
@@ -2054,8 +2215,30 @@
     {
       "surface": "codex",
       "kind": "skill",
+      "name": "meridian-event-accounting-architecture",
+      "path": ".codex/skills/meridian-event-accounting-architecture/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
       "name": "meridian-implementation-assurance",
       "path": ".codex/skills/meridian-implementation-assurance/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md",
+        ".codex/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "codex",
+      "kind": "skill",
+      "name": "meridian-ledger-projection-replay-review",
+      "path": ".codex/skills/meridian-ledger-projection-replay-review/SKILL.md",
       "expected_docs": [
         "docs/ai/skills/README.md",
         ".codex/skills/README.md"
@@ -2392,6 +2575,22 @@
       "kind": "ai-doc",
       "name": "advanced-configuration.md",
       "path": "docs/ai/codex/advanced-configuration.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "agent-workflow-redesign.md",
+      "path": "docs/ai/codex/agent-workflow-redesign.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "memory-system.md",
+      "path": "docs/ai/codex/memory-system.md",
       "expected_docs": [],
       "alternate_markers": []
     },

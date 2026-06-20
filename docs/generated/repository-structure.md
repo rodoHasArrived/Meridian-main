@@ -314,6 +314,7 @@ Meridian-main
 │   │   ├── dense-data-grid-inspector-panel.toml
 │   │   ├── desktop-test-generation.toml
 │   │   ├── diagnostics-audit-timeline.toml
+│   │   ├── meridian-accounting-posting-controls.toml
 │   │   ├── meridian-archive-organizer.toml
 │   │   ├── meridian-blueprint.toml
 │   │   ├── meridian-brainstorm.toml
@@ -324,7 +325,14 @@ Meridian-main
 │   │   ├── meridian-codex-skill-builder.toml
 │   │   ├── meridian-contract-governance.toml
 │   │   ├── meridian-docs.toml
+│   │   ├── meridian-event-accounting-architecture.toml
+│   │   ├── meridian-feasibility-sketcher.toml
+│   │   ├── meridian-idea-critic.toml
+│   │   ├── meridian-idea-to-blueprint-router.toml
 │   │   ├── meridian-implementation-assurance.toml
+│   │   ├── meridian-ledger-projection-replay-review.toml
+│   │   ├── meridian-opportunity-scout.toml
+│   │   ├── meridian-persona-signal-scout.toml
 │   │   ├── meridian-provider-builder.toml
 │   │   ├── meridian-repo-navigation.toml
 │   │   ├── meridian-roadmap-strategist.toml
@@ -371,6 +379,25 @@ Meridian-main
 │   ├── environments
 │   │   ├── environment.toml
 │   │   └── README.md
+│   ├── memory
+│   │   ├── branches
+│   │   │   └── README.md
+│   │   ├── goals
+│   │   │   ├── example.yml
+│   │   │   └── README.md
+│   │   ├── repo
+│   │   │   ├── accounting-workflows.md
+│   │   │   ├── ai-guidance.md
+│   │   │   ├── architecture.md
+│   │   │   ├── financial-record-explorers.md
+│   │   │   └── validation.md
+│   │   ├── sessions
+│   │   │   └── README.md
+│   │   ├── tasks
+│   │   │   ├── example.yml
+│   │   │   └── README.md
+│   │   ├── index.yml
+│   │   └── README.md
 │   ├── prompts
 │   │   ├── add-shared-workstation-control.md
 │   │   ├── audit-timeline.md
@@ -384,24 +411,63 @@ Meridian-main
 │   │   └── research-data-acquisition-feature.md
 │   ├── skills
 │   │   ├── _shared
+│   │   │   ├── scripts
+│   │   │   │   ├── simple_skill_eval_runner.py
+│   │   │   │   ├── simple_skill_score.py
+│   │   │   │   └── text_package_check.py
 │   │   │   ├── codex-execution-contract.md
 │   │   │   └── project-context.md
 │   │   ├── dense-data-grid-inspector-panel
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── dense_data_grid_inspector_panel_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── desktop-test-generation
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── desktop_test_generation_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── diagnostics-audit-timeline
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── diagnostics_audit_timeline_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
+│   │   │   └── SKILL.md
+│   │   ├── meridian-accounting-posting-controls
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── references
+│   │   │   │   └── posting-control-checklist.md
+│   │   │   ├── scripts
+│   │   │   │   ├── posting_controls_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-archive-organizer
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
 │   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
 │   │   │   │   └── evals.json
 │   │   │   ├── fixtures
 │   │   │   │   └── superseded-adr
@@ -422,8 +488,15 @@ Meridian-main
 │   │   ├── meridian-blueprint
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
+│   │   │   ├── scripts
+│   │   │   │   ├── blueprint_output_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-brainstorm
 │   │   │   ├── agents
@@ -441,12 +514,25 @@ Meridian-main
 │   │   ├── meridian-browser-workstation
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── browser_workstation_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
 │   │   │   ├── scripts
-│   │   │   │   └── repo-updater.ps1
+│   │   │   │   ├── cleanup_check.py
+│   │   │   │   ├── repo-updater.ps1
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-architecture
 │   │   │   ├── agents
@@ -464,6 +550,13 @@ Meridian-main
 │   │   ├── meridian-code-review
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── code_review_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-codex-skill-builder
 │   │   │   ├── agents
@@ -494,6 +587,26 @@ Meridian-main
 │   │   ├── meridian-docs
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── docs_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
+│   │   │   └── SKILL.md
+│   │   ├── meridian-event-accounting-architecture
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── references
+│   │   │   │   └── event-accounting-patterns.md
+│   │   │   ├── scripts
+│   │   │   │   ├── accounting_architecture_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-implementation-assurance
 │   │   │   ├── agents
@@ -512,21 +625,55 @@ Meridian-main
 │   │   │   │   ├── score_eval.py
 │   │   │   │   └── skill_script_advisor.py
 │   │   │   └── SKILL.md
+│   │   ├── meridian-ledger-projection-replay-review
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── references
+│   │   │   │   └── projection-replay-checklist.md
+│   │   │   ├── scripts
+│   │   │   │   ├── projection_replay_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
+│   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
 │   │   │   ├── references
 │   │   │   │   └── provider-patterns.md
+│   │   │   ├── scripts
+│   │   │   │   ├── provider_builder_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-repo-navigation
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── repo_navigation_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-roadmap-strategist
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
 │   │   │   ├── references
 │   │   │   │   └── roadmap-source-map.md
+│   │   │   ├── scripts
+│   │   │   │   ├── roadmap_output_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-simulated-user-panel
 │   │   │   ├── agents
@@ -539,45 +686,108 @@ Meridian-main
 │   │   │   │   │   └── workflow-walkthrough.manifest.json
 │   │   │   │   ├── eval-result.schema.json
 │   │   │   │   └── review-manifest.schema.json
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
 │   │   │   ├── references
 │   │   │   │   ├── artifact-bundles.md
 │   │   │   │   ├── personas.md
 │   │   │   │   ├── review-contract.md
 │   │   │   │   └── review-modes.md
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── simulated_user_output_check.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
 │   │   │   ├── references
 │   │   │   │   └── test-patterns.md
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── test_writer_check.py
 │   │   │   └── SKILL.md
 │   │   ├── modular-desktop-mvvm
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── modular_desktop_mvvm_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── performance-resource-review
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── performance_resource_review_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── provider-management-workflow
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── provider_management_workflow_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── research-data-acquisition
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── research_data_acquisition_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── safe-refactoring
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── safe_refactoring_check.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── shared-component-extraction
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── shared_component_extraction_check.py
 │   │   │   └── SKILL.md
 │   │   ├── workstation-screen-composition
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── workstation_screen_composition_check.py
 │   │   │   └── SKILL.md
 │   │   └── README.md
 │   ├── AGENTS.md
@@ -846,6 +1056,7 @@ Meridian-main
 │       │   ├── tests
 │       │   │   ├── test_check_ai_handoff.py
 │       │   │   ├── test_check_ai_inventory.py
+│       │   │   ├── test_check_codex_memory.py
 │       │   │   ├── test_generate_structure_docs.py
 │       │   │   ├── test_markdown_generation_lint.py
 │       │   │   ├── test_pilot_readiness_dashboard.py
@@ -859,6 +1070,7 @@ Meridian-main
 │       │   ├── check-ai-inventory.py
 │       │   ├── check-ai-navigation-freshness.py
 │       │   ├── check-ai-routing-parity.py
+│       │   ├── check-codex-memory.py
 │       │   ├── check-codex-skills.py
 │       │   ├── check-handoff-packet-schema.py
 │       │   ├── check-known-lanes.py
@@ -1019,6 +1231,8 @@ Meridian-main
 │   │   │   └── contract-policy.mirror.json
 │   │   ├── codex
 │   │   │   ├── advanced-configuration.md
+│   │   │   ├── agent-workflow-redesign.md
+│   │   │   ├── memory-system.md
 │   │   │   ├── prompt-execution-trace.md
 │   │   │   ├── prompt-route-rules.json
 │   │   │   ├── quickstart.md
@@ -1061,9 +1275,6 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── work-modes.md
 │   │   └── working-memory.md
-│   ├── api
-│   │   ├── oms-ems-integration.md
-│   │   └── README.md
 │   ├── architecture
 │   │   ├── diagrams
 │   │   │   ├── meridian-assurance-loop.mmd
@@ -1086,6 +1297,7 @@ Meridian-main
 │   │   ├── deterministic-canonicalization.md
 │   │   ├── domains.md
 │   │   ├── environment-designer-runtime-projection-and-wpf-admin-surface.md
+│   │   ├── event-accounting-architecture.md
 │   │   ├── evidence-workflow-fabric.md
 │   │   ├── layer-boundaries.md
 │   │   ├── ledger-architecture.md
@@ -1110,22 +1322,6 @@ Meridian-main
 │   │   ├── wpf-shell-mvvm.md
 │   │   ├── wpf-workstation-shell-ux.md
 │   │   └── write-path-invariants.md
-│   ├── audits
-│   │   ├── AUDIT_REPORT.md
-│   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
-│   │   ├── CODE_REVIEW_2026-03-16.md
-│   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
-│   │   ├── README.md
-│   │   └── workspace-visual-audit-checklist-2026-04-22.md
-│   ├── design
-│   │   ├── design-system-usage.md
-│   │   ├── meridian-design-document.md
-│   │   └── README.md
-│   ├── developer
-│   │   ├── build-test-run.md
-│   │   ├── publish-standalone-exe.md
-│   │   ├── README.md
-│   │   └── setup.md
 │   ├── development
 │   │   ├── policies
 │   │   │   ├── desktop-support-policy.md
@@ -1404,13 +1600,11 @@ Meridian-main
 │   │   ├── README.md
 │   │   └── security.md
 │   ├── engineering
+│   │   ├── dead-code-inventory.md
 │   │   ├── free-development-tools.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
 │   │   ├── README.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
-│   ├── evaluations
-│   │   ├── evaluation-archive-migration-2026-06-16.md
-│   │   └── README.md
 │   ├── examples
 │   │   ├── agent-improvement-loop
 │   │   │   ├── agent_improvement_loop.ipynb
@@ -1569,19 +1763,6 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── repo-maintenance-prompts.md
 │   │   └── roadmap-source-docs-implementation-prompt.md
-│   ├── providers
-│   │   ├── alpaca-setup.md
-│   │   ├── backfill-guide.md
-│   │   ├── broker-adapter-template-guide.md
-│   │   ├── data-sources.md
-│   │   ├── interactive-brokers-free-equity-reference.md
-│   │   ├── interactive-brokers-setup.md
-│   │   ├── provider-comparison.md
-│   │   ├── provider-confidence-baseline.md
-│   │   ├── README.md
-│   │   ├── security-master-guide.md
-│   │   ├── stocksharp-connectors.md
-│   │   └── tradestation-endpoint-inventory.md
 │   ├── reference
 │   │   ├── accounting-configuration.md
 │   │   ├── accounting-report-packs.md
@@ -1860,9 +2041,6 @@ Meridian-main
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
 │   │   ├── WAVE2_ACCEPTANCE_GATE_CHECKLIST.md
 │   │   └── WAVE2_ACCEPTANCE_TESTS.md
-│   ├── ui
-│   │   ├── components.md
-│   │   └── README.md
 │   ├── DEPENDENCIES.md
 │   ├── documentation-inventory.md
 │   ├── documentation-ownership.md
@@ -2863,7 +3041,9 @@ Meridian-main
 │   │   │   └── ProviderIntegrationContractsJsonContext.cs
 │   │   ├── Ledger
 │   │   │   ├── AccountingConfigurationDtos.cs
-│   │   │   └── LedgerBookDtos.cs
+│   │   │   ├── AccountingPostingCommandDtos.cs
+│   │   │   ├── LedgerBookDtos.cs
+│   │   │   └── PrivateCapitalActivityRoutes.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
 │   │   ├── MoneyMarketFunds
@@ -3259,8 +3439,10 @@ Meridian-main
 │   │   └── TaxLot.cs
 │   ├── Meridian.FinancialOperations
 │   │   ├── AccountingClose
+│   │   │   ├── AccountingCloseManagementService.cs
 │   │   │   ├── AccountingCloseModels.cs
-│   │   │   └── AccountingCloseServices.cs
+│   │   │   ├── AccountingCloseServices.cs
+│   │   │   └── AccountingReportPackageService.cs
 │   │   ├── AccountingSystem
 │   │   │   └── AccountingSystemIntegrationService.cs
 │   │   ├── Banking
@@ -3278,7 +3460,8 @@ Meridian-main
 │   │   │   │   ├── LedgerTextReportRenderer.cs
 │   │   │   │   └── LedgerTextTransaction.cs
 │   │   │   ├── AccountingJournalDraftService.cs
-│   │   │   └── AccountingPolicyService.cs
+│   │   │   ├── AccountingPolicyService.cs
+│   │   │   └── AccountingPostingCandidateService.cs
 │   │   ├── OperationsContinuity
 │   │   │   ├── OperationsApprovalPolicyMatrixService.cs
 │   │   │   ├── OperationsCloseCalendarService.cs
@@ -3289,7 +3472,13 @@ Meridian-main
 │   │   │   ├── OperationsWorkflowAuditHashing.cs
 │   │   │   └── PostgresOperationsContinuityStore.cs
 │   │   ├── PrivateCapital
-│   │   │   └── PrivateCapitalCloseCockpitService.cs
+│   │   │   ├── PrivateCapitalActivityProjectionBuilder.cs
+│   │   │   ├── PrivateCapitalCapitalAccountSubledgerBuilder.cs
+│   │   │   ├── PrivateCapitalCloseCockpitService.cs
+│   │   │   ├── PrivateCapitalEvidenceCategoryBuilder.cs
+│   │   │   ├── PrivateCapitalFundEventLedgerReadinessBuilder.cs
+│   │   │   ├── PrivateCapitalFundEventLedgerRecordBuilder.cs
+│   │   │   └── PrivateCapitalPaymentIntentEvidenceBuilder.cs
 │   │   ├── Reconciliation
 │   │   │   ├── BrokerCustodianReconciliationModels.cs
 │   │   │   ├── BrokerReconciliationFeedModels.cs
@@ -3676,6 +3865,7 @@ Meridian-main
 │   │   ├── IReadOnlyLedger.cs
 │   │   ├── JournalEntry.cs
 │   │   ├── JournalEntryMetadata.cs
+│   │   ├── JournalEvidenceReference.cs
 │   │   ├── Ledger.cs
 │   │   ├── LedgerAccount.cs
 │   │   ├── LedgerAccounts.cs
@@ -3692,6 +3882,7 @@ Meridian-main
 │   │   ├── LedgerFinancialReportPack.cs
 │   │   ├── LedgerFinancialStatementBuilder.cs
 │   │   ├── LedgerFinancialStatements.cs
+│   │   ├── LedgerLineDimensionSet.cs
 │   │   ├── LedgerQuery.cs
 │   │   ├── LedgerReportExportFormat.cs
 │   │   ├── LedgerReportPackArtifact.cs
@@ -4032,7 +4223,12 @@ Meridian-main
 │   │   │   │   ├── V_ledger_007__journal_adjustment_approval_metadata.sql
 │   │   │   │   ├── V_ledger_008__operations_continuity.sql
 │   │   │   │   ├── V_ledger_009__tax_lot_persistence.sql
-│   │   │   │   └── V_ledger_010__accounting_configuration.sql
+│   │   │   │   ├── V_ledger_010__accounting_configuration.sql
+│   │   │   │   ├── V_ledger_011__accounting_rule_payload.sql
+│   │   │   │   ├── V_ledger_012__accounting_rule_test_cases.sql
+│   │   │   │   ├── V_ledger_013__journal_idempotency_guards.sql
+│   │   │   │   └── V_ledger_014__journal_leg_dimensions.sql
+│   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerJournalStoreOptions.cs
@@ -4414,6 +4610,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.tsx
 │   │   │   │   │   ├── reporting-screen.view-model.test.ts
 │   │   │   │   │   ├── reporting-screen.view-model.ts
+│   │   │   │   │   ├── settings-admin-operations-console.tsx
 │   │   │   │   │   ├── settings-screen.test.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
@@ -4771,13 +4968,7 @@ Meridian-main
 │   │   │   ├── OperatorRiskRuleService.cs
 │   │   │   ├── PlaidWorkstationService.cs
 │   │   │   ├── PortfolioLedgerWorkflowStatusService.cs
-│   │   │   ├── PrivateCapitalActivityRouteBuilder.cs
-│   │   │   ├── PrivateCapitalCapitalAccountSubledgerBuilder.cs
-│   │   │   ├── PrivateCapitalEvidenceCategoryBuilder.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
-│   │   │   ├── PrivateCapitalFundEventLedgerReadinessBuilder.cs
-│   │   │   ├── PrivateCapitalFundEventLedgerRecordBuilder.cs
-│   │   │   ├── PrivateCapitalPaymentIntentEvidenceBuilder.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
 │   │   │   ├── ProviderLedgerReconciliationService.cs
 │   │   │   ├── ProviderNavigationRouteMapper.cs
@@ -5809,6 +6000,7 @@ Meridian-main
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   └── ReconciliationRunServiceTests.cs
 │   │   ├── Architecture
+│   │   │   ├── AccountingSemanticsBoundaryTests.cs
 │   │   │   └── LayerBoundaryTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
@@ -5825,6 +6017,7 @@ Meridian-main
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── FundStructureContractsJsonContextTests.cs
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
+│   │   │   ├── OperationalFinanceContractTests.cs
 │   │   │   └── ProviderIntegrationContractsTests.cs
 │   │   ├── Core
 │   │   │   └── Config
@@ -5956,7 +6149,8 @@ Meridian-main
 │   │   │   │   └── PaymentApprovalTests.cs
 │   │   │   ├── Ledger
 │   │   │   │   ├── AccountingJournalDraftServiceTests.cs
-│   │   │   │   └── AccountingPolicyServiceTests.cs
+│   │   │   │   ├── AccountingPolicyServiceTests.cs
+│   │   │   │   └── AccountingPostingCandidateServiceTests.cs
 │   │   │   ├── PrivateCapital
 │   │   │   │   └── PrivateCapitalCloseCockpitServiceTests.cs
 │   │   │   └── Reconciliation
@@ -6315,6 +6509,7 @@ Meridian-main
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
 │   │   │   ├── AccountingConfigurationServiceTests.cs
+│   │   │   ├── AccountingReportPackageServiceTests.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
 │   │   │   ├── AlpacaBrokerageConnectionServiceTests.cs
 │   │   │   ├── AlpacaCredentialEnvironmentCollection.cs

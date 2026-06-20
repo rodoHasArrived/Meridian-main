@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "ebe2ce41ebdc",
+  "sourceFingerprint": "c36633371fb0",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 91,
@@ -343,6 +343,7 @@
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/TradingHoursViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -357,7 +358,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +4 more."
         }
       ],
       "openTaskCount": 1

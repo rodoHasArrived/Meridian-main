@@ -1841,7 +1841,7 @@ describe("SettingsScreen", () => {
     expect(await within(workbench).findByText("1 provider integration templates loaded.")).toBeInTheDocument();
     await user.click(within(workbench).getByRole("button", { name: "Use selected provider integration template for Polygon.io" }));
     expect(await within(workbench).findByText("Template template-polygon-data-v1 loaded into draft setup editor.")).toBeInTheDocument();
-    expect(within(workbench).getByText(/\$\.accountId/)).toBeInTheDocument();
+    expect(within(workbench).getAllByText(/\$\.accountId/).length).toBeGreaterThan(0);
 
     await user.click(within(workbench).getByRole("button", { name: "Save provider integration setup draft for Polygon.io" }));
     await waitFor(() => {

@@ -120,16 +120,6 @@ public sealed class LedgerBookServiceTests
         var store = new InMemoryLedgerJournalStore();
         var inbox = new InMemoryOperatorInboxService();
         var service = new PostgresLedgerBookService(store, inbox);
-        await inbox.UpsertItemAsync(new OperatorWorkItemDto(
-            WorkItemId: "reconciliation-break-alpha",
-            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
-            Label: "Reconciliation break requires review",
-            Detail: "Existing cash variance.",
-            Tone: OperatorWorkItemToneDto.Warning,
-            CreatedAt: DateTimeOffset.Parse("2026-01-15T10:00:00Z"),
-            Workspace: "Accounting",
-            TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
-            TargetPageTag: "FundReconciliation"));
 
         var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
             "alpha-fund",
@@ -168,6 +158,28 @@ public sealed class LedgerBookServiceTests
             new DateOnly(2026, 2, 1),
             new DateOnly(2026, 2, 28)));
         await store.AppendAsync(BuildBalancedEntry(current.PeriodId, revenue: 1_200m, expense: 300m));
+        await inbox.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "reconciliation-break-alpha",
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: "Reconciliation break requires review",
+            Detail: "Existing cash variance.",
+            Tone: OperatorWorkItemToneDto.Warning,
+            CreatedAt: DateTimeOffset.Parse("2026-02-15T10:00:00Z"),
+            Workspace: "Accounting",
+            TargetRoute: $"{UiApiRoutes.ReconciliationBreakQueue}?ledgerBookId={book.LedgerBookId:D}&periodId={current.PeriodId:D}",
+            TargetPageTag: "FundReconciliation",
+            Scope: $"ledger-book:{book.LedgerBookId:N};ledger-period:{current.PeriodId:N}"));
+        await inbox.UpsertItemAsync(new OperatorWorkItemDto(
+            WorkItemId: "reconciliation-break-other-book",
+            Kind: OperatorWorkItemKindDto.ReconciliationBreak,
+            Label: "Other ledger book break",
+            Detail: "This break belongs to a different ledger book.",
+            Tone: OperatorWorkItemToneDto.Critical,
+            CreatedAt: DateTimeOffset.Parse("2026-02-15T11:00:00Z"),
+            Workspace: "Accounting",
+            TargetRoute: $"{UiApiRoutes.ReconciliationBreakQueue}?ledgerBookId={Guid.NewGuid():D}&periodId={Guid.NewGuid():D}",
+            TargetPageTag: "FundReconciliation",
+            Scope: $"ledger-book:{Guid.NewGuid():N};ledger-period:{Guid.NewGuid():N}"));
 
         var result = await service.ClosePeriodAsync(
             current.PeriodId,
@@ -195,6 +207,8 @@ public sealed class LedgerBookServiceTests
         result.WorkItem.Detail.Should().Contain("Fund Controller");
         result.WorkItem.Detail.Should().Contain("month-end-25bp");
         result.WorkItem.Detail.Should().Contain("FundReconciliation");
+        result.WorkItem.Scope.Should().Contain(book.LedgerBookId.ToString("N"));
+        result.WorkItem.Scope.Should().Contain(current.PeriodId.ToString("N"));
         result.WorkItem.RequiredSignoffRole.Should().Be("Fund Controller");
         result.WorkItem.ToleranceProfileId.Should().Be("month-end-25bp");
         result.WorkItem.SignoffStatus.Should().Be(nameof(LedgerPeriodSignoffStatusDto.Pending));
@@ -604,13 +618,16 @@ public sealed class LedgerBookServiceTests
                 new DateOnly(2026, 6, 1),
                 new DateOnly(2026, 6, 30)));
 
+        var aggregateId = Guid.Parse("aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa");
+        var parallelAggregateId = Guid.Parse("bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb");
         await store.AppendAsync(BuildDimensionalRevenueEntry(
             period.PeriodId,
             amount: 100m,
             timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z"),
             entityId: "entity-master",
             costCenterId: "cost-center-investment-ops",
-            externalGlDepartment: "InvestmentOps") with
+            externalGlDepartment: "InvestmentOps",
+            aggregateId: aggregateId) with
         {
             AccountingBasis = AccountingBasisKindDto.Gaap,
             AccountingPolicyId = "gaap-close-v1",
@@ -622,7 +639,8 @@ public sealed class LedgerBookServiceTests
             timestamp: DateTimeOffset.Parse("2026-06-30T22:00:00Z"),
             entityId: "entity-parallel",
             costCenterId: "cost-center-fund-accounting",
-            externalGlDepartment: "FundAccounting") with
+            externalGlDepartment: "FundAccounting",
+            aggregateId: parallelAggregateId) with
         {
             AccountingBasis = AccountingBasisKindDto.Gaap,
             AccountingPolicyId = "gaap-close-v1",
@@ -638,6 +656,33 @@ public sealed class LedgerBookServiceTests
             ServerJsonOptions);
         var trialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
             UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString()),
+            ServerJsonOptions);
+        var filteredPeriodTrialBalance = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            ServerJsonOptions);
+        var filteredPeriodTrialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            ServerJsonOptions);
+        var emptyInvestmentOpsReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=missing-cost-center&externalGl.Department=InvestmentOps",
+            ServerJsonOptions);
+        var emptyFundAccountingReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=missing-cost-center&externalGl.Department=FundAccounting",
+            ServerJsonOptions);
+        var filteredPeriodPnl = await client.GetFromJsonAsync<LedgerPeriodPnlSummaryDto>(
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodPnlSummary, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            ServerJsonOptions);
+        var journalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString()),
+            ServerJsonOptions);
+        var filteredJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            ServerJsonOptions);
+        var aggregateJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerAggregateJournalEntries, "aggregateId", aggregateId.ToString())}?ledgerBookId={book.LedgerBookId:D}",
+            ServerJsonOptions);
+        var filteredAggregateJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerAggregateJournalEntries, "aggregateId", aggregateId.ToString())}?ledgerBookId={book.LedgerBookId:D}&entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
             ServerJsonOptions);
         var crossPeriodReport = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
             $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30",
@@ -675,6 +720,95 @@ public sealed class LedgerBookServiceTests
             .Should()
             .HaveCount(2);
         trialBalanceReport.Signature.PayloadChecksumSha256.Should().HaveLength(64);
+
+        filteredPeriodTrialBalance.Should().NotBeNull();
+        filteredPeriodTrialBalance!.Should().ContainSingle(row =>
+            row.AccountName == "Management fees" &&
+            row.Balance == 100m &&
+            row.Dimensions != null &&
+            row.Dimensions.EntityId == "entity-master" &&
+            row.Dimensions.CostCenterId == "cost-center-investment-ops" &&
+            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
+
+        filteredPeriodTrialBalanceReport.Should().NotBeNull();
+        filteredPeriodTrialBalanceReport!.Lines.Should().ContainSingle(row =>
+            row.AccountName == "Management fees" &&
+            row.Balance == 100m &&
+            row.Dimensions != null &&
+            row.Dimensions.EntityId == "entity-master" &&
+            row.Dimensions.CostCenterId == "cost-center-investment-ops" &&
+            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
+        filteredPeriodTrialBalanceReport.TotalDebits.Should().Be(0m);
+        filteredPeriodTrialBalanceReport.TotalCredits.Should().Be(100m);
+        filteredPeriodTrialBalanceReport.NetIncome.Should().Be(100m);
+        filteredPeriodTrialBalanceReport.Signature.PayloadChecksumSha256.Should()
+            .NotBe(trialBalanceReport.Signature.PayloadChecksumSha256);
+
+        emptyInvestmentOpsReport.Should().NotBeNull();
+        emptyInvestmentOpsReport!.Lines.Should().BeEmpty();
+        emptyInvestmentOpsReport.TotalDebits.Should().Be(0m);
+        emptyInvestmentOpsReport.TotalCredits.Should().Be(0m);
+        emptyInvestmentOpsReport.Signature.PayloadChecksumSha256.Should()
+            .NotBe(filteredPeriodTrialBalanceReport.Signature.PayloadChecksumSha256);
+
+        emptyFundAccountingReport.Should().NotBeNull();
+        emptyFundAccountingReport!.Lines.Should().BeEmpty();
+        emptyFundAccountingReport.Signature.PayloadChecksumSha256.Should()
+            .NotBe(emptyInvestmentOpsReport.Signature.PayloadChecksumSha256);
+
+        filteredPeriodPnl.Should().NotBeNull();
+        filteredPeriodPnl!.TotalRevenue.Should().Be(100m);
+        filteredPeriodPnl.TotalExpenses.Should().Be(0m);
+        filteredPeriodPnl.NetIncome.Should().Be(100m);
+        filteredPeriodPnl.RevenueLines.Should().ContainSingle(row =>
+            row.AccountName == "Management fees" &&
+            row.Dimensions != null &&
+            row.Dimensions.EntityId == "entity-master");
+
+        journalEntries.Should().NotBeNull();
+        journalEntries!.Should().HaveCount(2);
+        journalEntries.Should().OnlyContain(entry => entry.PeriodId == period.PeriodId && entry.LedgerBookId == book.LedgerBookId);
+        journalEntries.SelectMany(static entry => entry.Lines).Should().Contain(line =>
+            line.AccountName == "Management fees" &&
+            line.Dimensions != null &&
+            line.Dimensions.EntityId == "entity-master" &&
+            line.Dimensions.CostCenterId == "cost-center-investment-ops" &&
+            line.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
+
+        filteredJournalEntries.Should().NotBeNull();
+        var filteredJournalEntry = filteredJournalEntries!.Should().ContainSingle(entry =>
+            entry.PeriodId == period.PeriodId &&
+            entry.LedgerBookId == book.LedgerBookId &&
+            entry.TotalDebits == 0m &&
+            entry.TotalCredits == 100m &&
+            entry.Lines.Count == 1 &&
+            entry.Lines[0].AccountName == "Management fees").Subject;
+        var filteredJournalLine = filteredJournalEntry.Lines[0];
+        filteredJournalLine.Dimensions.Should().NotBeNull();
+        filteredJournalLine.Dimensions!.EntityId.Should().Be("entity-master");
+        filteredJournalLine.Dimensions.CostCenterId.Should().Be("cost-center-investment-ops");
+        filteredJournalLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
+
+        aggregateJournalEntries.Should().NotBeNull();
+        aggregateJournalEntries!.Should().ContainSingle(entry =>
+            entry.AggregateId == aggregateId &&
+            entry.PeriodId == period.PeriodId &&
+            entry.LedgerBookId == book.LedgerBookId &&
+            entry.Lines.Count == 2);
+
+        filteredAggregateJournalEntries.Should().NotBeNull();
+        var filteredAggregateEntry = filteredAggregateJournalEntries!.Should().ContainSingle(entry =>
+            entry.AggregateId == aggregateId &&
+            entry.PeriodId == period.PeriodId &&
+            entry.LedgerBookId == book.LedgerBookId &&
+            entry.TotalDebits == 0m &&
+            entry.TotalCredits == 100m &&
+            entry.Lines.Count == 1 &&
+            entry.Lines[0].AccountName == "Management fees").Subject;
+        filteredAggregateEntry.Lines[0].Dimensions.Should().NotBeNull();
+        filteredAggregateEntry.Lines[0].Dimensions!.EntityId.Should().Be("entity-master");
+        filteredAggregateEntry.Lines[0].Dimensions!.CostCenterId.Should().Be("cost-center-investment-ops");
+        filteredAggregateEntry.Lines[0].Dimensions!.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
 
         crossPeriodReport.Should().NotBeNull();
         crossPeriodReport!.Lines.Should().Contain(row =>
@@ -1123,7 +1257,8 @@ public sealed class LedgerBookServiceTests
         DateTimeOffset timestamp,
         string entityId,
         string costCenterId,
-        string externalGlDepartment)
+        string externalGlDepartment,
+        Guid? aggregateId = null)
     {
         var journalEntryId = Guid.NewGuid();
         const string description = "Dimension-scoped revenue posting";
@@ -1160,7 +1295,7 @@ public sealed class LedgerBookServiceTests
 
         return new LedgerJournalEntryWrite(
             new JournalEntry(journalEntryId, timestamp, description, lines, metadata),
-            AggregateId: Guid.NewGuid(),
+            AggregateId: aggregateId ?? Guid.NewGuid(),
             PeriodId: periodId);
     }
 

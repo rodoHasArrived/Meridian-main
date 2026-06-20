@@ -8,6 +8,7 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -210,6 +211,88 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        app.MapGet(UiApiRoutes.LedgerPeriodJournalEntries, async (Guid periodId, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var journalStore = ResolveJournalStore(context);
+            if (journalStore is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var period = await journalStore.GetPeriodAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            if (period is null)
+            {
+                return Results.NotFound(new { error = $"Ledger period '{periodId}' was not found." });
+            }
+
+            var ledgerBookId = period.LedgerBookId;
+            if (ledgerBookId is not { } bookId)
+            {
+                return Results.BadRequest(new { error = $"Ledger period '{periodId}' is not scoped to a ledger book." });
+            }
+
+            var entries = await journalStore.GetByPeriodAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
+            var result = BuildJournalEntryDtos(entries, _ => bookId, dimensionFilter);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetLedgerPeriodJournalEntries")
+        .Produces<IReadOnlyList<LedgerJournalEntryDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerAggregateJournalEntries, async (
+            Guid aggregateId,
+            Guid? ledgerBookId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var journalStore = ResolveJournalStore(context);
+            if (journalStore is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var entries = await journalStore.GetByAggregateAsync(aggregateId, context.RequestAborted).ConfigureAwait(false);
+            var periodBookIds = new Dictionary<Guid, Guid?>();
+            foreach (var periodId in entries.Select(static entry => entry.PeriodId).Distinct())
+            {
+                var period = await journalStore.GetPeriodAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+                if (period is null)
+                {
+                    return Results.NotFound(new { error = $"Ledger period '{periodId}' was not found for aggregate '{aggregateId}'." });
+                }
+
+                periodBookIds[periodId] = period.LedgerBookId;
+            }
+
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
+            var scopedEntries = ledgerBookId.HasValue
+                ? entries.Where(entry => periodBookIds.GetValueOrDefault(entry.PeriodId) == ledgerBookId.Value).ToArray()
+                : entries;
+            var result = BuildJournalEntryDtos(
+                scopedEntries,
+                entry => periodBookIds.GetValueOrDefault(entry.PeriodId),
+                dimensionFilter);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetLedgerAggregateJournalEntries")
+        .Produces<IReadOnlyList<LedgerJournalEntryDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapGet(UiApiRoutes.LedgerPeriodTrialBalance, async (Guid periodId, HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -223,10 +306,11 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
             var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
             return summary is null
                 ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
-                : Results.Json(summary.TrialBalance, jsonOptions);
+                : Results.Json(ApplyDimensionFilter(summary, dimensionFilter).TrialBalance, jsonOptions);
         })
         .WithName("GetLedgerPeriodTrialBalance")
         .Produces<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(StatusCodes.Status200OK)
@@ -247,10 +331,11 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
             var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
             return summary is null
                 ? Results.NotFound()
-                : Results.Json(BuildTrialBalanceReport(summary, context), jsonOptions);
+                : Results.Json(BuildTrialBalanceReport(ApplyDimensionFilter(summary, dimensionFilter), context), jsonOptions);
         })
         .WithName("GetLedgerPeriodTrialBalanceReport")
         .Produces<LedgerTrialBalanceReportDto>(StatusCodes.Status200OK)
@@ -271,10 +356,11 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
             var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
             return summary is null
                 ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
-                : Results.Json(BuildPnlSummary(summary), jsonOptions);
+                : Results.Json(BuildPnlSummary(ApplyDimensionFilter(summary, dimensionFilter)), jsonOptions);
         })
         .WithName("GetLedgerPeriodPnlSummary")
         .Produces<LedgerPeriodPnlSummaryDto>(StatusCodes.Status200OK)
@@ -996,6 +1082,7 @@ public static class LedgerEndpoints
         app.MapGet(UiApiRoutes.LedgerReportsAccountingPackages, async (
             string? fundProfileId,
             string? periodId,
+            Guid? ledgerBookId,
             HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -1009,7 +1096,7 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var result = await service.ListPackagesAsync(fundProfileId, periodId, context.RequestAborted).ConfigureAwait(false);
+            var result = await service.ListPackagesAsync(fundProfileId, periodId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListLedgerAccountingReportPackages")
@@ -1541,6 +1628,9 @@ public static class LedgerEndpoints
     private static ILedgerBookService? ResolveService(HttpContext context)
         => context.RequestServices.GetService<ILedgerBookService>();
 
+    private static ILedgerJournalStore? ResolveJournalStore(HttpContext context)
+        => context.RequestServices.GetService<ILedgerJournalStore>();
+
     private static IAccountingCloseManagementService? ResolveAccountingCloseManagementService(HttpContext context)
         => context.RequestServices.GetService<IAccountingCloseManagementService>();
 
@@ -1801,36 +1891,44 @@ public static class LedgerEndpoints
             .ThenBy(static row => row.FinancialAccountId, StringComparer.Ordinal)
             .ThenBy(static row => BuildDimensionSignature(row.Dimensions), StringComparer.Ordinal)
             .ToArray();
+        var reportSummary = summary with
+        {
+            TrialBalance = lines,
+            TotalDebits = lines.Sum(static row => row.DebitTotal),
+            TotalCredits = lines.Sum(static row => row.CreditTotal),
+            NetIncome = CalculateNetIncome(lines)
+        };
         var signature = new LedgerReportSignatureDto(
             "SHA256",
-            ComputeTrialBalanceReportChecksum(summary, lines),
+            ComputeTrialBalanceReportChecksum(reportSummary, lines, BuildDimensionReportFilter(context.Request.Query)),
             actor,
             signedAtUtc);
 
         return new LedgerTrialBalanceReportDto(
-            summary.PeriodId,
-            summary.LedgerBookId,
-            summary.FiscalYear,
-            summary.PeriodNo,
-            summary.Label,
+            reportSummary.PeriodId,
+            reportSummary.LedgerBookId,
+            reportSummary.FiscalYear,
+            reportSummary.PeriodNo,
+            reportSummary.Label,
             IsPeriodLocked: true,
-            summary.TotalDebits,
-            summary.TotalCredits,
-            summary.NetIncome,
-            summary.PeriodOnPeriodVariance,
-            summary.OpenBreakCount,
-            summary.SignoffStatus,
-            summary.CompletedAt,
+            reportSummary.TotalDebits,
+            reportSummary.TotalCredits,
+            reportSummary.NetIncome,
+            reportSummary.PeriodOnPeriodVariance,
+            reportSummary.OpenBreakCount,
+            reportSummary.SignoffStatus,
+            reportSummary.CompletedAt,
             lines,
             signature,
-            summary.AccountingBasis,
-            summary.AccountingPolicyId,
-            summary.AccountingPolicyVersion);
+            reportSummary.AccountingBasis,
+            reportSummary.AccountingPolicyId,
+            reportSummary.AccountingPolicyVersion);
     }
 
     private static string ComputeTrialBalanceReportChecksum(
         LedgerPeriodSummaryDto summary,
-        IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
+        IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines,
+        LedgerDimensionReportFilter dimensionFilter)
     {
         var builder = new StringBuilder();
         builder.AppendLine("ledger-trial-balance-report-v1");
@@ -1847,6 +1945,7 @@ public static class LedgerEndpoints
         builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-basis,{summary.AccountingBasis}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-policy-id,{EscapeSignatureField(summary.AccountingPolicyId)}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-policy-version,{EscapeSignatureField(summary.AccountingPolicyVersion)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"dimension-filter,{EscapeSignatureField(BuildDimensionFilterSignature(dimensionFilter))}");
         builder.AppendLine("account-name,account-type,symbol,financial-account-id,debits,credits,balance,entry-count,rule-id,rule-version,source-event-id,source-journal-entry-id,dimensions");
 
         foreach (var line in lines)
@@ -1879,6 +1978,39 @@ public static class LedgerEndpoints
         }
 
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+    }
+
+    private static string BuildDimensionFilterSignature(LedgerDimensionReportFilter filter)
+    {
+        if (!filter.HasCriteria)
+        {
+            return string.Empty;
+        }
+
+        var externalGl = filter.ExternalGlDimensions
+            .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
+
+        return string.Join(
+            "|",
+            filter.FundId ?? string.Empty,
+            filter.EntityId ?? string.Empty,
+            filter.SleeveId ?? string.Empty,
+            filter.StrategyId ?? string.Empty,
+            filter.InvestorId ?? string.Empty,
+            filter.CapitalAccountId ?? string.Empty,
+            filter.InstrumentId ?? string.Empty,
+            filter.TaxLotId ?? string.Empty,
+            filter.CostCenterId ?? string.Empty,
+            filter.CounterpartyId ?? string.Empty,
+            filter.OrganizationId ?? string.Empty,
+            filter.PortfolioId ?? string.Empty,
+            filter.BookId ?? string.Empty,
+            filter.AccountId ?? string.Empty,
+            filter.CustomerId ?? string.Empty,
+            filter.VendorId ?? string.Empty,
+            filter.ProjectId ?? string.Empty,
+            string.Join(";", externalGl));
     }
 
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
@@ -1985,6 +2117,168 @@ public static class LedgerEndpoints
         };
     }
 
+    private static IReadOnlyList<LedgerJournalEntryDto> BuildJournalEntryDtos(
+        IReadOnlyList<LedgerJournalEntryRecord> entries,
+        Func<LedgerJournalEntryRecord, Guid?> resolveLedgerBookId,
+        LedgerDimensionReportFilter filter)
+    {
+        return entries
+            .OrderBy(static entry => entry.GlobalSequence)
+            .Select(entry => BuildJournalEntryDto(entry, resolveLedgerBookId(entry), filter))
+            .Where(static entry => entry is not null)
+            .Select(static entry => entry!)
+            .ToArray();
+    }
+
+    private static LedgerJournalEntryDto? BuildJournalEntryDto(
+        LedgerJournalEntryRecord record,
+        Guid? ledgerBookId,
+        LedgerDimensionReportFilter filter)
+    {
+        var entryDimensions = BuildDimensions(record.Entry.Metadata);
+        var lines = record.Entry.Lines
+            .Select(line => BuildJournalEntryLineDto(
+                line,
+                BuildDimensions(line.Dimensions)
+                ?? BuildDimensions(record.Entry.Metadata, line.EntryId)
+                ?? entryDimensions))
+            .Where(line => MatchesDimensionFilter(line.Dimensions, filter))
+            .ToArray();
+        if (filter.HasCriteria && lines.Length == 0)
+        {
+            return null;
+        }
+
+        return new LedgerJournalEntryDto(
+            record.Entry.JournalEntryId,
+            record.PeriodId,
+            ledgerBookId,
+            record.AggregateId,
+            record.CommandId,
+            record.CorrelationId,
+            record.GlobalSequence,
+            record.CreatedAt,
+            record.Entry.Timestamp,
+            record.Entry.Description,
+            lines.Sum(static line => line.Debit),
+            lines.Sum(static line => line.Credit),
+            Math.Abs(lines.Sum(static line => line.Debit) - lines.Sum(static line => line.Credit)) <= 0.000001m,
+            lines,
+            record.AccountingBasis,
+            record.AccountingPolicyId,
+            record.AccountingPolicyVersion,
+            record.RuleId,
+            record.RuleVersion,
+            record.SourceEventId,
+            record.SourceJournalEntryId,
+            record.PostingKind,
+            record.AdjustmentApproval);
+    }
+
+    private static LedgerJournalEntryLineDto BuildJournalEntryLineDto(
+        LedgerEntry line,
+        LedgerDimensionSetDto? dimensions)
+        => new(
+            line.EntryId,
+            line.JournalEntryId,
+            line.Timestamp,
+            line.Account.Name,
+            line.Account.AccountType.ToString(),
+            line.Account.Symbol,
+            line.Account.FinancialAccountId,
+            line.Debit,
+            line.Credit,
+            line.Description,
+            dimensions);
+
+    private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata)
+    {
+        var tags = metadata.Tags;
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: FirstTag(tags, "fundId", "fundProfileId"),
+            EntityId: FirstTag(tags, "entityId", "legalEntityId"),
+            SleeveId: FirstTag(tags, "sleeveId"),
+            StrategyId: metadata.StrategyId ?? FirstTag(tags, "strategyId"),
+            InvestorId: metadata.InvestorId ?? FirstTag(tags, "investorId"),
+            CapitalAccountId: metadata.CapitalAccountId ?? FirstTag(tags, "capitalAccountId"),
+            InstrumentId: metadata.SecurityId,
+            TaxLotId: FirstTag(tags, "taxLotId", "lotId"),
+            CostCenterId: FirstTag(tags, "costCenterId"),
+            CounterpartyId: metadata.CounterpartyAccountId ?? FirstTag(tags, "counterpartyId", "counterpartyAccountId"),
+            ExternalGlDimensions: ExtractExternalGlDimensions(tags),
+            OrganizationId: FirstTag(tags, "organizationId"),
+            PortfolioId: FirstTag(tags, "portfolioId"),
+            BookId: metadata.LedgerBook ?? FirstTag(tags, "bookId"),
+            AccountId: metadata.FinancialAccountId ?? FirstTag(tags, "accountId"),
+            CustomerId: FirstTag(tags, "customerId"),
+            VendorId: FirstTag(tags, "vendorId"),
+            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"));
+
+        return HasAnyDimension(dimensions) ? dimensions : null;
+    }
+
+    private static LedgerDimensionSetDto? BuildDimensions(LedgerLineDimensionSet? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return null;
+        }
+
+        var result = new LedgerDimensionSetDto(
+            FundId: dimensions.FundId,
+            EntityId: dimensions.EntityId,
+            SleeveId: dimensions.SleeveId,
+            StrategyId: dimensions.StrategyId,
+            InvestorId: dimensions.InvestorId,
+            CapitalAccountId: dimensions.CapitalAccountId,
+            InstrumentId: dimensions.InstrumentId,
+            TaxLotId: dimensions.TaxLotId,
+            CostCenterId: dimensions.CostCenterId,
+            CounterpartyId: dimensions.CounterpartyId,
+            ExternalGlDimensions: dimensions.ExternalGlDimensions,
+            OrganizationId: dimensions.OrganizationId,
+            PortfolioId: dimensions.PortfolioId,
+            BookId: dimensions.BookId,
+            AccountId: dimensions.AccountId,
+            CustomerId: dimensions.CustomerId,
+            VendorId: dimensions.VendorId,
+            ProjectId: dimensions.ProjectId);
+
+        return HasAnyDimension(result) ? result : null;
+    }
+
+    private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata, Guid lineEntryId)
+    {
+        var tags = metadata.Tags;
+        var prefix = $"lineDimensions.{lineEntryId:N}.";
+        if (tags is null || tags.Keys.All(key => !key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: FirstTag(tags, prefix + "fundId"),
+            EntityId: FirstTag(tags, prefix + "entityId"),
+            SleeveId: FirstTag(tags, prefix + "sleeveId"),
+            StrategyId: FirstTag(tags, prefix + "strategyId"),
+            InvestorId: FirstTag(tags, prefix + "investorId"),
+            CapitalAccountId: FirstTag(tags, prefix + "capitalAccountId"),
+            InstrumentId: Guid.TryParse(FirstTag(tags, prefix + "instrumentId"), out var instrumentId) ? instrumentId : null,
+            TaxLotId: FirstTag(tags, prefix + "taxLotId"),
+            CostCenterId: FirstTag(tags, prefix + "costCenterId"),
+            CounterpartyId: FirstTag(tags, prefix + "counterpartyId"),
+            ExternalGlDimensions: ExtractExternalGlDimensions(tags, prefix),
+            OrganizationId: FirstTag(tags, prefix + "organizationId"),
+            PortfolioId: FirstTag(tags, prefix + "portfolioId"),
+            BookId: FirstTag(tags, prefix + "bookId"),
+            AccountId: FirstTag(tags, prefix + "accountId"),
+            CustomerId: FirstTag(tags, prefix + "customerId"),
+            VendorId: FirstTag(tags, prefix + "vendorId"),
+            ProjectId: FirstTag(tags, prefix + "projectId"));
+
+        return HasAnyDimension(dimensions) ? dimensions : null;
+    }
+
     private static decimal CalculateNetIncome(IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
         => lines.Sum(static row =>
             row.AccountType switch
@@ -2060,6 +2354,95 @@ public static class LedgerEndpoints
 
     private static bool IsValidDateRange(DateOnly? startDate, DateOnly? endDate)
         => !startDate.HasValue || !endDate.HasValue || startDate.Value <= endDate.Value;
+
+    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
+        => !string.IsNullOrWhiteSpace(dimensions.FundId)
+           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
+           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
+           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
+           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
+           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
+           || dimensions.InstrumentId.HasValue
+           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
+           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
+           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
+           || dimensions.ExternalGlDimensions.Count > 0
+           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
+           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
+           || !string.IsNullOrWhiteSpace(dimensions.BookId)
+           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
+           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
+           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
+           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
+
+    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
+        IReadOnlyDictionary<string, string>? tags)
+        => ExtractExternalGlDimensions(tags, prefix: null);
+
+    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
+        IReadOnlyDictionary<string, string>? tags,
+        string? prefix)
+    {
+        if (tags is null || tags.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in tags)
+        {
+            var key = NormalizeOptional(pair.Key);
+            var value = NormalizeOptional(pair.Value);
+            if (key is null || value is null)
+            {
+                continue;
+            }
+
+            var scopedKey = prefix is null
+                ? key
+                : StripPrefix(key, prefix);
+            if (scopedKey is null)
+            {
+                continue;
+            }
+
+            var dimensionKey = StripPrefix(scopedKey, "externalGl.")
+                               ?? StripPrefix(scopedKey, "externalGl:")
+                               ?? StripPrefix(scopedKey, "gl.")
+                               ?? StripPrefix(scopedKey, "gl:");
+            if (!string.IsNullOrWhiteSpace(dimensionKey))
+            {
+                result[dimensionKey] = value;
+            }
+        }
+
+        return result;
+    }
+
+    private static string? StripPrefix(string value, string prefix)
+        => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? NormalizeOptional(value[prefix.Length..])
+            : null;
+
+    private static string? FirstTag(
+        IReadOnlyDictionary<string, string>? tags,
+        params string[] keys)
+    {
+        if (tags is null || tags.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var key in keys)
+        {
+            if (tags.TryGetValue(key, out var value))
+            {
+                return NormalizeOptional(value);
+            }
+        }
+
+        return null;
+    }
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();

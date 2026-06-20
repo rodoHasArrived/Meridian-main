@@ -104,7 +104,8 @@ public static class EvidenceEndpoints
                     subjectId));
             }
 
-            var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted).ConfigureAwait(false);
+            var ledgerBookId = ResolveLedgerBookId(context);
+            var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId).ConfigureAwait(false);
             return graph is null
                 ? Results.NotFound(Error(
                     "evidence-subject-not-found",
@@ -300,7 +301,8 @@ public static class EvidenceEndpoints
                 subjectId)));
         }
 
-        var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted).ConfigureAwait(false);
+        var ledgerBookId = ResolveLedgerBookId(context);
+        var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId).ConfigureAwait(false);
         return packet is null
             ? (null, Results.NotFound(Error(
                 "evidence-subject-not-found",
@@ -309,6 +311,11 @@ public static class EvidenceEndpoints
                 subjectId)))
             : (packet, Results.Empty);
     }
+
+    private static Guid? ResolveLedgerBookId(HttpContext context)
+        => Guid.TryParse(context.Request.Query["ledgerBookId"].FirstOrDefault(), out var ledgerBookId)
+            ? ledgerBookId
+            : null;
 
     private static EvidenceEndpointErrorDto Error(
         string code,

@@ -1275,16 +1275,14 @@ function withReportingSchedule(state: "Active" | "Paused" = "Active"): Accountin
 
 function formatExpectedScheduleTimestamp(value: string): string {
   const timestamp = new Date(value);
-  const dateLabel = timestamp.toLocaleDateString(undefined, {
+  return timestamp.toLocaleString("en-US", {
     month: "short",
-    day: "numeric"
-  });
-  const timeLabel = timestamp.toLocaleTimeString(undefined, {
+    day: "numeric",
     hour: "numeric",
-    minute: "2-digit"
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short"
   });
-
-  return `${dateLabel}, ${timeLabel}`;
 }
 
 describe("ReportingScreen", () => {

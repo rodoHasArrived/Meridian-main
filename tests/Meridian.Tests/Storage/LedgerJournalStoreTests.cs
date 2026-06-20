@@ -695,6 +695,46 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingCommand_LedgerBookMismatch_RejectsBeforeAppend()
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var writeLedgerBookId = Guid.NewGuid();
+        var commandLedgerBookId = Guid.NewGuid();
+        var write = BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            LedgerBookId = writeLedgerBookId,
+            PostingCommand = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "capital-call:fund-alpha:book-mismatch",
+                SourceEventId: Guid.NewGuid(),
+                SourceEventType: "CapitalCall",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-capital-call-book-mismatch",
+                        "evidence://capital-call/book-mismatch",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "DocumentVault",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: commandLedgerBookId)
+        };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*ledger book id conflicts*");
+    }
+
+    [Fact]
     public void PostingCommand_ReversalWithoutSourceJournalLineage_RejectsBeforeAppend()
     {
         var periodId = Guid.NewGuid();

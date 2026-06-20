@@ -93,6 +93,8 @@ import type {
   AccountingSystemImportDetail,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
+  AccountingRulesStudioPromotionQueueItem,
+  AccountingRulesStudioRuleRow,
   CloseCalendarMilestone,
   ClosePeriodPlan,
   CloseTask,
@@ -342,6 +344,7 @@ export interface AccountingConfigurationViewModel {
   errorText: string | null;
   errorDetails: string[];
   metricRows: AccountingConfigurationMetricViewModel[];
+  setupReadinessRows: AccountingConfigurationMetricViewModel[];
   templates: AccountingConfigurationTemplateViewModel[];
   rules: AccountingRulesStudioRuleViewModel[];
   selectedRule: AccountingRulesStudioRuleViewModel | null;
@@ -3311,6 +3314,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: eventPredicateRule,
         correlationId: `browser-accounting-rule-event-predicate-${timestamp}`,
@@ -3373,6 +3377,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: thresholdRule,
         correlationId: `browser-accounting-rule-threshold-${timestamp}`,
@@ -3422,6 +3427,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: effectiveRule,
         correlationId: `browser-accounting-rule-effective-start-${timestamp}`,
@@ -3471,6 +3477,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: scopedRule,
         correlationId: `browser-accounting-rule-scope-${timestamp}`,
@@ -3519,6 +3526,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: capturedRule,
         correlationId: `browser-accounting-rule-generated-postings-${timestamp}`,
@@ -3576,6 +3584,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: formulaRule,
         correlationId: `browser-accounting-rule-formula-${timestamp}`,
@@ -3623,6 +3632,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: allocationRule,
         correlationId: `browser-accounting-rule-allocation-${timestamp}`,
@@ -3671,6 +3681,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: prioritizedRule,
         correlationId: `browser-accounting-rule-priority-${timestamp}`,
@@ -3727,6 +3738,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: duplicatedRule,
         correlationId: `browser-accounting-rule-duplicate-${timestamp}`,
@@ -3772,6 +3784,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.upsertRule({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         actor: "browser-accounting-operator",
         rule: archivedRule,
         correlationId: `browser-accounting-rule-archive-${timestamp}`,
@@ -3801,6 +3814,7 @@ export function useAccountingConfigurationViewModel(
     try {
       const next = await services.approveRulePromotion({
         fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
         ruleId: rule.ruleId,
         ruleVersion: rule.ruleVersion,
         actor: "browser-accounting-operator",
@@ -3855,6 +3869,11 @@ export function useAccountingConfigurationViewModel(
     const hasRule = activeRuleCount > 0;
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const savedRuleTestCases = workspace?.ruleTestCases ?? [];
+    const studioSummary = workspace?.rulesStudio?.summary ?? null;
+    const studioRuleRows = workspace?.rulesStudio?.rules ?? [];
+    const studioRuleRowsById = new Map(studioRuleRows.map((row) => [row.ruleId, row]));
+    const studioPromotionQueue = workspace?.rulesStudio?.promotionQueue ?? [];
+    const studioPromotionQueueById = new Map(studioPromotionQueue.map((item) => [item.ruleId, item]));
     const promotionApprovalBlockedRules = activeRules.filter((rule) =>
       rule.requiresPromotionApproval === true && !isApprovedRulePromotion(rule.promotionApproval));
     const savedRuleTestExpectedRuleVersions = new Set(savedRuleTestCases
@@ -3868,6 +3887,7 @@ export function useAccountingConfigurationViewModel(
       ? selectedRuleId
       : activeRules[0]?.ruleId ?? null;
     const selectedPostingRule = activeRules.find((rule) => rule.ruleId === resolvedSelectedRuleId) ?? null;
+    const selectedStudioRule = resolvedSelectedRuleId ? studioRuleRowsById.get(resolvedSelectedRuleId) ?? null : null;
     const dryRunDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -4031,7 +4051,7 @@ export function useAccountingConfigurationViewModel(
         ? "Load accounting configuration before approving rule promotion."
         : !selectedPostingRule
           ? "Select an active posting rule before approving promotion."
-          : isApprovedRulePromotion(selectedPostingRule.promotionApproval)
+          : selectedStudioRule?.isPromotionApproved === true || isApprovedRulePromotion(selectedPostingRule.promotionApproval)
             ? "Selected posting rule already has an approved promotion."
             : null;
     const previewDisabledReason = loading
@@ -4055,10 +4075,10 @@ export function useAccountingConfigurationViewModel(
                 ? "Create at least one active journal template before activation."
                 : !hasRule
                   ? "Create at least one active posting rule before activation."
-                  : promotionApprovalBlockedRules.length > 0
-                    ? `Approve promotion for ${promotionApprovalBlockedRules.length} required posting rule${promotionApprovalBlockedRules.length === 1 ? "" : "s"} before activation.`
-                    : promotionTestCoverageBlockedRules.length > 0
-                      ? `Save regression test cases for ${promotionTestCoverageBlockedRules.length} promotion-gated posting rule${promotionTestCoverageBlockedRules.length === 1 ? "" : "s"} before activation.`
+                  : (studioSummary?.pendingPromotionApprovalRules ?? promotionApprovalBlockedRules.length) > 0
+                    ? `Approve promotion for ${studioSummary?.pendingPromotionApprovalRules ?? promotionApprovalBlockedRules.length} required posting rule${(studioSummary?.pendingPromotionApprovalRules ?? promotionApprovalBlockedRules.length) === 1 ? "" : "s"} before activation.`
+                    : (studioSummary?.rulesMissingCurrentVersionRegressionTests ?? promotionTestCoverageBlockedRules.length) > 0
+                      ? `Save regression test cases for ${studioSummary?.rulesMissingCurrentVersionRegressionTests ?? promotionTestCoverageBlockedRules.length} promotion-gated posting rule${(studioSummary?.rulesMissingCurrentVersionRegressionTests ?? promotionTestCoverageBlockedRules.length) === 1 ? "" : "s"} before activation.`
                       : lastRuleTestSuiteFailed
                         ? "Resolve failing rule test cases before activation."
                         : null;
@@ -4096,8 +4116,10 @@ export function useAccountingConfigurationViewModel(
       {
         id: "rules",
         label: "Posting rules",
-        value: String(activeRuleCount),
-        detail: "Source events mapped to non-posting previews.",
+        value: String(studioSummary?.activeRules ?? activeRuleCount),
+        detail: studioSummary
+          ? `${studioSummary.generatedPostingRules} generated / ${studioSummary.templateMappingRules} template mappings.`
+          : "Source events mapped to non-posting previews.",
         tone: activeRuleCount > 0 ? "success" : "warning"
       },
       {
@@ -4110,9 +4132,43 @@ export function useAccountingConfigurationViewModel(
       {
         id: "rule-tests",
         label: "Rule tests",
-        value: String(savedRuleTestCases.length),
-        detail: "Persisted dry-run regression cases for posting-rule promotion.",
-        tone: savedRuleTestCases.length > 0 ? "success" : "warning"
+        value: String(studioSummary?.savedTestCaseCount ?? savedRuleTestCases.length),
+        detail: studioSummary
+          ? `${studioSummary.rulesWithSavedRegressionTests} rule(s) covered; ${studioSummary.rulesMissingCurrentVersionRegressionTests} current version gap(s).`
+          : "Persisted dry-run regression cases for posting-rule promotion.",
+        tone: (studioSummary?.savedTestCaseCount ?? savedRuleTestCases.length) > 0 ? "success" : "warning"
+      }
+    ];
+    const selectedLedgerBook = workspace?.ledgerBooks.find((book) => book.ledgerBookId === workspace.ledgerBookId) ?? null;
+    const missingLedgerBookIssue = workspace?.validationIssues.find((issue) => issue.code === "configuration.ledger-book-missing") ?? null;
+    const setupReadinessRows: AccountingConfigurationMetricViewModel[] = [
+      {
+        id: "selected-ledger-book",
+        label: "Selected book",
+        value: missingLedgerBookIssue
+          ? "Missing"
+          : selectedLedgerBook
+            ? selectedLedgerBook.displayName
+            : workspace?.ledgerBookId
+              ? "Scoped"
+              : "Fund scope",
+        detail: missingLedgerBookIssue?.message ??
+          (selectedLedgerBook
+            ? `${selectedLedgerBook.accountingBasis} basis; policy ${selectedLedgerBook.accountingPolicyId}/${selectedLedgerBook.accountingPolicyVersion}.`
+            : workspace?.ledgerBookId
+              ? `Ledger book ${workspace.ledgerBookId} is selected; setup details are not loaded.`
+              : "Configuration is using the fund-level setup scope."),
+        tone: missingLedgerBookIssue ? "danger" : selectedLedgerBook ? "success" : workspace?.ledgerBookId ? "warning" : "default"
+      },
+      {
+        id: "activation-readiness",
+        label: "Activation readiness",
+        value: criticalIssueCount > 0 ? "Blocked" : "Ready",
+        detail: missingLedgerBookIssue?.suggestedAction ??
+          (criticalIssueCount > 0
+            ? `${criticalIssueCount} critical validation issue${criticalIssueCount === 1 ? "" : "s"} must be cleared.`
+            : "No critical validation blockers are attached to this configuration."),
+        tone: criticalIssueCount > 0 ? "danger" : "success"
       }
     ];
     const templates = (workspace?.journalTemplates ?? []).map<AccountingConfigurationTemplateViewModel>((template) => {
@@ -4128,7 +4184,13 @@ export function useAccountingConfigurationViewModel(
       };
     });
     const rules = activeRules.map<AccountingRulesStudioRuleViewModel>((rule) =>
-      buildAccountingRulesStudioRuleViewModel(rule, rule.ruleId === resolvedSelectedRuleId, savedRuleTestCases, ruleTestSuite));
+      buildAccountingRulesStudioRuleViewModel(
+        rule,
+        rule.ruleId === resolvedSelectedRuleId,
+        savedRuleTestCases,
+        ruleTestSuite,
+        studioRuleRowsById.get(rule.ruleId) ?? null,
+        studioPromotionQueueById.get(rule.ruleId) ?? null));
     const dryRunPreviewView = dryRunPreview
       ? buildAccountingRulesStudioDryRunViewModel(dryRunPreview)
       : null;
@@ -4179,6 +4241,7 @@ export function useAccountingConfigurationViewModel(
       errorText: error?.summary ?? null,
       errorDetails: error?.details ?? [],
       metricRows,
+      setupReadinessRows,
       templates,
       rules,
       selectedRule: rules.find((rule) => rule.id === resolvedSelectedRuleId) ?? null,
@@ -4544,7 +4607,9 @@ function buildAccountingRulesStudioRuleViewModel(
   rule: PostingRule,
   isSelected: boolean,
   savedRuleTestCases: AccountingRuleTestCase[],
-  ruleTestSuite: AccountingRuleTestSuiteResult | null
+  ruleTestSuite: AccountingRuleTestSuiteResult | null,
+  studioRule: AccountingRulesStudioRuleRow | null = null,
+  promotionQueueItem: AccountingRulesStudioPromotionQueueItem | null = null
 ): AccountingRulesStudioRuleViewModel {
   const conditions = rule.conditions ?? [];
   const conditionGroups = rule.conditionGroups ?? [];
@@ -4553,12 +4618,15 @@ function buildAccountingRulesStudioRuleViewModel(
   const generatedPostings = rule.generatedPostings ?? [];
   const versions = rule.versions ?? [];
   const promotion = resolvePostingRulePromotion(rule);
-  const needsApproval = rule.requiresPromotionApproval && promotion?.approvalState !== "Approved";
+  const needsApproval = studioRule
+    ? studioRule.requiresPromotionApproval && !studioRule.isPromotionApproved
+    : rule.requiresPromotionApproval && promotion?.approvalState !== "Approved";
+  const usesGeneratedPostings = studioRule?.usesGeneratedPostings ?? generatedPostings.length > 0;
   const statusLabel = rule.isArchived
     ? "Archived"
     : needsApproval
       ? "Promotion review"
-      : generatedPostings.length > 0
+      : usesGeneratedPostings
         ? "Generated postings"
         : "Template mapping";
 
@@ -4588,15 +4656,30 @@ function buildAccountingRulesStudioRuleViewModel(
     versionRows: versions.length > 0
       ? versions.map((version) => `${version.version} by ${version.createdBy} on ${formatDateOnly(version.createdAtUtc)} - ${version.changeSummary}`)
       : [`${rule.ruleVersion} is the only retained rule version.`],
-    promotionReadiness: buildAccountingRulesStudioPromotionReadiness(rule, savedRuleTestCases, ruleTestSuite),
+    promotionReadiness: buildAccountingRulesStudioPromotionReadiness(
+      rule,
+      savedRuleTestCases,
+      ruleTestSuite,
+      studioRule,
+      promotionQueueItem),
     promotionLabel: promotion
       ? `${promotion.approvalState} by ${promotion.approvedBy ?? promotion.requestedBy}`
       : rule.requiresPromotionApproval
         ? "Promotion approval required"
         : "Promotion approval not required",
-    promotionTone: promotionTone(promotion, rule.requiresPromotionApproval),
+    promotionTone: studioRule?.isPromotionApproved
+      ? "success"
+      : promotionQueueItem
+        ? "warning"
+        : promotionTone(promotion, rule.requiresPromotionApproval),
     statusLabel,
-    statusTone: rule.isArchived ? "outline" : needsApproval ? "warning" : "success",
+    statusTone: rule.isArchived
+      ? "outline"
+      : (studioRule?.criticalIssueCount ?? 0) > 0
+        ? "danger"
+        : needsApproval
+          ? "warning"
+          : "success",
     isSelected,
     selectAriaLabel: `Inspect accounting posting rule ${rule.displayName}`
   };
@@ -4609,15 +4692,19 @@ function resolvePostingRulePromotion(rule: PostingRule): PostingRule["promotionA
 function buildAccountingRulesStudioPromotionReadiness(
   rule: PostingRule,
   savedRuleTestCases: AccountingRuleTestCase[],
-  ruleTestSuite: AccountingRuleTestSuiteResult | null
+  ruleTestSuite: AccountingRuleTestSuiteResult | null,
+  studioRule: AccountingRulesStudioRuleRow | null = null,
+  promotionQueueItem: AccountingRulesStudioPromotionQueueItem | null = null
 ): AccountingRulesStudioPromotionReadinessViewModel[] {
   const versions = rule.versions ?? [];
   const promotion = resolvePostingRulePromotion(rule);
-  const promotionApproved = isApprovedRulePromotion(promotion);
+  const promotionApproved = studioRule?.isPromotionApproved ?? isApprovedRulePromotion(promotion);
   const savedCases = savedRuleTestCases.filter((testCase) =>
     testCase.expectedRuleId === rule.ruleId &&
     testCase.expectedRuleVersion === (rule.ruleVersion ?? "v1"));
+  const savedCaseCount = studioRule?.savedTestCaseCount ?? savedCases.length;
   const generatedPostings = rule.generatedPostings ?? [];
+  const generatedPostingLineCount = studioRule?.generatedPostingLineCount ?? generatedPostings.length;
   const scopeRows = formatLedgerDimensionSet(rule.scope);
   const latestVersion = versions[0];
   const suiteTone: AccountingToolingTone = !ruleTestSuite
@@ -4627,15 +4714,19 @@ function buildAccountingRulesStudioPromotionReadiness(
       : ruleTestSuite.totalCount > 0
         ? "success"
         : "warning";
-  const activationBlockedReason = rule.isArchived
-    ? "Archived rules cannot be activated."
-    : rule.requiresPromotionApproval && !promotionApproved
-      ? "Promotion approval is required before activation."
-      : rule.requiresPromotionApproval && savedCases.length === 0
-        ? "A saved regression case is required before activation."
-        : (ruleTestSuite?.failedCount ?? 0) > 0
-          ? "Latest regression suite has failing cases."
-          : "Rule satisfies current promotion gates.";
+  const activationBlockedReason = studioRule && studioRule.canActivate
+    ? "Rule satisfies current promotion gates."
+    : promotionQueueItem
+      ? promotionQueueItem.suggestedAction
+      : rule.isArchived
+        ? "Archived rules cannot be activated."
+        : rule.requiresPromotionApproval && !promotionApproved
+          ? "Promotion approval is required before activation."
+          : rule.requiresPromotionApproval && savedCaseCount === 0
+            ? "A saved regression case is required before activation."
+            : (ruleTestSuite?.failedCount ?? 0) > 0
+              ? "Latest regression suite has failing cases."
+              : "Rule satisfies current promotion gates.";
 
   return [
     {
@@ -4647,6 +4738,20 @@ function buildAccountingRulesStudioPromotionReadiness(
         : `${rule.ruleVersion} has no prior retained versions.`,
       tone: versions.length > 0 ? "success" : "warning"
     },
+    ...(studioRule ? [{
+      id: "server-readiness",
+      label: "Shared readiness",
+      value: studioRule.canActivate ? "Ready" : studioRule.canRequestPromotion ? "Promotion ready" : "Blocked",
+      detail: `${studioRule.criticalIssueCount} critical, ${studioRule.warningIssueCount} warning, ${studioRule.savedTestCaseCount} saved test case(s).`,
+      tone: studioRule.criticalIssueCount > 0 ? "danger" : studioRule.canActivate ? "success" : "warning"
+    } satisfies AccountingRulesStudioPromotionReadinessViewModel] : []),
+    ...(promotionQueueItem ? [{
+      id: "promotion-queue",
+      label: "Promotion queue",
+      value: promotionQueueItem.approvalState ?? "Pending",
+      detail: promotionQueueItem.suggestedAction,
+      tone: promotionQueueItem.criticalIssueCount > 0 ? "danger" : "warning"
+    } satisfies AccountingRulesStudioPromotionReadinessViewModel] : []),
     {
       id: "promotion-approval",
       label: "Promotion approval",
@@ -4665,11 +4770,13 @@ function buildAccountingRulesStudioPromotionReadiness(
     {
       id: "saved-regression",
       label: "Saved regression",
-      value: savedCases.length > 0 ? `${savedCases.length} saved` : "Missing",
-      detail: savedCases.length > 0
-        ? `${savedCases[0].displayName} anchors promotion coverage.`
+      value: savedCaseCount > 0
+        ? `${savedCaseCount} saved`
+        : "Missing",
+      detail: savedCaseCount > 0
+        ? `${savedCases[0]?.displayName ?? "Server-retained regression coverage"} anchors promotion coverage.`
         : "Save a dry-run regression case for this rule before promotion.",
-      tone: savedCases.length > 0 ? "success" : rule.requiresPromotionApproval ? "warning" : "default"
+      tone: savedCaseCount > 0 ? "success" : rule.requiresPromotionApproval ? "warning" : "default"
     },
     {
       id: "latest-suite",
@@ -4685,11 +4792,13 @@ function buildAccountingRulesStudioPromotionReadiness(
     {
       id: "generated-postings",
       label: "Generated postings",
-      value: generatedPostings.length > 0 ? `${generatedPostings.length} lines` : "Template only",
-      detail: generatedPostings.length > 0
+      value: generatedPostingLineCount > 0
+        ? `${generatedPostingLineCount} lines`
+        : "Template only",
+      detail: generatedPostingLineCount > 0
         ? "Rule can generate explicit multi-line postings."
         : `Rule still maps to template ${rule.templateId || "none"}.`,
-      tone: generatedPostings.length > 0 ? "success" : "warning"
+      tone: generatedPostingLineCount > 0 ? "success" : "warning"
     },
     {
       id: "scope-coverage",

@@ -485,6 +485,79 @@ public sealed record AccountingActionAuditEventDto(
     string? CompanyId = null,
     IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
+public sealed record AccountingRulesStudioSummaryDto(
+    int TotalRules,
+    int ActiveRules,
+    int ArchivedRules,
+    int EffectiveDatedRules,
+    int GeneratedPostingRules,
+    int TemplateMappingRules,
+    int RulesWithConditions,
+    int RulesWithFormulas,
+    int RulesWithAllocations,
+    int RulesRequiringPromotionApproval,
+    int ApprovedPromotionRules,
+    int PendingPromotionApprovalRules,
+    int SavedTestCaseCount,
+    int RulesWithSavedRegressionTests,
+    int RulesMissingCurrentVersionRegressionTests,
+    int CriticalIssueCount,
+    int WarningIssueCount);
+
+public sealed record AccountingRulesStudioRuleRowDto(
+    string RuleId,
+    string DisplayName,
+    string SourceEventType,
+    string RuleVersion,
+    int Priority,
+    DateOnly? EffectiveFrom,
+    DateOnly? EffectiveTo,
+    string TemplateId,
+    bool IsArchived,
+    bool UsesGeneratedPostings,
+    int ConditionCount,
+    int ConditionGroupCount,
+    int FormulaCount,
+    int AllocationCount,
+    int GeneratedPostingLineCount,
+    int VersionCount,
+    int SavedTestCaseCount,
+    int SavedTestEvidenceLinkCount,
+    bool RequiresPromotionApproval,
+    bool IsPromotionApproved,
+    ManualJournalEntryStatusDto? PromotionApprovalState,
+    string? PromotionApprovalId,
+    int CriticalIssueCount,
+    int WarningIssueCount,
+    bool CanDryRun,
+    bool CanRequestPromotion,
+    bool CanActivate);
+
+public sealed record AccountingRulesStudioPromotionQueueItemDto(
+    string RuleId,
+    string DisplayName,
+    string RuleVersion,
+    string RequestedBy,
+    DateTimeOffset? RequestedAtUtc,
+    ManualJournalEntryStatusDto? ApprovalState,
+    string? ApprovalId,
+    int RegressionTestCaseCount,
+    int MissingRegressionEvidenceCount,
+    int CriticalIssueCount,
+    string SuggestedAction);
+
+public sealed record AccountingRulesStudioDto(
+    AccountingRulesStudioSummaryDto Summary,
+    IReadOnlyList<AccountingRulesStudioRuleRowDto>? Rules = null,
+    IReadOnlyList<AccountingRulesStudioPromotionQueueItemDto>? PromotionQueue = null)
+{
+    public IReadOnlyList<AccountingRulesStudioRuleRowDto> Rules { get; init; } =
+        Rules ?? [];
+
+    public IReadOnlyList<AccountingRulesStudioPromotionQueueItemDto> PromotionQueue { get; init; } =
+        PromotionQueue ?? [];
+}
+
 public sealed record AccountingConfigurationWorkspaceDto(
     string FundProfileId,
     Guid? LedgerBookId,
@@ -497,7 +570,8 @@ public sealed record AccountingConfigurationWorkspaceDto(
     IReadOnlyList<PostingRuleDto> PostingRules,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
     IReadOnlyList<AccountingActionAuditEventDto> AuditTrail,
-    IReadOnlyList<AccountingRuleTestCaseDto>? RuleTestCases = null)
+    IReadOnlyList<AccountingRuleTestCaseDto>? RuleTestCases = null,
+    AccountingRulesStudioDto? RulesStudio = null)
 {
     public IReadOnlyList<AccountingRuleTestCaseDto> RuleTestCases { get; init; } =
         RuleTestCases ?? [];
@@ -510,7 +584,8 @@ public sealed record UpsertChartOfAccountsNodeRequest(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
-    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null,
+    Guid? LedgerBookId = null);
 
 public sealed record UpsertJournalEntryTemplateRequest(
     string FundProfileId,
@@ -519,7 +594,8 @@ public sealed record UpsertJournalEntryTemplateRequest(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
-    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null,
+    Guid? LedgerBookId = null);
 
 public sealed record UpsertPostingRuleRequest(
     string FundProfileId,
@@ -528,7 +604,8 @@ public sealed record UpsertPostingRuleRequest(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
-    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null,
+    Guid? LedgerBookId = null);
 
 public sealed record ApprovePostingRulePromotionRequest(
     string FundProfileId,
@@ -543,6 +620,7 @@ public sealed record ApprovePostingRulePromotionRequest(
     string? CorrelationId = null,
     string? CompanyId = null,
     IReadOnlyList<string>? ReportGroupPrincipalIds = null,
+    Guid? LedgerBookId = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
@@ -2102,7 +2180,10 @@ public interface IManualJournalEntryDraftStore
 
 public interface IAccountingConfigurationStore
 {
-    Task<AccountingConfigurationWorkspaceDto?> GetAsync(string fundProfileId, CancellationToken ct = default);
+    Task<AccountingConfigurationWorkspaceDto?> GetAsync(
+        string fundProfileId,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default);
 
     Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);
 }

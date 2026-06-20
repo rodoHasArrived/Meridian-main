@@ -430,7 +430,8 @@ public sealed record ReconciliationBreakQueueItem(
     string? SourceImportId = null,
     string? SourceBreakId = null,
     string? SourceFingerprint = null,
-    ReconciliationBreakExplanationDto? BreakExplanation = null);
+    ReconciliationBreakExplanationDto? BreakExplanation = null,
+    Guid? LedgerBookId = null);
 
 public sealed record ReconciliationBreakExplanationDto(
     string Summary,

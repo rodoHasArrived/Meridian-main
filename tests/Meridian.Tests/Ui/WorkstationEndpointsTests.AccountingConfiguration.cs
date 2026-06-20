@@ -1237,11 +1237,24 @@ public sealed partial class WorkstationEndpointsTests
                 Notes: "Controller approved the generated interest rule after dry-run regression review.",
                 EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2-approval-rule-generated-interest-v2"]),
             ServerJsonOptions);
+        var lifecycleDraft = ManualJournalEntryDraft();
         await client.PostAsJsonAsync(
             UiApiRoutes.LedgerAccountingConfigurationChart,
-            new UpsertChartOfAccountsNodeRequest("fund-alpha", new ChartOfAccountsNodeDto("capital", "Equity:Capital Contributions", "Capital Contributions", "Equity"), "browser-user"),
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("cash-book", "Assets:Cash", "Cash", "Asset"),
+                "browser-user",
+                LedgerBookId: lifecycleDraft.LedgerBookId),
             ServerJsonOptions);
-        var submitted = await SaveAndSubmitManualJournalDraftAsync(client, ManualJournalEntryDraft(), "lifecycle");
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("capital", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+                "browser-user",
+                LedgerBookId: lifecycleDraft.LedgerBookId),
+            ServerJsonOptions);
+        var submitted = await SaveAndSubmitManualJournalDraftAsync(client, lifecycleDraft, "lifecycle");
         using var approveResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
             new JournalEntryLifecycleActionRequestDto(
@@ -1327,6 +1340,22 @@ public sealed partial class WorkstationEndpointsTests
             item.TestCaseId == "interest-accrual-saved-happy-path" &&
             item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/rule-test-interest-accrual-saved-happy-path-rule-generated-interest-v2"));
         savedWorkspace.AuditTrail.Should().Contain(item => item.Action == "rule-test-case.upsert");
+        savedWorkspace.RulesStudio.Should().NotBeNull();
+        savedWorkspace.RulesStudio!.Summary.TotalRules.Should().Be(1);
+        savedWorkspace.RulesStudio.Summary.GeneratedPostingRules.Should().Be(1);
+        savedWorkspace.RulesStudio.Summary.RulesRequiringPromotionApproval.Should().Be(0);
+        savedWorkspace.RulesStudio.Summary.PendingPromotionApprovalRules.Should().Be(0);
+        savedWorkspace.RulesStudio.Summary.RulesWithSavedRegressionTests.Should().Be(1);
+        savedWorkspace.RulesStudio.PromotionQueue.Should().BeEmpty();
+        savedWorkspace.RulesStudio.Rules.Should().ContainSingle(item =>
+            item.RuleId == "rule-generated-interest" &&
+            item.UsesGeneratedPostings &&
+            item.FormulaCount == 1 &&
+            item.GeneratedPostingLineCount == 2 &&
+            item.SavedTestCaseCount == 1 &&
+            item.CanDryRun &&
+            !item.CanRequestPromotion &&
+            item.CanActivate);
         persistedRuleTests!.TotalCount.Should().Be(1);
         persistedRuleTests.PassedCount.Should().Be(1);
         persistedRuleTests.Results.Should().ContainSingle(item =>
@@ -1340,6 +1369,16 @@ public sealed partial class WorkstationEndpointsTests
             version.Version == "v2" &&
             version.PromotionApproval != null &&
             version.PromotionApproval.ApprovalId == "approval-rule-generated-interest-v2");
+        promotionWorkspace.RulesStudio.Should().NotBeNull();
+        promotionWorkspace.RulesStudio!.Summary.ApprovedPromotionRules.Should().Be(1);
+        promotionWorkspace.RulesStudio.Summary.PendingPromotionApprovalRules.Should().Be(0);
+        promotionWorkspace.RulesStudio.PromotionQueue.Should().BeEmpty();
+        promotionWorkspace.RulesStudio.Rules.Should().ContainSingle(item =>
+            item.RuleId == "rule-generated-interest" &&
+            item.IsPromotionApproved &&
+            item.PromotionApprovalId == "approval-rule-generated-interest-v2" &&
+            !item.CanRequestPromotion &&
+            item.CanActivate);
         promotionWorkspace.AuditTrail.Should().Contain(item =>
             item.Action == "posting-rule.promotion-approve" &&
             item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2-approval-rule-generated-interest-v2"));
@@ -1349,6 +1388,106 @@ public sealed partial class WorkstationEndpointsTests
             item.Status == ManualJournalEntryStatusDto.Draft &&
             item.EntryType == ManualJournalEntryTypeDto.Reversal &&
             item.ReversalOfJournalEntryId == posted.JournalEntry.JournalEntryId);
+    }
+
+    [Fact]
+    public async Task AccountingConfigurationWorkspace_IncludesRulesStudioPromotionQueue()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest("fund-alpha", new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"), "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest("fund-alpha", new ChartOfAccountsNodeDto("income", "Income:Interest", "Interest Income", "Revenue"), "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRules,
+            new UpsertPostingRuleRequest(
+                "fund-alpha",
+                new PostingRuleDto(
+                    "rule-studio-interest",
+                    "Studio interest accrual",
+                    "InterestAccrual",
+                    "",
+                    RuleVersion: "v3",
+                    EffectiveFrom: new DateOnly(2026, 1, 1),
+                    EffectiveTo: new DateOnly(2026, 12, 31),
+                    Priority: 25,
+                    Scope: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+                    Conditions:
+                    [
+                        new AccountingRuleConditionDto("threshold", "amount", AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual, "100")
+                    ],
+                    Formulas:
+                    [
+                        new AccountingRuleFormulaDto("source", AccountingRuleFormulaKindDto.SourceAmount, 0m)
+                    ],
+                    GeneratedPostings:
+                    [
+                        new GeneratedPostingLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, "source", 0m),
+                        new GeneratedPostingLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source", 0m)
+                    ],
+                    RequiresPromotionApproval: true),
+                "browser-user"),
+            ServerJsonOptions);
+
+        using var savedRuleTestCaseResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleTestCases,
+            new UpsertAccountingRuleTestCaseRequest(
+                FundProfileId: "fund-alpha",
+                TestCase: new AccountingRuleTestCaseDto(
+                    "studio-interest-happy-path",
+                    "Studio interest happy path",
+                    new RuleDryRunRequestDto(
+                        "fund-alpha",
+                        "InterestAccrual",
+                        225m,
+                        "USD",
+                        new DateOnly(2026, 6, 30),
+                        "browser-user",
+                        Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master")),
+                    ExpectedRuleId: "rule-studio-interest",
+                    ExpectedRuleVersion: "v3"),
+                Actor: "browser-user",
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/regression-test-studio-interest-happy-path-rule-studio-interest-v3"]),
+            ServerJsonOptions);
+
+        savedRuleTestCaseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var workspace = await savedRuleTestCaseResponse.Content.ReadFromJsonAsync<AccountingConfigurationWorkspaceDto>(ServerJsonOptions);
+
+        workspace!.RulesStudio.Should().NotBeNull();
+        workspace.RulesStudio!.Summary.TotalRules.Should().Be(1);
+        workspace.RulesStudio.Summary.EffectiveDatedRules.Should().Be(1);
+        workspace.RulesStudio.Summary.GeneratedPostingRules.Should().Be(1);
+        workspace.RulesStudio.Summary.RulesWithConditions.Should().Be(1);
+        workspace.RulesStudio.Summary.RulesWithFormulas.Should().Be(1);
+        workspace.RulesStudio.Summary.RulesRequiringPromotionApproval.Should().Be(1);
+        workspace.RulesStudio.Summary.PendingPromotionApprovalRules.Should().Be(1);
+        workspace.RulesStudio.Summary.RulesWithSavedRegressionTests.Should().Be(1);
+        workspace.RulesStudio.PromotionQueue.Should().ContainSingle(item =>
+            item.RuleId == "rule-studio-interest" &&
+            item.RuleVersion == "v3" &&
+            item.RegressionTestCaseCount == 1 &&
+            item.MissingRegressionEvidenceCount == 0);
+        workspace.RulesStudio.Rules.Should().ContainSingle(item =>
+            item.RuleId == "rule-studio-interest" &&
+            item.Priority == 25 &&
+            item.EffectiveFrom == new DateOnly(2026, 1, 1) &&
+            item.EffectiveTo == new DateOnly(2026, 12, 31) &&
+            item.UsesGeneratedPostings &&
+            item.ConditionCount == 1 &&
+            item.FormulaCount == 1 &&
+            item.GeneratedPostingLineCount == 2 &&
+            item.SavedTestCaseCount == 1 &&
+            item.RequiresPromotionApproval &&
+            !item.IsPromotionApproved &&
+            item.CanDryRun);
     }
 
     [Fact]

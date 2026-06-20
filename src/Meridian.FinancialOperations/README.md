@@ -45,7 +45,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   certification, and restatement workflow metadata.
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
-- Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
+- Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
@@ -169,7 +169,7 @@ portfolio/ledger candidates with the contracts-owned Security Master query surfa
 matches and breaks through the F# ledger reconciliation kernel instead of Application-local
 service/logging ownership.
 
-Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, and exposes planned import-first Xero and NetSuite rows with posting disabled. It retains latest imports by provider/fund/book, reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available, and stores scoped external-GL mapping profiles for account and dimension mappings. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. The tie-out evidence package classifies missing-external, missing-Meridian, and variance breaks into operator required actions for assignment, retained provider support, ledger remediation, and close approval evidence. Guarded export-package creation requires retained export-control evidence that identifies export-control intent plus the export fund, provider/fund scope, or exact export period on the same evidence artifact, a certified mapping profile with retained mapping approval, certification, sign-off, or review evidence that identifies the mapping profile or provider/fund scope, account mapping coverage, certified fund/entity dimension mappings on both Meridian and external GL sides, import/reconciliation evidence for the exact export period, generated mapped export lines from Meridian-owned ledger totals, and no stale-period reconciliation reuse before it can reach ready-for-review certification state; unresolved GL breaks remain critical validation issues when balanced reconciliation is required. Export packages retain mapping profile, reconciliation, and balanced-reconciliation lineage, and certification revalidates the current mapping profile, latest reconciliation, and retained reconciliation snapshot id before moving a retained artifact to Certified. Certified-looking mapping profiles with only generic support evidence or wrong-profile approval evidence are downgraded to Draft and cannot emit generated export lines. Generated export lines are also suppressed when any retained dimension mapping is uncertified or missing fund/entity scope on either the Meridian or external GL side. Retained ready-for-review export packages can be certified with reviewer notes and evidence, duplicate or draft certification is rejected, and certification also fails closed if retained package state has live external GL posting enabled, lacks a posting-disabled reason, has current mapping/reconciliation blockers, was supplied by reviewed automation instead of a human operator, or the supplied certification evidence does not reference the retained export package id, certification id, and exact export period in the same artifact. Live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries. Controlled export-package manifests retain generated mapped lines, mapping/reconciliation lineage, evidence links, validation state, deterministic content hash, and `ExternalPostingAllowed = false` posture for review without creating a live posting path. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation, mapping validation, export-package safeguards, or posting-disable posture.
+Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, and exposes planned import-first Xero and NetSuite rows with posting disabled. It retains latest imports by provider/fund/book, reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available, and stores scoped external-GL mapping profiles for account and dimension mappings. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes ledger-book scope plus external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. The tie-out evidence package classifies missing-external, missing-Meridian, and variance breaks into operator required actions for assignment, retained provider support, ledger remediation, and close approval evidence. Guarded export-package creation requires retained export-control evidence that identifies export-control intent plus the export fund, provider/fund scope, or exact export period on the same evidence artifact, a certified mapping profile with retained mapping approval, certification, sign-off, or review evidence that identifies the mapping profile or provider/fund scope, account mapping coverage, certified fund/entity dimension mappings on both Meridian and external GL sides, import/reconciliation evidence for the exact export period and same ledger book, generated mapped export lines from Meridian-owned ledger totals, and no stale-period reconciliation reuse before it can reach ready-for-review certification state; unresolved GL breaks remain critical validation issues when balanced reconciliation is required. Export packages retain mapping profile, reconciliation, and balanced-reconciliation lineage, and certification revalidates the current mapping profile, latest reconciliation, retained reconciliation snapshot id, and reconciliation ledger book before moving a retained artifact to Certified. Certified-looking mapping profiles with only generic support evidence or wrong-profile approval evidence are downgraded to Draft and cannot emit generated export lines. Generated export lines are also suppressed when any retained dimension mapping is uncertified or missing fund/entity scope on either the Meridian or external GL side. Retained ready-for-review export packages can be certified with reviewer notes and evidence, duplicate or draft certification is rejected, and certification also fails closed if retained package state has live external GL posting enabled, lacks a posting-disabled reason, has current mapping/reconciliation blockers, was supplied by reviewed automation instead of a human operator, or the supplied certification evidence does not reference the retained export package id, certification id, and exact export period in the same artifact. Live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries. Controlled export-package manifests retain generated mapped lines, mapping/reconciliation lineage, evidence links, validation state, deterministic content hash, and `ExternalPostingAllowed = false` posture for review without creating a live posting path. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation, mapping validation, export-package safeguards, or posting-disable posture.
 
 External GL export certification evidence must carry certification intent plus retained export
 package id, certification id, and exact-period scope on the same evidence artifact; split support
@@ -185,7 +185,13 @@ are exposed to UI Services and WPF without making those surfaces own accounting-
 `AccountingCloseManagementService` now projects a `ClosePeriodPlanDto` from the Operations
 Continuity workflow, converting workflow checklist tasks into dependency-aware close tasks,
 Operations approvals into sign-off rows, close-package publication into period-lock posture, and
-retained late-adjustment requests into materiality-policy validation issues. When `StorageOptions`
+retained late-adjustment requests into materiality-policy validation issues. Workflows that are
+started with a ledger-book scope retain that `LedgerBookId` through the workflow projection and the
+close plan so report-package, close, and ledger-book review surfaces do not lose book context after
+handoff from Operations Continuity. Close-backed accounting report packages inherit the close plan
+book when the request omits one, block explicit ledger-book mismatches during package assembly, and
+revalidate the current close-plan book before certification so certified exports cannot drift across
+books. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
 Task sign-off decisions retain authenticated actor, role, notes, and evidence, reject duplicate
@@ -213,6 +219,10 @@ financial statement package, investor capital statement, realized gain/loss repo
 certification, validation issues, deterministic report-line provenance, deterministic export
 artifact rows, and optional restatement workflow metadata. It carries close-plan validation into the package certification state, keeps
 standalone packages ready-for-review when non-blocking warnings remain, returns draft state when
+ledger-book scope is missing, and uses ledger-book-scoped retained package identifiers so primary,
+GAAP, tax, or other book packages for the same fund period do not overwrite one another. Package
+history can also be filtered by ledger book so close, reporting, and export review surfaces inspect
+the intended book rather than a fund-period aggregate.
 blocking close-plan evidence is missing, close checklist dependencies are incomplete, the attached
 close workflow has not reached period-lock, approved
 sign-offs are missing, or material late adjustments are still unapproved, blocks restatement
@@ -253,20 +263,27 @@ Accounting-basis policy and ledger text-journal reporting also live here. Applic
 registers the policy/projection services and the CLI command invokes the text-journal report service,
 but Application no longer owns accounting policy resolution, ledger write projection metadata, or
 text-journal parser/report semantics.
-`AccountingJournalDraftService` accepts shared treasury ledger context and stamps the resulting
+`AccountingJournalDraftService` accepts shared ledger-book scope and treasury ledger context and stamps the resulting
 journal metadata with effective date, idempotency, fund-event, capital-account, investor,
 payment-intent, and settlement references before a governed ledger write is projected. Keep this
 behavior in Financial Operations so private-capital and payment-linked drafts are validated once
 before browser, WPF, storage, or reporting surfaces inspect them.
+Operations Continuity ledger-posting candidates preserve `LedgerDimensionSetDto` on each candidate
+line and map that scope into immutable ledger line dimensions before appending the governed journal
+write, so close, reconciliation, report, and external-GL consumers do not have to infer line scope
+from account names or journal-level metadata.
 `AccountingPostingCandidateService` bridges Rules Studio posting-rule dry runs into that governed
 journal draft path. It evaluates a source event through the shared accounting-configuration
 service, resolves generated account paths through the active chart without guessing account type,
 preserves generated dimensions and evidence on the returned candidate payload, carries generated
 line dimensions into the draft request, and then calls the draft service to produce only an
-approval-gated posting command candidate. The draft service retains line-entry keyed dimension tags
-on the governed write metadata so downstream ledger-book reports and export mapping can recover
-line-specific fund/entity/cost-center/counterparty/external-GL scope without adding a live posting
-path. It does not append ledger entries or bypass the manual-journal lifecycle.
+approval-gated posting command candidate. The draft request keeps the selected Rules Studio posting
+rule id/version and dry-run correlation separate from the accounting-policy rule id, then stamps
+that provenance onto the governed journal metadata with source-event identity. The draft service
+also retains line-entry keyed dimension tags on the governed write metadata so downstream
+ledger-book reports and export mapping can recover line-specific
+fund/entity/cost-center/counterparty/external-GL scope without adding a live posting path. It does
+not append ledger entries or bypass the manual-journal lifecycle.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid

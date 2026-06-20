@@ -58,6 +58,76 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerLedger_ShouldExposeCanonicalDimensions()
+    {
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-ledger-dimensions", withBreaks: false) with
+        {
+            FundProfileId = "fund-core",
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountScopeId"] = "acct-ops",
+                ["entityScopeId"] = "entity-book",
+                ["sleeveScopeId"] = "sleeve-alpha"
+            }
+        });
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.Columns.Select(static column => column.ColumnId).Should().Contain(
+            ["fundId", "entityId", "bookId", "accountId"]);
+        explorer.Filters.Should().Contain(filter =>
+            filter.Label == "Fund" &&
+            filter.Value == "fund-core" &&
+            filter.Tone == FinancialRecordExplorerTone.Info);
+        explorer.Filters.Should().Contain(filter =>
+            filter.Label == "Entity" &&
+            filter.Value == "entity-book");
+        explorer.Filters.Should().Contain(filter =>
+            filter.Label == "Sleeve" &&
+            filter.Value == "sleeve-alpha");
+        explorer.Filters.Should().Contain(filter =>
+            filter.Label == "Strategy" &&
+            filter.Value == "workflow-paper-strategy");
+        explorer.Filters.Should().Contain(filter =>
+            filter.Label == "Portfolio" &&
+            filter.Value == "workflow-paper-portfolio");
+        explorer.Filters.Should().Contain(filter =>
+            filter.Label == "Account Scope" &&
+            filter.Value == "acct-ops");
+
+        var row = explorer.Rows.Should().ContainSingle(row =>
+            row.Cells.Any(cell => cell.ColumnId == "accountName" && cell.DisplayValue == "Cash")).Subject;
+        row.Cells.Should().Contain(cell =>
+            cell.ColumnId == "fundId" &&
+            cell.DisplayValue == "fund-core" &&
+            cell.RawValue == "fund-core");
+        row.Cells.Should().Contain(cell =>
+            cell.ColumnId == "entityId" &&
+            cell.DisplayValue == "entity-book" &&
+            cell.RawValue == "entity-book");
+        row.Cells.Should().Contain(cell =>
+            cell.ColumnId == "accountId" &&
+            cell.DisplayValue == "acct-ops" &&
+            cell.RawValue == "acct-ops");
+        row.Detail.Fields.Should().Contain(field =>
+            field.Label == "Fund" &&
+            field.Value == "fund-core" &&
+            field.Tone == FinancialRecordExplorerTone.Info);
+        row.Detail.Fields.Should().Contain(field =>
+            field.Label == "Entity" &&
+            field.Value == "entity-book");
+        row.Detail.Fields.Should().Contain(field =>
+            field.Label == "Account Scope" &&
+            field.Value == "acct-ops");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldExposeEndToEndDrillThroughChain()
     {
         await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));

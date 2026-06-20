@@ -30,18 +30,17 @@ const formatReportPackDistributionDue = (dueAtUtc: string | null): string => {
     return "No due date";
   }
 
-  const due = new Date(dueAtUtc);
-  if (Number.isNaN(due.getTime())) {
-    return dueAtUtc;
-  }
-
-  return due.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  });
+  return formatTimestamp(dueAtUtc);
 };
+
+const reportingTimestampFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "UTC",
+  timeZoneName: "short"
+});
 
 export interface ReportingProfileBadge {
   label: string;
@@ -1882,16 +1881,7 @@ function formatTimestamp(value: string): string {
     return value;
   }
 
-  const dateLabel = timestamp.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric"
-  });
-  const timeLabel = timestamp.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit"
-  });
-
-  return `${dateLabel}, ${timeLabel}`;
+  return reportingTimestampFormatter.format(timestamp);
 }
 
 function artifactLabel(artifact: string): string {

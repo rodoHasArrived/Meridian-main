@@ -80,15 +80,24 @@ routing matrix; the server turns those into broker-ingest blocker/review states 
 clients to infer close readiness from provider metadata. Closed operations workflows also
 publish `OperationsClosePackagePublicationDto` with close-package id, retained manifest id/route,
 evidence hash, sign-off actor/rationale, report pack id, evidence links, and checklist approvals so
-clients can inspect close-package publication without rebuilding package metadata locally. Ledger
-journal line DTOs carry optional Security Master identity, client-observed active status, approval
+clients can inspect close-package publication without rebuilding package metadata locally.
+Strategy-run trial-balance and journal DTOs expose the canonical `LedgerDimensionSetDto` beside
+legacy account/entity/sleeve/vehicle scope fields so browser and WPF ledger drill-throughs can use
+the same dimensional accounting vocabulary as rules, drafts, period reports, and external GL
+mapping flows. Ledger journal line DTOs carry optional Security Master identity, client-observed active status, approval
 reference, provenance, and ledger-mapping evidence, and the shared blocker vocabulary includes the
 posting gate failures used when an instrument-bearing posting lacks authoritative server-side
 Security Master active-status proof or when journal/line provenance does not reference the resolved
 Security Master id. The vocabulary also includes symbol
 mismatch blockers for journal candidates whose instrument line symbol diverges from the
 journal-level Security Master symbol and mapping mismatch blockers for generic ledger-mapping
-references that do not name the resolved symbol or Security Master id.
+references that do not name the resolved symbol or Security Master id. Operations Continuity
+journal candidate lines also carry optional `LedgerDimensionSetDto` scope so reviewed close,
+reconciliation, or accrual postings can preserve line-level fund/entity/cost-center/counterparty
+and external-GL dimensions through the Financial Operations posting gate.
+Reconciliation break queue items carry optional `LedgerBookId` scope so shared Accounting,
+Reconciliation, and close-readiness surfaces can filter explicit book cases without inferring
+accounting ownership from fund labels, routes, or exception text.
 Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
 workflows can block the draft gate before post-time journal-line validation when Security Master
 provenance exists but approved identity or accounting mapping proof is still missing.
@@ -170,6 +179,11 @@ both browser and WPF. The report-line provenance payload uses the same row, proo
 relationship, and graph DTOs to expose the retained instrument, position or transaction,
 reconciliation, journal, report-line, evidence, and audit-link chain without adding browser- or
 desktop-specific contract shapes.
+Accounting configuration workspaces expose a computed `AccountingRulesStudioDto` beside the raw
+posting-rule, version, approval, dry-run, and regression-test DTOs. Browser and WPF clients should
+render rule counts, generated-posting coverage, effective-dated rule posture, saved-test coverage,
+promotion queues, and activation readiness from this shared studio read model instead of
+recomputing approval or validation state locally.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can
@@ -784,7 +798,7 @@ Manual journal entry contracts include private-capital entry types for capital c
 distributions, subscriptions, redemptions, LP transfers, and management fees. `TreasuryLedgerContextDto`
 is the shared audit context for those drafts and carries effective date, idempotency key, fund
 event, capital account, investor, payment intent, and settlement references so browser, WPF,
-Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary. `AccountingPostingCommandDto` is the shared event-accounting posting envelope for source-backed journal impact; it carries command, aggregate, period, source/correlation/causation, idempotency, reviewer state, treasury context, correction lineage, action origin, and typed evidence references so posting services and durable storage validate the same intent.
+Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary. `AccountingPostingCommandDto` is the shared event-accounting posting envelope for source-backed journal impact; it carries command, aggregate, period, ledger-book scope, source/correlation/causation, idempotency, reviewer state, treasury context, correction lineage, action origin, and typed evidence references so posting services and durable storage validate the same intent.
 Accounting configuration contracts also carry the productized rules-studio vocabulary:
 effective-dated posting rules, flat conditions, grouped `All`/`Any` condition sets, formulas,
 allocation metadata, priority, dimensional scope through `LedgerDimensionSetDto`, generated posting lines, dry-run results,
@@ -792,7 +806,10 @@ persisted and ad-hoc rule/version-pinned test-case requests/results with expecte
 the dedicated promotion-approval request for approving a retained rule version with approver notes,
 retained approval/review evidence that identifies the retained rule, rule version, and approval id in the same artifact,
 human-operator action origin, and passing saved current-version regression tests whose retained evidence identifies the test case, expected rule, and expected version in the same artifact. Activation-readiness blockers for promotion-gated rules
-remain contract-visible. Dry-run generation expands positive static
+remain contract-visible. Chart, template, posting-rule, regression-test, and promotion mutation
+requests can carry `LedgerBookId`, and `IAccountingConfigurationStore.GetAsync` accepts the same
+book scope so clients can address fund-level and ledger-book-specific rule studios without sharing
+one fund-wide workspace by accident. Dry-run generation expands positive static
 or formula-backed allocation weights into generated posting lines, preserves balance through
 residual rounding, and merges allocation target dimensions into the preview payload. Generated
 posting-rule predicates can evaluate dimensional fields and external GL dimensions through the
@@ -831,6 +848,9 @@ whose retained artifact identifies the task, sign-off role, and workflow or peri
 late-adjustment approval/rejection with request-, journal-, workflow-, or period-specific evidence
 on the same retained artifact, financial statement, investor capital
 statement, realized gain/loss, NAV, export-artifact manifest, certification, validation, and restatement vocabulary.
+Operations Continuity workflow start and workflow projection DTOs can carry an optional
+`LedgerBookId`, and close-plan DTOs preserve that book scope so close/reporting clients can remain
+ledger-book-native after workflow handoff.
 Posting-rule promotion approval, close sign-off, late-adjustment, report-package certification, and external GL export certification
 request DTOs also carry `OperationsActionOriginDto` so reviewed automation can draft support but
 cannot approve, sign off, certify, or retain governed accounting evidence without a human operator.
@@ -849,7 +869,12 @@ automation may draft journal content, but cannot submit the durable approval rec
 human operator. Manual-journal mutation requests also carry period-lock posture so save, submit,
 evidence attachment, and lifecycle mutations can be rejected once close management locks the
 accounting period; validation requests stay non-posting and return `manual-je.period-locked` as a
-critical issue.
+critical issue. Shared manual-journal validation also treats GUID-backed `PeriodId` values as
+ledger period references when a ledger store is registered, blocking approval and lifecycle
+promotion if the period is missing, closed, or scoped to a different `LedgerBookId`.
+Evidence subjects can carry optional `LedgerBookId` scope so shared accounting evidence packets can
+resolve the same ledger book as the initiating accounting surface instead of falling back to
+fund-wide activity.
 `LedgerDimensionSetDto` is the canonical dimensional accounting envelope for rules, generated
 postings, manual JE headers/lines, mapping profiles, close checks, and reporting/export filters. It
 now supports neutral operational-finance scope across organization, entity, portfolio, book,
@@ -867,6 +892,11 @@ Ledger period and cross-period trial-balance report lines carry that same dimens
 closed-period accounting reports can distinguish account balances by retained fund/entity,
 strategy, capital-account, instrument, cost-center, counterparty, and external GL context instead
 of collapsing all activity to the account alone.
+`LedgerJournalEntryDto` and `LedgerJournalEntryLineDto` expose raw period journal entries through
+the same ledger-book and line-dimension contract so browser/WPF drill-through views can inspect the
+underlying immutable postings without falling back to account-only report totals. The same payload
+shape is used for aggregate-level journal drill-through, allowing clients to scope an operational
+aggregate back to retained ledger-book postings and dimensional lines.
 `OperationalFinanceScopeDto`, `OperationalEventCommandContextDto`,
 `OperationalFinanceTraceNodeDto`, and `OperationalFinanceRecordTraceDto` provide the read-only
 trace contract for the customer-neutral proof path from operational event through evidence,
@@ -891,6 +921,8 @@ Guarded external GL export packages require certified account and dimension mapp
 they can reach `ReadyForReview`: account mappings must be present, every dimension mapping must be
 certified, both Meridian and external GL dimension sides must carry fund/entity scope, and generated
 export lines must come from mapped Meridian-owned ledger totals rather than external-only evidence.
+Reconciliation summaries carry `LedgerBookId`, and guarded export packages must use reconciliation
+evidence from the same book before review or certification can proceed.
 Certified mapping profiles must retain mapping approval, certification, sign-off, or review evidence
 that identifies the mapping profile or provider/fund scope on the same evidence artifact; split
 support and approval links leave the profile in `Draft`.

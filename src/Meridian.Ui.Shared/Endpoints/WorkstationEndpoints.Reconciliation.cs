@@ -302,6 +302,7 @@ public static partial class WorkstationEndpoints
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationBreakQueue), async (
             string? status,
             string? fundAccountId,
+            Guid? ledgerBookId,
             string? team,
             string? assignee,
             string? counterparty,
@@ -312,7 +313,7 @@ public static partial class WorkstationEndpoints
             [FromServices] IReconciliationBreakQueueRepository? repository) =>
         {
             await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
-            var items = await GetBreakQueueItemsAsync(repository, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
+            var items = await GetBreakQueueItemsAsync(repository, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             items = items
                 .Where(item => string.IsNullOrWhiteSpace(team) || string.Equals(item.Team, team, StringComparison.OrdinalIgnoreCase))
                 .Where(item => string.IsNullOrWhiteSpace(assignee) || string.Equals(item.AssignedTo, assignee, StringComparison.OrdinalIgnoreCase))
@@ -353,7 +354,8 @@ public static partial class WorkstationEndpoints
         {
             var asOf = DateTimeOffset.UtcNow;
             await EnsureBreakQueueSeededAsync(readService, reconciliationService, statementService, repository, context.RequestAborted).ConfigureAwait(false);
-            var items = await GetBreakQueueItemsAsync(repository, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
+            var ledgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
+            var items = await GetBreakQueueItemsAsync(repository, status: null, fundAccountId: null, ledgerBookId: ledgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
             var summary = BuildReconciliationCalibrationSummary(items, asOf);
             return Results.Json(summary, jsonOptions);
         })

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -160,7 +161,17 @@ public sealed class AccountingSystemIntegrationService
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
         var requestEvidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation);
-        var validationIssues = BuildExportValidationIssues(providerId, fundProfileId, mappingProfile, reconciliation, periodStart, periodEnd, request.RequireBalancedReconciliation, requestEvidenceLinks, generatedLines);
+        var validationIssues = BuildExportValidationIssues(
+            providerId,
+            fundProfileId,
+            request.LedgerBookId,
+            mappingProfile,
+            reconciliation,
+            periodStart,
+            periodEnd,
+            request.RequireBalancedReconciliation,
+            requestEvidenceLinks,
+            generatedLines);
         var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var certificationState = hasCritical
@@ -413,7 +424,8 @@ public sealed class AccountingSystemIntegrationService
             PostingEnabled: false,
             PostingDisabledReason: "Meridian is the source of all ledger truth; external GL posting/export is disabled until an approved adapter publishes Meridian-owned ledger entries.",
             rows,
-            summaryEvidenceReferences)
+            summaryEvidenceReferences,
+            latest.Summary.LedgerBookId)
         {
             EvidencePackages = BuildEvidencePackages(
                 latest,
@@ -487,6 +499,7 @@ public sealed class AccountingSystemIntegrationService
         return BuildExportValidationIssues(
             package.ProviderId,
             package.FundProfileId,
+            package.LedgerBookId,
             mappingProfile,
             reconciliation,
             package.PeriodStart,
@@ -500,6 +513,7 @@ public sealed class AccountingSystemIntegrationService
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
         string providerId,
         string fundProfileId,
+        Guid? exportLedgerBookId,
         ScopedExternalGlMappingProfile? mappingProfile,
         AccountingSystemReconciliationSummaryDto? reconciliation,
         DateOnly periodStart,
@@ -621,6 +635,16 @@ public sealed class AccountingSystemIntegrationService
         }
         else
         {
+            if (reconciliation.LedgerBookId != exportLedgerBookId)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ExternalGlReconciliationLedgerBookMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"External GL reconciliation '{reconciliation.ReconciliationId}' targets ledger book '{reconciliation.LedgerBookId?.ToString("D") ?? "unscoped"}', not export package ledger book '{exportLedgerBookId?.ToString("D") ?? "unscoped"}'.",
+                    reconciliation.ReconciliationId,
+                    "Import and reconcile external GL evidence for the same ledger book before creating or certifying the guarded export package."));
+            }
+
             if (reconciliation.PeriodStart != periodStart || reconciliation.PeriodEnd != periodEnd)
             {
                 issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -816,6 +840,7 @@ public sealed class AccountingSystemIntegrationService
             package.ExportPackageId,
             package.ProviderId,
             package.FundProfileId,
+            package.LedgerBookId?.ToString("D") ?? string.Empty,
             package.PeriodStart.ToString("yyyy-MM-dd"),
             package.PeriodEnd.ToString("yyyy-MM-dd"),
             package.MappingProfileId ?? string.Empty,
@@ -826,9 +851,62 @@ public sealed class AccountingSystemIntegrationService
             package.PostingDisabledReason,
             string.Join(",", package.GeneratedLines
                 .OrderBy(static line => line.ExportLineId, StringComparer.OrdinalIgnoreCase)
-                .Select(line => $"{line.ExportLineId}:{line.ExternalAccountId}:{line.Debit:0.00}:{line.Credit:0.00}:{line.NetAmount:0.00}")),
+                .Select(FormatGeneratedExportLineForHash)),
+            string.Join(",", package.ValidationIssues
+                .OrderBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
+                .Select(static issue => $"{issue.Code}:{issue.Severity}:{issue.TargetId}:{issue.Message}:{issue.SuggestedAction}")),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+    }
+
+    private static string FormatGeneratedExportLineForHash(ExternalGlExportLineDto line)
+        => string.Join(
+            ":",
+            line.ExportLineId,
+            line.ReconciliationRowId,
+            line.SourceStatus,
+            line.MeridianAccountCode,
+            line.ExternalAccountId,
+            line.AccountName,
+            line.Currency,
+            line.Debit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Credit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.NetAmount.ToString("0.00", CultureInfo.InvariantCulture),
+            FormatDimensionsForHash(line.MeridianDimensions),
+            FormatDimensionsForHash(line.ExternalDimensions),
+            string.Join(",", line.EvidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
+
+    private static string FormatDimensionsForHash(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return string.Empty;
+        }
+
+        var externalGl = dimensions.ExternalGlDimensions
+            .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
+        return string.Join(
+            "\u001e",
+            dimensions.FundId ?? string.Empty,
+            dimensions.EntityId ?? string.Empty,
+            dimensions.SleeveId ?? string.Empty,
+            dimensions.StrategyId ?? string.Empty,
+            dimensions.InvestorId ?? string.Empty,
+            dimensions.CapitalAccountId ?? string.Empty,
+            dimensions.InstrumentId?.ToString("D") ?? string.Empty,
+            dimensions.TaxLotId ?? string.Empty,
+            dimensions.CostCenterId ?? string.Empty,
+            dimensions.CounterpartyId ?? string.Empty,
+            string.Join("\u001d", externalGl),
+            dimensions.OrganizationId ?? string.Empty,
+            dimensions.PortfolioId ?? string.Empty,
+            dimensions.BookId ?? string.Empty,
+            dimensions.AccountId ?? string.Empty,
+            dimensions.CustomerId ?? string.Empty,
+            dimensions.VendorId ?? string.Empty,
+            dimensions.ProjectId ?? string.Empty);
     }
 
     private async Task<Dictionary<string, MeridianAccountTotal>> LoadMeridianTotalsAsync(

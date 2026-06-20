@@ -473,7 +473,8 @@ public sealed record OperationsStartWorkflowRequestDto(
     string Actor,
     string? Rationale = null,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    Guid? LedgerBookId = null);
 
 public sealed record OperationsTransitionRequestDto(
     long ExpectedVersion,
@@ -598,7 +599,8 @@ public sealed record OperationsLedgerJournalLineDto(
     string? SecurityMasterProvenance = null,
     string? LedgerMappingReference = null,
     string? SecurityMasterApprovalReference = null,
-    SecurityStatusDto? SecurityMasterStatus = null);
+    SecurityStatusDto? SecurityMasterStatus = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record OperationsJournalEntryMetadataDto(
     string? ActivityType = null,
@@ -927,7 +929,8 @@ public sealed record OperationsContinuityWorkflowDto(
     IReadOnlyList<OperationsReconciliationLaneSummaryDto>? ReconciliationLanes = null,
     OperationsDashboardSummaryDto? DashboardSummary = null,
     IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null,
-    OperationsReviewedAutomationSummaryDto? ReviewedAutomation = null)
+    OperationsReviewedAutomationSummaryDto? ReviewedAutomation = null,
+    Guid? LedgerBookId = null)
 {
     public IReadOnlyList<OperationsEvidencePackageSummaryDto> EvidencePackages { get; init; } =
         EvidencePackages ?? [];

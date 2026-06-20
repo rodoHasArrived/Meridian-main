@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `ebe2ce41ebdc`
+- Source fingerprint: `c36633371fb0`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `91`
 - Open automated tasks: `76`
@@ -191,7 +191,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as TradingHours (TradingHoursPage).
 - [ ] Capture a fixture-mode desktop screenshot for TradingHours or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +4 more.
 
 ### Portfolio
 

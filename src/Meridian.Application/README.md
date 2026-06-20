@@ -168,14 +168,18 @@ and UI presentation concerns in their owning layers.
   `Meridian.FinancialOperations.Banking`; Application composition wires the module service but does
   not own the banking workflow state. Financial Operations ledger policy/projection services now
   own accounting-basis policy lookup and ledger write metadata stamping; application commands and
-  composition consume those services. Direct-lending event projections also attach deterministic idempotency, typed source evidence, and an accounting posting command before handing loan journal impact to durable storage. Ledger posting commands also enforce line-level Security Master symbol, identity,
+  composition consume those services. Direct-lending event projections also attach deterministic idempotency, typed source evidence, ledger-book scope from the resolved posting period, and an accounting posting command before handing loan journal impact to durable storage. Ledger posting commands also enforce line-level Security Master symbol, identity,
   explicit approval reference, provenance, and ledger-mapping evidence for every instrument-bearing
   journal line before the durable journal can be appended, including securities-style account lines
   that omit symbol metadata. Candidate and line-level provenance must reference the resolved
   Security Master id carried by the journal metadata or instrument line, line status must be
   re-read from the server-side Security Master and still be active, and instrument line symbols
   must match the journal-level Security Master symbol before posting. Ledger-mapping references must also identify the same resolved symbol or Security Master
-  id instead of using a generic account mapping token.
+  id instead of using a generic account mapping token. Direct-lending journal projection now stamps
+  every generated ledger line with the resolved ledger book, borrower legal-entity/counterparty,
+  Security Master instrument, and loan account dimensions before durable storage receives the
+  posting candidate, so downstream trial balance, journal, close, and reporting filters do not have
+  to infer direct-lending scope from journal-level tags.
 - Operations Continuity workflow DTO projection also derives the shared accounting-record summary
   from server-owned workflow state. The summary covers retained source records, normalized
   activity, reconciliation history, ledger evidence, approvals, report-pack lineage, export

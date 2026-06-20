@@ -67,7 +67,8 @@ public sealed record AccountingPostingCommandDto(
     string? ApprovalId = null,
     string? OperatorRationale = null,
     IReadOnlyList<AccountingPostingEvidenceReferenceDto>? Evidence = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    Guid? LedgerBookId = null)
 {
     public IReadOnlyList<AccountingPostingEvidenceReferenceDto> Evidence { get; init; } =
         Evidence ?? [];

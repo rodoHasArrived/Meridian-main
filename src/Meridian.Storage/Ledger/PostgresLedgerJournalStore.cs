@@ -781,6 +781,12 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
 
         if (period.LedgerBookId is not { } ledgerBookId)
         {
+            if (entry.LedgerBookId.HasValue)
+            {
+                throw new LedgerValidationException(
+                    $"Journal entry '{entry.Entry.JournalEntryId}' targets ledger book '{entry.LedgerBookId.Value}' but period '{entry.PeriodId}' is not scoped to a ledger book.");
+            }
+
             if (entry.AccountingBasis != AccountingBasisKindDto.Primary)
             {
                 throw new LedgerValidationException(
@@ -788,6 +794,12 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             }
 
             return;
+        }
+
+        if (entry.LedgerBookId.HasValue && entry.LedgerBookId.Value != ledgerBookId)
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{entry.Entry.JournalEntryId}' ledger book '{entry.LedgerBookId.Value}' does not match period '{entry.PeriodId}' ledger book '{ledgerBookId}'.");
         }
 
         var book = await LoadLedgerBookAsync(connection, transaction, ledgerBookId, ct).ConfigureAwait(false)

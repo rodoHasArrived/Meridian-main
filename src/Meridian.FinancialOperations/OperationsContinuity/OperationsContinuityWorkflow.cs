@@ -13,6 +13,7 @@ public sealed class OperationsContinuityWorkflow
     public Guid WorkflowId { get; init; }
     public Guid FundAccountId { get; init; }
     public string PeriodId { get; init; } = string.Empty;
+    public Guid? LedgerBookId { get; init; }
     public Guid? SecurityMasterSnapshotId { get; init; }
     public string BrokerSource { get; init; } = "unspecified";
     public DateTimeOffset CreatedAtUtc { get; init; }
@@ -107,7 +108,8 @@ public sealed class OperationsContinuityWorkflow
         string periodId,
         Guid? securityMasterSnapshotId,
         string? brokerSource,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        Guid? ledgerBookId = null)
     {
         ArgumentOutOfRangeException.ThrowIfEqual(workflowId, Guid.Empty);
         ArgumentOutOfRangeException.ThrowIfEqual(fundAccountId, Guid.Empty);
@@ -118,6 +120,7 @@ public sealed class OperationsContinuityWorkflow
             WorkflowId = workflowId,
             FundAccountId = fundAccountId,
             PeriodId = periodId.Trim(),
+            LedgerBookId = ledgerBookId,
             SecurityMasterSnapshotId = securityMasterSnapshotId,
             BrokerSource = string.IsNullOrWhiteSpace(brokerSource) ? "unspecified" : brokerSource.Trim(),
             CreatedAtUtc = EnsureUtc(now),

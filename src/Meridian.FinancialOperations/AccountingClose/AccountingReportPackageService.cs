@@ -18,6 +18,7 @@ public interface IAccountingReportPackageService
     Task<IReadOnlyList<AccountingReportPackageBundleDto>> ListPackagesAsync(
         string? fundProfileId = null,
         string? periodId = null,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default);
 
     Task<AccountingReportPackageBundleDto?> CertifyPackageAsync(
@@ -72,6 +73,17 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var closePlan = request.CloseWorkflowId.HasValue && _closeManagementService is not null
             ? await _closeManagementService.GetPeriodPlanAsync(request.CloseWorkflowId.Value, ct).ConfigureAwait(false)
             : null;
+        var ledgerBookId = request.LedgerBookId ?? closePlan?.LedgerBookId;
+
+        if (!ledgerBookId.HasValue)
+        {
+            validationIssues.Add(new AccountingConfigurationValidationIssueDto(
+                "ReportPackageLedgerBookMissing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Accounting report package for period '{periodId}' is missing ledger-book scope.",
+                periodId,
+                "Select a ledger book or build from a close workflow that carries ledger-book scope before report certification."));
+        }
 
         if (request.CloseWorkflowId.HasValue && closePlan is null)
         {
@@ -87,6 +99,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         {
             validationIssues.AddRange(closePlan.ValidationIssues);
             validationIssues.AddRange(BuildCloseCertificationIssues(closePlan));
+            validationIssues.AddRange(BuildCloseLedgerBookConsistencyIssues(
+                closePlan,
+                ledgerBookId,
+                $"report package for period '{periodId}'"));
             if (!closePlan.IsPeriodLocked)
             {
                 validationIssues.Add(new AccountingConfigurationValidationIssueDto(
@@ -113,10 +129,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var state = hasCritical ? AccountingCertificationStateDto.Draft : AccountingCertificationStateDto.ReadyForReview;
-        var packageId = $"accounting-report-package-{Sanitize(fundProfileId)}-{Sanitize(periodId)}";
+        var packageId = BuildPackageId(fundProfileId, periodId, ledgerBookId);
         ThrowIfCertifiedPackageWouldBeReplaced(packageId, ReadPackages());
         var certification = new ReportCertificationDto(
-            $"report-certification-{Sanitize(fundProfileId)}-{Sanitize(periodId)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+            $"report-certification-{Sanitize(packageId)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
             state,
             actor,
             DateTimeOffset.UtcNow,
@@ -126,12 +142,20 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             evidenceLinks);
         var restatement = BuildRestatement(request, actor, evidenceLinks);
         var endingCapital = request.BeginningCapital + request.Contributions - request.Distributions + request.RealizedGainLoss;
-        var lineProvenance = BuildReportLineProvenance(request, fundProfileId, periodId, currency, endingCapital, restatement, evidenceLinks);
+        var lineProvenance = BuildReportLineProvenance(
+            request,
+            fundProfileId,
+            periodId,
+            currency,
+            endingCapital,
+            ledgerBookId,
+            restatement,
+            evidenceLinks);
 
         var financialStatements = new FinancialStatementPackageDto(
             packageId,
             fundProfileId,
-            request.LedgerBookId,
+            ledgerBookId,
             periodId,
             state,
             ["balance-sheet", "income-statement", "trial-balance", "statement-of-changes-in-capital"],
@@ -156,9 +180,13 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var realizedGainLoss = new RealizedGainLossReportDto(
             $"realized-gain-loss-{Sanitize(fundProfileId)}-{Sanitize(periodId)}",
             fundProfileId,
-            request.LedgerBookId,
+            ledgerBookId,
             periodId,
-            new LedgerDimensionSetDto(FundId: fundProfileId, InvestorId: request.InvestorId, CapitalAccountId: request.CapitalAccountId),
+            new LedgerDimensionSetDto(
+                FundId: fundProfileId,
+                InvestorId: request.InvestorId,
+                CapitalAccountId: request.CapitalAccountId,
+                BookId: ledgerBookId?.ToString("D")),
             request.RealizedGainLoss,
             currency,
             state,
@@ -166,7 +194,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var navPackage = new NavPackageDto(
             $"nav-package-{Sanitize(fundProfileId)}-{Sanitize(periodId)}",
             fundProfileId,
-            request.LedgerBookId,
+            ledgerBookId,
             periodId,
             request.Nav,
             currency,
@@ -200,6 +228,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
     public Task<IReadOnlyList<AccountingReportPackageBundleDto>> ListPackagesAsync(
         string? fundProfileId = null,
         string? periodId = null,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
@@ -208,6 +237,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var rows = ReadPackages()
             .Where(package => normalizedFundProfileId is null || string.Equals(package.FinancialStatements.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(package => normalizedPeriodId is null || string.Equals(package.FinancialStatements.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => !ledgerBookId.HasValue || package.FinancialStatements.LedgerBookId == ledgerBookId.Value)
             .OrderByDescending(static package => package.Certification.RecordedAtUtc)
             .ToArray();
 
@@ -462,6 +492,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         }
 
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        issues.AddRange(BuildCloseLedgerBookConsistencyIssues(
+            closePlan,
+            package.FinancialStatements.LedgerBookId,
+            $"retained report package '{package.FinancialStatements.PackageId}'"));
         issues.AddRange(closePlan.ValidationIssues);
         issues.AddRange(BuildCloseCertificationIssues(closePlan));
         if (!closePlan.IsPeriodLocked)
@@ -475,6 +509,45 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         }
 
         return issues;
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildCloseLedgerBookConsistencyIssues(
+        ClosePeriodPlanDto closePlan,
+        Guid? packageLedgerBookId,
+        string packageLabel)
+    {
+        if (!closePlan.LedgerBookId.HasValue)
+        {
+            return [];
+        }
+
+        if (!packageLedgerBookId.HasValue)
+        {
+            return
+            [
+                new AccountingConfigurationValidationIssueDto(
+                    "ReportPackageLedgerBookMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Close-backed {packageLabel} does not carry the close plan ledger book '{closePlan.LedgerBookId.Value:D}'.",
+                    closePlan.ClosePlanId,
+                    "Rebuild the report package with the close plan ledger book before certification.")
+            ];
+        }
+
+        if (packageLedgerBookId.Value == closePlan.LedgerBookId.Value)
+        {
+            return [];
+        }
+
+        return
+        [
+            new AccountingConfigurationValidationIssueDto(
+                "ReportPackageLedgerBookMismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Close-backed {packageLabel} targets ledger book '{packageLedgerBookId.Value:D}', but close plan '{closePlan.ClosePlanId}' targets ledger book '{closePlan.LedgerBookId.Value:D}'.",
+                closePlan.ClosePlanId,
+                "Use the same ledger book for close workflow, report package assembly, certification, and export.")
+        ];
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildRestatementCertificationIssues(
@@ -552,6 +625,14 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         return issues;
     }
+
+    private static string BuildPackageId(
+        string fundProfileId,
+        string periodId,
+        Guid? ledgerBookId)
+        => ledgerBookId.HasValue
+            ? $"accounting-report-package-{Sanitize(fundProfileId)}-{Sanitize(periodId)}-book-{ledgerBookId.Value:N}"
+            : $"accounting-report-package-{Sanitize(fundProfileId)}-{Sanitize(periodId)}";
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportCertificationEvidenceIssues(
         string periodId,
@@ -941,13 +1022,15 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         string periodId,
         string currency,
         decimal endingCapital,
+        Guid? ledgerBookId,
         RestatementWorkflowDto? restatement,
         IReadOnlyList<string> evidenceLinks)
     {
         var dimensions = new LedgerDimensionSetDto(
             FundId: fundProfileId,
             InvestorId: string.IsNullOrWhiteSpace(request.InvestorId) ? null : request.InvestorId.Trim(),
-            CapitalAccountId: string.IsNullOrWhiteSpace(request.CapitalAccountId) ? null : request.CapitalAccountId.Trim());
+            CapitalAccountId: string.IsNullOrWhiteSpace(request.CapitalAccountId) ? null : request.CapitalAccountId.Trim(),
+            BookId: ledgerBookId?.ToString("D"));
         var ledgerEvidence = EvidenceMatching(evidenceLinks, "ledger", "trial-balance");
         var reconciliationEvidence = EvidenceMatching(evidenceLinks, "reconciliation", "tie-out");
         var renderedReportEvidence = EvidenceMatching(evidenceLinks, "report-render", "rendered-report", "report-package");

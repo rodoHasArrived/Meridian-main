@@ -229,7 +229,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             request.PeriodId,
             request.SecurityMasterSnapshotId,
             request.BrokerSource,
-            now);
+            now,
+            request.LedgerBookId);
 
         var evidence = NormalizeEvidence(request.EvidenceLinks);
         var auditDraft = new OperationsWorkflowAuditDraft(
@@ -1214,7 +1215,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             workflow.ReconciliationLanes,
             dashboardSummary,
             evidencePackages,
-            reviewedAutomation);
+            reviewedAutomation,
+            workflow.LedgerBookId);
     }
 
     private static OperationsReviewedAutomationSummaryDto BuildReviewedAutomationSummary(
@@ -3169,7 +3171,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                             NormalizeOptional(line.FinancialAccountId)),
                         line.Debit,
                         line.Credit,
-                        description);
+                        description,
+                        ToLedgerLineDimensions(line.Dimensions));
                 })
                 .ToArray();
 
@@ -3194,7 +3197,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 candidate.SourceEventId,
                 candidate.SourceJournalEntryId,
                 candidate.PostingKind,
-                candidate.AdjustmentApproval);
+                candidate.AdjustmentApproval,
+                LedgerBookId: workflow.LedgerBookId);
             blockers = [];
             return true;
         }
@@ -3572,6 +3576,76 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             CounterpartyAccountId: NormalizeOptional(metadata.CounterpartyAccountId),
             Institution: NormalizeOptional(metadata.Institution),
             Tags: tags.Count == 0 ? null : tags);
+    }
+
+    private static LedgerLineDimensionSet? ToLedgerLineDimensions(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return null;
+        }
+
+        var result = new LedgerLineDimensionSet(
+            FundId: NormalizeOptional(dimensions.FundId),
+            EntityId: NormalizeOptional(dimensions.EntityId),
+            SleeveId: NormalizeOptional(dimensions.SleeveId),
+            StrategyId: NormalizeOptional(dimensions.StrategyId),
+            InvestorId: NormalizeOptional(dimensions.InvestorId),
+            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
+            InstrumentId: dimensions.InstrumentId,
+            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
+            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
+            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
+            ExternalGlDimensions: NormalizeExternalGlDimensions(dimensions.ExternalGlDimensions),
+            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
+            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
+            BookId: NormalizeOptional(dimensions.BookId),
+            AccountId: NormalizeOptional(dimensions.AccountId),
+            CustomerId: NormalizeOptional(dimensions.CustomerId),
+            VendorId: NormalizeOptional(dimensions.VendorId),
+            ProjectId: NormalizeOptional(dimensions.ProjectId));
+
+        return HasLedgerLineDimension(result) ? result : null;
+    }
+
+    private static bool HasLedgerLineDimension(LedgerLineDimensionSet dimensions)
+        => !string.IsNullOrWhiteSpace(dimensions.FundId)
+           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
+           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
+           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
+           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
+           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
+           || dimensions.InstrumentId.HasValue
+           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
+           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
+           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
+           || dimensions.ExternalGlDimensions.Count > 0
+           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
+           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
+           || !string.IsNullOrWhiteSpace(dimensions.BookId)
+           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
+           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
+           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
+           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
+
+    private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(
+        IReadOnlyDictionary<string, string>? dimensions)
+    {
+        if (dimensions is null || dimensions.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var normalized = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in dimensions)
+        {
+            if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
+            {
+                normalized[key.Trim()] = value.Trim();
+            }
+        }
+
+        return normalized;
     }
 
     private static string? BuildSecurityMasterLineageTag(

@@ -75,6 +75,9 @@ lists active or revoked assignments, grants principal authority with role, optio
 permission names, effective dates, approval-limit metadata, segregation-of-duties rule text,
 rationale, and correlation metadata, and revokes assignments with the current assignment version so
 optimistic-concurrency and audit evidence remain server-owned.
+Settings also exposes the Admin Ops task console over shared maintenance, storage, retention,
+cleanup, schedule, and data-package endpoints. React renders returned posture, command results, and
+typed package/schedule evidence without inventing local maintenance policy or retention decisions.
 The browser route catalog, endpoint helpers, DTO mirrors, and API client also expose the shared
 v0.19 provider-integration runtime for template catalog/detail, OpenAPI import, setup-save,
 activation-readiness, dry-runs, activation, monitor, sync-run history, sync planning, due-sync
@@ -154,14 +157,21 @@ route catalog, covering setup, journal entries, ledger review, reconciliation, e
 Security Master readiness, approvals, and retained evidence packaging without browser-local close
 state.
 The Accounting Configure workstream at `/accounting/configure` renders the shared Accounting Rules
-Studio from `PostingRuleDto`, `RuleDryRunResultDto`, and rule-test suite DTOs: effective dates,
+Studio from `AccountingRulesStudioDto`, `PostingRuleDto`, `RuleDryRunResultDto`, and rule-test suite
+DTOs: server-computed rule counts, promotion queues, activation readiness, effective dates,
 priority, dimensional scope, event predicates, grouped `All`/`Any` predicates, formulas, allocations, generated posting metadata,
 retained versions, promotion approvals, dry-run preview results, saved regression cases, and
 regression test-case results are browser projections over the shared configuration service rather
 than client-local rule logic. Operators can duplicate the selected posting rule into a
 promotion-gated draft through the shared posting-rule upsert endpoint; the browser clears carried
 approval state, retains browser evidence links, selects the returned draft rule, and lets service
-validation/audit own the canonical workspace state. Operators can apply the selected dry-run source
+validation/audit own the canonical workspace state. Rule mutation, promotion approval, and
+regression-test actions carry the active `ledgerBookId` so book-scoped configuration changes do not
+fall back to fund-level rules while the operator is working inside a selected ledger book. Operators
+also see setup-readiness rows from shared validation; a missing registered ledger book is surfaced
+as the critical `configuration.ledger-book-missing` activation blocker instead of being hidden in
+the generic validation list. Operators
+can apply the selected dry-run source
 event as a required predicate through the same shared upsert route, replacing stale event-kind
 predicates, clearing stale promotion approval, and requiring fresh promotion before activation.
 Operators can apply the selected dry-run amount as a required amount-threshold predicate through the

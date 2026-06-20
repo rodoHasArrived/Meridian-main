@@ -187,6 +187,15 @@
                         <StackPanel Grid.Column="0">
                             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
+                                    <TextBlock Text="Setup Readiness" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding SetupReadinessRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="AccountingConfigurationSetupReadinessGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Check" Binding="{Binding Name}" Width="170" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150" />
+                                            <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="240" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Validation" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding ValidationRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingConfigurationValidationGrid">
                                         <DataGrid.Columns>
@@ -242,6 +251,86 @@
                                             <DataGridTextColumn Header="Actor" Binding="{Binding Status}" Width="110" />
                                             <DataGridTextColumn Header="Time" Binding="{Binding Detail}" Width="160" />
                                             <DataGridTextColumn Header="Correlation" Binding="{Binding Evidence}" Width="*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Rules Studio" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding RulesStudioStatusText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding RulesStudioDetailText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,4,0,0"
+                                               TextWrapping="Wrap" />
+                                    <WrapPanel Margin="0,10,0,0">
+                                        <Button AutomationProperties.AutomationId="AccountingRulesStudioRunTestsButton"
+                                                Command="{Binding ExecuteRulesStudioTestsCommand}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                ToolTip="{Binding RulesStudioActionText}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Margin="0,0,8,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{StaticResource IconCheckmark}"
+                                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                           FontSize="14"
+                                                           VerticalAlignment="Center" />
+                                                <TextBlock Text="Run tests" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button AutomationProperties.AutomationId="AccountingRulesStudioApprovePromotionButton"
+                                                Command="{Binding ApproveRulesStudioPromotionCommand}"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                ToolTip="{Binding RulesStudioActionText}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Margin="0,0,8,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{StaticResource IconCheckmark}"
+                                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                           FontSize="14"
+                                                           VerticalAlignment="Center" />
+                                                <TextBlock Text="Approve promotion" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
+                                    </WrapPanel>
+                                    <TextBlock Text="{Binding RulesStudioActionText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,2,0,0"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingRulesStudioActionText" />
+                                    <DataGrid ItemsSource="{Binding RulesStudioRuleRows}"
+                                              Style="{StaticResource ConfigureGridStyle}"
+                                              Margin="0,12,0,12"
+                                              AutomationProperties.AutomationId="AccountingRulesStudioRuleGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Rule" Binding="{Binding Name}" Width="170" />
+                                            <DataGridTextColumn Header="Readiness" Binding="{Binding Status}" Width="130" />
+                                            <DataGridTextColumn Header="Version / Scope" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Logic / Tests" Binding="{Binding Evidence}" Width="260" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <DataGrid ItemsSource="{Binding RulesStudioPromotionRows}"
+                                              Style="{StaticResource ConfigureGridStyle}"
+                                              AutomationProperties.AutomationId="AccountingRulesStudioPromotionGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Rule" Binding="{Binding Name}" Width="170" />
+                                            <DataGridTextColumn Header="Approval" Binding="{Binding Status}" Width="120" />
+                                            <DataGridTextColumn Header="Request" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Tests / Action" Binding="{Binding Evidence}" Width="260" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <DataGrid ItemsSource="{Binding RulesStudioActionRows}"
+                                              Style="{StaticResource ConfigureGridStyle}"
+                                              Margin="0,12,0,0"
+                                              AutomationProperties.AutomationId="AccountingRulesStudioActionGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Action" Binding="{Binding Name}" Width="170" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                                            <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Evidence / Issue" Binding="{Binding Evidence}" Width="260" />
                                         </DataGrid.Columns>
                                     </DataGrid>
                                 </StackPanel>

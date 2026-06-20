@@ -40,10 +40,14 @@ public sealed record AccountingJournalDraftRequest(
     string? RuleId = null,
     AccountingTreatmentKindDto? TreatmentKind = null,
     string? SourceEventType = null,
+    Guid? LedgerBookId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
     TreasuryLedgerContextDto? TreasuryContext = null,
-    IReadOnlyList<string>? EvidenceLinks = null);
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? PostingRuleId = null,
+    string? PostingRuleVersion = null,
+    string? DryRunCorrelationId = null);
 
 public sealed record AccountingJournalDraftResult(
     AccountingPolicyDto Policy,
@@ -197,6 +201,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                         rule.RuleVersion,
                         request.PostingKind,
                         request.AdjustmentApproval,
+                        request.LedgerBookId,
                         BuildPostingCommand(request, rule, draftEntry, treasuryContext, evidenceLinks, effectiveDate)),
                     ct)
                 .ConfigureAwait(false);
@@ -388,6 +393,13 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             tags["sourceEventType"] = request.SourceEventType.Trim();
         }
 
+        AddTag(tags, "sourceEventId", request.SourceEventId?.ToString("D"));
+        AddTag(tags, "sourceJournalEntryId", request.SourceJournalEntryId?.ToString("D"));
+        AddTag(tags, "ledgerBookId", request.LedgerBookId?.ToString("D"));
+        AddTag(tags, "postingRuleId", request.PostingRuleId);
+        AddTag(tags, "postingRuleVersion", request.PostingRuleVersion);
+        AddTag(tags, "dryRunCorrelationId", request.DryRunCorrelationId);
+
         for (var index = 0; index < request.Lines.Count && index < lines.Count; index++)
         {
             AppendLineDimensionTags(tags, lines[index].EntryId, request.Lines[index].Dimensions);
@@ -396,8 +408,8 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         return new JournalEntryMetadata(
             ActivityType: NormalizeOptional(request.SourceEventType) ?? "ManualJournalEntry",
             ProjectId: NormalizeOptional(request.FundProfileId),
-            LedgerView: null,
             EffectiveDate: treasuryContext?.EffectiveDate ?? request.EffectiveDate,
+            LedgerBook: request.LedgerBookId?.ToString("D"),
             IdempotencyKey: NormalizeOptional(treasuryContext?.IdempotencyKey),
             FundEventId: NormalizeOptional(treasuryContext?.FundEventId),
             FundEventType: NormalizeOptional(treasuryContext?.FundEventType),
@@ -550,7 +562,8 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 Kind: AccountingPostingEvidenceKindDto.Source,
                 SourceSystem: "FinancialOperations",
                 RetainedAtUtc: request.AccountingTimestamp,
-                RetainedBy: "financial-operations")).ToArray());
+                RetainedBy: "financial-operations")).ToArray(),
+            LedgerBookId: request.LedgerBookId);
     }
 
     private static Guid CreateDeterministicCommandId(

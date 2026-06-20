@@ -29,6 +29,7 @@
 - `ai-audit-code`
 - `ai-audit-docs`
 - `ai-audit-tests`
+- `ai-codex-memory-check`
 - `ai-codex-skills-check`
 - `ai-docs-archive`
 - `ai-docs-archive-execute`
@@ -45,7 +46,6 @@
 - `analyze-errors`
 - `app-metrics`
 - `bench-filter`
-- `bench-quick`
 
 ### Scripts
 - `build/scripts/ai-architecture-check.py`
@@ -72,4 +72,4 @@
 - `build/scripts/docs/check-ai-inventory.py`
 - `build/scripts/docs/check-ai-navigation-freshness.py`
 - `build/scripts/docs/check-ai-routing-parity.py`
-- `build/scripts/docs/check-codex-skills.py`
+- `build/scripts/docs/check-codex-memory.py`

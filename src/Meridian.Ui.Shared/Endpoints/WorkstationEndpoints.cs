@@ -1693,14 +1693,14 @@ public static partial class WorkstationEndpoints
         .Produces(501);
 
 
-        group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, HttpContext context) =>
+        group.MapGet("/reconciliation/break-queue", async (string? status, string? fundAccountId, Guid? ledgerBookId, HttpContext context) =>
         {
             if (!CanViewReconciliationBreakQueue(context))
             {
                 return EndpointHelpers.Forbidden();
             }
 
-            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, context.RequestAborted).ConfigureAwait(false);
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(items, jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue")
@@ -1724,7 +1724,8 @@ public static partial class WorkstationEndpoints
         group.MapGet("/reconciliation/calibration-summary", async (HttpContext context) =>
         {
             var asOf = DateTimeOffset.UtcNow;
-            var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
+            var ledgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
+            var items = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, ledgerBookId: ledgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
             var summary = BuildReconciliationCalibrationSummary(items, asOf);
             return Results.Json(summary, jsonOptions);
         })
@@ -2119,7 +2120,22 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/runs/{runId}/ledger/trial-balance", async (string runId, string? accountType, HttpContext context) =>
+        group.MapGet("/runs/{runId}/ledger/trial-balance", async (
+            string runId,
+            string? accountType,
+            string? fundId,
+            string? entityId,
+            string? sleeveId,
+            string? strategyId,
+            string? portfolioId,
+            string? accountId,
+            string? investorId,
+            string? capitalAccountId,
+            Guid? instrumentId,
+            string? taxLotId,
+            string? costCenterId,
+            string? counterpartyId,
+            HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2138,6 +2154,24 @@ public static partial class WorkstationEndpoints
                 : summary.TrialBalance
                     .Where(l => string.Equals(l.AccountType, accountType, StringComparison.OrdinalIgnoreCase))
                     .ToArray();
+            var externalGlDimensions = BuildExternalGlDimensionFilter(context.Request.Query);
+            lines = lines
+                .Where(line => MatchesLedgerDimensionFilter(
+                    line.Dimensions,
+                    fundId,
+                    entityId,
+                    sleeveId,
+                    strategyId,
+                    portfolioId,
+                    accountId,
+                    investorId,
+                    capitalAccountId,
+                    instrumentId,
+                    taxLotId,
+                    costCenterId,
+                    counterpartyId,
+                    externalGlDimensions))
+                .ToArray();
             return Results.Json(lines, jsonOptions);
         })
         .WithName("GetRunLedgerTrialBalance")
@@ -2148,6 +2182,18 @@ public static partial class WorkstationEndpoints
             string runId,
             DateTimeOffset? from,
             DateTimeOffset? to,
+            string? fundId,
+            string? entityId,
+            string? sleeveId,
+            string? strategyId,
+            string? portfolioId,
+            string? accountId,
+            string? investorId,
+            string? capitalAccountId,
+            Guid? instrumentId,
+            string? taxLotId,
+            string? costCenterId,
+            string? counterpartyId,
             HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -2172,6 +2218,23 @@ public static partial class WorkstationEndpoints
             {
                 entries = entries.Where(e => e.Timestamp <= to.Value);
             }
+
+            var externalGlDimensions = BuildExternalGlDimensionFilter(context.Request.Query);
+            entries = entries.Where(entry => MatchesLedgerDimensionFilter(
+                entry.Dimensions,
+                fundId,
+                entityId,
+                sleeveId,
+                strategyId,
+                portfolioId,
+                accountId,
+                investorId,
+                capitalAccountId,
+                instrumentId,
+                taxLotId,
+                costCenterId,
+                counterpartyId,
+                externalGlDimensions));
 
             return Results.Json(entries.ToArray(), jsonOptions);
         })
@@ -3612,7 +3675,8 @@ public static partial class WorkstationEndpoints
                 context.RequestServices,
                 status: null,
                 fundAccountId: null,
-                context.RequestAborted).ConfigureAwait(false);
+                ledgerBookId: null,
+                ct: context.RequestAborted).ConfigureAwait(false);
             workItems.AddRange(reconciliationBreaks
                 .Where(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
                 .Select(MapReconciliationBreakWorkItem));
@@ -3977,6 +4041,95 @@ public static partial class WorkstationEndpoints
             Exports: [],
             UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static bool MatchesLedgerDimensionFilter(
+        LedgerDimensionSetDto? dimensions,
+        string? fundId,
+        string? entityId,
+        string? sleeveId,
+        string? strategyId,
+        string? portfolioId,
+        string? accountId,
+        string? investorId,
+        string? capitalAccountId,
+        Guid? instrumentId,
+        string? taxLotId,
+        string? costCenterId,
+        string? counterpartyId,
+        IReadOnlyDictionary<string, string>? externalGlDimensions = null)
+        => MatchesDimensionValue(fundId, dimensions?.FundId)
+           && MatchesDimensionValue(entityId, dimensions?.EntityId)
+           && MatchesDimensionValue(sleeveId, dimensions?.SleeveId)
+           && MatchesDimensionValue(strategyId, dimensions?.StrategyId)
+           && MatchesDimensionValue(portfolioId, dimensions?.PortfolioId)
+           && MatchesDimensionValue(accountId, dimensions?.AccountId)
+           && MatchesDimensionValue(investorId, dimensions?.InvestorId)
+           && MatchesDimensionValue(capitalAccountId, dimensions?.CapitalAccountId)
+           && MatchesDimensionValue(instrumentId?.ToString("D"), dimensions?.InstrumentId?.ToString("D"))
+           && MatchesDimensionValue(taxLotId, dimensions?.TaxLotId)
+           && MatchesDimensionValue(costCenterId, dimensions?.CostCenterId)
+           && MatchesDimensionValue(counterpartyId, dimensions?.CounterpartyId)
+           && MatchesExternalGlDimensions(externalGlDimensions, dimensions?.ExternalGlDimensions);
+
+    private static bool MatchesDimensionValue(string? requested, string? actual)
+        => string.IsNullOrWhiteSpace(requested) ||
+           string.Equals(actual, requested.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static string? NormalizeOptionalDimensionValue(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static IReadOnlyDictionary<string, string> BuildExternalGlDimensionFilter(IQueryCollection query)
+    {
+        var dimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, values) in query)
+        {
+            const string prefix = "externalGl.";
+            if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                key.Length > prefix.Length)
+            {
+                var value = values.FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    dimensions[key[prefix.Length..].Trim()] = value.Trim();
+                }
+            }
+        }
+
+        var externalGlDimensionKey = NormalizeOptionalDimensionValue(query["externalGlDimensionKey"].FirstOrDefault());
+        var externalGlDimensionValue = NormalizeOptionalDimensionValue(query["externalGlDimensionValue"].FirstOrDefault());
+        if (externalGlDimensionKey is not null && externalGlDimensionValue is not null)
+        {
+            dimensions[externalGlDimensionKey] = externalGlDimensionValue;
+        }
+
+        return dimensions;
+    }
+
+    private static bool MatchesExternalGlDimensions(
+        IReadOnlyDictionary<string, string>? requested,
+        IReadOnlyDictionary<string, string>? actual)
+    {
+        if (requested is null || requested.Count == 0)
+        {
+            return true;
+        }
+
+        if (actual is null || actual.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var (key, expectedValue) in requested)
+        {
+            if (!actual.TryGetValue(key, out var actualValue) ||
+                !string.Equals(actualValue, expectedValue, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static WorkstationDataPayload BuildDataFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
@@ -4829,10 +4982,11 @@ public static partial class WorkstationEndpoints
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
+        var requestedLedgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
         var manualJournalWorkbench = await BuildManualJournalWorkbenchPayloadAsync(context).ConfigureAwait(false);
         if (readService is null)
         {
-            return BuildAccountingFallbackPayload(kernelObservability, manualJournalWorkbench);
+            return BuildAccountingFallbackPayload(kernelObservability, manualJournalWorkbench, requestedLedgerBookId);
         }
 
         var allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
@@ -4877,14 +5031,17 @@ public static partial class WorkstationEndpoints
             (detail?.Portfolio?.SecurityMissingCount ?? 0) > 0 ||
             (detail?.Ledger?.SecurityMissingCount ?? 0) > 0);
         var auditReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.AuditReference)) - runsWithBreaks;
-        var breakQueueItems = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
+        var breakQueueItems = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, ledgerBookId: requestedLedgerBookId, ct: context.RequestAborted).ConfigureAwait(false);
         var reportingPayload = BuildReportingPayload(context);
+        var scopedOpenBreaks = requestedLedgerBookId.HasValue
+            ? breakQueueItems.Count(static item => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview)
+            : openBreaks;
 
         // PR-03: return typed DTO
         return new WorkstationAccountingPayload(
             Metrics:
             [
-                new WorkstationMetricCard("open-breaks", "Open Breaks", openBreaks.ToString(CultureInfo.InvariantCulture), "0%", openBreaks == 0 ? "success" : "warning"),
+                new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning"),
                 new WorkstationMetricCard("timing-drift", "Timing Drift", timingDriftRuns.ToString(CultureInfo.InvariantCulture), "0%", timingDriftRuns == 0 ? "default" : "warning"),
                 new WorkstationMetricCard("security-gaps", "Security Gaps", runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), "0%", runsWithSecurityIssues == 0 ? "success" : "warning"),
                 new WorkstationMetricCard("audit-ready", "Audit Ready", Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), "0%", auditReadyRuns > 0 ? "success" : "default"),
@@ -4894,14 +5051,14 @@ public static partial class WorkstationEndpoints
                 .Zip(details, static (run, detail) => (run, detail))
                 .Zip(reconciliations, (pair, reconciliation) => (object)BuildAccountingRunCard(pair.run, pair.detail, reconciliation, kernelObservability))
                 .ToArray(),
-            BreakQueue: (await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false))
+            BreakQueue: breakQueueItems
                 .Cast<object>()
                 .ToArray(),
             Workspace: new WorkstationAccountingWorkspaceSummary(
                 TotalRuns: allRuns.Length,
                 ReconciledRuns: reconciliations.Count(static detail => detail is not null),
                 LedgerReadyRuns: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
-                OpenBreaks: openBreaks,
+                OpenBreaks: scopedOpenBreaks,
                 SecurityIssues: runsWithSecurityIssues),
             CashFlow: BuildAccountingWorkspaceCashFlowSummary(details),
             Reporting: reportingPayload,
@@ -4920,9 +5077,7 @@ public static partial class WorkstationEndpoints
 
         var query = context.Request.Query;
         var fundProfileId = query["fundProfileId"].FirstOrDefault();
-        var ledgerBookId = Guid.TryParse(query["ledgerBookId"].FirstOrDefault(), out var parsedLedgerBookId)
-            ? parsedLedgerBookId
-            : (Guid?)null;
+        var ledgerBookId = ParseOptionalGuid(query["ledgerBookId"].FirstOrDefault());
 
         return await service
             .GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted)
@@ -4932,8 +5087,31 @@ public static partial class WorkstationEndpoints
     // PR-03: returns typed DTO
     private static WorkstationAccountingPayload BuildAccountingFallbackPayload(
         KernelObservabilitySnapshot? kernelObservability = null,
-        ManualJournalEntryWorkbenchDto? manualJournalWorkbench = null)
+        ManualJournalEntryWorkbenchDto? manualJournalWorkbench = null,
+        Guid? requestedLedgerBookId = null)
     {
+        if (requestedLedgerBookId.HasValue)
+        {
+            var scopedReporting = BuildReportingPayload();
+            return new WorkstationAccountingPayload(
+                Metrics:
+                [
+                    new WorkstationMetricCard("open-breaks", "Open Breaks", "0", "0%", "success"),
+                    new WorkstationMetricCard("timing-drift", "Timing Drift", "0", "0%", "default"),
+                    new WorkstationMetricCard("security-gaps", "Security Gaps", "0", "0%", "success"),
+                    new WorkstationMetricCard("audit-ready", "Audit Ready", "0", "0%", "default"),
+                    new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
+                ],
+                ReconciliationQueue: Array.Empty<object>(),
+                BreakQueue: Array.Empty<object>(),
+                Workspace: new WorkstationAccountingWorkspaceSummary(0, 0, 0, 0, 0),
+                CashFlow: BuildAccountingWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
+                Reporting: scopedReporting,
+                ControlCenter: BuildAccountingControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), scopedReporting),
+                KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
+                ManualJournalWorkbench: manualJournalWorkbench);
+        }
+
         var metricsCards = new WorkstationMetricCard[]
         {
             new("open-breaks", "Open Breaks", "4", "0%", "warning"),
@@ -6660,7 +6838,8 @@ public static partial class WorkstationEndpoints
                         SourceSystem: "provider-ledger-reconciliation",
                         SourceReference: reconciliationBreak.CheckId,
                         SourceBreakId: reconciliationBreak.CheckId,
-                        SourceFingerprint: ComputeReconciliationSourceFingerprint("provider-ledger", run.RunId, reconciliationBreak.CheckId, reconciliationBreak.Category.ToString(), reconciliationBreak.Reason, reconciliationBreak.Variance.ToString(CultureInfo.InvariantCulture))),
+                        SourceFingerprint: ComputeReconciliationSourceFingerprint("provider-ledger", run.RunId, reconciliationBreak.CheckId, reconciliationBreak.Category.ToString(), reconciliationBreak.Reason, reconciliationBreak.Variance.ToString(CultureInfo.InvariantCulture)),
+                        LedgerBookId: null),
                     ct).ConfigureAwait(false);
             }
         }
@@ -6716,7 +6895,8 @@ public static partial class WorkstationEndpoints
             SourceBreakId: statementBreak.BreakId,
             SourceFingerprint: fingerprint,
             EvidenceLinks: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? null : [statementBreak.EvidenceLink],
-            EvidenceCount: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? 0 : 1);
+            EvidenceCount: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? 0 : 1,
+            LedgerBookId: null);
     }
 
     private static bool IsOpenStatementBreak(string? status)
@@ -6936,16 +7116,18 @@ public static partial class WorkstationEndpoints
         IServiceProvider services,
         string? status,
         string? fundAccountId,
+        Guid? ledgerBookId,
         CancellationToken ct)
     {
         var repository = services.GetService<IReconciliationBreakQueueRepository>();
-        return await GetBreakQueueItemsAsync(repository, status, fundAccountId, ct).ConfigureAwait(false);
+        return await GetBreakQueueItemsAsync(repository, status, fundAccountId, ledgerBookId, ct).ConfigureAwait(false);
     }
 
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetBreakQueueItemsAsync(
         IReconciliationBreakQueueRepository? repository,
         string? status,
         string? fundAccountId,
+        Guid? ledgerBookId,
         CancellationToken ct)
     {
         if (repository is null)
@@ -6960,13 +7142,15 @@ public static partial class WorkstationEndpoints
         }
 
         var items = await repository.GetAllAsync(parsed, ct).ConfigureAwait(false);
-        if (string.IsNullOrWhiteSpace(fundAccountId))
-        {
-            return items;
-        }
-
-        return items.Where(item => string.Equals(item.FundAccountId, fundAccountId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        return items
+            .Where(item => string.IsNullOrWhiteSpace(fundAccountId) ||
+                           string.Equals(item.FundAccountId, fundAccountId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId.Value)
+            .ToArray();
     }
+
+    private static Guid? ParseOptionalGuid(string? value)
+        => Guid.TryParse(value, out var parsed) ? parsed : null;
 
     private static ReconciliationCalibrationSummaryDto BuildReconciliationCalibrationSummary(
         IReadOnlyList<ReconciliationBreakQueueItem> items,

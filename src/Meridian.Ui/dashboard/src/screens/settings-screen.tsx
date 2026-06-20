@@ -5747,11 +5747,15 @@ function ProviderIntegrationWorkbenchPanel({
   const saveSetupDraft = async () => {
     const manifestDraft = parseProviderIntegrationWorkbenchJson<ProviderIntegrationManifest>(state.draftManifestJson, "Manifest draft JSON");
     const connectionDraft = parseProviderIntegrationWorkbenchJson<ProviderIntegrationConnection>(state.draftConnectionJson, "Connection draft JSON");
-    if (!manifestDraft.ok || !connectionDraft.ok) {
+    if (manifestDraft.ok === false || connectionDraft.ok === false) {
+      const details = [
+        manifestDraft.ok === false ? manifestDraft.error : null,
+        connectionDraft.ok === false ? connectionDraft.error : null
+      ].filter((detail): detail is string => Boolean(detail));
       setState((current) => ({
         ...current,
         message: "Provider integration setup draft is not valid JSON.",
-        details: [manifestDraft.error, connectionDraft.error].filter((detail): detail is string => Boolean(detail)),
+        details,
         tone: "warning"
       }));
       return;
@@ -5849,11 +5853,15 @@ function ProviderIntegrationWorkbenchPanel({
   const runRestDryRun = async () => {
     const pathParameters = parseProviderIntegrationStringRecord(state.restPathParametersJson, "REST path parameters JSON");
     const queryParameters = parseProviderIntegrationStringRecord(state.restQueryParametersJson, "REST query parameters JSON");
-    if (!manifestId || !state.endpointKey.trim() || !pathParameters.ok || !queryParameters.ok) {
+    if (!manifestId || !state.endpointKey.trim() || pathParameters.ok === false || queryParameters.ok === false) {
+      const details = [
+        pathParameters.ok === false ? pathParameters.error : null,
+        queryParameters.ok === false ? queryParameters.error : null
+      ].filter((detail): detail is string => Boolean(detail));
       setState((current) => ({
         ...current,
         message: "Manifest id, endpoint key, and valid REST parameter JSON are required before running a REST dry-run.",
-        details: [pathParameters.error, queryParameters.error].filter((detail): detail is string => Boolean(detail)),
+        details,
         tone: "warning"
       }));
       return;
@@ -6727,8 +6735,8 @@ function parseProviderIntegrationStringRecord(
   label: string
 ): { ok: true; value: Record<string, string> } | { ok: false; error: string } {
   const parsed = parseProviderIntegrationWorkbenchJson<unknown>(value || "{}", label);
-  if (!parsed.ok) {
-    return parsed;
+  if (parsed.ok === false) {
+    return { ok: false, error: parsed.error };
   }
   if (!parsed.value || typeof parsed.value !== "object" || Array.isArray(parsed.value)) {
     return { ok: false, error: `${label}: expected a JSON object.` };

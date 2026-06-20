@@ -248,6 +248,47 @@ public sealed record LedgerPeriodSummaryDto(
     string AccountingPolicyId = "legacy-v1",
     string AccountingPolicyVersion = "legacy-v1");
 
+public sealed record LedgerJournalEntryLineDto(
+    Guid EntryId,
+    Guid JournalEntryId,
+    DateTimeOffset Timestamp,
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal Debit,
+    decimal Credit,
+    string Description,
+    LedgerDimensionSetDto? Dimensions = null);
+
+public sealed record LedgerJournalEntryDto(
+    Guid JournalEntryId,
+    Guid PeriodId,
+    Guid? LedgerBookId,
+    Guid AggregateId,
+    Guid? CommandId,
+    Guid? CorrelationId,
+    long GlobalSequence,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset Timestamp,
+    string Description,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    bool IsBalanced,
+    IReadOnlyList<LedgerJournalEntryLineDto> Lines,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    Guid? SourceEventId = null,
+    Guid? SourceJournalEntryId = null,
+    LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null)
+{
+    public IReadOnlyList<LedgerJournalEntryLineDto> Lines { get; init; } = Lines ?? [];
+}
+
 public sealed record LedgerReportSignatureDto(
     string Algorithm,
     string PayloadChecksumSha256,

@@ -200,7 +200,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var book = await RequireBookAsync(RequireLedgerBookId(period), ct).ConfigureAwait(false);
         var financials = await BuildFinancialsAsync(period, ct).ConfigureAwait(false);
         var variance = await CalculatePeriodVarianceAsync(period, financials.NetIncome, ct).ConfigureAwait(false);
-        var openBreakCount = await CountOpenBreaksAsync(ct).ConfigureAwait(false);
+        var openBreakCount = await CountOpenBreaksAsync(period, book, ct).ConfigureAwait(false);
 
         return BuildSummary(
             period,
@@ -258,7 +258,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var toleranceProfile = NormalizeOptional(request.ToleranceProfileId) ?? "standard-recon-tolerance";
         var financials = await BuildFinancialsAsync(saved, ct).ConfigureAwait(false);
         var variance = await CalculatePeriodVarianceAsync(saved, financials.NetIncome, ct).ConfigureAwait(false);
-        var openBreakCount = await CountOpenBreaksAsync(ct).ConfigureAwait(false);
+        var openBreakCount = await CountOpenBreaksAsync(saved, book, ct).ConfigureAwait(false);
         var summary = BuildSummary(
             saved,
             book,
@@ -337,7 +337,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return netIncome - priorFinancials.NetIncome;
     }
 
-    private async Task<int> CountOpenBreaksAsync(CancellationToken ct)
+    private async Task<int> CountOpenBreaksAsync(
+        LedgerAccountingPeriod period,
+        LedgerBookRecord book,
+        CancellationToken ct)
     {
         if (_operatorInbox is null)
         {
@@ -345,9 +348,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         }
 
         var items = await _operatorInbox.GetItemsAsync(ct).ConfigureAwait(false);
-        return items.Count(static item =>
+        return items.Count(item =>
             item.Kind == OperatorWorkItemKindDto.ReconciliationBreak
-            && item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical);
+            && item.Tone is OperatorWorkItemToneDto.Warning or OperatorWorkItemToneDto.Critical
+            && IsScopedToPeriodOrBook(item, period, book));
     }
 
     private static LedgerPeriodSummaryDto BuildSummary(
@@ -404,10 +408,30 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             Workspace: "Accounting",
             TargetRoute: UiApiRoutes.ReconciliationBreakQueue,
             TargetPageTag: "FundReconciliation",
-            Scope: $"ledger-period:{period.PeriodId:N}",
+            Scope: $"ledger-book:{book.LedgerBookId:N};ledger-period:{period.PeriodId:N}",
             RequiredSignoffRole: requiredRole,
             ToleranceProfileId: toleranceProfile,
             SignoffStatus: LedgerPeriodSignoffStatusDto.Pending.ToString());
+
+    private static bool IsScopedToPeriodOrBook(
+        OperatorWorkItemDto item,
+        LedgerAccountingPeriod period,
+        LedgerBookRecord book)
+    {
+        var periodId = period.PeriodId;
+        var ledgerBookId = book.LedgerBookId;
+        return ContainsIdentifier(item.Scope, periodId)
+               || ContainsIdentifier(item.AuditReference, periodId)
+               || ContainsIdentifier(item.TargetRoute, periodId)
+               || ContainsIdentifier(item.Scope, ledgerBookId)
+               || ContainsIdentifier(item.AuditReference, ledgerBookId)
+               || ContainsIdentifier(item.TargetRoute, ledgerBookId);
+    }
+
+    private static bool ContainsIdentifier(string? value, Guid id)
+        => !string.IsNullOrWhiteSpace(value)
+           && (value.Contains(id.ToString("D"), StringComparison.OrdinalIgnoreCase)
+               || value.Contains(id.ToString("N"), StringComparison.OrdinalIgnoreCase));
 
     private static LedgerPeriodFinancials CalculateFinancials(IReadOnlyList<LedgerJournalEntryRecord> entries)
     {

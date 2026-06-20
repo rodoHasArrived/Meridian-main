@@ -19,7 +19,8 @@ public sealed record EvidenceSubjectDto(
     string Label,
     string Workspace,
     string? Route,
-    string PageTag);
+    string PageTag,
+    Guid? LedgerBookId = null);
 
 public sealed record EvidenceFreshnessDto(
     DateTimeOffset? AsOf,

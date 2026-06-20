@@ -122,7 +122,7 @@ also include fund event id, fund event type, and capital account id so private-c
 be reconstructed from durable journal evidence. Postgres journal storage also keeps partial unique
 indexes for aggregate-scoped command id, source event id, and normalized metadata idempotency key so
 retry attempts fail closed at the durable ledger boundary instead of relying only on caller-side
-checks. When LedgerJournalEntryWrite carries an AccountingPostingCommandDto, storage normalizes the write metadata from that command and rejects missing command identity, mismatched aggregate/period, pending reviewer state, non-human material origin, missing evidence/rationale, or correction intents without source journal lineage before append.
+checks. When LedgerJournalEntryWrite carries an AccountingPostingCommandDto, storage normalizes the write metadata from that command and rejects missing command identity, mismatched aggregate/period/ledger-book scope, pending reviewer state, non-human material origin, missing evidence/rationale, or correction intents without source journal lineage before append.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
@@ -141,6 +141,9 @@ When a governed draft candidate emits line-entry keyed dimension tags, closed-pe
 prefer those line-specific dimensions before falling back to journal-level tags. This lets generated
 multi-line postings retain different cost-center or external-GL scope per line while the underlying
 ledger engine remains immutable and posting-gated.
+Ledger-period summaries count open reconciliation breaks only when the operator work item carries
+explicit ledger-period or ledger-book scope in its route, audit reference, or scope metadata; global
+inbox breaks no longer leak into unrelated book closes.
 New ledger writes persist the first-class `LedgerEntry.Dimensions` value into
 `journal_legs.dimensions` as JSONB and rehydrate it with each ledger line. The metadata-tag path
 remains a compatibility fallback for older retained rows, but new dimensional accounting evidence
@@ -193,7 +196,13 @@ state remain isolated by the authenticated tenant session.
 Accounting configuration persistence keeps rich posting-rule payloads and saved Accounting Rules
 Studio regression cases as durable workspace-owned records. PostgreSQL stores saved rule test cases
 in `accounting_configuration_rule_test_cases` so service-owned dry-run regression suites round-trip
-beside chart accounts, journal templates, posting rules, and configuration audit events.
+beside chart accounts, journal templates, posting rules, and configuration audit events. Durable
+configuration workspaces are scoped by fund profile plus a non-null configuration scope derived
+from `LedgerBookId`, and chart/template/rule/test-case child rows use the same scope so a fund can
+retain separate primary, GAAP, tax, or shadow-book rule studios without delete/replace operations
+crossing ledger-book boundaries. The ledger-book scope migration drops and recreates the scoped
+workspace foreign keys before rebuilding composite keys, keeping migration replay compatible with
+operational schema validation.
 
 ## Glossary
 

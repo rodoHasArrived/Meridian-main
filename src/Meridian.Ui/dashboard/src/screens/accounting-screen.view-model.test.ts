@@ -2545,6 +2545,57 @@ describe("accounting-screen view model", () => {
         requiresPromotionApproval: true
       }],
       validationIssues: [],
+      rulesStudio: {
+        summary: {
+          totalRules: 1,
+          activeRules: 1,
+          archivedRules: 0,
+          effectiveDatedRules: 1,
+          generatedPostingRules: 1,
+          templateMappingRules: 0,
+          rulesWithConditions: 1,
+          rulesWithFormulas: 1,
+          rulesWithAllocations: 1,
+          rulesRequiringPromotionApproval: 1,
+          approvedPromotionRules: 1,
+          pendingPromotionApprovalRules: 0,
+          savedTestCaseCount: 1,
+          rulesWithSavedRegressionTests: 1,
+          rulesMissingCurrentVersionRegressionTests: 0,
+          criticalIssueCount: 0,
+          warningIssueCount: 0
+        },
+        rules: [{
+          ruleId: "rule-trade-buy",
+          displayName: "Trade buy posting",
+          sourceEventType: "TradeExecuted",
+          ruleVersion: "v3",
+          priority: 10,
+          effectiveFrom: "2026-01-01",
+          effectiveTo: "2026-12-31",
+          templateId: "template-trade-buy",
+          isArchived: false,
+          usesGeneratedPostings: true,
+          conditionCount: 2,
+          conditionGroupCount: 1,
+          formulaCount: 1,
+          allocationCount: 1,
+          generatedPostingLineCount: 2,
+          versionCount: 1,
+          savedTestCaseCount: 1,
+          savedTestEvidenceLinkCount: 1,
+          requiresPromotionApproval: true,
+          isPromotionApproved: true,
+          promotionApprovalState: "Approved",
+          promotionApprovalId: "approval-rule-trade-buy",
+          criticalIssueCount: 0,
+          warningIssueCount: 0,
+          canDryRun: true,
+          canRequestPromotion: false,
+          canActivate: true
+        }],
+        promotionQueue: []
+      },
       auditTrail: [{
         auditEventId: "audit-rule-trade-buy",
         recordedAtUtc: "2026-06-15T11:00:00Z",
@@ -2749,7 +2800,25 @@ describe("accounting-screen view model", () => {
     expect(result.current.selectedRule?.allocationRows.join("\n")).toContain("alloc-strategy: StrategyWeight weight 1 via formula-source");
     expect(result.current.selectedRule?.generatedPostingRows.join("\n")).toContain("Debit 1200.Investments $250,000 USD via formula-source");
     expect(result.current.selectedRule?.versionRows.join("\n")).toContain("v3 by controller on 2026-06-15");
+    expect(result.current.metricRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "rules",
+        value: "1",
+        detail: "1 generated / 0 template mappings."
+      }),
+      expect.objectContaining({
+        id: "rule-tests",
+        value: "1",
+        detail: "1 rule(s) covered; 0 current version gap(s)."
+      })
+    ]));
     expect(result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "server-readiness",
+        value: "Ready",
+        detail: "0 critical, 0 warning, 1 saved test case(s).",
+        tone: "success"
+      }),
       expect.objectContaining({
         id: "promotion-approval",
         value: "Approved",
@@ -2816,6 +2885,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/event-predicate/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -2843,6 +2913,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/effective-start/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -2863,6 +2934,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/generated-postings/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -2894,6 +2966,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/scope/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -2949,6 +3022,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/threshold/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -2976,6 +3050,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/formula/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -3002,6 +3077,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/allocation/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -3030,6 +3106,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/priority/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -3049,6 +3126,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: ["browser://accounting/rules-studio/duplicate/rule-trade-buy"],
       rule: expect.objectContaining({
@@ -3069,6 +3147,7 @@ describe("accounting-screen view model", () => {
     if (!duplicateRequest) {
       throw new Error("Duplicate rule request was not captured.");
     }
+    expect(duplicateRequest.ledgerBookId).toBe("book-primary");
     expect(duplicateRequest.rule.ruleId).toMatch(/^rule-trade-buy-draft-\d+$/);
     expect(duplicateRequest.rule.scope).toMatchObject({
       fundId: "fund-alpha",
@@ -3118,6 +3197,7 @@ describe("accounting-screen view model", () => {
 
     expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
       actor: "browser-accounting-operator",
       evidenceLinks: [`browser://accounting/rules-studio/archive/${duplicateRequest.rule.ruleId}`],
       rule: expect.objectContaining({
@@ -3176,7 +3256,21 @@ describe("accounting-screen view model", () => {
       buildJournalCandidate: vi.fn(),
       runRuleTests: vi.fn(),
       saveRuleTestCase: vi.fn(),
-      approveRulePromotion: vi.fn(),
+      approveRulePromotion: vi.fn().mockResolvedValue({
+        ...workspace,
+        postingRules: [{
+          ...workspace.postingRules[0],
+          promotionApproval: {
+            approvalId: "approval-rule-interest",
+            requestedBy: "browser-accounting-operator",
+            requestedAtUtc: "2026-06-15T10:00:00Z",
+            approvalState: "Approved",
+            approvedBy: "browser-accounting-operator",
+            approvedAtUtc: "2026-06-15T11:00:00Z",
+            evidenceLinks: ["browser://accounting/rules-studio/promotion/rule-interest"]
+          }
+        }]
+      }),
       activate: vi.fn()
     };
 
@@ -3196,6 +3290,22 @@ describe("accounting-screen view model", () => {
         tone: "warning"
       })
     ]));
+
+    await act(async () => {
+      await result.current.approveRulePromotion();
+    });
+
+    expect(services.approveRulePromotion).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      ruleId: "rule-interest",
+      ruleVersion: "v2",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/promotion-review/rule-interest/v2"],
+      requestedBy: "browser-accounting-operator",
+      notes: "Approved Interest accrual v2 from Accounting Rules Studio."
+    }));
+    expect(result.current.approveRulePromotionStatusText).toBe("Approved promotion for Interest accrual.");
 
     const approvedServices: AccountingConfigurationServices = {
       ...services,
@@ -3237,6 +3347,81 @@ describe("accounting-screen view model", () => {
         tone: "warning"
       })
     ]));
+  });
+
+  it("surfaces missing ledger-book setup as configuration setup readiness", async () => {
+    const workspace: AccountingConfigurationWorkspace = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-missing",
+      status: "Draft",
+      configurationVersion: "v4",
+      updatedAtUtc: "2026-06-30T12:00:00Z",
+      ledgerBooks: [],
+      chartOfAccounts: [
+        { nodeId: "cash", path: "1000.Cash", accountName: "Cash", accountType: "Asset", parentPath: null, isArchived: false },
+        { nodeId: "income", path: "4000.Interest", accountName: "Interest", accountType: "Revenue", parentPath: null, isArchived: false }
+      ],
+      journalTemplates: [{
+        templateId: "template-interest",
+        displayName: "Interest accrual",
+        description: "Balanced interest accrual.",
+        isArchived: false,
+        version: "v1",
+        lines: [
+          { lineId: "debit-cash", accountPath: "1000.Cash", side: "Debit", amount: 100, currency: "USD", description: "Cash" },
+          { lineId: "credit-income", accountPath: "4000.Interest", side: "Credit", amount: 100, currency: "USD", description: "Interest" }
+        ]
+      }],
+      postingRules: [{
+        ruleId: "rule-interest",
+        displayName: "Interest accrual",
+        sourceEventType: "InterestAccrual",
+        templateId: "template-interest",
+        ruleVersion: "v1",
+        isArchived: false,
+        priority: 10
+      }],
+      validationIssues: [{
+        code: "configuration.ledger-book-missing",
+        severity: "Critical",
+        message: "Accounting configuration targets ledger book 'book-missing', but no matching ledger book setup was found.",
+        targetId: "book-missing",
+        suggestedAction: "Create or select the ledger book before activating book-scoped accounting configuration."
+      }],
+      auditTrail: [],
+      ruleTestCases: []
+    };
+    const services: AccountingConfigurationServices = {
+      getConfiguration: vi.fn().mockResolvedValue(workspace),
+      previewTemplate: vi.fn(),
+      upsertRule: vi.fn(),
+      dryRunRule: vi.fn(),
+      buildJournalCandidate: vi.fn(),
+      runRuleTests: vi.fn(),
+      saveRuleTestCase: vi.fn(),
+      approveRulePromotion: vi.fn(),
+      activate: vi.fn()
+    };
+
+    const { result } = renderHook(() => useAccountingConfigurationViewModel(services));
+
+    await waitFor(() => expect(result.current.validationIssues).toHaveLength(1));
+    expect(result.current.setupReadinessRows).toEqual([
+      expect.objectContaining({
+        id: "selected-ledger-book",
+        value: "Missing",
+        tone: "danger",
+        detail: "Accounting configuration targets ledger book 'book-missing', but no matching ledger book setup was found."
+      }),
+      expect.objectContaining({
+        id: "activation-readiness",
+        value: "Blocked",
+        tone: "danger",
+        detail: "Create or select the ledger book before activating book-scoped accounting configuration."
+      })
+    ]);
+    expect(result.current.activateDisabledReason).toBe("Resolve critical validation issues before activation.");
+    expect(result.current.canActivate).toBe(false);
   });
 
   it("loads the Capital Account Workbench with investor evidence, allocation rules, lineage, and audit drill-through rows", async () => {

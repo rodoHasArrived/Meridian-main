@@ -155,17 +155,18 @@ public sealed class EvidenceSubjectResolver
                 : await Task.WhenAll(fundProfileIds.Select(fundProfileId =>
                     manualJournalService.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, ct))).ConfigureAwait(false);
             subjects.AddRange(privateCapitalActivities
-                .SelectMany(static activity => activity.FundEventRecords)
-                .OrderByDescending(static record => record.EffectiveDate)
-                .ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase)
+                .SelectMany(static activity => activity.FundEventRecords.Select(record => (activity, record)))
+                .OrderByDescending(static item => item.record.EffectiveDate)
+                .ThenBy(static item => item.record.FundEventId, StringComparer.OrdinalIgnoreCase)
                 .Take(100)
-                .Select(static record => new EvidenceSubjectDto(
-                    SubjectId: record.FundEventId,
+                .Select(static item => new EvidenceSubjectDto(
+                    SubjectId: item.record.FundEventId,
                     SubjectKind: PrivateCapitalFundEventKind,
-                    Label: $"Private-capital fund event {record.FundEventType}",
+                    Label: $"Private-capital fund event {item.record.FundEventType}",
                     Workspace: "Accounting",
-                    Route: $"/accounting/journal-entries?fundEventId={Uri.EscapeDataString(record.FundEventId)}",
-                    PageTag: "AccountingJournalEntries")));
+                    Route: BuildAccountingJournalEntriesRoute("fundEventId", item.record.FundEventId, item.activity.LedgerBookId),
+                    PageTag: "AccountingJournalEntries",
+                    LedgerBookId: item.activity.LedgerBookId)));
             subjects.AddRange(privateCapitalActivities
                 .SelectMany(static activity => activity.PaymentIntents)
                 .OrderByDescending(static workflow => workflow.ExpectedCashMovement.EffectiveDate)
@@ -176,8 +177,9 @@ public sealed class EvidenceSubjectResolver
                     SubjectKind: PaymentIntentKind,
                     Label: $"Payment intent {workflow.StatusLabel}",
                     Workspace: "Accounting",
-                    Route: $"/accounting/journal-entries?paymentIntentId={Uri.EscapeDataString(workflow.PaymentIntentId)}",
-                    PageTag: "AccountingJournalEntries")));
+                    Route: BuildAccountingJournalEntriesRoute("paymentIntentId", workflow.PaymentIntentId, workflow.LedgerBookId),
+                    PageTag: "AccountingJournalEntries",
+                    LedgerBookId: workflow.LedgerBookId)));
         }
 
         var deliveryAttempts = ListReportPackDeliveryAttempts(100);
@@ -204,7 +206,8 @@ public sealed class EvidenceSubjectResolver
     public async Task<EvidenceSubjectDto?> ResolveAsync(
         string subjectKind,
         string subjectId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
         if (!IsSupportedKind(subjectKind) || string.IsNullOrWhiteSpace(subjectId))
         {
@@ -233,12 +236,12 @@ public sealed class EvidenceSubjectResolver
 
         if (string.Equals(subjectKind, PrivateCapitalFundEventKind, StringComparison.OrdinalIgnoreCase))
         {
-            return await ResolvePrivateCapitalFundEventSubjectAsync(subjectId, ct).ConfigureAwait(false);
+            return await ResolvePrivateCapitalFundEventSubjectAsync(subjectId, ledgerBookId, ct).ConfigureAwait(false);
         }
 
         if (string.Equals(subjectKind, PaymentIntentKind, StringComparison.OrdinalIgnoreCase))
         {
-            return await ResolvePaymentIntentSubjectAsync(subjectId, ct).ConfigureAwait(false);
+            return await ResolvePaymentIntentSubjectAsync(subjectId, ledgerBookId, ct).ConfigureAwait(false);
         }
 
         if (string.Equals(subjectKind, ReportPackDeliveryKind, StringComparison.OrdinalIgnoreCase))
@@ -328,7 +331,7 @@ public sealed class EvidenceSubjectResolver
                 PageTag: "EvidenceWorkbench");
     }
 
-    private async Task<EvidenceSubjectDto?> ResolvePrivateCapitalFundEventSubjectAsync(string subjectId, CancellationToken ct)
+    private async Task<EvidenceSubjectDto?> ResolvePrivateCapitalFundEventSubjectAsync(string subjectId, Guid? ledgerBookId, CancellationToken ct)
     {
         var service = _services.GetService<IManualJournalEntryWorkbenchService>();
         if (service is null)
@@ -337,7 +340,8 @@ public sealed class EvidenceSubjectResolver
         }
 
         var fundProfileId = TryResolveFundProfileIdFromFundEventId(subjectId);
-        var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, ct).ConfigureAwait(false);
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
+        var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var record = activity.FundEventRecords.FirstOrDefault(item =>
             string.Equals(item.FundEventId, subjectId, StringComparison.OrdinalIgnoreCase));
         if (record is null)
@@ -350,16 +354,36 @@ public sealed class EvidenceSubjectResolver
             SubjectKind: PrivateCapitalFundEventKind,
             Label: $"Private-capital fund event {record.FundEventType}",
             Workspace: "Accounting",
-            Route: $"/accounting/journal-entries?fundEventId={Uri.EscapeDataString(record.FundEventId)}",
-            PageTag: "AccountingJournalEntries");
+            Route: BuildAccountingJournalEntriesRoute("fundEventId", record.FundEventId, activity.LedgerBookId),
+            PageTag: "AccountingJournalEntries",
+            LedgerBookId: activity.LedgerBookId);
     }
 
-    private async Task<EvidenceSubjectDto?> ResolvePaymentIntentSubjectAsync(string subjectId, CancellationToken ct)
+    private async Task<EvidenceSubjectDto?> ResolvePaymentIntentSubjectAsync(string subjectId, Guid? ledgerBookId, CancellationToken ct)
     {
         var service = _services.GetService<IManualJournalEntryWorkbenchService>();
         if (service is null)
         {
             return null;
+        }
+
+        if (ledgerBookId.HasValue)
+        {
+            var fundProfileId = TryResolveFundProfileIdFromPaymentIntentId(subjectId);
+            var scopedActivity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+            var scopedWorkflow = scopedActivity.PaymentIntents
+                .FirstOrDefault(item => string.Equals(item.PaymentIntentId, subjectId, StringComparison.OrdinalIgnoreCase));
+            if (scopedWorkflow is not null)
+            {
+                return new EvidenceSubjectDto(
+                    SubjectId: scopedWorkflow.PaymentIntentId,
+                    SubjectKind: PaymentIntentKind,
+                    Label: $"Payment intent {scopedWorkflow.StatusLabel}",
+                    Workspace: "Accounting",
+                    Route: BuildAccountingJournalEntriesRoute("paymentIntentId", scopedWorkflow.PaymentIntentId, scopedWorkflow.LedgerBookId),
+                    PageTag: "AccountingJournalEntries",
+                    LedgerBookId: scopedWorkflow.LedgerBookId);
+            }
         }
 
         var fundProfileIds = await service.ListFundProfileIdsAsync(ct).ConfigureAwait(false);
@@ -380,8 +404,47 @@ public sealed class EvidenceSubjectResolver
             SubjectKind: PaymentIntentKind,
             Label: $"Payment intent {workflow.StatusLabel}",
             Workspace: "Accounting",
-            Route: $"/accounting/journal-entries?paymentIntentId={Uri.EscapeDataString(workflow.PaymentIntentId)}",
-            PageTag: "AccountingJournalEntries");
+            Route: BuildAccountingJournalEntriesRoute("paymentIntentId", workflow.PaymentIntentId, workflow.LedgerBookId),
+            PageTag: "AccountingJournalEntries",
+            LedgerBookId: workflow.LedgerBookId);
+    }
+
+    private static string BuildAccountingJournalEntriesRoute(string key, string value, Guid? ledgerBookId)
+    {
+        var query = new List<string>
+        {
+            $"{key}={Uri.EscapeDataString(value)}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        return $"/accounting/journal-entries?{string.Join("&", query)}";
+    }
+
+    private static Guid? TryResolveLedgerBookId(string subjectId)
+    {
+        var queryStart = subjectId.IndexOf('?', StringComparison.Ordinal);
+        if (queryStart < 0 || queryStart == subjectId.Length - 1)
+        {
+            return null;
+        }
+
+        var query = subjectId[(queryStart + 1)..];
+        foreach (var segment in query.Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var parts = segment.Split('=', 2);
+            if (parts.Length == 2 &&
+                string.Equals(Uri.UnescapeDataString(parts[0]), "ledgerBookId", StringComparison.OrdinalIgnoreCase) &&
+                Guid.TryParse(Uri.UnescapeDataString(parts[1]), out var ledgerBookId))
+            {
+                return ledgerBookId;
+            }
+        }
+
+        return null;
     }
 
     private async Task<EvidenceSubjectDto?> ResolveApprovalSubjectAsync(string subjectId, CancellationToken ct)
@@ -481,6 +544,20 @@ public sealed class EvidenceSubjectResolver
         var parts = fundEventId.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         return parts.Length >= 3 &&
                string.Equals(parts[0], "fund-event", StringComparison.OrdinalIgnoreCase)
+            ? parts[1]
+            : null;
+    }
+
+    private static string? TryResolveFundProfileIdFromPaymentIntentId(string paymentIntentId)
+    {
+        if (string.IsNullOrWhiteSpace(paymentIntentId))
+        {
+            return null;
+        }
+
+        var parts = paymentIntentId.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 3 &&
+               string.Equals(parts[0], "payment", StringComparison.OrdinalIgnoreCase)
             ? parts[1]
             : null;
     }

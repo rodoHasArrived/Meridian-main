@@ -14,7 +14,8 @@ public sealed class AccountingPostingCandidateServiceTests
     [Fact]
     public async Task Scenario_AccountingRulesStudio_SourceEventBuildsApprovalGatedJournalCandidate()
     {
-        var service = await CreateSeededCandidateServiceAsync();
+        var ledgerBookId = Guid.NewGuid();
+        var service = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
         var instrumentId = Guid.NewGuid();
         var sourceEventId = Guid.NewGuid();
         var aggregateId = Guid.NewGuid();
@@ -32,6 +33,7 @@ public sealed class AccountingPostingCandidateServiceTests
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Accrue custodian interest from retained source event",
             AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
             Dimensions: new LedgerDimensionSetDto(
                 FundId: "fund-alpha",
                 EntityId: "entity-master",
@@ -77,6 +79,7 @@ public sealed class AccountingPostingCandidateServiceTests
         result.PostingCommand.Should().NotBeNull();
         result.PostingCommand!.AggregateId.Should().Be(aggregateId);
         result.PostingCommand.PeriodId.Should().Be(periodId);
+        result.PostingCommand.LedgerBookId.Should().Be(ledgerBookId);
         result.PostingCommand.SourceEventId.Should().Be(sourceEventId);
         result.PostingCommand.SourceEventType.Should().Be("CustodianInterestAccrual");
         result.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Pending);
@@ -190,10 +193,13 @@ public sealed class AccountingPostingCandidateServiceTests
     [Fact]
     public async Task BuildCandidateAsync_PassesGeneratedLineDimensionsToGovernedDraftRequest()
     {
-        var configurationService = await CreateSeededConfigurationServiceAsync();
+        var ledgerBookId = Guid.NewGuid();
+        var configurationService = await CreateSeededConfigurationServiceAsync(ledgerBookId: ledgerBookId);
         var draftService = new CapturingJournalDraftService();
         var service = new AccountingPostingCandidateService(configurationService, draftService);
         var instrumentId = Guid.NewGuid();
+        var correlationId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
 
         await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
             "fund-alpha",
@@ -207,6 +213,7 @@ public sealed class AccountingPostingCandidateServiceTests
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Dimensional generated posting",
             AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
             Dimensions: new LedgerDimensionSetDto(
                 FundId: "fund-alpha",
                 EntityId: "entity-master",
@@ -216,11 +223,18 @@ public sealed class AccountingPostingCandidateServiceTests
                     ["Department"] = "InvestmentOps"
                 }),
             CounterpartyId: "custodian-bny",
+            CorrelationId: correlationId,
+            SourceEventId: sourceEventId,
             PolicyId: "gaap-accrual-v1",
             TreatmentKind: AccountingTreatmentKindDto.Accrual,
             EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]));
 
         draftService.CapturedRequest.Should().NotBeNull();
+        draftService.CapturedRequest!.PostingRuleId.Should().Be("posting.interest-accrual");
+        draftService.CapturedRequest.PostingRuleVersion.Should().Be("v1");
+        draftService.CapturedRequest.LedgerBookId.Should().Be(ledgerBookId);
+        draftService.CapturedRequest.DryRunCorrelationId.Should().Be(correlationId.ToString("D"));
+        draftService.CapturedRequest.SourceEventId.Should().Be(sourceEventId);
         draftService.CapturedRequest!.Lines.Should().HaveCount(2);
         draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions != null);
         draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.FundId == "fund-alpha");
@@ -235,9 +249,10 @@ public sealed class AccountingPostingCandidateServiceTests
 
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
         string incomeAccountType = "Revenue",
-        decimal? creditAmount = null)
+        decimal? creditAmount = null,
+        Guid? ledgerBookId = null)
     {
-        var configurationService = await CreateSeededConfigurationServiceAsync(incomeAccountType, creditAmount);
+        var configurationService = await CreateSeededConfigurationServiceAsync(incomeAccountType, creditAmount, ledgerBookId);
         var policyService = new AccountingPolicyService();
         await policyService.CreatePolicyAsync(new CreateAccountingPolicyRequest(
             AccountingBasisKindDto.Gaap,
@@ -269,7 +284,8 @@ public sealed class AccountingPostingCandidateServiceTests
 
     private static async Task<AccountingConfigurationService> CreateSeededConfigurationServiceAsync(
         string incomeAccountType = "Revenue",
-        decimal? creditAmount = null)
+        decimal? creditAmount = null,
+        Guid? ledgerBookId = null)
     {
         var configurationService = new AccountingConfigurationService(
             new InMemoryAccountingConfigurationStore(),
@@ -282,7 +298,8 @@ public sealed class AccountingPostingCandidateServiceTests
                 "assets/accrued-interest",
                 "Accrued Interest Receivable",
                 "Asset"),
-            "controller@meridian.local"));
+            "controller@meridian.local",
+            LedgerBookId: ledgerBookId));
         await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             "fund-alpha",
             new ChartOfAccountsNodeDto(
@@ -290,7 +307,8 @@ public sealed class AccountingPostingCandidateServiceTests
                 "income/interest",
                 "Interest Income",
                 incomeAccountType),
-            "controller@meridian.local"));
+            "controller@meridian.local",
+            LedgerBookId: ledgerBookId));
         await configurationService.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
             "fund-alpha",
             new PostingRuleDto(
@@ -341,7 +359,8 @@ public sealed class AccountingPostingCandidateServiceTests
                         new LedgerDimensionSetDto(CostCenterId: "income-review"),
                         "Credit interest income")
                 ]),
-            "controller@meridian.local"));
+            "controller@meridian.local",
+            LedgerBookId: ledgerBookId));
 
         return configurationService;
     }

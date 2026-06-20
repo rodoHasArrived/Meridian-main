@@ -33,6 +33,10 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+`LedgerReadService` projects strategy-run trial balance and journal rows with canonical
+`LedgerDimensionSetDto` scope for fund, strategy, portfolio, account, entity, sleeve, and
+`externalGl.*` run-parameter filters so workstation ledger drill-throughs stay aligned with
+accounting dimensions instead of a strategy-only scope vocabulary.
 Paper-to-live promotion requires the live approval checklist, explicit evidence references for
 each live checklist item, and an active `AllowLivePromotion` manual override. Approved and
 execution-control-blocked live promotion attempts are written to the durable execution audit

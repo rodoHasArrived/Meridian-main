@@ -124,7 +124,7 @@ async function settle<T>(label: string, request: Promise<T>) {
   try {
     return { label, value: await request as unknown, error: null as string | null };
   } catch (error) {
-    return { label, value: null, error: `${label}: ${describeApiError(error)}` };
+    return { label, value: null, error: `${label}: ${describeApiError(error, `${label} failed.`).summary}` };
   }
 }
 
@@ -273,7 +273,8 @@ export function SettingsAdminOperationsConsole({ active, operatorLabel, onRefres
       await loadSnapshot();
       await onRefresh?.();
     } catch (error) {
-      setMessage({ tone: "danger", title: "Command failed", detail: describeApiError(error) });
+      const display = describeApiError(error, "Admin operation failed.");
+      setMessage({ tone: "danger", title: display.summary, detail: display.details.join(" | ") });
     } finally {
       setBusyCommand(null);
       setBusyScheduleId(null);
@@ -298,7 +299,7 @@ export function SettingsAdminOperationsConsole({ active, operatorLabel, onRefres
             <CardDescription>Maintenance, archive storage, retention, diagnostics, schedules, and package handoff for {operatorLabel ?? "the workstation operator"}.</CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={loaded ? snapshot?.failures.length ? "warning" : "success" : "secondary"}>{loading ? "Checking" : loaded ? snapshot?.failures.length ? "Degraded" : "Loaded" : "Not loaded"}</Badge>
+            <Badge variant={loaded ? snapshot?.failures.length ? "warning" : "success" : "outline"}>{loading ? "Checking" : loaded ? snapshot?.failures.length ? "Degraded" : "Loaded" : "Not loaded"}</Badge>
             <Button type="button" variant="outline" size="sm" busy={loading} busyLabel="Refreshing admin operations" onClick={() => void loadSnapshot()}><RefreshCcw className="h-4 w-4" />Refresh</Button>
           </div>
         </div>
@@ -338,3 +339,123 @@ export function SettingsAdminOperationsConsole({ active, operatorLabel, onRefres
             </div>
           </Panel>
         </div>
+        <div className="grid gap-4 xl:grid-cols-3">
+          <Panel icon={<CheckCircle2 className="h-4 w-4" />} title="Retention and cleanup" detail="Retention policy and cleanup preview remain endpoint-owned.">
+            <div className="grid gap-2">
+              <EvidenceLine label="Retention" value={snapshot?.retention ? `${snapshot.retention.retentionDays} days` : "Not loaded"} detail={snapshot?.retention ? `${snapshot.retention.maxStorageSizeGb} GB max storage` : "retention endpoint pending"} />
+              <EvidenceLine label="Cleanup candidates" value={count(snapshot?.cleanupPreview?.candidateCount)} detail={`${bytes(snapshot?.cleanupPreview?.reclaimableBytes)} reclaimable`} />
+              <EvidenceLine label="Quick check" value={snapshot?.quickCheck?.configLoaded ? "Config loaded" : "Not loaded"} detail={snapshot?.quickCheck?.dataRoot ?? "quick-check endpoint pending"} />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" busy={busyCommand === "retention"} disabled={disableOther("retention")} onClick={() => void runCommand("retention", () => applyAdminRetention(), () => ({ tone: "success", title: "Retention applied", detail: "Retention endpoint completed." }))}><CheckCircle2 className="h-4 w-4" />Apply retention</Button>
+              <Button type="button" variant="outline" size="sm" busy={busyCommand === "cleanup"} disabled={disableOther("cleanup")} onClick={() => void runCommand("cleanup", () => executeAdminCleanup(), (result) => ({ tone: result.executed ? "success" : "warning", title: result.executed ? "Cleanup executed" : "Cleanup not executed", detail: result.message ?? result.timestamp ?? "Cleanup endpoint completed." }))}><Trash2 className="h-4 w-4" />Run cleanup</Button>
+            </div>
+          </Panel>
+
+          <Panel icon={<PackageCheck className="h-4 w-4" />} title="Data packages" detail="Package creation, validation, and manifest inspection use shared endpoints.">
+            <div className="grid gap-2">
+              {packages.length ? packages.slice(0, 3).map((item) => <EvidenceLine key={item.path} label={item.fileName} value={bytes(item.sizeBytes)} detail={item.path ?? item.createdAt ?? "--"} />) : <EmptyState label="No packages loaded" />}
+            </div>
+            <div className="mt-4 grid gap-2">
+              <Input value={packageForm.packagePath} onChange={(event) => setPackageForm((current) => ({ ...current, packagePath: event.target.value }))} placeholder="Package path for validation or contents" />
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" size="sm" busy={busyCommand === "create-package"} disabled={disableOther("create-package")} onClick={() => void runCommand("create-package", () => createDataPackage(packageRequest(packageForm)), (result) => ({ tone: "success", title: "Package requested", detail: result.packagePath ?? result.packageId ?? "Package endpoint completed." }))}><PackageCheck className="h-4 w-4" />Create</Button>
+                <Button type="button" variant="outline" size="sm" busy={busyCommand === "validate-package"} disabled={disableOther("validate-package") || !packageForm.packagePath.trim()} onClick={() => void runCommand("validate-package", () => validateDataPackage({ packagePath: packageForm.packagePath.trim() }), (result) => ({ tone: result.isValid ? "success" : "warning", title: result.isValid ? "Package valid" : "Package issues", detail: `${count((result.issues ?? []).length + (result.missingFiles ?? []).length)} issue(s)` }))}><ShieldCheck className="h-4 w-4" />Validate</Button>
+              </div>
+            </div>
+          </Panel>
+
+          <Panel icon={<RefreshCcw className="h-4 w-4" />} title="Schedules" detail="Maintenance schedules can be run or toggled without browser-local state mutation.">
+            <div className="grid gap-2">
+              {schedules.length ? schedules.slice(0, 4).map((schedule) => {
+                const id = scheduleId(schedule);
+                return (
+                  <div key={id} className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="font-semibold text-foreground">{schedule.name || id}</div>
+                        <div className="font-mono text-xs text-muted-foreground">{schedule.cronExpression ?? "--"}</div>
+                      </div>
+                      <Badge variant={schedule.enabled ? "success" : "outline"}>{schedule.enabled ? "Enabled" : "Disabled"}</Badge>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Button type="button" variant="outline" size="sm" busy={busyScheduleId === id && busyCommand === "schedule"} disabled={disableOther("schedule")} onClick={() => void runCommand("schedule", () => runMaintenanceSchedule(id), (run) => ({ tone: "success", title: "Schedule run started", detail: runDetail(run) }), id)}>Run</Button>
+                      <Button type="button" variant="outline" size="sm" busy={busyScheduleId === id && busyCommand === "toggle"} disabled={disableOther("toggle")} onClick={() => void runCommand("toggle", () => schedule.enabled ? disableMaintenanceSchedule(id) : enableMaintenanceSchedule(id), () => ({ tone: "success", title: schedule.enabled ? "Schedule disabled" : "Schedule enabled", detail: id }), id)}>{schedule.enabled ? "Disable" : "Enable"}</Button>
+                    </div>
+                  </div>
+                );
+              }) : <EmptyState label="No schedules loaded" />}
+            </div>
+          </Panel>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MetricTile({
+  icon,
+  label,
+  value,
+  detail
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-3">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{icon}{label}</div>
+      <div className="mt-2 font-mono text-lg font-semibold text-foreground">{value}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{detail}</div>
+    </div>
+  );
+}
+
+function Panel({
+  icon,
+  title,
+  detail,
+  children
+}: {
+  icon: ReactNode;
+  title: string;
+  detail: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-lg border border-border/70 bg-background/45 p-3">
+      <div className="flex items-start gap-2">
+        <div className="mt-0.5 text-primary">{icon}</div>
+        <div>
+          <div className="font-semibold text-foreground">{title}</div>
+          <div className="text-xs leading-5 text-muted-foreground">{detail}</div>
+        </div>
+      </div>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function EvidenceLine({
+  label,
+  value,
+  detail
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-sm">
+      <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-sm text-foreground">{value}</div>
+      <div className="mt-1 break-words text-xs text-muted-foreground">{detail}</div>
+    </div>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return <div className="rounded-md border border-dashed border-border/70 px-3 py-2 text-sm text-muted-foreground">{label}</div>;
+}

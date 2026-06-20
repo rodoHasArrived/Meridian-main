@@ -1773,7 +1773,7 @@ public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContri
         }
 
         var fundProfileId = TryResolveFundProfileIdFromFundEventId(context.Subject.SubjectId);
-        var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, context.CancellationToken)
+        var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, context.Subject.LedgerBookId, context.CancellationToken)
             .ConfigureAwait(false);
         var record = activity.FundEventRecords.FirstOrDefault(item =>
             string.Equals(item.FundEventId, context.Subject.SubjectId, StringComparison.OrdinalIgnoreCase));
@@ -2036,7 +2036,7 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
             return Empty("Manual journal entry workbench service is not registered.");
         }
 
-        var match = await ResolvePaymentIntentAsync(service, context.Subject.SubjectId, context.CancellationToken)
+        var match = await ResolvePaymentIntentAsync(service, context.Subject.SubjectId, context.Subject.LedgerBookId, context.CancellationToken)
             .ConfigureAwait(false);
         if (match is null)
         {
@@ -2190,12 +2190,13 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
     private static async Task<(PrivateCapitalActivityProjectionDto Activity, PaymentIntentWorkflowDto Workflow)?> ResolvePaymentIntentAsync(
         IManualJournalEntryWorkbenchService service,
         string paymentIntentId,
+        Guid? ledgerBookId,
         CancellationToken ct)
     {
         var fundProfileId = TryResolveFundProfileIdFromPaymentIntentId(paymentIntentId);
         if (!string.IsNullOrWhiteSpace(fundProfileId))
         {
-            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, ct)
+            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct)
                 .ConfigureAwait(false);
             var workflow = activity.PaymentIntents.FirstOrDefault(item =>
                 string.Equals(item.PaymentIntentId, paymentIntentId, StringComparison.OrdinalIgnoreCase));

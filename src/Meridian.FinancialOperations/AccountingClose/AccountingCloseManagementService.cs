@@ -405,7 +405,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         return new ClosePeriodPlanDto(
             $"close-plan-{workflow.WorkflowId:D}",
             workflow.FundAccountId.ToString("D"),
-            LedgerBookId: null,
+            workflow.LedgerBookId,
             workflow.PeriodId,
             period.Start,
             period.End,

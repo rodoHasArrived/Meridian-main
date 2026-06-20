@@ -274,7 +274,7 @@ async function captureRoute(page, capture, outputDir, baseUrl, defaults, minByte
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: timeoutMs });
   await page.waitForSelector(".workstation-frame", { timeout: timeoutMs });
   for (const waitForText of collectCaptureWaitForTexts(capture)) {
-    await page.getByText(waitForText, { exact: false }).first().waitFor({ timeout: timeoutMs });
+    await page.getByText(waitForText, { exact: false }).filter({ visible: true }).first().waitFor({ timeout: timeoutMs });
   }
   if (Array.isArray(capture.waitForSelectors)) {
     for (const selector of capture.waitForSelectors) {
