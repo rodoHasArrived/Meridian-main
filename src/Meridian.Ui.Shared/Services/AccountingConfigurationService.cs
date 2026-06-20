@@ -3370,6 +3370,15 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
+        if (FindIdempotentLifecycleTransition(
+                draft,
+                JournalEntryLifecycleActionDto.Submit,
+                request.Actor,
+                request.CorrelationId) is not null)
+        {
+            return draft;
+        }
+
         if (draft.Version != request.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
@@ -3485,6 +3494,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
+        var idempotent = await TryBuildIdempotentLifecycleResultAsync(fundProfileId, draft, request, ct).ConfigureAwait(false);
+        if (idempotent is not null)
+        {
+            return idempotent;
+        }
+
         if (draft.Version != request.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
@@ -3755,6 +3770,62 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         }
 
         return draft;
+    }
+
+    private async Task<JournalEntryLifecycleActionResultDto?> TryBuildIdempotentLifecycleResultAsync(
+        string fundProfileId,
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionRequestDto request,
+        CancellationToken ct)
+    {
+        var transition = FindIdempotentLifecycleTransition(draft, request.Action, request.Actor, request.CorrelationId);
+        if (transition is null)
+        {
+            return null;
+        }
+
+        var generated = await LoadIdempotentCorrectionDraftsAsync(fundProfileId, draft, request.Action, ct).ConfigureAwait(false);
+        return new JournalEntryLifecycleActionResultDto(draft, transition, generated);
+    }
+
+    private async Task<IReadOnlyList<ManualJournalEntryDraftDto>> LoadIdempotentCorrectionDraftsAsync(
+        string fundProfileId,
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionDto action,
+        CancellationToken ct)
+    {
+        var correctionId = action switch
+        {
+            JournalEntryLifecycleActionDto.Reverse => draft.Reversal?.ReversalJournalEntryId,
+            JournalEntryLifecycleActionDto.Rebook => draft.Rebook?.RebookJournalEntryId,
+            _ => null
+        };
+        if (!correctionId.HasValue)
+        {
+            return [];
+        }
+
+        var correction = await _draftStore.GetAsync(fundProfileId, correctionId.Value, ct).ConfigureAwait(false);
+        return correction is null ? [] : [correction];
+    }
+
+    private static JournalEntryLifecycleTransitionDto? FindIdempotentLifecycleTransition(
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionDto action,
+        string? actor,
+        string? correlationId)
+    {
+        var normalizedActor = NormalizeOptional(actor);
+        var normalizedCorrelationId = NormalizeOptional(correlationId);
+        if (normalizedActor is null || normalizedCorrelationId is null)
+        {
+            return null;
+        }
+
+        return draft.LifecycleTransitions.LastOrDefault(transition =>
+            transition.Action == action &&
+            string.Equals(transition.Actor, normalizedActor, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(transition.CorrelationId, normalizedCorrelationId, StringComparison.OrdinalIgnoreCase));
     }
 
     private static JournalEntryLifecycleActionRequestDto RequireLifecycleDecisionNotes(

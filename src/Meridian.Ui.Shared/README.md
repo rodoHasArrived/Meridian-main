@@ -1339,7 +1339,10 @@ the posted source is mutated. The lifecycle service validates the generated corr
 mutating the posted source entry, so invalid custom rebook lines cannot leave the source entry in a
 corrected terminal state without a valid correction draft. Once the source entry is close-locked,
 direct lifecycle correction actions are blocked and post-close changes must flow through
-late-adjustment or restatement governance.
+late-adjustment or restatement governance. Lifecycle commands with a retained correlation id are
+also replay-safe: repeated submit, approval, posting, close-lock, reversal, or rebook requests from
+the same actor return the existing transition, and correction replays return any existing generated
+draft, instead of appending duplicate transitions or audit events after a stale client retry.
 Closed Operations Continuity workflow detail payloads include the governed close-package
 publication manifest metadata produced by the close command: signer, sign-off rationale, retained
 manifest id/route, evidence hash, report pack id, linked evidence, and checklist approvals.

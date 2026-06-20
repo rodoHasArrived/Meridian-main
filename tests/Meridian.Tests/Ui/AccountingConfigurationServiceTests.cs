@@ -908,6 +908,99 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntryLifecycle_ReplayedCorrelationReturnsExistingTransition()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
+
+        var submitted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            JournalEntryLifecycleActionDto.Submit,
+            "controller",
+            saved.Version,
+            Notes: "Submit through lifecycle action.",
+            CorrelationId: "manual-je-submit-idempotent"));
+        var replayedSubmit = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            JournalEntryLifecycleActionDto.Submit,
+            "controller",
+            saved.Version,
+            Notes: "Submit through lifecycle action.",
+            CorrelationId: "manual-je-submit-idempotent"));
+
+        replayedSubmit.Transition.TransitionId.Should().Be(submitted.Transition.TransitionId);
+        replayedSubmit.JournalEntry.Version.Should().Be(submitted.JournalEntry.Version);
+        replayedSubmit.JournalEntry.LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.Submit &&
+            transition.CorrelationId == "manual-je-submit-idempotent");
+
+        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntry.JournalEntryId,
+            submitted.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.JournalEntry.Version,
+            Notes: "Controller approved with retained evidence.",
+            CorrelationId: "manual-je-approve-idempotent",
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)]));
+        var replayedApprove = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntry.JournalEntryId,
+            submitted.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.JournalEntry.Version,
+            Notes: "Controller approved with retained evidence.",
+            CorrelationId: "manual-je-approve-idempotent",
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)]));
+
+        replayedApprove.Transition.TransitionId.Should().Be(approved.Transition.TransitionId);
+        replayedApprove.JournalEntry.Version.Should().Be(approved.JournalEntry.Version);
+        replayedApprove.JournalEntry.LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.Approve &&
+            transition.CorrelationId == "manual-je-approve-idempotent");
+
+        var posted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Post after approval evidence.",
+            CorrelationId: "manual-je-post-idempotent",
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
+        var replayedPost = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Post after approval evidence.",
+            CorrelationId: "manual-je-post-idempotent",
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
+
+        replayedPost.Transition.TransitionId.Should().Be(posted.Transition.TransitionId);
+        replayedPost.JournalEntry.Version.Should().Be(posted.JournalEntry.Version);
+        replayedPost.JournalEntry.LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.Post &&
+            transition.CorrelationId == "manual-je-post-idempotent");
+
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+        workbench.AuditTrail.Should().ContainSingle(item =>
+            item.Action == "manual-je.submit-approval" &&
+            item.CorrelationId == "manual-je-submit-idempotent");
+        workbench.AuditTrail.Should().ContainSingle(item =>
+            item.Action == "manual-je.approve" &&
+            item.CorrelationId == "manual-je-approve-idempotent");
+        workbench.AuditTrail.Should().ContainSingle(item =>
+            item.Action == "manual-je.post" &&
+            item.CorrelationId == "manual-je-post-idempotent");
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntry_DraftSaveHonorsLifecycleMutability()
     {
         var configuration = CreateService();
