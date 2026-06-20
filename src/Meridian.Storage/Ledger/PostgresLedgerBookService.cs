@@ -369,7 +369,8 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                 {
                     AccountingBasis = book.AccountingBasis,
                     AccountingPolicyId = book.AccountingPolicyId,
-                    AccountingPolicyVersion = book.AccountingPolicyVersion
+                    AccountingPolicyVersion = book.AccountingPolicyVersion,
+                    Dimensions = EnsureBookDimensions(row.Dimensions, book)
                 })
                 .ToArray(),
             TotalDebits: financials.TotalDebits,
@@ -410,21 +411,24 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
     private static LedgerPeriodFinancials CalculateFinancials(IReadOnlyList<LedgerJournalEntryRecord> entries)
     {
-        var totals = new Dictionary<LedgerAccount, AccountAccumulator>();
+        var totals = new Dictionary<string, AccountAccumulator>(StringComparer.Ordinal);
         var totalDebits = 0m;
         var totalCredits = 0m;
 
         foreach (var entry in entries)
         {
+            var entryDimensions = BuildDimensions(entry.Entry.Metadata);
             foreach (var line in entry.Entry.Lines)
             {
                 totalDebits += line.Debit;
                 totalCredits += line.Credit;
 
-                if (!totals.TryGetValue(line.Account, out var accumulator))
+                var dimensions = BuildDimensions(line.Dimensions) ?? BuildDimensions(entry.Entry.Metadata, line.EntryId) ?? entryDimensions;
+                var key = BuildAccumulatorKey(line.Account, dimensions);
+                if (!totals.TryGetValue(key, out var accumulator))
                 {
-                    accumulator = new AccountAccumulator(line.Account);
-                    totals[line.Account] = accumulator;
+                    accumulator = new AccountAccumulator(line.Account, dimensions);
+                    totals[key] = accumulator;
                 }
 
                 accumulator.Add(line.Debit, line.Credit);
@@ -443,12 +447,14 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                     accumulator.Debits,
                     accumulator.Credits,
                     balance,
-                    accumulator.EntryCount);
+                    accumulator.EntryCount,
+                    Dimensions: accumulator.Dimensions);
             })
             .OrderBy(static row => row.AccountType, StringComparer.Ordinal)
             .ThenBy(static row => row.AccountName, StringComparer.Ordinal)
             .ThenBy(static row => row.Symbol, StringComparer.Ordinal)
             .ThenBy(static row => row.FinancialAccountId, StringComparer.Ordinal)
+            .ThenBy(static row => BuildDimensionsKey(row.Dimensions), StringComparer.Ordinal)
             .ToArray();
 
         var netIncome = trialBalance.Sum(static row =>
@@ -466,6 +472,241 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         => account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense
             ? debits - credits
             : credits - debits;
+
+    private static LedgerDimensionSetDto? EnsureBookDimensions(
+        LedgerDimensionSetDto? dimensions,
+        LedgerBookRecord book)
+    {
+        var fundId = NormalizeOptional(dimensions?.FundId) ?? book.FundProfileId;
+        if (dimensions is null)
+        {
+            return new LedgerDimensionSetDto(FundId: fundId);
+        }
+
+        return dimensions with { FundId = fundId };
+    }
+
+    private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata)
+    {
+        var tags = metadata.Tags;
+        var externalGlDimensions = ExtractExternalGlDimensions(tags);
+        var dimensionSet = new LedgerDimensionSetDto(
+            FundId: FirstTag(tags, "fundId", "fundProfileId"),
+            EntityId: FirstTag(tags, "entityId", "legalEntityId"),
+            SleeveId: FirstTag(tags, "sleeveId"),
+            StrategyId: metadata.StrategyId ?? FirstTag(tags, "strategyId"),
+            InvestorId: metadata.InvestorId ?? FirstTag(tags, "investorId"),
+            CapitalAccountId: metadata.CapitalAccountId ?? FirstTag(tags, "capitalAccountId"),
+            InstrumentId: metadata.SecurityId,
+            TaxLotId: FirstTag(tags, "taxLotId", "lotId"),
+            CostCenterId: FirstTag(tags, "costCenterId"),
+            CounterpartyId: metadata.CounterpartyAccountId ?? FirstTag(tags, "counterpartyId", "counterpartyAccountId"),
+            ExternalGlDimensions: externalGlDimensions,
+            OrganizationId: FirstTag(tags, "organizationId"),
+            PortfolioId: FirstTag(tags, "portfolioId"),
+            BookId: metadata.LedgerBook ?? FirstTag(tags, "bookId"),
+            AccountId: metadata.FinancialAccountId ?? FirstTag(tags, "accountId"),
+            CustomerId: FirstTag(tags, "customerId"),
+            VendorId: FirstTag(tags, "vendorId"),
+            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"));
+
+        return HasAnyDimension(dimensionSet) ? dimensionSet : null;
+    }
+
+    private static LedgerDimensionSetDto? BuildDimensions(LedgerLineDimensionSet? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return null;
+        }
+
+        var dimensionSet = new LedgerDimensionSetDto(
+            FundId: dimensions.FundId,
+            EntityId: dimensions.EntityId,
+            SleeveId: dimensions.SleeveId,
+            StrategyId: dimensions.StrategyId,
+            InvestorId: dimensions.InvestorId,
+            CapitalAccountId: dimensions.CapitalAccountId,
+            InstrumentId: dimensions.InstrumentId,
+            TaxLotId: dimensions.TaxLotId,
+            CostCenterId: dimensions.CostCenterId,
+            CounterpartyId: dimensions.CounterpartyId,
+            ExternalGlDimensions: dimensions.ExternalGlDimensions,
+            OrganizationId: dimensions.OrganizationId,
+            PortfolioId: dimensions.PortfolioId,
+            BookId: dimensions.BookId,
+            AccountId: dimensions.AccountId,
+            CustomerId: dimensions.CustomerId,
+            VendorId: dimensions.VendorId,
+            ProjectId: dimensions.ProjectId);
+
+        return HasAnyDimension(dimensionSet) ? dimensionSet : null;
+    }
+
+    private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata, Guid lineEntryId)
+    {
+        var tags = metadata.Tags;
+        var prefix = $"lineDimensions.{lineEntryId:N}.";
+        if (tags is null || tags.Keys.All(key => !key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+
+        var instrumentId = Guid.TryParse(FirstTag(tags, prefix + "instrumentId"), out var parsedInstrumentId)
+            ? parsedInstrumentId
+            : (Guid?)null;
+        var dimensionSet = new LedgerDimensionSetDto(
+            FundId: FirstTag(tags, prefix + "fundId"),
+            EntityId: FirstTag(tags, prefix + "entityId"),
+            SleeveId: FirstTag(tags, prefix + "sleeveId"),
+            StrategyId: FirstTag(tags, prefix + "strategyId"),
+            InvestorId: FirstTag(tags, prefix + "investorId"),
+            CapitalAccountId: FirstTag(tags, prefix + "capitalAccountId"),
+            InstrumentId: instrumentId,
+            TaxLotId: FirstTag(tags, prefix + "taxLotId"),
+            CostCenterId: FirstTag(tags, prefix + "costCenterId"),
+            CounterpartyId: FirstTag(tags, prefix + "counterpartyId"),
+            ExternalGlDimensions: ExtractExternalGlDimensions(tags, prefix),
+            OrganizationId: FirstTag(tags, prefix + "organizationId"),
+            PortfolioId: FirstTag(tags, prefix + "portfolioId"),
+            BookId: FirstTag(tags, prefix + "bookId"),
+            AccountId: FirstTag(tags, prefix + "accountId"),
+            CustomerId: FirstTag(tags, prefix + "customerId"),
+            VendorId: FirstTag(tags, prefix + "vendorId"),
+            ProjectId: FirstTag(tags, prefix + "projectId"));
+
+        return HasAnyDimension(dimensionSet) ? dimensionSet : null;
+    }
+
+    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
+        => !string.IsNullOrWhiteSpace(dimensions.FundId)
+           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
+           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
+           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
+           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
+           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
+           || dimensions.InstrumentId.HasValue
+           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
+           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
+           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
+           || dimensions.ExternalGlDimensions.Count > 0
+           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
+           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
+           || !string.IsNullOrWhiteSpace(dimensions.BookId)
+           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
+           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
+           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
+           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
+
+    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
+        IReadOnlyDictionary<string, string>? tags)
+        => ExtractExternalGlDimensions(tags, prefix: null);
+
+    private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
+        IReadOnlyDictionary<string, string>? tags,
+        string? prefix)
+    {
+        if (tags is null || tags.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in tags)
+        {
+            var key = NormalizeOptional(pair.Key);
+            var value = NormalizeOptional(pair.Value);
+            if (key is null || value is null)
+            {
+                continue;
+            }
+
+            var scopedKey = prefix is null
+                ? key
+                : StripPrefix(key, prefix);
+            if (scopedKey is null)
+            {
+                continue;
+            }
+
+            var dimensionKey = StripPrefix(scopedKey, "externalGl.")
+                               ?? StripPrefix(scopedKey, "externalGl:")
+                               ?? StripPrefix(scopedKey, "gl.")
+                               ?? StripPrefix(scopedKey, "gl:");
+            if (!string.IsNullOrWhiteSpace(dimensionKey))
+            {
+                result[dimensionKey] = value;
+            }
+        }
+
+        return result;
+    }
+
+    private static string? StripPrefix(string value, string prefix)
+        => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? NormalizeOptional(value[prefix.Length..])
+            : null;
+
+    private static string? FirstTag(
+        IReadOnlyDictionary<string, string>? tags,
+        params string[] keys)
+    {
+        if (tags is null || tags.Count == 0)
+        {
+            return null;
+        }
+
+        foreach (var key in keys)
+        {
+            if (tags.TryGetValue(key, out var value))
+            {
+                return NormalizeOptional(value);
+            }
+        }
+
+        return null;
+    }
+
+    private static string BuildAccumulatorKey(LedgerAccount account, LedgerDimensionSetDto? dimensions)
+        => string.Join(
+            "\u001f",
+            account.Name,
+            account.AccountType,
+            account.Symbol ?? string.Empty,
+            account.FinancialAccountId ?? string.Empty,
+            BuildDimensionsKey(dimensions));
+
+    private static string BuildDimensionsKey(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return string.Empty;
+        }
+
+        var externalGl = dimensions.ExternalGlDimensions
+            .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
+        return string.Join(
+            "\u001e",
+            dimensions.FundId ?? string.Empty,
+            dimensions.EntityId ?? string.Empty,
+            dimensions.SleeveId ?? string.Empty,
+            dimensions.StrategyId ?? string.Empty,
+            dimensions.InvestorId ?? string.Empty,
+            dimensions.CapitalAccountId ?? string.Empty,
+            dimensions.InstrumentId?.ToString("D") ?? string.Empty,
+            dimensions.TaxLotId ?? string.Empty,
+            dimensions.CostCenterId ?? string.Empty,
+            dimensions.CounterpartyId ?? string.Empty,
+            dimensions.OrganizationId ?? string.Empty,
+            dimensions.PortfolioId ?? string.Empty,
+            dimensions.BookId ?? string.Empty,
+            dimensions.AccountId ?? string.Empty,
+            dimensions.CustomerId ?? string.Empty,
+            dimensions.VendorId ?? string.Empty,
+            dimensions.ProjectId ?? string.Empty,
+            string.Join("\u001d", externalGl));
+    }
 
     private static LedgerBookDto MapBook(LedgerBookRecord record)
         => new(
@@ -544,11 +785,18 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
     private sealed class AccountAccumulator
     {
         public AccountAccumulator(LedgerAccount account)
+            : this(account, null)
+        {
+        }
+
+        public AccountAccumulator(LedgerAccount account, LedgerDimensionSetDto? dimensions)
         {
             Account = account;
+            Dimensions = dimensions;
         }
 
         public LedgerAccount Account { get; }
+        public LedgerDimensionSetDto? Dimensions { get; }
         public decimal Debits { get; private set; }
         public decimal Credits { get; private set; }
         public int EntryCount { get; private set; }

@@ -146,7 +146,7 @@ Use this matrix to avoid source-of-truth drift:
 | Extensibility engineering boundaries | [Core Extensibility Model](../architecture/core-extensibility-model.md) and `src/Meridian.Contracts/Extensibility/` | Stable-core and governed-configuration rules for implementation |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
-| Detailed planning / historical analysis | `docs/plans/`, `docs/evaluations/`, `docs/status/` | Source material only; extract only active facts |
+| Detailed planning / historical analysis | `docs/plans/`, `archive/docs/assessments/`, `docs/status/` | Source material only; extract only active facts |
 
 ## Product-Critical Migration Index
 

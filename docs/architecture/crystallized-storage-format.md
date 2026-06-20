@@ -625,7 +625,7 @@ The format uses schema versioning for forward compatibility:
 ## Related Documentation
 
 - [Storage Architecture Overview](./storage-design.md)
-- [Data Providers Guide](../providers/backfill-guide.md)
+- [Provider Backfill Operations](../operators/provider-backfill-operations.md)
 - [WAL Durability (ADR-007)](../adr/007-write-ahead-log-durability.md)
 - [Multi-Format Storage (ADR-008)](../adr/008-multi-format-composite-storage.md)
 - [AI Assistant Storage Guide](../ai/claude/CLAUDE.storage.md)

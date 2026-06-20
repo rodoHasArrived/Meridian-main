@@ -46,11 +46,19 @@ const apiMocks = vi.hoisted(() => ({
   revokeAlpacaConnection: vi.fn(),
   testProviderConnection: vi.fn(),
   putProviderCredentials: vi.fn(),
+  activateProviderIntegration: vi.fn(),
+  checkProviderIntegrationSchemaDrift: vi.fn(),
   createProviderIntegrationReconciliationHandoff: vi.fn(),
+  getProviderIntegrationReadiness: vi.fn(),
+  getProviderIntegrationTemplate: vi.fn(),
+  getProviderIntegrationTemplates: vi.fn(),
   importProviderIntegrationOpenApi: vi.fn(),
   replayProviderIntegrationQuarantineRecords: vi.fn(),
   resolveProviderIntegrationQuarantineRecord: vi.fn(),
   runDueProviderIntegrationSync: vi.fn(),
+  runManualCsvProviderIntegrationDryRun: vi.fn(),
+  runRestProviderIntegrationDryRun: vi.fn(),
+  saveProviderIntegrationSetup: vi.fn(),
   verifyProviderConnection: vi.fn(),
   deleteProviderCredentials: vi.fn(),
   getProviderIntegrationConnectionMonitor: vi.fn(),
@@ -81,11 +89,19 @@ vi.mock("@/lib/api", async (importActual) => ({
   revokeAlpacaConnection: apiMocks.revokeAlpacaConnection,
   testProviderConnection: apiMocks.testProviderConnection,
   putProviderCredentials: apiMocks.putProviderCredentials,
+  activateProviderIntegration: apiMocks.activateProviderIntegration,
+  checkProviderIntegrationSchemaDrift: apiMocks.checkProviderIntegrationSchemaDrift,
   createProviderIntegrationReconciliationHandoff: apiMocks.createProviderIntegrationReconciliationHandoff,
+  getProviderIntegrationReadiness: apiMocks.getProviderIntegrationReadiness,
+  getProviderIntegrationTemplate: apiMocks.getProviderIntegrationTemplate,
+  getProviderIntegrationTemplates: apiMocks.getProviderIntegrationTemplates,
   importProviderIntegrationOpenApi: apiMocks.importProviderIntegrationOpenApi,
   replayProviderIntegrationQuarantineRecords: apiMocks.replayProviderIntegrationQuarantineRecords,
   resolveProviderIntegrationQuarantineRecord: apiMocks.resolveProviderIntegrationQuarantineRecord,
   runDueProviderIntegrationSync: apiMocks.runDueProviderIntegrationSync,
+  runManualCsvProviderIntegrationDryRun: apiMocks.runManualCsvProviderIntegrationDryRun,
+  runRestProviderIntegrationDryRun: apiMocks.runRestProviderIntegrationDryRun,
+  saveProviderIntegrationSetup: apiMocks.saveProviderIntegrationSetup,
   verifyProviderConnection: apiMocks.verifyProviderConnection,
   deleteProviderCredentials: apiMocks.deleteProviderCredentials,
   getProviderIntegrationConnectionMonitor: apiMocks.getProviderIntegrationConnectionMonitor,
@@ -1683,6 +1699,212 @@ describe("SettingsScreen", () => {
     });
   });
 
+  it("runs the guided provider integration workbench over shared setup and dry-run endpoints", async () => {
+    const user = userEvent.setup();
+    const manifest = {
+      manifestId: "template-polygon-data-v1",
+      manifestVersion: 1,
+      providerId: "polygon",
+      displayName: "Polygon positions REST",
+      integrationType: "OpenApiRest" as const,
+      environment: "paper",
+      auth: { type: "ApiKey" as const, tokenUrl: null, scopes: [], metadata: {} },
+      capabilities: [
+        {
+          capability: "Positions" as const,
+          enabled: true,
+          requiresCertifiedAdapter: false,
+          requiredCanonicalFields: ["accountId", "symbol", "quantity"]
+        }
+      ],
+      endpoints: [
+        {
+          endpointKey: "positions",
+          capability: "Positions" as const,
+          method: "Get" as const,
+          path: "/v3/reference/positions",
+          headers: {},
+          query: { limit: "100" },
+          requestBodyTemplate: null,
+          dependsOn: null,
+          pagination: { type: "None" as const, cursorPath: null, cursorParam: null, nextUrlPath: null, pageSize: null },
+          response: { recordsPath: "$.results", schemaFingerprint: "positions-v1", requiredPaths: ["accountId", "symbol", "quantity"] }
+        }
+      ],
+      fieldMappings: [
+        { capability: "Positions" as const, sourcePath: "$.accountId", targetField: "providerAccountId", transform: null, required: true, confidence: "High" as const, defaultValue: null, constantValue: null },
+        { capability: "Positions" as const, sourcePath: "$.symbol", targetField: "symbol", transform: null, required: true, confidence: "High" as const, defaultValue: null, constantValue: null }
+      ],
+      sync: { mode: "incremental", frequency: "daily", time: null, timezone: "America/New_York", cursorType: "Timestamp" as const, cursorField: "updatedAt", fullRefreshFrequency: null },
+      validationRules: [],
+      activation: {
+        requiresAuthenticationTest: true,
+        requiresEndpointTest: true,
+        requiresDryRun: true,
+        requiresApproval: true,
+        productionWriteCapabilitiesAllowed: false,
+        requiredIssueCodes: []
+      },
+      state: "Draft" as const,
+      createdBy: "operations",
+      createdAt: "2026-06-16T12:00:00Z",
+      approvedBy: null,
+      approvedAt: null,
+      changeReason: "Seed Polygon provider integration."
+    };
+    const reviewReadiness = {
+      isReady: false,
+      requiredEvidence: ["dry-run-result"],
+      issues: [
+        { code: "DRY_RUN_REQUIRED", severity: "Warning" as const, message: "Run dry-run before activation.", capability: "Positions" as const, suggestedFix: "Run a read-only dry-run." }
+      ]
+    };
+    const readyReadiness = { isReady: true, requiredEvidence: ["dry-run-result"], issues: [] };
+    apiMocks.getProviderIntegrationTemplates.mockResolvedValue([
+      {
+        manifestId: manifest.manifestId,
+        providerId: "polygon",
+        displayName: "Polygon positions REST",
+        integrationType: "OpenApiRest",
+        capabilities: ["Positions"],
+        summary: "Read-only position import for reconciliation staging.",
+        requiresCredentials: true
+      }
+    ]);
+    apiMocks.getProviderIntegrationTemplate.mockResolvedValue(manifest);
+    apiMocks.saveProviderIntegrationSetup.mockResolvedValue({
+      saved: true,
+      manifestId: manifest.manifestId,
+      connectionId: "provider-reference",
+      manifestState: "Draft",
+      connectionState: "Draft",
+      readiness: reviewReadiness,
+      approvalEvidenceId: null,
+      message: "Provider integration setup draft saved."
+    });
+    apiMocks.getProviderIntegrationReadiness.mockResolvedValue(readyReadiness);
+    apiMocks.runManualCsvProviderIntegrationDryRun.mockResolvedValue({
+      syncRunId: "settings-csv-provider-reference-20260616",
+      rawPayloadId: "raw-csv-1",
+      capability: "Positions",
+      recordsReceived: 1,
+      recordsAccepted: 1,
+      recordsQuarantined: 0,
+      status: "Validated",
+      issues: []
+    });
+    apiMocks.runRestProviderIntegrationDryRun.mockResolvedValue({
+      syncRunId: "settings-rest-provider-reference-20260616",
+      rawPayloadId: "raw-rest-1",
+      capability: "Positions",
+      recordsReceived: 2,
+      recordsAccepted: 2,
+      recordsQuarantined: 0,
+      status: "Validated",
+      issues: []
+    });
+    apiMocks.checkProviderIntegrationSchemaDrift.mockResolvedValue({
+      manifestId: manifest.manifestId,
+      connectionId: "provider-reference",
+      capability: "Positions",
+      endpointKey: "positions",
+      syncRunId: "settings-rest-provider-reference-20260616",
+      rawPayloadId: "raw-rest-1",
+      driftDetected: false,
+      shouldPauseCapability: false,
+      recordsInspected: 2,
+      issues: []
+    });
+    apiMocks.activateProviderIntegration.mockResolvedValue({
+      activated: true,
+      manifestId: manifest.manifestId,
+      connectionId: "provider-reference",
+      manifestState: "Active",
+      connectionState: "Active",
+      readiness: readyReadiness,
+      message: "Provider integration activated."
+    });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      />
+    );
+
+    const workbench = screen.getByRole("region", { name: "Polygon.io guided provider integration workbench" });
+    await user.click(within(workbench).getByRole("button", { name: "Load provider integration templates for Polygon.io" }));
+    expect(await within(workbench).findByText("1 provider integration templates loaded.")).toBeInTheDocument();
+    await user.click(within(workbench).getByRole("button", { name: "Use selected provider integration template for Polygon.io" }));
+    expect(await within(workbench).findByText("Template template-polygon-data-v1 loaded into draft setup editor.")).toBeInTheDocument();
+    expect(within(workbench).getByText(/\$\.accountId/)).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Save provider integration setup draft for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.saveProviderIntegrationSetup).toHaveBeenCalledWith(expect.objectContaining({
+        manifest: expect.objectContaining({ manifestId: manifest.manifestId }),
+        connection: expect.objectContaining({ connectionId: "provider-reference", credentialSecretRef: expect.stringContaining("provider-credential:polygon") }),
+        savedBy: "Andrew Rowden",
+        savedAt: expect.any(String)
+      }));
+    });
+    expect(await within(workbench).findByText("Provider integration setup draft saved.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Check provider integration activation readiness for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.getProviderIntegrationReadiness).toHaveBeenCalledWith(manifest.manifestId, "provider-reference");
+    });
+    expect(await within(workbench).findByText("Activation readiness passed.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Run provider integration CSV dry-run for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.runManualCsvProviderIntegrationDryRun).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: manifest.manifestId,
+        connectionId: "provider-reference",
+        capability: "Positions",
+        requestedBy: "Andrew Rowden"
+      }));
+    });
+    expect(await within(workbench).findByText("CSV dry-run completed: 1 accepted / 0 quarantined.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Run provider integration REST dry-run for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.runRestProviderIntegrationDryRun).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: manifest.manifestId,
+        connectionId: "provider-reference",
+        endpointKey: "positions",
+        maxPages: 2
+      }));
+    });
+    expect(await within(workbench).findByText("REST dry-run completed: 2 accepted / 0 quarantined.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Check provider integration schema drift for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.checkProviderIntegrationSchemaDrift).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: manifest.manifestId,
+        connectionId: "provider-reference",
+        endpointKey: "positions",
+        rawPayloadId: "raw-rest-1",
+        checkedBy: "Andrew Rowden"
+      }));
+    });
+    expect(await within(workbench).findByText("Schema drift check passed.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Activate provider integration setup for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.activateProviderIntegration).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: manifest.manifestId,
+        connectionId: "provider-reference",
+        approvedBy: "Andrew Rowden",
+        approvalEvidenceId: expect.stringMatching(/^settings-provider-activation-provider-reference-/)
+      }));
+    });
+    expect(await within(workbench).findByText("Provider integration activated.")).toBeInTheDocument();
+  });
   it("supports inline provider edit, test, save, verify, and clear actions", async () => {
     const user = userEvent.setup();
     const onRefresh = vi.fn();

@@ -261,9 +261,12 @@ before browser, WPF, storage, or reporting surfaces inspect them.
 `AccountingPostingCandidateService` bridges Rules Studio posting-rule dry runs into that governed
 journal draft path. It evaluates a source event through the shared accounting-configuration
 service, resolves generated account paths through the active chart without guessing account type,
-preserves generated dimensions and evidence on the returned candidate payload, and then calls the
-draft service to produce only an approval-gated posting command candidate. It does not append
-ledger entries or bypass the manual-journal lifecycle.
+preserves generated dimensions and evidence on the returned candidate payload, carries generated
+line dimensions into the draft request, and then calls the draft service to produce only an
+approval-gated posting command candidate. The draft service retains line-entry keyed dimension tags
+on the governed write metadata so downstream ledger-book reports and export mapping can recover
+line-specific fund/entity/cost-center/counterparty/external-GL scope without adding a live posting
+path. It does not append ledger entries or bypass the manual-journal lifecycle.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid

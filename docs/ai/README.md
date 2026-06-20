@@ -251,7 +251,7 @@ The following high-traffic files are source material or historical entrypoints o
 - `archive/docs/developer/setup.md` and `archive/docs/developer/build-test-run.md` → [start/](../start/README.md) and [engineering/](../engineering/README.md)
 - `archive/docs/developer/` and `docs/development/` guidance files → [engineering/README.md](../engineering/README.md)
 - `docs/ops`-style quickstart notes and one-off operator snapshots → [operators/README.md](../operators/README.md)
-- `docs/providers/*` setup, matrix, and provider-reference pages → [operators/provider-*.md](../operators/README.md) and [reference/provider-*.md](../reference/README.md)
+- archived `docs/providers/*` setup, matrix, and provider-reference pages → [operators/provider-*.md](../operators/README.md) and [reference/provider-*.md](../reference/README.md)
 
 ---
 

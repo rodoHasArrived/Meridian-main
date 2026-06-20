@@ -18,7 +18,8 @@ public sealed record AccountingJournalDraftLineRequest(
     decimal Debit,
     decimal Credit,
     string? Description = null,
-    IReadOnlyList<string>? EvidenceLinks = null);
+    IReadOnlyList<string>? EvidenceLinks = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record AccountingJournalDraftRequest(
     Guid AggregateId,
@@ -328,14 +329,16 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
 
             totalDebits += line.Debit;
             totalCredits += line.Credit;
+            var lineEntryId = Guid.NewGuid();
             lines.Add(new LedgerEntry(
-                Guid.NewGuid(),
+                lineEntryId,
                 journalEntryId,
                 request.AccountingTimestamp,
                 line.Account,
                 line.Debit,
                 line.Credit,
-                description));
+                description,
+                ToLedgerLineDimensions(line.Dimensions)));
         }
 
         if (lines.Count == 0)
@@ -351,7 +354,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                     request.AccountingTimestamp,
                     description,
                     lines,
-                    BuildJournalEntryMetadata(request, evidenceLinks, treasuryContext)),
+                    BuildJournalEntryMetadata(request, lines, evidenceLinks, treasuryContext)),
                 totalDebits,
                 totalCredits);
         }
@@ -370,6 +373,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
 
     private static JournalEntryMetadata BuildJournalEntryMetadata(
         AccountingJournalDraftRequest request,
+        IReadOnlyList<LedgerEntry> lines,
         IReadOnlyList<string> evidenceLinks,
         TreasuryLedgerContextDto? treasuryContext)
     {
@@ -382,6 +386,11 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         if (!string.IsNullOrWhiteSpace(request.SourceEventType))
         {
             tags["sourceEventType"] = request.SourceEventType.Trim();
+        }
+
+        for (var index = 0; index < request.Lines.Count && index < lines.Count; index++)
+        {
+            AppendLineDimensionTags(tags, lines[index].EntryId, request.Lines[index].Dimensions);
         }
 
         return new JournalEntryMetadata(
@@ -404,6 +413,86 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 SourceSystem: "FinancialOperations",
                 RetainedAtUtc: request.AccountingTimestamp,
                 RetainedBy: "financial-operations")).ToArray());
+    }
+
+    private static void AppendLineDimensionTags(
+        Dictionary<string, string> tags,
+        Guid lineEntryId,
+        LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return;
+        }
+
+        var prefix = $"lineDimensions.{lineEntryId:N}.";
+        AddTag(tags, prefix + "fundId", dimensions.FundId);
+        AddTag(tags, prefix + "entityId", dimensions.EntityId);
+        AddTag(tags, prefix + "sleeveId", dimensions.SleeveId);
+        AddTag(tags, prefix + "strategyId", dimensions.StrategyId);
+        AddTag(tags, prefix + "investorId", dimensions.InvestorId);
+        AddTag(tags, prefix + "capitalAccountId", dimensions.CapitalAccountId);
+        AddTag(tags, prefix + "instrumentId", dimensions.InstrumentId?.ToString("D"));
+        AddTag(tags, prefix + "taxLotId", dimensions.TaxLotId);
+        AddTag(tags, prefix + "costCenterId", dimensions.CostCenterId);
+        AddTag(tags, prefix + "counterpartyId", dimensions.CounterpartyId);
+        AddTag(tags, prefix + "organizationId", dimensions.OrganizationId);
+        AddTag(tags, prefix + "portfolioId", dimensions.PortfolioId);
+        AddTag(tags, prefix + "bookId", dimensions.BookId);
+        AddTag(tags, prefix + "accountId", dimensions.AccountId);
+        AddTag(tags, prefix + "customerId", dimensions.CustomerId);
+        AddTag(tags, prefix + "vendorId", dimensions.VendorId);
+        AddTag(tags, prefix + "projectId", dimensions.ProjectId);
+
+        foreach (var pair in dimensions.ExternalGlDimensions.OrderBy(static item => item.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var key = NormalizeOptional(pair.Key);
+            var value = NormalizeOptional(pair.Value);
+            if (key is not null && value is not null)
+            {
+                tags[$"{prefix}externalGl.{key}"] = value;
+            }
+        }
+    }
+
+    private static void AddTag(Dictionary<string, string> tags, string key, string? value)
+    {
+        var normalized = NormalizeOptional(value);
+        if (normalized is not null)
+        {
+            tags[key] = normalized;
+        }
+    }
+
+    private static LedgerLineDimensionSet? ToLedgerLineDimensions(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return null;
+        }
+
+        return new LedgerLineDimensionSet(
+            FundId: NormalizeOptional(dimensions.FundId),
+            EntityId: NormalizeOptional(dimensions.EntityId),
+            SleeveId: NormalizeOptional(dimensions.SleeveId),
+            StrategyId: NormalizeOptional(dimensions.StrategyId),
+            InvestorId: NormalizeOptional(dimensions.InvestorId),
+            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
+            InstrumentId: dimensions.InstrumentId,
+            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
+            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
+            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
+            ExternalGlDimensions: dimensions.ExternalGlDimensions
+                .Where(static item => !string.IsNullOrWhiteSpace(item.Key) && !string.IsNullOrWhiteSpace(item.Value))
+                .OrderBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(static item => item.Key.Trim(), static item => item.Value.Trim(), StringComparer.OrdinalIgnoreCase),
+            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
+            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
+            BookId: NormalizeOptional(dimensions.BookId),
+            AccountId: NormalizeOptional(dimensions.AccountId),
+            CustomerId: NormalizeOptional(dimensions.CustomerId),
+            VendorId: NormalizeOptional(dimensions.VendorId),
+            ProjectId: NormalizeOptional(dimensions.ProjectId));
     }
 
     private static AccountingPostingCommandDto BuildPostingCommand(

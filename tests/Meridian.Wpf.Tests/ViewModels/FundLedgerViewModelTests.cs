@@ -154,6 +154,15 @@ public sealed class FundLedgerViewModelTests
                 await viewModel.LoadAsync();
                 await WaitForConditionAsync(() => viewModel.SupportsSelectedBreakActions);
 
+                viewModel.TrialBalanceTable.Rows.Should().BeSameAs(viewModel.VisibleTrialBalance);
+                viewModel.JournalTable.Rows.Should().BeSameAs(viewModel.VisibleJournal);
+                viewModel.SelectedTrialBalanceLine.Should().NotBeNull();
+                viewModel.SelectedTrialBalanceInspector.Title.Should().Be(viewModel.SelectedTrialBalanceLine!.AccountName);
+                viewModel.SelectedTrialBalanceInspector.Facts.Should().Contain(fact => fact.Label == "Balance");
+                viewModel.SelectedJournalEntry.Should().NotBeNull();
+                viewModel.SelectedJournalInspector.Subtitle.Should().Be(viewModel.SelectedJournalEntry!.JournalEntryId.ToString("D"));
+                viewModel.SelectedJournalInspector.Facts.Should().Contain(fact => fact.Label == "Linked accounts");
+
                 viewModel.Accounts.Should().ContainSingle();
                 viewModel.Accounts[0].StructureLabel.Should().Contain("Entity");
                 viewModel.Accounts[0].StructureLabel.Should().Contain("Sleeve");
@@ -310,6 +319,15 @@ public sealed class FundLedgerViewModelTests
 
                 await viewModel.LoadAsync();
                 await WaitForConditionAsync(() => viewModel.SupportsSelectedBreakActions);
+
+                viewModel.TrialBalanceTable.Rows.Should().BeSameAs(viewModel.VisibleTrialBalance);
+                viewModel.JournalTable.Rows.Should().BeSameAs(viewModel.VisibleJournal);
+                viewModel.SelectedTrialBalanceLine.Should().NotBeNull();
+                viewModel.SelectedTrialBalanceInspector.Title.Should().Be(viewModel.SelectedTrialBalanceLine!.AccountName);
+                viewModel.SelectedTrialBalanceInspector.Facts.Should().Contain(fact => fact.Label == "Balance");
+                viewModel.SelectedJournalEntry.Should().NotBeNull();
+                viewModel.SelectedJournalInspector.Subtitle.Should().Be(viewModel.SelectedJournalEntry!.JournalEntryId.ToString("D"));
+                viewModel.SelectedJournalInspector.Facts.Should().Contain(fact => fact.Label == "Linked accounts");
 
                 viewModel.ReconciliationNoteText = "Reviewed custodian statement and matched ledger adjustment.";
                 await viewModel.StartReviewSelectedBreakAsync();

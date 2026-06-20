@@ -306,6 +306,7 @@ public static class LedgerEndpoints
             {
                 return ServiceUnavailable();
             }
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
 
             var summaries = await LoadClosedPeriodSummariesAsync(
                 service,
@@ -325,7 +326,8 @@ public static class LedgerEndpoints
                     fundStructureNodeId,
                     accountingBasis,
                     startDate,
-                    endDate),
+                    endDate,
+                    dimensionFilter),
                 jsonOptions);
         })
         .WithName("GetLedgerCrossPeriodTrialBalanceReport")
@@ -358,6 +360,7 @@ public static class LedgerEndpoints
             {
                 return ServiceUnavailable();
             }
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
 
             var summaries = await LoadClosedPeriodSummariesAsync(
                 service,
@@ -377,7 +380,8 @@ public static class LedgerEndpoints
                     fundStructureNodeId,
                     accountingBasis,
                     startDate,
-                    endDate),
+                    endDate,
+                    dimensionFilter),
                 jsonOptions);
         })
         .WithName("GetLedgerCrossPeriodPnlReport")
@@ -1795,6 +1799,7 @@ public static class LedgerEndpoints
             .ThenBy(static row => row.AccountName, StringComparer.Ordinal)
             .ThenBy(static row => row.Symbol, StringComparer.Ordinal)
             .ThenBy(static row => row.FinancialAccountId, StringComparer.Ordinal)
+            .ThenBy(static row => BuildDimensionSignature(row.Dimensions), StringComparer.Ordinal)
             .ToArray();
         var signature = new LedgerReportSignatureDto(
             "SHA256",
@@ -1842,7 +1847,7 @@ public static class LedgerEndpoints
         builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-basis,{summary.AccountingBasis}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-policy-id,{EscapeSignatureField(summary.AccountingPolicyId)}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-policy-version,{EscapeSignatureField(summary.AccountingPolicyVersion)}");
-        builder.AppendLine("account-name,account-type,symbol,financial-account-id,debits,credits,balance,entry-count,rule-id,rule-version,source-event-id,source-journal-entry-id");
+        builder.AppendLine("account-name,account-type,symbol,financial-account-id,debits,credits,balance,entry-count,rule-id,rule-version,source-event-id,source-journal-entry-id,dimensions");
 
         foreach (var line in lines)
         {
@@ -1868,10 +1873,178 @@ public static class LedgerEndpoints
             builder.Append(',');
             builder.Append(EscapeSignatureField(line.SourceEventId ?? string.Empty));
             builder.Append(',');
-            builder.AppendLine(line.SourceJournalEntryId?.ToString("D") ?? string.Empty);
+            builder.Append(line.SourceJournalEntryId?.ToString("D") ?? string.Empty);
+            builder.Append(',');
+            builder.AppendLine(EscapeSignatureField(BuildDimensionSignature(line.Dimensions)));
         }
 
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+    }
+
+    private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return string.Empty;
+        }
+
+        var externalGl = dimensions.ExternalGlDimensions
+            .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
+        return string.Join(
+            "|",
+            dimensions.FundId ?? string.Empty,
+            dimensions.EntityId ?? string.Empty,
+            dimensions.SleeveId ?? string.Empty,
+            dimensions.StrategyId ?? string.Empty,
+            dimensions.InvestorId ?? string.Empty,
+            dimensions.CapitalAccountId ?? string.Empty,
+            dimensions.InstrumentId?.ToString("D") ?? string.Empty,
+            dimensions.TaxLotId ?? string.Empty,
+            dimensions.CostCenterId ?? string.Empty,
+            dimensions.CounterpartyId ?? string.Empty,
+            dimensions.OrganizationId ?? string.Empty,
+            dimensions.PortfolioId ?? string.Empty,
+            dimensions.BookId ?? string.Empty,
+            dimensions.AccountId ?? string.Empty,
+            dimensions.CustomerId ?? string.Empty,
+            dimensions.VendorId ?? string.Empty,
+            dimensions.ProjectId ?? string.Empty,
+            string.Join(";", externalGl));
+    }
+
+    private static LedgerDimensionReportFilter BuildDimensionReportFilter(IQueryCollection query)
+    {
+        var externalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in query)
+        {
+            const string prefix = "externalGl.";
+            if (!pair.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var dimensionName = NormalizeOptional(pair.Key[prefix.Length..]);
+            var dimensionValue = NormalizeOptional(pair.Value.ToString());
+            if (dimensionName is not null && dimensionValue is not null)
+            {
+                externalGlDimensions[dimensionName] = dimensionValue;
+            }
+        }
+
+        var externalGlDimensionKey = NormalizeOptional(GetQueryValue(query, "externalGlDimensionKey"));
+        var externalGlDimensionValue = NormalizeOptional(GetQueryValue(query, "externalGlDimensionValue"));
+        if (externalGlDimensionKey is not null && externalGlDimensionValue is not null)
+        {
+            externalGlDimensions[externalGlDimensionKey] = externalGlDimensionValue;
+        }
+
+        return new LedgerDimensionReportFilter(
+            FundId: NormalizeOptional(GetQueryValue(query, "dimensionFundId")),
+            EntityId: NormalizeOptional(GetQueryValue(query, "entityId")),
+            SleeveId: NormalizeOptional(GetQueryValue(query, "sleeveId")),
+            StrategyId: NormalizeOptional(GetQueryValue(query, "strategyId")),
+            InvestorId: NormalizeOptional(GetQueryValue(query, "investorId")),
+            CapitalAccountId: NormalizeOptional(GetQueryValue(query, "capitalAccountId")),
+            InstrumentId: NormalizeOptional(GetQueryValue(query, "instrumentId")),
+            TaxLotId: NormalizeOptional(GetQueryValue(query, "taxLotId")),
+            CostCenterId: NormalizeOptional(GetQueryValue(query, "costCenterId")),
+            CounterpartyId: NormalizeOptional(GetQueryValue(query, "counterpartyId")),
+            OrganizationId: NormalizeOptional(GetQueryValue(query, "organizationId")),
+            PortfolioId: NormalizeOptional(GetQueryValue(query, "portfolioId")),
+            BookId: NormalizeOptional(GetQueryValue(query, "bookId")),
+            AccountId: NormalizeOptional(GetQueryValue(query, "accountId")),
+            CustomerId: NormalizeOptional(GetQueryValue(query, "customerId")),
+            VendorId: NormalizeOptional(GetQueryValue(query, "vendorId")),
+            ProjectId: NormalizeOptional(GetQueryValue(query, "projectId")),
+            ExternalGlDimensions: externalGlDimensions);
+    }
+
+    private static string? GetQueryValue(IQueryCollection query, string key)
+        => query.TryGetValue(key, out var value) ? value.ToString() : null;
+
+    private static LedgerPeriodSummaryDto ApplyDimensionFilter(
+        LedgerPeriodSummaryDto summary,
+        LedgerDimensionReportFilter filter)
+    {
+        if (!filter.HasCriteria)
+        {
+            return summary;
+        }
+
+        var lines = summary.TrialBalance
+            .Where(row => MatchesDimensionFilter(row.Dimensions, filter))
+            .ToArray();
+        return summary with
+        {
+            TrialBalance = lines,
+            TotalDebits = lines.Sum(static row => row.DebitTotal),
+            TotalCredits = lines.Sum(static row => row.CreditTotal),
+            NetIncome = CalculateNetIncome(lines),
+            PeriodOnPeriodVariance = null
+        };
+    }
+
+    private static decimal CalculateNetIncome(IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
+        => lines.Sum(static row =>
+            row.AccountType switch
+            {
+                "Revenue" => row.Balance,
+                "Expense" => -row.Balance,
+                _ => 0m
+            });
+
+    private static bool MatchesDimensionFilter(
+        LedgerDimensionSetDto? dimensions,
+        LedgerDimensionReportFilter filter)
+    {
+        if (!filter.HasCriteria)
+        {
+            return true;
+        }
+
+        if (dimensions is null)
+        {
+            return false;
+        }
+
+        return Matches(filter.FundId, dimensions.FundId)
+               && Matches(filter.EntityId, dimensions.EntityId)
+               && Matches(filter.SleeveId, dimensions.SleeveId)
+               && Matches(filter.StrategyId, dimensions.StrategyId)
+               && Matches(filter.InvestorId, dimensions.InvestorId)
+               && Matches(filter.CapitalAccountId, dimensions.CapitalAccountId)
+               && Matches(filter.InstrumentId, dimensions.InstrumentId?.ToString("D"))
+               && Matches(filter.TaxLotId, dimensions.TaxLotId)
+               && Matches(filter.CostCenterId, dimensions.CostCenterId)
+               && Matches(filter.CounterpartyId, dimensions.CounterpartyId)
+               && Matches(filter.OrganizationId, dimensions.OrganizationId)
+               && Matches(filter.PortfolioId, dimensions.PortfolioId)
+               && Matches(filter.BookId, dimensions.BookId)
+               && Matches(filter.AccountId, dimensions.AccountId)
+               && Matches(filter.CustomerId, dimensions.CustomerId)
+               && Matches(filter.VendorId, dimensions.VendorId)
+               && Matches(filter.ProjectId, dimensions.ProjectId)
+               && MatchesExternalGlDimensions(filter.ExternalGlDimensions, dimensions.ExternalGlDimensions);
+    }
+
+    private static bool Matches(string? expected, string? actual)
+        => expected is null || string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase);
+
+    private static bool MatchesExternalGlDimensions(
+        IReadOnlyDictionary<string, string> expected,
+        IReadOnlyDictionary<string, string> actual)
+    {
+        foreach (var pair in expected)
+        {
+            if (!actual.TryGetValue(pair.Key, out var actualValue) ||
+                !string.Equals(pair.Value, actualValue, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static string FormatSignatureDecimal(decimal value)
@@ -2208,9 +2381,13 @@ public static class LedgerEndpoints
         Guid? fundStructureNodeId,
         AccountingBasisKindDto? accountingBasis,
         DateOnly? startDate,
-        DateOnly? endDate)
+        DateOnly? endDate,
+        LedgerDimensionReportFilter dimensionFilter)
     {
-        var lines = summaries
+        var filteredSummaries = summaries
+            .Select(item => (item.period, summary: ApplyDimensionFilter(item.summary, dimensionFilter)))
+            .ToArray();
+        var lines = filteredSummaries
             .SelectMany(static item => item.summary.TrialBalance.Select(line => new LedgerCrossPeriodTrialBalanceLineDto(
                 item.summary.PeriodId,
                 item.summary.LedgerBookId,
@@ -2231,7 +2408,8 @@ public static class LedgerEndpoints
                 line.RuleId,
                 line.RuleVersion,
                 line.SourceEventId,
-                line.SourceJournalEntryId)))
+                line.SourceJournalEntryId,
+                line.Dimensions)))
             .ToArray();
 
         return new LedgerCrossPeriodTrialBalanceReportDto(
@@ -2242,11 +2420,11 @@ public static class LedgerEndpoints
             accountingBasis,
             startDate,
             endDate,
-            summaries.Select(static item => item.period).ToArray(),
+            filteredSummaries.Select(static item => item.period).ToArray(),
             lines,
-            summaries.Sum(static item => item.summary.TotalDebits),
-            summaries.Sum(static item => item.summary.TotalCredits),
-            summaries.Sum(static item => item.summary.NetIncome));
+            filteredSummaries.Sum(static item => item.summary.TotalDebits),
+            filteredSummaries.Sum(static item => item.summary.TotalCredits),
+            filteredSummaries.Sum(static item => item.summary.NetIncome));
     }
 
     private static LedgerCrossPeriodPnlReportDto BuildPnlReport(
@@ -2256,10 +2434,11 @@ public static class LedgerEndpoints
         Guid? fundStructureNodeId,
         AccountingBasisKindDto? accountingBasis,
         DateOnly? startDate,
-        DateOnly? endDate)
+        DateOnly? endDate,
+        LedgerDimensionReportFilter dimensionFilter)
     {
         var periods = summaries
-            .Select(static item => BuildPnlSummary(item.summary))
+            .Select(item => BuildPnlSummary(ApplyDimensionFilter(item.summary, dimensionFilter)))
             .ToArray();
 
         return new LedgerCrossPeriodPnlReportDto(
@@ -2276,6 +2455,47 @@ public static class LedgerEndpoints
             periods.Sum(static period => period.NetIncome),
             periods.Sum(static period => period.RealizedNetIncome),
             periods.Sum(static period => period.AccrualBasisAdjustmentNetImpact));
+    }
+
+    private sealed record LedgerDimensionReportFilter(
+        string? FundId,
+        string? EntityId,
+        string? SleeveId,
+        string? StrategyId,
+        string? InvestorId,
+        string? CapitalAccountId,
+        string? InstrumentId,
+        string? TaxLotId,
+        string? CostCenterId,
+        string? CounterpartyId,
+        string? OrganizationId,
+        string? PortfolioId,
+        string? BookId,
+        string? AccountId,
+        string? CustomerId,
+        string? VendorId,
+        string? ProjectId,
+        IReadOnlyDictionary<string, string> ExternalGlDimensions)
+    {
+        public bool HasCriteria
+            => FundId is not null
+               || EntityId is not null
+               || SleeveId is not null
+               || StrategyId is not null
+               || InvestorId is not null
+               || CapitalAccountId is not null
+               || InstrumentId is not null
+               || TaxLotId is not null
+               || CostCenterId is not null
+               || CounterpartyId is not null
+               || OrganizationId is not null
+               || PortfolioId is not null
+               || BookId is not null
+               || AccountId is not null
+               || CustomerId is not null
+               || VendorId is not null
+               || ProjectId is not null
+               || ExternalGlDimensions.Count > 0;
     }
 
     private static bool ContainsAccrualMarker(string? value)

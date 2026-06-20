@@ -1367,6 +1367,31 @@
                         </StackPanel>
                     </Border>
 
+
+                    <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                            AutomationProperties.AutomationId="SecurityMasterInstrumentPassportInspector">
+                        <StackPanel>
+                            <TextBlock Text="Instrument Passport" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding InstrumentPassportSummaryText}" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding InstrumentPassportProviderConfidenceText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,6" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding InstrumentPassportErrorText}" FontSize="11" Foreground="{StaticResource ErrorBrush}" Margin="0,0,0,10" TextWrapping="Wrap" />
+                            <ItemsControl ItemsSource="{Binding InstrumentPassportFields}"
+                                          AutomationProperties.AutomationId="SecurityMasterInstrumentPassportFields">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="110" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" TextWrapping="Wrap" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="11" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
                             AutomationProperties.AutomationId="SecurityMasterSelectionInspector">
                         <StackPanel>

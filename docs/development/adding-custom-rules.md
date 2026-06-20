@@ -70,7 +70,7 @@ Only one check type per rule. To apply multiple checks to the same files, create
 
 ```yaml
 - name: "Provider setup has prerequisites"
-  applies_to: "docs/providers/*-setup.md"
+  applies_to: "docs/operators/provider-onboarding-*.md"
   required_sections:
     - "Prerequisites"
     - "Configuration"

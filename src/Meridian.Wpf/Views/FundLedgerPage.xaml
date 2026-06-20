@@ -715,19 +715,24 @@
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
-                        <DataGrid ItemsSource="{Binding VisibleJournal}"
-                                  Style="{StaticResource WorkbenchDataGridStyle}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  FrozenColumnCount="2">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat={}{0:g}}" Width="150" />
-                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
-                                <DataGridTextColumn Header="Debits" Binding="{Binding TotalDebits, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="Credits" Binding="{Binding TotalCredits, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="Lines" Binding="{Binding LineCount}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Grid MinHeight="380">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.35*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="0.85*" />
+                            </Grid.ColumnDefinitions>
+                            <workstationControls:DenseDataGridControl Grid.Column="0"
+                                                                       Table="{Binding JournalTable}"
+                                                                       SelectedItem="{Binding SelectedJournalEntry, Mode=TwoWay}"
+                                                                       Height="380"
+                                                                       GridAutomationId="FundLedgerJournalGrid"
+                                                                       EmptyAutomationId="FundLedgerJournalEmptyState"
+                                                                       AutomationProperties.Name="Fund ledger journal table" />
+                            <workstationControls:InspectorPanelControl Grid.Column="2"
+                                                                       Panel="{Binding SelectedJournalInspector}"
+                                                                       AutomationProperties.AutomationId="FundLedgerJournalInspector"
+                                                                       AutomationProperties.Name="Selected journal entry detail" />
+                        </Grid>
                     </StackPanel>
                 </TabItem>
 
@@ -789,20 +794,24 @@
                                 <TextBlock Text="{Binding SelectedLedgerDimensionStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
-                        <DataGrid ItemsSource="{Binding VisibleTrialBalance}"
-                                  Style="{StaticResource WorkbenchDataGridStyle}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  FrozenColumnCount="2">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
-                                <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="110" />
-                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="110" />
-                                <DataGridTextColumn Header="Financial Account" Binding="{Binding FinancialAccountId}" Width="180" />
-                                <DataGridTextColumn Header="Balance" Binding="{Binding Balance, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="80" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Grid MinHeight="380">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.35*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="0.85*" />
+                            </Grid.ColumnDefinitions>
+                            <workstationControls:DenseDataGridControl Grid.Column="0"
+                                                                       Table="{Binding TrialBalanceTable}"
+                                                                       SelectedItem="{Binding SelectedTrialBalanceLine, Mode=TwoWay}"
+                                                                       Height="380"
+                                                                       GridAutomationId="FundLedgerTrialBalanceGrid"
+                                                                       EmptyAutomationId="FundLedgerTrialBalanceEmptyState"
+                                                                       AutomationProperties.Name="Fund ledger trial balance table" />
+                            <workstationControls:InspectorPanelControl Grid.Column="2"
+                                                                       Panel="{Binding SelectedTrialBalanceInspector}"
+                                                                       AutomationProperties.AutomationId="FundLedgerTrialBalanceInspector"
+                                                                       AutomationProperties.Name="Selected trial-balance detail" />
+                        </Grid>
                     </StackPanel>
                 </TabItem>
 

@@ -64,17 +64,22 @@ import type {
   ReconciliationStatementRunRowViewModel,
   ReconciliationQueueRunTone,
   AccountingTrialBalanceRowViewModel,
+  AccountingTrialBalanceDetailViewState,
   OperationalExceptionWorkbenchViewState,
   SecuritySchedulesViewState,
   SecurityScheduleRowViewModel,
   SecurityOpenLotReadModelViewState,
   SecurityOpenLotRowViewModel,
+  ReferenceDataEndpointRowViewModel,
+  ReferenceDataWorkbenchViewState,
   SecuritySearchResultRowViewModel,
   AccountingCloseReportPackageViewModel,
   CloseCommandCenterViewState,
   AccountingWorkflowLaunchViewState,
   AccountingToolingTone,
-  TradingParametersViewState
+  TradingParametersViewState,
+  InstrumentPassportViewState,
+  InstrumentPassportProviderConfidenceRowViewModel
 } from "@/screens/accounting-screen.view-model";
 import type {
   AccountingSystemImportDetail,
@@ -359,6 +364,23 @@ const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[
   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone}>{row.statusLabel}</Badge> }
 ];
 
+const referenceDataEndpointColumns: DenseDataTableColumn<ReferenceDataEndpointRowViewModel>[] = [
+  {
+    id: "endpoint",
+    label: "Endpoint",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.path}</span>
+      </span>
+    )
+  },
+  { id: "family", label: "Family", render: (row) => <span className="text-muted-foreground">{row.familyLabel}</span> },
+  { id: "method", label: "Method", render: (row) => <span className="font-mono text-xs text-foreground">{row.methodLabel}</span> },
+  { id: "payload", label: "Payload", align: "right", render: (row) => <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.countLabel}</span> },
+  { id: "latency", label: "Latency", align: "right", render: (row) => <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.latencyLabel}</span> },
+  { id: "status", label: "Status", render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusLabel}</Badge> }
+];
 const focusCopy: Record<string, { title: string; description: string }> = {
   ledger: {
     title: "Ledger overview",
@@ -2446,107 +2468,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                     ariaLabel={reconciliation.trialBalanceView.tableLabel}
                   />
                   {reconciliation.trialBalanceView.selectedDetail ? (
-                    <div id={reconciliation.trialBalanceView.detailPanelId} className="min-w-0">
-                      <>
-                        <EntitySummary
-                          eyebrow={reconciliation.trialBalanceView.selectedDetail.eyebrow}
-                          title={reconciliation.trialBalanceView.selectedDetail.title}
-                          subtitle={reconciliation.trialBalanceView.selectedDetail.subtitle}
-                          description={reconciliation.trialBalanceView.selectedDetail.description}
-                          status={<Badge variant={reconciliation.trialBalanceView.selectedDetail.statusVariant} dot>{reconciliation.trialBalanceView.selectedDetail.statusLabel}</Badge>}
-                          fields={reconciliation.trialBalanceView.selectedDetail.fields}
-                          ariaLabel={reconciliation.trialBalanceView.selectedDetail.ariaLabel}
-                        />
-                        <div className="mt-3 flex flex-wrap gap-2" aria-label="Trial balance audit drill-through actions">
-                          {reconciliation.trialBalanceView.selectedDetail.auditDrillThroughHref ? (
-                            <Button asChild size="sm" variant="secondary">
-                              <Link to={reconciliation.trialBalanceView.selectedDetail.auditDrillThroughHref}>
-                                {reconciliation.trialBalanceView.selectedDetail.auditDrillThroughLabel}
-                              </Link>
-                            </Button>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">{reconciliation.trialBalanceView.selectedDetail.auditDrillThroughLabel}</span>
-                          )}
-                          {reconciliation.trialBalanceView.selectedDetail.approvalDrillThroughHref ? (
-                            <Button asChild size="sm" variant="outline">
-                              <Link to={reconciliation.trialBalanceView.selectedDetail.approvalDrillThroughHref}>Open approval evidence</Link>
-                            </Button>
-                          ) : null}
-                        </div>
-                        <div className="mt-4 rounded-md border border-border/70 bg-background/60 p-3">
-                          <h3 className="text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.selectedDetail.ledgerLinesTitle}</h3>
-                          <p className="mt-1 text-xs leading-5 text-muted-foreground">{reconciliation.trialBalanceView.selectedDetail.ledgerLinesDescription}</p>
-                          {reconciliation.trialBalanceView.selectedDetail.ledgerLines.length > 0 ? (
-                            <div className="mt-3 space-y-2" role="list" aria-label={reconciliation.trialBalanceView.selectedDetail.ledgerLinesTitle}>
-                              {reconciliation.trialBalanceView.selectedDetail.ledgerLines.map((line) => (
-                                <div key={line.rowId} role="listitem" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={line.ariaLabel}>
-                                  <div className="flex items-start justify-between gap-3">
-                                    <span className="min-w-0">
-                                      <span className="block truncate text-sm font-semibold text-foreground">{line.description}</span>
-                                      <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{line.journalEntryId}</span>
-                                    </span>
-                                    <Badge variant="outline">{line.balanceLabel}</Badge>
-                                  </div>
-                                  <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                                    <span className="font-mono">Debit {line.debitLabel}</span>
-                                    <span className="font-mono">Credit {line.creditLabel}</span>
-                                  </div>
-                                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                                    {line.evidenceHref ? (
-                                      <Link className="text-primary underline-offset-2 hover:underline" to={line.evidenceHref}>
-                                        {line.evidenceLabel}
-                                      </Link>
-                                    ) : (
-                                      <span className="text-muted-foreground">{line.evidenceLabel}</span>
-                                    )}
-                                    {line.approvalHref ? (
-                                      <Link className="text-primary underline-offset-2 hover:underline" to={line.approvalHref}>
-                                        Approval evidence
-                                      </Link>
-                                    ) : null}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p role="status" className="mt-3 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
-                              {reconciliation.trialBalanceView.selectedDetail.ledgerLinesEmptyText}
-                            </p>
-                          )}
-                        </div>
-                        <div className="mt-4 rounded-md border border-border/70 bg-background/60 p-3">
-                          <h3 className="text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.selectedDetail.supportingDocumentsTitle}</h3>
-                          {reconciliation.trialBalanceView.selectedDetail.supportingDocuments.length > 0 ? (
-                            <div className="mt-3 space-y-2" role="list" aria-label={reconciliation.trialBalanceView.selectedDetail.supportingDocumentsTitle}>
-                              {reconciliation.trialBalanceView.selectedDetail.supportingDocuments.map((document) => (
-                                <div key={document.id} role="listitem" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-                                  <div className="text-sm font-semibold text-foreground">
-                                    {document.href ? (
-                                      document.href.startsWith("/accounting") ? (
-                                        <Link className="text-primary underline-offset-2 hover:underline" to={document.href} aria-label={document.ariaLabel}>
-                                          {document.label}
-                                        </Link>
-                                      ) : (
-                                        <a className="text-primary underline-offset-2 hover:underline" href={document.href} target="_blank" rel="noreferrer" aria-label={document.ariaLabel}>
-                                          {document.label}
-                                        </a>
-                                      )
-                                    ) : (
-                                      document.label
-                                    )}
-                                  </div>
-                                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{document.detail}</p>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p role="status" className="mt-3 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
-                              {reconciliation.trialBalanceView.selectedDetail.supportingDocumentsEmptyText}
-                            </p>
-                          )}
-                        </div>
-                      </>
-                    </div>
+                    <AccountingTrialBalanceSelectedDetailPanel
+                      panelId={reconciliation.trialBalanceView.detailPanelId}
+                      detail={reconciliation.trialBalanceView.selectedDetail}
+                    />
                   ) : (
                     <aside
                       id={reconciliation.trialBalanceView.detailPanelId}
@@ -3258,6 +3183,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           {/* Schedule workbench, corporate actions, and trading controls — shown when a security is selected */}
           {securityMaster.selectedSecurityId && (
             <>
+              <ReferenceDataWorkbenchPanel
+                view={securityMaster.referenceDataWorkbenchView}
+                onSelect={securityMaster.selectReferenceDataEndpoint}
+              />
               <SecuritySchedulesPanel
                 view={securityMaster.schedulesView}
                 onSelect={securityMaster.selectScheduleEvent}
@@ -3272,6 +3201,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   onSelect={securityMaster.selectCorporateAction}
                 />
                 <TradingParametersPanel view={securityMaster.tradingParametersView} />
+                <InstrumentPassportPanel view={securityMaster.instrumentPassportView} />
               </div>
             </>
           )}
@@ -3655,6 +3585,113 @@ function CorporateActionsPanel({
   );
 }
 
+function ReferenceDataWorkbenchPanel({
+  view,
+  onSelect
+}: {
+  view: ReferenceDataWorkbenchViewState;
+  onSelect: (rowId: string) => void;
+}) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Network className="h-4 w-4 text-primary" aria-hidden="true" />
+              {view.title}
+            </CardTitle>
+            <CardDescription className="mt-2">{view.description}</CardDescription>
+          </div>
+          <div className="min-w-0 lg:max-w-[32rem]">
+            <ToolbarStrip
+              ariaLabel="Reference data endpoint coverage metrics"
+              items={view.metrics.map((metric) => ({
+                id: metric.id,
+                label: metric.label,
+                value: metric.value,
+                active: metric.tone === "success" || metric.tone === "warning" || metric.tone === "danger"
+              }))}
+            />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
+        {view.errorText && (
+          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        )}
+        {!view.loadingText && !view.errorText && (
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.4fr)_minmax(22rem,0.6fr)]">
+            <DenseDataTable
+              columns={referenceDataEndpointColumns}
+              rows={view.rows}
+              getRowId={(row) => row.rowId}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+              getRowAriaControls={(row) => row.detailPanelId}
+              getRowAriaExpanded={(row) => row.isExpanded}
+              onRowSelect={(row) => onSelect(row.rowId)}
+              selectedRowId={view.selectedRowId}
+              emptyText={view.emptyText}
+              ariaLabel={view.tableLabel}
+              caption={view.tableCaption}
+            />
+            <div id={view.detailPanelId} data-selected-source="Selected from reference endpoints" className="row-detail-panel h-fit min-w-0">
+              {view.selectedDetail ? (
+                <div className="space-y-4">
+                  <EntitySummary
+                    eyebrow={view.selectedDetail.eyebrow}
+                    title={view.selectedDetail.title}
+                    subtitle={view.selectedDetail.subtitle}
+                    description={view.selectedDetail.description}
+                    ariaLabel={view.selectedDetail.ariaLabel}
+                    status={<Badge variant={view.selectedDetail.statusBadgeVariant} dot>{view.selectedDetail.statusLabel}</Badge>}
+                    fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
+                  />
+                  {view.selectedDetail.responsePreview ? (
+                    <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-[11px] leading-5 text-muted-foreground">
+                      {view.selectedDetail.responsePreview}
+                    </pre>
+                  ) : null}
+                  {view.selectedDetail.errorSummary ? (
+                    <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                      <div>{view.selectedDetail.errorSummary}</div>
+                      {view.selectedDetail.errorDetails.length > 0 ? (
+                        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                          {view.selectedDetail.errorDetails.map((detail) => (
+                            <li key={detail}>{detail}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div role="region" aria-label={view.detailEmptyAriaLabel}>
+                  <div className="eyebrow-label">Reference endpoint detail</div>
+                  <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function SecuritySchedulesPanel({
   view,
   onSelect
@@ -3821,6 +3858,93 @@ function SecurityOpenLotReadModelPanel({
   );
 }
 
+const instrumentPassportProviderColumns: DenseDataTableColumn<InstrumentPassportProviderConfidenceRowViewModel>[] = [
+  {
+    id: "provider",
+    label: "Provider",
+    render: (row) => <span className="font-medium text-foreground">{row.providerLabel}</span>
+  },
+  {
+    id: "symbol",
+    label: "Symbol",
+    render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.symbolLabel}</span>
+  },
+  {
+    id: "confidence",
+    label: "Confidence",
+    align: "right",
+    render: (row) => <span className="font-mono text-xs tabular-nums text-foreground">{row.confidenceLabel}</span>
+  },
+  {
+    id: "freshness",
+    label: "Freshness",
+    render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.freshnessLabel}</span>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={row.statusTone} dot>{row.statusLabel}</Badge>
+  }
+];
+
+function InstrumentPassportPanel({ view }: { view: InstrumentPassportViewState }) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+              {view.title}
+            </CardTitle>
+            <CardDescription className="mt-2">{view.description}</CardDescription>
+          </div>
+          <Badge variant={view.statusBadgeVariant} dot className="w-fit shrink-0">
+            {view.statusLabel}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
+        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
+        {view.errorText && (
+          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            <div>{view.errorText}</div>
+            {view.errorDetails.length > 0 ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                {view.errorDetails.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        )}
+        {!view.loadingText && !view.errorText && (
+          <div className="grid gap-4 2xl:grid-cols-[minmax(20rem,0.65fr)_minmax(0,1.35fr)]">
+            <EntitySummary
+              eyebrow="Passport summary"
+              title={view.securityId}
+              subtitle="Identifiers, trust, pricing, and usage"
+              description="Endpoint-backed instrument passport evidence for the selected Security Master record."
+              ariaLabel={`Instrument passport summary for ${view.securityId}`}
+              status={<Badge variant={view.statusBadgeVariant} dot>{view.statusLabel}</Badge>}
+              fields={view.fields.map((field) => ({ label: field.label, value: field.value }))}
+            />
+            <DenseDataTable
+              columns={instrumentPassportProviderColumns}
+              rows={view.providerRows}
+              getRowId={(row) => row.rowId}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={view.providerEmptyText}
+              ariaLabel={view.providerTableLabel}
+              caption={view.providerTableCaption}
+            />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 function TradingParametersPanel({ view }: { view: TradingParametersViewState }) {
   return (
     <Card>
@@ -4996,6 +5120,113 @@ function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchV
   );
 }
 
+function AccountingTrialBalanceSelectedDetailPanel({
+  panelId,
+  detail
+}: {
+  panelId: string;
+  detail: AccountingTrialBalanceDetailViewState;
+}) {
+  return (
+    <div id={panelId} className="min-w-0">
+      <EntitySummary
+        eyebrow={detail.eyebrow}
+        title={detail.title}
+        subtitle={detail.subtitle}
+        description={detail.description}
+        status={<Badge variant={detail.statusVariant} dot>{detail.statusLabel}</Badge>}
+        fields={detail.fields}
+        ariaLabel={detail.ariaLabel}
+      />
+      <div className="mt-3 flex flex-wrap gap-2" aria-label="Trial balance audit drill-through actions">
+        {detail.auditDrillThroughHref ? (
+          <Button asChild size="sm" variant="secondary">
+            <Link to={detail.auditDrillThroughHref}>{detail.auditDrillThroughLabel}</Link>
+          </Button>
+        ) : (
+          <span className="text-xs text-muted-foreground">{detail.auditDrillThroughLabel}</span>
+        )}
+        {detail.approvalDrillThroughHref ? (
+          <Button asChild size="sm" variant="outline">
+            <Link to={detail.approvalDrillThroughHref}>Open approval evidence</Link>
+          </Button>
+        ) : null}
+      </div>
+      <div className="mt-4 rounded-md border border-border/70 bg-background/60 p-3">
+        <h3 className="text-sm font-semibold text-foreground">{detail.ledgerLinesTitle}</h3>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.ledgerLinesDescription}</p>
+        {detail.ledgerLines.length > 0 ? (
+          <div className="mt-3 space-y-2" role="list" aria-label={detail.ledgerLinesTitle}>
+            {detail.ledgerLines.map((line) => (
+              <div key={line.rowId} role="listitem" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={line.ariaLabel}>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-foreground">{line.description}</span>
+                    <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{line.journalEntryId}</span>
+                  </span>
+                  <Badge variant="outline">{line.balanceLabel}</Badge>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                  <span className="font-mono">Debit {line.debitLabel}</span>
+                  <span className="font-mono">Credit {line.creditLabel}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  {line.evidenceHref ? (
+                    <Link className="text-primary underline-offset-2 hover:underline" to={line.evidenceHref}>
+                      {line.evidenceLabel}
+                    </Link>
+                  ) : (
+                    <span className="text-muted-foreground">{line.evidenceLabel}</span>
+                  )}
+                  {line.approvalHref ? (
+                    <Link className="text-primary underline-offset-2 hover:underline" to={line.approvalHref}>
+                      Approval evidence
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p role="status" className="mt-3 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
+            {detail.ledgerLinesEmptyText}
+          </p>
+        )}
+      </div>
+      <div className="mt-4 rounded-md border border-border/70 bg-background/60 p-3">
+        <h3 className="text-sm font-semibold text-foreground">{detail.supportingDocumentsTitle}</h3>
+        {detail.supportingDocuments.length > 0 ? (
+          <div className="mt-3 space-y-2" role="list" aria-label={detail.supportingDocumentsTitle}>
+            {detail.supportingDocuments.map((document) => (
+              <div key={document.id} role="listitem" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+                <div className="text-sm font-semibold text-foreground">
+                  {document.href ? (
+                    document.href.startsWith("/accounting") ? (
+                      <Link className="text-primary underline-offset-2 hover:underline" to={document.href} aria-label={document.ariaLabel}>
+                        {document.label}
+                      </Link>
+                    ) : (
+                      <a className="text-primary underline-offset-2 hover:underline" href={document.href} target="_blank" rel="noreferrer" aria-label={document.ariaLabel}>
+                        {document.label}
+                      </a>
+                    )
+                  ) : (
+                    document.label
+                  )}
+                </div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{document.detail}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p role="status" className="mt-3 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm text-muted-foreground">
+            {detail.supportingDocumentsEmptyText}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
 function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: ManualJournalEntryWorkbenchViewModel["privateCapitalActivity"] }) {
   return (
     <Card className="panel-surface">

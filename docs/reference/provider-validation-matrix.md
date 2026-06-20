@@ -57,7 +57,7 @@ Evidence anchors for this run date:
 
 - `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs`
 - `tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs`
-- `docs/providers/provider-confidence-baseline.md`
+- `archive/docs/providers/provider-confidence-baseline.md`
 
 
 ## 2026-05-19 focused execution-provider validation artifacts

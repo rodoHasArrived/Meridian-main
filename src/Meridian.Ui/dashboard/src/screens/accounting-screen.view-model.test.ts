@@ -29,6 +29,8 @@ import {
   buildSecurityConflictRows,
   buildSecurityConflictRefreshCommand,
   buildSecurityIdentityDrillInState,
+  buildInstrumentPassportViewState,
+  buildReferenceDataWorkbenchViewState,
   buildSecurityMasterPageViewState,
   buildSecuritySearchResultRows,
   buildSecuritySearchState,
@@ -77,7 +79,8 @@ import type {
   SecurityIdentityDrillIn,
   SecurityMasterTrustSnapshot,
   InvestmentAccountingTransactionLabPreview,
-  TradingParameters
+  TradingParameters,
+  InstrumentPassport
 } from "@/types";
 
 const reconciliationQueue: AccountingWorkspaceResponse["reconciliationQueue"] = [
@@ -206,6 +209,66 @@ const corporateActions: CorporateAction[] = [
   }
 ];
 
+const referenceDataCoverage = {
+  requestedAtUtc: "2026-05-10T12:00:00Z",
+  endpoints: []
+};
+const instrumentPassport: InstrumentPassport = {
+  securityId: "sec-1",
+  identity: securityIdentity,
+  economicDefinition: {},
+  identifierSummary: { summary: "Primary identifiers are aligned." },
+  providerMappings: [],
+  lifecycleEvents: [],
+  corporateActions,
+  pricing: {
+    status: "Ready",
+    summary: "Trading parameters are active.",
+    tradingParameters,
+    lotSize: tradingParameters.lotSize,
+    tickSize: tradingParameters.tickSize,
+    contractMultiplier: tradingParameters.contractMultiplier,
+    tradingHoursUtc: tradingParameters.tradingHoursUtc,
+    circuitBreakerThresholdPct: tradingParameters.circuitBreakerThresholdPct
+  },
+  usage: { summary: "Used by accounting and trading workflows." },
+  trustPosture: { tone: "Trusted", summary: "Approved Security Master record." },
+  retrievedAtUtc: "2026-05-10T12:00:00Z",
+  providerConfidence: [
+    {
+      provider: "Bloomberg",
+      providerSource: "blp-reference",
+      mappingKind: "Ticker",
+      symbol: "AAPL US Equity",
+      normalizedSymbol: "AAPL",
+      isPrimary: true,
+      isActive: true,
+      freshnessAsOf: "2026-05-10T11:55:00Z",
+      freshnessMinutes: 5,
+      confidenceScore: 0.87,
+      confidenceReason: "Primary ticker matches the golden copy.",
+      identifierConflictIds: [],
+      identifierConflictSummaries: [],
+      overrideHistory: []
+    },
+    {
+      provider: "Reuters",
+      providerSource: "refinitiv",
+      mappingKind: "RIC",
+      symbol: "AAPL.O",
+      normalizedSymbol: "AAPL.O",
+      isPrimary: false,
+      isActive: false,
+      freshnessAsOf: null,
+      freshnessMinutes: null,
+      confidenceScore: 87,
+      confidenceReason: "Inactive mapping retained for audit evidence.",
+      identifierConflictIds: ["conflict-1"],
+      identifierConflictSummaries: ["RIC mapping is disabled."],
+      overrideHistory: []
+    }
+  ]
+};
 const cashFlowSchedules: SecurityCashFlowScheduleEvent[] = [
   {
     eventId: "sched-1-coupon",
@@ -443,6 +506,8 @@ function createSecurityMasterDrillInServices(
 ): SecurityMasterDrillInServices {
   return {
     getCorporateActions: vi.fn().mockResolvedValue([] as CorporateAction[]),
+    getInstrumentPassport: vi.fn().mockResolvedValue(instrumentPassport),
+    getReferenceDataCoverage: vi.fn().mockResolvedValue(referenceDataCoverage),
     getTradingParameters: vi.fn().mockResolvedValue(tradingParameters),
     getTrustSnapshot: vi.fn().mockResolvedValue(securityTrustSnapshot),
     ...overrides
@@ -5273,6 +5338,164 @@ describe("accounting-screen view model", () => {
     });
   });
 
+  it("projects Security Master instrument passport evidence and provider confidence rows", async () => {
+    const view = buildInstrumentPassportViewState({
+      securityId: "sec-1",
+      passport: instrumentPassport
+    });
+
+    expect(view).toMatchObject({
+      title: "Instrument passport",
+      statusLabel: "Trusted",
+      statusBadgeVariant: "success",
+      providerTableLabel: "Provider confidence for sec-1",
+      providerEmptyText: "No provider confidence rows are available for sec-1."
+    });
+    expect(view.fields).toEqual(expect.arrayContaining([
+      { label: "Identifiers", value: "Primary identifiers are aligned." },
+      { label: "Provider confidence", value: "1 active / 2 total" },
+      { label: "Pricing", value: "Ready: Trading parameters are active." },
+      { label: "Usage", value: "Used by accounting and trading workflows." }
+    ]));
+    expect(view.providerRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        providerLabel: "Bloomberg / blp-reference",
+        symbolLabel: "Ticker: AAPL US Equity",
+        confidenceLabel: "87%",
+        freshnessLabel: "5 min",
+        statusLabel: "Primary",
+        statusTone: "success"
+      }),
+      expect.objectContaining({
+        providerLabel: "Reuters / refinitiv",
+        symbolLabel: "RIC: AAPL.O",
+        confidenceLabel: "87%",
+        freshnessLabel: "-",
+        statusLabel: "Inactive",
+        statusTone: "warning"
+      })
+    ]));
+  });
+
+  it("projects multi-asset reference data coverage rows and selected endpoint detail", () => {
+    const view = buildReferenceDataWorkbenchViewState({
+      securityId: "sec-1",
+      coverage: {
+        requestedAtUtc: "2026-05-10T12:00:00Z",
+        endpoints: [
+          {
+            id: "bond-reference",
+            family: "Bonds",
+            label: "Bond reference",
+            method: "GET",
+            path: "/api/reference-data/bonds/sec-1",
+            requestLabel: "GET bond reference for sec-1",
+            probe: true,
+            status: "Ready",
+            statusCode: 200,
+            durationMs: 9,
+            responseCount: 1,
+            responseSummary: "1 fields returned.",
+            responsePreview: "{\n  \"couponRate\": 5.25\n}",
+            errorSummary: null,
+            errorDetails: []
+          },
+          {
+            id: "option-chain-import",
+            family: "Options",
+            label: "Option chain import",
+            method: "POST",
+            path: "/api/reference-data/options/chains/import",
+            requestLabel: "POST option chain import endpoint catalogued; not invoked by this read-only workbench.",
+            probe: false,
+            mutation: true,
+            status: "Deferred",
+            statusCode: null,
+            durationMs: null,
+            responseCount: null,
+            responseSummary: "POST option chain import endpoint catalogued; not invoked by this read-only workbench.",
+            responsePreview: null,
+            errorSummary: null,
+            errorDetails: []
+          }
+        ]
+      },
+      selectedRowId: "reference-data-bond-reference"
+    });
+
+    expect(view.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "routes", value: "2" }),
+      expect.objectContaining({ id: "ready", value: "1", tone: "success" }),
+      expect.objectContaining({ id: "deferred", value: "1", tone: "warning" })
+    ]));
+    expect(view.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rowId: "reference-data-bond-reference",
+        statusLabel: "Ready",
+        statusBadgeVariant: "success",
+        countLabel: "1 record",
+        latencyLabel: "9 ms"
+      }),
+      expect.objectContaining({
+        rowId: "reference-data-option-chain-import",
+        statusLabel: "Deferred",
+        statusBadgeVariant: "outline"
+      })
+    ]));
+    expect(view.selectedDetail).toMatchObject({
+      title: "Bond reference",
+      subtitle: "GET /api/reference-data/bonds/sec-1",
+      responsePreview: "{\n  \"couponRate\": 5.25\n}"
+    });
+  });
+
+  it("loads Security Master instrument passport drill-in without blocking trust evidence", async () => {
+    const getInstrumentPassport = vi.fn().mockResolvedValue(instrumentPassport);
+    const services = createSecurityMasterServices();
+    const drillInServices = createSecurityMasterDrillInServices({ getInstrumentPassport });
+
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+
+    act(() => {
+      void result.current.selectSecurity("sec-1");
+    });
+
+    await waitFor(() => expect(getInstrumentPassport).toHaveBeenCalledWith("sec-1"));
+    await waitFor(() => expect(result.current.instrumentPassportView.providerRows).toHaveLength(2));
+
+    expect(result.current.trustSnapshot).toBe(securityTrustSnapshot);
+    expect(result.current.instrumentPassportErrorText).toBeNull();
+    expect(result.current.instrumentPassportView.fields).toEqual(expect.arrayContaining([
+      { label: "Provider confidence", value: "1 active / 2 total" }
+    ]));
+  });
+
+  it("surfaces Security Master instrument passport failures while preserving other drill-in evidence", async () => {
+    const getInstrumentPassport = vi.fn().mockRejectedValue(new MeridianApiError({
+      path: "/api/workstation/security-master/securities/sec-1/passport",
+      status: 503,
+      detail: "Passport provider unavailable."
+    }));
+    const services = createSecurityMasterServices();
+    const drillInServices = createSecurityMasterDrillInServices({ getInstrumentPassport });
+
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+
+    act(() => {
+      void result.current.selectSecurity("sec-1");
+    });
+
+    await waitFor(() => expect(result.current.instrumentPassportErrorText).toBe("Passport provider unavailable."));
+
+    expect(result.current.trustSnapshot).toBe(securityTrustSnapshot);
+    expect(result.current.tradingParameters).toBe(tradingParameters);
+    expect(result.current.instrumentPassport).toBeNull();
+    expect(result.current.instrumentPassportView).toMatchObject({
+      errorText: "Passport provider unavailable.",
+      errorDetails: ["Endpoint returned 503 for /api/workstation/security-master/securities/sec-1/passport."]
+    });
+  });
+
   it("ignores stale Security Master identity responses after a newer selection settles", async () => {
     const staleIdentity = deferred<SecurityIdentityDrillIn>();
     const latestIdentity = deferred<SecurityIdentityDrillIn>();
@@ -5318,11 +5541,13 @@ describe("accounting-screen view model", () => {
     const corporateActions = deferred<CorporateAction[]>();
     const parameters = deferred<TradingParameters>();
     const trustSnapshot = deferred<SecurityMasterTrustSnapshot>();
+    const passport = deferred<InstrumentPassport>();
     const services = createSecurityMasterServices({
       getIdentity: vi.fn().mockReturnValue(identity.promise)
     });
     const drillInServices = createSecurityMasterDrillInServices({
       getCorporateActions: vi.fn().mockReturnValue(corporateActions.promise),
+      getInstrumentPassport: vi.fn().mockReturnValue(passport.promise),
       getTradingParameters: vi.fn().mockReturnValue(parameters.promise),
       getTrustSnapshot: vi.fn().mockReturnValue(trustSnapshot.promise)
     });
@@ -5345,18 +5570,21 @@ describe("accounting-screen view model", () => {
     expect(result.current.corporateActionsLoading).toBe(false);
     expect(result.current.tradingParametersLoading).toBe(false);
     expect(result.current.trustSnapshotLoading).toBe(false);
+    expect(result.current.instrumentPassportLoading).toBe(false);
 
     await act(async () => {
       identity.resolve(securityIdentity);
       corporateActions.resolve([]);
       parameters.resolve(tradingParameters);
       trustSnapshot.resolve(securityTrustSnapshot);
-      await Promise.all([identity.promise, corporateActions.promise, parameters.promise, trustSnapshot.promise]);
+      passport.resolve(instrumentPassport);
+      await Promise.all([identity.promise, corporateActions.promise, parameters.promise, trustSnapshot.promise, passport.promise]);
     });
 
     expect(result.current.identity).toBeNull();
     expect(result.current.selectedSecurityId).toBeNull();
     expect(result.current.trustSnapshot).toBeNull();
+    expect(result.current.instrumentPassport).toBeNull();
   });
 
   it("surfaces search failures and counts open conflicts for badges", () => {

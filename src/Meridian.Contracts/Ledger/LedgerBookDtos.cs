@@ -227,7 +227,8 @@ public sealed record LedgerPeriodTrialBalanceLineDto(
     string? RuleId = null,
     string? RuleVersion = null,
     string? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record LedgerPeriodSummaryDto(
     Guid PeriodId,
@@ -319,7 +320,8 @@ public sealed record LedgerCrossPeriodTrialBalanceLineDto(
     string? RuleId = null,
     string? RuleVersion = null,
     string? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record LedgerCrossPeriodTrialBalanceReportDto(
     DateTimeOffset GeneratedAtUtc,

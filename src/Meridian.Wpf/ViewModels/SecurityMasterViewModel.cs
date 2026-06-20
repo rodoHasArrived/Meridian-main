@@ -68,6 +68,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public ObservableCollection<SecurityMasterImpactLinkDto> DownstreamImpactLinks => _conflictSection.DownstreamImpactLinks;
     public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields => _printSection.CompanyProfileFields;
     public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields => _printSection.CompanyCoverageFields;
+    public ObservableCollection<SecurityMasterPresentationField> InstrumentPassportFields => _printSection.InstrumentPassportFields;
     public ObservableCollection<SecurityValidationIssueDto> ValidationIssues => _scheduleSection.ValidationIssues;
     public ObservableCollection<SecurityMasterChangeHistoryItemDto> ChangeHistoryItems => _scheduleSection.ChangeHistoryItems;
     public ObservableCollection<SecurityMasterPresentationField> ScheduleBookFields => _scheduleSection.ScheduleBookFields;
@@ -515,6 +516,43 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private bool _suppressConflictLaneSelectionSync;
     private bool _suppressConflictDrivenSelectionLoad;
 
+    private InstrumentPassportDto? _selectedInstrumentPassport;
+    public InstrumentPassportDto? SelectedInstrumentPassport
+    {
+        get => _selectedInstrumentPassport;
+        private set
+        {
+            if (SetProperty(ref _selectedInstrumentPassport, value))
+            {
+                RaisePropertyChanged(nameof(InstrumentPassportSummaryText));
+                RaisePropertyChanged(nameof(InstrumentPassportProviderConfidenceText));
+            }
+        }
+    }
+
+    public string InstrumentPassportSummaryText => SelectedInstrumentPassport is null
+        ? "Instrument passport evidence is unavailable."
+        : $"{SelectedInstrumentPassport.Identity.DisplayName} - {SelectedInstrumentPassport.TrustPosture.Tone} - {SelectedInstrumentPassport.ProviderConfidence.Count} provider confidence row(s)";
+
+    public string InstrumentPassportProviderConfidenceText => SelectedInstrumentPassport is null
+        ? "No provider confidence loaded."
+        : $"{SelectedInstrumentPassport.ProviderConfidence.Count(item => item.IsActive)} active / {SelectedInstrumentPassport.ProviderConfidence.Count} total provider mapping(s).";
+
+    private string _instrumentPassportErrorText = string.Empty;
+    public string InstrumentPassportErrorText
+    {
+        get => _instrumentPassportErrorText;
+        private set
+        {
+            if (SetProperty(ref _instrumentPassportErrorText, value))
+            {
+                RaisePropertyChanged(nameof(HasInstrumentPassportError));
+            }
+        }
+    }
+
+    public bool HasInstrumentPassportError => !string.IsNullOrWhiteSpace(InstrumentPassportErrorText);
+
     private SecurityMasterTrustSnapshotDto? _selectedTrustSnapshot;
     public SecurityMasterTrustSnapshotDto? SelectedTrustSnapshot
     {
@@ -767,7 +805,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ? ActiveOnly
             ? "Active-only scope ready. Enter a symbol, name, or identifier."
             : "All-status scope ready. Enter a symbol, name, or identifier."
-        : $"{(ActiveOnly ? "Active-only" : "All-status")} scope • query \"{SearchQuery.Trim()}\"";
+        : $"{(ActiveOnly ? "Active-only" : "All-status")} scope - query \"{SearchQuery.Trim()}\"";
 
     public string SearchResultCountLabel => ResultCount switch
     {
@@ -847,7 +885,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 parts.Add("mapping gaps only");
             }
 
-            return $"Showing {ResultCount} of {LoadedResultCount} loaded results • {string.Join(" • ", parts)}";
+            return $"Showing {ResultCount} of {LoadedResultCount} loaded results - {string.Join(" - ", parts)}";
         }
     }
 
@@ -864,7 +902,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             var missingCount = LoadedResultCount - mappedCount;
             return missingCount == 0
                 ? $"{mappedCount} result{(mappedCount == 1 ? string.Empty : "s")} mapped across provider aliases."
-                : $"{mappedCount} mapped • {missingCount} with provider or identifier coverage gaps.";
+                : $"{mappedCount} mapped - {missingCount} with provider or identifier coverage gaps.";
         }
     }
 
@@ -908,7 +946,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             var assetFamily = SecurityMasterTextHelpers.FirstNonEmpty(economic?.AssetFamily, economic?.AssetClass, SelectedSecurity?.Classification.AssetClass, "Security");
             var issuerType = SecurityMasterTextHelpers.FirstNonEmpty(economic?.IssuerType, SelectedSecurity?.Classification.IssuerType, "Issuer");
             var country = SecurityMasterTextHelpers.FirstNonEmpty(identity?.CountryOfRisk, economic?.RiskCountry, SelectedSecurity?.Classification.RiskCountry, "Country unavailable");
-            return $"{assetFamily} • {issuerType} • {country}";
+            return $"{assetFamily} - {issuerType} - {country}";
         }
     }
 
@@ -1112,11 +1150,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SelectionSummaryText => SelectedSecurity is null
         ? "Select a security to inspect identifiers, runtime state, history, and corporate actions."
-        : $"{SelectedSecurity.DisplayName} • {SelectedAssetClass} • {SelectedCurrency}";
+        : $"{SelectedSecurity.DisplayName} - {SelectedAssetClass} - {SelectedCurrency}";
 
     public string SelectionLifecycleText => SelectedSecurity is null
         ? "No security selected."
-        : $"Status {SelectedStatusBadge} • version {SelectedSecurity.EconomicDefinition?.Version ?? 0}";
+        : $"Status {SelectedStatusBadge} - version {SelectedSecurity.EconomicDefinition?.Version ?? 0}";
 
     public string SelectedSecurityConflictSummaryText => SelectedSecurity is null
         ? "Conflict posture appears after a security is selected."
@@ -1187,15 +1225,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
             var sourceRecordText = string.IsNullOrWhiteSpace(sourceRecordId)
                 ? string.Empty
-                : $" • record {sourceRecordId}";
+                : $" - record {sourceRecordId}";
             var reasonText = string.IsNullOrWhiteSpace(reason)
                 ? string.Empty
-                : $" • {reason}";
+                : $" - {reason}";
             var asOfText = asOf.HasValue
-                ? $" • {asOf.Value.LocalDateTime:g}"
+                ? $" - {asOf.Value.LocalDateTime:g}"
                 : string.Empty;
 
-            return $"Source {sourceSystem}{sourceRecordText} • updated by {updatedBy}{asOfText}{reasonText}";
+            return $"Source {sourceSystem}{sourceRecordText} - updated by {updatedBy}{asOfText}{reasonText}";
         }
     }
 
@@ -1239,7 +1277,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         {
             if (_latestHistoryEvent is not null)
             {
-                return $"{_latestHistoryEvent.EventType} • v{_latestHistoryEvent.StreamVersion} • {_latestHistoryEvent.EventTimestamp.LocalDateTime:g} by {_latestHistoryEvent.Actor}";
+                return $"{_latestHistoryEvent.EventType} - v{_latestHistoryEvent.StreamVersion} - {_latestHistoryEvent.EventTimestamp.LocalDateTime:g} by {_latestHistoryEvent.Actor}";
             }
 
             if (string.IsNullOrWhiteSpace(HistoryText) || HistoryText == "(no history)")
@@ -1283,7 +1321,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SelectedConflictDetectedText => SelectedConflictEntry is null
         ? "Detection time appears after a conflict is selected."
-        : $"Detected {SelectedConflictEntry.Conflict.DetectedAt.LocalDateTime:g} • {SelectedConflictEntry.Conflict.ConflictKind}";
+        : $"Detected {SelectedConflictEntry.Conflict.DetectedAt.LocalDateTime:g} - {SelectedConflictEntry.Conflict.ConflictKind}";
 
     public string AcceptPrimaryConflictLabel => SelectedConflictEntry is null
         ? "Accept A"
@@ -1669,6 +1707,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(LatestHistoryEventText));
         RaisePropertyChanged(nameof(TrustScoreText));
         RaisePropertyChanged(nameof(TrustSummaryText));
+        RaisePropertyChanged(nameof(InstrumentPassportSummaryText));
+        RaisePropertyChanged(nameof(InstrumentPassportProviderConfidenceText));
         RaisePropertyChanged(nameof(GoldenCopySourceText));
         RaisePropertyChanged(nameof(GoldenCopyRuleText));
         RaisePropertyChanged(nameof(TradingParametersStatusText));
@@ -1858,6 +1898,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private void ClearSelectedSecurityAssuranceState()
     {
         SelectedTrustSnapshot = null;
+        SelectedInstrumentPassport = null;
         TrustSnapshotErrorText = string.Empty;
         _selectedEconomicDefinition = null;
         _selectedTradingParameters = null;
@@ -1869,6 +1910,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         DownstreamImpactLinks.Clear();
         CompanyProfileFields.Clear();
         CompanyCoverageFields.Clear();
+        InstrumentPassportFields.Clear();
         ValidationIssues.Clear();
         ChangeHistoryItems.Clear();
         ScheduleBookFields.Clear();
@@ -1904,6 +1946,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(LatestHistoryEventText));
         RaisePropertyChanged(nameof(TrustScoreText));
         RaisePropertyChanged(nameof(TrustSummaryText));
+        RaisePropertyChanged(nameof(InstrumentPassportSummaryText));
+        RaisePropertyChanged(nameof(InstrumentPassportProviderConfidenceText));
         RaisePropertyChanged(nameof(GoldenCopySourceText));
         RaisePropertyChanged(nameof(GoldenCopyRuleText));
         RaisePropertyChanged(nameof(TradingParametersStatusText));
@@ -2184,13 +2228,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         IsLoading = true;
         IsTrustSnapshotLoading = true;
         TrustSnapshotErrorText = string.Empty;
-        StatusText = "Loading selected security trust snapshot…";
+        InstrumentPassportErrorText = string.Empty;
+        StatusText = "Loading selected security trust snapshot...";
 
         try
         {
             await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
+            var fundProfileId = GetCurrentFundProfileId();
             var snapshot = await _workstationSecurityMasterApiClient
-                .GetTrustSnapshotAsync(securityId, GetCurrentFundProfileId(), ct)
+                .GetTrustSnapshotAsync(securityId, fundProfileId, ct)
                 .ConfigureAwait(false);
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
@@ -2203,8 +2249,16 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 }
 
                 ApplyTrustSnapshot(snapshot);
-                StatusText = $"Loaded trust snapshot for {snapshot.Security.DisplayName}.";
+                ApplyInstrumentPassport(snapshot.InstrumentPassport);
+                StatusText = snapshot.InstrumentPassport is null
+                    ? string.Concat("Loaded trust snapshot for ", snapshot.Security.DisplayName, ".")
+                    : string.Concat("Loaded trust snapshot and instrument passport for ", snapshot.Security.DisplayName, ".");
             });
+
+            if (snapshot?.InstrumentPassport is null)
+            {
+                await LoadInstrumentPassportAsync(securityId, fundProfileId, snapshot?.Security.DisplayName, ct).ConfigureAwait(false);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -2224,6 +2278,46 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             IsLoading = false;
             IsTrustSnapshotLoading = false;
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => RefreshSelectedTrustSnapshotCommand.NotifyCanExecuteChanged());
+        }
+    }
+
+    private async Task LoadInstrumentPassportAsync(
+        Guid securityId,
+        string? fundProfileId,
+        string? displayName,
+        CancellationToken ct)
+    {
+        try
+        {
+            var passport = await _workstationSecurityMasterApiClient
+                .GetInstrumentPassportAsync(securityId, fundProfileId, ct)
+                .ConfigureAwait(false);
+
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ApplyInstrumentPassport(passport);
+                StatusText = passport is null
+                    ? string.Concat("Loaded trust snapshot for ", SecurityMasterTextHelpers.FirstNonEmpty(displayName, securityId.ToString("D")), ".")
+                    : string.Concat("Loaded trust snapshot and instrument passport for ", SecurityMasterTextHelpers.FirstNonEmpty(displayName, passport.Identity.DisplayName), ".");
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError($"Security Master instrument passport load failed for {securityId}", ex);
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ApplyInstrumentPassport(null);
+                InstrumentPassportErrorText = "Instrument passport failed to load.";
+                StatusText = string.Concat(
+                    "Loaded trust snapshot for ",
+                    SecurityMasterTextHelpers.FirstNonEmpty(displayName, securityId.ToString("D")),
+                    ", but instrument passport evidence failed to load.");
+                _notificationService.ShowNotification("Security Master", "Instrument passport load failed.", NotificationType.Warning);
+            });
         }
     }
 
@@ -2255,7 +2349,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             DownstreamImpactLinks.Add(link);
         }
 
-        TrustScoreText = $"{snapshot.TrustPosture.TrustScore}/100 • {snapshot.TrustPosture.Tone}";
+        TrustScoreText = $"{snapshot.TrustPosture.TrustScore}/100 - {snapshot.TrustPosture.Tone}";
         TrustSummaryText = snapshot.TrustPosture.Summary;
         GoldenCopySourceText = FormatGoldenCopySourceText(snapshot.EconomicDefinition);
         GoldenCopyRuleText = snapshot.TrustPosture.GoldenCopyRule;
@@ -2278,6 +2372,32 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         RaiseConflictDerivedStateChanged();
     }
 
+    private void ApplyInstrumentPassport(InstrumentPassportDto? passport)
+    {
+        SelectedInstrumentPassport = passport;
+        if (passport is null)
+        {
+            InstrumentPassportFields.Clear();
+            return;
+        }
+
+        var activeProviderCount = passport.ProviderConfidence.Count(item => item.IsActive);
+        var primaryProvider = passport.ProviderConfidence.FirstOrDefault(item => item.IsPrimary)
+            ?? passport.ProviderConfidence.FirstOrDefault();
+        ReplaceCollection(InstrumentPassportFields,
+        [
+            new SecurityMasterPresentationField("Display name", passport.Identity.DisplayName),
+            new SecurityMasterPresentationField("Security ID", passport.SecurityId.ToString("D")),
+            new SecurityMasterPresentationField("Asset class", SecurityMasterTextHelpers.FirstNonEmpty(passport.Identity.AssetClass, passport.EconomicDefinition.AssetClass, "Unavailable")),
+            new SecurityMasterPresentationField("Trust", $"{passport.TrustPosture.Tone} - {passport.TrustPosture.Summary}"),
+            new SecurityMasterPresentationField("Identifiers", passport.IdentifierSummary.Summary),
+            new SecurityMasterPresentationField("Provider confidence", $"{activeProviderCount} active / {passport.ProviderConfidence.Count} total"),
+            new SecurityMasterPresentationField("Primary provider", primaryProvider is null ? "Unavailable" : $"{primaryProvider.Provider} {primaryProvider.MappingKind} {primaryProvider.Symbol}"),
+            new SecurityMasterPresentationField("Pricing", $"{passport.Pricing.Status}: {passport.Pricing.Summary}"),
+            new SecurityMasterPresentationField("Usage", passport.Usage.Summary),
+            new SecurityMasterPresentationField("Retrieved", passport.RetrievedAtUtc.LocalDateTime.ToString("g"))
+        ]);
+    }
     private void RebuildFilteredConflicts()
         => RebuildFilteredConflicts(SelectedConflict?.ConflictId);
 

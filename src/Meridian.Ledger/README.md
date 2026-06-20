@@ -83,6 +83,11 @@ and payment-linked postings: effective date, idempotency key, fund event, capita
 payment intent, settlement references, and typed retained evidence references. Keep those fields additive and metadata-owned so ledger
 consumers can reconstruct capital-call, distribution, subscription, redemption, LP-transfer, and
 management-fee postings without introducing UI- or storage-specific query forks.
+`LedgerEntry` also carries an optional `LedgerLineDimensionSet` so fund, entity, strategy,
+investor, capital-account, instrument, tax-lot, cost-center, counterparty, organization, portfolio,
+book, customer/vendor/project, and external-GL scope can live on the immutable ledger line itself
+instead of only in journal-level metadata. Storage and reporting surfaces should prefer the
+line-level dimension set when present and use metadata-derived dimensions only as legacy fallback.
 `PrivateCapitalFundEventLedgerProjector` reconstructs a posted Fund Event Ledger view from those
 journal entries and optional ledger report packs. It groups private-capital journal entries by fund
 event, exposes balanced ledger impact rows, capital-account subledger impact, retained evidence,

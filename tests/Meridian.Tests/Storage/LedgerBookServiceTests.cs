@@ -575,6 +575,147 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task LedgerEndpoints_PeriodReportingRoutes_RetainTrialBalanceDimensions()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<ILedgerJournalStore>();
+
+        var book = await PostJsonAsync<LedgerBookDto>(
+            client,
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                Guid.Parse("183ef413-9db7-4f43-bc12-bd336d509c2d"),
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD",
+                AccountingBasis: AccountingBasisKindDto.Gaap,
+                AccountingPolicyId: "gaap-close-v1",
+                AccountingPolicyVersion: "v1"));
+        var period = await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                book.LedgerBookId,
+                2026,
+                6,
+                "2026-P06",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30)));
+
+        await store.AppendAsync(BuildDimensionalRevenueEntry(
+            period.PeriodId,
+            amount: 100m,
+            timestamp: DateTimeOffset.Parse("2026-06-30T21:00:00Z"),
+            entityId: "entity-master",
+            costCenterId: "cost-center-investment-ops",
+            externalGlDepartment: "InvestmentOps") with
+        {
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = "gaap-close-v1",
+            AccountingPolicyVersion = "v1"
+        });
+        await store.AppendAsync(BuildDimensionalRevenueEntry(
+            period.PeriodId,
+            amount: 200m,
+            timestamp: DateTimeOffset.Parse("2026-06-30T22:00:00Z"),
+            entityId: "entity-parallel",
+            costCenterId: "cost-center-fund-accounting",
+            externalGlDepartment: "FundAccounting") with
+        {
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = "gaap-close-v1",
+            AccountingPolicyVersion = "v1"
+        });
+        await PostJsonAsync<LedgerPeriodCloseResultDto>(
+            client,
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", period.PeriodId.ToString()),
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, ClosedBy: "fund-controller"));
+
+        var trialBalance = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", period.PeriodId.ToString()),
+            ServerJsonOptions);
+        var trialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString()),
+            ServerJsonOptions);
+        var crossPeriodReport = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
+            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30",
+            ServerJsonOptions);
+        var filteredCrossPeriodReport = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
+            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30&entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            ServerJsonOptions);
+        var filteredPnlReport = await client.GetFromJsonAsync<LedgerCrossPeriodPnlReportDto>(
+            $"{UiApiRoutes.LedgerReportsPnlSummary}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30&entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            ServerJsonOptions);
+
+        trialBalance.Should().NotBeNull();
+        var revenueRows = trialBalance!
+            .Where(row => row.AccountName == "Management fees")
+            .ToArray();
+        revenueRows.Should().HaveCount(2);
+        revenueRows.Should().Contain(row =>
+            row.Balance == 100m &&
+            row.Dimensions != null &&
+            row.Dimensions.FundId == "alpha-fund" &&
+            row.Dimensions.EntityId == "entity-master" &&
+            row.Dimensions.CostCenterId == "cost-center-investment-ops" &&
+            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
+        revenueRows.Should().Contain(row =>
+            row.Balance == 200m &&
+            row.Dimensions != null &&
+            row.Dimensions.FundId == "alpha-fund" &&
+            row.Dimensions.EntityId == "entity-parallel" &&
+            row.Dimensions.CostCenterId == "cost-center-fund-accounting" &&
+            row.Dimensions.ExternalGlDimensions["Department"] == "FundAccounting");
+
+        trialBalanceReport.Should().NotBeNull();
+        trialBalanceReport!.Lines
+            .Where(row => row.AccountName == "Management fees")
+            .Should()
+            .HaveCount(2);
+        trialBalanceReport.Signature.PayloadChecksumSha256.Should().HaveLength(64);
+
+        crossPeriodReport.Should().NotBeNull();
+        crossPeriodReport!.Lines.Should().Contain(row =>
+            row.PeriodId == period.PeriodId &&
+            row.AccountName == "Management fees" &&
+            row.Balance == 100m &&
+            row.Dimensions != null &&
+            row.Dimensions.EntityId == "entity-master" &&
+            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
+        crossPeriodReport.Lines.Should().Contain(row =>
+            row.PeriodId == period.PeriodId &&
+            row.AccountName == "Management fees" &&
+            row.Balance == 200m &&
+            row.Dimensions != null &&
+            row.Dimensions.EntityId == "entity-parallel" &&
+            row.Dimensions.ExternalGlDimensions["Department"] == "FundAccounting");
+
+        filteredCrossPeriodReport.Should().NotBeNull();
+        filteredCrossPeriodReport!.Lines.Should().ContainSingle(row =>
+            row.PeriodId == period.PeriodId &&
+            row.AccountName == "Management fees" &&
+            row.Balance == 100m &&
+            row.Dimensions != null &&
+            row.Dimensions.EntityId == "entity-master" &&
+            row.Dimensions.CostCenterId == "cost-center-investment-ops" &&
+            row.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
+        filteredCrossPeriodReport.TotalDebits.Should().Be(0m);
+        filteredCrossPeriodReport.TotalCredits.Should().Be(100m);
+        filteredCrossPeriodReport.NetIncome.Should().Be(100m);
+
+        filteredPnlReport.Should().NotBeNull();
+        filteredPnlReport!.Periods.Should().ContainSingle(periodSummary =>
+            periodSummary.PeriodId == period.PeriodId &&
+            periodSummary.TotalRevenue == 100m &&
+            periodSummary.TotalExpenses == 0m &&
+            periodSummary.NetIncome == 100m);
+        filteredPnlReport.TotalRevenue.Should().Be(100m);
+        filteredPnlReport.NetIncome.Should().Be(100m);
+    }
+
+    [Fact]
     public async Task LedgerEndpoints_CrossPeriodReportRoutes_ReturnClosedPeriodTrialBalanceAndPnlReports()
     {
         await using var app = await CreateAppAsync();
@@ -972,6 +1113,53 @@ public sealed class LedgerBookServiceTests
 
         return new LedgerJournalEntryWrite(
             new JournalEntry(journalEntryId, timestamp, description, lines),
+            AggregateId: Guid.NewGuid(),
+            PeriodId: periodId);
+    }
+
+    private static LedgerJournalEntryWrite BuildDimensionalRevenueEntry(
+        Guid periodId,
+        decimal amount,
+        DateTimeOffset timestamp,
+        string entityId,
+        string costCenterId,
+        string externalGlDepartment)
+    {
+        var journalEntryId = Guid.NewGuid();
+        const string description = "Dimension-scoped revenue posting";
+        var lines = new[]
+        {
+            new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                timestamp,
+                new LedgerAccount("Cash", LedgerAccountType.Asset),
+                debit: amount,
+                credit: 0m,
+                description),
+            new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                timestamp,
+                new LedgerAccount("Management fees", LedgerAccountType.Revenue),
+                debit: 0m,
+                credit: amount,
+                description,
+                new LedgerLineDimensionSet(
+                    EntityId: entityId,
+                    CostCenterId: costCenterId,
+                    ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["Department"] = externalGlDepartment
+                    }))
+        };
+        var metadata = new JournalEntryMetadata(
+            StrategyId: "strategy-direct-lending",
+            FinancialAccountId: "operating-cash",
+            CounterpartyAccountId: "counterparty-bank");
+
+        return new LedgerJournalEntryWrite(
+            new JournalEntry(journalEntryId, timestamp, description, lines, metadata),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
     }

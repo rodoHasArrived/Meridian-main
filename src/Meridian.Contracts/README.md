@@ -859,6 +859,14 @@ fund/private-capital workflows. Manual journal normalization trims and retains h
 merges deterministic external GL dimension keys, and propagates fund/entity scope to line
 dimensions while allowing line-specific organization, entity, portfolio, account, instrument,
 tax-lot, cost-center, and external GL overrides.
+Generated posting candidates also carry those line dimensions into the governed draft request shape,
+where retained ledger entries receive first-class line dimensions while compatibility metadata tags
+remain available for downstream report and external-GL mapping recovery. This keeps dimensional
+scope available without exposing a direct posting path.
+Ledger period and cross-period trial-balance report lines carry that same dimension envelope so
+closed-period accounting reports can distinguish account balances by retained fund/entity,
+strategy, capital-account, instrument, cost-center, counterparty, and external GL context instead
+of collapsing all activity to the account alone.
 `OperationalFinanceScopeDto`, `OperationalEventCommandContextDto`,
 `OperationalFinanceTraceNodeDto`, and `OperationalFinanceRecordTraceDto` provide the read-only
 trace contract for the customer-neutral proof path from operational event through evidence,

@@ -72,6 +72,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private FundPortfolioPosition? _selectedPortfolioPosition;
     private CashFlowEntryDto? _selectedCashFlowEntry;
     private FundLedgerDimensionView? _selectedLedgerDimension;
+    private FundTrialBalanceLine? _selectedTrialBalanceLine;
+    private FundJournalLine? _selectedJournalEntry;
     private string _selectedLedgerDimensionDisplayText = "Consolidated Fund View";
     private string _selectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
     private string _selectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
@@ -124,6 +126,35 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             "No fund accounts loaded",
             "Select a fund profile or load retained fund account records before opening account-level portfolio review.");
 
+        TrialBalanceTable = new WorkstationTableModel<FundTrialBalanceLine>(
+            VisibleTrialBalance,
+            [
+                new("Account", nameof(FundTrialBalanceLine.AccountName), 190),
+                new("Type", nameof(FundTrialBalanceLine.AccountType), 110),
+                new("Symbol", nameof(FundTrialBalanceLine.Symbol), 100),
+                new("Security", "Security.DisplayName", 180),
+                new("Financial Account", nameof(FundTrialBalanceLine.FinancialAccountId), 165),
+                new("Balance", nameof(FundTrialBalanceLine.Balance), 120, "{0:C2}"),
+                new("Entries", nameof(FundTrialBalanceLine.EntryCount), 80, "{0:N0}")
+            ],
+            "Fund trial balance",
+            "No trial-balance lines retained",
+            "Select a fund profile or ledger dimension with retained trial-balance rows before reviewing account balances.");
+
+        JournalTable = new WorkstationTableModel<FundJournalLine>(
+            VisibleJournal,
+            [
+                new("Timestamp", nameof(FundJournalLine.Timestamp), 155, "{0:g}"),
+                new("Description", nameof(FundJournalLine.Description), 330),
+                new("Debits", nameof(FundJournalLine.TotalDebits), 120, "{0:C2}"),
+                new("Credits", nameof(FundJournalLine.TotalCredits), 120, "{0:C2}"),
+                new("Lines", nameof(FundJournalLine.LineCount), 75, "{0:N0}"),
+                new("Journal Entry", nameof(FundJournalLine.JournalEntryId), 220)
+            ],
+            "Fund journal",
+            "No journal entries retained",
+            "Select a fund profile or ledger dimension with retained journal entries before reviewing posted activity.");
+
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         OpenAccountingCommand = new RelayCommand(() => _navigationService.NavigateTo("AccountingShell"));
         OpenRunLedgerCommand = new RelayCommand(OpenLatestRunLedger);
@@ -169,6 +200,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public WorkstationTableModel<FundAccountSummary> AccountQueueTable { get; }
 
+    public WorkstationTableModel<FundTrialBalanceLine> TrialBalanceTable { get; }
+
+    public WorkstationTableModel<FundJournalLine> JournalTable { get; }
+
     public ObservableCollection<BankAccountSnapshot> BankSnapshots => _collectionsSection.BankSnapshots;
 
     public ObservableCollection<FundPortfolioPosition> PortfolioPositions => _collectionsSection.PortfolioPositions;
@@ -212,11 +247,25 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     internal FundLedgerWorkbenchSectionViewModel WorkbenchSection => _workbenchSection;
 
     private InspectorPanelModel _selectedAccountInspector = BuildSelectedAccountInspector(null);
+    private InspectorPanelModel _selectedTrialBalanceInspector = BuildTrialBalanceInspector(null);
+    private InspectorPanelModel _selectedJournalInspector = BuildJournalInspector(null);
 
     public InspectorPanelModel SelectedAccountInspector
     {
         get => _selectedAccountInspector;
         private set => SetProperty(ref _selectedAccountInspector, value);
+    }
+
+    public InspectorPanelModel SelectedTrialBalanceInspector
+    {
+        get => _selectedTrialBalanceInspector;
+        private set => SetProperty(ref _selectedTrialBalanceInspector, value);
+    }
+
+    public InspectorPanelModel SelectedJournalInspector
+    {
+        get => _selectedJournalInspector;
+        private set => SetProperty(ref _selectedJournalInspector, value);
     }
 
     public string AccountQueueStatusText
@@ -764,6 +813,29 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         }
     }
 
+    public FundTrialBalanceLine? SelectedTrialBalanceLine
+    {
+        get => _selectedTrialBalanceLine;
+        set
+        {
+            if (SetProperty(ref _selectedTrialBalanceLine, value))
+            {
+                SelectedTrialBalanceInspector = BuildTrialBalanceInspector(value);
+            }
+        }
+    }
+
+    public FundJournalLine? SelectedJournalEntry
+    {
+        get => _selectedJournalEntry;
+        set
+        {
+            if (SetProperty(ref _selectedJournalEntry, value))
+            {
+                SelectedJournalInspector = BuildJournalInspector(value);
+            }
+        }
+    }
     public string SelectedLedgerDimensionDisplayText
     {
         get => _selectedLedgerDimensionDisplayText;
@@ -1274,10 +1346,15 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private void ApplyLedgerDimensionFilter()
     {
+        var previousTrialBalanceKey = BuildTrialBalanceSelectionKey(SelectedTrialBalanceLine);
+        var previousJournalEntryId = SelectedJournalEntry?.JournalEntryId;
+
         if (SelectedLedgerDimension is null)
         {
             VisibleTrialBalance.Clear();
             VisibleJournal.Clear();
+            SelectedTrialBalanceLine = null;
+            SelectedJournalEntry = null;
             SelectedLedgerDimensionDisplayText = "Consolidated Fund View";
             SelectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
             SelectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
@@ -1320,6 +1397,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             VisibleJournal.Add(line);
         }
 
+        SelectedTrialBalanceLine = visibleTrialBalance.FirstOrDefault(line =>
+                                       string.Equals(BuildTrialBalanceSelectionKey(line), previousTrialBalanceKey, StringComparison.Ordinal))
+                                   ?? visibleTrialBalance.FirstOrDefault();
+        SelectedJournalEntry = visibleJournal.FirstOrDefault(line => line.JournalEntryId == previousJournalEntryId)
+                               ?? visibleJournal.FirstOrDefault();
+
         SelectedLedgerDimensionDisplayText = SelectedLedgerDimension.DisplayName;
         SelectedLedgerDimensionCoverageText = SelectedLedgerDimension.CoverageText;
         SelectedLedgerDimensionStatusText = SelectedLedgerDimension.StatusText;
@@ -1330,6 +1413,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         SelectedLedgerEquityBalanceText = SelectedLedgerDimension.Totals.EquityBalance.ToString("C2");
     }
 
+    private static string? BuildTrialBalanceSelectionKey(FundTrialBalanceLine? line)
+        => line is null
+            ? null
+            : string.Join("|", line.AccountName, line.AccountType, line.Symbol ?? string.Empty, line.FinancialAccountId ?? string.Empty);
     private static FundLedgerTotalsDto BuildSummaryTotals(FundLedgerSummary? ledger)
         => ledger is null
             ? new FundLedgerTotalsDto(0, 0, 0m, 0m, 0m, 0m, 0m)
@@ -1487,6 +1574,91 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         };
     }
 
+    internal static InspectorPanelModel BuildTrialBalanceInspector(FundTrialBalanceLine? line)
+    {
+        if (line is null)
+        {
+            return new InspectorPanelModel
+            {
+                Title = "No trial-balance line selected",
+                Subtitle = "Ledger account detail",
+                Detail = "Select a trial-balance row to inspect account balance, journal support, Security Master coverage, and fund-account scope."
+            };
+        }
+
+        var security = line.Security;
+        var hasSecurity = security is not null;
+        var hasSymbol = !string.IsNullOrWhiteSpace(line.Symbol);
+        var securityValue = hasSecurity
+            ? security!.DisplayName
+            : hasSymbol ? "Security mapping needed" : "Not security-linked";
+        var coverageTone = hasSecurity ? WorkspaceTone.Success : hasSymbol ? WorkspaceTone.Warning : WorkspaceTone.Neutral;
+
+        return new InspectorPanelModel
+        {
+            Title = line.AccountName,
+            Subtitle = $"{line.AccountType} trial-balance line",
+            Detail = hasSecurity
+                ? $"Security Master resolves this ledger account to {security!.DisplayName}."
+                : hasSymbol
+                    ? "This ledger account carries a symbol, but no Security Master reference is attached yet."
+                    : "This ledger account is not linked to an instrument symbol.",
+            Badge = new WorkstationBadgeModel("Coverage", securityValue, "\uE8D4", coverageTone),
+            Facts =
+            [
+                new("Account type", line.AccountType),
+                new("Balance", line.Balance.ToString("C2")),
+                new("Entries", line.EntryCount.ToString("N0")),
+                new("Symbol", FormatLedgerValue(line.Symbol)),
+                new("Financial account", FormatLedgerValue(line.FinancialAccountId)),
+                new("Security", security?.DisplayName ?? "No retained Security Master record"),
+                new("Asset class", security?.AssetClass ?? "-", security?.SubType ?? string.Empty),
+                new("Identifier", security?.PrimaryIdentifier ?? "-", security?.MatchedIdentifierKind ?? string.Empty)
+            ]
+        };
+    }
+
+    internal static InspectorPanelModel BuildJournalInspector(FundJournalLine? entry)
+    {
+        if (entry is null)
+        {
+            return new InspectorPanelModel
+            {
+                Title = "No journal entry selected",
+                Subtitle = "Posted journal detail",
+                Detail = "Select a journal row to inspect posted debits, credits, line count, and linked financial-account scope."
+            };
+        }
+
+        var isBalanced = entry.TotalDebits == entry.TotalCredits;
+        var linkedAccounts = entry.FinancialAccountIds is { Count: > 0 }
+            ? string.Join(", ", entry.FinancialAccountIds.Where(static accountId => !string.IsNullOrWhiteSpace(accountId)).Distinct(StringComparer.OrdinalIgnoreCase))
+            : "No account links retained";
+
+        return new InspectorPanelModel
+        {
+            Title = entry.Description,
+            Subtitle = entry.JournalEntryId.ToString("D"),
+            Detail = "Posted journal entry retained by the fund ledger read model. Drafting, approval, posting, reversal, and rebook actions stay in the shared manual journal workbench.",
+            Badge = new WorkstationBadgeModel(
+                "Balance",
+                isBalanced ? "Balanced" : "Out of balance",
+                "\uE9D5",
+                isBalanced ? WorkspaceTone.Success : WorkspaceTone.Warning),
+            Facts =
+            [
+                new("Timestamp", entry.Timestamp.LocalDateTime.ToString("g")),
+                new("Debits", entry.TotalDebits.ToString("C2")),
+                new("Credits", entry.TotalCredits.ToString("C2")),
+                new("Lines", entry.LineCount.ToString("N0")),
+                new("Linked accounts", linkedAccounts),
+                new("Journal entry", entry.JournalEntryId.ToString("D"))
+            ]
+        };
+    }
+
+    private static string FormatLedgerValue(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
     private static string BuildOverviewStatus(FundWorkspaceSummary summary)
     {
         var status = $"{summary.FundDisplayName} is loaded with {summary.TotalAccounts} account(s), {summary.JournalEntryCount} journal entries, and {summary.ReconciliationRuns} reconciliation run(s).";

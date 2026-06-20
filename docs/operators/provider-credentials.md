@@ -112,5 +112,5 @@ readiness flag plus treasury and compliance sign-off before transfer creation is
 ## Legacy links moved into canonical lane
 
 - [Provider credential management (legacy source)](../../archive/docs/operations/provider-credential-management.md)
-- [Interactive Brokers setup (legacy)](../providers/interactive-brokers-setup.md)
-- [Alpaca setup (legacy)](../providers/alpaca-setup.md)
+- [Interactive Brokers setup archive](../../archive/docs/providers/interactive-brokers-setup.md)
+- [Alpaca setup archive](../../archive/docs/providers/alpaca-setup.md)

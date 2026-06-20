@@ -10,7 +10,7 @@ See also:
 - [ADR-004: Async Streaming Patterns](../adr/004-async-streaming-patterns.md)
 - [ADR-005: Attribute-Based Discovery](../adr/005-attribute-based-discovery.md)
 - [Provider Implementation Guide](../development/provider-implementation.md)
-- [Provider Comparison](../providers/provider-comparison.md)
+- [Provider Capability Matrix](../reference/provider-capability-matrix.md)
 
 ---
 

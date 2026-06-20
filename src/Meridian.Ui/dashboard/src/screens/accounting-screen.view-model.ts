@@ -19,6 +19,7 @@ import {
   getCapitalAccountWorkbench,
   getManualJournalEntryWorkbench,
   getCorporateActions,
+  getReferenceDataWorkbenchCoverage,
   getReconciliationBreakQueue,
   getReconciliationCalibrationSummary,
   getReconciliationStatementRun,
@@ -26,6 +27,7 @@ import {
   getRunReviewPacketPath,
   getRunTrialBalance,
   getSecurityConflicts,
+  getSecurityInstrumentPassport,
   getSecurityIdentity,
   getSecurityTrustSnapshot,
   previewInvestmentAccountingTransaction,
@@ -43,7 +45,10 @@ import {
   upsertAccountingConfigurationPostingRuleTestCase,
   validateManualJournalEntryDraft,
   type AccountingReportPackageHistoryQuery,
-  type CapitalAccountWorkbenchQuery
+  type CapitalAccountWorkbenchQuery,
+  type ReferenceDataEndpointProbeStatus,
+  type ReferenceDataEndpointProbeResult,
+  type ReferenceDataWorkbenchCoverage
 } from "@/lib/api";
 import {
   evidenceWorkbenchPath,
@@ -51,7 +56,7 @@ import {
   WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath
 } from "@/lib/workspace";
-import { EXPORT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { EXPORT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import { formatReportPackRecipientList, getReportPackDistributions } from "@/lib/reporting-distributions";
 import {
   buildCalibrationSummaryViewState,
@@ -144,6 +149,8 @@ import type {
   SecurityIdentifierEntry,
   SecurityMasterConflict,
   SecurityMasterEntry,
+  InstrumentPassport,
+  InstrumentPassportProviderConfidence,
   SecurityMasterOpenLot,
   SecurityMasterOpenLotReadModel,
   SecurityMasterTrustSnapshot,
@@ -659,6 +666,8 @@ export interface SecurityOpenLotReadModelViewState {
 
 export interface SecurityMasterDrillInServices {
   getCorporateActions: (securityId: string) => Promise<CorporateAction[]>;
+  getReferenceDataCoverage: (seed: ReferenceDataWorkbenchEndpointSeed) => Promise<ReferenceDataWorkbenchCoverage>;
+  getInstrumentPassport: (securityId: string) => Promise<InstrumentPassport>;
   getTradingParameters: (securityId: string) => Promise<TradingParameters>;
   getTrustSnapshot: (securityId: string) => Promise<SecurityMasterTrustSnapshot>;
 }
@@ -703,7 +712,7 @@ export interface SecurityMasterPageMetricViewModel {
 }
 
 export interface SecurityMasterDetailSectionViewModel {
-  id: "overview" | "schedules" | "lots" | "controls" | "audit";
+  id: "overview" | "reference" | "schedules" | "lots" | "controls" | "audit";
   label: string;
   value: string;
   active?: boolean;
@@ -725,6 +734,97 @@ export interface SecurityMasterPageViewState {
   detailSections: SecurityMasterDetailSectionViewModel[];
 }
 
+export interface InstrumentPassportProviderConfidenceRowViewModel extends InstrumentPassportProviderConfidence {
+  rowId: string;
+  providerLabel: string;
+  symbolLabel: string;
+  confidenceLabel: string;
+  freshnessLabel: string;
+  statusLabel: string;
+  statusTone: "success" | "warning";
+  ariaLabel: string;
+}
+
+export interface InstrumentPassportFieldViewModel {
+  label: string;
+  value: string;
+  tone?: "default" | "success" | "warning";
+}
+
+export interface InstrumentPassportViewState {
+  securityId: string;
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning" | "outline";
+  fields: InstrumentPassportFieldViewModel[];
+  providerRows: InstrumentPassportProviderConfidenceRowViewModel[];
+  providerTableLabel: string;
+  providerTableCaption: string;
+  providerEmptyText: string;
+  loadingText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
+  statusAnnouncement: string;
+}
+export interface ReferenceDataWorkbenchMetricViewModel {
+  id: "routes" | "ready" | "review" | "deferred";
+  label: string;
+  value: string;
+  detail: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface ReferenceDataEndpointRowViewModel extends ReferenceDataEndpointProbeResult {
+  rowId: string;
+  familyLabel: string;
+  methodLabel: string;
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning" | "outline" | "danger";
+  countLabel: string;
+  latencyLabel: string;
+  ariaLabel: string;
+  selectAriaLabel: string;
+  detailPanelId: string;
+  isExpanded: boolean;
+}
+
+export interface ReferenceDataEndpointDetailViewState {
+  id: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning" | "outline" | "danger";
+  fields: SecurityScheduleDetailFieldViewModel[];
+  responsePreview: string | null;
+  errorSummary: string | null;
+  errorDetails: string[];
+}
+
+export interface ReferenceDataWorkbenchViewState {
+  securityId: string | null;
+  title: string;
+  description: string;
+  metrics: ReferenceDataWorkbenchMetricViewModel[];
+  rows: ReferenceDataEndpointRowViewModel[];
+  selectedRowId: string | null;
+  selectedDetail: ReferenceDataEndpointDetailViewState | null;
+  tableLabel: string;
+  tableCaption: string;
+  detailPanelId: string;
+  emptyText: string;
+  detailEmptyTitle: string;
+  detailEmptyText: string;
+  detailEmptyAriaLabel: string;
+  loadingText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
+  hasRows: boolean;
+  statusAnnouncement: string;
+}
 export interface SecurityIdentitySummaryFieldViewModel {
   label: string;
   value: string;
@@ -2190,6 +2290,8 @@ const defaultCapitalAccountWorkbenchServices: CapitalAccountWorkbenchServices = 
 
 const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
   getCorporateActions: (securityId) => getCorporateActions(securityId),
+  getReferenceDataCoverage: (seed) => getReferenceDataWorkbenchCoverage(seed),
+  getInstrumentPassport: (securityId) => getSecurityInstrumentPassport(securityId),
   getTradingParameters: (securityId) => getTradingParameters(securityId),
   getTrustSnapshot: (securityId) => getSecurityTrustSnapshot(securityId)
 };
@@ -4928,11 +5030,18 @@ export function useSecurityMasterViewModel(
   const [corporateActionsLoading, setCorporateActionsLoading] = useState(false);
   const [corporateActionsError, setCorporateActionsError] = useState<ApiErrorDisplay | null>(null);
   const [selectedCorporateActionId, setSelectedCorporateActionId] = useState<string | null>(null);
+  const [referenceDataCoverage, setReferenceDataCoverage] = useState<ReferenceDataWorkbenchCoverage | null>(null);
+  const [referenceDataCoverageLoading, setReferenceDataCoverageLoading] = useState(false);
+  const [referenceDataCoverageError, setReferenceDataCoverageError] = useState<ApiErrorDisplay | null>(null);
+  const [selectedReferenceDataEndpointId, setSelectedReferenceDataEndpointId] = useState<string | null>(null);
   const [selectedScheduleEventId, setSelectedScheduleEventId] = useState<string | null>(null);
   const [selectedOpenLotId, setSelectedOpenLotId] = useState<string | null>(null);
   const [trustSnapshot, setTrustSnapshot] = useState<SecurityMasterTrustSnapshot | null>(null);
   const [trustSnapshotLoading, setTrustSnapshotLoading] = useState(false);
   const [trustSnapshotError, setTrustSnapshotError] = useState<ApiErrorDisplay | null>(null);
+  const [instrumentPassport, setInstrumentPassport] = useState<InstrumentPassport | null>(null);
+  const [instrumentPassportLoading, setInstrumentPassportLoading] = useState(false);
+  const [instrumentPassportError, setInstrumentPassportError] = useState<ApiErrorDisplay | null>(null);
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [tradingParametersLoading, setTradingParametersLoading] = useState(false);
   const [tradingParametersError, setTradingParametersError] = useState<ApiErrorDisplay | null>(null);
@@ -4941,6 +5050,12 @@ export function useSecurityMasterViewModel(
   const identityGenerationRef = useRef(0);
   const conflictGenerationRef = useRef(0);
   const conflictResolvingIdRef = useRef<string | null>(null);
+  const resetReferenceDataCoverage = useCallback(() => {
+    setReferenceDataCoverage(null);
+    setReferenceDataCoverageLoading(false);
+    setReferenceDataCoverageError(null);
+    setSelectedReferenceDataEndpointId(null);
+  }, []);
 
   useEffect(() => () => {
     if (searchTimerRef.current) {
@@ -4979,15 +5094,19 @@ export function useSecurityMasterViewModel(
     setCorporateActionsLoading(false);
     setCorporateActionsError(null);
     setSelectedCorporateActionId(null);
+    resetReferenceDataCoverage();
     setSelectedScheduleEventId(null);
     setSelectedOpenLotId(null);
     setTrustSnapshot(null);
     setTrustSnapshotLoading(false);
     setTrustSnapshotError(null);
+    setInstrumentPassport(null);
+    setInstrumentPassportLoading(false);
+    setInstrumentPassportError(null);
     setTradingParameters(null);
     setTradingParametersLoading(false);
     setTradingParametersError(null);
-  }, [active]);
+  }, [active, resetReferenceDataCoverage]);
 
   const refreshConflicts = useCallback(async () => {
     if (!active) {
@@ -5018,7 +5137,7 @@ export function useSecurityMasterViewModel(
         setConflictsLoading(false);
       }
     }
-  }, [active, services]);
+  }, [active, resetReferenceDataCoverage, services]);
 
   useEffect(() => {
     void refreshConflicts();
@@ -5030,6 +5149,7 @@ export function useSecurityMasterViewModel(
       setCorporateActionsLoading(false);
       setCorporateActionsError(null);
       setSelectedCorporateActionId(null);
+      resetReferenceDataCoverage();
       setSelectedScheduleEventId(null);
       setSelectedOpenLotId(null);
       setTrustSnapshot(null);
@@ -5044,11 +5164,36 @@ export function useSecurityMasterViewModel(
     let cancelled = false;
     setCorporateActionsLoading(true);
     setCorporateActionsError(null);
+    setReferenceDataCoverage(null);
+    setReferenceDataCoverageLoading(true);
+    setReferenceDataCoverageError(null);
+    setSelectedReferenceDataEndpointId(null);
     setTrustSnapshotLoading(true);
     setTrustSnapshotError(null);
+    setInstrumentPassportLoading(true);
+    setInstrumentPassportError(null);
     setTradingParametersLoading(true);
     setTradingParametersError(null);
 
+    const selectedSearchResult = results?.find((entry) => entry.securityId === selectedSecurityId) ?? null;
+
+    drillInServices.getReferenceDataCoverage(buildReferenceDataWorkbenchSeed(selectedSecurityId, selectedSearchResult))
+      .then((coverage) => {
+        if (!cancelled) {
+          setReferenceDataCoverage(coverage);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setReferenceDataCoverage(null);
+          setReferenceDataCoverageError(describeApiError(err, "Reference data workbench failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setReferenceDataCoverageLoading(false);
+        }
+      });
     drillInServices.getCorporateActions(selectedSecurityId)
       .then((rows) => {
         if (!cancelled) {
@@ -5085,6 +5230,24 @@ export function useSecurityMasterViewModel(
         }
       });
 
+    drillInServices.getInstrumentPassport(selectedSecurityId)
+      .then((passport) => {
+        if (!cancelled) {
+          setInstrumentPassport(passport);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setInstrumentPassport(null);
+          setInstrumentPassportError(describeApiError(err, "Instrument passport failed to load."));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setInstrumentPassportLoading(false);
+        }
+      });
+
     drillInServices.getTradingParameters(selectedSecurityId)
       .then((params) => {
         if (!cancelled) {
@@ -5106,7 +5269,7 @@ export function useSecurityMasterViewModel(
     return () => {
       cancelled = true;
     };
-  }, [active, selectedSecurityId, drillInServices]);
+  }, [active, selectedSecurityId, drillInServices, resetReferenceDataCoverage, results]);
 
   const updateQuery = useCallback((nextQuery: string) => {
     setQuery(nextQuery);
@@ -5115,11 +5278,15 @@ export function useSecurityMasterViewModel(
     setIdentityError(null);
     setSearchError(null);
     setSelectedCorporateActionId(null);
+    resetReferenceDataCoverage();
     setSelectedScheduleEventId(null);
     setSelectedOpenLotId(null);
     setTrustSnapshot(null);
     setTrustSnapshotLoading(false);
     setTrustSnapshotError(null);
+    setInstrumentPassport(null);
+    setInstrumentPassportLoading(false);
+    setInstrumentPassportError(null);
     identityGenerationRef.current += 1;
 
     if (searchTimerRef.current) {
@@ -5158,7 +5325,7 @@ export function useSecurityMasterViewModel(
           }
         });
     }, searchDelayMs);
-  }, [searchDelayMs, services]);
+  }, [resetReferenceDataCoverage, searchDelayMs, services]);
 
   const selectSecurity = useCallback(async (securityId: string) => {
     if (!active) {
@@ -5174,11 +5341,15 @@ export function useSecurityMasterViewModel(
     setCorporateActions(null);
     setCorporateActionsError(null);
     setSelectedCorporateActionId(null);
+    resetReferenceDataCoverage();
     setSelectedScheduleEventId(null);
     setSelectedOpenLotId(null);
     setTrustSnapshot(null);
     setTrustSnapshotLoading(false);
     setTrustSnapshotError(null);
+    setInstrumentPassport(null);
+    setInstrumentPassportLoading(false);
+    setInstrumentPassportError(null);
     setTradingParameters(null);
     setTradingParametersError(null);
 
@@ -5196,7 +5367,7 @@ export function useSecurityMasterViewModel(
         setIdentityLoading(false);
       }
     }
-  }, [active, services]);
+  }, [active, resetReferenceDataCoverage, services]);
 
   const resolveConflict = useCallback(async (
     conflictId: string,
@@ -5354,10 +5525,47 @@ export function useSecurityMasterViewModel(
       trustSnapshotLoading
     ]
   );
+  const instrumentPassportView = useMemo(
+    () => buildInstrumentPassportViewState({
+      securityId: selectedSecurityId,
+      passport: instrumentPassport,
+      loading: instrumentPassportLoading,
+      error: instrumentPassportError
+    }),
+    [instrumentPassport, instrumentPassportError, instrumentPassportLoading, selectedSecurityId]
+  );
   const tradingParametersView = useMemo(
     () => buildTradingParametersViewState(tradingParameters, tradingParametersLoading, tradingParametersError),
     [tradingParameters, tradingParametersLoading, tradingParametersError]
   );
+  const referenceDataWorkbenchView = useMemo(
+    () => buildReferenceDataWorkbenchViewState({
+      securityId: selectedSecurityId,
+      coverage: referenceDataCoverage,
+      loading: referenceDataCoverageLoading,
+      error: referenceDataCoverageError,
+      selectedRowId: selectedReferenceDataEndpointId
+    }),
+    [
+      referenceDataCoverage,
+      referenceDataCoverageError,
+      referenceDataCoverageLoading,
+      selectedReferenceDataEndpointId,
+      selectedSecurityId
+    ]
+  );
+  useEffect(() => {
+    if (referenceDataWorkbenchView.rows.length === 0) {
+      if (selectedReferenceDataEndpointId !== null) {
+        setSelectedReferenceDataEndpointId(null);
+      }
+      return;
+    }
+
+    if (!selectedReferenceDataEndpointId || !referenceDataWorkbenchView.rows.some((row) => row.rowId === selectedReferenceDataEndpointId)) {
+      setSelectedReferenceDataEndpointId(referenceDataWorkbenchView.rows[0].rowId);
+    }
+  }, [referenceDataWorkbenchView.rows, selectedReferenceDataEndpointId]);
   const openConflictCount = countOpenSecurityConflicts(conflicts);
   const conflictRefreshCommand = useMemo(
     () => buildSecurityConflictRefreshCommand(conflictsLoading, conflictsError, conflictResolvingId),
@@ -5376,6 +5584,9 @@ export function useSecurityMasterViewModel(
       conflicts,
       conflictsLoading,
       corporateActions,
+      referenceDataCoverage,
+      referenceDataLoading: referenceDataCoverageLoading,
+      referenceDataError: referenceDataCoverageError,
       securitySchedules,
       openLotReadModel: trustSnapshot?.openLotReadModel ?? null,
       trustSnapshotLoading,
@@ -5386,6 +5597,9 @@ export function useSecurityMasterViewModel(
       conflicts,
       conflictsLoading,
       corporateActions,
+      referenceDataCoverage,
+      referenceDataCoverageError,
+      referenceDataCoverageLoading,
       securitySchedules,
       trustSnapshot?.openLotReadModel,
       trustSnapshotError,
@@ -5432,6 +5646,9 @@ export function useSecurityMasterViewModel(
     corporateActions,
     corporateActionRows,
     corporateActionsView,
+    referenceDataCoverage,
+    referenceDataWorkbenchView,
+    selectReferenceDataEndpoint: setSelectedReferenceDataEndpointId,
     selectCorporateAction: setSelectedCorporateActionId,
     hasCorporateActions: (corporateActions?.length ?? 0) > 0,
     corporateActionsLoading,
@@ -5447,6 +5664,11 @@ export function useSecurityMasterViewModel(
     openLotRows,
     openLotReadModelView,
     selectOpenLot: setSelectedOpenLotId,
+    instrumentPassport,
+    instrumentPassportView,
+    instrumentPassportLoading,
+    instrumentPassportErrorText: instrumentPassportError?.summary ?? null,
+    instrumentPassportErrorDetails: instrumentPassportError?.details ?? [],
     tradingParameters,
     tradingParametersView,
     tradingParametersLoading,
@@ -8141,6 +8363,9 @@ export function buildSecurityMasterPageViewState({
   conflicts,
   conflictsLoading,
   corporateActions,
+  referenceDataCoverage = null,
+  referenceDataLoading = false,
+  referenceDataError = null,
   securitySchedules,
   openLotReadModel,
   trustSnapshotLoading = false,
@@ -8158,6 +8383,9 @@ export function buildSecurityMasterPageViewState({
   conflicts: SecurityMasterConflict[] | null;
   conflictsLoading: boolean;
   corporateActions: CorporateAction[] | null;
+  referenceDataCoverage?: ReferenceDataWorkbenchCoverage | null;
+  referenceDataLoading?: boolean;
+  referenceDataError?: ApiErrorDisplay | string | null;
   securitySchedules?: SecurityCashFlowScheduleEvent[] | null;
   openLotReadModel?: SecurityMasterOpenLotReadModel | null;
   trustSnapshotLoading?: boolean;
@@ -8181,6 +8409,15 @@ export function buildSecurityMasterPageViewState({
     : selectedSecurityId
       ? "Loading schedules"
       : "No selection";
+  const referenceDataLabel = referenceDataError
+    ? "Error"
+    : referenceDataLoading
+      ? "Loading"
+      : referenceDataCoverage
+        ? formatCount(referenceDataCoverage.endpoints.length, "route")
+        : selectedSecurityId
+          ? "Pending"
+          : "No selection";
   const scheduleLabel = securitySchedules
     ? securitySchedules.length > 0
       ? formatCount(securitySchedules.length, "cash-flow event")
@@ -8250,6 +8487,7 @@ export function buildSecurityMasterPageViewState({
     detailToolbarAriaLabel: selectedSecurityId ? `Security detail sections for ${selectedName}` : "Security detail sections",
     detailSections: [
       { id: "overview", label: "Overview", value: identifiersLabel, active: true },
+      { id: "reference", label: "Reference", value: referenceDataLabel },
       { id: "schedules", label: "Schedules", value: scheduleLabel },
       { id: "lots", label: "Open lots", value: openLotLabel },
       { id: "controls", label: "Controls", value: tradingParameters ? "Trading set" : selectedSecurityId ? "Pending" : "No selection" },
@@ -11843,6 +12081,343 @@ function buildSecurityOpenLotDetailViewState(
   };
 }
 
+function buildReferenceDataWorkbenchSeed(
+  securityId: string,
+  entry: SecurityMasterEntry | null
+): ReferenceDataWorkbenchEndpointSeed {
+  const symbol = normalizeReferenceWorkbenchSymbol(
+    entry?.classification.primaryIdentifierValue ?? entry?.displayName ?? securityId
+  );
+  const currency = entry?.economicDefinition.currency || "USD";
+  const primaryKind = entry?.classification.primaryIdentifierKind ?? null;
+  const primaryValue = entry?.classification.primaryIdentifierValue ?? null;
+  const issuerName = entry?.displayName ?? symbol;
+
+  return {
+    securityId,
+    displayName: entry?.displayName ?? null,
+    primaryIdentifierKind: primaryKind,
+    primaryIdentifierValue: primaryValue,
+    currency,
+    issuerName,
+    optionContractSymbol: `${symbol}20261219C00150000`,
+    optionChainId: `${symbol}-20261219`,
+    optionExpiryDate: "2026-12-19",
+    underlyingSymbol: symbol,
+    exchangeCode: "XNYS",
+    rootSymbol: symbol.slice(0, 3) || "ES",
+    fxPairCode: currency === "USD" ? "EURUSD" : `${currency}USD`,
+    swapType: entry?.economicDefinition.subType ?? "InterestRate",
+    commodityType: entry?.economicDefinition.assetFamily ?? "Energy",
+    network: "Ethereum",
+    baseCurrency: currency === "USD" ? "BTC" : currency,
+    institutionName: issuerName,
+    fundFamily: issuerName,
+    cik: primaryKind?.toLowerCase() === "cik" ? normalizeReferenceWorkbenchCik(primaryValue) : null,
+    maturityFrom: "2026-01-01",
+    maturityTo: "2036-12-31",
+    beforeDate: "2031-12-31"
+  };
+}
+
+export function buildReferenceDataWorkbenchViewState({
+  securityId,
+  coverage,
+  loading = false,
+  error = null,
+  selectedRowId = null
+}: {
+  securityId: string | null;
+  coverage: ReferenceDataWorkbenchCoverage | null;
+  loading?: boolean;
+  error?: string | ApiErrorDisplay | null;
+  selectedRowId?: string | null;
+}): ReferenceDataWorkbenchViewState {
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
+  const rows = buildReferenceDataEndpointRows(coverage, selectedRowId);
+  const effectiveSelectedRowId = rows.some((row) => row.rowId === selectedRowId)
+    ? selectedRowId
+    : rows[0]?.rowId ?? null;
+  const selectedRow = rows.find((row) => row.rowId === effectiveSelectedRowId) ?? null;
+  const readyCount = rows.filter((row) => row.status === "Ready").length;
+  const reviewCount = rows.filter((row) => row.status === "Empty" || row.status === "Missing" || row.status === "Blocked" || row.status === "Error").length;
+  const deferredCount = rows.filter((row) => row.status === "Deferred").length;
+  const routeCount = rows.length;
+  const displaySecurityId = securityId ?? "selected security";
+
+  return {
+    securityId,
+    title: "Multi-asset reference data",
+    description: securityId
+      ? `Endpoint-backed coverage for ${displaySecurityId} across bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, CDs, and EDGAR.`
+      : "Select a security to inspect multi-asset reference data endpoint coverage.",
+    metrics: [
+      {
+        id: "routes",
+        label: "Mapped routes",
+        value: routeCount > 0 ? routeCount.toLocaleString() : "Pending",
+        detail: routeCount > 0 ? `${formatCount(routeCount, "reference endpoint")} catalogued for this selection.` : "Select a security to build endpoint probes.",
+        tone: routeCount > 0 ? "default" : "warning"
+      },
+      {
+        id: "ready",
+        label: "Ready payloads",
+        value: readyCount.toLocaleString(),
+        detail: readyCount > 0 ? `${formatCount(readyCount, "endpoint")} returned payload data.` : "No endpoint has returned payload data yet.",
+        tone: readyCount > 0 ? "success" : "default"
+      },
+      {
+        id: "review",
+        label: "Needs review",
+        value: reviewCount.toLocaleString(),
+        detail: reviewCount > 0 ? `${formatCount(reviewCount, "endpoint")} returned empty, missing, blocked, or error status.` : "No probed endpoint is flagged for review.",
+        tone: reviewCount > 0 ? "warning" : "success"
+      },
+      {
+        id: "deferred",
+        label: "Deferred mutations",
+        value: deferredCount.toLocaleString(),
+        detail: deferredCount > 0 ? `${formatCount(deferredCount, "mutation endpoint")} catalogued without invocation.` : "No mutation endpoint is present in the catalog.",
+        tone: deferredCount > 0 ? "warning" : "default"
+      }
+    ],
+    rows,
+    selectedRowId: effectiveSelectedRowId,
+    selectedDetail: selectedRow ? buildReferenceDataEndpointDetailViewState(selectedRow, coverage) : null,
+    tableLabel: `Reference data endpoint coverage for ${displaySecurityId}`,
+    tableCaption: `Read-only probe status for mapped reference data endpoints backing ${displaySecurityId}.`,
+    detailPanelId: "reference-data-endpoint-detail",
+    emptyText: securityId ? "No reference endpoint rows are available for this security." : "Select a security to load reference endpoint coverage.",
+    detailEmptyTitle: "No endpoint selected",
+    detailEmptyText: "Select an endpoint row to inspect request details, response preview, and error evidence.",
+    detailEmptyAriaLabel: `Reference data endpoint detail for ${displaySecurityId}`,
+    loadingText: loading ? "Loading multi-asset reference data coverage..." : null,
+    errorText,
+    errorDetails: normalizedError?.details ?? [],
+    hasRows: rows.length > 0,
+    statusAnnouncement: errorText
+      ? `Reference data workbench error: ${errorText}`
+      : loading
+        ? `Loading multi-asset reference data coverage for ${displaySecurityId}.`
+        : rows.length > 0
+          ? `${formatCount(rows.length, "reference endpoint")} loaded for ${displaySecurityId}; ${formatCount(readyCount, "endpoint")} ready.`
+          : ""
+  };
+}
+
+function buildReferenceDataEndpointRows(
+  coverage: ReferenceDataWorkbenchCoverage | null,
+  selectedRowId: string | null
+): ReferenceDataEndpointRowViewModel[] {
+  return (coverage?.endpoints ?? []).map((endpoint) => {
+    const rowId = `reference-data-${endpoint.id}`;
+    const statusBadgeVariant = referenceDataStatusBadgeVariant(endpoint.status);
+    const countLabel = endpoint.responseCount === null ? "-" : formatCount(endpoint.responseCount, "record");
+    const latencyLabel = endpoint.durationMs === null ? "-" : `${endpoint.durationMs} ms`;
+    const statusLabel = referenceDataStatusLabel(endpoint.status);
+
+    return {
+      ...endpoint,
+      rowId,
+      familyLabel: endpoint.family,
+      methodLabel: endpoint.method,
+      statusLabel,
+      statusBadgeVariant,
+      countLabel,
+      latencyLabel,
+      ariaLabel: `${endpoint.family} ${endpoint.label}, ${endpoint.method} ${endpoint.path}, ${statusLabel}. ${endpoint.responseSummary}`,
+      selectAriaLabel: `Inspect ${endpoint.label} reference endpoint`,
+      detailPanelId: "reference-data-endpoint-detail",
+      isExpanded: rowId === selectedRowId
+    };
+  });
+}
+
+function buildReferenceDataEndpointDetailViewState(
+  row: ReferenceDataEndpointRowViewModel,
+  coverage: ReferenceDataWorkbenchCoverage | null
+): ReferenceDataEndpointDetailViewState {
+  return {
+    id: row.detailPanelId,
+    eyebrow: row.familyLabel,
+    title: row.label,
+    subtitle: `${row.methodLabel} ${row.path}`,
+    description: row.errorSummary ?? row.responseSummary,
+    ariaLabel: `${row.label} reference data endpoint detail`,
+    statusLabel: row.statusLabel,
+    statusBadgeVariant: row.statusBadgeVariant,
+    fields: [
+      { label: "Family", value: row.familyLabel },
+      { label: "Method", value: row.methodLabel, tone: row.mutation ? "warning" : "default" },
+      { label: "Endpoint", value: row.path },
+      { label: "Request", value: row.requestLabel },
+      { label: "Status", value: row.statusLabel, tone: referenceDataStatusTone(row.status) },
+      { label: "Payload", value: row.countLabel },
+      { label: "Latency", value: row.latencyLabel },
+      { label: "Catalogued", value: coverage?.requestedAtUtc ? formatDateTimeLabel(coverage.requestedAtUtc) : "-" }
+    ],
+    responsePreview: row.responsePreview,
+    errorSummary: row.errorSummary,
+    errorDetails: row.errorDetails
+  };
+}
+
+function referenceDataStatusLabel(status: ReferenceDataEndpointProbeResult["status"]): string {
+  const labels: Record<ReferenceDataEndpointProbeResult["status"], string> = {
+    Ready: "Ready",
+    Empty: "Empty",
+    Missing: "Missing",
+    Blocked: "Blocked",
+    Error: "Error",
+    Deferred: "Deferred"
+  };
+
+  return labels[status];
+}
+
+function referenceDataStatusBadgeVariant(
+  status: ReferenceDataEndpointProbeResult["status"]
+): ReferenceDataEndpointRowViewModel["statusBadgeVariant"] {
+  if (status === "Ready") {
+    return "success";
+  }
+
+  if (status === "Error" || status === "Blocked") {
+    return "danger";
+  }
+
+  if (status === "Empty" || status === "Missing") {
+    return "warning";
+  }
+
+  return "outline";
+}
+
+function referenceDataStatusTone(status: ReferenceDataEndpointProbeResult["status"]): SecurityScheduleDetailFieldViewModel["tone"] {
+  if (status === "Ready") {
+    return "success";
+  }
+
+  if (status === "Error" || status === "Blocked") {
+    return "danger";
+  }
+
+  if (status === "Empty" || status === "Missing" || status === "Deferred") {
+    return "warning";
+  }
+
+  return "default";
+}
+
+function normalizeReferenceWorkbenchSymbol(value: string): string {
+  const match = value.toUpperCase().match(/[A-Z0-9]{1,8}/);
+  return match?.[0] ?? "AAPL";
+}
+
+function normalizeReferenceWorkbenchCik(value: string | null | undefined): string | null {
+  const normalized = value?.replace(/\D/g, "");
+  return normalized || null;
+}
+
+export function buildInstrumentPassportViewState({
+  securityId,
+  passport,
+  loading = false,
+  error = null
+}: {
+  securityId: string | null;
+  passport: InstrumentPassport | null;
+  loading?: boolean;
+  error?: string | ApiErrorDisplay | null;
+}): InstrumentPassportViewState {
+  const normalizedError = normalizeApiErrorDisplay(error);
+  const errorText = normalizedError?.summary ?? null;
+  const displaySecurityId = securityId ?? passport?.securityId ?? "selected security";
+  const providerRows = buildInstrumentPassportProviderRows(passport);
+  const trustTone = passport?.trustPosture.tone?.trim() || "Unknown";
+  const trustSummary = passport?.trustPosture.summary?.trim() || "Trust posture is unavailable.";
+  const identifierSummary = passport?.identifierSummary.summary?.trim() || "Identifier summary is unavailable.";
+  const usageSummary = passport?.usage.summary?.trim() || "Downstream usage is unavailable.";
+  const pricingStatus = passport?.pricing?.status?.trim() || "Unknown";
+  const pricingSummary = passport?.pricing?.summary?.trim() || "Pricing and trading controls are unavailable.";
+  const activeProviderCount = providerRows.filter((row) => row.isActive).length;
+  const statusBadgeVariant = trustTone.toLowerCase() === "trusted"
+    ? "success"
+    : trustTone.toLowerCase() === "blocked" || trustTone.toLowerCase() === "review"
+      ? "warning"
+      : "outline";
+
+  return {
+    securityId: displaySecurityId,
+    title: "Instrument passport",
+    description: passport
+      ? `${passport.identity.displayName} passport combines identifiers, provider confidence, lifecycle, pricing, and downstream usage evidence.`
+      : `Instrument passport evidence for ${displaySecurityId}.`,
+    statusLabel: trustTone,
+    statusBadgeVariant,
+    fields: [
+      { label: "Security ID", value: passport?.securityId ?? displaySecurityId },
+      { label: "Display name", value: passport?.identity.displayName ?? "-" },
+      { label: "Asset class", value: passport?.identity.assetClass ?? "-" },
+      { label: "Trust", value: trustSummary, tone: statusBadgeVariant === "success" ? "success" : statusBadgeVariant === "warning" ? "warning" : "default" },
+      { label: "Identifiers", value: identifierSummary },
+      { label: "Provider confidence", value: `${activeProviderCount} active / ${providerRows.length} total` },
+      { label: "Pricing", value: `${pricingStatus}: ${pricingSummary}` },
+      { label: "Usage", value: usageSummary },
+      { label: "Retrieved", value: passport?.retrievedAtUtc ? formatDateTimeLabel(passport.retrievedAtUtc) : "-" }
+    ],
+    providerRows,
+    providerTableLabel: `Provider confidence for ${displaySecurityId}`,
+    providerTableCaption: `Provider symbol confidence and conflict evidence for ${displaySecurityId}.`,
+    providerEmptyText: `No provider confidence rows are available for ${displaySecurityId}.`,
+    loadingText: loading ? "Loading instrument passport..." : null,
+    errorText,
+    errorDetails: normalizedError?.details ?? [],
+    statusAnnouncement: errorText
+      ? `Instrument passport error: ${errorText}`
+      : loading
+        ? `Loading instrument passport for ${displaySecurityId}.`
+        : passport
+          ? `Instrument passport loaded for ${displaySecurityId}.`
+          : ""
+  };
+}
+
+function buildInstrumentPassportProviderRows(
+  passport: InstrumentPassport | null
+): InstrumentPassportProviderConfidenceRowViewModel[] {
+  return (passport?.providerConfidence ?? []).map((row, index) => {
+    const confidenceLabel = formatInstrumentPassportConfidenceLabel(row.confidenceScore);
+    const freshnessLabel = row.freshnessMinutes !== null
+      ? `${row.freshnessMinutes} min`
+      : row.freshnessAsOf
+        ? formatDateTimeLabel(row.freshnessAsOf)
+        : "-";
+    const statusLabel = row.isPrimary ? "Primary" : row.isActive ? "Active" : "Inactive";
+
+    return {
+      ...row,
+      rowId: `${row.provider}-${row.normalizedSymbol || row.symbol}-${index}`,
+      providerLabel: `${row.provider} / ${row.providerSource}`,
+      symbolLabel: `${row.mappingKind}: ${row.symbol}`,
+      confidenceLabel,
+      freshnessLabel,
+      statusLabel,
+      statusTone: row.isActive ? "success" : "warning",
+      ariaLabel: `${row.provider} ${row.symbol}, confidence ${confidenceLabel}, ${statusLabel}. ${row.confidenceReason}`
+    };
+  });
+}
+function formatInstrumentPassportConfidenceLabel(score: number): string {
+  if (!Number.isFinite(score)) {
+    return "-";
+  }
+
+  const normalizedScore = Math.abs(score) <= 1 ? score * 100 : score;
+  const boundedScore = Math.max(0, Math.min(100, normalizedScore));
+  return `${Math.round(boundedScore)}%`;
+}
 export function buildTradingParametersViewState(
   params: TradingParameters | null,
   loading: boolean,

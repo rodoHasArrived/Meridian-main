@@ -140,7 +140,8 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
                 line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
                 line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m,
                 line.Description,
-                request.EvidenceLinks));
+                request.EvidenceLinks,
+                line.Dimensions));
         }
 
         if (issues.Any(static issue => issue.BlocksCandidate))

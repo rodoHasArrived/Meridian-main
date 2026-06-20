@@ -8679,6 +8679,22 @@ export interface TradingParameters {
   asOf: string;
 }
 
+export interface InstrumentPassportEconomicDefinition extends Record<string, unknown> {
+  assetClass?: string | null;
+}
+
+export interface InstrumentPassportIdentifierSummary {
+  summary: string;
+}
+
+export interface InstrumentPassportUsage {
+  summary: string;
+}
+
+export interface InstrumentPassportTrustPosture {
+  tone: string;
+  summary: string;
+}
 export interface InstrumentPassportProviderConfidence {
   provider: string;
   providerSource: string;
@@ -8710,14 +8726,14 @@ export interface InstrumentPassportPricing {
 export interface InstrumentPassport {
   securityId: string;
   identity: SecurityIdentityDrillIn;
-  economicDefinition: Record<string, unknown>;
-  identifierSummary: Record<string, unknown>;
+  economicDefinition: InstrumentPassportEconomicDefinition;
+  identifierSummary: InstrumentPassportIdentifierSummary;
   providerMappings: Record<string, unknown>[];
   lifecycleEvents: Record<string, unknown>[];
   corporateActions: CorporateAction[];
   pricing: InstrumentPassportPricing;
-  usage: Record<string, unknown>;
-  trustPosture: Record<string, unknown>;
+  usage: InstrumentPassportUsage;
+  trustPosture: InstrumentPassportTrustPosture;
   retrievedAtUtc: string;
   providerConfidence: InstrumentPassportProviderConfidence[];
 }
@@ -9175,4 +9191,248 @@ export interface DataFetchResult {
   interval: DataFetchRequest["interval"];
   bars: PriceBar[];
   rowCount: number;
+}
+
+export type AdminMaintenanceTaskType =
+  | "HealthCheck"
+  | "Cleanup"
+  | "Defragmentation"
+  | "TierMigration"
+  | "Compression"
+  | "Repair"
+  | "FullMaintenance"
+  | "IntegrityCheck"
+  | "Archival"
+  | "RetentionEnforcement";
+
+export interface ArchiveMaintenanceSchedule {
+  scheduleId: string;
+  name: string;
+  description?: string | null;
+  enabled: boolean;
+  cronExpression: string;
+  timeZoneId?: string | null;
+  taskType: AdminMaintenanceTaskType | string;
+  priority?: string | null;
+  targetPaths?: string[] | null;
+  lastExecutedAt?: string | null;
+  nextExecutionAt?: string | null;
+  lastExecutionId?: string | null;
+  lastExecutionStatus?: string | null;
+  executionCount?: number;
+  successfulExecutions?: number;
+  failedExecutions?: number;
+  tags?: string[] | null;
+}
+
+export interface AdminMaintenanceScheduleResponse {
+  schedules: ArchiveMaintenanceSchedule[];
+  summary?: string | Record<string, unknown> | null;
+  timestamp?: string;
+  total?: number;
+}
+
+export interface MaintenanceExecution {
+  executionId: string;
+  scheduleId?: string | null;
+  scheduleName?: string | null;
+  taskType: AdminMaintenanceTaskType | string;
+  status: string;
+  manualTrigger?: boolean;
+  startedAt: string;
+  completedAt?: string | null;
+  filesProcessed?: number;
+  issuesFound?: number;
+  issuesResolved?: number;
+  bytesProcessed?: number;
+  bytesSaved?: number;
+  errorMessage?: string | null;
+  logMessages?: string[] | null;
+  result?: Record<string, unknown> | null;
+}
+
+export interface AdminMaintenanceHistoryResponse {
+  executions: MaintenanceExecution[];
+  total: number;
+  statistics?: Record<string, unknown> | null;
+  timestamp?: string;
+}
+
+export interface AdminMaintenanceRunRequest {
+  taskType?: AdminMaintenanceTaskType | string;
+  targetPaths?: string[] | null;
+}
+
+export interface AdminTierInfo {
+  fileCount: number;
+  totalBytes: number;
+  oldestFile?: string | null;
+  newestFile?: string | null;
+}
+
+export interface AdminStorageTiersResponse {
+  tiers: Record<string, AdminTierInfo>;
+  generatedAt?: string;
+}
+
+export interface AdminStorageUsageBreakdownEntry {
+  fileCount: number;
+  bytes: number;
+}
+
+export interface AdminStorageUsageResponse {
+  rootPath: string;
+  totalBytes: number;
+  fileCount: number;
+  breakdown: Record<string, AdminStorageUsageBreakdownEntry>;
+  timestamp?: string;
+}
+
+export interface AdminRetentionResponse {
+  retentionDays: number;
+  maxStorageSizeGb: number;
+  timestamp?: string;
+}
+
+export interface AdminCleanupCandidate {
+  path: string;
+  sizeBytes: number;
+  lastModified: string;
+}
+
+export interface AdminCleanupPreviewResponse {
+  candidateCount: number;
+  reclaimableBytes: number;
+  candidates: AdminCleanupCandidate[];
+  timestamp?: string;
+}
+
+export interface AdminCleanupExecuteResponse {
+  executed: boolean;
+  message?: string | null;
+  timestamp?: string;
+}
+
+export interface AdminStoragePermissionsResponse {
+  rootPath: string;
+  readable: boolean;
+  writable: boolean;
+  timestamp?: string;
+}
+
+export interface AdminQuickCheckResponse {
+  configLoaded?: boolean;
+  dataRoot?: string;
+  dataRootExists?: boolean;
+  symbolCount?: number;
+  dataSource?: string;
+  timestamp?: string;
+}
+
+export interface AdminShowConfigResponse {
+  dataSource?: string;
+  symbolCount?: number;
+  symbols?: string[];
+  dataRoot?: string;
+  compress?: boolean;
+  storage?: Record<string, unknown> | null;
+  timestamp?: string;
+}
+
+export interface AdminErrorCodesResponse {
+  errorCodes: Array<{ code: number; name: string }>;
+  timestamp?: string;
+}
+
+export interface AdminSelfTestResponse {
+  passed?: boolean;
+  checks: Array<{ check: string; passed: boolean }>;
+  timestamp?: string;
+}
+
+export interface MaintenanceSchedulesResponse extends AdminMaintenanceScheduleResponse {
+  total?: number;
+}
+
+export interface MaintenanceScheduleHistoryResponse {
+  scheduleId: string;
+  executions: MaintenanceExecution[];
+  total: number;
+  summary?: Record<string, unknown> | null;
+}
+
+export interface DataPackageListItem {
+  path: string;
+  fileName: string;
+  sizeBytes: number;
+  createdAt: string;
+  modifiedAt: string;
+}
+
+export interface DataPackageListResponse {
+  packages: DataPackageListItem[];
+}
+
+export interface DataPackageCreateRequest {
+  name?: string | null;
+  description?: string | null;
+  outputDirectory?: string | null;
+  symbols?: string[] | null;
+  eventTypes?: string[] | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  format?: string | null;
+  compressionLevel?: string | null;
+  includeQualityReport?: boolean | null;
+  includeDataDictionary?: boolean | null;
+  includeLoaderScripts?: boolean | null;
+  verifyChecksums?: boolean | null;
+  tags?: string[] | null;
+  customMetadata?: Record<string, string> | null;
+}
+
+export interface DataPackageResult {
+  success: boolean;
+  jobId?: string;
+  packageId?: string | null;
+  packagePath?: string | null;
+  packageFileName?: string | null;
+  packageSizeBytes?: number;
+  uncompressedSizeBytes?: number;
+  filesIncluded?: number;
+  totalEvents?: number;
+  symbols?: string[];
+  eventTypes?: string[];
+  packageChecksum?: string | null;
+  warnings?: string[];
+  error?: string | null;
+  completedAt?: string | null;
+}
+
+export interface DataPackageValidateRequest {
+  packagePath: string;
+}
+
+export interface DataPackageValidationResponse {
+  isValid: boolean;
+  packagePath?: string;
+  manifest?: Record<string, unknown> | null;
+  issues?: string[] | null;
+  missingFiles?: string[] | null;
+  error?: string | null;
+}
+
+export interface DataPackageContentsResponse {
+  packageId: string;
+  name: string;
+  description?: string | null;
+  createdAt?: string;
+  totalFiles: number;
+  totalEvents: number;
+  packageSizeBytes: number;
+  uncompressedSizeBytes: number;
+  symbols: string[];
+  eventTypes: string[];
+  files?: Array<{ relativePath?: string; path?: string; sizeBytes?: number; recordCount?: number }>;
+  quality?: Record<string, unknown> | null;
 }

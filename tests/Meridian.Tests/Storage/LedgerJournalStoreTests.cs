@@ -593,6 +593,17 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("where nullif(btrim(metadata ->> 'idempotencyKey'), '') is not null");
     }
 
+    [Fact]
+    public void LedgerJournalLineDimensionMigration_DefinesDurableLineDimensions()
+    {
+        var sql = ReadMigration("V_ledger_014__journal_leg_dimensions.sql");
+
+        sql.Should().Contain("alter table __SCHEMA__.journal_legs");
+        sql.Should().Contain("add column if not exists dimensions jsonb null");
+        sql.Should().Contain("ix_journal_legs_dimensions_gin");
+        sql.Should().Contain("using gin (dimensions)");
+    }
+
 
     [Fact]
     public void PostingCommand_ApprovedCommand_NormalizesWriteMetadataAndEvidence()

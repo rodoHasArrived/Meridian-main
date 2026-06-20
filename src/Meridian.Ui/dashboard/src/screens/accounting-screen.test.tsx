@@ -215,10 +215,51 @@ vi.mock("@/lib/api", async () => {
     certifyLedgerAccountingReportPackage: vi.fn(),
     getLedgerAccountingReportPackageExport: vi.fn(),
     getCorporateActions: vi.fn().mockResolvedValue([]),
+    getReferenceDataWorkbenchCoverage: vi.fn().mockResolvedValue({
+      requestedAtUtc: "2026-05-21T15:00:00Z",
+      endpoints: [
+        {
+          id: "bond-reference",
+          family: "Bonds",
+          label: "Bond reference",
+          method: "GET",
+          path: "/api/reference-data/bonds/22222222-2222-2222-2222-222222222222",
+          requestLabel: "GET bond reference for 22222222-2222-2222-2222-222222222222",
+          probe: true,
+          status: "Ready",
+          statusCode: 200,
+          durationMs: 12,
+          responseCount: 1,
+          responseSummary: "1 fields returned.",
+          responsePreview: "{\n  \"couponRate\": 5.25\n}",
+          errorSummary: null,
+          errorDetails: []
+        },
+        {
+          id: "option-chain-import",
+          family: "Options",
+          label: "Option chain import",
+          method: "POST",
+          path: "/api/reference-data/options/chains/import",
+          requestLabel: "POST option chain import endpoint catalogued; not invoked by this read-only workbench.",
+          probe: false,
+          mutation: true,
+          status: "Deferred",
+          statusCode: null,
+          durationMs: null,
+          responseCount: null,
+          responseSummary: "POST option chain import endpoint catalogued; not invoked by this read-only workbench.",
+          responsePreview: null,
+          errorSummary: null,
+          errorDetails: []
+        }
+      ]
+    }),
     getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflow: vi.fn(),
     approveOperationsContinuityWorkflow: vi.fn(),
     rejectOperationsContinuityWorkflow: vi.fn(),
+    getSecurityInstrumentPassport: vi.fn().mockResolvedValue(null),
     getTradingParameters: vi.fn().mockResolvedValue(null),
     getSecurityTrustSnapshot: vi.fn().mockResolvedValue({
       securityId: "sec-1",
@@ -3561,6 +3602,29 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("table", { name: "Aliases for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByText("AAPL.OQ")).toBeInTheDocument();
     expect(screen.getByText("Collector")).toBeInTheDocument();
+  });
+
+  it("renders multi-asset reference data endpoint coverage after selecting a security", async () => {
+    const user = userEvent.setup();
+
+    await renderAccountingScreen(data, "/accounting/security-master");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+    await user.click(securityRow);
+
+    expect(await screen.findByRole("heading", { name: "Multi-asset reference data" })).toBeInTheDocument();
+    expect(api.getReferenceDataWorkbenchCoverage).toHaveBeenCalledWith(expect.objectContaining({
+      securityId: "22222222-2222-2222-2222-222222222222",
+      primaryIdentifierValue: "AAPL"
+    }));
+
+    const table = screen.getByRole("table", {
+      name: /Reference data endpoint coverage for 22222222-2222-2222-2222-222222222222/
+    });
+    expect(within(table).getByText("Bond reference")).toBeInTheDocument();
+    expect(within(table).getByText("Option chain import")).toBeInTheDocument();
+    expect(screen.getByText(/couponRate/)).toBeInTheDocument();
   });
 
   it("selects Security Master search rows with keyboard-expanded detail linkage", async () => {

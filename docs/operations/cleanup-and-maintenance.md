@@ -36,7 +36,7 @@ rm -Recurse -Force .tmp,.buildtmp,.vs,artifacts,node_modules,src/Meridian.Ui/das
 - Review duplicate legacy guides in `docs/development`, `docs/operations`, `docs/plans`, and `docs/status`.
 - Route active onboarding to:
   - [`docs/start/README.md`](../start/README.md)
-  - [`docs/developer/setup.md`](../developer/setup.md)
+  - [`docs/start/README.md`](../start/README.md)
   - [`docs/engineering/README.md`](../engineering/README.md)
 - Keep generated or historical content in `archive/docs` and link to it from active folders.
 

@@ -113,6 +113,8 @@ Runtime desktop capability toggles are declared by feature modules and surfaced 
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
+
+The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, and downstream usage evidence in parity with the browser Accounting workstream.
 The Settings page also surfaces governed Security Master asset profiles for WPF operators. It lists
 approved profile definitions from the shared `/api/security-master/asset-profiles` route, drafts and
 approves profile variants through the shared governance endpoints, loads lineage, supports rollback,

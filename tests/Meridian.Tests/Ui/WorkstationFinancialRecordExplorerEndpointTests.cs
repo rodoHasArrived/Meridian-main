@@ -408,4 +408,275 @@ public sealed partial class WorkstationEndpointsTests
             .Select(static id => new ReportPackEvidenceLinkDto(id, id, $"/evidence/{id}", "report-line-provenance"))
             .ToArray();
     }
+
+    private sealed class FinancialRecordExplorerSecurityMasterWorkbenchQueryService(Guid securityId) : ISecurityMasterWorkbenchQueryService
+    {
+        private readonly DateTimeOffset _now = new(2026, 3, 22, 15, 0, 0, TimeSpan.Zero);
+
+        public Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
+            Guid requestedSecurityId,
+            string? fundProfileId,
+            CancellationToken ct = default)
+            => Task.FromResult<SecurityMasterTrustSnapshotDto?>(null);
+
+        public Task<InstrumentPassportDto?> GetInstrumentPassportAsync(
+            Guid requestedSecurityId,
+            string? fundProfileId,
+            CancellationToken ct = default)
+            => Task.FromResult<InstrumentPassportDto?>(requestedSecurityId == securityId ? CreatePassport() : null);
+
+        public Task<BulkResolveSecurityMasterConflictsResult> BulkResolveConflictsAsync(
+            BulkResolveSecurityMasterConflictsRequest request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException("Conflict resolution is not used by Financial Record Explorer tests.");
+
+        private InstrumentPassportDto CreatePassport()
+        {
+            var identifier = new SecurityIdentifierDto(
+                SecurityIdentifierKind.Ticker,
+                "AAPL",
+                true,
+                _now.AddYears(-1),
+                Provider: "alpaca");
+            var providerMapping = new SecurityMasterProviderSymbolMappingDto(
+                MappingSource: "alpaca",
+                MappingKind: "Ticker",
+                Value: "AAPL",
+                NormalizedValue: "AAPL",
+                Provider: "alpaca",
+                NormalizedProvider: "ALPACA",
+                IsPrimary: true,
+                IsEnabled: true,
+                ValidFrom: _now.AddYears(-1),
+                ValidTo: null,
+                IsActive: true);
+            var identifierSummary = new SecurityMasterIdentifierSummaryDto(
+                PrimaryIdentifierKind: "Ticker",
+                PrimaryIdentifierValue: "AAPL",
+                ActiveIdentifierCount: 1,
+                ActiveAliasCount: 0,
+                ProviderMappingCount: 1,
+                DistinctProviderCount: 1,
+                HasPrimaryIdentifier: true,
+                HasProviderMappings: true,
+                Summary: "Primary ticker AAPL is mapped to active provider evidence.",
+                ProviderMappings: [providerMapping]);
+            var trustPosture = new SecurityMasterTrustPostureDto(
+                SecurityMasterTrustTone.Trusted,
+                TrustScore: 96,
+                Summary: "Passport trusted with provider-confirmed identifier evidence.",
+                GoldenCopySource: "Security Master",
+                GoldenCopyRule: "provider-primary",
+                TradingParametersStatus: "Complete",
+                CorporateActionReadiness: "Ready",
+                HasOpenConflicts: false,
+                OpenConflictCount: 0,
+                TradingParametersComplete: true,
+                HasUpcomingCorporateActions: false,
+                CorporateActionsTrusted: true);
+            var passport = new InstrumentPassportDto(
+                securityId,
+                new SecurityIdentityDrillInDto(
+                    securityId,
+                    "Apple Inc.",
+                    "Equity",
+                    SecurityStatusDto.Active,
+                    Version: 1,
+                    EffectiveFrom: _now.AddYears(-1),
+                    EffectiveTo: null,
+                    Identifiers: [identifier],
+                    Aliases: []),
+                new SecurityMasterEconomicDefinitionDrillInDto(
+                    securityId,
+                    AssetClass: "Equity",
+                    Currency: "USD",
+                    Version: 1,
+                    EffectiveFrom: _now.AddYears(-1),
+                    EffectiveTo: null,
+                    AssetFamily: "PublicEquity",
+                    SubType: "CommonShare",
+                    IssuerType: "Corporate",
+                    RiskCountry: "US",
+                    WinningSourceSystem: "security-master",
+                    WinningSourceRecordId: "AAPL",
+                    WinningSourceAsOf: _now,
+                    WinningSourceUpdatedBy: "steward",
+                    WinningSourceReason: "Golden-copy provider mapping."),
+                identifierSummary,
+                [providerMapping],
+                LifecycleEvents: [],
+                CorporateActions: [],
+                Pricing: new InstrumentPassportPricingDto(
+                    Status: "Ready",
+                    Summary: "Trading parameters retained.",
+                    TradingParameters: null,
+                    LotSize: 1m,
+                    TickSize: 0.01m,
+                    ContractMultiplier: 1m,
+                    TradingHoursUtc: "14:30-21:00",
+                    CircuitBreakerThresholdPct: null),
+                Usage: new SecurityMasterDownstreamImpactDto(
+                    FundProfileId: "northwind-income",
+                    IsScoped: true,
+                    Severity: SecurityMasterImpactSeverity.Low,
+                    Summary: "Used by portfolio, ledger, reconciliation, and report provenance.",
+                    PortfolioExposureSummary: "1 portfolio position",
+                    LedgerExposureSummary: "1 ledger line",
+                    ReconciliationExposureSummary: "1 reconciliation result",
+                    ReportPackExposureSummary: "1 report line",
+                    MatchedRunCount: 1,
+                    PortfolioExposureCount: 1,
+                    LedgerExposureCount: 1,
+                    ReconciliationExposureCount: 1,
+                    ReportPackExposureCount: 1,
+                    Links: []),
+                TrustPosture: trustPosture,
+                RetrievedAtUtc: _now)
+            {
+                ProviderConfidence =
+                [
+                    new InstrumentPassportProviderConfidenceDto(
+                        Provider: "alpaca",
+                        ProviderSource: "alpaca",
+                        MappingKind: "Ticker",
+                        Symbol: "AAPL",
+                        NormalizedSymbol: "AAPL",
+                        IsPrimary: true,
+                        IsActive: true,
+                        FreshnessAsOf: _now.AddMinutes(-5),
+                        FreshnessMinutes: 5,
+                        ConfidenceScore: 0.96m,
+                        ConfidenceReason: "Fresh provider mapping agrees with the golden-copy ticker.",
+                        IdentifierConflictIds: [],
+                        IdentifierConflictSummaries: [],
+                        OverrideHistory: [])
+                ]
+            };
+
+            return passport;
+        }
+    }
+
+    private sealed class FinancialRecordExplorerAssetOperationsQueryService(Guid securityId) : IAssetOperationsQueryService
+    {
+        private readonly DateTimeOffset _now = new(2026, 3, 22, 15, 0, 0, TimeSpan.Zero);
+
+        public Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid requestedSecurityId, CancellationToken ct = default)
+            => Task.FromResult<AssetOperationsDetailDto?>(requestedSecurityId == securityId ? CreateDetail() : null);
+
+        public Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid requestedSecurityId, CancellationToken ct = default)
+            => Task.FromResult<AssetOperationsReadinessDto?>(requestedSecurityId == securityId ? CreateReadiness() : null);
+
+        private AssetOperationsDetailDto CreateDetail()
+        {
+            var readiness = CreateReadiness();
+            var projectionRunId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var reconciliationRunId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            return new AssetOperationsDetailDto(
+                new AssetOperationSubjectDto(
+                    securityId,
+                    AssetClass: "Equity",
+                    DisplayName: "Apple Inc.",
+                    PrimaryIdentifier: "AAPL",
+                    OperationalProfile: ["cash-flow", "ledger-projection"]),
+                TermsHistory:
+                [
+                    new AssetTermsVersionDto(
+                        TermsVersionId: Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                        SecurityId: securityId,
+                        VersionNumber: 1,
+                        TermsHash: "sha256:aapl-terms",
+                        EffectiveDate: new DateOnly(2026, 3, 22),
+                        RecordedAt: _now,
+                        SourceDomain: "security-master",
+                        SourceEntityId: securityId.ToString("D"),
+                        Summary: "Common equity terms retained.")
+                ],
+                LifecycleEvents: [],
+                CashFlowProjectionRuns:
+                [
+                    new AssetCashFlowProjectionRunDto(
+                        projectionRunId,
+                        securityId,
+                        ProjectionAsOf: new DateOnly(2026, 3, 22),
+                        EngineVersion: "test-v1",
+                        Status: "Generated",
+                        GeneratedAt: _now,
+                        SourceDomain: "asset-operations",
+                        SourceEntityId: "projection-aapl")
+                ],
+                ProjectedCashFlows:
+                [
+                    new AssetProjectedCashFlowDto(
+                        ProjectedCashFlowId: Guid.Parse("55555555-5555-5555-5555-555555555555"),
+                        ProjectionRunId: projectionRunId,
+                        SecurityId: securityId,
+                        SequenceNumber: 1,
+                        FlowType: "Dividend",
+                        DueDate: new DateOnly(2026, 4, 15),
+                        Amount: 1.20m,
+                        Currency: "USD",
+                        Status: "Projected")
+                ],
+                ActualActivity: [],
+                ReconciliationRuns:
+                [
+                    new AssetReconciliationRunDto(
+                        reconciliationRunId,
+                        securityId,
+                        ProjectionRunId: projectionRunId,
+                        Status: "Matched",
+                        RequestedAt: _now.AddMinutes(-20),
+                        CompletedAt: _now.AddMinutes(-10),
+                        SourceDomain: "asset-operations",
+                        SourceEntityId: "recon-aapl")
+                ],
+                ReconciliationResults:
+                [
+                    new AssetReconciliationResultDto(
+                        ReconciliationResultId: Guid.Parse("66666666-6666-6666-6666-666666666666"),
+                        ReconciliationRunId: reconciliationRunId,
+                        SecurityId: securityId,
+                        MatchStatus: "Matched",
+                        ExpectedAmount: 1.20m,
+                        ActualAmount: 1.20m,
+                        VarianceAmount: 0m,
+                        ExpectedDate: new DateOnly(2026, 4, 15),
+                        ActualDate: new DateOnly(2026, 4, 15),
+                        SourceDomain: "asset-operations",
+                        SourceEntityId: "recon-result-aapl",
+                        EvidenceLink: "/evidence/recon-result-aapl")
+                ],
+                LedgerProjections:
+                [
+                    new AssetLedgerProjectionDto(
+                        LedgerProjectionId: Guid.Parse("77777777-7777-7777-7777-777777777777"),
+                        SecurityId: securityId,
+                        ProjectionType: "DividendIncome",
+                        AccountingDate: new DateOnly(2026, 4, 15),
+                        LedgerBasis: "GAAP",
+                        Status: "Ready",
+                        DebitAmount: 1.20m,
+                        CreditAmount: null,
+                        Currency: "USD",
+                        SourceDomain: "asset-operations",
+                        SourceEntityId: "ledger-projection-aapl",
+                        LedgerReferenceId: "journal-preview-aapl")
+                ],
+                Readiness: readiness,
+                WorkflowAudit: []);
+        }
+
+        private AssetOperationsReadinessDto CreateReadiness()
+            => new(
+                securityId,
+                Status: "Ready",
+                Capabilities: ["cash-flow", "ledger-projection", "reconciliation"],
+                ReadyCapabilities: ["cash-flow", "ledger-projection", "reconciliation"],
+                MissingCapabilities: [],
+                Warnings: [],
+                EvaluatedAt: _now,
+                SourceDomain: "asset-operations",
+                SourceEntityId: "aapl-readiness");
+    }
 }

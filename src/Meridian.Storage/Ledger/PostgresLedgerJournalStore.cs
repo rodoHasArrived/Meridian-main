@@ -837,7 +837,8 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                     financial_account_id,
                     debit,
                     credit,
-                    description)
+                    description,
+                    dimensions)
                 values (
                     @entry_id,
                     @journal_entry_id,
@@ -862,7 +863,8 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                     @financial_account_id,
                     @debit,
                     @credit,
-                    @description);
+                    @description,
+                    cast(@dimensions as jsonb));
                 """;
             command.Parameters.AddWithValue("entry_id", leg.EntryId);
             command.Parameters.AddWithValue("journal_entry_id", leg.JournalEntryId);
@@ -888,6 +890,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             command.Parameters.AddWithValue("debit", leg.Debit);
             command.Parameters.AddWithValue("credit", leg.Credit);
             command.Parameters.AddWithValue("description", leg.Description);
+            command.Parameters.AddWithValue("dimensions", SerializeLineDimensions(leg.Dimensions));
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -924,7 +927,8 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                    jl.debit,
                    jl.credit,
                    jl.description,
-                   jl.occurred_at
+                   jl.occurred_at,
+                   jl.dimensions::text
             from {Qualified("journal_entries")} je
             join {Qualified("journal_legs")} jl on jl.journal_entry_id = je.journal_entry_id
             """ + "\n";
@@ -984,7 +988,8 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
                 account,
                 reader.GetDecimal(24),
                 reader.GetDecimal(25),
-                reader.GetString(26)));
+                reader.GetString(26),
+                reader.IsDBNull(28) ? null : DeserializeLineDimensions(reader.GetString(28))));
         }
 
         if (current is not null)
@@ -1371,6 +1376,13 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
 
     private static object SerializeAdjustmentApproval(LedgerAdjustmentApprovalMetadataDto? approval)
         => approval is null ? DBNull.Value : JsonSerializer.Serialize(approval, JsonOptions);
+
+    private static object SerializeLineDimensions(LedgerLineDimensionSet? dimensions)
+        => dimensions is null ? DBNull.Value : JsonSerializer.Serialize(dimensions, JsonOptions);
+
+    private static LedgerLineDimensionSet DeserializeLineDimensions(string json)
+        => JsonSerializer.Deserialize<LedgerLineDimensionSet>(json, JsonOptions)
+           ?? throw new LedgerValidationException("Stored ledger line dimensions are invalid.");
 
     private static LedgerAdjustmentApprovalMetadataDto DeserializeAdjustmentApproval(string json)
         => JsonSerializer.Deserialize<LedgerAdjustmentApprovalMetadataDto>(json, JsonOptions)

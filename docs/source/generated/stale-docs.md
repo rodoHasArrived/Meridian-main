@@ -8,16 +8,10 @@ do_not_edit: true
 
 This report marks registered source modules whose code or README hashes differ from the reviewed baseline.
 
-- Stale modules: 8
+- Stale modules: 2
 - Removed module hash entries: 0
 
 | Module | Path | README | Reason |
 | --- | --- | --- | --- |
-| `SRC-APP` | `src/Meridian.Application` | `src/Meridian.Application/README.md` | `source_hash_drift` |
-| `SRC-CONTRACTS` | `src/Meridian.Contracts` | `src/Meridian.Contracts/README.md` | `readme_hash_drift` |
-| `SRC-DESIGN-DATA-INTEGRATION` | `src/Meridian.DataIntegration` | `src/Meridian.DataIntegration/README.md` | `source_hash_drift`, `readme_hash_drift` |
-| `SRC-DESIGN-FINANCIAL-OPERATIONS` | `src/Meridian.FinancialOperations` | `src/Meridian.FinancialOperations/README.md` | `source_hash_drift`, `readme_hash_drift` |
-| `SRC-STORAGE` | `src/Meridian.Storage` | `src/Meridian.Storage/README.md` | `readme_hash_drift` |
 | `SRC-UI` | `src/Meridian.Ui` | `src/Meridian.Ui/README.md` | `source_hash_drift` |
-| `SRC-UI-SHARED` | `src/Meridian.Ui.Shared` | `src/Meridian.Ui.Shared/README.md` | `source_hash_drift` |
-| `SRC-WPF` | `src/Meridian.Wpf` | `src/Meridian.Wpf/README.md` | `source_hash_drift` |
+| `SRC-UI-DASHBOARD` | `src/Meridian.Ui/dashboard` | `src/Meridian.Ui/dashboard/README.md` | `source_hash_drift` |

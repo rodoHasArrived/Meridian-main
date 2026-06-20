@@ -31,8 +31,8 @@ import {
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
-import { WORKSTATION_API_ENDPOINTS, reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
+import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
@@ -72,6 +72,7 @@ import type {
   ReportWriterGridDefinition,
   ReportWriterGridKind,
   ReportWriterGridRender,
+  ReportingRunRequest,
   ReportWriterMetricDefinition,
   RenderReportTemplateRequest,
   ReportingScheduleUpsertRequest,
@@ -135,6 +136,7 @@ type ReportingScheduleDraftField =
   | "distributionId"
   | "deliveryMode"
   | "deliveryNote";
+type ExportsReportRunDraftField = "templateRowId" | "asOfDate" | "maxRetries" | "requestedBy" | "datasetSourceId";
 
 interface ReportWriterDraftSettings {
   name: string;
@@ -186,6 +188,14 @@ interface ReportingScheduleDraftState {
   deliveryTargets: ReportingScheduleDraftTarget[];
 }
 
+interface ExportsReportRunDraftState {
+  templateRowId: string;
+  asOfDate: string;
+  maxRetries: string;
+  requestedBy: string;
+  datasetSourceId: string;
+}
+
 interface ReportingScheduleDraftTarget {
   distributionId: string;
   deliveryMode: ReportPackDeliveryMode;
@@ -202,6 +212,7 @@ const structuredExportDownloadFormats = [
   { format: "xlsx", label: "XLSX" }
 ] as const;
 const livePortfolioAutoRefreshIntervalMs = 60_000;
+const defaultExportsReportRunRequester = "browser-workstation";
 const reportWriterPreviewDatasetProfiles: { id: ReportWriterPreviewDatasetProfile; label: string }[] = [
   { id: "portfolioPositions", label: "Portfolio positions" },
   { id: "ledgerFacts", label: "Ledger facts" },
@@ -263,6 +274,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
   const [deliveryFailureStatus, setDeliveryFailureStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
+  const [exportsRunDraft, setExportsRunDraft] = useState<ExportsReportRunDraftState>(() => buildDefaultExportsReportRunDraft(data?.reporting ?? null));
   const [templateRunDatasetSourceId, setTemplateRunDatasetSourceId] = useState(() => buildDefaultReportWriterDatasetSourceId(data?.reporting ?? null));
   const [writerDrafts, setWriterDrafts] = useState<Record<string, ReportWriterDraftState>>({});
   const [writerDraftSettings, setWriterDraftSettings] = useState<Record<string, Partial<ReportWriterDraftSettings>>>({});
@@ -291,6 +303,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
   const privateCapitalActivity = resolveReportingPrivateCapitalActivity(data);
+  const selectedExportsTemplate = resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft);
+  const exportsRunRows = vm.runStatusRows.filter(isExportsOnDemandRun);
+  const templateRowsKey = vm.templateRows.map((template) => template.id).join("|");
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -315,6 +330,20 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
 
     return () => window.clearInterval(timer);
   }, [onRefreshLivePortfolioViews, shouldAutoRefreshLivePortfolioViews]);
+
+  useEffect(() => {
+    if (!data?.reporting) {
+      return;
+    }
+
+    setExportsRunDraft((current) => {
+      if (current.templateRowId && vm.templateRows.some((template) => template.id === current.templateRowId)) {
+        return current;
+      }
+
+      return buildDefaultExportsReportRunDraft(data.reporting);
+    });
+  }, [data?.reporting, templateRowsKey]);
 
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
@@ -377,33 +406,60 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       return;
     }
 
+    await executeTemplateRun(template, {
+      templateId: template.templateName,
+      asOfDate: new Date().toISOString().slice(0, 10),
+      maxRetries: 0,
+      datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(templateRunDatasetSourceId) : null
+    }, template.runActionLabel);
+  }
+
+  function updateExportsReportRunDraft(field: ExportsReportRunDraftField, value: string) {
+    setExportsRunDraft((current) => ({
+      ...current,
+      [field]: value
+    }));
+  }
+
+  async function handleExportsReportRun() {
+    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand || runningTemplateRunId) {
+      return;
+    }
+
+    await executeTemplateRun(
+      selectedExportsTemplate,
+      buildExportsReportRunRequest(selectedExportsTemplate, exportsRunDraft),
+      "Exports report run"
+    );
+  }
+
+  async function executeTemplateRun(
+    template: ReportingTemplateRow,
+    request: ReportingRunRequest,
+    statusLabel: string
+  ) {
     setTemplateRunStatus({
       id: template.id,
-      label: template.runActionLabel,
+      label: statusLabel,
       state: "running",
       message: `${template.name} is running.`,
       details: []
     });
 
     try {
-      const result = await runReportingNow({
-        templateId: template.templateName,
-        asOfDate: new Date().toISOString().slice(0, 10),
-        maxRetries: 0,
-        datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(templateRunDatasetSourceId) : null
-      });
+      const result = await runReportingNow(request);
       setTemplateRunStatus({
         id: template.id,
-        label: template.runActionLabel,
+        label: statusLabel,
         state: "success",
         message: `${template.name} run created.`,
-        details: [`Run ID: ${result.run.runId}`, `Status: ${result.run.status}`]
+        details: buildReportRunResultDetails(result.run)
       });
     } catch (error) {
       const display = describeApiError(error, `${template.name} run failed.`);
       setTemplateRunStatus({
         id: template.id,
-        label: template.runActionLabel,
+        label: statusLabel,
         state: "error",
         message: display.summary,
         details: display.details
@@ -2144,6 +2200,18 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
+      <ExportsReportRunner
+        draft={exportsRunDraft}
+        templates={vm.templateRows}
+        selectedTemplate={selectedExportsTemplate}
+        datasetSources={reportWriterDatasetSources}
+        recentRuns={exportsRunRows}
+        status={templateRunStatus}
+        runningTemplateRunId={runningTemplateRunId}
+        onDraftChange={updateExportsReportRunDraft}
+        onRun={() => void handleExportsReportRun()}
+      />
+
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -2269,7 +2337,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                 ) : null}
               </div>
             ))}
-            {templateRunStatus ? (
+            {templateRunStatus && templateRunStatus.label !== "Exports report run" ? (
               <ReportingCommandStatusView status={templateRunStatus} />
             ) : null}
             {templateLifecycleStatus ? (
@@ -4599,6 +4667,197 @@ function reportWriterValidationCheckVariant(status: string): "outline" | "succes
   return "outline";
 }
 
+interface ExportsReportRunnerProps {
+  draft: ExportsReportRunDraftState;
+  templates: ReportingTemplateRow[];
+  selectedTemplate: ReportingTemplateRow | null;
+  datasetSources: ReportWriterDatasetSource[];
+  recentRuns: ReportingRunStatusRow[];
+  status: ReportingCommandStatus | null;
+  runningTemplateRunId: string | null;
+  onDraftChange: (field: ExportsReportRunDraftField, value: string) => void;
+  onRun: () => void;
+}
+
+function ExportsReportRunner({
+  draft,
+  templates,
+  selectedTemplate,
+  datasetSources,
+  recentRuns,
+  status,
+  runningTemplateRunId,
+  onDraftChange,
+  onRun
+}: ExportsReportRunnerProps) {
+  const selectedDataset = datasetSources.find((source) => source.sourceId === draft.datasetSourceId) ?? null;
+  const runDisabledReason = resolveExportsRunDisabledReason(selectedTemplate);
+  const isRunningSelected = Boolean(selectedTemplate && runningTemplateRunId === selectedTemplate.id);
+
+  return (
+    <section role="region" aria-label="Exports report runner">
+      <Card className="panel-surface">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Exports</div>
+              <CardTitle>Run a governed report now</CardTitle>
+              <CardDescription>
+                Submit approved Reporting templates through the shared run endpoint with explicit date, requester, retry, and dataset context.
+              </CardDescription>
+            </div>
+            <span className="flex flex-wrap items-center gap-1.5">
+              <Badge variant={selectedTemplate?.canRunOnDemand ? "success" : "warning"}>
+                {selectedTemplate?.canRunOnDemand ? "Runnable" : "Gated"}
+              </Badge>
+              <Badge variant="outline">POST {FUND_STRUCTURE_API_ENDPOINTS.reportingRuns}</Badge>
+              <Badge variant="outline">{WORKSTATION_ROUTE_CATALOG.reportingExports}</Badge>
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 lg:grid-cols-[1.3fr_0.7fr_0.7fr]">
+            <label className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Template</span>
+              <Select
+                value={selectedTemplate?.id ?? draft.templateRowId}
+                onChange={(event) => onDraftChange("templateRowId", event.target.value)}
+                aria-label="Exports report template"
+              >
+                {templates.length > 0 ? templates.map((template) => (
+                  <option key={template.id} value={template.id} disabled={!template.canRunOnDemand}>
+                    {template.name} v{template.versionNumber} ({template.statusLabel})
+                  </option>
+                )) : (
+                  <option value="">No report templates available</option>
+                )}
+              </Select>
+            </label>
+            <label className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">As of</span>
+              <Input
+                type="date"
+                value={draft.asOfDate}
+                onChange={(event) => onDraftChange("asOfDate", event.target.value)}
+                aria-label="Exports report as-of date"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Retries</span>
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                value={draft.maxRetries}
+                onChange={(event) => onDraftChange("maxRetries", event.target.value)}
+                aria-label="Exports report max retries"
+              />
+            </label>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
+            <label className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Dataset source</span>
+              <Select
+                value={draft.datasetSourceId}
+                onChange={(event) => onDraftChange("datasetSourceId", event.target.value)}
+                disabled={!selectedTemplate?.hasWriterGrids || datasetSources.length === 0}
+                aria-label="Exports report dataset source"
+              >
+                <option value="">Default retained dataset</option>
+                {datasetSources.map((source) => (
+                  <option key={source.sourceId} value={source.sourceId}>
+                    {source.label} ({source.rowCount})
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <label className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Requested by</span>
+              <Input
+                value={draft.requestedBy}
+                onChange={(event) => onDraftChange("requestedBy", event.target.value)}
+                aria-label="Exports report requested by"
+              />
+            </label>
+            <div className="flex items-end">
+              <Button
+                className="w-full lg:w-auto"
+                disabled={Boolean(runDisabledReason) || Boolean(runningTemplateRunId)}
+                disabledReason={runDisabledReason}
+                busy={isRunningSelected}
+                busyLabel="Running"
+                onClick={onRun}
+                aria-label={selectedTemplate ? `Run ${selectedTemplate.name} from Exports` : "Run report from Exports"}
+              >
+                <Send className="h-4 w-4" aria-hidden="true" />
+                Run report
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-[1fr_1fr]">
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3" aria-label="Exports selected template readiness">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h4 className="text-sm font-semibold text-foreground">{selectedTemplate?.name ?? "No template selected"}</h4>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {selectedTemplate ? selectedTemplate.approvalSummary : "Load approved report templates before running an export report."}
+                  </p>
+                </div>
+                <span className="flex flex-wrap justify-end gap-1.5">
+                  {selectedTemplate ? (
+                    <>
+                      <Badge variant={selectedTemplate.statusVariant}>{selectedTemplate.statusLabel}</Badge>
+                      <Badge variant={selectedTemplate.accessGovernance.postureVariant}>{selectedTemplate.accessGovernance.postureLabel}</Badge>
+                      <Badge variant="outline">{selectedTemplate.family}</Badge>
+                    </>
+                  ) : <Badge variant="outline">Unavailable</Badge>}
+                </span>
+              </div>
+              <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2" aria-label="Exports report request summary">
+                <ReportingScheduleField label="Template" value={selectedTemplate?.templateName ?? "No template"} />
+                <ReportingScheduleField label="Version" value={selectedTemplate?.version ?? "Unavailable"} />
+                <ReportingScheduleField label="Sections" value={selectedTemplate?.sectionSummary ?? "Unavailable"} />
+                <ReportingScheduleField label="Access" value={selectedTemplate?.accessSummary ?? "Unavailable"} />
+                <ReportingScheduleField label="Dataset" value={selectedDataset ? `${selectedDataset.label} (${selectedDataset.rowCount})` : "Default retained dataset"} />
+                <ReportingScheduleField label="Requester" value={draft.requestedBy.trim() || defaultExportsReportRunRequester} />
+              </dl>
+              {runDisabledReason ? <p className="mt-3 text-xs leading-5 text-warning">{runDisabledReason}</p> : null}
+            </div>
+
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="text-sm font-semibold text-foreground">Recent export runs</h4>
+                <Badge variant="outline">{recentRuns.length}</Badge>
+              </div>
+              {recentRuns.length > 0 ? (
+                <div role="list" aria-label="Recent Exports report runs" className="mt-3 space-y-2">
+                  {recentRuns.slice(0, 3).map((run) => (
+                    <div key={run.id} role="listitem" className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2 text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="break-all font-mono text-foreground">{run.id}</span>
+                        <Badge variant={run.status === "Failed" ? "warning" : "outline"}>{run.status}</Badge>
+                      </div>
+                      <p className="mt-1 text-muted-foreground">
+                        {run.templateLabel} / {run.asOfDateLabel} / {run.datasetSourceLabel}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p role="status" className="mt-3 text-sm text-muted-foreground">No export runs have been run yet.</p>
+              )}
+            </div>
+          </div>
+
+          {status?.label === "Exports report run" ? <ReportingCommandStatusView status={status} /> : null}
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
 interface ReportWriterDropZoneViewProps {
   grid: ReportingWriterGridRow;
   zone: ReportWriterDropZone;
@@ -4821,6 +5080,83 @@ function normalizeBrandingColor(value: string | null | undefined, fallback: stri
   return /^#[0-9A-Fa-f]{6}$/.test(normalized)
     ? normalized.toUpperCase()
     : fallback;
+}
+
+function buildDefaultExportsReportRunDraft(reporting: AccountingWorkspaceResponse["reporting"] | null): ExportsReportRunDraftState {
+  const template = reporting?.templates?.find((item) => (item.isAccessible ?? true) && (item.lifecycleStatus ?? "Approved") === "Approved")
+    ?? reporting?.templates?.[0]
+    ?? null;
+
+  return {
+    templateRowId: template ? `${template.templateId}:${template.version}` : "",
+    asOfDate: new Date().toISOString().slice(0, 10),
+    maxRetries: "0",
+    requestedBy: defaultExportsReportRunRequester,
+    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting)
+  };
+}
+
+function resolveSelectedExportsTemplate(
+  templates: ReportingTemplateRow[],
+  draft: ExportsReportRunDraftState
+): ReportingTemplateRow | null {
+  return templates.find((template) => template.id === draft.templateRowId)
+    ?? templates.find((template) => template.canRunOnDemand)
+    ?? templates[0]
+    ?? null;
+}
+
+function buildExportsReportRunRequest(
+  template: ReportingTemplateRow,
+  draft: ExportsReportRunDraftState
+): ReportingRunRequest {
+  return {
+    templateId: template.templateName,
+    asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
+    maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
+    requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
+    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null
+  };
+}
+
+function parseExportsReportMaxRetries(value: string): number {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
+function resolveExportsRunDisabledReason(template: ReportingTemplateRow | null): string | null {
+  if (!template) {
+    return "No report template is available to run.";
+  }
+
+  return template.canRunOnDemand ? null : template.runDisabledReason ?? `${template.name} is not approved for export runs.`;
+}
+
+function isExportsOnDemandRun(run: ReportingRunStatusRow): boolean {
+  const trigger = run.trigger.trim().toLowerCase().replace(/[^a-z]/g, "");
+  return trigger === "adhoc" || trigger === "ondemand" || trigger === "manual";
+}
+
+function buildReportRunResultDetails(run: {
+  runId: string;
+  status: string;
+  trigger: string;
+  asOfDate?: string | null;
+  reportWriterDatasetSourceLabel?: string | null;
+  reportWriterDatasetSourceId?: string | null;
+  reportWriterDatasetRowCount?: number | null;
+}): string[] {
+  const details = [`Run ID: ${run.runId}`, `Status: ${run.status}`, `Trigger: ${run.trigger}`];
+  if (run.asOfDate) {
+    details.push(`As of: ${run.asOfDate}`);
+  }
+
+  const source = run.reportWriterDatasetSourceLabel?.trim() || run.reportWriterDatasetSourceId?.trim();
+  if (source) {
+    details.push(run.reportWriterDatasetRowCount == null ? `Dataset: ${source}` : `Dataset: ${source} (${run.reportWriterDatasetRowCount} rows)`);
+  }
+
+  return details;
 }
 
 function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceResponse["reporting"] | null): ReportingScheduleDraftState {

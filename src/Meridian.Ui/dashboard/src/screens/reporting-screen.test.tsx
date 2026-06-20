@@ -2120,12 +2120,12 @@ describe("ReportingScreen", () => {
   it("renders template designer lifecycle controls for governed versions", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
-    expect(screen.getByText("Investor Monthly Statement")).toBeInTheDocument();
-    const templateRow = screen.getByText("Investor Monthly Statement").closest("div");
+    const lineage = screen.getByRole("group", { name: "Investor Monthly Statement template audit and version lineage" });
+    const templateRow = lineage.parentElement;
     expect(templateRow).not.toBeNull();
+    expect(within(templateRow!).getByText("Investor Monthly Statement")).toBeInTheDocument();
     expect(within(templateRow!).getByText("Approved")).toBeInTheDocument();
     expect(within(templateRow!).getByText("Built-in")).toBeInTheDocument();
-    const lineage = screen.getByRole("group", { name: "Investor Monthly Statement template audit and version lineage" });
     expect(lineage).toHaveTextContent("investor-monthly-statement@v1.0.0 no prior template");
     expect(lineage).toHaveTextContent("2 audit events");
     expect(lineage).toHaveTextContent("approve InReview->Approved by controller.admin");
@@ -2140,7 +2140,7 @@ describe("ReportingScreen", () => {
     expect(accessGovernance).toHaveTextContent("Company");
     expect(accessGovernance).toHaveTextContent("Runnable");
     expect(accessGovernance).toHaveTextContent("Company-wide access; run and lifecycle actions use the shared access evaluation.");
-    expect(screen.getByText("Built-in approved template for InvestorStatement.")).toBeInTheDocument();
+    expect(within(templateRow!).getByText("Built-in approved template for InvestorStatement.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Draft a revision of Investor Monthly Statement" })).toHaveAttribute(
       "href",
       "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
@@ -3401,6 +3401,67 @@ describe("ReportingScreen", () => {
     expect(screen.getByText("Run ID: adhoc-custom-exposure-pack-20260607")).toBeInTheDocument();
   });
 
+  it("runs a report from Exports with explicit on-demand controls", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        run: {
+          runId: "exports-investor-monthly-statement-20260630",
+          templateId: "investor-monthly-statement",
+          family: "InvestorStatement",
+          status: "Draft",
+          trigger: "AdHoc",
+          asOfDate: "2026-06-30",
+          attemptCount: 2,
+          sectionCount: 2,
+          lineageLinkedSections: 2,
+          artifacts: ["exports-investor-monthly-statement-20260630.manifest.json"],
+          auditActions: ["RunGenerated"],
+          failureReason: null,
+          drilldownLinks: [],
+          nextActions: [],
+          reportWriterDatasetSourceId: "portfolio-reporting-cuts",
+          reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
+          reportWriterDatasetRowCount: 2
+        }
+      })
+    });
+
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
+
+    expect(screen.getByRole("region", { name: "Exports report runner" })).toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("Exports report template"), "investor-monthly-statement:1.0.0");
+    fireEvent.change(screen.getByLabelText("Exports report as-of date"), { target: { value: "2026-06-30" } });
+    fireEvent.change(screen.getByLabelText("Exports report max retries"), { target: { value: "2" } });
+    fireEvent.change(screen.getByLabelText("Exports report requested by"), { target: { value: "controller.user" } });
+    await user.selectOptions(screen.getByLabelText("Exports report dataset source"), "portfolio-reporting-cuts");
+
+    await user.click(screen.getByRole("button", { name: "Run Investor Monthly Statement from Exports" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/runs",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.any(String)
+      })
+    ));
+    const request = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request).toEqual(expect.objectContaining({
+      templateId: "investor-monthly-statement",
+      asOfDate: "2026-06-30",
+      maxRetries: 2,
+      requestedBy: "controller.user",
+      datasetSourceId: "portfolio-reporting-cuts"
+    }));
+    expect(screen.getByRole("status", { name: "Exports report run status" })).toHaveTextContent(
+      "Investor Monthly Statement run created."
+    );
+    expect(screen.getByRole("status", { name: "Exports report run status" })).toHaveTextContent(
+      "Dataset: Portfolio reporting cuts (2 rows)"
+    );
+    expect(screen.getByText("Run ID: exports-investor-monthly-statement-20260630")).toBeInTheDocument();
+  });
   it("renders typed report run drilldown links and executable next action buttons", () => {
     const accountingWithRunLinks: AccountingWorkspaceResponse = {
       ...accounting,

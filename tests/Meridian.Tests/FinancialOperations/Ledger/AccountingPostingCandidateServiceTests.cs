@@ -187,13 +187,57 @@ public sealed class AccountingPostingCandidateServiceTests
             issue.BlocksCandidate);
     }
 
+    [Fact]
+    public async Task BuildCandidateAsync_PassesGeneratedLineDimensionsToGovernedDraftRequest()
+    {
+        var configurationService = await CreateSeededConfigurationServiceAsync();
+        var draftService = new CapturingJournalDraftService();
+        var service = new AccountingPostingCandidateService(configurationService, draftService);
+        var instrumentId = Guid.NewGuid();
+
+        await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
+            "fund-alpha",
+            "CustodianInterestAccrual",
+            125.44m,
+            "USD",
+            new DateOnly(2026, 5, 31),
+            "controller@meridian.local",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Dimensional generated posting",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            Dimensions: new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                EntityId: "entity-master",
+                InstrumentId: instrumentId,
+                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["Department"] = "InvestmentOps"
+                }),
+            CounterpartyId: "custodian-bny",
+            PolicyId: "gaap-accrual-v1",
+            TreatmentKind: AccountingTreatmentKindDto.Accrual,
+            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]));
+
+        draftService.CapturedRequest.Should().NotBeNull();
+        draftService.CapturedRequest!.Lines.Should().HaveCount(2);
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions != null);
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.FundId == "fund-alpha");
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.EntityId == "entity-master");
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.InstrumentId == instrumentId);
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.CounterpartyId == "custodian-bny");
+        draftService.CapturedRequest.Lines.Should().Contain(line =>
+            line.Credit == 125.44m &&
+            line.Dimensions!.CostCenterId == "income-review" &&
+            line.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
+    }
+
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
         string incomeAccountType = "Revenue",
         decimal? creditAmount = null)
     {
-        var configurationService = new AccountingConfigurationService(
-            new InMemoryAccountingConfigurationStore(),
-            new InMemoryAccountingActionAuditStore());
+        var configurationService = await CreateSeededConfigurationServiceAsync(incomeAccountType, creditAmount);
         var policyService = new AccountingPolicyService();
         await policyService.CreatePolicyAsync(new CreateAccountingPolicyRequest(
             AccountingBasisKindDto.Gaap,
@@ -215,6 +259,21 @@ public sealed class AccountingPostingCandidateServiceTests
                         AllowsAutoPosting: false,
                         Description: "Accrue custodian interest income from retained source evidence.")
                 ])));
+
+        return new AccountingPostingCandidateService(
+            configurationService,
+            new AccountingJournalDraftService(
+                policyService,
+                new AccountingBasisProjectionService(policyService)));
+    }
+
+    private static async Task<AccountingConfigurationService> CreateSeededConfigurationServiceAsync(
+        string incomeAccountType = "Revenue",
+        decimal? creditAmount = null)
+    {
+        var configurationService = new AccountingConfigurationService(
+            new InMemoryAccountingConfigurationStore(),
+            new InMemoryAccountingActionAuditStore());
 
         await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             "fund-alpha",
@@ -284,10 +343,46 @@ public sealed class AccountingPostingCandidateServiceTests
                 ]),
             "controller@meridian.local"));
 
-        return new AccountingPostingCandidateService(
-            configurationService,
-            new AccountingJournalDraftService(
-                policyService,
-                new AccountingBasisProjectionService(policyService)));
+        return configurationService;
+    }
+
+    private sealed class CapturingJournalDraftService : IAccountingJournalDraftService
+    {
+        public AccountingJournalDraftRequest? CapturedRequest { get; private set; }
+
+        public Task<AccountingJournalDraftResult> BuildDraftAsync(
+            AccountingJournalDraftRequest request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            CapturedRequest = request;
+            var totalDebits = request.Lines.Sum(static line => line.Debit);
+            var totalCredits = request.Lines.Sum(static line => line.Credit);
+            var policy = new AccountingPolicyDto(
+                "captured-policy",
+                request.AccountingBasis,
+                "v1",
+                "Captured policy",
+                new DateOnly(2026, 1, 1),
+                EffectiveTo: null,
+                IsDefault: true,
+                RulesJson: "{}",
+                CreatedAt: DateTimeOffset.Parse("2026-01-01T00:00:00Z"));
+
+            return Task.FromResult(new AccountingJournalDraftResult(
+                policy,
+                Rule: null,
+                DraftEntry: null,
+                Write: null,
+                totalDebits,
+                totalCredits,
+                totalDebits - totalCredits,
+                totalDebits == totalCredits,
+                HasCriticalIssues: false,
+                CanSubmitForApproval: false,
+                CanPostWithoutAdditionalApproval: false,
+                request.EvidenceLinks ?? [],
+                ValidationIssues: []));
+        }
     }
 }

@@ -132,6 +132,20 @@ records.
 Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
 schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
 relief projection, approval workflow, and tax-reporting exports remain outside this project.
+Closed-period trial-balance financials now preserve the dimension envelope available on retained
+journal metadata when building report rows. The ledger book service groups balances by account and
+dimension key, then fills the book fund profile as the default fund dimension, so entity,
+strategy, capital-account, instrument, cost-center, counterparty, and external GL context is not
+lost before browser, WPF, reporting, or export callers consume the shared report DTO.
+When a governed draft candidate emits line-entry keyed dimension tags, closed-period financials
+prefer those line-specific dimensions before falling back to journal-level tags. This lets generated
+multi-line postings retain different cost-center or external-GL scope per line while the underlying
+ledger engine remains immutable and posting-gated.
+New ledger writes persist the first-class `LedgerEntry.Dimensions` value into
+`journal_legs.dimensions` as JSONB and rehydrate it with each ledger line. The metadata-tag path
+remains a compatibility fallback for older retained rows, but new dimensional accounting evidence
+should use the line property so reports, external-GL mapping, close checks, and future query
+filters do not have to infer line scope from journal-level tags.
 
 ### Direct lending and operational projections
 

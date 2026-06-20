@@ -79,36 +79,30 @@ The older taxonomy below is retained only to help migrate existing source materi
 
 ### Directory Organization
 
-Legacy docs were organized into three zones by audience and purpose:
+The rebuilt documentation model starts from canonical audience lanes and keeps
+legacy/source-material folders only while their content is still being migrated:
 
 ```
 docs/
 │
-│  ── PRODUCT ZONE (users and operators) ────────────────────────────
-├── getting-started/           # Quick start guides for new users
-├── providers/                 # Provider-specific setup guides
-├── operations/                # Deployment and maintenance
-│
-│  ── ENGINEERING ZONE (developers and architects) ──────────────────
-├── architecture/              # System design and design rationale
-├── adr/                       # Architecture Decision Records
-├── development/               # Developer guides and patterns
-├── integrations/              # Integration guides (Lean, F#)
-├── reference/                 # API docs, data dictionary
-├── diagrams/                  # All visual assets
-│   └── uml/                   # UML diagrams (PlantUML sources + PNGs)
-│
-│  ── GOVERNANCE ZONE (status, reviews, security) ────────────────────
-├── status/                    # Project status, roadmap, TODO
-├── evaluations/               # Technology and architecture evaluations
-├── audits/                    # Code quality audits
-├── security/                  # Security documentation
-│
-│  ── META / TOOLING ─────────────────────────────────────────────────
-├── ai/                        # AI assistant instructions
+├── start/                     # First-run orientation and local setup
+├── product/                   # Stakeholder product narrative and capability posture
+├── engineering/               # Developer and coding-agent workflow
+├── operators/                 # Provider setup, runbooks, deployment, troubleshooting
+├── reference/                 # API, env/config, schema, provider matrices, glossary
+├── domain/                    # Business dictionary and durable domain language
+├── roadmap/                   # Registry-owned roadmap data and generated views
+├── source/                    # Source-module registry and generated source docs
+├── ai/                        # AI assistant instructions and generated navigation
 ├── generated/                 # Auto-generated documentation (do not edit)
-├── archive/                   # Historical docs retained inside the docs tree
-├── docfx/                     # DocFX API docs config
+├── architecture/              # Retained source material linked from engineering
+├── development/               # Legacy developer source material
+├── operations/                # Legacy operator source material
+├── plans/                     # Controlled plan migration index
+├── status/                    # Controlled status/reporting migration index
+├── security/                  # Security docs routed by audience
+├── diagrams/                  # Maintained diagram and visual assets
+├── docfx/                     # DocFX API docs config and filters
 └── README.md                  # Master documentation index (START HERE)
 ```
 
@@ -119,7 +113,7 @@ only with a focused link and index update.
 
 | Category | Purpose | Examples |
 |----------|---------|----------|
-| **Guides** | Step-by-step instructions | Getting Started, Provider Setup |
+| **Guides** | Step-by-step instructions | Start, Provider Onboarding |
 | **References** | Lookup information | API Reference, Data Dictionary |
 | **Explanations** | Conceptual understanding | Architecture Overview, Design Decisions |
 | **How-To** | Task-focused procedures | Adding a Provider, Running Backfill |
@@ -133,9 +127,9 @@ Use [Documentation Ownership Contract](../documentation-ownership.md) when decid
 ```
 Is it a step-by-step guide for end users or operators?
 ├── Yes → Is it about a data provider?
-│   ├── Yes → docs/providers/
-│   └── No, it's about deploying or maintaining the system → docs/operations/
-│              Or it's about getting started → docs/getting-started/
+│   ├── Yes → docs/operators/ for setup, docs/reference/ for capability lookup
+│   └── No, it's about deploying, maintaining, or troubleshooting → docs/operators/
+│              Or it's about getting started → docs/start/
 └── No →
     Is it an architecture narrative, design rationale, or ADR?
     ├── Architecture overview or layer rules → docs/architecture/
@@ -151,13 +145,13 @@ Is it a step-by-step guide for end users or operators?
                 ├── Yes → docs/integrations/
                 └── No →
                     Is it about project status, roadmap, or active tracking?
-                    ├── Yes → docs/status/
+                    ├── Yes → docs/roadmap/ for registry truth, docs/product/ for interpretation, generated/status output for reports
                     └── No →
                         Is it an evaluation, brainstorm, or improvement proposal?
-                        ├── Yes → docs/evaluations/
+                        ├── Yes → archive/docs/assessments/
                         └── No →
                             Is it a targeted code-quality or hygiene audit?
-                            ├── Yes → docs/audits/
+                            ├── Yes → archive/docs/assessments/
                             └── No →
                                 Is it superseded or historical? → archive/docs/
 ```
@@ -213,12 +207,12 @@ Add these fields in the front matter section at the top of new documents:
 
 | Folder | Suggested Review Cadence |
 |--------|-------------------------|
-| `getting-started/`, `providers/`, `operations/` | Every release or when behavior changes |
+| `start/`, `operators/`, `reference/` provider pages | Every release or when behavior changes |
 | `architecture/`, `adr/` | Quarterly or when architectural decisions are revised |
 | `development/` | As tooling and conventions evolve |
 | `reference/` | When APIs or configuration options change |
-| `status/` | Weekly (roadmap) or per-release (changelog) |
-| `evaluations/`, `audits/` | When superseded by new analysis |
+| `roadmap/`, generated status outputs | Weekly for roadmap data or when automation inputs change |
+| Archived assessments and historical audits | When superseded by new analysis |
 
 ### Stale Detection
 

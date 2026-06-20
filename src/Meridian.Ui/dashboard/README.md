@@ -726,6 +726,8 @@ That shared explorer shell also wraps `/portfolio` and `/accounting/security-mas
 anchors open holdings, selected run evidence, brokerage posture, and coverage proof to the existing
 Portfolio view model, while Security Master anchors instrument search, identity evidence, conflicts,
 schedules, lots, and trading controls to the Accounting-owned Security Master view model.
+
+The Accounting Security Master workstream also renders the shared Instrument Passport provider-confidence evidence from /api/workstation/security-master/securities/{securityId}/passport, keeping provider mapping confidence, pricing posture, trust summary, and downstream usage endpoint-owned.
 The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
 over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
 selection, selected-line Security Master search/picker results, line validation badges, typed source

@@ -47,7 +47,7 @@ Current local project path: `D:\Meridian-main`.
 - `ai/`, `roadmap/`, `source/`, and `generated/` remain specialized controlled documentation systems.
 - `archive/docs/` is the destination for superseded plans, stale audits, old status snapshots, historical experiments, and one-off brainstorms.
 
-The older folders (`developer/`, `development/`, `plans/`, `status/`, `operations/`, `evaluations/`, `audits/`, and related areas) are active only where linked from the canonical sources above. During the rebuild, they should be treated as migration inputs, not as the desired final information architecture.
+Legacy folders that still exist under `docs/` are active only where linked from the canonical sources above. Removed legacy lanes such as `developer/`, `providers/`, `api/`, `design/`, `ui/`, `evaluations/`, and `audits/` now route through canonical docs and `archive/docs/`.
 
 ## Generated And Registry-Owned Content
 
@@ -66,7 +66,7 @@ Archive rather than delete when a document has historical value, stale evidence,
 
 ## Migration Status
 
-- `docs/audits/` and `docs/evaluations/` are now source-material indexes. Use them for historical context and extraction work, not as canonical destinations for new guidance.
+- Historical audit and evaluation material now lives in `archive/docs/assessments/`. Use it for context and extraction work, not as canonical guidance.
 - `docs/plans/` and `docs/status/` are now controlled migration indexes. Use `docs/product/` for stakeholder interpretation, `docs/roadmap/data/*.yml` for durable roadmap truth, and generated views for rendered registry output.
 - `archive/docs/assessments/`, `archive/docs/plans/`, `archive/docs/status/`, `archive/docs/summaries/`, `archive/docs/migrations/`, and `archive/docs/workflows/` have bucket indexes for staged archive batches.
 - High-traffic archived material should keep a short redirect stub at the old path until all active links move to the replacement.

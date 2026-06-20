@@ -61,6 +61,7 @@ internal sealed class SecurityMasterPrintSectionViewModel
     public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> CompanyProfileFields { get; } = new();
     public ObservableCollection<SecurityMasterPresentationField> CompanyCoverageFields { get; } = new();
+    public ObservableCollection<SecurityMasterPresentationField> InstrumentPassportFields { get; } = new();
     public ObservableCollection<SecurityMasterPrintSectionItem> PrintSections { get; } = new();
     public ObservableCollection<SecurityMasterChecklistItem> PrintChecklistItems { get; } = new();
     public ObservableCollection<SecurityMasterEvidenceItem> PrintEvidenceItems { get; } = new();

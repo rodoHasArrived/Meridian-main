@@ -189,6 +189,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.reportingEvidence
   },
   {
+    id: "reporting-exports",
+    label: "Exports",
+    description: "Run on-demand reports and review generated export run posture.",
+    route: WORKSTATION_ROUTE_CATALOG.reportingExports
+  },
+  {
     id: "strategy-quant-lab",
     label: "Quant Lab",
     description: "Run scripts with parameter hints, templates, plots, and metrics.",

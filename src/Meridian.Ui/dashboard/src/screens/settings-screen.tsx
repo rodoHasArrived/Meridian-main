@@ -11,8 +11,10 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import {
+  activateProviderIntegration,
   approveSecurityAssetProfile,
   assignLedgerMapping,
+  checkProviderIntegrationSchemaDrift,
   createProviderIntegrationReconciliationHandoff,
   createRolePermissionProfile,
   createScopedAccessAssignment,
@@ -25,8 +27,11 @@ import {
   getProviderIntegrationIdentityResolution,
   getProviderIntegrationPromotionReadiness,
   getProviderIntegrationQuarantineReview,
+  getProviderIntegrationReadiness,
   getProviderIntegrationReconciliationHandoffHistory,
   getProviderIntegrationStagingReview,
+  getProviderIntegrationTemplate,
+  getProviderIntegrationTemplates,
   getSecurityAssetProfileLineage,
   importProviderIntegrationOpenApi,
   listScopedAccessAssignments,
@@ -36,6 +41,9 @@ import {
   revokeScopedAccessAssignment,
   rollbackSecurityAssetProfile,
   runDueProviderIntegrationSync,
+  runManualCsvProviderIntegrationDryRun,
+  runRestProviderIntegrationDryRun,
+  saveProviderIntegrationSetup,
   testProviderConnection,
   upsertOperationsApprovalPolicyRule,
   upsertOperationsCloseCalendarItem,
@@ -74,8 +82,15 @@ import type {
   OperationsCloseCalendar,
   OperationsCloseCalendarItem,
   ProviderIntegrationAuthType,
+  ProviderIntegrationActivationReadiness,
+  ProviderIntegrationActivationResult,
   ProviderIntegrationCapabilityKind,
+  ProviderIntegrationConnection,
   ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationDryRunResult,
+  ProviderIntegrationEndpointDefinition,
+  ProviderIntegrationFieldMapping,
+  ProviderIntegrationManifest,
   ProviderIntegrationOpenApiImportResult,
   ProviderIntegrationProcessingStatus,
   ProviderIntegrationPromotionReadinessPreview,
@@ -84,11 +99,14 @@ import type {
   ProviderIntegrationQuarantineResolutionAction,
   ProviderIntegrationQuarantineReview,
   ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationSchemaDriftCheckResult,
+  ProviderIntegrationSetupSaveResult,
   ProviderIntegrationStagingIdentityResolutionPreview,
   ProviderIntegrationStagingReview,
   ProviderIntegrationSyncPlan,
   ProviderIntegrationSyncRunEvidence,
   ProviderIntegrationSyncRunHistory,
+  ProviderIntegrationTemplateCatalogEntry,
   RolePermissionCatalog,
   SecurityAssetProfileDefinition,
   SecurityAssetProfileFieldDefinition,
@@ -294,7 +312,40 @@ interface ProviderOpenApiImportState {
   details: string[];
   tone: "default" | "success" | "danger" | "warning";
 }
+type ProviderIntegrationWorkbenchBusyAction =
+  | "activate"
+  | "csv-dry-run"
+  | "drift"
+  | "readiness"
+  | "rest-dry-run"
+  | "save"
+  | "template"
+  | "templates"
+  | null;
 
+interface ProviderIntegrationWorkbenchState {
+  templates: ProviderIntegrationTemplateCatalogEntry[] | null;
+  selectedManifestId: string;
+  manifest: ProviderIntegrationManifest | null;
+  connection: ProviderIntegrationConnection | null;
+  draftManifestJson: string;
+  draftConnectionJson: string;
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey: string;
+  csvFileName: string;
+  csvContent: string;
+  restPathParametersJson: string;
+  restQueryParametersJson: string;
+  readiness: ProviderIntegrationActivationReadiness | null;
+  setupResult: ProviderIntegrationSetupSaveResult | null;
+  dryRunResult: ProviderIntegrationDryRunResult | null;
+  driftResult: ProviderIntegrationSchemaDriftCheckResult | null;
+  activationResult: ProviderIntegrationActivationResult | null;
+  busyAction: ProviderIntegrationWorkbenchBusyAction;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger" | "warning";
+}
 const emptyProviderRuntimeEvidenceState: ProviderRuntimeEvidenceState = {
   phase: "idle",
   message: null,
@@ -3905,6 +3956,7 @@ export function SettingsScreen({
                       <ProviderIntegrationRuntimePanel
                         row={row}
                         state={providerRuntimeState[providerRuntimeStateKey(row)] ?? emptyProviderRuntimeEvidenceState}
+                        operatorName={session?.displayName ?? "settings-operator"}
                         openApiImportState={providerOpenApiImportState[providerRuntimeStateKey(row)] ?? createProviderOpenApiImportState(row)}
                         onOpenApiImportStateChange={(updater) => updateProviderOpenApiImportState(row, updater)}
                         onImportOpenApi={() => void submitProviderOpenApiImport(row)}
@@ -5243,6 +5295,7 @@ function ProviderInlineActionPanel({
 function ProviderIntegrationRuntimePanel({
   row,
   state,
+  operatorName,
   openApiImportState,
   onOpenApiImportStateChange,
   onImportOpenApi,
@@ -5254,6 +5307,7 @@ function ProviderIntegrationRuntimePanel({
 }: {
   row: SettingsProviderConnectionRow;
   state: ProviderRuntimeEvidenceState;
+  operatorName: string;
   openApiImportState: ProviderOpenApiImportState;
   onOpenApiImportStateChange: (updater: (state: ProviderOpenApiImportState) => ProviderOpenApiImportState) => void;
   onImportOpenApi: () => void;
@@ -5379,6 +5433,11 @@ function ProviderIntegrationRuntimePanel({
         state={openApiImportState}
         onStateChange={onOpenApiImportStateChange}
         onSubmit={onImportOpenApi}
+      />
+      <ProviderIntegrationWorkbenchPanel
+        row={row}
+        runtimeState={state}
+        operatorName={operatorName}
       />
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
         <SettingsFieldRow
@@ -5606,6 +5665,436 @@ function ProviderIntegrationRuntimePanel({
   );
 }
 
+function ProviderIntegrationWorkbenchPanel({
+  row,
+  runtimeState,
+  operatorName
+}: {
+  row: SettingsProviderConnectionRow;
+  runtimeState: ProviderRuntimeEvidenceState;
+  operatorName: string;
+}) {
+  const [state, setState] = useState<ProviderIntegrationWorkbenchState>(() => createProviderIntegrationWorkbenchState(row));
+
+  useEffect(() => {
+    setState(createProviderIntegrationWorkbenchState(row));
+  }, [row.integrationConnectionId, row.providerId]);
+
+  const busy = state.busyAction !== null;
+  const manifestId = providerIntegrationWorkbenchManifestId(state, runtimeState);
+  const connectionId = providerIntegrationWorkbenchConnectionId(row, state, runtimeState);
+  const capabilityOptions = providerIntegrationWorkbenchCapabilities(state);
+  const endpointOptions = providerIntegrationWorkbenchEndpoints(state, state.capability);
+  const mappingPreview = providerIntegrationWorkbenchMappings(state, state.capability);
+  const latestRawPayload = providerIntegrationLatestRawPayload(state, runtimeState);
+  const canCheckDrift = Boolean(manifestId && connectionId && latestRawPayload && state.endpointKey.trim());
+  const activationReady = state.readiness?.isReady ?? false;
+
+  const updateField = <K extends keyof ProviderIntegrationWorkbenchState>(
+    field: K,
+    value: ProviderIntegrationWorkbenchState[K]
+  ) => {
+    setState((current) => ({
+      ...current,
+      [field]: value,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  const loadTemplates = async () => {
+    setState((current) => ({ ...current, busyAction: "templates", message: "Loading provider integration templates.", details: [], tone: "default" }));
+    try {
+      const templates = await getProviderIntegrationTemplates();
+      setState((current) => ({
+        ...current,
+        templates,
+        selectedManifestId: providerIntegrationDefaultSelectedManifestId(row, templates, current.selectedManifestId),
+        busyAction: null,
+        message: templates.length === 0 ? "No provider integration templates returned." : `${templates.length} provider integration templates loaded.`,
+        details: templates.slice(0, 3).map((template) => `${template.displayName}: ${template.summary}`),
+        tone: templates.length === 0 ? "warning" : "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration templates could not be loaded.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const useTemplate = async () => {
+    const selectedManifestId = state.selectedManifestId.trim();
+    if (!selectedManifestId) {
+      setState((current) => ({ ...current, message: "Select or enter a manifest id before loading a template.", details: [], tone: "warning" }));
+      return;
+    }
+
+    setState((current) => ({ ...current, busyAction: "template", message: `Loading template ${selectedManifestId}.`, details: [], tone: "default" }));
+    try {
+      const manifest = await getProviderIntegrationTemplate(selectedManifestId);
+      const connection = createProviderIntegrationConnectionDraft(row, manifest, operatorName);
+      setState((current) => providerIntegrationWorkbenchWithDraft(row, current, manifest, connection, {
+        message: `Template ${manifest.manifestId} loaded into draft setup editor.`,
+        details: providerIntegrationWorkbenchDraftDetails(manifest),
+        tone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration template could not be loaded.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const saveSetupDraft = async () => {
+    const manifestDraft = parseProviderIntegrationWorkbenchJson<ProviderIntegrationManifest>(state.draftManifestJson, "Manifest draft JSON");
+    const connectionDraft = parseProviderIntegrationWorkbenchJson<ProviderIntegrationConnection>(state.draftConnectionJson, "Connection draft JSON");
+    if (!manifestDraft.ok || !connectionDraft.ok) {
+      setState((current) => ({
+        ...current,
+        message: "Provider integration setup draft is not valid JSON.",
+        details: [manifestDraft.error, connectionDraft.error].filter((detail): detail is string => Boolean(detail)),
+        tone: "warning"
+      }));
+      return;
+    }
+
+    const savedAt = new Date().toISOString();
+    setState((current) => ({ ...current, busyAction: "save", message: "Saving provider integration setup draft.", details: [], tone: "default" }));
+    try {
+      const result = await saveProviderIntegrationSetup({
+        manifest: manifestDraft.value,
+        connection: connectionDraft.value,
+        savedBy: operatorName,
+        savedAt,
+        changeReason: manifestDraft.value.changeReason ?? "Saved from the Settings Provider Connection Center guided workbench."
+      });
+      setState((current) => ({
+        ...current,
+        manifest: manifestDraft.value,
+        connection: connectionDraft.value,
+        selectedManifestId: result.manifestId,
+        setupResult: result,
+        readiness: result.readiness,
+        busyAction: null,
+        message: result.message ?? `Provider integration setup saved for ${result.connectionId}.`,
+        details: providerIntegrationReadinessDetails(result.readiness),
+        tone: result.readiness.isReady ? "success" : "warning"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration setup save failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const checkReadiness = async () => {
+    if (!manifestId) {
+      setState((current) => ({
+        ...current,
+        message: "Load a template, import a draft, or load runtime monitor evidence before checking activation readiness.",
+        details: [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    setState((current) => ({ ...current, busyAction: "readiness", message: "Checking provider integration activation readiness.", details: [], tone: "default" }));
+    try {
+      const readiness = await getProviderIntegrationReadiness(manifestId, connectionId);
+      setState((current) => ({
+        ...current,
+        readiness,
+        busyAction: null,
+        message: readiness.isReady ? "Activation readiness passed." : "Activation readiness requires review.",
+        details: providerIntegrationReadinessDetails(readiness),
+        tone: readiness.isReady ? "success" : "warning"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration activation readiness could not be checked.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const runCsvDryRun = async () => {
+    if (!manifestId || !state.csvContent.trim()) {
+      setState((current) => ({ ...current, message: "Manifest id and CSV content are required before running a manual CSV dry-run.", details: [], tone: "warning" }));
+      return;
+    }
+
+    const requestedAt = new Date();
+    setState((current) => ({ ...current, busyAction: "csv-dry-run", message: "Running manual CSV provider integration dry-run.", details: [], tone: "default" }));
+    try {
+      const result = await runManualCsvProviderIntegrationDryRun({
+        syncRunId: providerIntegrationWorkbenchSyncRunId(row.integrationConnectionId, "csv", requestedAt),
+        manifestId,
+        connectionId,
+        capability: state.capability,
+        fileName: state.csvFileName.trim() || `${row.providerId}-sample.csv`,
+        csvContent: state.csvContent,
+        requestedBy: operatorName,
+        requestedAt: requestedAt.toISOString()
+      });
+      setState((current) => ({
+        ...current,
+        dryRunResult: result,
+        busyAction: null,
+        message: `CSV dry-run completed: ${result.recordsAccepted} accepted / ${result.recordsQuarantined} quarantined.`,
+        details: result.issues.map((issue) => issue.message),
+        tone: result.recordsQuarantined > 0 || result.issues.length > 0 ? "warning" : "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Manual CSV provider integration dry-run failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const runRestDryRun = async () => {
+    const pathParameters = parseProviderIntegrationStringRecord(state.restPathParametersJson, "REST path parameters JSON");
+    const queryParameters = parseProviderIntegrationStringRecord(state.restQueryParametersJson, "REST query parameters JSON");
+    if (!manifestId || !state.endpointKey.trim() || !pathParameters.ok || !queryParameters.ok) {
+      setState((current) => ({
+        ...current,
+        message: "Manifest id, endpoint key, and valid REST parameter JSON are required before running a REST dry-run.",
+        details: [pathParameters.error, queryParameters.error].filter((detail): detail is string => Boolean(detail)),
+        tone: "warning"
+      }));
+      return;
+    }
+
+    const requestedAt = new Date();
+    setState((current) => ({ ...current, busyAction: "rest-dry-run", message: "Running REST provider integration dry-run.", details: [], tone: "default" }));
+    try {
+      const result = await runRestProviderIntegrationDryRun({
+        syncRunId: providerIntegrationWorkbenchSyncRunId(row.integrationConnectionId, "rest", requestedAt),
+        manifestId,
+        connectionId,
+        capability: state.capability,
+        endpointKey: state.endpointKey.trim(),
+        pathParameters: pathParameters.value,
+        queryParameters: queryParameters.value,
+        requestedBy: operatorName,
+        requestedAt: requestedAt.toISOString(),
+        maxPages: 2
+      });
+      setState((current) => ({
+        ...current,
+        dryRunResult: result,
+        busyAction: null,
+        message: `REST dry-run completed: ${result.recordsAccepted} accepted / ${result.recordsQuarantined} quarantined.`,
+        details: result.issues.map((issue) => issue.message),
+        tone: result.recordsQuarantined > 0 || result.issues.length > 0 ? "warning" : "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "REST provider integration dry-run failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const checkSchemaDrift = async () => {
+    if (!manifestId || !latestRawPayload || !state.endpointKey.trim()) {
+      setState((current) => ({ ...current, message: "A manifest id, endpoint key, and dry-run or runtime raw payload are required before schema drift review.", details: [], tone: "warning" }));
+      return;
+    }
+
+    const checkedAt = new Date();
+    setState((current) => ({ ...current, busyAction: "drift", message: "Checking provider integration schema drift.", details: [], tone: "default" }));
+    try {
+      const result = await checkProviderIntegrationSchemaDrift({
+        manifestId,
+        connectionId,
+        capability: latestRawPayload.capability,
+        endpointKey: state.endpointKey.trim(),
+        syncRunId: latestRawPayload.syncRunId,
+        rawPayloadId: latestRawPayload.rawPayloadId,
+        checkedBy: operatorName,
+        checkedAt: checkedAt.toISOString()
+      });
+      setState((current) => ({
+        ...current,
+        driftResult: result,
+        busyAction: null,
+        message: result.driftDetected ? "Schema drift detected." : "Schema drift check passed.",
+        details: result.issues.map((issue) => issue.message),
+        tone: result.shouldPauseCapability ? "danger" : result.driftDetected ? "warning" : "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration schema drift check failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const activateSetup = async () => {
+    if (!manifestId || !activationReady) {
+      setState((current) => ({ ...current, message: "Activation is blocked until readiness passes.", details: providerIntegrationReadinessDetails(current.readiness), tone: "warning" }));
+      return;
+    }
+
+    const approvedAt = new Date();
+    setState((current) => ({ ...current, busyAction: "activate", message: "Requesting provider integration activation.", details: [], tone: "default" }));
+    try {
+      const result = await activateProviderIntegration({
+        manifestId,
+        connectionId,
+        approvedBy: operatorName,
+        approvedAt: approvedAt.toISOString(),
+        approvalEvidenceId: providerIntegrationWorkbenchEvidenceId(row.integrationConnectionId, "activation", approvedAt),
+        changeReason: "Activated from the Settings Provider Connection Center guided workbench."
+      });
+      setState((current) => ({
+        ...current,
+        activationResult: result,
+        readiness: result.readiness,
+        busyAction: null,
+        message: result.message ?? `Provider integration ${result.activated ? "activated" : "activation reviewed"}.`,
+        details: providerIntegrationReadinessDetails(result.readiness),
+        tone: result.activated ? "success" : "warning"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration activation failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  return (
+    <section className="mt-3 rounded-md border border-border/60 bg-background/35 px-3 py-3" aria-label={`${row.displayName} guided provider integration workbench`}>
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h6 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Guided integration workbench</h6>
+          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Template, setup, dry-run, readiness, drift, and quarantine evidence stay on shared provider-integration endpoints.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => void loadTemplates()} disabled={busy} busy={state.busyAction === "templates"} aria-label={`Load provider integration templates for ${row.displayName}`}>
+            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            Load templates
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => void useTemplate()} disabled={busy || !state.selectedManifestId.trim()} busy={state.busyAction === "template"} aria-label={`Use selected provider integration template for ${row.displayName}`}>
+            <Save className="h-3.5 w-3.5" aria-hidden="true" />
+            Use template
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => void checkReadiness()} disabled={busy || !manifestId} busy={state.busyAction === "readiness"} aria-label={`Check provider integration activation readiness for ${row.displayName}`}>
+            <MonitorCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            Check readiness
+          </Button>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Template or manifest ID
+          <Input value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest id`} />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Template catalog
+          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
+            <option value={state.selectedManifestId}>{state.selectedManifestId || "No template selected"}</option>
+            {(state.templates ?? []).map((template) => <option key={template.manifestId} value={template.manifestId}>{template.displayName}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Manifest draft JSON
+          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Connection draft JSON
+          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
+        </label>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={() => void saveSetupDraft()} disabled={busy || !state.draftManifestJson.trim() || !state.draftConnectionJson.trim()} busy={state.busyAction === "save"} aria-label={`Save provider integration setup draft for ${row.displayName}`}>
+          <Save className="h-3.5 w-3.5" aria-hidden="true" />
+          Save setup draft
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => void activateSetup()} disabled={busy || !activationReady} busy={state.busyAction === "activate"} disabledReason={!activationReady ? "Activation readiness must pass before activation." : undefined} aria-label={`Activate provider integration setup for ${row.displayName}`}>
+          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+          Activate when ready
+        </Button>
+      </div>
+      {state.manifest ? (
+        <div className="mt-3 grid gap-2 rounded-sm border border-border/60 bg-background/40 px-2 py-2" aria-label={`${row.displayName} provider integration mapping preview`}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-foreground">Mapping preview</span>
+            <Badge variant="outline">{state.manifest.integrationType}</Badge>
+            <Badge variant={state.manifest.state === "Active" ? "success" : "warning"}>{state.manifest.state}</Badge>
+          </div>
+          <div className="grid gap-2 md:grid-cols-2">
+            {mappingPreview.length > 0 ? mappingPreview.slice(0, 4).map((mapping) => (
+              <div key={`${mapping.capability}-${mapping.sourcePath}-${mapping.targetField}`} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-2 text-[11px] text-muted-foreground">
+                <span className="font-mono text-foreground">{mapping.sourcePath}</span> {" -> "} <span className="font-mono text-foreground">{mapping.targetField}</span> · {mapping.confidence}{mapping.required ? " · required" : ""}
+              </div>
+            )) : <p className="text-[11px] text-muted-foreground">No mapping rows for the selected capability.</p>}
+          </div>
+        </div>
+      ) : null}
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Capability
+          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary" value={state.capability} onChange={(event) => setState((current) => {
+            const capability = event.target.value as ProviderIntegrationCapabilityKind;
+            return { ...current, capability, endpointKey: providerIntegrationPreferredEndpointKey(current.manifest, capability, current.endpointKey), message: null, details: [], tone: "default" };
+          })} disabled={busy} aria-label={`${row.displayName} provider integration dry-run capability`}>
+            {capabilityOptions.map((capability) => <option key={capability} value={capability}>{capability}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Endpoint key
+          <Input value={state.endpointKey} onChange={(event) => updateField("endpointKey", event.target.value)} list={`${row.providerId}-provider-endpoint-options`} disabled={busy} aria-label={`${row.displayName} provider integration dry-run endpoint key`} />
+          <datalist id={`${row.providerId}-provider-endpoint-options`}>{endpointOptions.map((endpoint) => <option key={endpoint.endpointKey} value={endpoint.endpointKey} />)}</datalist>
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          CSV file name
+          <Input value={state.csvFileName} onChange={(event) => updateField("csvFileName", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run file name`} />
+        </label>
+      </div>
+      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          CSV content
+          <textarea className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
+        </label>
+        <div className="grid gap-3">
+          <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+            REST path parameters JSON
+            <Input value={state.restPathParametersJson} onChange={(event) => updateField("restPathParametersJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration REST path parameters JSON`} />
+          </label>
+          <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+            REST query parameters JSON
+            <Input value={state.restQueryParametersJson} onChange={(event) => updateField("restQueryParametersJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration REST query parameters JSON`} />
+          </label>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={() => void runCsvDryRun()} disabled={busy || !manifestId || !state.csvContent.trim()} busy={state.busyAction === "csv-dry-run"} aria-label={`Run provider integration CSV dry-run for ${row.displayName}`}>
+          <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+          CSV dry-run
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => void runRestDryRun()} disabled={busy || !manifestId || !state.endpointKey.trim()} busy={state.busyAction === "rest-dry-run"} aria-label={`Run provider integration REST dry-run for ${row.displayName}`}>
+          <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+          REST dry-run
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => void checkSchemaDrift()} disabled={busy || !canCheckDrift} busy={state.busyAction === "drift"} disabledReason={!canCheckDrift ? "A dry-run or runtime raw payload is required before schema drift review." : undefined} aria-label={`Check provider integration schema drift for ${row.displayName}`}>
+          <MonitorCheck className="h-3.5 w-3.5" aria-hidden="true" />
+          Schema drift
+        </Button>
+      </div>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+        <SettingsFieldRow label="Manifest" value={manifestId || "Not selected"} tone={manifestId ? "success" : "muted"} />
+        <SettingsFieldRow label="Connection" value={state.connection?.connectionName ?? runtimeState.monitor?.connectionName ?? "Runtime connection"} tone="muted" />
+        <SettingsFieldRow label="Activation readiness" value={state.readiness ? (state.readiness.isReady ? "Ready" : "Review required") : "Not checked"} tone={state.readiness?.isReady ? "success" : state.readiness ? "warning" : "muted"} />
+        <SettingsFieldRow label="Dry-run result" value={state.dryRunResult ? `${state.dryRunResult.recordsAccepted} accepted / ${state.dryRunResult.recordsQuarantined} quarantined` : "Not run"} tone={state.dryRunResult ? (state.dryRunResult.recordsQuarantined > 0 ? "warning" : "success") : "muted"} />
+        <SettingsFieldRow label="Schema drift" value={state.driftResult ? (state.driftResult.driftDetected ? `${state.driftResult.issues.length} issues` : "No drift") : "Not checked"} tone={state.driftResult ? (state.driftResult.shouldPauseCapability ? "danger" : state.driftResult.driftDetected ? "warning" : "success") : "muted"} />
+        <SettingsFieldRow label="Activation" value={state.activationResult ? state.activationResult.connectionState : "Not requested"} tone={state.activationResult?.activated ? "success" : "muted"} />
+      </dl>
+      {state.message ? (
+        <div role={state.tone === "danger" ? "alert" : "status"} className={cn("mt-3 text-xs", itemToneClass[state.tone])}>
+          <div>{state.message}</div>
+          {state.details.length > 0 ? (
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+              {state.details.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
 function ProviderOpenApiImportForm({
   row,
   state,
@@ -5994,6 +6483,289 @@ function providerRuntimeHandoffEvidenceId(connectionId: string, requestedAt: Dat
   return `settings-provider-handoff-${normalizedConnection}-${suffix}`;
 }
 
+function createProviderIntegrationWorkbenchState(row: SettingsProviderConnectionRow): ProviderIntegrationWorkbenchState {
+  const capability = providerIntegrationDefaultCapability(row);
+  return {
+    templates: null,
+    selectedManifestId: providerIntegrationDefaultManifestId(row),
+    manifest: null,
+    connection: null,
+    draftManifestJson: "",
+    draftConnectionJson: "",
+    capability,
+    endpointKey: providerIntegrationDefaultEndpointKey(capability),
+    csvFileName: `${providerIntegrationNormalizedId(row.providerId)}-${capability.toLowerCase()}.csv`,
+    csvContent: providerIntegrationSampleCsv(capability),
+    restPathParametersJson: "{}",
+    restQueryParametersJson: "{}",
+    readiness: null,
+    setupResult: null,
+    dryRunResult: null,
+    driftResult: null,
+    activationResult: null,
+    busyAction: null,
+    message: null,
+    details: [],
+    tone: "default"
+  };
+}
+
+function providerIntegrationDefaultCapability(row: Pick<SettingsProviderConnectionRow, "capabilityGroup">): ProviderIntegrationCapabilityKind {
+  return row.capabilityGroup === "accounting" ? "Transactions" : "Positions";
+}
+
+function providerIntegrationDefaultEndpointKey(capability: ProviderIntegrationCapabilityKind): string {
+  return capability.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+}
+
+function providerIntegrationDefaultManifestId(row: Pick<SettingsProviderConnectionRow, "providerId" | "capabilityGroup">): string {
+  const suffix = row.capabilityGroup === "accounting" ? "accounting" : row.capabilityGroup === "brokerage" ? "brokerage" : "data";
+  return `template-${providerIntegrationNormalizedId(row.providerId)}-${suffix}-v1`;
+}
+
+function providerIntegrationDefaultSelectedManifestId(
+  row: Pick<SettingsProviderConnectionRow, "providerId" | "displayName" | "capabilityGroup">,
+  templates: ProviderIntegrationTemplateCatalogEntry[],
+  currentManifestId: string
+): string {
+  const current = currentManifestId.trim();
+  if (current && templates.some((template) => template.manifestId === current)) {
+    return current;
+  }
+
+  const normalizedProvider = providerIntegrationNormalizedId(row.providerId);
+  const normalizedName = providerIntegrationNormalizedId(row.displayName);
+  const matched = templates.find((template) => (
+    providerIntegrationNormalizedId(template.providerId) === normalizedProvider ||
+    providerIntegrationNormalizedId(template.displayName).includes(normalizedName) ||
+    providerIntegrationNormalizedId(template.manifestId).includes(normalizedProvider)
+  ));
+
+  return matched?.manifestId ?? templates[0]?.manifestId ?? current ?? providerIntegrationDefaultManifestId(row);
+}
+
+function createProviderIntegrationConnectionDraft(
+  row: SettingsProviderConnectionRow,
+  manifest: ProviderIntegrationManifest,
+  operatorName: string
+): ProviderIntegrationConnection {
+  const now = new Date().toISOString();
+  const enabledCapabilities = manifest.capabilities
+    .filter((capability) => capability.enabled)
+    .map((capability) => capability.capability);
+  return {
+    connectionId: row.integrationConnectionId || `${manifest.manifestId}-connection`,
+    providerId: manifest.providerId || row.providerId,
+    manifestId: manifest.manifestId,
+    connectionName: `${manifest.displayName || row.displayName} ${manifest.environment || providerOpenApiEnvironment(row.environmentLabel)}`.trim(),
+    environment: manifest.environment || providerOpenApiEnvironment(row.environmentLabel),
+    state: manifest.state === "Active" ? "PendingApproval" : manifest.state,
+    credentialSecretRef: row.credentialStatus === "not-required" ? "" : providerIntegrationCredentialReference(row),
+    enabledCapabilities: enabledCapabilities.length > 0 ? enabledCapabilities : [providerIntegrationDefaultCapability(row)],
+    ownerUserId: operatorName,
+    createdAt: manifest.createdAt || now,
+    updatedAt: now,
+    approvalEvidenceId: null
+  };
+}
+
+function providerIntegrationWorkbenchWithDraft(
+  row: SettingsProviderConnectionRow,
+  state: ProviderIntegrationWorkbenchState,
+  manifest: ProviderIntegrationManifest,
+  connection: ProviderIntegrationConnection,
+  status: { message: string; details: string[]; tone: ProviderIntegrationWorkbenchState["tone"] }
+): ProviderIntegrationWorkbenchState {
+  const capability = providerIntegrationWorkbenchCapabilities({ ...state, manifest })[0] ?? providerIntegrationDefaultCapability(row);
+  return {
+    ...state,
+    selectedManifestId: manifest.manifestId,
+    manifest,
+    connection,
+    draftManifestJson: providerIntegrationFormatJson(manifest),
+    draftConnectionJson: providerIntegrationFormatJson(connection),
+    capability,
+    endpointKey: providerIntegrationPreferredEndpointKey(manifest, capability, state.endpointKey),
+    readiness: null,
+    setupResult: null,
+    driftResult: null,
+    activationResult: null,
+    busyAction: null,
+    message: status.message,
+    details: status.details,
+    tone: status.tone
+  };
+}
+
+function providerIntegrationWorkbenchCapabilities(state: Pick<ProviderIntegrationWorkbenchState, "manifest" | "capability">): ProviderIntegrationCapabilityKind[] {
+  const capabilities = new Set<ProviderIntegrationCapabilityKind>();
+  if (state.capability) {
+    capabilities.add(state.capability);
+  }
+  state.manifest?.capabilities
+    .filter((capability) => capability.enabled)
+    .forEach((capability) => capabilities.add(capability.capability));
+  if (capabilities.size === 0) {
+    capabilities.add("Positions");
+  }
+  return Array.from(capabilities);
+}
+
+function providerIntegrationWorkbenchEndpoints(
+  state: Pick<ProviderIntegrationWorkbenchState, "manifest">,
+  capability: ProviderIntegrationCapabilityKind
+): ProviderIntegrationEndpointDefinition[] {
+  return (state.manifest?.endpoints ?? []).filter((endpoint) => endpoint.capability === capability);
+}
+
+function providerIntegrationWorkbenchMappings(
+  state: Pick<ProviderIntegrationWorkbenchState, "manifest">,
+  capability: ProviderIntegrationCapabilityKind
+): ProviderIntegrationFieldMapping[] {
+  return (state.manifest?.fieldMappings ?? []).filter((mapping) => mapping.capability === capability);
+}
+
+function providerIntegrationPreferredEndpointKey(
+  manifest: ProviderIntegrationManifest | null,
+  capability: ProviderIntegrationCapabilityKind,
+  currentEndpointKey: string
+): string {
+  const current = currentEndpointKey.trim();
+  const endpoints = (manifest?.endpoints ?? []).filter((endpoint) => endpoint.capability === capability);
+  if (current && endpoints.some((endpoint) => endpoint.endpointKey === current)) {
+    return current;
+  }
+  return endpoints[0]?.endpointKey ?? (current || providerIntegrationDefaultEndpointKey(capability));
+}
+
+function providerIntegrationWorkbenchManifestId(
+  state: Pick<ProviderIntegrationWorkbenchState, "manifest" | "selectedManifestId">,
+  runtimeState: ProviderRuntimeEvidenceState
+): string {
+  if (state.manifest?.manifestId) {
+    return state.manifest.manifestId;
+  }
+
+  const selectedManifestId = state.selectedManifestId.trim();
+  if (selectedManifestId) {
+    return selectedManifestId;
+  }
+
+  return runtimeState.monitor?.manifestId ?? "";
+}
+
+function providerIntegrationWorkbenchConnectionId(
+  row: Pick<SettingsProviderConnectionRow, "integrationConnectionId">,
+  state: Pick<ProviderIntegrationWorkbenchState, "connection">,
+  runtimeState: ProviderRuntimeEvidenceState
+): string {
+  return state.connection?.connectionId ?? runtimeState.monitor?.connectionId ?? row.integrationConnectionId;
+}
+
+function providerIntegrationLatestRawPayload(
+  state: Pick<ProviderIntegrationWorkbenchState, "dryRunResult" | "capability" | "endpointKey">,
+  runtimeState: ProviderRuntimeEvidenceState
+): { syncRunId: string; rawPayloadId: string; capability: ProviderIntegrationCapabilityKind; endpointKey: string } | null {
+  if (state.dryRunResult?.rawPayloadId) {
+    return {
+      syncRunId: state.dryRunResult.syncRunId,
+      rawPayloadId: state.dryRunResult.rawPayloadId,
+      capability: state.dryRunResult.capability,
+      endpointKey: state.endpointKey
+    };
+  }
+
+  const latestRunWithPayload = providerRuntimeRuns(runtimeState).find((run) => Boolean(run.rawPayloadId));
+  if (!latestRunWithPayload?.rawPayloadId) {
+    return null;
+  }
+
+  return {
+    syncRunId: latestRunWithPayload.syncRunId,
+    rawPayloadId: latestRunWithPayload.rawPayloadId,
+    capability: latestRunWithPayload.capability,
+    endpointKey: latestRunWithPayload.endpointKey
+  };
+}
+
+function providerIntegrationWorkbenchDraftDetails(manifest: ProviderIntegrationManifest): string[] {
+  return [
+    `${manifest.endpoints.length} endpoint definitions`,
+    `${manifest.fieldMappings.length} mapping rows`,
+    `${manifest.validationRules.length} validation rules`
+  ];
+}
+
+function providerIntegrationReadinessDetails(readiness: ProviderIntegrationActivationReadiness | null): string[] {
+  if (!readiness) {
+    return [];
+  }
+
+  return [
+    ...readiness.requiredEvidence.map((evidence) => `Evidence required: ${evidence}`),
+    ...readiness.issues.map((issue) => `${issue.severity}: ${issue.message}`)
+  ];
+}
+
+function providerIntegrationFormatJson(value: unknown): string {
+  return JSON.stringify(value, null, 2);
+}
+
+function parseProviderIntegrationWorkbenchJson<T>(
+  value: string,
+  label: string
+): { ok: true; value: T } | { ok: false; error: string } {
+  try {
+    return { ok: true, value: JSON.parse(value) as T };
+  } catch (error) {
+    return { ok: false, error: `${label}: ${error instanceof Error ? error.message : "Invalid JSON"}` };
+  }
+}
+
+function parseProviderIntegrationStringRecord(
+  value: string,
+  label: string
+): { ok: true; value: Record<string, string> } | { ok: false; error: string } {
+  const parsed = parseProviderIntegrationWorkbenchJson<unknown>(value || "{}", label);
+  if (!parsed.ok) {
+    return parsed;
+  }
+  if (!parsed.value || typeof parsed.value !== "object" || Array.isArray(parsed.value)) {
+    return { ok: false, error: `${label}: expected a JSON object.` };
+  }
+
+  return {
+    ok: true,
+    value: Object.fromEntries(Object.entries(parsed.value).map(([key, item]) => [key, String(item)]))
+  };
+}
+
+function providerIntegrationCredentialReference(row: Pick<SettingsProviderConnectionRow, "providerId" | "sourceLabel">): string {
+  return `provider-credential:${providerIntegrationNormalizedId(row.providerId)}:${providerIntegrationNormalizedId(row.sourceLabel || "local")}`;
+}
+
+function providerIntegrationWorkbenchSyncRunId(connectionId: string, mode: string, requestedAt: Date): string {
+  return `settings-${mode}-${providerIntegrationNormalizedId(connectionId || "connection")}-${providerIntegrationTimestampSuffix(requestedAt)}`;
+}
+
+function providerIntegrationWorkbenchEvidenceId(connectionId: string, purpose: string, requestedAt: Date): string {
+  return `settings-provider-${purpose}-${providerIntegrationNormalizedId(connectionId || "connection")}-${providerIntegrationTimestampSuffix(requestedAt)}`;
+}
+
+function providerIntegrationTimestampSuffix(value: Date): string {
+  return value.toISOString().replace(/[^0-9A-Za-z]/g, "").toLowerCase();
+}
+
+function providerIntegrationNormalizedId(value: string): string {
+  return (value || "provider").replace(/[^0-9A-Za-z-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "provider";
+}
+
+function providerIntegrationSampleCsv(capability: ProviderIntegrationCapabilityKind): string {
+  if (capability === "Transactions") {
+    return "transactionId,accountId,amount,currency,postedAt\ntxn-1,acct-1,125.00,USD,2026-06-01";
+  }
+  return "positionId,accountId,symbol,quantity,asOfDate\npos-1,acct-1,MSFT,10,2026-06-01";
+}
 function createProviderOpenApiImportState(row: SettingsProviderConnectionRow): ProviderOpenApiImportState {
   const normalizedProvider = (row.providerId || row.integrationConnectionId || "provider")
     .replace(/[^0-9A-Za-z-]/g, "-")
