@@ -205,6 +205,9 @@ booleans as executable migration proof.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, operator-surface, and retained-evidence readiness so production accounting setup is
 blocked by shared contract state rather than workstation-local assumptions.
+`AccountingTenantAdministrationProfileDto` is the retained setup profile shape for the same controls,
+allowing shared endpoints, browser, and WPF to review or certify tenant administration posture
+without passing transient request-only booleans.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

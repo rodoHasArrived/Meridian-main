@@ -27,7 +27,10 @@ public sealed class AccountingProductionReadinessService
 
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var migrationRunArtifacts = await LoadMigrationRunArtifactsAsync(request, fundProfileId, ct).ConfigureAwait(false);
-        var effectiveRequest = request with { FundProfileId = fundProfileId, MigrationRunArtifacts = migrationRunArtifacts };
+        var tenantAdministrationProfile = await LoadTenantAdministrationProfileAsync(request, ct).ConfigureAwait(false);
+        var effectiveRequest = MergeTenantAdministrationProfile(
+            request with { FundProfileId = fundProfileId, MigrationRunArtifacts = migrationRunArtifacts },
+            tenantAdministrationProfile);
         var components = new List<AccountingProductionReadinessComponentDto>();
         var ledgerRollout = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         var rulesSummary = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
@@ -90,6 +93,48 @@ public sealed class AccountingProductionReadinessService
             .OrderByDescending(static item => item.StartedAtUtc)
             .ThenBy(static item => item.RunId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    private async Task<AccountingTenantAdministrationProfileDto?> LoadTenantAdministrationProfileAsync(
+        AccountingProductionReadinessRequestDto request,
+        CancellationToken ct)
+    {
+        var store = _services.GetService<IAccountingTenantAdministrationProfileStore>();
+        if (store is null)
+        {
+            return null;
+        }
+
+        return await store.GetAsync(request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+    }
+
+    private static AccountingProductionReadinessRequestDto MergeTenantAdministrationProfile(
+        AccountingProductionReadinessRequestDto request,
+        AccountingTenantAdministrationProfileDto? profile)
+    {
+        if (profile is null)
+        {
+            return request;
+        }
+
+        var evidence = request.TenantAdministrationEvidenceLinks
+            .Concat(profile.EvidenceReferences)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return request with
+        {
+            TenantId = profile.TenantId,
+            CompanyId = profile.CompanyId,
+            TenantScopeConfigured = profile.TenantScopeConfigured,
+            AdminRoleProfileConfigured = profile.AdminRoleProfileConfigured,
+            ScopedAccessPoliciesConfigured = profile.ScopedAccessPoliciesConfigured,
+            ReportingGroupsConfigured = profile.ReportingGroupsConfigured,
+            AccountingAdminSurfaceConfigured = profile.AccountingAdminSurfaceConfigured,
+            TenantAdministrationEvidenceLinks = evidence
+        };
     }
 
     private async Task<LedgerBookRolloutAssessmentDto?> BuildLedgerBookComponentAsync(

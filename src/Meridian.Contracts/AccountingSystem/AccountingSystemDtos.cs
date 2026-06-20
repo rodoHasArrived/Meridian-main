@@ -145,6 +145,33 @@ public sealed record AccountingMigrationRunArtifactUpsertRequestDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record AccountingTenantAdministrationProfileDto(
+    string TenantId,
+    string CompanyId,
+    bool TenantScopeConfigured,
+    bool AdminRoleProfileConfigured,
+    bool ScopedAccessPoliciesConfigured,
+    bool ReportingGroupsConfigured,
+    bool AccountingAdminSurfaceConfigured,
+    DateTimeOffset UpdatedAtUtc,
+    string UpdatedBy,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? CorrelationId = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+}
+
+public sealed record AccountingTenantAdministrationProfileUpsertRequestDto(
+    AccountingTenantAdministrationProfileDto Profile,
+    string Actor,
+    string? CorrelationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
 public sealed record AccountingProductionReadinessRequestDto(
     string? FundProfileId = null,
     Guid? LedgerBookId = null,

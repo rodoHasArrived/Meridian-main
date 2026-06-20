@@ -166,6 +166,48 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_LoadsRetainedTenantAdministrationProfileFromStore()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingTenantAdministrationProfileStore, InMemoryAccountingTenantAdministrationProfileStore>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<IAccountingTenantAdministrationProfileStore>();
+
+        await store.UpsertAsync(new AccountingTenantAdministrationProfileUpsertRequestDto(
+            new AccountingTenantAdministrationProfileDto(
+                "tenant-alpha",
+                "company-alpha",
+                TenantScopeConfigured: true,
+                AdminRoleProfileConfigured: true,
+                ScopedAccessPoliciesConfigured: true,
+                ReportingGroupsConfigured: true,
+                AccountingAdminSurfaceConfigured: true,
+                UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                UpdatedBy: "controller",
+                EvidenceReferences: ["evidence://tenant-admin/tenant-alpha/setup-certified"]),
+            "controller",
+            CorrelationId: "tenant-admin-tenant-alpha",
+            EvidenceLinks: ["approval:tenant-admin:tenant-alpha"]));
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha"));
+
+        readiness.TenantAdministration.Should().NotBeNull();
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(7);
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain("evidence://tenant-admin/tenant-alpha/setup-certified");
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain("approval:tenant-admin:tenant-alpha");
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain("correlation:tenant-admin-tenant-alpha");
+        readiness.Issues.Should().NotContain(issue => issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            component.Status == AccountingProductionReadinessStatusDto.Ready);
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_RequiresRetainedMigrationRunArtifactsForCertifiedControls()
     {
         var services = new ServiceCollection();
@@ -1763,6 +1805,56 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemTenantAdministrationProfileEndpoint_PersistsAndFeedsReadiness()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemTenantAdministrationProfile,
+            JsonContent(new AccountingTenantAdministrationProfileUpsertRequestDto(
+                new AccountingTenantAdministrationProfileDto(
+                    "company-alpha",
+                    "company-alpha",
+                    TenantScopeConfigured: true,
+                    AdminRoleProfileConfigured: true,
+                    ScopedAccessPoliciesConfigured: true,
+                    ReportingGroupsConfigured: true,
+                    AccountingAdminSurfaceConfigured: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/setup-certified"]),
+                "controller",
+                CorrelationId: "tenant-admin-company-alpha",
+                EvidenceLinks: ["approval:tenant-admin:company-alpha"])));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var upserted = await ReadAsync<AccountingTenantAdministrationProfileDto>(upsertResponse);
+        upserted.TenantId.Should().Be("company-alpha");
+        upserted.CompanyId.Should().Be("company-alpha");
+        upserted.EvidenceReferences.Should().Contain("approval:tenant-admin:company-alpha");
+
+        var getResponse = await client.GetAsync(UiApiRoutes.AccountingSystemTenantAdministrationProfile);
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var retained = await ReadAsync<AccountingTenantAdministrationProfileDto>(getResponse);
+        retained.EvidenceReferences.Should().Contain("correlation:tenant-admin-company-alpha");
+
+        var readinessResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionReadiness,
+            JsonContent(new AccountingProductionReadinessRequestDto(FundProfileId: "default-fund")));
+
+        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
+        readiness.TenantAdministration.Should().NotBeNull();
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(7);
+        readiness.Issues.Should().NotContain(issue => issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            component.Status == AccountingProductionReadinessStatusDto.Ready &&
+            component.EvidenceReferences.Contains("approval:tenant-admin:company-alpha"));
+    }
+
+    [Fact]
     public async Task AccountingSystemEndpoints_WithoutAccountingAccess_ReturnForbidden()
     {
         await using var app = await CreateAppAsync(UserPermission.ViewMarketData);
@@ -1960,6 +2052,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
         builder.Services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         builder.Services.AddSingleton<IAccountingMigrationRunArtifactStore, InMemoryAccountingMigrationRunArtifactStore>();
+        builder.Services.AddSingleton<IAccountingTenantAdministrationProfileStore, InMemoryAccountingTenantAdministrationProfileStore>();
         builder.Services.AddSingleton<AccountingProductionReadinessService>();
         builder.Services.AddRateLimiter(options =>
         {

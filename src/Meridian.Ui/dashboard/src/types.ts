@@ -5659,6 +5659,27 @@ export interface AccountingTenantAdministrationReadiness {
   hasRetainedEvidence: boolean;
 }
 
+export interface AccountingTenantAdministrationProfile {
+  tenantId: string;
+  companyId: string;
+  tenantScopeConfigured: boolean;
+  adminRoleProfileConfigured: boolean;
+  scopedAccessPoliciesConfigured: boolean;
+  reportingGroupsConfigured: boolean;
+  accountingAdminSurfaceConfigured: boolean;
+  updatedAtUtc: string;
+  updatedBy: string;
+  evidenceReferences: string[];
+  correlationId?: string | null;
+}
+
+export interface AccountingTenantAdministrationProfileUpsertRequest {
+  profile: AccountingTenantAdministrationProfile;
+  actor: string;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
+}
+
 export interface AccountingProductionReadiness {
   generatedAtUtc: string;
   fundProfileId: string;

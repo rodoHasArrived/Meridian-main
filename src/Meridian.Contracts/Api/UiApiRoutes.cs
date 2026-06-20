@@ -118,6 +118,7 @@ public static class UiApiRoutes
     public const string AccountingSystemExportPackageManifest = "/api/accounting-system/export-packages/{exportPackageId}/manifest";
     public const string AccountingSystemExportPackageCertification = "/api/accounting-system/export-packages/certification";
     public const string AccountingSystemMigrationRunArtifacts = "/api/accounting-system/migration-run-artifacts";
+    public const string AccountingSystemTenantAdministrationProfile = "/api/accounting-system/tenant-administration-profile";
     public const string AccountingSystemQuickBooksOAuthStart = "/api/accounting-system/quickbooks/oauth/start";
     public const string AccountingSystemQuickBooksOAuthCallback = "/api/accounting-system/quickbooks/oauth/callback";
 

@@ -332,7 +332,8 @@ export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
   exportPackages: UI_API_ROUTES.AccountingSystemExportPackages,
   exportPackageManifest: UI_API_ROUTES.AccountingSystemExportPackageManifest,
   exportPackageCertification: UI_API_ROUTES.AccountingSystemExportPackageCertification,
-  migrationRunArtifacts: UI_API_ROUTES.AccountingSystemMigrationRunArtifacts
+  migrationRunArtifacts: UI_API_ROUTES.AccountingSystemMigrationRunArtifacts,
+  tenantAdministrationProfile: UI_API_ROUTES.AccountingSystemTenantAdministrationProfile
 } as const;
 
 export const PLAID_API_ENDPOINTS = {

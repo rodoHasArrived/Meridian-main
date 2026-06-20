@@ -54,6 +54,66 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingProductionReadinessDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
+        group.MapGet(UiApiRoutes.AccountingSystemTenantAdministrationProfile, async (
+            string? tenantId,
+            string? companyId,
+            HttpContext context,
+            IAccountingTenantAdministrationProfileStore store) =>
+        {
+            if (!HasAccountingAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var resolvedTenantId = string.IsNullOrWhiteSpace(tenantId) ? tenantContext.TenantId : tenantId;
+            var resolvedCompanyId = string.IsNullOrWhiteSpace(companyId) ? tenantContext.CompanyId : companyId;
+            var result = await store.GetAsync(resolvedTenantId, resolvedCompanyId, context.RequestAborted).ConfigureAwait(false);
+            return result is null
+                ? Results.NotFound(new { error = "Accounting tenant administration profile was not found." })
+                : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetAccountingTenantAdministrationProfile")
+        .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPost(UiApiRoutes.AccountingSystemTenantAdministrationProfile, async (
+            AccountingTenantAdministrationProfileUpsertRequestDto request,
+            HttpContext context,
+            IAccountingTenantAdministrationProfileStore store) =>
+        {
+            if (!HasAccountingCertificationAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var trustedProfile = request.Profile with
+            {
+                TenantId = string.IsNullOrWhiteSpace(request.Profile.TenantId) ? tenantContext.TenantId ?? string.Empty : request.Profile.TenantId,
+                CompanyId = string.IsNullOrWhiteSpace(request.Profile.CompanyId) ? tenantContext.CompanyId ?? string.Empty : request.Profile.CompanyId
+            };
+            var trustedRequest = request with { Profile = trustedProfile };
+            try
+            {
+                var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("UpsertAccountingTenantAdministrationProfile")
+        .Produces<AccountingTenantAdministrationProfileDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         group.MapGet(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
             string? fundProfileId,
             Guid? ledgerBookId,

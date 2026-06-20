@@ -173,6 +173,10 @@ public static class WorkstationServiceCollectionExtensions
             new FileAccountingMigrationRunArtifactStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "migration-run-artifacts.json"),
                 sp.GetRequiredService<ILogger<FileAccountingMigrationRunArtifactStore>>()));
+        services.TryAddSingleton<IAccountingTenantAdministrationProfileStore>(sp =>
+            new FileAccountingTenantAdministrationProfileStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "tenant-administration-profiles.json"),
+                sp.GetRequiredService<ILogger<FileAccountingTenantAdministrationProfileStore>>()));
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>

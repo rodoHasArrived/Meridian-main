@@ -3611,6 +3611,21 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
     openPeriodCount: 1
   },
   rulesStudioSummary: fixtureAccountingConfiguration.rulesStudio?.summary ?? null,
+  tenantAdministration: {
+    tenantId: "fixture-tenant",
+    companyId: "fixture-company",
+    tenantScopeConfigured: true,
+    adminRoleProfileConfigured: true,
+    scopedAccessPoliciesConfigured: true,
+    reportingGroupsConfigured: false,
+    accountingAdminSurfaceConfigured: false,
+    evidenceReferences: ["fixture:tenant-admin:gap"],
+    completedControlCount: 5,
+    requiredControlCount: 7,
+    hasTenantScope: true,
+    hasCompanyScope: true,
+    hasRetainedEvidence: true
+  },
   components: [
     {
       area: "LedgerBooks",
@@ -6086,6 +6101,19 @@ const fixtures = {
     fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
     ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId,
     artifacts: fixtureAccountingProductionReadiness.migrationRunArtifacts ?? []
+  },
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile]: {
+    tenantId: "fixture-tenant",
+    companyId: "fixture-company",
+    tenantScopeConfigured: true,
+    adminRoleProfileConfigured: true,
+    scopedAccessPoliciesConfigured: true,
+    reportingGroupsConfigured: false,
+    accountingAdminSurfaceConfigured: false,
+    updatedAtUtc: "2026-02-01T00:15:00Z",
+    updatedBy: "fixture-controller",
+    evidenceReferences: ["fixture:tenant-admin:gap"],
+    correlationId: "fixture-tenant-admin"
   },
   "/api/workstation/runs/run-42/ledger/trial-balance": fixtureLedgerTrialBalance,
   "/api/workstation/governance": fixtureAccountingWorkspace,

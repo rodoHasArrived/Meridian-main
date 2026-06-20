@@ -6,6 +6,8 @@ import type {
   AccountingMigrationRunArtifactList,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
+  AccountingTenantAdministrationProfile,
+  AccountingTenantAdministrationProfileUpsertRequest,
   AccountingSystemExportPackageRequest,
   AccountingSystemImportDetail,
   AccountingSystemImportRequest,
@@ -2000,6 +2002,33 @@ export function getAccountingMigrationRunArtifacts(
   const suffix = params.toString();
   const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts;
   return getJson<AccountingMigrationRunArtifactList>(route, options);
+}
+
+export function getAccountingTenantAdministrationProfile(
+  query: { tenantId?: string | null; companyId?: string | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.companyId) {
+    params.set("companyId", query.companyId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix
+    ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile}?${suffix}`
+    : ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile;
+  return getJson<AccountingTenantAdministrationProfile>(route, options);
+}
+
+export function upsertAccountingTenantAdministrationProfile(
+  request: AccountingTenantAdministrationProfileUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingTenantAdministrationProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile, request, options);
 }
 
 export function previewAccountingSystemImport(
