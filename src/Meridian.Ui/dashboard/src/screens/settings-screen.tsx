@@ -4027,7 +4027,7 @@ export function SettingsScreen({
               </fieldset>
             </div>
             {alpacaForm.liveAcknowledgement.visible ? (
-              <PanelSurface tone="danger" className={cn("px-3 py-3", alpacaForm.liveAcknowledgement.disabled && "opacity-60")}>
+              <PanelSurface tone="danger" className={cn("px-3 py-3 text-danger", alpacaForm.liveAcknowledgement.disabled && "opacity-60")}>
                 <Checkbox
                   id={alpacaForm.liveAcknowledgement.id}
                   checked={alpacaForm.liveAcknowledgement.checked}
@@ -5208,7 +5208,7 @@ function ProviderInlineActionPanel({
             </Select>
           </label>
           {state.environment === "live" ? (
-            <PanelSurface tone="danger" className="px-2 py-2">
+            <PanelSurface tone="danger" className="px-2 py-2 text-danger">
               <Checkbox
                 checked={state.liveAcknowledged}
                 onCheckedChange={onLiveAcknowledgementChange}

@@ -26,7 +26,14 @@ describe("design-system UI primitives", () => {
   it("maps semantic panel tones to shared token classes", () => {
     render(<PanelSurface tone="success" aria-label="Verified provider">Provider ready</PanelSurface>);
 
-    expect(screen.getByLabelText("Verified provider")).toHaveClass("border-success/35", "bg-success/10");
+    expect(screen.getByLabelText("Verified provider")).toHaveClass("border-success/30", "bg-success/10");
+  });
+
+  it("does not apply raised background over non-default semantic tones", () => {
+    render(<PanelSurface tone="danger" raised aria-label="Live provider acknowledgement">Live provider acknowledgement</PanelSurface>);
+
+    expect(screen.getByLabelText("Live provider acknowledgement")).toHaveClass("border-danger/35", "bg-danger/10");
+    expect(screen.getByLabelText("Live provider acknowledgement")).not.toHaveClass("bg-muted/35");
   });
 
   it("toggles checkbox and switch primitives", async () => {

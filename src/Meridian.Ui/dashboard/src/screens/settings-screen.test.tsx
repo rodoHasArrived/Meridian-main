@@ -2029,7 +2029,7 @@ describe("SettingsScreen", () => {
     const submit = screen.getByRole("button", { name: /connect and test/i });
     const liveAcknowledgement = screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" });
     expect(liveAcknowledgement).not.toBeChecked();
-    expect(liveAcknowledgement.closest("[class*='border-danger/35']")).toBeInTheDocument();
+    expect(liveAcknowledgement.closest("[class*='border-danger/35']")).toHaveClass("text-danger");
     expect(screen.getByText("Live endpoint review required")).toBeInTheDocument();
     expect(submit).toBeDisabled();
     expect(submit).toHaveAttribute(
@@ -2041,6 +2041,26 @@ describe("SettingsScreen", () => {
 
     expect(submit).toBeEnabled();
     expect(screen.getByText("Credentials ready for test")).toBeInTheDocument();
+  });
+
+  it("keeps live provider routing acknowledgement text emphasized as danger", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit Alpaca credentials" }));
+    fireEvent.change(screen.getByLabelText("Alpaca environment"), { target: { value: "live" } });
+
+    const liveRoutingAcknowledgement = screen.getByRole("checkbox", {
+      name: "I understand this save updates live provider routing credentials."
+    });
+
+    expect(liveRoutingAcknowledgement.closest("[class*='border-danger/35']")).toHaveClass("text-danger");
   });
 
   it("explains disabled Alpaca form controls while a credential request is running", async () => {
