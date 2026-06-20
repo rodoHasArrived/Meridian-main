@@ -5575,7 +5575,15 @@ export interface AccountingProductionReadinessRequest {
   ledgerBookId?: string | null;
   accountingBasis?: AccountingBasisKind | null;
   providerId?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
   requiredLedgerBookScopes?: LedgerBookRequiredScope[] | null;
+  tenantScopeConfigured?: boolean;
+  adminRoleProfileConfigured?: boolean;
+  scopedAccessPoliciesConfigured?: boolean;
+  reportingGroupsConfigured?: boolean;
+  accountingAdminSurfaceConfigured?: boolean;
+  tenantAdministrationEvidenceLinks?: string[] | null;
   ledgerBookMigrationCertified?: boolean;
   historicalJournalBackfillCertified?: boolean;
   dimensionalBackfillCertified?: boolean;
@@ -5635,6 +5643,22 @@ export interface AccountingProductionReadinessComponent {
   route?: string | null;
 }
 
+export interface AccountingTenantAdministrationReadiness {
+  tenantId?: string | null;
+  companyId?: string | null;
+  tenantScopeConfigured: boolean;
+  adminRoleProfileConfigured: boolean;
+  scopedAccessPoliciesConfigured: boolean;
+  reportingGroupsConfigured: boolean;
+  accountingAdminSurfaceConfigured: boolean;
+  evidenceReferences: string[];
+  completedControlCount: number;
+  requiredControlCount: number;
+  hasTenantScope: boolean;
+  hasCompanyScope: boolean;
+  hasRetainedEvidence: boolean;
+}
+
 export interface AccountingProductionReadiness {
   generatedAtUtc: string;
   fundProfileId: string;
@@ -5649,6 +5673,7 @@ export interface AccountingProductionReadiness {
   certifiedExternalGlMappingProfileCount: number;
   externalGlLivePostingEnabled: boolean;
   migrationRunArtifacts?: AccountingMigrationRunArtifact[];
+  tenantAdministration?: AccountingTenantAdministrationReadiness | null;
   criticalIssueCount: number;
   warningIssueCount: number;
 }

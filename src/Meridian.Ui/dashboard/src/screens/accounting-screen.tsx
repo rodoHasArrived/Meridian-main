@@ -6607,7 +6607,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             </div>
           ) : null}
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Readiness</div>
               <div className={cn("mt-2 text-sm font-semibold", view.productionReadiness.blockerIssues.some((issue) => issue.tone === "danger") ? "text-danger" : view.productionReadiness.blockerIssues.length > 0 ? "text-warning" : "text-success")}>{view.productionReadiness.issueSummaryLabel}</div>
@@ -6629,11 +6629,29 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               <p className="mt-1 text-xs text-muted-foreground">Rules, posting, JE lifecycle, dimensions, close, and admin readiness.</p>
             </div>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Tenant admin</div>
+              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.tenantAdministrationLabel}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{view.productionReadiness.tenantAdministrationEvidenceLabel}</p>
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Migration evidence</div>
               <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.migrationArtifactSummaryLabel}</div>
               <p className="mt-1 text-xs text-muted-foreground">Retained migration run artifacts from the shared Accounting System store.</p>
             </div>
           </div>
+
+          {view.productionReadiness.tenantAdministrationControls.length > 0 ? (
+            <div className="grid gap-2 md:grid-cols-4" role="region" aria-label="Accounting tenant administration readiness controls">
+              {view.productionReadiness.tenantAdministrationControls.map((control) => (
+                <div key={control.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(control.tone))}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold text-foreground">{control.label}</span>
+                    <Badge variant={accountingToolingBadgeVariant(control.tone)}>{control.statusLabel}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           {view.productionReadiness.migrationArtifactRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Retained accounting migration run artifacts">

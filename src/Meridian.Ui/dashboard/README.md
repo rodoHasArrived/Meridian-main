@@ -219,7 +219,9 @@ posture for ledger books, Rules Studio, posting rules, JE lifecycle, dimensions,
 close/reporting, migration rollout, and tenant administration. The panel displays returned blockers, suggested
 actions, evidence counts, retained migration run artifact posture, certified external-GL mapping
 coverage, and the disabled live-posting stance without deriving production-readiness policy in
-React. It also lists retained migration run artifacts from
+React. Tenant administration uses the shared `AccountingTenantAdministrationReadinessDto` to render
+tenant, company, admin-role, scoped-access, reporting-group, operator-surface, and retained-evidence
+controls instead of treating setup readiness as a generic component row. It also lists retained migration run artifacts from
 `/api/accounting-system/migration-run-artifacts`, including run kind, certification status,
 fund/book scope, migrated-record and issue counts, and evidence reference counts, so operators can
 inspect migration proof retained in the shared Accounting System store rather than re-entering

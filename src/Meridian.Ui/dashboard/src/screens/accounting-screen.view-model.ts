@@ -368,6 +368,13 @@ export interface AccountingMigrationRunArtifactViewModel {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+export interface AccountingTenantAdministrationControlViewModel {
+  id: string;
+  label: string;
+  statusLabel: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
 export interface AccountingProductionReadinessViewModel {
   title: string;
   statusLabel: string;
@@ -377,6 +384,9 @@ export interface AccountingProductionReadinessViewModel {
   issueSummaryLabel: string;
   externalGlLabel: string;
   ledgerBookRolloutLabel: string;
+  tenantAdministrationLabel: string;
+  tenantAdministrationEvidenceLabel: string;
+  tenantAdministrationControls: AccountingTenantAdministrationControlViewModel[];
   migrationArtifactSummaryLabel: string;
   migrationArtifactRows: AccountingMigrationRunArtifactViewModel[];
   components: AccountingProductionReadinessComponentViewModel[];
@@ -4724,6 +4734,9 @@ function buildAccountingProductionReadinessViewModel(
       issueSummaryLabel: error?.summary ?? "Load accounting configuration to assess rollout readiness.",
       externalGlLabel: "External GL posture unavailable",
       ledgerBookRolloutLabel: "Ledger-book rollout unavailable",
+      tenantAdministrationLabel: "Tenant administration unavailable",
+      tenantAdministrationEvidenceLabel: "No tenant setup evidence loaded",
+      tenantAdministrationControls: [],
       migrationArtifactSummaryLabel: artifactRows.length > 0
         ? `${artifactRows.length} retained migration run artifact${artifactRows.length === 1 ? "" : "s"} loaded`
         : "No retained migration run artifacts loaded",
@@ -4755,6 +4768,14 @@ function buildAccountingProductionReadinessViewModel(
   const migrationArtifactRows = buildAccountingMigrationRunArtifactRows(retainedArtifacts);
   const certifiedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Certified").length;
   const failedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Failed").length;
+  const tenantAdministration = readiness.tenantAdministration ?? null;
+  const tenantAdministrationControls = buildAccountingTenantAdministrationControls(tenantAdministration);
+  const tenantAdministrationLabel = tenantAdministration
+    ? `${tenantAdministration.completedControlCount}/${tenantAdministration.requiredControlCount} admin controls | tenant ${tenantAdministration.tenantId?.trim() || "missing"} | company ${tenantAdministration.companyId?.trim() || "missing"}`
+    : "Tenant administration evidence unavailable";
+  const tenantAdministrationEvidenceLabel = tenantAdministration
+    ? `${tenantAdministration.evidenceReferences.length} retained setup evidence reference${tenantAdministration.evidenceReferences.length === 1 ? "" : "s"}`
+    : "No tenant setup evidence loaded";
 
   return {
     title: "Accounting production readiness",
@@ -4773,6 +4794,9 @@ function buildAccountingProductionReadinessViewModel(
     ledgerBookRolloutLabel: readiness.ledgerBookRollout
       ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"}`
       : "Ledger-book rollout evidence unavailable",
+    tenantAdministrationLabel,
+    tenantAdministrationEvidenceLabel,
+    tenantAdministrationControls,
     migrationArtifactSummaryLabel: retainedArtifacts.length > 0
       ? `${certifiedArtifactCount}/${retainedArtifacts.length} retained artifact${retainedArtifacts.length === 1 ? "" : "s"} certified${failedArtifactCount > 0 ? ` | ${failedArtifactCount} failed` : ""}`
       : "No retained migration run artifacts loaded",
@@ -4793,6 +4817,32 @@ function buildAccountingProductionReadinessViewModel(
     errorText: error?.summary ?? null,
     errorDetails: error?.details ?? []
   };
+}
+
+function buildAccountingTenantAdministrationControls(
+  tenantAdministration: AccountingProductionReadiness["tenantAdministration"] | null | undefined
+): AccountingTenantAdministrationControlViewModel[] {
+  if (!tenantAdministration) {
+    return [];
+  }
+
+  const controls: Array<[string, string, boolean]> = [
+    ["tenant-scope", "Tenant scope", tenantAdministration.hasTenantScope],
+    ["company-scope", "Company scope", tenantAdministration.hasCompanyScope],
+    ["tenant-config", "Tenant config", tenantAdministration.tenantScopeConfigured],
+    ["admin-roles", "Admin roles", tenantAdministration.adminRoleProfileConfigured],
+    ["scoped-access", "Scoped access", tenantAdministration.scopedAccessPoliciesConfigured],
+    ["reporting-groups", "Reporting groups", tenantAdministration.reportingGroupsConfigured],
+    ["operator-surface", "Operator surface", tenantAdministration.accountingAdminSurfaceConfigured],
+    ["retained-evidence", "Setup evidence", tenantAdministration.hasRetainedEvidence]
+  ];
+
+  return controls.map(([id, label, complete]) => ({
+    id,
+    label,
+    statusLabel: complete ? "Ready" : "Missing",
+    tone: complete ? "success" : "danger"
+  }));
 }
 
 function buildAccountingMigrationRunArtifactRows(artifacts: AccountingMigrationRunArtifact[]): AccountingMigrationRunArtifactViewModel[] {

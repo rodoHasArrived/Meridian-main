@@ -2740,6 +2740,21 @@ describe("accounting-screen view model", () => {
         openPeriodCount: 1
       },
       rulesStudioSummary: workspace.rulesStudio.summary,
+      tenantAdministration: {
+        tenantId: "tenant-alpha",
+        companyId: "company-alpha",
+        tenantScopeConfigured: true,
+        adminRoleProfileConfigured: true,
+        scopedAccessPoliciesConfigured: true,
+        reportingGroupsConfigured: false,
+        accountingAdminSurfaceConfigured: false,
+        evidenceReferences: ["evidence://tenant-admin/gap"],
+        completedControlCount: 5,
+        requiredControlCount: 7,
+        hasTenantScope: true,
+        hasCompanyScope: true,
+        hasRetainedEvidence: true
+      },
       components: [
         {
           area: "RulesStudio",
@@ -2947,8 +2962,15 @@ describe("accounting-screen view model", () => {
       scoreLabel: "78/100",
       issueSummaryLabel: "1 warning requires review",
       externalGlLabel: "3 providers | 1 certified mapping | live posting disabled",
-      ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers"
+      ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers",
+      tenantAdministrationLabel: "5/7 admin controls | tenant tenant-alpha | company company-alpha",
+      tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
     });
+    expect(result.current.productionReadiness.tenantAdministrationControls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "tenant-scope", statusLabel: "Ready", tone: "success" }),
+      expect.objectContaining({ id: "reporting-groups", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "operator-surface", statusLabel: "Missing", tone: "danger" })
+    ]));
     expect(result.current.productionReadiness.components).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "RulesStudio",

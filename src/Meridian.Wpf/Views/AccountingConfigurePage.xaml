@@ -198,6 +198,7 @@
                                             <TextBlock Text="Rollout" Style="{StaticResource MetricLabelStyle}" />
                                             <TextBlock Text="{Binding ProductionReadinessLedgerBookText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding ProductionReadinessExternalGlText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ProductionReadinessTenantAdminText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" AutomationProperties.AutomationId="AccountingProductionReadinessTenantAdminText" />
                                         </StackPanel>
                                     </UniformGrid>
                                     <DataGrid ItemsSource="{Binding ProductionReadinessComponentRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,0,0,12" AutomationProperties.AutomationId="AccountingProductionReadinessComponentGrid">

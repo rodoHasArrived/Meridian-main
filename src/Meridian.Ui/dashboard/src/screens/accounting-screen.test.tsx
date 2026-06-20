@@ -1893,6 +1893,21 @@ describe("AccountingScreen", () => {
         openPeriodCount: 1
       },
       rulesStudioSummary: workspace.rulesStudio?.summary ?? null,
+      tenantAdministration: {
+        tenantId: "tenant-alpha",
+        companyId: "company-alpha",
+        tenantScopeConfigured: true,
+        adminRoleProfileConfigured: true,
+        scopedAccessPoliciesConfigured: true,
+        reportingGroupsConfigured: false,
+        accountingAdminSurfaceConfigured: false,
+        evidenceReferences: ["evidence://tenant-admin/gap"],
+        completedControlCount: 5,
+        requiredControlCount: 7,
+        hasTenantScope: true,
+        hasCompanyScope: true,
+        hasRetainedEvidence: true
+      },
       components: [
         {
           area: "RulesStudio",
@@ -1974,6 +1989,11 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Accounting production readiness")).toBeInTheDocument();
     expect(screen.getByText("78/100")).toBeInTheDocument();
     expect(screen.getByText("Tenant administration")).toBeInTheDocument();
+    expect(screen.getByText("5/7 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
+    expect(screen.getByText("1 retained setup evidence reference")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
+    expect(screen.getByText("Reporting groups")).toBeInTheDocument();
+    expect(screen.getByText("Operator surface")).toBeInTheDocument();
     expect(screen.getByText("1/1 retained artifact certified")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Retained accounting migration run artifacts" })).toBeInTheDocument();
     expect(screen.getByText("Dimensional backfill")).toBeInTheDocument();

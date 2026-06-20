@@ -187,6 +187,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _productionReadinessScoreText = "No score";
     private string _productionReadinessLedgerBookText = "Ledger-book rollout readiness has not loaded.";
     private string _productionReadinessExternalGlText = "External GL readiness has not loaded.";
+    private string _productionReadinessTenantAdminText = "Tenant administration readiness has not loaded.";
     private string _selectedReconciliationView = "Open breaks";
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
     private string _draftMemo = "Manual accounting adjustment";
@@ -487,6 +488,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _productionReadinessExternalGlText;
         private set => SetProperty(ref _productionReadinessExternalGlText, value);
+    }
+
+    public string ProductionReadinessTenantAdminText
+    {
+        get => _productionReadinessTenantAdminText;
+        private set => SetProperty(ref _productionReadinessTenantAdminText, value);
     }
 
     public string SelectedReconciliationView
@@ -1349,6 +1356,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProductionReadinessScoreText = "No score";
         ProductionReadinessLedgerBookText = "Locked until a fund context is selected.";
         ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
+        ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
         BatchReconciliationActionText = "No reconciliation rows are loaded.";
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
@@ -1505,6 +1513,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessScoreText = "No score";
             ProductionReadinessLedgerBookText = "Locked until a fund context is selected.";
             ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
+            ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessIssueRows.Clear();
             return;
@@ -1517,6 +1526,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessScoreText = "No score";
             ProductionReadinessLedgerBookText = "Ledger-book readiness cannot be assessed.";
             ProductionReadinessExternalGlText = "External GL readiness cannot be assessed.";
+            ProductionReadinessTenantAdminText = "Tenant administration readiness cannot be assessed.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
             [
@@ -1542,6 +1552,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessScoreText = "No score";
             ProductionReadinessLedgerBookText = "Ledger-book readiness could not be assessed.";
             ProductionReadinessExternalGlText = "External GL readiness could not be assessed.";
+            ProductionReadinessTenantAdminText = "Tenant administration readiness could not be assessed.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
             [
@@ -1588,6 +1599,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s).";
         ProductionReadinessExternalGlText =
             $"{readiness.ExternalGlProviderCount} provider(s), {readiness.CertifiedExternalGlMappingProfileCount} certified mapping profile(s); live posting {(readiness.ExternalGlLivePostingEnabled ? "available" : "disabled")}.";
+        ProductionReadinessTenantAdminText = readiness.TenantAdministration is null
+            ? "Tenant administration readiness is unavailable."
+            : $"{readiness.TenantAdministration.CompletedControlCount}/{readiness.TenantAdministration.RequiredControlCount} tenant admin control(s); tenant {FormatReadinessScope(readiness.TenantAdministration.TenantId)}; company {FormatReadinessScope(readiness.TenantAdministration.CompanyId)}; {readiness.TenantAdministration.EvidenceReferences.Count} retained evidence link(s).";
 
         ProductionReadinessComponentRows.ReplaceWith(readiness.Components.Select(component =>
             new AccountingWorkbenchRow(
@@ -1611,6 +1625,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     ? string.Join("; ", issue.EvidenceReferences)
                     : issue.Area.ToString())));
     }
+
+    private static string FormatReadinessScope(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "missing" : value.Trim();
 
     private PostingRuleDto? ResolvePostingCandidateRule(AccountingConfigurationWorkspaceDto workspace)
     {
