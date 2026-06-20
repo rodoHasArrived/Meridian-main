@@ -6,6 +6,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
@@ -38,6 +39,163 @@ public sealed partial class WorkstationEndpointsTests
         using var response = await client.GetAsync(UiApiRoutes.LedgerAccountingConfiguration);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task AccountingConfigurationPostingRulePromotionApproval_RequiresAdminMaintenance()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.ManageDirectLending);
+        var client = app.GetTestClient();
+
+        using var cashResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
+                "browser-user"),
+            ServerJsonOptions);
+        using var incomeResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("income", "Income:Interest", "Interest Income", "Revenue"),
+                "browser-user"),
+            ServerJsonOptions);
+        using var ruleResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRules,
+            new UpsertPostingRuleRequest(
+                "fund-alpha",
+                new PostingRuleDto(
+                    "rule-direct-lending-staged",
+                    "Direct-lending staged interest rule",
+                    "InterestAccrual",
+                    "",
+                    RuleVersion: "v3",
+                    EffectiveFrom: new DateOnly(2027, 1, 1),
+                    Priority: 10,
+                    Scope: new LedgerDimensionSetDto(FundId: "fund-alpha"),
+                    Formulas:
+                    [
+                        new AccountingRuleFormulaDto("source", AccountingRuleFormulaKindDto.SourceAmount, 0m)
+                    ],
+                    GeneratedPostings:
+                    [
+                        new GeneratedPostingLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, "source", 0m),
+                        new GeneratedPostingLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source", 0m)
+                    ]),
+                "browser-user"),
+            ServerJsonOptions);
+        using var saveTestResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleTestCases,
+            new UpsertAccountingRuleTestCaseRequest(
+                FundProfileId: "fund-alpha",
+                TestCase: new AccountingRuleTestCaseDto(
+                    "direct-lending-staged-regression",
+                    "Direct-lending staged regression",
+                    new RuleDryRunRequestDto(
+                        "fund-alpha",
+                        "InterestAccrual",
+                        175m,
+                        "USD",
+                        new DateOnly(2027, 2, 28),
+                        "browser-user",
+                        Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha")),
+                    ExpectedRuleId: "rule-direct-lending-staged",
+                    ExpectedRuleVersion: "v3"),
+                Actor: "browser-user",
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/direct-lending-staged-regression-rule-direct-lending-staged-v3"]),
+            ServerJsonOptions);
+        using var runTestsResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests,
+            new ExecuteAccountingRuleTestCasesRequestDto(
+                FundProfileId: "fund-alpha",
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        using var approvalResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRulePromotionApprovals,
+            new ApprovePostingRulePromotionRequest(
+                FundProfileId: "fund-alpha",
+                RuleId: "rule-direct-lending-staged",
+                RuleVersion: "v3",
+                Actor: "browser-user",
+                ApprovalId: "approval-rule-direct-lending-staged-v3",
+                Notes: "Direct-lending operator attempted to approve a staged posting rule.",
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-direct-lending-staged-review-v3"]),
+            ServerJsonOptions);
+
+        cashResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        incomeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        ruleResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        saveTestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        runTestsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var testSuite = await runTestsResponse.Content.ReadFromJsonAsync<AccountingRuleTestSuiteResultDto>(ServerJsonOptions);
+        testSuite!.PassedCount.Should().Be(1);
+        approvalResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task AccountingConfigurationActivation_RequiresAdminMaintenance()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.ManageDirectLending);
+        var client = app.GetTestClient();
+
+        using var cashResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
+                "browser-user"),
+            ServerJsonOptions);
+        using var incomeResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("income", "Income:Interest", "Interest Income", "Revenue"),
+                "browser-user"),
+            ServerJsonOptions);
+        using var templateResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationTemplates,
+            new UpsertJournalEntryTemplateRequest(
+                FundProfileId: "fund-alpha",
+                Template: new JournalEntryTemplateDto(
+                    TemplateId: "template-interest-accrual",
+                    DisplayName: "Interest accrual",
+                    Description: "Recognize daily accrued interest.",
+                    Lines:
+                    [
+                        new JournalEntryTemplateLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 100m),
+                        new JournalEntryTemplateLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, 100m)
+                    ]),
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        using var ruleResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRules,
+            new UpsertPostingRuleRequest(
+                "fund-alpha",
+                new PostingRuleDto(
+                    "rule-interest-accrual",
+                    "Daily interest accrual",
+                    "InterestAccrual",
+                    "template-interest-accrual"),
+                "browser-user"),
+            ServerJsonOptions);
+        using var activationResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationActivate,
+            new ActivateAccountingConfigurationRequest(
+                FundProfileId: "fund-alpha",
+                Actor: "browser-user",
+                EvidenceLinks: ["evidence://accounting/configuration/activation-approval"]),
+            ServerJsonOptions);
+
+        cashResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        incomeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        templateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        ruleResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        activationResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -257,7 +415,15 @@ public sealed partial class WorkstationEndpointsTests
         var reportOutput = await reportOutputResponse.Content.ReadFromJsonAsync<PrivateCapitalReportOutputDto>(ServerJsonOptions);
         submitted!.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
         submitted.ApprovalId.Should().NotBeNullOrWhiteSpace();
+        submitted.LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.Submit &&
+            transition.ToStatus == ManualJournalEntryStatusDto.Submitted &&
+            transition.CorrelationId == "manual-je-submit");
         workbench!.Drafts.Should().ContainSingle(item => item.JournalEntryId == submitted.JournalEntryId);
+        workbench.Drafts.Single(item => item.JournalEntryId == submitted.JournalEntryId).LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.Submit &&
+            transition.ToStatus == ManualJournalEntryStatusDto.Submitted &&
+            transition.CorrelationId == "manual-je-submit");
         workbench.AuditTrail.Select(item => item.Action).Should().Contain("manual-je.submit-approval");
         workbench.PrivateCapitalActivity.Should().NotBeNull();
         workbench.PrivateCapitalActivity!.FundEvents.Should().ContainSingle(item =>
@@ -738,12 +904,182 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task AccountingRulesAndLifecycleEndpoints_DryRunApprovePostAndReverseDraft()
+    public async Task ManualJournalEntryLifecycleEndpoint_RequiresAdminMaintenanceForReleaseTransitions()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.ManageDirectLending);
+        var client = app.GetTestClient();
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
+                "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("capital", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+                "browser-user"),
+            ServerJsonOptions);
+        var submitted = await SaveAndSubmitManualJournalDraftAsync(client, ManualJournalEntryDraft(), "non-admin-lifecycle");
+
+        using var validateResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                submitted.JournalEntryId,
+                submitted.FundProfileId,
+                JournalEntryLifecycleActionDto.Validate,
+                "browser-user",
+                submitted.Version,
+                Notes: "Validate submitted journal before release."),
+            ServerJsonOptions);
+        using var approveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                submitted.JournalEntryId,
+                submitted.FundProfileId,
+                JournalEntryLifecycleActionDto.Approve,
+                "browser-user",
+                submitted.Version,
+                Notes: "Non-admin operator attempted to approve a submitted journal."),
+            ServerJsonOptions);
+
+        validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var validated = await validateResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
+        validated!.Transition.Action.Should().Be(JournalEntryLifecycleActionDto.Validate);
+        validated.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
+    }
+
+    [Fact]
+    public async Task ManualJournalEntryWorkbenchEndpoints_SaveAndSubmitRetainsFullDimensionalAccounting()
     {
         await using var app = await CreateAppAsync(
             RegisterAccountingConfigurationServices,
             currentUserPermissions: UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
+                "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("capital", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+                "browser-user"),
+            ServerJsonOptions);
+
+        var instrumentId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-income",
+            StrategyId: "strategy-direct-lending",
+            InvestorId: "investor:lp-1",
+            CapitalAccountId: "capital-account:fund-alpha:lp-1",
+            InstrumentId: instrumentId,
+            TaxLotId: "tax-lot-2026-06",
+            CostCenterId: "cost-center-accounting",
+            CounterpartyId: "counterparty-bank",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Class"] = "FundAlpha",
+                ["Department"] = "Accounting"
+            });
+        var draft = ManualJournalEntryDraft() with
+        {
+            Dimensions = dimensions,
+            Lines =
+            [
+                new ManualJournalEntryLineDto(
+                    "debit-cash",
+                    AccountingTemplateLineSideDto.Debit,
+                    100m,
+                    "USD",
+                    "Assets:Cash",
+                    EntityId: "entity-master",
+                    SecurityId: instrumentId,
+                    TaxLotId: "tax-lot-2026-06",
+                    Dimensions: dimensions),
+                new ManualJournalEntryLineDto(
+                    "credit-capital",
+                    AccountingTemplateLineSideDto.Credit,
+                    100m,
+                    "USD",
+                    "Equity:Capital Contributions",
+                    EntityId: "entity-master",
+                    SecurityId: instrumentId,
+                    TaxLotId: "tax-lot-2026-06",
+                    Dimensions: dimensions)
+            ]
+        };
+
+        var submitted = await SaveAndSubmitManualJournalDraftAsync(client, draft, "full-dimensions");
+        using var workbenchResponse = await client.GetAsync($"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId=fund-alpha");
+
+        workbenchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var workbench = await workbenchResponse.Content.ReadFromJsonAsync<ManualJournalEntryWorkbenchDto>(ServerJsonOptions);
+        var retained = workbench!.Drafts.Should().ContainSingle(item => item.JournalEntryId == submitted.JournalEntryId).Subject;
+        submitted.Dimensions.Should().BeEquivalentTo(dimensions);
+        foreach (var line in submitted.Lines)
+        {
+            line.Dimensions.Should().NotBeNull();
+        }
+
+        retained.Dimensions.Should().BeEquivalentTo(dimensions);
+        foreach (var line in retained.Lines)
+        {
+            var lineDimensions = line.Dimensions;
+            lineDimensions.Should().NotBeNull();
+            lineDimensions!.FundId.Should().Be("fund-alpha");
+            lineDimensions.EntityId.Should().Be("entity-master");
+            lineDimensions.SleeveId.Should().Be("sleeve-income");
+            lineDimensions.StrategyId.Should().Be("strategy-direct-lending");
+            lineDimensions.InvestorId.Should().Be("investor:lp-1");
+            lineDimensions.CapitalAccountId.Should().Be("capital-account:fund-alpha:lp-1");
+            lineDimensions.InstrumentId.Should().Be(instrumentId);
+            lineDimensions.TaxLotId.Should().Be("tax-lot-2026-06");
+            lineDimensions.CostCenterId.Should().Be("cost-center-accounting");
+            lineDimensions.CounterpartyId.Should().Be("counterparty-bank");
+            lineDimensions.ExternalGlDimensions.Should().ContainKey("Class").WhoseValue.Should().Be("FundAlpha");
+            lineDimensions.ExternalGlDimensions.Should().ContainKey("Department").WhoseValue.Should().Be("Accounting");
+        }
+    }
+
+    [Fact]
+    public async Task AccountingRulesAndLifecycleEndpoints_DryRunApprovePostAndReverseDraft()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        await app.Services.GetRequiredService<IAccountingPolicyService>().CreatePolicyAsync(new CreateAccountingPolicyRequest(
+            AccountingBasisKindDto.Gaap,
+            PolicyId: "gaap-interest-v1",
+            Version: "v1",
+            DisplayName: "GAAP interest accrual",
+            EffectiveFrom: new DateOnly(2026, 1, 1),
+            RulePack: new AccountingPolicyRulePackDto(
+                "gaap-interest-rules",
+                "v1",
+                [
+                    new AccountingPolicyRuleDto(
+                        "policy.interest-accrual",
+                        AccountingTreatmentKindDto.Accrual,
+                        RuleVersion: "v1",
+                        SourceEventType: "InterestAccrual",
+                        RequiresEvidence: true,
+                        RequiresApproval: true,
+                        AllowsAutoPosting: false)
+                ])));
+        var client = app.GetTestClient();
+        var sourceEventId = Guid.NewGuid();
         await client.PostAsJsonAsync(
             UiApiRoutes.LedgerAccountingConfigurationChart,
             new UpsertChartOfAccountsNodeRequest("fund-alpha", new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"), "browser-user"),
@@ -792,6 +1128,27 @@ public sealed partial class WorkstationEndpointsTests
                 "browser-user",
                 Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"),
                 CounterpartyId: "counterparty-bank"),
+            ServerJsonOptions);
+        using var candidateResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates,
+            new PostingRuleJournalCandidateRequestDto(
+                "fund-alpha",
+                "InterestAccrual",
+                175m,
+                "USD",
+                new DateOnly(2026, 6, 30),
+                "browser-user",
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                DateTimeOffset.Parse("2026-06-30T21:00:00Z"),
+                "Build governed interest accrual draft candidate",
+                AccountingBasis: AccountingBasisKindDto.Gaap,
+                Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"),
+                CounterpartyId: "counterparty-bank",
+                SourceEventId: sourceEventId,
+                PolicyId: "gaap-interest-v1",
+                TreatmentKind: AccountingTreatmentKindDto.Accrual,
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/interest-accrual-source-event"]),
             ServerJsonOptions);
         using var ruleTestsResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests,
@@ -866,7 +1223,7 @@ public sealed partial class WorkstationEndpointsTests
                 Actor: "controller",
                 ApprovalId: "approval-rule-generated-interest-v2",
                 Notes: "Assistant drafted approval should remain unpromoted.",
-                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2"],
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2-approval-rule-generated-interest-v2"],
                 ActionOrigin: OperationsActionOriginDto.AssistantDraft),
             ServerJsonOptions);
         using var promotionApprovalResponse = await client.PostAsJsonAsync(
@@ -878,7 +1235,7 @@ public sealed partial class WorkstationEndpointsTests
                 Actor: "controller",
                 ApprovalId: "approval-rule-generated-interest-v2",
                 Notes: "Controller approved the generated interest rule after dry-run regression review.",
-                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2"]),
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2-approval-rule-generated-interest-v2"]),
             ServerJsonOptions);
         await client.PostAsJsonAsync(
             UiApiRoutes.LedgerAccountingConfigurationChart,
@@ -893,7 +1250,8 @@ public sealed partial class WorkstationEndpointsTests
                 JournalEntryLifecycleActionDto.Approve,
                 "controller",
                 submitted.Version,
-                Notes: "Controller approved the submitted manual journal."),
+                Notes: "Controller approved the submitted manual journal.",
+                EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-record/approval/{submitted.PeriodId}"]),
             ServerJsonOptions);
         var approved = await approveResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
         using var postResponse = await client.PostAsJsonAsync(
@@ -904,7 +1262,8 @@ public sealed partial class WorkstationEndpointsTests
                 JournalEntryLifecycleActionDto.Post,
                 "controller",
                 approved.JournalEntry.Version,
-                Notes: "Posted after controller approval."),
+                Notes: "Posted after controller approval.",
+                EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-record/posting/{approved.JournalEntry.PeriodId}"]),
             ServerJsonOptions);
         var posted = await postResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
         using var reverseResponse = await client.PostAsJsonAsync(
@@ -920,6 +1279,7 @@ public sealed partial class WorkstationEndpointsTests
             ServerJsonOptions);
 
         dryRunResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        candidateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         ruleTestsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         savedRuleTestCaseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         persistedRuleTestsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -929,6 +1289,7 @@ public sealed partial class WorkstationEndpointsTests
         postResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         reverseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var dryRun = await dryRunResponse.Content.ReadFromJsonAsync<RuleDryRunResultDto>(ServerJsonOptions);
+        var candidate = await candidateResponse.Content.ReadFromJsonAsync<PostingRuleJournalCandidateResultDto>(ServerJsonOptions);
         var ruleTests = await ruleTestsResponse.Content.ReadFromJsonAsync<AccountingRuleTestSuiteResultDto>(ServerJsonOptions);
         var savedWorkspace = await savedRuleTestCaseResponse.Content.ReadFromJsonAsync<AccountingConfigurationWorkspaceDto>(ServerJsonOptions);
         var persistedRuleTests = await persistedRuleTestsResponse.Content.ReadFromJsonAsync<AccountingRuleTestSuiteResultDto>(ServerJsonOptions);
@@ -937,6 +1298,20 @@ public sealed partial class WorkstationEndpointsTests
         dryRun!.SelectedRuleId.Should().Be("rule-generated-interest");
         dryRun.IsPostingBalanced.Should().BeTrue();
         dryRun.GeneratedPostingLines.Should().HaveCount(2);
+        candidate!.SelectedRuleId.Should().Be("rule-generated-interest");
+        candidate.SelectedRuleVersion.Should().Be("v2");
+        candidate.GeneratedPostingLines.Should().HaveCount(2);
+        candidate.HasBlockingIssues.Should().BeFalse();
+        candidate.CanSubmitForApproval.Should().BeTrue();
+        candidate.CanPostWithoutAdditionalApproval.Should().BeFalse();
+        candidate.PostingCommand.Should().NotBeNull();
+        candidate.PostingCommand!.SourceEventId.Should().Be(sourceEventId);
+        candidate.PostingCommand.SourceEventType.Should().Be("InterestAccrual");
+        candidate.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Pending);
+        candidate.EvidenceLinks.Should().ContainSingle("/api/workstation/evidence/subjects/accounting-record/interest-accrual-source-event");
+        candidate.Issues.Should().Contain(issue =>
+            issue.Code == "JOURNAL_DRAFT_APPROVAL_REQUIRED" &&
+            !issue.BlocksCandidate);
         ruleTests!.TotalCount.Should().Be(2);
         ruleTests.PassedCount.Should().Be(1);
         ruleTests.FailedCount.Should().Be(1);
@@ -967,7 +1342,7 @@ public sealed partial class WorkstationEndpointsTests
             version.PromotionApproval.ApprovalId == "approval-rule-generated-interest-v2");
         promotionWorkspace.AuditTrail.Should().Contain(item =>
             item.Action == "posting-rule.promotion-approve" &&
-            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2"));
+            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2-approval-rule-generated-interest-v2"));
         approved.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Approved);
         posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
         reverse!.GeneratedJournalEntries.Should().ContainSingle(item =>
@@ -1212,6 +1587,10 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
         services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
         services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.AddSingleton<IAccountingPolicyService, AccountingPolicyService>();
+        services.AddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
+        services.AddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
+        services.AddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.AddSingleton<IManualJournalEntryDraftStore, InMemoryManualJournalEntryDraftStore>();
         services.AddSingleton<IManualJournalEntryWorkbenchService, ManualJournalEntryWorkbenchService>();
     }

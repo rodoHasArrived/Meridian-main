@@ -5,6 +5,7 @@ import {
   approveAccountingConfigurationPostingRulePromotion,
   applyManualJournalEntryLifecycleAction,
   attachManualJournalEntryEvidence,
+  buildAccountingPostingRuleJournalCandidate,
   buildLedgerAccountingReportPackage,
   certifyLedgerAccountingReportPackage,
   createLedgerCloseManagementLateAdjustment,
@@ -106,6 +107,8 @@ import type {
   ResolveConflictRequest,
   PreviewJournalTemplateRequest,
   PostingRule,
+  PostingRuleJournalCandidateRequest,
+  PostingRuleJournalCandidateResult,
   RuleDryRunRequest,
   RuleDryRunResult,
   ExecuteAccountingRuleTestCasesRequest,
@@ -199,6 +202,7 @@ export interface AccountingConfigurationServices {
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
   upsertRule: (request: UpsertPostingRuleRequest) => Promise<AccountingConfigurationWorkspace>;
   dryRunRule: (request: RuleDryRunRequest) => Promise<RuleDryRunResult>;
+  buildJournalCandidate: (request: PostingRuleJournalCandidateRequest) => Promise<PostingRuleJournalCandidateResult>;
   runRuleTests: (request: ExecuteAccountingRuleTestCasesRequest) => Promise<AccountingRuleTestSuiteResult>;
   saveRuleTestCase: (request: UpsertAccountingRuleTestCaseRequest) => Promise<AccountingConfigurationWorkspace>;
   approveRulePromotion: (request: ApprovePostingRulePromotionRequest) => Promise<AccountingConfigurationWorkspace>;
@@ -263,6 +267,17 @@ export interface AccountingRulesStudioDryRunViewModel {
   generatedLineRows: string[];
   generatedPostingRows: string[];
   validationRows: AccountingConfigurationIssueViewModel[];
+}
+
+export interface AccountingRulesStudioJournalCandidateViewModel {
+  title: string;
+  selectedRuleLabel: string;
+  balanceLabel: string;
+  commandLabel: string;
+  approvalLabel: string;
+  evidenceLabel: string;
+  generatedLineRows: string[];
+  issueRows: AccountingConfigurationIssueViewModel[];
 }
 
 export interface AccountingRulesStudioTestSuiteViewModel {
@@ -332,6 +347,13 @@ export interface AccountingConfigurationViewModel {
   dryRunBusy: boolean;
   canDryRun: boolean;
   dryRunSelectedRule: () => Promise<void>;
+  journalCandidatePreview: AccountingRulesStudioJournalCandidateViewModel | null;
+  journalCandidateStatusText: string | null;
+  journalCandidateButtonLabel: string;
+  journalCandidateDisabledReason: string | null;
+  journalCandidateBusy: boolean;
+  canBuildJournalCandidate: boolean;
+  buildJournalCandidate: () => Promise<void>;
   applyEventPredicateButtonLabel: string;
   applyEventPredicateDisabledReason: string | null;
   applyEventPredicateStatusText: string | null;
@@ -2144,6 +2166,7 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   getConfiguration: () => getAccountingConfiguration(),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
   dryRunRule: (request) => dryRunAccountingConfigurationPostingRule(request),
+  buildJournalCandidate: (request) => buildAccountingPostingRuleJournalCandidate(request),
   runRuleTests: (request) => executeAccountingConfigurationPostingRuleTests(request),
   saveRuleTestCase: (request) => upsertAccountingConfigurationPostingRuleTestCase(request),
   upsertRule: (request) => upsertAccountingConfigurationPostingRule(request),
@@ -2864,6 +2887,9 @@ export function useAccountingConfigurationViewModel(
   const [dryRunPreview, setDryRunPreview] = useState<RuleDryRunResult | null>(null);
   const [dryRunBusy, setDryRunBusy] = useState(false);
   const [dryRunError, setDryRunError] = useState<ApiErrorDisplay | null>(null);
+  const [journalCandidatePreview, setJournalCandidatePreview] = useState<PostingRuleJournalCandidateResult | null>(null);
+  const [journalCandidateBusy, setJournalCandidateBusy] = useState(false);
+  const [journalCandidateError, setJournalCandidateError] = useState<ApiErrorDisplay | null>(null);
   const [applyEventPredicateBusy, setApplyEventPredicateBusy] = useState(false);
   const [applyEventPredicateError, setApplyEventPredicateError] = useState<ApiErrorDisplay | null>(null);
   const [eventPredicateRuleId, setEventPredicateRuleId] = useState<string | null>(null);
@@ -3014,6 +3040,64 @@ export function useAccountingConfigurationViewModel(
       setRuleTestBusy(false);
     }
   }, [ruleTestBusy, services, workspace]);
+
+  const buildJournalCandidate = useCallback(async () => {
+    if (!workspace || !dryRunPreview || journalCandidateBusy) {
+      return;
+    }
+
+    const selectedRule = workspace.postingRules.find((rule) => rule.ruleId === dryRunPreview.selectedRuleId && !rule.isArchived) ??
+      workspace.postingRules.find((rule) => rule.ruleId === selectedRuleId && !rule.isArchived) ??
+      null;
+    if (!selectedRule) {
+      setJournalCandidateError({ summary: "Dry-run did not select an active posting rule.", details: [] });
+      return;
+    }
+
+    const timestamp = Date.now();
+    const correlationId = buildBrowserGuid(timestamp, 1);
+    const evidenceLinks = [
+      `browser://accounting/rules-studio/dry-run/${selectedRule.ruleId}`,
+      `browser://accounting/rules-studio/journal-candidate/${selectedRule.ruleId}/${correlationId}`
+    ];
+    const request: PostingRuleJournalCandidateRequest = {
+      fundProfileId: workspace.fundProfileId,
+      ledgerBookId: workspace.ledgerBookId ?? null,
+      sourceEventType: dryRunPreview.sourceEventType,
+      eventAmount: dryRunPreview.eventAmount,
+      currency: dryRunPreview.currency,
+      effectiveDate: dryRunPreview.effectiveDate,
+      actor: "browser-accounting-operator",
+      aggregateId: buildBrowserGuid(timestamp, 2),
+      periodId: buildBrowserGuid(timestamp, 3),
+      accountingTimestamp: new Date(timestamp).toISOString(),
+      description: `${selectedRule.displayName} governed journal draft candidate`,
+      accountingBasis: resolveRuleAccountingBasis(workspace),
+      dimensions: cloneLedgerDimensionSet(selectedRule.scope),
+      counterpartyId: selectedRule.scope?.counterpartyId ?? null,
+      instrumentSymbol: selectedRule.scope?.instrumentId ?? null,
+      correlationId,
+      sourceEventId: buildBrowserGuid(timestamp, 4),
+      policyId: resolveRulePolicyId(workspace),
+      treatmentKind: "General",
+      postingKind: "Originating",
+      evidenceLinks
+    };
+
+    setJournalCandidateBusy(true);
+    setJournalCandidateError(null);
+    try {
+      const result = await services.buildJournalCandidate(request);
+      setJournalCandidatePreview(result);
+      if (result.selectedRuleId) {
+        setSelectedRuleId(result.selectedRuleId);
+      }
+    } catch (err) {
+      setJournalCandidateError(describeApiError(err, "Journal draft candidate build failed."));
+    } finally {
+      setJournalCandidateBusy(false);
+    }
+  }, [dryRunPreview, journalCandidateBusy, selectedRuleId, services, workspace]);
 
   const saveDryRunAsRuleTest = useCallback(async () => {
     if (!workspace || !dryRunPreview || saveRuleTestBusy) {
@@ -3812,6 +3896,19 @@ export function useAccountingConfigurationViewModel(
           : !dryRunPreview.selectedRuleId
             ? "Dry-run preview must select a posting rule before saving."
             : null;
+    const journalCandidateDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before building a journal candidate."
+        : !selectedPostingRule
+          ? "Select an active posting rule before building a journal candidate."
+          : !dryRunPreview
+            ? "Run a dry-run preview before building a journal candidate."
+            : !dryRunPreview.selectedRuleId
+              ? "Dry-run preview must select a posting rule before building a journal candidate."
+              : dryRunPreview.selectedRuleId !== selectedPostingRule.ruleId
+                ? "Dry-run preview must match the selected posting rule before building a journal candidate."
+                : null;
     const duplicateRuleDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -3933,6 +4030,9 @@ export function useAccountingConfigurationViewModel(
     const dryRunPreviewView = dryRunPreview
       ? buildAccountingRulesStudioDryRunViewModel(dryRunPreview)
       : null;
+    const journalCandidatePreviewView = journalCandidatePreview
+      ? buildAccountingRulesStudioJournalCandidateViewModel(journalCandidatePreview)
+      : null;
     const ruleTestSuiteView = ruleTestSuite
       ? buildAccountingRulesStudioTestSuiteViewModel(ruleTestSuite)
       : null;
@@ -3989,6 +4089,13 @@ export function useAccountingConfigurationViewModel(
       dryRunBusy,
       canDryRun: dryRunDisabledReason === null && !dryRunBusy,
       dryRunSelectedRule,
+      journalCandidatePreview: journalCandidatePreviewView,
+      journalCandidateStatusText: journalCandidateError?.summary ?? (journalCandidatePreviewView ? journalCandidatePreviewView.commandLabel : null),
+      journalCandidateButtonLabel: journalCandidateBusy ? "Building candidate" : "Build journal candidate",
+      journalCandidateDisabledReason,
+      journalCandidateBusy,
+      canBuildJournalCandidate: journalCandidateDisabledReason === null && !journalCandidateBusy,
+      buildJournalCandidate,
       applyEventPredicateButtonLabel: applyEventPredicateBusy ? "Applying event predicate" : "Apply event predicate",
       applyEventPredicateDisabledReason,
       applyEventPredicateStatusText: applyEventPredicateError?.summary ?? (eventPredicateRuleId ? `Applied event predicate to ${eventPredicateRuleId}.` : null),
@@ -4133,6 +4240,7 @@ export function useAccountingConfigurationViewModel(
     approveRulePromotionBusy,
     approveRulePromotionError,
     approvedRulePromotionId,
+    buildJournalCandidate,
     dryRunBusy,
     dryRunError,
     dryRunPreview,
@@ -4141,6 +4249,9 @@ export function useAccountingConfigurationViewModel(
     eventPredicateRuleId,
     effectiveStartRuleId,
     formulaRuleId,
+    journalCandidateBusy,
+    journalCandidateError,
+    journalCandidatePreview,
     loading,
     preview,
     previewBusy,
@@ -4522,6 +4633,41 @@ function buildAccountingRulesStudioDryRunViewModel(result: RuleDryRunResult): Ac
   };
 }
 
+function buildAccountingRulesStudioJournalCandidateViewModel(
+  result: PostingRuleJournalCandidateResult
+): AccountingRulesStudioJournalCandidateViewModel {
+  const command = result.postingCommand;
+  const commandLabel = command
+    ? `Draft command ${command.commandId} is ${command.approvalState.toLowerCase()} and remains lifecycle-gated.`
+    : "No posting command was produced.";
+  const approvalLabel = command
+    ? `Approval ${command.approvalState}; post-without-approval ${result.canPostWithoutAdditionalApproval ? "allowed" : "blocked"}.`
+    : "Approval state unavailable.";
+
+  return {
+    title: "Governed journal draft candidate",
+    selectedRuleLabel: result.selectedRuleId
+      ? `Selected rule ${result.selectedRuleId}${result.selectedRuleVersion ? ` version ${result.selectedRuleVersion}` : ""}`
+      : "No selected posting rule",
+    balanceLabel: result.isBalanced
+      ? `Balanced ${formatCurrency(result.totalDebits)} / ${formatCurrency(result.totalCredits)}`
+      : `Unbalanced by ${formatCurrency(result.imbalance)}`,
+    commandLabel,
+    approvalLabel,
+    evidenceLabel: `${result.evidenceLinks.length} evidence link${result.evidenceLinks.length === 1 ? "" : "s"}`,
+    generatedLineRows: result.generatedPostingLines.length > 0
+      ? result.generatedPostingLines.map(formatGeneratedPostingLine)
+      : ["No generated posting lines were converted to a draft candidate."],
+    issueRows: result.issues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+      id: `${issue.code}-${issue.targetId ?? index}`,
+      label: `${issue.severity} | ${issue.code}${issue.blocksCandidate ? " | blocking" : ""}`,
+      message: issue.message,
+      detail: issue.suggestedAction ?? issue.targetId ?? "No additional action supplied.",
+      tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+    }))
+  };
+}
+
 function buildAccountingRulesStudioTestCaseViewModel(testCase: AccountingRuleTestCase): AccountingRulesStudioTestCaseViewModel {
   const request = testCase.request;
   const expectedRule = testCase.expectedRuleId ?? "any matching rule";
@@ -4610,6 +4756,24 @@ function buildAccountingRuleTestCase(
     expectBalancedPosting: true,
     expectedIssueCodes: []
   };
+}
+
+function buildBrowserGuid(timestamp: number, discriminator: number): string {
+  const suffix = Math.abs(timestamp + discriminator).toString(16).padStart(12, "0").slice(-12);
+  const group = discriminator.toString(16).padStart(4, "0").slice(-4);
+  return `00000000-0000-4000-8000-${suffix.slice(0, 8)}${group}`;
+}
+
+function resolveRuleAccountingBasis(workspace: AccountingConfigurationWorkspace): AccountingBasisKind {
+  return workspace.ledgerBooks.find((book) => book.ledgerBookId === workspace.ledgerBookId)?.accountingBasis ??
+    workspace.ledgerBooks[0]?.accountingBasis ??
+    "Primary";
+}
+
+function resolveRulePolicyId(workspace: AccountingConfigurationWorkspace): string | null {
+  return workspace.ledgerBooks.find((book) => book.ledgerBookId === workspace.ledgerBookId)?.accountingPolicyId ??
+    workspace.ledgerBooks[0]?.accountingPolicyId ??
+    null;
 }
 
 function formatAccountingRuleCondition(condition: NonNullable<PostingRule["conditions"]>[number]): string {

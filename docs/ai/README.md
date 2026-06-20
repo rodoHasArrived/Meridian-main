@@ -52,7 +52,7 @@ Classify AI/doc changes in this rebuild model:
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills), [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
 | Codex repo-local skills and profiles | [`codex/README.md`](codex/README.md) | [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents), [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md), [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
 | Fast Codex task startup | [`codex/quickstart.md`](codex/quickstart.md) | [`codex/advanced-configuration.md`](codex/advanced-configuration.md), [`codex/route-cards.md`](codex/route-cards.md) |
-| Codex memory contract | [`codex/memory-system.md`](codex/memory-system.md) | [`.codex/memory/index.yml`](../../.codex/memory/index.yml), task descriptors under `.codex/memory/tasks/*.yml`, `python build/scripts/docs/check-codex-memory.py --summary` |
+| Codex memory contract | [`codex/memory-system.md`](codex/memory-system.md) | [`.codex/memory/index.yml`](../../.codex/memory/index.yml), task descriptors under `.codex/memory/tasks/*.yml`, goal inventories under `.codex/memory/goals/*.yml`, `python build/scripts/docs/check-codex-memory.py --summary` |
 | MDIF context packs | [`context/README.md`](context/README.md) | [`../architecture/meridian-development-intelligence-framework.md`](../architecture/meridian-development-intelligence-framework.md), [`../domain/README.md`](../domain/README.md), and [`exports/README.md`](exports/README.md) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
@@ -122,7 +122,7 @@ python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
 The memory checker validates `.codex/memory/index.yml`, sourced Markdown entries, task descriptors,
-review dates, routing metadata, and unindexed memory files. The inventory checker inventories root assistant entrypoints, Codex configuration, Codex agent profiles,
+goal inventories, review dates, routing metadata, and unindexed memory files. The inventory checker inventories root assistant entrypoints, Codex configuration, Codex agent profiles,
 Codex desktop prompts, Codex validation checklists, Codex `AGENTS.md`, Codex quality tools under
 `tools/codex/`, Claude configuration, checked-in Claude plugin packages under `.claude/plugins/`, Agent Skills-compatible
 packages and shared context, Copilot instructions, agents, skills, prompts, repository prompt

@@ -2,8 +2,8 @@
 // Meridian current project stance
 // Last Updated: 2026-06-10
 //
-// Backtesting is a supporting evidence workflow. Backtesting Studio is a
-// deferred expansion lane behind the operational-record baseline.
+// Backtesting is a supporting evidence workflow. Backtesting Studio is planned
+// and should follow current source and roadmap evidence.
 
 digraph BacktestingEngine {
   rankdir=LR;
@@ -65,7 +65,7 @@ digraph BacktestingEngine {
     bgcolor="#edf2f7";
 
     STUDIO [fillcolor="#e2e8f0",
-      label="Backtesting Studio\nplanned/deferred;\nnot the active W1-W5 center"];
+      label="Backtesting Studio\nplanned;\nroadmap-evidence guided"];
     LIVE [fillcolor="#e2e8f0",
       label="Live promotion\nfuture gated path,\nnot direct output"];
   }

@@ -384,8 +384,8 @@
 <title>BACKTESTING</title>
 <path fill="#e2e8f0" stroke="black" d="M743.44,-60C743.44,-60 584.67,-60 584.67,-60 578.67,-60 572.67,-54 572.67,-48 572.67,-48 572.67,-28 572.67,-28 572.67,-22 578.67,-16 584.67,-16 584.67,-16 743.44,-16 743.44,-16 749.44,-16 755.44,-22 755.44,-28 755.44,-28 755.44,-48 755.44,-48 755.44,-54 749.44,-60 743.44,-60"/>
 <text xml:space="preserve" text-anchor="middle" x="664.06" y="-47" font-family="Helvetica,sans-Serif" font-size="10.00">Backtesting Studio and live&#45;readiness</text>
-<text xml:space="preserve" text-anchor="middle" x="664.06" y="-35" font-family="Helvetica,sans-Serif" font-size="10.00">planned/deferred behind W1&#45;W5</text>
-<text xml:space="preserve" text-anchor="middle" x="664.06" y="-23" font-family="Helvetica,sans-Serif" font-size="10.00">paper&#45;first governance only</text>
+<text xml:space="preserve" text-anchor="middle" x="664.06" y="-35" font-family="Helvetica,sans-Serif" font-size="10.00">planned; roadmap&#45;evidence guided</text>
+<text xml:space="preserve" text-anchor="middle" x="664.06" y="-23" font-family="Helvetica,sans-Serif" font-size="10.00">paper&#45;first governance where relevant</text>
 </g>
 <!-- BACKTESTING&#45;&gt;APPLICATION -->
 <g id="edge26" class="edge">

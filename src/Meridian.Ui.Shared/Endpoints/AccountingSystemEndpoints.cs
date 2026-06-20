@@ -174,7 +174,7 @@ public static class AccountingSystemEndpoints
             HttpContext context,
             AccountingSystemIntegrationService service) =>
         {
-            if (!HasAccountingAccess(context))
+            if (!HasAccountingCertificationAccess(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -212,4 +212,7 @@ public static class AccountingSystemEndpoints
             context,
             UserPermission.AdminMaintenance,
             UserPermission.ManageFundStructure);
+
+    private static bool HasAccountingCertificationAccess(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
 }

@@ -111,7 +111,7 @@ digraph C4_Containers {
     bgcolor="#edf2f7";
 
     BACKTESTING [fillcolor="#e2e8f0",
-      label="Backtesting Studio and live-readiness\nplanned/deferred behind W1-W5\npaper-first governance only"];
+      label="Backtesting Studio and live-readiness\nplanned; roadmap-evidence guided\npaper-first governance applies where relevant"];
     SCALEOUT [fillcolor="#e2e8f0",
       label="Payments, forecasting,\nenterprise risk, portal,\nworkflow designer, mobile\nnot an active container lane"];
   }

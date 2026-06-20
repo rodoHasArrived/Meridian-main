@@ -29,9 +29,55 @@ public sealed class AccountingReportPackageServiceTests
             package.FinancialStatements.PackageId,
             "controller",
             "Attempt to certify before the close period is locked.",
-            ["evidence:report-certification:controller-approval:2027-02"]));
+            [CertificationEvidence(package)]));
         await certify.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*must be ready for review before certification*");
+            .WithMessage("*current close-plan blockers*PeriodNotLocked*");
+    }
+
+    [Fact]
+    public async Task CertifyPackageAsync_RevalidatesCurrentClosePlanBeforeCertification()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var closePlan = BuildSignedOffClosePlan(workflowId, isPeriodLocked: true);
+        var closeManagement = new MutableStubCloseManagementService(workflowId, closePlan);
+        var service = new AccountingReportPackageService(closeManagement);
+
+        var package = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-02",
+            CloseWorkflowId: workflowId));
+
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.CloseWorkflowId.Should().Be(workflowId);
+        closeManagement.ClosePlan = closePlan with
+        {
+            LateAdjustments =
+            [
+                new LateAdjustmentRequestDto(
+                    "late-adjustment-nav-true-up",
+                    Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                    "controller",
+                    DateTimeOffset.Parse("2027-02-28T19:00:00Z"),
+                    25_000m,
+                    "USD",
+                    "Material NAV true-up identified after package assembly.",
+                    ManualJournalEntryStatusDto.Submitted,
+                    closePlan.MaterialityPolicy,
+                    ["evidence:late-adjustment:2027-02:nav-true-up"])
+            ]
+        };
+
+        var certify = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            package.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted stale close-backed package certification.",
+            [CertificationEvidence(package)]));
+
+        await certify.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*current close-plan blockers*LateAdjustmentApprovalPending*");
+        var retained = await service.ListPackagesAsync("fund-alpha", "2027-02");
+        retained.Should().ContainSingle();
+        retained[0].Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
     }
 
     [Fact]
@@ -97,7 +143,7 @@ public sealed class AccountingReportPackageServiceTests
             "Controller certified the wrong retained report package.",
             ["evidence:report-certification:controller-approval:2027-04"]));
         await wrongPeriodEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained package, certification id, or exact package period*");
+            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
 
         var splitCertificationEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
@@ -108,13 +154,21 @@ public sealed class AccountingReportPackageServiceTests
                 "evidence:report-certification:controller-approval:2027-04"
             ]));
         await splitCertificationEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained package, certification id, or exact package period*");
+            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
+
+        var missingCertificationIdEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with package and period evidence that omits the certification id.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:2027-03"]));
+        await missingCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
 
         var assistantCertification = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
             "assistant",
             "Assistant drafted certification should not certify the retained report package.",
-            ["evidence:report-certification:controller-approval:2027-03"],
+            [CertificationEvidence(ready)],
             ActionOrigin: OperationsActionOriginDto.AssistantDraft));
         await assistantCertification.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*Reviewed automation cannot certify accounting report packages*human operator*");
@@ -123,16 +177,16 @@ public sealed class AccountingReportPackageServiceTests
             ready.FinancialStatements.PackageId,
             "controller",
             "Controller certified the retained report package.",
-            ["evidence:report-certification:controller-approval:2027-03"]));
+            [CertificationEvidence(ready)]));
 
         certified.Should().NotBeNull();
         certified!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
-        certified.Certification.EvidenceLinks.Should().Contain("evidence:report-certification:controller-approval:2027-03");
+        certified.Certification.EvidenceLinks.Should().Contain(CertificationEvidence(ready));
         certified.FinancialStatements.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
         certified.NavPackage.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
         certified.ExportArtifacts.Should().OnlyContain(row => row.CertificationState == AccountingCertificationStateDto.Certified);
         certified.ExportArtifacts.Should().OnlyContain(row =>
-            row.EvidenceLinks.Contains("evidence:report-certification:controller-approval:2027-03"));
+            row.EvidenceLinks.Contains(CertificationEvidence(ready)));
         certified.ExportArtifacts.Select(static row => row.ContentHash).Should().OnlyContain(hash => hash.Length == 64);
 
         var artifact = certified.ExportArtifacts.First(row => row.ArtifactKind == "financial-statements");
@@ -150,7 +204,7 @@ public sealed class AccountingReportPackageServiceTests
         manifest.ContentType.Should().Be("application/json");
         manifest.ExternalPostingAllowed.Should().BeFalse();
         manifest.Payload.Should().Contain("\"packageId\"");
-        manifest.Payload.Should().Contain("evidence:report-certification:controller-approval:2027-03");
+        manifest.Payload.Should().Contain(CertificationEvidence(ready));
     }
 
     [Fact]
@@ -203,7 +257,7 @@ public sealed class AccountingReportPackageServiceTests
             draftPrior.FinancialStatements.PackageId,
             "controller",
             "Controller certified the prior report package.",
-            ["evidence:report-certification:controller-approval:2027-03"]));
+            [CertificationEvidence(draftPrior)]));
         var readyRestatement = await service.BuildPackageAsync(CompletePackageRequest(
             "fund-alpha",
             "2027-04",
@@ -236,22 +290,22 @@ public sealed class AccountingReportPackageServiceTests
             readyRestatement.FinancialStatements.PackageId,
             "controller",
             "Controller approved the restatement package.",
-            ["evidence:report-certification:restatement-approval:2027-04"]));
+            [CertificationEvidence(readyRestatement, "restatement-approval")]));
 
         certifiedRestatement.Should().NotBeNull();
         certifiedRestatement!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
         certifiedRestatement.FinancialStatements.Restatement.Should().NotBeNull();
         certifiedRestatement.FinancialStatements.Restatement!.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
         certifiedRestatement.FinancialStatements.Restatement.EvidenceLinks.Should()
-            .Contain("evidence:report-certification:restatement-approval:2027-04");
+            .Contain(CertificationEvidence(readyRestatement, "restatement-approval"));
         certifiedRestatement.NavPackage.Restatement.Should().NotBeNull();
         certifiedRestatement.NavPackage.Restatement!.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
         certifiedRestatement.NavPackage.Restatement.EvidenceLinks.Should()
-            .Contain("evidence:report-certification:restatement-approval:2027-04");
+            .Contain(CertificationEvidence(readyRestatement, "restatement-approval"));
         certifiedRestatement.ExportArtifacts.Should().Contain(row =>
             row.ArtifactKind == "restatement-workflow" &&
             row.CertificationState == AccountingCertificationStateDto.Certified &&
-            row.EvidenceLinks.Contains("evidence:report-certification:restatement-approval:2027-04"));
+            row.EvidenceLinks.Contains(CertificationEvidence(readyRestatement, "restatement-approval")));
     }
 
     [Fact]
@@ -263,7 +317,7 @@ public sealed class AccountingReportPackageServiceTests
             ready.FinancialStatements.PackageId,
             "controller",
             "Controller certified the May report package.",
-            ["evidence:report-certification:controller-approval:2027-05"]));
+            [CertificationEvidence(ready)]));
 
         var replace = () => service.BuildPackageAsync(CompletePackageRequest(
             "fund-alpha",
@@ -281,7 +335,7 @@ public sealed class AccountingReportPackageServiceTests
         var retained = await service.ListPackagesAsync("fund-alpha", "2027-05");
         retained.Should().ContainSingle();
         retained[0].Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
-        retained[0].Certification.EvidenceLinks.Should().Contain("evidence:report-certification:controller-approval:2027-05");
+        retained[0].Certification.EvidenceLinks.Should().Contain(CertificationEvidence(ready));
         retained[0].FinancialStatements.EvidenceLinks.Should().Contain("evidence:ledger:trial-balance:2027-05");
         retained[0].FinancialStatements.EvidenceLinks.Should().NotContain("evidence:ledger:trial-balance:2027-05-rebuild");
         certified!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
@@ -313,6 +367,11 @@ public sealed class AccountingReportPackageServiceTests
                 $"evidence:report-render:financial-statements:{periodId}",
                 $"evidence:nav:support-package:{periodId}"
             ]);
+
+    private static string CertificationEvidence(
+        AccountingReportPackageBundleDto package,
+        string approvalLabel = "controller-approval")
+        => $"evidence:report-certification:{approvalLabel}:{package.FinancialStatements.PackageId}:{package.Certification.CertificationId}:{package.FinancialStatements.PeriodId}";
 
     private static ClosePeriodPlanDto BuildSignedOffClosePlan(Guid workflowId, bool isPeriodLocked)
     {
@@ -396,6 +455,37 @@ public sealed class AccountingReportPackageServiceTests
             return Task.FromResult<ClosePeriodPlanDto?>(workflowId == Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
                 ? closePlan
                 : null);
+        }
+
+        public Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
+            CreateLateAdjustmentRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
+            ReviewLateAdjustmentRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
+            SignOffCloseTaskRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+    }
+
+    private sealed class MutableStubCloseManagementService(
+        Guid workflowId,
+        ClosePeriodPlanDto closePlan) : IAccountingCloseManagementService
+    {
+        public ClosePeriodPlanDto ClosePlan { get; set; } = closePlan;
+
+        public Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid requestedWorkflowId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<ClosePeriodPlanDto?>(requestedWorkflowId == workflowId ? ClosePlan : null);
         }
 
         public Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(

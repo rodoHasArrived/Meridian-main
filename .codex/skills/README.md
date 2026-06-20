@@ -21,6 +21,9 @@ Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 | `meridian-code-architecture` | [`SKILL.md`](meridian-code-architecture/SKILL.md) | Review architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review` | [`SKILL.md`](meridian-code-review/SKILL.md) | Review changes for bugs, regressions, and architecture drift |
 | `meridian-contract-governance` | [`SKILL.md`](meridian-contract-governance/SKILL.md) | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-accounting-posting-controls` | [`SKILL.md`](meridian-accounting-posting-controls/SKILL.md) | Review accounting posting gates, approval, period locks, idempotency, and reversal/rebook safeguards |
+| `meridian-event-accounting-architecture` | [`SKILL.md`](meridian-event-accounting-architecture/SKILL.md) | Design event-based accounting architecture, immutable journals, ledger projections, and evidence-backed controls |
+| `meridian-ledger-projection-replay-review` | [`SKILL.md`](meridian-ledger-projection-replay-review/SKILL.md) | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
 | `meridian-codex-skill-builder` | [`SKILL.md`](meridian-codex-skill-builder/SKILL.md) | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | [`SKILL.md`](meridian-docs/SKILL.md) | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | [`SKILL.md`](meridian-implementation-assurance/SKILL.md) | Implement, certify, and improve changes with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
@@ -52,6 +55,9 @@ different work:
 | Plan | `meridian-blueprint` | Turn one selected idea into a code-ready design. |
 | Architecture | `meridian-code-architecture` | Check module boundaries, dependency direction, ADR/source-doc alignment, and public seams. |
 | Contract governance | `meridian-contract-governance` | Trace DTO, route, provider-interface, and read-model impact across consumers. |
+| Accounting posting controls | `meridian-accounting-posting-controls` | Review posting gates, approval, period locks, idempotency, double-entry, and reversal/rebook safeguards. |
+| Event accounting architecture | `meridian-event-accounting-architecture` | Design event-based accounting, immutable journals, projection/replay, and evidence-backed posting controls. |
+| Ledger projection replay | `meridian-ledger-projection-replay-review` | Review replay ordering, duplicate handling, projection rebuilds, versioning, drift, and report handoff. |
 | Codex skill builder | `meridian-codex-skill-builder` | Create or audit Codex skill packages with scripts, evals, profiles, catalogs, and routes. |
 | Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence and docs sync. |
 | Review | `meridian-code-review` | Findings first; no implementation unless asked. |

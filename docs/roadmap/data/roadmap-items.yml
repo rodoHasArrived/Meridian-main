@@ -336,7 +336,7 @@ items:
     health: green
     priority: high
     evidence_posture: planned_evidence
-    current_summary: Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. It builds on the closed W1-W5 operational-record baseline and should consume the same shared contracts/read models as the Financial Record Explorers rather than creating browser- or WPF-local business rules.
+    current_summary: Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. It should consume shared contracts/read models rather than creating browser- or WPF-local business rules.
     exit_criteria:
       - Accounting workspace exposes a financial operations command surface that groups reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness from shared read models.
       - Reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets can be opened from a unified operator queue with deterministic status, owner, due date, and blocker signals.
@@ -370,7 +370,7 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    current_summary: Backtesting Studio remains planned but deferred behind the W1-W5 operational record baseline. Near-term Strategy work should only proceed when it links research or backtest results into retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting instead of creating a broad research workbench.
+    current_summary: Backtesting Studio remains planned. Strategy work should link research or backtest results into retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting when those links are relevant, without treating prior baselines or named productization targets as development ceilings.
     exit_criteria:
       - Backtest result evidence links to strategy lineage.
       - Operator-facing acceptance criteria are checklist-backed.

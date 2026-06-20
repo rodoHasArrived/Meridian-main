@@ -1818,6 +1818,17 @@ export function dryRunAccountingConfigurationPostingRule(
   return postJson<import("@/types").RuleDryRunResult>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun, request, options);
 }
 
+export function buildAccountingPostingRuleJournalCandidate(
+  request: import("@/types").PostingRuleJournalCandidateRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").PostingRuleJournalCandidateResult>(
+    WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleCandidates,
+    request,
+    options
+  );
+}
+
 export function executeAccountingConfigurationPostingRuleTests(
   request: import("@/types").ExecuteAccountingRuleTestCasesRequest,
   options: ApiRequestOptions = {}

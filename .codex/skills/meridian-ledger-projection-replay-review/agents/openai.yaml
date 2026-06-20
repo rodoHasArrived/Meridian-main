@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Ledger Replay"
+  short_description: "Review ledger projection replay"
+  default_prompt: "Use $meridian-ledger-projection-replay-review to review Meridian ledger projection, replay ordering, idempotency, rebuild, and reporting handoff risks."

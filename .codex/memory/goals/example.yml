@@ -1,0 +1,26 @@
+version: 1
+goal_id: codex-memory-long-goal-example
+objective: Keep the Codex memory system usable during very long implementation goals.
+status: active
+started_at: 2026-06-20T00:00:00Z
+updated_at: 2026-06-20T00:00:00Z
+active_task_descriptor: .codex/memory/tasks/example.yml
+progress_inventory:
+  - id: task-specific-routing
+    status: completed
+    summary: Added task descriptor routing and explainable memory selection.
+    evidence_refs:
+      - build/scripts/docs/check-codex-memory.py
+      - build/scripts/docs/tests/test_check_codex_memory.py
+      - docs/ai/codex/memory-system.md
+    updated_at: 2026-06-20T00:00:00Z
+  - id: long-goal-inventory
+    status: in_progress
+    summary: Add goal inventory validation and routing through the active task descriptor.
+    evidence_refs:
+      - docs/ai/codex/memory-system.md
+    updated_at: 2026-06-20T00:00:00Z
+next_actions:
+  - Keep progress inventory items evidence-backed and compact during long Codex goals.
+open_questions: []
+promotion_candidates: []

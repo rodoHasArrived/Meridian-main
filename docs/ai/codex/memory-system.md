@@ -22,6 +22,8 @@ The memory system should:
   explicit tag.
 - Bind task-specific memory to an explicit task descriptor so one Codex task does not inherit
   another task's assumptions.
+- Track progress for very long Codex goals in a compact inventory that survives compaction,
+  interruption, and thread continuation.
 - Keep each durable entry auditable through source references, confidence, freshness, review dates,
   and invalidation triggers.
 - Make promotion deliberate so short-lived observations do not become repo guidance without review.
@@ -72,6 +74,9 @@ The Meridian repo-local store uses YAML index data plus reviewable Markdown entr
   tasks/
     README.md
     example.yml
+  goals/
+    README.md
+    example.yml
   branches/
     README.md
   sessions/
@@ -87,6 +92,8 @@ Storage rules:
   with the same required metadata as the index entry.
 - Task descriptor files under `tasks/*.yml` are YAML routing inputs, not indexed memory entries.
   They are exempt from entry indexing and must not contain durable guidance by themselves.
+- Goal inventory files under `goals/*.yml` are YAML progress records, not indexed memory entries.
+  They are exempt from entry indexing and should point to the active task descriptor.
 - Folder `README.md` files provide guidance and are exempt from entry indexing.
 - File names should be stable lowercase slugs and must stay under `.codex/memory/`.
 - Use `repo/` only for stable, sourced facts. Put uncertain or temporary findings in `sessions/`,
@@ -189,9 +196,55 @@ Required fields are `version`, `task_id`, `intent`, `selected_skill`, `work_mode
 `planned_paths`, `memory_tags`, and `success_criteria`. `promotion_candidates` is optional and is a
 review queue only; it must not promote memory automatically.
 
+## Goal Inventories
+
+Goal inventories are YAML files under `.codex/memory/goals/<goal-id>.yml`. Use them when Codex is
+running a very long goal that may span compaction, thread continuation, or multiple implementation
+passes.
+
+```yaml
+version: 1
+goal_id: codex-memory-long-goal-example
+objective: Keep the Codex memory system usable during very long implementation goals.
+status: active
+started_at: 2026-06-20T00:00:00Z
+updated_at: 2026-06-20T00:00:00Z
+active_task_descriptor: .codex/memory/tasks/example.yml
+progress_inventory:
+  - id: task-specific-routing
+    status: completed
+    summary: Added task descriptor routing and explainable memory selection.
+    evidence_refs:
+      - build/scripts/docs/check-codex-memory.py
+    updated_at: 2026-06-20T00:00:00Z
+next_actions:
+  - Keep progress inventory items evidence-backed and compact.
+open_questions: []
+promotion_candidates: []
+```
+
+Required fields are `version`, `goal_id`, `objective`, `status`, `started_at`, `updated_at`,
+`active_task_descriptor`, `progress_inventory`, and `next_actions`. Allowed goal statuses are
+`active`, `blocked`, `complete`, and `abandoned`. Progress items require `id`, `status`, `summary`,
+`evidence_refs`, and `updated_at`; allowed progress statuses are `pending`, `in_progress`,
+`completed`, `blocked`, and `deferred`.
+
+Goal inventories should stay compact. They track progress and evidence, not durable guidance. Put
+reusable facts into task, branch, or repo memory through the normal promotion workflow.
+
 ## Loading Rules
 
 Memory loading must be selective and explainable.
+
+By goal inventory:
+
+- Use `--goal .codex/memory/goals/<goal-id>.yml` for very long Codex goals.
+- When `--goal` is provided and `--task` is not, route through the goal's
+  `active_task_descriptor`.
+- Include goal status, completed/total progress count, active task descriptor, next actions, and
+  blockers in the memory receipt or handoff summary.
+- Update the goal inventory at natural checkpoints: after a validation pass, before compaction,
+  after resuming a thread, and when the active task descriptor changes.
 
 By task descriptor:
 
@@ -298,6 +351,8 @@ Promotion hygiene:
 - Prefer concise entries and link to canonical docs instead of restating long instructions.
 - Record `promotion_candidates` in session or task notes only as reviewed candidates with target
   tier, source evidence, and reason; keep promotion explicit through `--promote-session`.
+- In a goal inventory, use `promotion_candidates` only as a queue of candidate observations to
+  review later; do not treat it as a write instruction.
 - Repo-level promotion requires source references. User/global promotion requires explicit user
   approval and a future opt-in mechanism.
 
@@ -344,6 +399,7 @@ Future examples should stay narrow:
 | User changes browser dashboard | Future `repo:browser-workstation` only if it captures stable browser-specific facts |
 | User asks for blueprint | Relevant task memory plus `repo:architecture` |
 | User resumes a branch | Matching branch memory plus repo entries selected by changed paths |
+| Codex runs a very long goal | Matching goal inventory plus its active task descriptor |
 
 ## Validation
 
@@ -362,6 +418,8 @@ The checker validates that:
 - Optional `exclude_when` selectors are well-formed.
 - Task descriptors used with `--task` live under `.codex/memory/tasks/` and contain the required
   routing fields.
+- Goal inventories used with `--goal` live under `.codex/memory/goals/`, contain progress inventory
+  metadata, and point to an existing active task descriptor.
 - IDs are unique.
 - `source_refs` for repo-local source paths exist.
 - `review_after` values are valid ISO dates.
@@ -369,6 +427,7 @@ The checker validates that:
 - Unknown active tiers, disabled tiers, and invalid scopes are rejected.
 - Non-README memory files are indexed.
 - Task descriptor YAML files under `.codex/memory/tasks/` are exempt from entry indexing.
+- Goal inventory YAML files under `.codex/memory/goals/` are exempt from entry indexing.
 - `--explain` reports selected and skipped routing decisions, including task-scope conflicts.
 
 Optional helper modes:
@@ -378,6 +437,7 @@ python build/scripts/docs/check-codex-memory.py --summary --stale-only
 python build/scripts/docs/check-codex-memory.py --paths docs/ai/codex/quickstart.md
 python build/scripts/docs/check-codex-memory.py --tags ai-guidance validation
 python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --explain --summary
 python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --json-output artifacts/codex/memory-routing.json
 ```
 

@@ -2598,6 +2598,7 @@ describe("accounting-screen view model", () => {
       }),
       upsertRule,
       dryRunRule: vi.fn().mockResolvedValue(dryRunResult),
+      buildJournalCandidate: vi.fn(),
       runRuleTests: vi.fn().mockResolvedValue({
         fundProfileId: "fund-alpha",
         ledgerBookId: "book-primary",
@@ -2710,7 +2711,7 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({
         id: "rule-test-trade-buy-saved",
         title: "Saved trade buy regression",
-        assertionLabel: "Expect rule-trade-buy version v3, balanced, no expected issue codes.",
+        assertionLabel: "Expect rule-trade-buy version v3, balanced, no expected issue codes, no expected generated posting lines.",
         evidenceLabel: "1 evidence link",
         evidenceTone: "success"
       })
@@ -3107,6 +3108,7 @@ describe("accounting-screen view model", () => {
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),
       dryRunRule: vi.fn(),
+      buildJournalCandidate: vi.fn(),
       runRuleTests: vi.fn(),
       saveRuleTestCase: vi.fn(),
       approveRulePromotion: vi.fn(),

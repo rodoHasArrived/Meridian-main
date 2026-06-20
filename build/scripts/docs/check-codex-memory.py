@@ -49,10 +49,24 @@ TASK_DESCRIPTOR_REQUIRED_FIELDS = {
     "memory_tags",
     "success_criteria",
 }
+GOAL_INVENTORY_REQUIRED_FIELDS = {
+    "version",
+    "goal_id",
+    "objective",
+    "status",
+    "started_at",
+    "updated_at",
+    "active_task_descriptor",
+    "progress_inventory",
+    "next_actions",
+}
+GOAL_PROGRESS_REQUIRED_FIELDS = {"id", "status", "summary", "evidence_refs", "updated_at"}
 ACTIVE_TIERS = {"session", "branch", "task", "repo", "archive"}
 DISABLED_TIERS = {"user", "global"}
 ALLOWED_CONFIDENCE = {"low", "medium", "high"}
 ALLOWED_FRESHNESS = {"fresh", "review-soon", "stale", "unknown"}
+ALLOWED_GOAL_STATUS = {"active", "blocked", "complete", "abandoned"}
+ALLOWED_PROGRESS_STATUS = {"pending", "in_progress", "completed", "blocked", "deferred"}
 TIER_PRECEDENCE = {"task": 1, "branch": 2, "repo": 3, "session": 4, "archive": 5}
 
 
@@ -242,6 +256,24 @@ def validate_review_after(value: Any, path: str) -> list[Finding]:
     if review_date < date.today():
         return [Finding("warning", path, f"Memory review date has passed: {display_value}")]
     return []
+
+
+def validate_iso_timestamp(value: Any, field: str, path: str) -> list[Finding]:
+    if isinstance(value, datetime):
+        return []
+    if isinstance(value, date):
+        return []
+    if not isinstance(value, str) or not value.strip():
+        return [Finding("error", path, f"{field} must be an ISO date or datetime string.")]
+    try:
+        datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return []
+    except ValueError:
+        try:
+            date.fromisoformat(value)
+            return []
+        except ValueError:
+            return [Finding("error", path, f"{field} is not a valid ISO date or datetime: {value}")]
 
 
 def validate_source_refs(root: Path, entry: dict[str, Any], path: str) -> list[Finding]:
@@ -471,6 +503,106 @@ def load_task_descriptor(root: Path, raw_path: str) -> tuple[dict[str, Any] | No
     return validate_task_descriptor(descriptor, rel(root, descriptor_path))
 
 
+def validate_goal_progress_item(root: Path, item: Any, display_path: str, index: int) -> list[Finding]:
+    path = f"{display_path}#progress_inventory[{index}]"
+    findings: list[Finding] = []
+    if not isinstance(item, dict):
+        return [Finding("error", path, "Progress inventory item must be a mapping.")]
+    missing = sorted(GOAL_PROGRESS_REQUIRED_FIELDS - set(item))
+    for field in missing:
+        findings.append(Finding("error", path, f"Progress inventory item is missing {field}."))
+    if missing:
+        return findings
+    for field in ("id", "summary"):
+        if not isinstance(item.get(field), str) or not item[field].strip():
+            findings.append(Finding("error", path, f"{field} must be a non-empty string."))
+    if item.get("status") not in ALLOWED_PROGRESS_STATUS:
+        findings.append(Finding("error", path, f"Unknown progress status: {item.get('status')}"))
+    findings.extend(validate_string_list(item.get("evidence_refs"), "evidence_refs", path))
+    if isinstance(item.get("evidence_refs"), list):
+        findings.extend(validate_source_refs(root, {"source_refs": item.get("evidence_refs")}, path))
+    findings.extend(validate_iso_timestamp(item.get("updated_at"), "updated_at", path))
+    return findings
+
+
+def validate_goal_inventory(root: Path, goal: Any, display_path: str) -> tuple[dict[str, Any] | None, list[Finding]]:
+    findings: list[Finding] = []
+    if not isinstance(goal, dict):
+        return None, [Finding("error", display_path, "Goal inventory must be a YAML mapping.")]
+
+    missing = sorted(GOAL_INVENTORY_REQUIRED_FIELDS - set(goal))
+    for field in missing:
+        findings.append(Finding("error", display_path, f"Goal inventory is missing {field}."))
+    if missing:
+        return goal, findings
+
+    version = goal.get("version")
+    if version not in {1, "1"}:
+        findings.append(Finding("error", display_path, f"Goal inventory version must be 1: {version}"))
+    for field in ("goal_id", "objective", "active_task_descriptor"):
+        if not isinstance(goal.get(field), str) or not goal[field].strip():
+            findings.append(Finding("error", display_path, f"{field} must be a non-empty string."))
+    if goal.get("status") not in ALLOWED_GOAL_STATUS:
+        findings.append(Finding("error", display_path, f"Unknown goal status: {goal.get('status')}"))
+    findings.extend(validate_iso_timestamp(goal.get("started_at"), "started_at", display_path))
+    findings.extend(validate_iso_timestamp(goal.get("updated_at"), "updated_at", display_path))
+    findings.extend(validate_string_list(goal.get("next_actions"), "next_actions", display_path))
+    findings.extend(validate_optional_string_list(goal.get("open_questions"), "open_questions", display_path))
+
+    active_task = goal.get("active_task_descriptor")
+    if isinstance(active_task, str):
+        task_path, task_findings = safe_memory_path(root, active_task, display_path)
+        findings.extend(task_findings)
+        tasks_root = (root / MEMORY_ROOT_REL / "tasks").resolve()
+        if task_path is not None:
+            try:
+                task_path.relative_to(tasks_root)
+            except ValueError:
+                findings.append(Finding("error", display_path, "active_task_descriptor must live under .codex/memory/tasks."))
+            if task_path.suffix.lower() not in {".yml", ".yaml"}:
+                findings.append(Finding("error", display_path, "active_task_descriptor must point to a task descriptor YAML file."))
+            if not task_path.is_file():
+                findings.append(Finding("error", display_path, f"active_task_descriptor does not exist: {active_task}"))
+
+    progress_inventory = goal.get("progress_inventory")
+    if not isinstance(progress_inventory, list):
+        findings.append(Finding("error", display_path, "progress_inventory must be a list."))
+    else:
+        for index, item in enumerate(progress_inventory):
+            findings.extend(validate_goal_progress_item(root, item, display_path, index))
+
+    promotion_candidates = goal.get("promotion_candidates", [])
+    if not isinstance(promotion_candidates, list):
+        findings.append(Finding("error", display_path, "promotion_candidates must be a list when present."))
+    elif any(not isinstance(item, (dict, str)) for item in promotion_candidates):
+        findings.append(Finding("error", display_path, "promotion_candidates must contain mappings or strings."))
+    return goal, findings
+
+
+def load_goal_inventory(root: Path, raw_path: str) -> tuple[dict[str, Any] | None, list[Finding]]:
+    goal_path, findings = safe_memory_path(root, raw_path, raw_path)
+    if goal_path is None:
+        return None, findings
+    goals_root = (root / MEMORY_ROOT_REL / "goals").resolve()
+    try:
+        goal_path.relative_to(goals_root)
+    except ValueError:
+        findings.append(Finding("error", raw_path, f"Goal inventory must live under {MEMORY_ROOT_REL}/goals."))
+        return None, findings
+    if goal_path.suffix.lower() not in {".yml", ".yaml"}:
+        findings.append(Finding("error", rel(root, goal_path), "Goal inventory must be a .yml or .yaml file."))
+        return None, findings
+    if not goal_path.is_file():
+        findings.append(Finding("error", rel(root, goal_path), "Goal inventory does not exist."))
+        return None, findings
+    try:
+        goal = load_data(goal_path)
+    except Exception as exc:
+        findings.append(Finding("error", rel(root, goal_path), f"Unable to parse goal inventory: {exc}"))
+        return None, findings
+    return validate_goal_inventory(root, goal, rel(root, goal_path))
+
+
 def collect_unindexed_files(root: Path, entries: Sequence[dict[str, Any]]) -> list[Finding]:
     memory_root = root / MEMORY_ROOT_REL
     if not memory_root.exists():
@@ -485,6 +617,8 @@ def collect_unindexed_files(root: Path, entries: Sequence[dict[str, Any]]) -> li
         if rel_path == INDEX_REL or name == "readme.md":
             continue
         if path.parent.resolve() == (memory_root / "tasks").resolve() and path.suffix.lower() in {".yml", ".yaml"}:
+            continue
+        if path.parent.resolve() == (memory_root / "goals").resolve() and path.suffix.lower() in {".yml", ".yaml"}:
             continue
         if normalize_path(rel_path) not in indexed:
             findings.append(Finding("error", rel_path, "Memory file is not listed in .codex/memory/index.yml."))
@@ -846,6 +980,29 @@ def task_descriptor_summary(task_descriptor: dict[str, Any] | None) -> dict[str,
     }
 
 
+def goal_inventory_summary(goal_inventory: dict[str, Any] | None) -> dict[str, Any] | None:
+    if not goal_inventory:
+        return None
+    progress = goal_inventory.get("progress_inventory", [])
+    progress_items = progress if isinstance(progress, list) else []
+    completed = sum(1 for item in progress_items if isinstance(item, dict) and item.get("status") == "completed")
+    blocked = sum(1 for item in progress_items if isinstance(item, dict) and item.get("status") == "blocked")
+    return {
+        "goal_id": goal_inventory.get("goal_id"),
+        "objective": goal_inventory.get("objective"),
+        "status": goal_inventory.get("status"),
+        "started_at": normalize_metadata_value(goal_inventory.get("started_at")),
+        "updated_at": normalize_metadata_value(goal_inventory.get("updated_at")),
+        "active_task_descriptor": goal_inventory.get("active_task_descriptor"),
+        "progress_count": len(progress_items),
+        "completed_count": completed,
+        "blocked_count": blocked,
+        "next_action_count": len(goal_inventory.get("next_actions", []))
+        if isinstance(goal_inventory.get("next_actions"), list)
+        else 0,
+    }
+
+
 def build_payload(
     root: Path,
     findings: Sequence[Finding],
@@ -853,6 +1010,7 @@ def build_payload(
     selected: Sequence[dict[str, Any]],
     decisions: Sequence[RoutingDecision] | None = None,
     task_descriptor: dict[str, Any] | None = None,
+    goal_inventory: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     errors = [finding for finding in findings if finding.severity == "error"]
     warnings = [finding for finding in findings if finding.severity == "warning"]
@@ -881,6 +1039,7 @@ def build_payload(
             asdict(decision) for decision in decisions or [] if decision.task_scope_conflict
         ],
         "task_descriptor": task_descriptor_summary(task_descriptor),
+        "goal_inventory": goal_inventory_summary(goal_inventory),
         "findings": [asdict(finding) for finding in findings],
         "repositoryRoot": ".",
         "repositoryName": root.resolve().name,
@@ -895,6 +1054,14 @@ def print_summary(payload: dict[str, Any], explain: bool = False) -> None:
         f"{summary['selected_count']} selected, "
         f"{summary['error_count']} error(s), {summary['warning_count']} warning(s)."
     )
+    goal = payload.get("goal_inventory")
+    if goal:
+        print(
+            "goal: "
+            f"{goal['goal_id']} ({goal['status']}); "
+            f"{goal['completed_count']}/{goal['progress_count']} progress item(s) completed; "
+            f"active task {goal['active_task_descriptor']}"
+        )
     for entry in payload["selected_entries"]:
         print(f"selected: {entry['id']} -> {entry['file']}")
     if explain:
@@ -1172,6 +1339,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--json-output", type=Path, help="Write machine-readable JSON output.")
     parser.add_argument("--stale-only", action="store_true", help="Select only stale or expired entries.")
     parser.add_argument("--task", help="Repo-relative .codex/memory/tasks/*.yml task descriptor used for routing.")
+    parser.add_argument("--goal", help="Repo-relative .codex/memory/goals/*.yml long-goal inventory used for progress and routing.")
     parser.add_argument("--explain", action="store_true", help="Print selected and skipped routing reasons.")
     parser.add_argument("--paths", nargs="*", default=[], help="Repo-relative paths used for routing selection.")
     parser.add_argument("--tags", nargs="*", default=[], help="Explicit tags used for routing selection.")
@@ -1263,12 +1431,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.promote_session:
         return promote_session(root, args)
 
+    goal_inventory: dict[str, Any] | None = None
+    goal_findings: list[Finding] = []
+    if args.goal:
+        goal_inventory, goal_findings = load_goal_inventory(root, args.goal)
+
     task_descriptor: dict[str, Any] | None = None
     task_findings: list[Finding] = []
-    if args.task:
-        task_descriptor, task_findings = load_task_descriptor(root, args.task)
+    task_path = args.task
+    if not task_path and goal_inventory and isinstance(goal_inventory.get("active_task_descriptor"), str):
+        task_path = goal_inventory["active_task_descriptor"]
+    if task_path:
+        task_descriptor, task_findings = load_task_descriptor(root, task_path)
 
     findings, entries = collect_findings(root)
+    findings.extend(goal_findings)
     findings.extend(task_findings)
     context = build_routing_context(
         paths=args.paths,
@@ -1279,7 +1456,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         branches=args.branches,
     )
     selected, decisions = route_entries(entries, context, args.stale_only)
-    payload = build_payload(root, findings, entries, selected, decisions, task_descriptor)
+    payload = build_payload(root, findings, entries, selected, decisions, task_descriptor, goal_inventory)
 
     if args.json_output:
         output_path = args.json_output

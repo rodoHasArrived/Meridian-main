@@ -32,10 +32,9 @@ The primary user hires Meridian to know:
 
 ### Active Scope Gate
 
-A new capability belongs in the active product scope only when it helps an operator prove what
-happened, why it happened, whether it can be trusted, and what was reconciled, approved, recorded,
-or reported. Capabilities outside that operational record workflow remain deferred unless the
-roadmap registry explicitly moves them into scope.
+A new capability belongs in active product scope when current source evidence, roadmap status, or
+user direction supports it. Operational proof remains a core product strength, but it is not a
+development ceiling for other Meridian capabilities.
 
 ### External Service Inspiration
 
@@ -308,7 +307,7 @@ W6 and W7 remain planned, not complete:
 
 | Wave | Planned Capability | Gate |
 | --- | --- | --- |
-| W6 | Backtesting studio evidence loop | Backtesting Studio is deferred behind the W1-W5 operational record baseline; backtest results must link to strategy lineage and operator-facing acceptance criteria before paper promotion expansion. |
+| W6 | Backtesting studio evidence loop | Backtesting Studio remains planned; backtest results should link to strategy lineage and operator-facing acceptance criteria before paper promotion expansion. |
 | W7 | Live-readiness governance | Live operation remains gated by trusted data, paper validation, reconciliation, approvals, governed reporting evidence, accounting records, and explicit governance sign-off. |
 
 ### Active Product Surfaces

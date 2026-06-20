@@ -607,6 +607,71 @@ public sealed record RuleDryRunResultDto(
         GeneratedPostingLines ?? [];
 }
 
+public sealed record PostingRuleJournalCandidateRequestDto(
+    string FundProfileId,
+    string SourceEventType,
+    decimal EventAmount,
+    string Currency,
+    DateOnly EffectiveDate,
+    string Actor,
+    Guid AggregateId,
+    Guid PeriodId,
+    DateTimeOffset AccountingTimestamp,
+    string Description,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    Guid? LedgerBookId = null,
+    LedgerDimensionSetDto? Dimensions = null,
+    string? CounterpartyId = null,
+    string? InstrumentSymbol = null,
+    Guid? CorrelationId = null,
+    Guid? SourceEventId = null,
+    Guid? SourceJournalEntryId = null,
+    string? PolicyId = null,
+    AccountingTreatmentKindDto? TreatmentKind = null,
+    LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    TreasuryLedgerContextDto? TreasuryContext = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record PostingRuleJournalCandidateIssueDto(
+    string Code,
+    AccountingConfigurationValidationSeverityDto Severity,
+    string Message,
+    bool BlocksCandidate,
+    string? TargetId = null,
+    string? SuggestedAction = null);
+
+public sealed record PostingRuleJournalCandidateResultDto(
+    RuleDryRunResultDto DryRunResult,
+    string? SelectedRuleId,
+    string? SelectedRuleVersion,
+    IReadOnlyList<GeneratedPostingLineDto> GeneratedPostingLines,
+    AccountingPostingCommandDto? PostingCommand,
+    Guid? JournalEntryId,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    decimal Imbalance,
+    bool IsBalanced,
+    bool HasBlockingIssues,
+    bool CanSubmitForApproval,
+    bool CanPostWithoutAdditionalApproval,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<PostingRuleJournalCandidateIssueDto> Issues)
+{
+    public IReadOnlyList<GeneratedPostingLineDto> GeneratedPostingLines { get; init; } =
+        GeneratedPostingLines ?? [];
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+
+    public IReadOnlyList<PostingRuleJournalCandidateIssueDto> Issues { get; init; } =
+        Issues ?? [];
+}
+
 public sealed record AccountingRuleTestCaseDto(
     string TestCaseId,
     string DisplayName,
@@ -1373,7 +1438,10 @@ public sealed record ExternalGlExportPackageDto(
     IReadOnlyList<string> EvidenceLinks,
     ExternalGlExportCertificationDto? Certification = null,
     IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
-    IReadOnlyList<ExternalGlExportLineDto>? GeneratedLines = null)
+    IReadOnlyList<ExternalGlExportLineDto>? GeneratedLines = null,
+    string? MappingProfileId = null,
+    string? ReconciliationId = null,
+    bool RequireBalancedReconciliation = false)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
@@ -1399,7 +1467,10 @@ public sealed record ExternalGlExportPackageManifestDto(
     string Payload,
     IReadOnlyList<ExternalGlExportLineDto>? GeneratedLines = null,
     IReadOnlyList<string>? EvidenceLinks = null,
-    IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null)
+    IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
+    string? MappingProfileId = null,
+    string? ReconciliationId = null,
+    bool RequireBalancedReconciliation = false)
 {
     public IReadOnlyList<ExternalGlExportLineDto> GeneratedLines { get; init; } =
         GeneratedLines ?? [];
@@ -1738,7 +1809,8 @@ public sealed record AccountingReportPackageBundleDto(
     NavPackageDto NavPackage,
     ReportCertificationDto Certification,
     IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
-    IReadOnlyList<ReportExportArtifactDto>? ExportArtifacts = null)
+    IReadOnlyList<ReportExportArtifactDto>? ExportArtifacts = null,
+    Guid? CloseWorkflowId = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
@@ -1799,7 +1871,8 @@ public sealed record ActivateAccountingConfigurationRequest(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
-    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public interface IAccountingConfigurationService
 {

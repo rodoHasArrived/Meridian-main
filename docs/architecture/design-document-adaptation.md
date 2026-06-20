@@ -6,9 +6,8 @@
 
 This document is the executable adaptation contract for the
 [Meridian Design Document](../product/meridian-design-document.md). It is broader than the physical
-module list: it covers the W1-W5 operational-record baseline, bounded contexts, recommended modules,
-root workspaces, MVP screen inventory, later expansion deferrals, shared UI surfaces, and the
-modular-monolith rule.
+module list: it covers roadmap/status evidence, bounded contexts, recommended modules, root
+workspaces, MVP screen inventory, expansion lanes, shared UI surfaces, and the modular-monolith rule.
 
 The machine-readable contract is [`design-document-adaptation.yml`](design-document-adaptation.yml).
 Validate it with:
@@ -27,7 +26,7 @@ Meridian adapts the design document through these enforceable surfaces:
 | Root operator navigation | Browser and WPF surfaces expose `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` as the root workspaces. |
 | Compatibility groupings | `Research`, `Data Operations`, and `Governance` remain aliases or internal groupings, not new root workspaces. |
 | Recommended modules | The twelve design modules exist physically under `src/` and expose bounded-context descriptors. |
-| Bounded contexts | MVP contexts map to physical design modules; later contexts remain explicitly deferred behind W1-W5. |
+| Bounded contexts | MVP and later contexts map to physical design modules as current source, roadmap, and user direction support them. |
 | MVP screen inventory | The design-doc screen inventory maps to current browser and WPF evidence paths. |
 | Module facets | Each design module declares the required `Domain model`, `Application services`, `Contracts / APIs`, `Infrastructure`, `UI components`, and `Tests` facets. |
 | Shared UI direction | Browser, WPF, `Ui.Shared`, and `Ui.Services` remain the active shared-first operator surface lanes. |

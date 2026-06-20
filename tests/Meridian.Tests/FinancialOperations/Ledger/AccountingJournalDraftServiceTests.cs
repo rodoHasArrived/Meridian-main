@@ -93,6 +93,19 @@ public sealed class AccountingJournalDraftServiceTests
         result.Write.Entry.Metadata.FundEventId.Should().Be("fund-event:fund-alpha:interest-accrual:202605");
         result.Write.Entry.Metadata.CapitalAccountId.Should().Be("capital-account:fund-alpha:master");
         result.Write.Entry.Metadata.PaymentIntentId.Should().Be("payment:fund-alpha:interest-accrual:202605");
+        result.Write.Entry.Metadata.EvidenceReferences.Should().ContainSingle(evidence =>
+            evidence.Uri == "provider://custodian/interest-accruals/2026-05" &&
+            evidence.Kind == AccountingPostingEvidenceKindDto.Source.ToString());
+        result.Write.PostingCommand.Should().NotBeNull();
+        result.Write.PostingCommand!.AggregateId.Should().Be(aggregateId);
+        result.Write.PostingCommand.PeriodId.Should().Be(periodId);
+        result.Write.PostingCommand.SourceEventId.Should().Be(sourceEventId);
+        result.Write.PostingCommand.IdempotencyKey.Should().Be("custodian-interest:fund-alpha:202605");
+        result.Write.PostingCommand.EffectiveDate.Should().Be(new DateOnly(2026, 5, 31));
+        result.Write.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Pending);
+        result.Write.PostingCommand.Evidence.Should().ContainSingle(evidence =>
+            evidence.Uri == "provider://custodian/interest-accruals/2026-05" &&
+            evidence.Kind == AccountingPostingEvidenceKindDto.Source);
         result.ValidationIssues.Should().Contain(issue => issue.Code == "JOURNAL_DRAFT_APPROVAL_REQUIRED");
         result.EvidenceLinks.Should().ContainSingle("provider://custodian/interest-accruals/2026-05");
     }

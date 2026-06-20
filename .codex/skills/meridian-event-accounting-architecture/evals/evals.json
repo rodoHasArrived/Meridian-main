@@ -1,0 +1,135 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Skill keeps core event accounting controls and Meridian context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/accounting_architecture_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 10,
+          "required_repo_docs": 5
+        }
+      },
+      "prompt": "Use $meridian-event-accounting-architecture to review a proposed fund-event journal projection for double-entry, immutability, evidence, idempotency, replay, and close/reporting handoff risks."
+    },
+    {
+      "id": 2,
+      "description": "Capital-event posting guidance covers source evidence, double-entry, approval, period posture, and journal consequences.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/accounting_architecture_check.py",
+        "--scenario",
+        "capital-event-posting",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 7
+        }
+      },
+      "prompt": "Use $meridian-event-accounting-architecture to design capital call or distribution posting that produces journal consequences with source evidence, approval, period posture, and double-entry controls."
+    },
+    {
+      "id": 3,
+      "description": "Replay guidance covers duplicate and out-of-order events, idempotency, ordering, and fail-closed behavior.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/accounting_architecture_check.py",
+        "--scenario",
+        "duplicate-replay-controls",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 6
+        }
+      },
+      "prompt": "Use $meridian-event-accounting-architecture to review duplicate and out-of-order replay handling for idempotency, ordering, and fail-closed ledger controls."
+    },
+    {
+      "id": 4,
+      "description": "Reversal/rebook guidance covers period locks, original facts, immutability, and evidence-chain preservation.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/accounting_architecture_check.py",
+        "--scenario",
+        "period-lock-reversal",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 5
+        }
+      },
+      "prompt": "Use $meridian-event-accounting-architecture to assess a period-lock reversal/rebook path that preserves the original journal fact and evidence chain."
+    },
+    {
+      "id": 5,
+      "description": "Projection and reporting handoff guidance separates immutable facts from rebuildable read models.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/accounting_architecture_check.py",
+        "--scenario",
+        "projection-reporting-handoff",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 5
+        }
+      },
+      "prompt": "Use $meridian-event-accounting-architecture to review a projection and reporting handoff that keeps immutable journal facts distinct from rebuildable read models."
+    },
+    {
+      "id": 6,
+      "description": "Complementary lane guidance covers triggers, expected outputs, validation owners, and persona partners.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/accounting_architecture_check.py",
+        "--scenario",
+        "complementary-lanes",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 14,
+          "required_persona_partners": 5
+        }
+      },
+      "prompt": "Use $meridian-event-accounting-architecture to coordinate contract governance, test writing, diagnostics audit timeline, implementation assurance, code architecture, and accounting persona reviews."
+    }
+  ]
+}

@@ -261,7 +261,7 @@ Completed the first shared multi-asset operations proof lane by exposing Securit
 
 ### Current Summary
 
-Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. It builds on the closed W1-W5 operational-record baseline and should consume the same shared contracts/read models as the Financial Record Explorers rather than creating browser- or WPF-local business rules.
+Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. It should consume shared contracts/read models rather than creating browser- or WPF-local business rules.
 
 ### Exit Criteria
 
@@ -328,7 +328,7 @@ Planned productization slice that turns the W1-W5 accounting-record, multi-asset
 
 ### Current Summary
 
-Backtesting Studio remains planned but deferred behind the W1-W5 operational record baseline. Near-term Strategy work should only proceed when it links research or backtest results into retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting instead of creating a broad research workbench.
+Backtesting Studio remains planned. Strategy work should link research or backtest results into retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting when those links are relevant, without treating prior baselines or named productization targets as development ceilings.
 
 ### Exit Criteria
 

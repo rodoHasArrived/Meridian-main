@@ -65,9 +65,9 @@ digraph StrategyLifecycle {
     bgcolor="#edf2f7";
 
     LIVE [fillcolor="#e2e8f0",
-      label="Broker-connected execution productization\nplanned/deferred;\nrequires explicit governance\nand W1-W5 evidence"];
+      label="Broker-connected execution productization\nplanned;\nrequires explicit governance\nand supporting evidence"];
     STUDIO [fillcolor="#e2e8f0",
-      label="Backtesting Studio\nplanned/deferred behind\noperational-record baseline"];
+      label="Backtesting Studio\nplanned;\nroadmap-evidence guided"];
   }
 
   DATA -> BACKTEST;

@@ -291,9 +291,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             return null;
         }
 
-        if (!HasCloseTaskSignOffEvidenceWithProvenance(evidenceLinks, taskId, workflow))
+        if (!HasCloseTaskSignOffEvidenceWithProvenance(evidenceLinks, taskId, role, workflow))
         {
-            throw new ArgumentException("Close task sign-off evidence must reference the close task, workflow, or exact close period.", nameof(request));
+            throw new ArgumentException("Close task sign-off evidence must reference the close task, sign-off role, and workflow or exact close period on the same artifact.", nameof(request));
         }
 
         if (workflow.Status == OperationsWorkflowStatusDto.Closed && workflow.ClosePackage is not null)
@@ -775,26 +775,38 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             link.Contains("control", StringComparison.OrdinalIgnoreCase) ||
             link.Contains("review", StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasCloseTaskSignOffProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        string taskId,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            link.Contains(taskId, StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase));
-
     private static bool HasCloseTaskSignOffEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         string taskId,
+        string role,
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
             HasCloseTaskSignOffEvidence([link]) &&
-            (link.Contains(taskId, StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+            EvidenceLinkContainsToken(link, taskId) &&
+            EvidenceLinkContainsToken(link, role) &&
+            (link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
              link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)));
+             EvidenceLinkContainsToken(link, workflow.PeriodId)));
+
+    private static bool EvidenceLinkContainsToken(string link, string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        if (link.Contains(token, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var normalizedToken = NormalizeEvidenceToken(token);
+        return normalizedToken.Length > 0 &&
+            NormalizeEvidenceToken(link).Contains(normalizedToken, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeEvidenceToken(string value)
+        => string.Concat(value.Where(static ch => char.IsLetterOrDigit(ch)));
 
     private static bool HasLateAdjustmentRequestEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>

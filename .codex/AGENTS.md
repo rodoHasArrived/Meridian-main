@@ -20,8 +20,8 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
 - Read `.codex/skills/_shared/codex-execution-contract.md` before changing skills, agents,
   prompts, hooks, config, or automation guidance.
 - Read `docs/ai/codex/memory-system.md`, `.codex/memory/index.yml`, and relevant
-  `.codex/memory/tasks/*.yml` descriptors before changing Codex memory entries, routing metadata,
-  or memory validation tooling.
+  `.codex/memory/tasks/*.yml` descriptors or `.codex/memory/goals/*.yml` inventories before
+  changing Codex memory entries, routing metadata, or memory validation tooling.
 - When changing Codex development behavior or validation workflow, keep the Codex-loaded baseline
   and mirrored assistant surfaces synchronized: root `AGENTS.md`, `CLAUDE.md`,
   `docs/ai/codex/quickstart.md`, `.codex/skills/_shared/*`,
@@ -148,6 +148,7 @@ Generator scripts are dry-run by default. Use `-Apply` only after reviewing the 
   were not run.
 - Codex memory edits: run `python build/scripts/docs/check-codex-memory.py --summary`,
   descriptor routing with `--task .codex/memory/tasks/example.yml --explain --summary`, and the
-  focused memory-checker tests when `build/scripts/docs/check-codex-memory.py` changes.
+  long-goal inventory check with `--goal .codex/memory/goals/example.yml --explain --summary`.
+  Run the focused memory-checker tests when `build/scripts/docs/check-codex-memory.py` changes.
 - Command guidance edits: verify the referenced script, Make target, project, or `--help` output
   before describing the command as current.

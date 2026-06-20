@@ -168,7 +168,7 @@ and UI presentation concerns in their owning layers.
   `Meridian.FinancialOperations.Banking`; Application composition wires the module service but does
   not own the banking workflow state. Financial Operations ledger policy/projection services now
   own accounting-basis policy lookup and ledger write metadata stamping; application commands and
-  composition consume those services. Ledger posting commands also enforce line-level Security Master symbol, identity,
+  composition consume those services. Direct-lending event projections also attach deterministic idempotency, typed source evidence, and an accounting posting command before handing loan journal impact to durable storage. Ledger posting commands also enforce line-level Security Master symbol, identity,
   explicit approval reference, provenance, and ledger-mapping evidence for every instrument-bearing
   journal line before the durable journal can be appended, including securities-style account lines
   that omit symbol metadata. Candidate and line-level provenance must reference the resolved

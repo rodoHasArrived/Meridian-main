@@ -191,7 +191,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             navPackage,
             certification,
             validationIssues,
-            exportArtifacts);
+            exportArtifacts,
+            request.CloseWorkflowId);
         await SavePackageAsync(bundle, ct).ConfigureAwait(false);
         return bundle;
     }
@@ -248,7 +249,19 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             var package = rows[index];
             if (!HasReportCertificationEvidenceWithProvenance(package, evidenceLinks))
             {
-                throw new ArgumentException("Accounting report package certification evidence must reference the retained package, certification id, or exact package period.");
+                throw new ArgumentException("Accounting report package certification evidence must reference the retained package, certification id, and exact package period in the same artifact.");
+            }
+
+            var currentCloseIssues = await BuildCurrentCloseCertificationIssuesAsync(package, ct).ConfigureAwait(false);
+            if (currentCloseIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
+            {
+                var issueCodes = string.Join(", ", currentCloseIssues
+                    .Where(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+                    .Select(static issue => issue.Code)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static code => code, StringComparer.OrdinalIgnoreCase));
+                throw new InvalidOperationException(
+                    $"Accounting report package '{package.FinancialStatements.PackageId}' has current close-plan blockers and cannot be certified: {issueCodes}.");
             }
 
             if (package.Certification.State == AccountingCertificationStateDto.Certified)
@@ -412,6 +425,58 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         return issues;
     }
 
+    private async Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> BuildCurrentCloseCertificationIssuesAsync(
+        AccountingReportPackageBundleDto package,
+        CancellationToken ct)
+    {
+        if (!package.CloseWorkflowId.HasValue)
+        {
+            return [];
+        }
+
+        if (_closeManagementService is null)
+        {
+            return
+            [
+                new AccountingConfigurationValidationIssueDto(
+                    "ClosePlanServiceMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Close-backed report package '{package.FinancialStatements.PackageId}' cannot refresh close-plan state because close management is not registered.",
+                    package.FinancialStatements.PackageId,
+                    "Register close management before certifying close-backed report packages.")
+            ];
+        }
+
+        var closePlan = await _closeManagementService.GetPeriodPlanAsync(package.CloseWorkflowId.Value, ct).ConfigureAwait(false);
+        if (closePlan is null)
+        {
+            return
+            [
+                new AccountingConfigurationValidationIssueDto(
+                    "ClosePlanMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Close workflow '{package.CloseWorkflowId.Value:D}' was not found.",
+                    package.CloseWorkflowId.Value.ToString("D"),
+                    "Create or select a close workflow before certifying the accounting report package.")
+            ];
+        }
+
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        issues.AddRange(closePlan.ValidationIssues);
+        issues.AddRange(BuildCloseCertificationIssues(closePlan));
+        if (!closePlan.IsPeriodLocked)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "PeriodNotLocked",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "The close period is not locked; close-backed report package certification is blocked.",
+                closePlan.ClosePlanId,
+                "Lock the period after close approvals before final report certification."));
+        }
+
+        return issues;
+    }
+
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildRestatementCertificationIssues(
         AccountingReportPackageRequestDto request,
         string fundProfileId,
@@ -526,22 +591,14 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
             link.Contains("review", StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasReportCertificationProvenance(
-        AccountingReportPackageBundleDto package,
-        IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(link =>
-            link.Contains(package.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase));
-
     private static bool HasReportCertificationEvidenceWithProvenance(
         AccountingReportPackageBundleDto package,
         IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(link =>
             HasReportCertificationEvidence([link]) &&
-            (link.Contains(package.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase)));
+            link.Contains(package.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) &&
+            link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
+            link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase));
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {

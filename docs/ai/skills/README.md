@@ -43,6 +43,9 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-code-architecture` | Review architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-contract-governance` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-accounting-posting-controls` | Review accounting posting gates, approval, period locks, idempotency, and reversal/rebook safeguards |
+| `meridian-event-accounting-architecture` | Design event-based accounting architecture, immutable journals, ledger projections, and evidence-backed controls |
+| `meridian-ledger-projection-replay-review` | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
 | `meridian-codex-skill-builder` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | Implement, certify, and improve work with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |

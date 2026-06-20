@@ -264,6 +264,38 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void AutomatedJournalDraftProjector_PreservesEventAccountingMetadataAndTypedEvidence()
+    {
+        var evidence = new JournalEvidenceReference(
+            "evidence-dividend-1",
+            "evidence://dividend/notice-1",
+            "Source",
+            "Custodian",
+            DateTimeOffset.Parse("2026-05-30T12:00:00Z"),
+            "fund-controller");
+
+        var draft = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.DividendDeclared,
+            " aapl ",
+            42.50m,
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            FinancialAccountId: " broker-1 ",
+            SourceEventId: "source-event-dividend-1",
+            EffectiveDate: new DateOnly(2026, 5, 31),
+            IdempotencyKey: "dividend:aapl:20260531",
+            EvidenceReferences: [evidence]));
+
+        draft.Metadata.Symbol.Should().Be("AAPL");
+        draft.Metadata.FinancialAccountId.Should().Be("broker-1");
+        draft.Metadata.EffectiveDate.Should().Be(new DateOnly(2026, 5, 31));
+        draft.Metadata.IdempotencyKey.Should().Be("dividend:aapl:20260531");
+        draft.Metadata.Tags.Should().ContainKey("sourceEventId").WhoseValue.Should().Be("source-event-dividend-1");
+        draft.Metadata.EvidenceReferences.Should().ContainSingle(item =>
+            item.EvidenceId == "evidence-dividend-1" &&
+            item.Uri == "evidence://dividend/notice-1" &&
+            item.Kind == "Source");
+    }
+    [Fact]
     public void PrivateCapitalFundEventLedgerProjector_ProjectsPostedEventWithLedgerCapitalEvidenceApprovalAndReportOutput()
     {
         var ledger = new Meridian.Ledger.Ledger();

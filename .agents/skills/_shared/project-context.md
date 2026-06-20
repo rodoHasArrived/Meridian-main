@@ -18,17 +18,14 @@
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already contains strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery focus is productization around the closed W1-W5 operational record baseline:
-  data confidence, retained source evidence, reconciliation, approvals, accounting records,
-  multi-asset operational coverage, and governed reports across `Trading`, `Portfolio`,
-  `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
-- The active W5X productization targets are the shared Financial Record Explorers and the Financial
-  Operations control center for reconciliation, exception management, close support, workflow
-  control, and audit evidence.
-- Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment
-  execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
-  client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work
-  directly strengthens that operational record workflow.
+- Current delivery direction is evidence-led: use current source, the roadmap registry, and the
+  design charter to decide whether a prior baseline, named productization target, or later expansion
+  lane is the right scope.
+- Treat prior baselines and named productization targets as roadmap/status evidence, not development
+  ceilings.
+- Expansion lanes such as Backtesting Studio, live-readiness, treasury payment execution,
+  alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, and
+  no-code workflow design can proceed when current source, roadmap, or user direction supports them.
 - MDIF is the required context spine for broad generation, domain modeling, workflow design, and
   architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
   dictionary pages, and context packs before implementation.

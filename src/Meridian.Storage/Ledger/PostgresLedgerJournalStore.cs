@@ -22,6 +22,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
+        entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
 
         if (entry.AggregateId == Guid.Empty)
         {
@@ -56,6 +57,7 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         ArgumentNullException.ThrowIfNull(transaction);
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
+        entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
 
         if (entry.AggregateId == Guid.Empty)
         {

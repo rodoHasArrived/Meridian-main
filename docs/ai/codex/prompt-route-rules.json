@@ -138,6 +138,134 @@
       }
     },
     {
+      "id": "accounting-posting-controls",
+      "description": "Route accounting posting command, approval, period lock, idempotency, and reversal/rebook control requests to the posting-controls specialist.",
+      "matchWeighted": {
+        "posting control": 3.0,
+        "posting command": 2.8,
+        "journal draft": 2.2,
+        "ledger write gate": 2.5,
+        "approval gate": 2.2,
+        "period lock": 2.2,
+        "idempotency key": 2.2,
+        "stale-version": 2.0,
+        "reversal/rebook": 2.2,
+        "double-entry balance": 2.0
+      },
+      "route": {
+        "lane": "accounting-posting-controls",
+        "skill": "meridian-accounting-posting-controls",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Posting-control prompts need source evidence, approval, period, idempotency, concurrency, double-entry, and correction-path checks before implementation.",
+        "validationFloor": [
+          "python .codex/skills/meridian-accounting-posting-controls/scripts/posting_controls_check.py --summary",
+          "python .codex/skills/meridian-accounting-posting-controls/scripts/run_evals.py --all --dry-run --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "accounting-posting-controls-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "posting command or journal contract changes",
+          "period lock or approval behavior is missing",
+          "idempotency, concurrency, or reversal/rebook controls are incomplete"
+        ]
+      }
+    },
+    {
+      "id": "ledger-projection-replay-review",
+      "description": "Route ledger projection, replay ordering, rebuild, versioning, drift, and report handoff requests to the projection/replay specialist.",
+      "matchWeighted": {
+        "projection replay": 3.0,
+        "ledger projection": 2.8,
+        "projection rebuild": 2.5,
+        "idempotent replay": 2.5,
+        "out-of-order": 2.0,
+        "duplicate detection": 2.0,
+        "projection version": 2.2,
+        "balance drift": 2.0,
+        "report-line provenance": 2.0,
+        "replay evidence": 1.8
+      },
+      "route": {
+        "lane": "ledger-projection-replay-review",
+        "skill": "meridian-ledger-projection-replay-review",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Projection/replay prompts need duplicate, ordering, rebuild, projection-version, balance-drift, report-handoff, and audit replay controls before implementation.",
+        "validationFloor": [
+          "python .codex/skills/meridian-ledger-projection-replay-review/scripts/projection_replay_check.py --summary",
+          "python .codex/skills/meridian-ledger-projection-replay-review/scripts/run_evals.py --all --dry-run --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "ledger-projection-replay-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "projection replay changes accounting balances",
+          "projection or report-line contracts change",
+          "duplicate, ordering, rebuild, versioning, or drift controls are incomplete"
+        ]
+      }
+    },
+    {
+      "id": "event-accounting-architecture",
+      "description": "Route event-sourced accounting, immutable ledger, projection/replay, and accounting evidence architecture requests to the event accounting specialist.",
+      "matchWeighted": {
+        "event accounting": 3.0,
+        "event-based accounting": 3.0,
+        "event sourced accounting": 3.0,
+        "event-sourced ledger": 2.8,
+        "immutable journal": 2.5,
+        "ledger projection": 2.5,
+        "reversal rebook": 2.0,
+        "fund-event posting": 2.5,
+        "accounting evidence": 2.0
+      },
+      "route": {
+        "lane": "event-accounting-architecture",
+        "skill": "meridian-event-accounting-architecture",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Event accounting prompts need immutable ledger, double-entry, evidence, approval, period, idempotency, replay, and projection controls before implementation.",
+        "validationFloor": [
+          "python .codex/skills/meridian-event-accounting-architecture/scripts/accounting_architecture_check.py --summary",
+          "python .codex/skills/meridian-event-accounting-architecture/scripts/run_evals.py --all --dry-run --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "event-accounting-architecture-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "posting rules or ledger contracts change",
+          "projection replay changes accounting balances",
+          "evidence, approval, period lock, or idempotency controls are missing"
+        ]
+      }
+    },
+    {
       "id": "brainstorm-ideation",
       "description": "Route open-ended ideas, quick wins, product bets, and opportunity exploration to the brainstorm lane.",
       "matchWeighted": {

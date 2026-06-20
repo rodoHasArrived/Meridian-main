@@ -18,7 +18,7 @@ messages:
       - ALL domain exceptions must derive from `MeridianException` in `src/Meridian.Core/Exceptions/`
       - Use `IOptionsMonitor<T>` (not `IOptions<T>`) for runtime-reloadable configuration
       - For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load MDIF first: `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`
-      - Keep product work centered on the closed W1-W5 operational record baseline plus the active W5X productization targets: shared Financial Record Explorers and the Financial Operations control center
+      - Keep product work grounded in current source evidence, the roadmap registry, and the design charter; prior baselines and named productization targets are roadmap/status evidence, not development ceilings
       - Do not create mobile applications, mobile-first workflows, autonomous posting/approval/payment/report-release agents, or broad expansion lanes unless roadmap evidence explicitly moves them into scope
 
       # Project Overview

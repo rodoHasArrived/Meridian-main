@@ -1,0 +1,90 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Projection/replay package keeps core replay controls, handoffs, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/projection_replay_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 13,
+          "required_handoffs": 6
+        }
+      },
+      "prompt": "Use $meridian-ledger-projection-replay-review to review ledger projection replay for duplicate detection, ordering, rebuild, versioning, and report handoff risk."
+    },
+    {
+      "id": 2,
+      "description": "Duplicate and ordering scenario covers idempotent replay and correlation identifiers.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/projection_replay_check.py",
+        "--scenario",
+        "duplicate-ordering",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 6
+        }
+      },
+      "prompt": "Use $meridian-ledger-projection-replay-review to check duplicate detection, out-of-order handling, deterministic ordering, and idempotent replay."
+    },
+    {
+      "id": 3,
+      "description": "Rebuild and versioning scenario covers backfill, stale projections, checkpoints, and balance drift.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/projection_replay_check.py",
+        "--scenario",
+        "rebuild-versioning",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 6
+        }
+      },
+      "prompt": "Use $meridian-ledger-projection-replay-review to assess projection rebuilds, versioning, backfill, stale projection invalidation, checkpoints, and balance drift."
+    },
+    {
+      "id": 4,
+      "description": "Report handoff scenario preserves immutable journal facts, read models, delivery records, and audit replay evidence.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/projection_replay_check.py",
+        "--scenario",
+        "report-handoff",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 6
+        }
+      },
+      "prompt": "Use $meridian-ledger-projection-replay-review to review close/reporting handoff with immutable journal facts, read models, report-line provenance, delivery records, and audit replay evidence."
+    }
+  ]
+}

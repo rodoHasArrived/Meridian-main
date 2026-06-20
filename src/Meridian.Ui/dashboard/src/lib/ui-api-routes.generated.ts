@@ -583,6 +583,7 @@ export const UI_API_ROUTES = {
   LedgerAccountingConfigurationPostingRulePromotionApprovals: "/api/ledger/accounting-configuration/posting-rules/promotion-approvals",
   LedgerAccountingConfigurationPreview: "/api/ledger/accounting-configuration/preview",
   LedgerAccountingConfigurationPostingRuleDryRun: "/api/ledger/accounting-configuration/posting-rules/dry-run",
+  LedgerAccountingConfigurationPostingRuleCandidates: "/api/ledger/accounting-configuration/posting-rules/candidates",
   LedgerAccountingConfigurationPostingRuleTests: "/api/ledger/accounting-configuration/posting-rules/tests",
   LedgerAccountingConfigurationPostingRuleTestCases: "/api/ledger/accounting-configuration/posting-rules/test-cases",
   LedgerAccountingConfigurationActivate: "/api/ledger/accounting-configuration/activate",

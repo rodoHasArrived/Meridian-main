@@ -728,6 +728,16 @@ public sealed class AccountingConfigurationServiceTests
         await missingActivationEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*critical validation issues*");
 
+        var assistantActivation = async () => await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
+            FundProfileId: "fund-alpha",
+            Actor: "controller",
+            CorrelationId: "config-golden-activate-assistant",
+            EvidenceLinks: ["evidence://accounting/configuration/activation-approval"],
+            ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        await assistantActivation.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Reviewed automation cannot activate accounting configurations*human operator*");
+
         var activated = await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
             FundProfileId: "fund-alpha",
             Actor: "controller",
@@ -771,9 +781,50 @@ public sealed class AccountingConfigurationServiceTests
         submitted.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
         submitted.ApprovalId.Should().Be("manual-je-approval-" + submitted.JournalEntryId.ToString("N"));
         submitted.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        submitted.LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.Submit &&
+            transition.FromStatus == ManualJournalEntryStatusDto.Draft &&
+            transition.ToStatus == ManualJournalEntryStatusDto.Submitted &&
+            transition.Actor == "controller");
         var workbench = await service.GetWorkbenchAsync("fund-alpha");
         workbench.Drafts.Should().ContainSingle(item => item.JournalEntryId == submitted.JournalEntryId && item.Status == ManualJournalEntryStatusDto.Submitted);
+        workbench.Drafts.Single(item => item.JournalEntryId == submitted.JournalEntryId).LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.Submit &&
+            transition.ToStatus == ManualJournalEntryStatusDto.Submitted);
         workbench.AuditTrail.Select(item => item.Action).Should().Contain(new[] { "manual-je.save-draft", "manual-je.submit-approval" });
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntryLifecycle_SubmitActionRetainsTransition()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
+
+        var result = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            JournalEntryLifecycleActionDto.Submit,
+            "controller",
+            saved.Version,
+            Notes: "Submit through lifecycle action.",
+            CorrelationId: "manual-je-lifecycle-submit",
+            EvidenceLinks: ["evidence://accounting/manual-je/submit"]));
+
+        result.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        result.Transition.Action.Should().Be(JournalEntryLifecycleActionDto.Submit);
+        result.Transition.FromStatus.Should().Be(ManualJournalEntryStatusDto.Draft);
+        result.Transition.ToStatus.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        result.Transition.CorrelationId.Should().Be("manual-je-lifecycle-submit");
+        result.Transition.EvidenceLinks.Should().Contain("evidence://accounting/manual-je/submit");
+        result.JournalEntry.LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.TransitionId == result.Transition.TransitionId &&
+            transition.Action == JournalEntryLifecycleActionDto.Submit);
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+        workbench.AuditTrail.Should().ContainSingle(item =>
+            item.Action == "manual-je.submit-approval" &&
+            item.CorrelationId == "manual-je-lifecycle-submit");
     }
 
     [Fact]
@@ -805,6 +856,9 @@ public sealed class AccountingConfigurationServiceTests
             Notes: "Duplicate submission should fail."));
         await resubmitSubmitted.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*is Submitted and cannot be submitted for approval*");
+        submitted.ApprovalId.Should().NotBeNullOrWhiteSpace();
+        submitted.SubmittedAtUtc.Should().NotBeNull();
+        submitted.SubmittedBy.Should().Be("controller");
 
         var rejected = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             submitted.JournalEntryId,
@@ -812,7 +866,8 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Reject,
             "controller",
             submitted.Version,
-            Notes: "Controller rejected for correction."));
+            Notes: "Controller rejected for correction.",
+            EvidenceLinks: [ManualJournalReviewEvidence(submitted)]));
         var repaired = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             rejected.JournalEntry with { Memo = "Corrected after rejection." },
             "ops-user"));
@@ -820,6 +875,14 @@ public sealed class AccountingConfigurationServiceTests
         repaired.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
         repaired.Version.Should().Be(rejected.JournalEntry.Version + 1);
         repaired.Memo.Should().Be("Corrected after rejection.");
+        repaired.ApprovalId.Should().BeNull();
+        repaired.SubmittedAtUtc.Should().BeNull();
+        repaired.SubmittedBy.Should().BeNull();
+        repaired.ApprovedAtUtc.Should().BeNull();
+        repaired.ApprovedBy.Should().BeNull();
+        repaired.LifecycleTransitions.Should().Contain(item =>
+            item.Action == JournalEntryLifecycleActionDto.Reject &&
+            item.ToStatus == ManualJournalEntryStatusDto.Rejected);
 
         var resubmitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             repaired.JournalEntryId,
@@ -827,13 +890,17 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             repaired.Version,
             Notes: "Resubmit corrected journal."));
+        resubmitted.ApprovalId.Should().NotBeNullOrWhiteSpace();
+        resubmitted.SubmittedAtUtc.Should().NotBeNull();
+        resubmitted.SubmittedBy.Should().Be("controller");
         var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             resubmitted.JournalEntryId,
             resubmitted.FundProfileId,
             JournalEntryLifecycleActionDto.Approve,
             "controller",
             resubmitted.Version,
-            Notes: "Controller approved corrected journal."));
+            Notes: "Controller approved corrected journal.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(resubmitted)]));
         var editApproved = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             approved.JournalEntry with { Memo = "Attempted edit while approved." },
             "ops-user"));
@@ -847,7 +914,8 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Post,
             "controller",
             approved.JournalEntry.Version,
-            Notes: "Post corrected journal."));
+            Notes: "Post corrected journal.",
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
         var editPosted = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             posted.JournalEntry with { Memo = "Attempted edit after posting." },
             "ops-user"));
@@ -950,14 +1018,16 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Approve,
             "controller",
             submitted.Version,
-            Notes: "Controller approved attached source evidence."));
+            Notes: "Controller approved attached source evidence.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted)]));
         var posted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             approved.JournalEntry.JournalEntryId,
             approved.JournalEntry.FundProfileId,
             JournalEntryLifecycleActionDto.Post,
             "controller",
             approved.JournalEntry.Version,
-            Notes: "Posted after evidence attachment."));
+            Notes: "Posted after evidence attachment.",
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
         var immutable = async () => await service.AttachEvidenceAsync(new AttachManualJournalEntryEvidenceRequest(
             posted.JournalEntry.JournalEntryId,
             posted.JournalEntry.FundProfileId,
@@ -1204,6 +1274,18 @@ public sealed class AccountingConfigurationServiceTests
                     {
                         ["Department"] = "Fund Ops"
                     }),
+                Conditions:
+                [
+                    new AccountingRuleConditionDto(
+                        "department-predicate",
+                        "externalGl.Department",
+                        AccountingRuleConditionOperatorDto.Equals,
+                        "Fund Ops"),
+                    new AccountingRuleConditionDto(
+                        "department-alias-predicate",
+                        "gl.Department",
+                        AccountingRuleConditionOperatorDto.IsPresent)
+                ],
                 Formulas:
                 [
                     new AccountingRuleFormulaDto("source-amount", AccountingRuleFormulaKindDto.SourceAmount, 0m)
@@ -1252,6 +1334,10 @@ public sealed class AccountingConfigurationServiceTests
             item.Explanations.Contains("Rule scope does not match the dry-run dimensions."));
         rightDepartment.SelectedRuleId.Should().Be("rule-interest-external-gl-department");
         rightDepartment.IsPostingBalanced.Should().BeTrue();
+        rightDepartment.RuleMatches.Should().ContainSingle(item =>
+            item.RuleId == "rule-interest-external-gl-department" &&
+            item.Explanations.Contains("Condition 'department-predicate' matched.") &&
+            item.Explanations.Contains("Condition 'department-alias-predicate' matched."));
         foreach (var line in rightDepartment.GeneratedPostingLines)
         {
             line.Dimensions.Should().NotBeNull();
@@ -1762,7 +1848,7 @@ public sealed class AccountingConfigurationServiceTests
                     ManualJournalEntryStatusDto.Approved,
                     ApprovedBy: "cfo",
                     ApprovedAtUtc: DateTimeOffset.Parse("2026-06-15T11:00:00Z"),
-                    EvidenceLinks: ["evidence://accounting/rules/rule-interest-versioned/approval-v2"])),
+                    EvidenceLinks: ["evidence://accounting/rules/rule-interest-versioned/v2/approval-rule-interest-v2/approval-v2"])),
             Actor: "controller",
             EvidenceLinks: ["evidence://accounting/rules/rule-interest-versioned/v2"]));
 
@@ -1813,7 +1899,7 @@ public sealed class AccountingConfigurationServiceTests
                 ManualJournalEntryStatusDto.Approved,
                 ApprovedBy: "cfo",
                 ApprovedAtUtc: DateTimeOffset.Parse("2026-06-15T11:00:00Z"),
-                EvidenceLinks: ["evidence://accounting/rules/rule-interest-approved/approval-v1"]),
+                EvidenceLinks: ["evidence://accounting/rules/rule-interest-approved/v1/approval-rule-interest-v1/approval-v1"]),
             RequiresPromotionApproval: true);
         await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
             FundProfileId: "fund-alpha",
@@ -1847,7 +1933,7 @@ public sealed class AccountingConfigurationServiceTests
                     ManualJournalEntryStatusDto.Approved,
                     ApprovedBy: "cfo",
                     ApprovedAtUtc: DateTimeOffset.Parse("2026-06-16T11:00:00Z"),
-                    EvidenceLinks: ["evidence://accounting/rules/rule-interest-approved/approval-v2"])
+                    EvidenceLinks: ["evidence://accounting/rules/rule-interest-approved/v2/approval-rule-interest-v2/approval-v2"])
             },
             Actor: "controller"));
         var freshRule = freshApprovalWorkspace.PostingRules.Should().ContainSingle(item => item.RuleId == "rule-interest-approved").Subject;
@@ -1906,7 +1992,7 @@ public sealed class AccountingConfigurationServiceTests
             Actor: "cfo",
             ApprovalId: "approval-rule-interest-v7",
             Notes: "Approve stale version.",
-            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7"]));
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v6/approval-rule-interest-v7"]));
         await staleVersion.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*currently at version 'v7'*");
 
@@ -1919,7 +2005,7 @@ public sealed class AccountingConfigurationServiceTests
             Notes: "Approve with unrelated approval evidence.",
             EvidenceLinks: ["evidence://accounting/rules/other-rule/review-v6"]));
         await wrongRuleEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*must reference the retained rule, rule version, or approval id*");
+            .WithMessage("*must reference the retained rule, rule version, and approval id in the same artifact*");
 
         var splitApprovalEvidence = async () => await service.ApprovePostingRulePromotionAsync(new ApprovePostingRulePromotionRequest(
             FundProfileId: "fund-alpha",
@@ -1934,7 +2020,18 @@ public sealed class AccountingConfigurationServiceTests
                 "evidence://accounting/rules/other-rule/review-v6"
             ]));
         await splitApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*must reference the retained rule, rule version, or approval id*");
+            .WithMessage("*must reference the retained rule, rule version, and approval id in the same artifact*");
+
+        var missingApprovalIdEvidence = async () => await service.ApprovePostingRulePromotionAsync(new ApprovePostingRulePromotionRequest(
+            FundProfileId: "fund-alpha",
+            RuleId: "rule-interest-promotion-operation",
+            RuleVersion: "v7",
+            Actor: "cfo",
+            ApprovalId: "approval-rule-interest-v7",
+            Notes: "Approve with rule and version evidence that omits the approval id.",
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7"]));
+        await missingApprovalIdEvidence.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*must reference the retained rule, rule version, and approval id in the same artifact*");
 
         var missingRegression = async () => await service.ApprovePostingRulePromotionAsync(new ApprovePostingRulePromotionRequest(
             FundProfileId: "fund-alpha",
@@ -1943,7 +2040,7 @@ public sealed class AccountingConfigurationServiceTests
             Actor: "cfo",
             ApprovalId: "approval-rule-interest-v7",
             Notes: "Approve without regression coverage.",
-            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7"]));
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7"]));
         await missingRegression.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*requires at least one saved regression test case*");
 
@@ -1976,7 +2073,7 @@ public sealed class AccountingConfigurationServiceTests
             Actor: "cfo",
             ApprovalId: "approval-rule-interest-v7",
             Notes: "Approve with weak regression evidence.",
-            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7"]));
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7"]));
         await weakRegressionEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*requires every current-version saved test case evidence*");
 
@@ -2001,7 +2098,7 @@ public sealed class AccountingConfigurationServiceTests
                     new GeneratedPostingLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source-amount", 250m, Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"))
                 ]),
             Actor: "controller",
-            EvidenceLinks: ["evidence://accounting/rule-tests/interest-promotion-operation-regression"]));
+            EvidenceLinks: ["evidence://accounting/rule-tests/interest-promotion-operation-regression/rule-interest-promotion-operation/v7"]));
 
         var failingRegression = async () => await service.ApprovePostingRulePromotionAsync(new ApprovePostingRulePromotionRequest(
             FundProfileId: "fund-alpha",
@@ -2010,7 +2107,7 @@ public sealed class AccountingConfigurationServiceTests
             Actor: "cfo",
             ApprovalId: "approval-rule-interest-v7",
             Notes: "Approve with failing regression coverage.",
-            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7"]));
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7"]));
         await failingRegression.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*requires all saved regression tests*to pass*");
 
@@ -2035,7 +2132,7 @@ public sealed class AccountingConfigurationServiceTests
                     new GeneratedPostingLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source-amount", 250m, Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"))
                 ]),
             Actor: "controller",
-            EvidenceLinks: ["evidence://accounting/rule-tests/interest-promotion-operation-regression"]));
+            EvidenceLinks: ["evidence://accounting/rule-tests/interest-promotion-operation-regression/rule-interest-promotion-operation/v7"]));
 
         var assistantApproval = async () => await service.ApprovePostingRulePromotionAsync(new ApprovePostingRulePromotionRequest(
             FundProfileId: "fund-alpha",
@@ -2044,7 +2141,7 @@ public sealed class AccountingConfigurationServiceTests
             Actor: "cfo",
             ApprovalId: "approval-rule-interest-v7",
             Notes: "Approve v7 from assistant draft.",
-            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7"],
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7"],
             ActionOrigin: OperationsActionOriginDto.AssistantDraft));
         await assistantApproval.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*Reviewed automation cannot approve posting rule promotions*human operator*");
@@ -2058,7 +2155,7 @@ public sealed class AccountingConfigurationServiceTests
             Notes: "Approve v7 after regression review.",
             RequestedBy: "controller",
             RequestedAtUtc: DateTimeOffset.Parse("2026-06-18T10:00:00Z"),
-            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7"]));
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7"]));
         var rule = approved.PostingRules.Should().ContainSingle(item => item.RuleId == "rule-interest-promotion-operation").Subject;
 
         rule.RequiresPromotionApproval.Should().BeTrue();
@@ -2067,13 +2164,13 @@ public sealed class AccountingConfigurationServiceTests
         rule.PromotionApproval.ApprovedBy.Should().Be("cfo");
         rule.PromotionApproval.RequestedBy.Should().Be("controller");
         rule.PromotionApproval.Notes.Should().Be("Approve v7 after regression review.");
-        rule.PromotionApproval.EvidenceLinks.Should().Contain("evidence://accounting/rules/rule-interest-promotion-operation/review-v7");
+        rule.PromotionApproval.EvidenceLinks.Should().Contain("evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7");
         rule.Versions.Should().Contain(version =>
             version.Version == "v7" &&
             version.PromotionApproval != null &&
             version.PromotionApproval.ApprovalId == "approval-rule-interest-v7" &&
             version.EvidenceLinks.Contains("evidence://accounting/rules/rule-interest-promotion-operation/v7") &&
-            version.EvidenceLinks.Contains("evidence://accounting/rules/rule-interest-promotion-operation/review-v7"));
+            version.EvidenceLinks.Contains("evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7"));
         approved.ValidationIssues.Should().NotContain(issue =>
             issue.Code == "posting-rule.promotion-approval-required" &&
             issue.TargetId == "rule-interest-promotion-operation");
@@ -2085,7 +2182,7 @@ public sealed class AccountingConfigurationServiceTests
             Actor: "cfo",
             ApprovalId: "approval-rule-interest-v7",
             Notes: "Retry same approval after transport timeout.",
-            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7"]));
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7"]));
         var retriedRule = idempotentRetry.PostingRules.Should().ContainSingle(item => item.RuleId == "rule-interest-promotion-operation").Subject;
         retriedRule.PromotionApproval.Should().NotBeNull();
         retriedRule.PromotionApproval!.ApprovalId.Should().Be("approval-rule-interest-v7");
@@ -2102,7 +2199,7 @@ public sealed class AccountingConfigurationServiceTests
             Actor: "cfo",
             ApprovalId: "approval-rule-interest-v7-second",
             Notes: "Attempt to replace an approved promotion.",
-            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7-second"]));
+            EvidenceLinks: ["evidence://accounting/rules/rule-interest-promotion-operation/review-v7-second/approval-rule-interest-v7-second"]));
         await conflictingApproval.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*already approved by promotion 'approval-rule-interest-v7'*");
 
@@ -2110,7 +2207,90 @@ public sealed class AccountingConfigurationServiceTests
         audit.Should().ContainSingle(item =>
             item.Action == "posting-rule.promotion-approve" &&
             item.Actor == "cfo" &&
-            item.EvidenceLinks.Contains("evidence://accounting/rules/rule-interest-promotion-operation/review-v7"));
+            item.EvidenceLinks.Contains("evidence://accounting/rules/rule-interest-promotion-operation/review-v7/approval-rule-interest-v7"));
+    }
+
+    [Fact]
+    public async Task Scenario_AccountingRulesStudio_FileStoreRetainsRuleVersionsApprovalsAndSavedTestsAcrossRestart()
+    {
+        var snapshotPath = Path.Combine(Path.GetTempPath(), $"meridian-accounting-rules-{Guid.NewGuid():N}.json");
+        var service = CreateFileBackedService(snapshotPath);
+        await SeedBalancedConfigurationAsync(service);
+        await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: new PostingRuleDto(
+                RuleId: "rule-file-durable",
+                DisplayName: "Durable file-backed interest accrual",
+                SourceEventType: "InterestAccrual",
+                TemplateId: "",
+                RuleVersion: "v1",
+                EffectiveFrom: new DateOnly(2026, 1, 1),
+                Priority: 625,
+                Scope: new LedgerDimensionSetDto(FundId: "fund-alpha"),
+                Formulas:
+                [
+                    new AccountingRuleFormulaDto("source-amount", AccountingRuleFormulaKindDto.SourceAmount, 0m)
+                ],
+                GeneratedPostings:
+                [
+                    new GeneratedPostingLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, "source-amount", 0m),
+                    new GeneratedPostingLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source-amount", 0m)
+                ],
+                RequiresPromotionApproval: true),
+            Actor: "controller",
+            EvidenceLinks: ["evidence://accounting/rules/rule-file-durable/v1"]));
+        await service.UpsertRuleTestCaseAsync(new UpsertAccountingRuleTestCaseRequest(
+            FundProfileId: "fund-alpha",
+            TestCase: new AccountingRuleTestCaseDto(
+                "file-durable-regression",
+                "File durable regression",
+                new RuleDryRunRequestDto(
+                    FundProfileId: "fund-alpha",
+                    SourceEventType: "InterestAccrual",
+                    EventAmount: 450m,
+                    Currency: "USD",
+                    EffectiveDate: new DateOnly(2026, 6, 30),
+                    Actor: "controller",
+                    Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha")),
+                ExpectedRuleId: "rule-file-durable",
+                ExpectedRuleVersion: "v1"),
+            Actor: "controller",
+            EvidenceLinks: ["evidence://accounting/rule-tests/file-durable-regression/rule-file-durable/v1"]));
+        await service.ApprovePostingRulePromotionAsync(new ApprovePostingRulePromotionRequest(
+            FundProfileId: "fund-alpha",
+            RuleId: "rule-file-durable",
+            RuleVersion: "v1",
+            Actor: "cfo",
+            ApprovalId: "approval-rule-file-durable-v1",
+            Notes: "Approve durable file-backed rule after regression evidence.",
+            EvidenceLinks: ["evidence://accounting/rules/rule-file-durable/review-v1/approval-rule-file-durable-v1"]));
+
+        var reloaded = CreateFileBackedService(snapshotPath);
+        var workspace = await reloaded.GetWorkspaceAsync("fund-alpha");
+        var rule = workspace.PostingRules.Should().ContainSingle(item => item.RuleId == "rule-file-durable").Subject;
+        var suite = await reloaded.ExecuteRuleTestCasesAsync(new ExecuteAccountingRuleTestCasesRequestDto(
+            FundProfileId: "fund-alpha",
+            Actor: "controller"));
+        var audit = await reloaded.ListAuditAsync("fund-alpha");
+
+        rule.PromotionApproval.Should().NotBeNull();
+        rule.PromotionApproval!.ApprovalId.Should().Be("approval-rule-file-durable-v1");
+        rule.Versions.Should().ContainSingle(version =>
+            version.Version == "v1" &&
+            version.PromotionApproval != null &&
+            version.PromotionApproval.ApprovalState == ManualJournalEntryStatusDto.Approved &&
+            version.EvidenceLinks.Contains("evidence://accounting/rules/rule-file-durable/v1") &&
+            version.EvidenceLinks.Contains("evidence://accounting/rules/rule-file-durable/review-v1/approval-rule-file-durable-v1"));
+        workspace.RuleTestCases.Should().ContainSingle(testCase =>
+            testCase.TestCaseId == "file-durable-regression" &&
+            testCase.EvidenceLinks.Contains("evidence://accounting/rule-tests/file-durable-regression/rule-file-durable/v1"));
+        suite.TotalCount.Should().Be(1);
+        suite.PassedCount.Should().Be(1);
+        suite.Results.Should().ContainSingle(result =>
+            result.TestCaseId == "file-durable-regression" &&
+            result.Passed &&
+            result.DryRunResult.SelectedRuleId == "rule-file-durable");
+        audit.Should().Contain(item => item.Action == "posting-rule.promotion-approve" && item.Actor == "cfo");
     }
 
     [Fact]
@@ -2593,6 +2773,64 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_AccountingRulesStudio_DryRunFailsClosedWhenPredicatesRejectAllCandidates()
+    {
+        var service = CreateService();
+        await SeedBalancedConfigurationAsync(service);
+        await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: new PostingRuleDto(
+                RuleId: "rule-interest-high-threshold",
+                DisplayName: "High threshold interest accrual",
+                SourceEventType: "InterestAccrual",
+                TemplateId: "",
+                RuleVersion: "v4",
+                EffectiveFrom: new DateOnly(2026, 1, 1),
+                Priority: 304,
+                Scope: new LedgerDimensionSetDto(FundId: "fund-alpha", CounterpartyId: "counterparty-bank"),
+                Conditions:
+                [
+                    new AccountingRuleConditionDto(
+                        "minimum-interest-threshold",
+                        "amount",
+                        AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual,
+                        "500")
+                ],
+                Formulas:
+                [
+                    new AccountingRuleFormulaDto("source-amount", AccountingRuleFormulaKindDto.SourceAmount, 0m)
+                ],
+                GeneratedPostings:
+                [
+                    new GeneratedPostingLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, "source-amount", 0m),
+                    new GeneratedPostingLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source-amount", 0m)
+                ]),
+            Actor: "controller"));
+
+        var result = await service.DryRunPostingRuleAsync(new RuleDryRunRequestDto(
+            FundProfileId: "fund-alpha",
+            SourceEventType: "InterestAccrual",
+            EventAmount: 100m,
+            Currency: "USD",
+            EffectiveDate: new DateOnly(2026, 6, 30),
+            Actor: "controller",
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", CounterpartyId: "counterparty-bank"),
+            CounterpartyId: "counterparty-bank"));
+
+        result.SelectedRuleId.Should().BeNull();
+        result.IsPostingBalanced.Should().BeFalse();
+        result.GeneratedPostingLines.Should().BeEmpty();
+        result.RuleMatches.Should().ContainSingle(match =>
+            match.RuleId == "rule-interest-high-threshold" &&
+            !match.IsMatched &&
+            match.Explanations.Contains("Required condition 'minimum-interest-threshold' did not match."));
+        result.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "rule.no-candidate-match" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == "InterestAccrual");
+    }
+
+    [Fact]
     public async Task Scenario_AccountingRulesStudio_DryRunRejectsDuplicateAllocationIds()
     {
         var service = CreateService();
@@ -2856,7 +3094,7 @@ public sealed class AccountingConfigurationServiceTests
                 ExpectedRuleId: "rule-interest-generated",
                 ExpectedRuleVersion: "v2"),
             Actor: "controller",
-            EvidenceLinks: ["evidence://accounting/rule-tests/interest-accrual"]));
+            EvidenceLinks: ["evidence://accounting/rule-tests/interest-accrual-saved-happy-path/rule-interest-generated/v2"]));
 
         var persistedResult = await service.ExecuteRuleTestCasesAsync(new ExecuteAccountingRuleTestCasesRequestDto(
             FundProfileId: "fund-alpha",
@@ -2871,7 +3109,7 @@ public sealed class AccountingConfigurationServiceTests
         var workspace = await service.GetWorkspaceAsync("fund-alpha");
         workspace.RuleTestCases.Should().ContainSingle(item => item.TestCaseId == "interest-accrual-saved-happy-path");
         workspace.RuleTestCases.Single(item => item.TestCaseId == "interest-accrual-saved-happy-path").EvidenceLinks
-            .Should().Contain("evidence://accounting/rule-tests/interest-accrual");
+            .Should().Contain("evidence://accounting/rule-tests/interest-accrual-saved-happy-path/rule-interest-generated/v2");
         workspace.AuditTrail.Should().Contain(item => item.Action == "rule-test-case.upsert");
     }
 
@@ -2944,7 +3182,7 @@ public sealed class AccountingConfigurationServiceTests
                     ManualJournalEntryStatusDto.Approved,
                     ApprovedBy: "cfo",
                     ApprovedAtUtc: DateTimeOffset.Parse("2026-06-15T11:00:00Z"),
-                    EvidenceLinks: ["evidence://accounting/rule-approval/rule-interest-promotion-gated/v1"])
+                    EvidenceLinks: ["evidence://accounting/rule-approval/rule-interest-promotion-gated/v1/approval-rule-interest"])
             },
             Actor: "controller"));
 
@@ -2995,7 +3233,7 @@ public sealed class AccountingConfigurationServiceTests
                 ExpectedRuleId: "rule-other",
                 ExpectedRuleVersion: "v1"),
             Actor: "controller",
-            EvidenceLinks: ["evidence://accounting/rule-tests/interest-promotion-failing-regression"]));
+            EvidenceLinks: ["evidence://accounting/rule-tests/interest-promotion-failing-regression/rule-other/v1"]));
 
         var failingRegressionAct = async () => await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
             FundProfileId: "fund-alpha",
@@ -3021,7 +3259,7 @@ public sealed class AccountingConfigurationServiceTests
                 ExpectedRuleId: "rule-interest-promotion-gated",
                 ExpectedRuleVersion: "v1"),
             Actor: "controller",
-            EvidenceLinks: ["evidence://accounting/rule-tests/interest-promotion-failing-regression"]));
+            EvidenceLinks: ["evidence://accounting/rule-tests/interest-promotion-failing-regression/rule-interest-promotion-gated/v1"]));
 
         var activated = await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
             FundProfileId: "fund-alpha",
@@ -3060,7 +3298,7 @@ public sealed class AccountingConfigurationServiceTests
                 ManualJournalEntryStatusDto.Approved,
                 ApprovedBy: "cfo",
                 ApprovedAtUtc: DateTimeOffset.Parse("2026-06-15T11:00:00Z"),
-                EvidenceLinks: ["evidence://accounting/rule-approval/rule-interest-v1"]),
+                EvidenceLinks: ["evidence://accounting/rule-approval/rule-interest-versioned/v1/approval-rule-interest-v1"]),
             RequiresPromotionApproval: true);
         await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
             FundProfileId: "fund-alpha",
@@ -3085,7 +3323,7 @@ public sealed class AccountingConfigurationServiceTests
                 ExpectedRuleId: "rule-interest-versioned",
                 ExpectedRuleVersion: "v1"),
             Actor: "controller",
-            EvidenceLinks: ["evidence://accounting/rule-tests/interest-versioned-v1"]));
+            EvidenceLinks: ["evidence://accounting/rule-tests/interest-versioned-regression/rule-interest-versioned/v1"]));
 
         await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
             FundProfileId: "fund-alpha",
@@ -3099,7 +3337,7 @@ public sealed class AccountingConfigurationServiceTests
                     ManualJournalEntryStatusDto.Approved,
                     ApprovedBy: "cfo",
                     ApprovedAtUtc: DateTimeOffset.Parse("2026-06-16T11:00:00Z"),
-                    EvidenceLinks: ["evidence://accounting/rule-approval/rule-interest-v2"])
+                    EvidenceLinks: ["evidence://accounting/rule-approval/rule-interest-versioned/v2/approval-rule-interest-v2"])
             },
             Actor: "controller",
             EvidenceLinks: ["evidence://accounting/rule-version/rule-interest-v2"]));
@@ -3136,7 +3374,7 @@ public sealed class AccountingConfigurationServiceTests
                 ExpectedRuleId: "rule-interest-versioned",
                 ExpectedRuleVersion: "v2"),
             Actor: "controller",
-            EvidenceLinks: ["evidence://accounting/rule-tests/interest-versioned-v2"]));
+            EvidenceLinks: ["evidence://accounting/rule-tests/interest-versioned-regression/rule-interest-versioned/v2"]));
 
         var activated = await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
             FundProfileId: "fund-alpha",
@@ -3353,6 +3591,95 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_AccountingRulesStudio_ActivationAllowsSamePriorityRulesWithDisjointAmountPredicates()
+    {
+        var service = CreateService();
+        await SeedBalancedConfigurationAsync(service);
+        await service.UpsertTemplateAsync(new UpsertJournalEntryTemplateRequest(
+            FundProfileId: "fund-alpha",
+            Template: BalancedInterestAccrualTemplate(),
+            Actor: "controller"));
+        var lowValueRule = new PostingRuleDto(
+            RuleId: "rule-interest-low-value",
+            DisplayName: "Low-value interest accrual",
+            SourceEventType: "InterestAccrual",
+            TemplateId: "template-interest-accrual",
+            EffectiveFrom: new DateOnly(2026, 1, 1),
+            EffectiveTo: new DateOnly(2026, 12, 31),
+            Priority: 500,
+            Scope: new LedgerDimensionSetDto(FundId: "fund-alpha", CounterpartyId: "counterparty-bank"),
+            Conditions:
+            [
+                new AccountingRuleConditionDto(
+                    "low-value-threshold",
+                    "amount",
+                    AccountingRuleConditionOperatorDto.AmountLessThanOrEqual,
+                    "100")
+            ]);
+        var highValueRule = new PostingRuleDto(
+            RuleId: "rule-interest-high-value",
+            DisplayName: "High-value interest accrual",
+            SourceEventType: "InterestAccrual",
+            TemplateId: "template-interest-accrual",
+            EffectiveFrom: new DateOnly(2026, 1, 1),
+            EffectiveTo: new DateOnly(2026, 12, 31),
+            Priority: 500,
+            Scope: new LedgerDimensionSetDto(FundId: "fund-alpha", CounterpartyId: "counterparty-bank"),
+            Conditions:
+            [
+                new AccountingRuleConditionDto(
+                    "high-value-threshold",
+                    "amount",
+                    AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual,
+                    "101")
+            ]);
+
+        await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: lowValueRule,
+            Actor: "controller"));
+        var workspace = await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: highValueRule,
+            Actor: "controller"));
+
+        workspace.ValidationIssues.Should().NotContain(issue => issue.Code == "posting-rule.priority-conflict");
+        var lowValueDryRun = await service.DryRunPostingRuleAsync(new RuleDryRunRequestDto(
+            FundProfileId: "fund-alpha",
+            SourceEventType: "InterestAccrual",
+            EventAmount: 75m,
+            Currency: "USD",
+            EffectiveDate: new DateOnly(2026, 6, 30),
+            Actor: "controller",
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", CounterpartyId: "counterparty-bank"),
+            CounterpartyId: "counterparty-bank"));
+        var highValueDryRun = await service.DryRunPostingRuleAsync(new RuleDryRunRequestDto(
+            FundProfileId: "fund-alpha",
+            SourceEventType: "InterestAccrual",
+            EventAmount: 250m,
+            Currency: "USD",
+            EffectiveDate: new DateOnly(2026, 6, 30),
+            Actor: "controller",
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", CounterpartyId: "counterparty-bank"),
+            CounterpartyId: "counterparty-bank"));
+
+        lowValueDryRun.SelectedRuleId.Should().Be("rule-interest-low-value");
+        lowValueDryRun.RuleMatches.Count(item => item.IsMatched).Should().Be(1);
+        lowValueDryRun.ValidationIssues.Should().NotContain(issue => issue.Code == "posting-rule.priority-conflict");
+        highValueDryRun.SelectedRuleId.Should().Be("rule-interest-high-value");
+        highValueDryRun.RuleMatches.Count(item => item.IsMatched).Should().Be(1);
+        highValueDryRun.ValidationIssues.Should().NotContain(issue => issue.Code == "posting-rule.priority-conflict");
+
+        var activated = await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
+            FundProfileId: "fund-alpha",
+            Actor: "controller",
+            EvidenceLinks: ["evidence://accounting/configuration/activation-approval"]));
+
+        activated.Status.Should().Be(AccountingConfigurationStatusDto.Active);
+        activated.ValidationIssues.Should().NotContain(issue => issue.Code == "posting-rule.priority-conflict");
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntryLifecycle_ApprovesPostsAndCreatesImmutableReversalDraft()
     {
         var configuration = CreateService();
@@ -3373,13 +3700,51 @@ public sealed class AccountingConfigurationServiceTests
         await missingApprovalNotes.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal approval and rejection actions require reviewer notes.");
 
-        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+        var missingApprovalEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             submitted.JournalEntryId,
             submitted.FundProfileId,
             JournalEntryLifecycleActionDto.Approve,
             "controller",
             submitted.Version,
             Notes: "Approved by fund controller"));
+        await missingApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Manual journal approval and rejection actions require retained reviewer evidence.");
+
+        var weakApprovalEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntryId,
+            submitted.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.Version,
+            Notes: "Approved by fund controller",
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"]));
+        await weakApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Manual journal approval and rejection actions require retained approval, rejection, sign-off, or review evidence.");
+
+        var splitApprovalEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntryId,
+            submitted.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.Version,
+            Notes: "Approved by fund controller",
+            EvidenceLinks:
+            [
+                $"/api/workstation/evidence/subjects/accounting-record/support-packet/{submitted.PeriodId}",
+                "/api/workstation/evidence/subjects/accounting-record/approval/generic-review"
+            ]));
+        await splitApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent and the journal entry or accounting period on the same evidence artifact.");
+
+        var approvalEvidence = ManualJournalApprovalEvidence(submitted);
+        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntryId,
+            submitted.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.Version,
+            Notes: "Approved by fund controller",
+            EvidenceLinks: [approvalEvidence]));
         var missingPostNotes = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             approved.JournalEntry.JournalEntryId,
             approved.JournalEntry.FundProfileId,
@@ -3389,13 +3754,51 @@ public sealed class AccountingConfigurationServiceTests
         await missingPostNotes.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal posting and close-lock actions require operator notes.");
 
-        var posted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+        var missingPostEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             approved.JournalEntry.JournalEntryId,
             approved.JournalEntry.FundProfileId,
             JournalEntryLifecycleActionDto.Post,
             "controller",
             approved.JournalEntry.Version,
             Notes: "Posted after approval"));
+        await missingPostEvidence.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Manual journal posting actions require retained posting evidence.");
+
+        var weakPostEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Posted after approval",
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"]));
+        await weakPostEvidence.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Manual journal posting actions require retained posting, approval, certification, sign-off, or review evidence.");
+
+        var splitPostEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Posted after approval",
+            EvidenceLinks:
+            [
+                $"/api/workstation/evidence/subjects/accounting-record/support-packet/{approved.JournalEntry.PeriodId}",
+                "/api/workstation/evidence/subjects/accounting-record/posting/generic-review"
+            ]));
+        await splitPostEvidence.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Manual journal posting evidence must reference posting intent and the journal entry or accounting period on the same evidence artifact.");
+
+        var postingEvidence = ManualJournalPostingEvidence(approved.JournalEntry);
+        var posted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Posted after approval",
+            EvidenceLinks: [postingEvidence]));
         var missingCloseLockNotes = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             posted.JournalEntry.JournalEntryId,
             posted.JournalEntry.FundProfileId,
@@ -3520,7 +3923,9 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks: [reversalEvidence]));
 
         approved.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Approved);
+        approved.Transition.EvidenceLinks.Should().Contain(approvalEvidence);
         posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        posted.Transition.EvidenceLinks.Should().Contain(postingEvidence);
         reversal.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Reversed);
         reversal.Transition.FromStatus.Should().Be(ManualJournalEntryStatusDto.Posted);
         reversal.Transition.ToStatus.Should().Be(ManualJournalEntryStatusDto.Reversed);
@@ -3568,14 +3973,16 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Approve,
             "controller",
             rebookSubmitted.Version,
-            Notes: "Controller approved the rebook source entry."));
+            Notes: "Controller approved the rebook source entry.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(rebookSubmitted)]));
         var rebookPosted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             rebookApproved.JournalEntry.JournalEntryId,
             rebookApproved.JournalEntry.FundProfileId,
             JournalEntryLifecycleActionDto.Post,
             "controller",
             rebookApproved.JournalEntry.Version,
-            Notes: "Posted before rebook"));
+            Notes: "Posted before rebook",
+            EvidenceLinks: [ManualJournalPostingEvidence(rebookApproved.JournalEntry)]));
         var invalidRebook = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             rebookPosted.JournalEntry.JournalEntryId,
             rebookPosted.JournalEntry.FundProfileId,
@@ -3644,14 +4051,16 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Approve,
             "controller",
             lockSubmitted.Version,
-            Notes: "Controller approved the close-lock source entry."));
+            Notes: "Controller approved the close-lock source entry.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(lockSubmitted)]));
         var lockPosted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             lockApproved.JournalEntry.JournalEntryId,
             lockApproved.JournalEntry.FundProfileId,
             JournalEntryLifecycleActionDto.Post,
             "controller",
             lockApproved.JournalEntry.Version,
-            Notes: "Posted before close lock."));
+            Notes: "Posted before close lock.",
+            EvidenceLinks: [ManualJournalPostingEvidence(lockApproved.JournalEntry)]));
         var closeLocked = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             lockPosted.JournalEntry.JournalEntryId,
             lockPosted.JournalEntry.FundProfileId,
@@ -5579,6 +5988,12 @@ public sealed class AccountingConfigurationServiceTests
             new InMemoryAccountingActionAuditStore());
     }
 
+    private static AccountingConfigurationService CreateFileBackedService(string snapshotPath)
+    {
+        var store = new FileAccountingConfigurationStore(snapshotPath);
+        return new AccountingConfigurationService(store, store);
+    }
+
     private static ManualJournalEntryWorkbenchService CreateManualJournalEntryWorkbenchService(
         IAccountingConfigurationService configurationService,
         ILedgerJournalStore? journalStore = null,
@@ -5593,6 +6008,15 @@ public sealed class AccountingConfigurationServiceTests
             reportPackWorkflowService: reportPackWorkflowService,
             bankTransactionSource: bankTransactionSource);
     }
+
+    private static string ManualJournalApprovalEvidence(ManualJournalEntryDraftDto journalEntry)
+        => $"/api/workstation/evidence/subjects/accounting-record/approval/{journalEntry.PeriodId}";
+
+    private static string ManualJournalReviewEvidence(ManualJournalEntryDraftDto journalEntry)
+        => $"/api/workstation/evidence/subjects/accounting-record/review/{journalEntry.PeriodId}";
+
+    private static string ManualJournalPostingEvidence(ManualJournalEntryDraftDto journalEntry)
+        => $"/api/workstation/evidence/subjects/accounting-record/posting/{journalEntry.PeriodId}";
 
     private sealed class StaticBankTransactionSource(params BankTransactionDto[] transactions) : IBankTransactionSource
     {

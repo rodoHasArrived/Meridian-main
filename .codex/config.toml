@@ -118,6 +118,21 @@ config_file = "agents/meridian-blueprint.toml"
 [agents."meridian-brainstorm"]
 config_file = "agents/meridian-brainstorm.toml"
 
+[agents."meridian-opportunity-scout"]
+config_file = "agents/meridian-opportunity-scout.toml"
+
+[agents."meridian-persona-signal-scout"]
+config_file = "agents/meridian-persona-signal-scout.toml"
+
+[agents."meridian-idea-critic"]
+config_file = "agents/meridian-idea-critic.toml"
+
+[agents."meridian-feasibility-sketcher"]
+config_file = "agents/meridian-feasibility-sketcher.toml"
+
+[agents."meridian-idea-to-blueprint-router"]
+config_file = "agents/meridian-idea-to-blueprint-router.toml"
+
 [agents."meridian-browser-workstation"]
 config_file = "agents/meridian-browser-workstation.toml"
 
@@ -132,6 +147,15 @@ config_file = "agents/meridian-code-architecture.toml"
 
 [agents."meridian-contract-governance"]
 config_file = "agents/meridian-contract-governance.toml"
+
+[agents."meridian-accounting-posting-controls"]
+config_file = "agents/meridian-accounting-posting-controls.toml"
+
+[agents."meridian-event-accounting-architecture"]
+config_file = "agents/meridian-event-accounting-architecture.toml"
+
+[agents."meridian-ledger-projection-replay-review"]
+config_file = "agents/meridian-ledger-projection-replay-review.toml"
 
 [agents."meridian-codex-skill-builder"]
 config_file = "agents/meridian-codex-skill-builder.toml"

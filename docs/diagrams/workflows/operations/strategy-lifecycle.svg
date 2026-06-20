@@ -189,8 +189,8 @@
 <title>STUDIO</title>
 <path fill="#e2e8f0" stroke="black" d="M175.37,-134C175.37,-134 62.18,-134 62.18,-134 56.18,-134 50.18,-128 50.18,-122 50.18,-122 50.18,-102 50.18,-102 50.18,-96 56.18,-90 62.18,-90 62.18,-90 175.37,-90 175.37,-90 181.37,-90 187.37,-96 187.37,-102 187.37,-102 187.37,-122 187.37,-122 187.37,-128 181.37,-134 175.37,-134"/>
 <text xml:space="preserve" text-anchor="middle" x="118.78" y="-121" font-family="Helvetica,sans-Serif" font-size="10.00">Backtesting Studio</text>
-<text xml:space="preserve" text-anchor="middle" x="118.78" y="-109" font-family="Helvetica,sans-Serif" font-size="10.00">planned/deferred behind</text>
-<text xml:space="preserve" text-anchor="middle" x="118.78" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00">operational&#45;record baseline</text>
+<text xml:space="preserve" text-anchor="middle" x="118.78" y="-109" font-family="Helvetica,sans-Serif" font-size="10.00">planned</text>
+<text xml:space="preserve" text-anchor="middle" x="118.78" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00">roadmap&#45;evidence guided</text>
 </g>
 <!-- STUDIO&#45;&gt;BACKTEST -->
 <g id="edge11" class="edge">

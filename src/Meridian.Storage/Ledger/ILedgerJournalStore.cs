@@ -1,6 +1,6 @@
-using Meridian.Ledger;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
 using Npgsql;
 
 namespace Meridian.Storage.Ledger;
@@ -87,7 +87,8 @@ public sealed record LedgerJournalEntryWrite(
     Guid? SourceEventId = null,
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
-    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null);
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    AccountingPostingCommandDto? PostingCommand = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,

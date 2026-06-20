@@ -40,8 +40,9 @@ Use these before claiming an AI surface is current:
 
 - `build/scripts/docs/check-codex-memory.py`
   - Validates `.codex/memory/index.yml`, indexed Markdown entry metadata, source references,
-    stale review dates, disabled tiers, unindexed files, task descriptors, negative routing guards,
-    and selective routing by task, path, tag, skill, intent, or branch.
+    stale review dates, disabled tiers, unindexed files, task descriptors, goal inventories,
+    negative routing guards, and selective routing by goal, task, path, tag, skill, intent, or
+    branch.
 - `build/scripts/docs/check-ai-inventory.py`
   - Inventories root assistant shims, Codex/Claude/Copilot surfaces, prompts, tools, and optional
     IDE entrypoints.
@@ -118,6 +119,8 @@ Use these for multi-agent, parallel, or route-aware work:
     references and refuse existing or out-of-root paths.
 - `build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain`
   - Shows selected and skipped memory decisions for a scoped Codex task descriptor.
+- `build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --explain`
+  - Shows goal progress inventory plus routing through the goal's active task descriptor.
 - `build/scripts/docs/check-codex-memory.py --json-output <path>`
   - Emits selected entries, routing decisions, task-scope conflicts, stale warnings, and validation
     findings for downstream inspection.

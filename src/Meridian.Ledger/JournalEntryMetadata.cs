@@ -27,8 +27,12 @@ public sealed record JournalEntryMetadata(
     string? InvestorId = null,
     string? PaymentIntentId = null,
     string? SettlementReference = null,
-    IReadOnlyDictionary<string, string>? Tags = null)
+    IReadOnlyDictionary<string, string>? Tags = null,
+    IReadOnlyList<JournalEvidenceReference>? EvidenceReferences = null)
 {
+    public IReadOnlyList<JournalEvidenceReference> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
     /// <summary>
     /// Returns a normalized copy suitable for durable comparisons and filters.
     /// </summary>
@@ -64,6 +68,7 @@ public sealed record JournalEntryMetadata(
             PaymentIntentId = string.IsNullOrWhiteSpace(PaymentIntentId) ? null : PaymentIntentId.Trim(),
             SettlementReference = string.IsNullOrWhiteSpace(SettlementReference) ? null : SettlementReference.Trim(),
             Tags = tags,
+            EvidenceReferences = EvidenceReferences.Select(static item => item.Normalize()).ToArray(),
         };
     }
 }

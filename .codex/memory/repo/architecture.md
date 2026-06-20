@@ -71,8 +71,9 @@ invalidates_when:
 Use this memory for broad generation, architecture-sensitive refactors, and UI-surface work.
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase.
-- Current productization centers on the closed W1-W5 operational record baseline and active W5X
-  targets: shared Financial Record Explorers and the Financial Operations control center.
+- Current productization is evidence-led: use source and roadmap status to choose the active slice;
+  prior baselines and named productization targets are status signals, not project development
+  restrictions.
 - Active operator UI surfaces are `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
 - Browser workstation production assets live under `src/Meridian.Ui/wwwroot/workstation/`.
 - `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` are shared API/read-model support

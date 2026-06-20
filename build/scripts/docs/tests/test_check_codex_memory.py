@@ -109,6 +109,28 @@ promotion_candidates: []
 """
 
 
+def goal_inventory(progress_status: str = "in_progress") -> str:
+    return f"""version: 1
+goal_id: goal-a
+objective: Keep Codex memory goal-aware.
+status: active
+started_at: 2026-06-20T00:00:00Z
+updated_at: 2026-06-20T00:10:00Z
+active_task_descriptor: .codex/memory/tasks/task-a.yml
+progress_inventory:
+  - id: task-routing
+    status: {progress_status}
+    summary: Add task descriptor routing.
+    evidence_refs:
+      - docs/ai/tooling/README.md
+    updated_at: 2026-06-20T00:10:00Z
+next_actions:
+  - Run focused memory validation.
+open_questions: []
+promotion_candidates: []
+"""
+
+
 def task_memory_entry(task_id: str) -> str:
     return f"""id: task:{task_id}
 tier: task
@@ -378,6 +400,57 @@ entries:
             self.assertEqual([], findings)
             self.assertNotIn("repo:generic-tag", [entry["id"] for entry in by_task])
             self.assertIn("repo:generic-tag", [entry["id"] for entry in by_explicit_tag])
+
+    def test_goal_inventory_loads_active_task_descriptor(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+            write(root / ".codex" / "memory" / "goals" / "goal-a.yml", goal_inventory())
+            json_path = root / "goal-routing.json"
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                status = check_codex_memory.main(
+                    [
+                        "--root",
+                        str(root),
+                        "--goal",
+                        ".codex/memory/goals/goal-a.yml",
+                        "--explain",
+                        "--summary",
+                        "--json-output",
+                        str(json_path),
+                    ]
+                )
+
+            self.assertEqual(0, status)
+            self.assertIn("goal: goal-a (active)", stdout.getvalue())
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+            self.assertEqual("goal-a", payload["goal_inventory"]["goal_id"])
+            self.assertEqual("task-a", payload["task_descriptor"]["task_id"])
+            self.assertEqual(["repo:validation"], [entry["id"] for entry in payload["selected_entries"]])
+
+    def test_goal_inventory_rejects_unknown_progress_status(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+            write(root / ".codex" / "memory" / "goals" / "goal-a.yml", goal_inventory("almost_done"))
+
+            _, findings = check_codex_memory.load_goal_inventory(root, ".codex/memory/goals/goal-a.yml")
+
+            self.assertTrue(any("Unknown progress status" in finding.message for finding in findings))
+
+    def test_goal_inventory_yaml_is_not_reported_as_unindexed_memory(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "goals" / "goal-a.yml", goal_inventory())
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertFalse(any(".codex/memory/goals/goal-a.yml" in finding.path for finding in findings))
 
     def test_write_stub_refuses_existing_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -280,7 +280,7 @@ public sealed partial class WorkstationEndpointsTests
                     ManualJournalEntryStatusDto.Approved,
                     "untrusted-controller",
                     "Controller should not sign off a task before dependencies are complete.",
-                    EvidenceLinks: [$"evidence:close-task:{dependentTask.TaskId}:dependency-block-signoff"]),
+                    EvidenceLinks: [$"evidence:close-task:{dependentTask.TaskId}:{dependentRole}:2026-07:dependency-block-signoff"]),
                 ServerJsonOptions);
 
             blockedSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
@@ -295,7 +295,7 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "assistant",
                 "Assistant drafted sign-off should not satisfy close control.",
-                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:controller-signoff"],
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:Controller:2026-07:controller-signoff"],
                 ActionOrigin: OperationsActionOriginDto.AssistantDraft),
             ServerJsonOptions);
 
@@ -324,10 +324,24 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "untrusted-controller",
                 "Controller tried to sign off with evidence for another close period.",
-                EvidenceLinks: ["evidence:close-task:other-task:controller-signoff:2026-08"]),
+                EvidenceLinks: ["evidence:close-task:other-task:Controller:2026-08:controller-signoff"]),
             ServerJsonOptions);
 
         wrongTaskEvidenceSignOffResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var wrongRoleEvidenceSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "Controller tried to sign off with evidence for a different close role.",
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:tax-reviewer:2026-07:approval"]),
+            ServerJsonOptions);
+
+        wrongRoleEvidenceSignOffResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         using var splitEvidenceSignOffResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementTaskSignOffs,
@@ -356,12 +370,12 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "untrusted-controller",
                 "A non-matrix role should not sign off this close task.",
-                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:tax-reviewer-signoff"]),
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:tax-reviewer:2026-07:tax-reviewer-signoff"]),
             ServerJsonOptions);
 
         unassignedRoleSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
-        var controllerSignOffEvidence = $"evidence:close-task:{taskToSignOff.TaskId}:controller-signoff";
+        var controllerSignOffEvidence = $"evidence:close-task:{taskToSignOff.TaskId}:{requiredRole}:2026-07:controller-signoff";
         using var signOffResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementTaskSignOffs,
             new SignOffCloseTaskRequestDto(
@@ -404,7 +418,7 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "untrusted-controller",
                 "Duplicate sign-off should fail.",
-                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:duplicate-signoff"]),
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:{requiredRole}:2026-07:duplicate-signoff"]),
             ServerJsonOptions);
 
         duplicateSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
@@ -741,7 +755,7 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Rejected,
                 "reviewer-reject",
                 "Controller rejected the first close sign-off review.",
-                EvidenceLinks: ["evidence:close-task:approval-control:controller-rejection"]),
+                EvidenceLinks: ["evidence:close-task:approval-control:Controller:2026-12:controller-rejection"]),
             "reviewer-reject");
 
         var rejectedTask = rejectedPlan!.Tasks.Should().ContainSingle().Subject;
@@ -761,7 +775,7 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "reviewer-a",
                 "First controller retained close sign-off.",
-                EvidenceLinks: ["evidence:close-task:approval-control:controller-signoff-a"]),
+                EvidenceLinks: ["evidence:close-task:approval-control:Controller:2026-12:controller-signoff-a"]),
             "reviewer-a");
 
         var firstRequirement = firstPlan!.Tasks.Should().ContainSingle().Subject.SignOffRequirements.Should().ContainSingle().Subject;
@@ -777,7 +791,7 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "reviewer-b",
                 "Second controller retained close sign-off.",
-                EvidenceLinks: ["evidence:close-task:approval-control:controller-signoff-b"]),
+                EvidenceLinks: ["evidence:close-task:approval-control:Controller:2026-12:controller-signoff-b"]),
             "reviewer-b");
 
         var signedOffTask = secondPlan!.Tasks.Should().ContainSingle().Subject;
@@ -795,7 +809,7 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "reviewer-c",
                 "Third controller sign-off should exceed the requirement.",
-                EvidenceLinks: ["evidence:close-task:approval-control:controller-signoff-c"]),
+                EvidenceLinks: ["evidence:close-task:approval-control:Controller:2026-12:controller-signoff-c"]),
             "reviewer-c");
         await thirdSignOff.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*already has 2 approved sign-off decision(s) for role 'Controller'*");
@@ -1056,6 +1070,50 @@ public sealed partial class WorkstationEndpointsTests
         exportManifest.ContentHash.Should().Be(exportArtifact.ContentHash);
         exportManifest.ExternalPostingAllowed.Should().BeFalse();
         exportManifest.Payload.Should().Contain("evidence:report-certification:controller-approval:2026-12");
+    }
+
+    [Fact]
+    public async Task LedgerAccountingReportPackageCertificationEndpoint_RequiresAdminMaintenance()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ManageDirectLending);
+        var client = app.GetTestClient();
+
+        using var buildResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-certify-permission",
+                PeriodId: "2027-02",
+                Actor: "browser-user",
+                BeginningCapital: 200_000m,
+                Contributions: 10_000m,
+                Distributions: 1_000m,
+                RealizedGainLoss: 8_000m,
+                Nav: 217_000m,
+                EvidenceLinks:
+                [
+                    "evidence:ledger:trial-balance:2027-02",
+                    "evidence:reconciliation:gl-tie-out:2027-02",
+                    "evidence:report-render:financial-statements:2027-02",
+                    "evidence:nav:support-package:2027-02"
+                ]),
+            ServerJsonOptions);
+        buildResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var ready = await buildResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        ready.Should().NotBeNull();
+        ready!.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+
+        using var certifyResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackageCertification,
+            new CertifyAccountingReportPackageRequestDto(
+                ready.FinancialStatements.PackageId,
+                "browser-user",
+                "Direct-lending operator attempted to certify the retained report package.",
+                ["evidence:report-certification:controller-approval:2027-02"]),
+            ServerJsonOptions);
+
+        certifyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

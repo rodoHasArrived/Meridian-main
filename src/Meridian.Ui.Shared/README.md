@@ -196,14 +196,22 @@ lines from Meridian-owned ledger totals so
 reviewers inspect the exact artifact that would be exported while external-only evidence remains
 reconciliation support. It also exposes a certification route for retained ready-for-review export
 artifacts so reviewer notes and evidence are handled by Financial Operations while live posting
-stays disabled.
+stays disabled. Retained export packages include mapping profile and reconciliation lineage, and
+the Financial Operations service revalidates the current mapping and latest reconciliation before
+the shared certification endpoint can move the artifact to Certified.
+Export-package certification is a governed release gate and requires `AdminMaintenance`;
+fund-structure operators may stage mapping and guarded export artifacts for review, but they cannot
+certify the retained export package.
+Accounting report-package certification follows the same release-gate posture: direct-lending
+operators may build retained ready-for-review report packages, while final certification requires
+`AdminMaintenance`.
 The controlled export-package manifest route returns generated mapped lines, retained evidence,
-validation state, a deterministic content hash, and explicit posting-disabled posture without
-creating a live external posting path.
-Export certification evidence must reference the retained export package id or exact export period
-on the same retained artifact, so a generic approval packet cannot certify a different guarded GL
-artifact. Assistant or automation-origin export certification requests are rejected before the
-service certifies the artifact.
+validation state, mapping/reconciliation lineage, a deterministic content hash, and explicit
+posting-disabled posture without creating a live external posting path.
+Export certification evidence must reference the retained export package id, certification id, and
+exact export period on the same retained artifact, so a generic approval packet cannot certify a
+different guarded GL artifact. Assistant or automation-origin export certification requests are
+rejected before the service certifies the artifact.
 UI Shared maps these routes and registers the Data Integration-owned credential-backed
 connection store, but it does not own GL evidence reconciliation, mapping-profile validation,
 export-package certification safeguards, or QuickBooks credential-persistence mapping.
@@ -229,7 +237,9 @@ counterparty, generated-line dimensions, allocation target dimensions, and exter
 generated posting lines before returning preview results, so browser and WPF clients do not
 reconstruct dimensional accounting context locally. Text rule predicates without retained
 comparison values fail closed as validation issues during dry-run preview and activation so
-incomplete operator predicates cannot accidentally select a posting rule. Private-capital entry types require shared treasury ledger context before
+incomplete operator predicates cannot accidentally select a posting rule. Rule staging, dry-run
+preview, and saved regression execution remain available to ledger operators, while posting-rule
+promotion approval is a governed release gate that requires `AdminMaintenance`. Private-capital entry types require shared treasury ledger context before
 approval submission: effective date, idempotency key, fund-event type/id, and capital account
 context, with optional investor, payment-intent, and settlement references. Stronger host
 registrations can still replace those stores, but browser and WPF clients should consume the shared
@@ -257,7 +267,8 @@ projects checklist dependencies, approval sign-offs, materiality policy, late ad
   lock posture, and validation issues from Operations Continuity, while the task sign-off and
   late-adjustment routes retain evidence-backed task, review request, approval, or rejection
   decisions without mutating posted journal entries. Assistant or automation-origin close sign-off
-  and late-adjustment commands are rejected before retaining decisions. Late-adjustment request evidence must identify
+  and late-adjustment commands are rejected before retaining decisions. Task sign-off evidence must identify
+the close task, sign-off role, and workflow or close period on the same retained artifact. Late-adjustment request evidence must identify
 the journal entry, workflow, or close period, and late-adjustment review evidence must identify the
 retained request, journal entry, workflow, or close period. Task sign-off requests are rejected when a
 projected dependency task has not been signed off or when the requested role is outside the
@@ -275,7 +286,9 @@ live external posting disabled. The
 `/api/ledger/reports/accounting-package/certification` route requires ledger mutation permission
 and forwards the shared certification request to the same service so endpoint adapters resolve the
 authenticated actor, reject assistant or automation-origin certification, return 404 for missing
-packages, and fail closed on draft, duplicate, or critically blocked retained packages.
+packages, require one retained approval artifact that references the package id, certification id,
+and exact period, and fail closed on draft, duplicate, stale close-plan, or critically blocked
+retained packages.
 ledger-owned capital-account impacts, so a posted fund event that touches multiple capital accounts
 keeps those account/investor identities visible in shared Accounting, browser, and WPF projections
 instead of collapsing every row to the event-level fallback account. When a posted fund event
@@ -302,12 +315,17 @@ evaluates those rules without posting, returning the selected rule, generated li
 and validation issues for browser and WPF clients. Dry-run previews also fail closed with the shared
 `posting-rule.priority-conflict` critical issue and no selected generated posting preview when
 multiple matched rules share the selected top priority, so ambiguous priority resolution is visible
-before activation or promotion. Allocation rules now split generated/template
+before activation or promotion. If effective candidates exist for the source event but dimensional
+scope or rule predicates reject every candidate, the dry-run returns `rule.no-candidate-match` and
+no generated posting preview so operators can repair event data, thresholds, or scopes before
+promotion or posting. Allocation rules now split generated/template
 posting lines by static or formula-backed positive weights, round each allocation to cents, place
 any residual on the final allocation line, and merge allocation target dimensions into the generated
-line preview. Rule scope matching includes external GL dimension key/value pairs, so department,
-class, book, or other external GL scoped rules do not match dry-run events from a different external
-dimension. Dry-run and workspace validation fail closed on duplicate active chart account paths,
+line preview. Rule scope matching includes external GL dimension key/value pairs, and rule
+conditions can address those same values with bare keys or explicit aliases such as
+`externalGl.Department` and `gl.Department`, so department, class, book, or other external GL scoped
+rules do not match dry-run events from a different external dimension. Dry-run and workspace
+validation fail closed on duplicate active chart account paths,
 missing or duplicate generated posting
 line ids, missing or archived generated posting account references, missing or duplicate allocation ids, event-specific non-positive allocation weights, missing or duplicate condition ids, malformed amount-threshold predicate values,
 inverted amount-between ranges, duplicate formula ids, missing generated-posting formula references, missing allocation
@@ -315,6 +333,11 @@ formula references, and formula-backed allocation weights that resolve non-posit
 rule-match validation issues for operator repair. Condition groups evaluate as required
 `All` or `Any` predicate sets and surface service-owned explanations when a required group does not
 match.
+`/api/ledger/accounting-configuration/posting-rules/candidates` turns the same dry-run result into a
+non-posting governed journal draft candidate by delegating to Financial Operations. The endpoint
+returns selected rule/version metadata, generated posting lines with dimensions, retained evidence
+links, blocking/non-blocking issues, and an approval-gated posting command when validation passes;
+browser and WPF clients must still route posting through the JE lifecycle.
 `/api/ledger/accounting-configuration/posting-rules/tests`
 executes ad-hoc or saved non-posting regression test cases through the same dry-run engine and returns
 per-case pass/fail assertion evidence for selected rule, selected rule version, balanced posting, expected generated posting lines,
@@ -327,7 +350,8 @@ service-owned version rows when a rule is created or its `RuleVersion` changes, 
 timestamp, mutation evidence, and the current promotion approval snapshot.
 `/api/ledger/accounting-configuration/posting-rules/promotion-approvals` approves only the current
 retained rule version, rejects stale-version approvals, requires approver notes plus retained
-approval/review evidence that references the retained rule, current version, or approval id,
+approval/review evidence that references the retained rule, current version, and approval id in
+the same retained artifact,
 requires retained saved regression coverage for that current version, runs those saved tests through
 the dry-run assertion engine, rejects assistant or automation-origin approval requests before
 mutation, updates the matching version snapshot, and appends
@@ -335,24 +359,33 @@ mutation, updates the matching version snapshot, and appends
 idempotent and does not append a second audit event; submitting a different approval id for an
 already approved rule version is rejected so the retained approval lineage cannot be overwritten.
   Configuration activation
-  now evaluates the same readiness path: the activation request itself requires retained activation,
+  now evaluates the same readiness path: the activation endpoint is an `AdminMaintenance` release
+  gate, rejects assistant or automation-origin release requests, and requires retained activation,
   approval, certification, sign-off, or review evidence before `configuration.activate` can be
   audited; promotion-gated posting rules require approved promotion
   evidence plus saved current-version test coverage with retained regression evidence that identifies
-  the test case, expected rule, or expected version, same-priority overlapping
+  the test case, expected rule, and expected version in the same artifact, same-priority overlapping
   effective rules are rejected as deterministic selection conflicts, and any failing or evidence-weak
   saved regression case blocks activation before a
 `configuration.activate` audit event is appended.
 Manual journal lifecycle actions are exposed
-through `/api/ledger/journal-entry-workbench/lifecycle-action`; approve, post, reject, close-lock,
-reverse-draft, and rebook-draft transitions stay server-owned, require human action origin, and
-append accounting action audit evidence. Approval and rejection requests require reviewer notes,
-while posting and close-lock requests require operator notes. Close-lock requests also require
-retained close, period-lock, sign-off, certification, approval, or review evidence that identifies
-the journal entry or accounting period.
+through `/api/ledger/journal-entry-workbench/lifecycle-action`; submit, approve, post, reject,
+close-lock, reverse-draft, and rebook-draft transitions stay server-owned, require human action
+origin, retain `JournalEntryLifecycleTransitionDto` rows, and append accounting action audit
+evidence. Direct submit-approval requests use the same retained submit transition. Lifecycle validation remains a non-release check, while
+review/release transitions require `AdminMaintenance` at the endpoint boundary. Approval and
+rejection requests require reviewer notes plus retained approval, rejection, sign-off, or review
+evidence that identifies the journal entry or accounting period. Posting requests require operator
+notes plus retained posting, approval, certification, sign-off, or review evidence with the same
+journal or period provenance. Close-lock requests also require retained close, period-lock,
+sign-off, certification, approval, or review evidence that identifies the journal entry or
+accounting period.
 Draft save and approval submission remain mutable only for `Draft`, `NeedsFix`, and `Rejected`
 entries; submitted, approved, posted, reversed, rebooked, and close-locked entries reject direct
 draft edits or duplicate submission and must use lifecycle actions or correction workflows.
+Rejected and needs-fix entries that are reworked through draft save clear stale submission,
+approval, posting, and close-lock fields before returning to editable draft state, while retaining
+their lifecycle transition rows and audit trail.
 Reversal and rebook requests create separate correction drafts instead of mutating the posted entry,
 and require retained reversal, rebook, correction, approval, or review evidence before the original
 posted entry transitions; that evidence must identify the posted journal entry or accounting

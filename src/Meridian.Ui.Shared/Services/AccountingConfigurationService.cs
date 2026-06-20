@@ -352,7 +352,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
 
         if (!HasPromotionApprovalEvidenceWithProvenance(evidenceLinks, ruleId, ruleVersion, approvalId))
         {
-            throw new InvalidOperationException("Posting rule promotion approval evidence must reference the retained rule, rule version, or approval id.");
+            throw new InvalidOperationException("Posting rule promotion approval evidence must reference the retained rule, rule version, and approval id in the same artifact.");
         }
 
         var existingRule = workspace.PostingRules.FirstOrDefault(item =>
@@ -392,7 +392,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
 
         if (promotionTestCases.Any(testCase => !HasRuleTestCaseEvidenceWithProvenance(testCase, testCase.EvidenceLinks)))
         {
-            throw new InvalidOperationException("Posting rule promotion approval requires every current-version saved test case evidence to reference the test case, rule, or version.");
+            throw new InvalidOperationException("Posting rule promotion approval requires every current-version saved test case evidence to reference the test case, expected rule, and expected rule version in the same artifact.");
         }
 
         var promotionSuite = await ExecuteRuleTestCasesAsync(new ExecuteAccountingRuleTestCasesRequestDto(
@@ -641,6 +641,15 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         {
             issues.Add(Issue("rule.none", AccountingConfigurationValidationSeverityDto.Critical, $"No active posting rule matched source event '{request.SourceEventType}' for {request.EffectiveDate:yyyy-MM-dd}.", request.SourceEventType, "Create an effective-dated posting rule for this source event."));
         }
+        else if (selectedRule is null && matchedCandidateRules.Count == 0)
+        {
+            issues.Add(Issue(
+                "rule.no-candidate-match",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"No effective posting rule matched source event '{request.SourceEventType}' after evaluating dimensional scope and rule conditions.",
+                request.SourceEventType,
+                "Review the dry-run match explanations, event predicates, amount thresholds, and dimensional scope before promoting or posting this rule set."));
+        }
 
         IReadOnlyList<GeneratedPostingLineDto> generatedPostingLines = selectedRule is null
             ? []
@@ -763,6 +772,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         ArgumentNullException.ThrowIfNull(request);
         var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
+        EnsureRuleStudioHumanOrigin(request.ActionOrigin, "activate accounting configurations");
         var issues = await ValidateActivationReadinessAsync(workspace, request, ct).ConfigureAwait(false);
         if (issues.Any(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
         {
@@ -887,6 +897,13 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         var existingApproval = existingRule?.PromotionApproval;
         var incomingApproval = incomingRule.PromotionApproval;
+        if (incomingRule.RequiresPromotionApproval &&
+            incomingApproval is not null &&
+            !IsApprovedPromotion(incomingRule))
+        {
+            return incomingRule with { PromotionApproval = null };
+        }
+
         if (existingRule is null ||
             !incomingRule.RequiresPromotionApproval ||
             existingApproval is null ||
@@ -1178,7 +1195,8 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     private static string? ResolveConditionField(string field, RuleDryRunRequestDto request)
     {
         var dimensions = request.Dimensions;
-        return field.Trim().ToLowerInvariant() switch
+        var normalizedField = field.Trim();
+        return normalizedField.ToLowerInvariant() switch
         {
             "sourceeventtype" or "source_event_type" => request.SourceEventType,
             "currency" => request.Currency,
@@ -1193,9 +1211,64 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             "taxlot" or "taxlotid" or "tax_lot_id" => dimensions?.TaxLotId,
             "costcenter" or "costcenterid" or "cost_center_id" => dimensions?.CostCenterId,
             "instrumentsymbol" or "instrument_symbol" => request.InstrumentSymbol,
-            _ => dimensions?.ExternalGlDimensions.TryGetValue(field, out var value) == true ? value : null
+            _ => ResolveExternalGlConditionField(normalizedField, dimensions?.ExternalGlDimensions)
         };
     }
+
+    private static string? ResolveExternalGlConditionField(
+        string field,
+        IReadOnlyDictionary<string, string>? externalGlDimensions)
+    {
+        if (externalGlDimensions is null || externalGlDimensions.Count == 0)
+        {
+            return null;
+        }
+
+        var key = StripExternalGlConditionPrefix(field);
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return null;
+        }
+
+        if (externalGlDimensions.TryGetValue(key, out var value))
+        {
+            return value;
+        }
+
+        var normalizedKey = NormalizeConditionFieldKey(key);
+        return externalGlDimensions
+            .FirstOrDefault(pair => NormalizeConditionFieldKey(pair.Key) == normalizedKey)
+            .Value;
+    }
+
+    private static string StripExternalGlConditionPrefix(string field)
+    {
+        var trimmed = field.Trim();
+        foreach (var prefix in new[] { "externalgl", "external_gl", "external-gl", "external.gl", "gl" })
+        {
+            if (trimmed.Length <= prefix.Length ||
+                !trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var separator = trimmed[prefix.Length];
+            if (separator is '.' or ':' or '/' or '\\')
+            {
+                return trimmed[(prefix.Length + 1)..].Trim();
+            }
+
+            if (separator == '[' && trimmed.EndsWith(']'))
+            {
+                return trimmed[(prefix.Length + 1)..^1].Trim();
+            }
+        }
+
+        return trimmed;
+    }
+
+    private static string NormalizeConditionFieldKey(string value)
+        => string.Concat(value.Where(static ch => char.IsLetterOrDigit(ch))).ToLowerInvariant();
 
     private static bool TryParseDecimal(string? value, out decimal result)
         => decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out result);
@@ -1749,16 +1822,6 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
             link.Contains("review", StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasPromotionApprovalProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        string ruleId,
-        string ruleVersion,
-        string approvalId)
-        => evidenceLinks.Any(link =>
-            link.Contains(ruleId, StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(ruleVersion, StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(approvalId, StringComparison.OrdinalIgnoreCase));
-
     private static bool HasPromotionApprovalEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         string ruleId,
@@ -1766,9 +1829,9 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         string approvalId)
         => evidenceLinks.Any(link =>
             HasPromotionApprovalEvidence([link]) &&
-            (link.Contains(ruleId, StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(ruleVersion, StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(approvalId, StringComparison.OrdinalIgnoreCase)));
+            link.Contains(ruleId, StringComparison.OrdinalIgnoreCase) &&
+            link.Contains(ruleVersion, StringComparison.OrdinalIgnoreCase) &&
+            link.Contains(approvalId, StringComparison.OrdinalIgnoreCase));
 
     private static void EnsureRuleStudioHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
@@ -1968,7 +2031,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
 
             if (!HasRuleTestCaseEvidenceWithProvenance(testCase, testCase.EvidenceLinks))
             {
-                issues.Add(Issue("rule-test-case.evidence-provenance-required", AccountingConfigurationValidationSeverityDto.Critical, $"Rule test case '{testCase.TestCaseId}' evidence does not identify the test case, expected rule, or expected rule version.", testCase.TestCaseId, "Attach retained evidence that names the test case, expected posting rule, or expected rule version."));
+                issues.Add(Issue("rule-test-case.evidence-provenance-required", AccountingConfigurationValidationSeverityDto.Critical, $"Rule test case '{testCase.TestCaseId}' evidence does not identify the test case, expected rule, and expected rule version on the same artifact.", testCase.TestCaseId, "Attach retained evidence that names the test case, expected posting rule, and expected rule version."));
             }
         }
 
@@ -1986,26 +2049,36 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
             link.Contains("review", StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasRuleTestCaseEvidenceProvenance(
-        AccountingRuleTestCaseDto testCase,
-        IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(link =>
-            link.Contains(testCase.TestCaseId, StringComparison.OrdinalIgnoreCase) ||
-            (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleId) &&
-                link.Contains(testCase.ExpectedRuleId, StringComparison.OrdinalIgnoreCase)) ||
-            (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleVersion) &&
-                link.Contains(testCase.ExpectedRuleVersion, StringComparison.OrdinalIgnoreCase)));
-
     private static bool HasRuleTestCaseEvidenceWithProvenance(
         AccountingRuleTestCaseDto testCase,
         IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(link =>
             HasRuleTestCaseEvidence([link]) &&
-            (link.Contains(testCase.TestCaseId, StringComparison.OrdinalIgnoreCase) ||
-             (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleId) &&
-                 link.Contains(testCase.ExpectedRuleId, StringComparison.OrdinalIgnoreCase)) ||
-             (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleVersion) &&
-                 link.Contains(testCase.ExpectedRuleVersion, StringComparison.OrdinalIgnoreCase))));
+            EvidenceLinkContainsToken(link, testCase.TestCaseId) &&
+            (string.IsNullOrWhiteSpace(testCase.ExpectedRuleId) ||
+                EvidenceLinkContainsToken(link, testCase.ExpectedRuleId)) &&
+            (string.IsNullOrWhiteSpace(testCase.ExpectedRuleVersion) ||
+                EvidenceLinkContainsToken(link, testCase.ExpectedRuleVersion)));
+
+    private static bool EvidenceLinkContainsToken(string link, string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        if (link.Contains(token, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var normalizedToken = NormalizeEvidenceToken(token);
+        return normalizedToken.Length > 0 &&
+            NormalizeEvidenceToken(link).Contains(normalizedToken, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeEvidenceToken(string value)
+        => string.Concat(value.Where(static ch => char.IsLetterOrDigit(ch)));
 
     private static bool HasSavedRegressionTestForRuleVersion(
         IReadOnlyList<AccountingRuleTestCaseDto> testCases,
@@ -2373,12 +2446,17 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                     continue;
                 }
 
+                if (!RulePredicatesCanOverlap(left, right))
+                {
+                    continue;
+                }
+
                 yield return Issue(
                     "posting-rule.priority-conflict",
                     AccountingConfigurationValidationSeverityDto.Critical,
                     $"Posting rules '{left.RuleId}' and '{right.RuleId}' share source event '{left.SourceEventType}', priority {left.Priority}, overlapping effective dates, and overlapping scope.",
                     left.RuleId,
-                    "Assign a distinct priority, effective-date window, or dimensional scope so dry-run rule selection is deterministic.");
+                    "Assign a distinct priority, effective-date window, dimensional scope, or mutually exclusive predicate so dry-run rule selection is deterministic.");
             }
         }
     }
@@ -2391,6 +2469,72 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         var rightTo = right.EffectiveTo ?? DateOnly.MaxValue;
         return leftFrom <= rightTo && rightFrom <= leftTo;
     }
+
+    private static bool RulePredicatesCanOverlap(PostingRuleDto left, PostingRuleDto right)
+    {
+        var leftAmountRange = BuildRequiredAmountRange(left);
+        var rightAmountRange = BuildRequiredAmountRange(right);
+        return AmountRangesOverlap(leftAmountRange, rightAmountRange);
+    }
+
+    private static AmountPredicateRange BuildRequiredAmountRange(PostingRuleDto rule)
+    {
+        var range = AmountPredicateRange.Unbounded;
+        foreach (var condition in rule.Conditions.Where(static condition => condition.IsRequired))
+        {
+            range = range.Intersect(BuildRequiredAmountRange(condition));
+        }
+
+        foreach (var group in rule.ConditionGroups.Where(static group =>
+                     group.IsRequired && group.Operator == AccountingRuleConditionGroupOperatorDto.All))
+        {
+            foreach (var condition in group.Conditions.Where(static condition => condition.IsRequired))
+            {
+                range = range.Intersect(BuildRequiredAmountRange(condition));
+            }
+        }
+
+        return range;
+    }
+
+    private static AmountPredicateRange BuildRequiredAmountRange(AccountingRuleConditionDto condition)
+    {
+        return condition.Operator switch
+        {
+            AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual
+                when TryParseDecimal(condition.Value, out var minimum) => AmountPredicateRange.FromMinimum(minimum),
+            AccountingRuleConditionOperatorDto.AmountLessThanOrEqual
+                when TryParseDecimal(condition.Value, out var maximum) => AmountPredicateRange.FromMaximum(maximum),
+            AccountingRuleConditionOperatorDto.AmountBetween
+                when TryParseDecimal(condition.Value, out var lower) &&
+                     TryParseDecimal(condition.SecondValue, out var upper) &&
+                     lower <= upper => new AmountPredicateRange(lower, upper, true),
+            _ => AmountPredicateRange.Unbounded
+        };
+    }
+
+    private static bool AmountRangesOverlap(AmountPredicateRange left, AmountPredicateRange right)
+    {
+        if (!left.HasConstraint || !right.HasConstraint)
+        {
+            return true;
+        }
+
+        if (left.IsEmpty || right.IsEmpty)
+        {
+            return false;
+        }
+
+        var minimum = MaxNullable(left.Minimum, right.Minimum);
+        var maximum = MinNullable(left.Maximum, right.Maximum);
+        return minimum is null || maximum is null || minimum <= maximum;
+    }
+
+    private static decimal? MaxNullable(decimal? left, decimal? right)
+        => left is null ? right : right is null ? left : Math.Max(left.Value, right.Value);
+
+    private static decimal? MinNullable(decimal? left, decimal? right)
+        => left is null ? right : right is null ? left : Math.Min(left.Value, right.Value);
 
     private static bool ScopesOverlap(LedgerDimensionSetDto? left, LedgerDimensionSetDto? right)
     {
@@ -2501,6 +2645,37 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         IReadOnlyList<AccountingRuleFormulaDto> Formulas,
         IReadOnlyList<AllocationRuleDto> Allocations,
         IReadOnlyList<GeneratedPostingLineDto> GeneratedPostings);
+
+    private readonly record struct AmountPredicateRange(decimal? Minimum, decimal? Maximum, bool HasConstraint)
+    {
+        public static AmountPredicateRange Unbounded { get; } = new(null, null, false);
+
+        public bool IsEmpty => Minimum is not null && Maximum is not null && Minimum > Maximum;
+
+        public static AmountPredicateRange FromMinimum(decimal minimum)
+            => new(minimum, null, true);
+
+        public static AmountPredicateRange FromMaximum(decimal maximum)
+            => new(null, maximum, true);
+
+        public AmountPredicateRange Intersect(AmountPredicateRange other)
+        {
+            if (!other.HasConstraint)
+            {
+                return this;
+            }
+
+            if (!HasConstraint)
+            {
+                return other;
+            }
+
+            return new AmountPredicateRange(
+                MaxNullable(Minimum, other.Minimum),
+                MinNullable(Maximum, other.Maximum),
+                true);
+        }
+    }
 
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? DefaultFundProfileId : value.Trim();
@@ -2915,11 +3090,29 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             PreparedBy = RequireText(request.Actor, nameof(request.Actor)),
             EvidenceLinks = MergeEvidenceLinks(normalizedDraft.EvidenceLinks, request.EvidenceLinks)
         };
+        saved = ClearManualJournalReviewMetadataForEditableDraft(saved);
 
         await _draftStore.SaveAsync(saved, ct).ConfigureAwait(false);
         await AppendAuditAsync(saved, "manual-je.save-draft", request.Actor, request.CorrelationId, saved.EvidenceLinks, ct).ConfigureAwait(false);
         return saved;
     }
+
+    private static ManualJournalEntryDraftDto ClearManualJournalReviewMetadataForEditableDraft(
+        ManualJournalEntryDraftDto draft)
+        => draft.Status is ManualJournalEntryStatusDto.Draft or ManualJournalEntryStatusDto.NeedsFix
+            ? draft with
+            {
+                ApprovalId = null,
+                SubmittedAtUtc = null,
+                SubmittedBy = null,
+                ApprovedAtUtc = null,
+                ApprovedBy = null,
+                PostedAtUtc = null,
+                PostedBy = null,
+                ClosedLockedAtUtc = null,
+                CloseLockedBy = null
+            }
+            : draft;
 
     private static bool CanSaveManualJournalDraft(ManualJournalEntryStatusDto status)
         => status is ManualJournalEntryStatusDto.Draft
@@ -2967,15 +3160,18 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             throw new InvalidOperationException("Manual journal entry cannot be submitted while critical validation issues remain.");
         }
 
+        var now = DateTimeOffset.UtcNow;
+        var transition = BuildSubmitTransition(validated.Status, request, now);
         var submitted = validated with
         {
             Status = ManualJournalEntryStatusDto.Submitted,
             ApprovalId = validated.ApprovalId ?? $"manual-je-approval-{validated.JournalEntryId:N}",
-            SubmittedAtUtc = DateTimeOffset.UtcNow,
+            SubmittedAtUtc = now,
             SubmittedBy = RequireText(request.Actor, nameof(request.Actor)),
-            UpdatedAtUtc = DateTimeOffset.UtcNow,
+            UpdatedAtUtc = now,
             Version = validated.Version + 1,
-            EvidenceLinks = MergeEvidenceLinks(validated.EvidenceLinks, request.EvidenceLinks)
+            EvidenceLinks = MergeEvidenceLinks(validated.EvidenceLinks, request.EvidenceLinks),
+            LifecycleTransitions = validated.LifecycleTransitions.Append(transition).ToArray()
         };
 
         await _draftStore.SaveAsync(submitted, ct).ConfigureAwait(false);
@@ -3084,21 +3280,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 "manual-je.validate",
                 now,
                 ct).ConfigureAwait(false),
-            JournalEntryLifecycleActionDto.Submit => new JournalEntryLifecycleActionResultDto(
-                await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
-                    request.JournalEntryId,
-                    request.FundProfileId,
-                    request.Actor,
-                    request.Version,
-                    request.Notes,
-                    request.CorrelationId,
-                    request.EvidenceLinks,
-                    request.ActionOrigin,
-                    request.PeriodIsLocked), ct).ConfigureAwait(false),
-                BuildTransition(validated.Status, ManualJournalEntryStatusDto.Submitted, request, now)),
+            JournalEntryLifecycleActionDto.Submit => await ApplySubmitLifecycleActionAsync(
+                request,
+                ct).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.Approve => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Submitted, request.Action),
-                RequireLifecycleDecisionNotes(request),
+                RequireApprovalLifecycleEvidence(RequireLifecycleDecisionNotes(request), validated),
                 ManualJournalEntryStatusDto.Approved,
                 "manual-je.approve",
                 now,
@@ -3106,14 +3293,14 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 item => item with { ApprovedAtUtc = now, ApprovedBy = RequireText(request.Actor, nameof(request.Actor)) }).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.Reject => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Submitted, request.Action),
-                RequireLifecycleDecisionNotes(request),
+                RequireApprovalLifecycleEvidence(RequireLifecycleDecisionNotes(request), validated),
                 ManualJournalEntryStatusDto.Rejected,
                 "manual-je.reject",
                 now,
                 ct).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.Post => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Approved, request.Action),
-                RequirePostingLifecycleNotes(request),
+                RequirePostingLifecycleEvidence(RequirePostingLifecycleNotes(request), validated),
                 ManualJournalEntryStatusDto.Posted,
                 "manual-je.post",
                 now,
@@ -3143,6 +3330,26 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 ct).ConfigureAwait(false),
             _ => throw new ArgumentOutOfRangeException(nameof(request), "Unsupported journal entry lifecycle action.")
         };
+    }
+
+    private async Task<JournalEntryLifecycleActionResultDto> ApplySubmitLifecycleActionAsync(
+        JournalEntryLifecycleActionRequestDto request,
+        CancellationToken ct)
+    {
+        var submitted = await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            request.JournalEntryId,
+            request.FundProfileId,
+            request.Actor,
+            request.Version,
+            request.Notes,
+            request.CorrelationId,
+            request.EvidenceLinks,
+            request.ActionOrigin,
+            request.PeriodIsLocked), ct).ConfigureAwait(false);
+        var transition = submitted.LifecycleTransitions.Last(static item =>
+            item.Action == JournalEntryLifecycleActionDto.Submit &&
+            item.ToStatus == ManualJournalEntryStatusDto.Submitted);
+        return new JournalEntryLifecycleActionResultDto(submitted, transition);
     }
 
     private async Task<JournalEntryLifecycleActionResultDto> ApplyStatusTransitionAsync(
@@ -3338,6 +3545,50 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         return request;
     }
 
+    private static JournalEntryLifecycleActionRequestDto RequireApprovalLifecycleEvidence(
+        JournalEntryLifecycleActionRequestDto request,
+        ManualJournalEntryDraftDto journalEntry)
+    {
+        if (request.EvidenceLinks.Count == 0)
+        {
+            throw new InvalidOperationException("Manual journal approval and rejection actions require retained reviewer evidence.");
+        }
+
+        if (!HasManualJournalApprovalEvidence(request.EvidenceLinks))
+        {
+            throw new InvalidOperationException("Manual journal approval and rejection actions require retained approval, rejection, sign-off, or review evidence.");
+        }
+
+        if (!HasManualJournalApprovalEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
+        {
+            throw new InvalidOperationException("Manual journal approval and rejection evidence must reference reviewer intent and the journal entry or accounting period on the same evidence artifact.");
+        }
+
+        return request;
+    }
+
+    private static JournalEntryLifecycleActionRequestDto RequirePostingLifecycleEvidence(
+        JournalEntryLifecycleActionRequestDto request,
+        ManualJournalEntryDraftDto journalEntry)
+    {
+        if (request.EvidenceLinks.Count == 0)
+        {
+            throw new InvalidOperationException("Manual journal posting actions require retained posting evidence.");
+        }
+
+        if (!HasManualJournalPostingEvidence(request.EvidenceLinks))
+        {
+            throw new InvalidOperationException("Manual journal posting actions require retained posting, approval, certification, sign-off, or review evidence.");
+        }
+
+        if (!HasManualJournalPostingEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
+        {
+            throw new InvalidOperationException("Manual journal posting evidence must reference posting intent and the journal entry or accounting period on the same evidence artifact.");
+        }
+
+        return request;
+    }
+
     private static JournalEntryLifecycleActionRequestDto RequireCloseLockLifecycleEvidence(
         JournalEntryLifecycleActionRequestDto request,
         ManualJournalEntryDraftDto journalEntry)
@@ -3378,6 +3629,27 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
             link.Contains("review", StringComparison.OrdinalIgnoreCase));
 
+    private static bool HasManualJournalApprovalEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("approved", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("rejection", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("rejected", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasManualJournalPostingEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("posting", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("posted", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("ledger-post", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("certification", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+
     private static bool HasManualJournalCloseLockEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>
             link.Contains("close", StringComparison.OrdinalIgnoreCase) ||
@@ -3394,6 +3666,20 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(link =>
             HasManualJournalCorrectionEvidence([link]) &&
+            HasManualJournalLifecycleEvidenceProvenance(journalEntry, [link]));
+
+    private static bool HasManualJournalApprovalEvidenceWithProvenance(
+        ManualJournalEntryDraftDto journalEntry,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            HasManualJournalApprovalEvidence([link]) &&
+            HasManualJournalLifecycleEvidenceProvenance(journalEntry, [link]));
+
+    private static bool HasManualJournalPostingEvidenceWithProvenance(
+        ManualJournalEntryDraftDto journalEntry,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            HasManualJournalPostingEvidence([link]) &&
             HasManualJournalLifecycleEvidenceProvenance(journalEntry, [link]));
 
     private static bool HasManualJournalCloseLockEvidenceWithProvenance(
@@ -3418,6 +3704,21 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             fromStatus,
             toStatus,
             request.Action,
+            RequireText(request.Actor, nameof(request.Actor)),
+            recordedAtUtc,
+            NormalizeOptional(request.Notes),
+            NormalizeOptional(request.CorrelationId),
+            request.EvidenceLinks);
+
+    private static JournalEntryLifecycleTransitionDto BuildSubmitTransition(
+        ManualJournalEntryStatusDto fromStatus,
+        SubmitManualJournalEntryApprovalRequest request,
+        DateTimeOffset recordedAtUtc)
+        => new(
+            $"manual-je-transition-{Guid.NewGuid():N}",
+            fromStatus,
+            ManualJournalEntryStatusDto.Submitted,
+            JournalEntryLifecycleActionDto.Submit,
             RequireText(request.Actor, nameof(request.Actor)),
             recordedAtUtc,
             NormalizeOptional(request.Notes),

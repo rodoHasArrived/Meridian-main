@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
@@ -501,7 +502,7 @@ public static class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRulePromotionApprovals, async (ApprovePostingRulePromotionRequest request, HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!HasLedgerCertificationPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -614,6 +615,37 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates, async (PostingRuleJournalCandidateRequestDto request, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingPostingCandidateService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var result = await service
+                    .BuildCandidateAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("BuildAccountingConfigurationPostingRuleCandidate")
+        .Produces<PostingRuleJournalCandidateResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests, async (ExecuteAccountingRuleTestCasesRequestDto request, HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -645,7 +677,7 @@ public static class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationActivate, async (ActivateAccountingConfigurationRequest request, HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!HasLedgerCertificationPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -915,7 +947,7 @@ public static class LedgerEndpoints
             CertifyAccountingReportPackageRequestDto request,
             HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!HasLedgerCertificationPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1466,7 +1498,7 @@ public static class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryLifecycleAction, async (JournalEntryLifecycleActionRequestDto request, HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!HasManualJournalLifecycleActionPermission(context, request.Action))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1525,6 +1557,9 @@ public static class LedgerEndpoints
                 auditStore,
                 context.RequestServices.GetService<ILedgerBookService>());
     }
+
+    private static IAccountingPostingCandidateService? ResolveAccountingPostingCandidateService(HttpContext context)
+        => context.RequestServices.GetService<IAccountingPostingCandidateService>();
 
     private static IManualJournalEntryWorkbenchService? ResolveManualJournalEntryWorkbenchService(HttpContext context)
     {
@@ -1603,6 +1638,16 @@ public static class LedgerEndpoints
             context,
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending);
+
+    private static bool HasLedgerCertificationPermission(HttpContext context)
+        => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
+
+    private static bool HasManualJournalLifecycleActionPermission(
+        HttpContext context,
+        JournalEntryLifecycleActionDto action)
+        => action == JournalEntryLifecycleActionDto.Validate
+            ? HasLedgerReadPermission(context)
+            : HasLedgerCertificationPermission(context);
 
     private static bool HasLedgerClosePermission(HttpContext context)
         => HasLedgerMutationPermission(context);

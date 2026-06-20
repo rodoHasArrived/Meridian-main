@@ -338,12 +338,10 @@ Every assistant and automation should use the same high-level flow:
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
    WPF names as legacy workspace aliases rather than new root workspaces.
-   Keep new product work centered on the closed W1-W5 operational record baseline plus the active
-   W5X productization targets: shared Financial Record Explorers and the Financial Operations
-   control center. Defer Backtesting Studio, live-readiness beyond paper-first governance, full
-   treasury payment execution, full alternative asset operations, forecasting/scenario engines,
-   enterprise risk, client portal, no-code workflow design, mobile, and other expansion lanes unless
-   they directly strengthen that workflow.
+   Keep new product work grounded in current source evidence, the roadmap registry, and the design
+   charter. Treat prior baselines and named productization targets as roadmap/status evidence, not
+   development ceilings; expansion lanes can proceed when current source, roadmap, or user direction
+   supports them.
    **No mobile development lane:** do not create mobile applications, mobile-specific product
    surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
    mobile-first workflows. Existing responsive browser checks may continue only as validation for
@@ -502,9 +500,9 @@ Use this checklist when changing any AI-related asset:
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
       WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
-- [ ] Keep product guidance aligned to the closed W1-W5 operational record baseline plus active W5X
-      productization targets; expansion lanes stay deferred unless roadmap data moves them into
-      active scope.
+- [ ] Keep product guidance aligned to current source evidence, the roadmap registry, and the
+      design charter without treating prior baselines or named productization targets as
+      development ceilings.
 - [ ] Keep MDIF discoverable from Codex, Claude, Copilot, Agent Skills, prompts, and MCP-facing
       guidance when broad generation, domain modeling, workflow design, or architecture-sensitive
       refactors are in scope.

@@ -2673,6 +2673,9 @@ export interface CertifyAccountingSystemExportPackageRequest {
     certification?: ExternalGlExportCertification | null;
     validationIssues: AccountingConfigurationValidationIssue[];
     generatedLines?: ExternalGlExportLine[];
+    mappingProfileId?: string | null;
+    reconciliationId?: string | null;
+    requireBalancedReconciliation?: boolean;
   }
 
   export interface ExternalGlExportPackageManifest {
@@ -2693,6 +2696,9 @@ export interface CertifyAccountingSystemExportPackageRequest {
     generatedLines: ExternalGlExportLine[];
     evidenceLinks: string[];
     validationIssues: AccountingConfigurationValidationIssue[];
+    mappingProfileId?: string | null;
+    reconciliationId?: string | null;
+    requireBalancedReconciliation?: boolean;
   }
 
 export type CloseTaskStatus = "NotStarted" | "WaitingOnDependency" | "InProgress" | "ReadyForSignOff" | "SignedOff" | "Blocked";
@@ -2976,6 +2982,7 @@ export interface AccountingReportPackageBundle {
   certification: ReportCertification;
   validationIssues: AccountingConfigurationValidationIssue[];
   exportArtifacts?: ReportExportArtifact[] | null;
+  closeWorkflowId?: string | null;
 }
 
 export interface AccountingSystemProvider {
@@ -5690,6 +5697,122 @@ export interface RuleDryRunResult {
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 
+export type LedgerPostingKind = "Originating" | "Adjustment";
+export type AccountingTreatmentKind =
+  | "General"
+  | "Accrual"
+  | "Expense"
+  | "PrepaidExpense"
+  | "Amortization"
+  | "Deferral"
+  | "Reclassification"
+  | "Reversal"
+  | "FxTranslation"
+  | "TaxLotRelief"
+  | "DirectLendingAccrual"
+  | "EquityMethodInvestment"
+  | "Intercompany"
+  | "ConsolidationElimination";
+export type AccountingPostingIntent = "Originating" | "Adjustment" | "Reversal" | "Rebook" | "Restatement" | "AutomatedDraft";
+export type AccountingPostingApprovalState = "NotRequired" | "Pending" | "Approved" | "Rejected";
+export type AccountingPostingEvidenceKind =
+  | "Source"
+  | "Approval"
+  | "Reconciliation"
+  | "Settlement"
+  | "PeriodLock"
+  | "OperatorRationale"
+  | "Correction"
+  | "ReportOutput"
+  | "AuditSupport";
+
+export interface AccountingPostingEvidenceReference {
+  evidenceId: string;
+  uri: string;
+  kind: AccountingPostingEvidenceKind;
+  sourceSystem: string;
+  retainedAtUtc: string;
+  retainedBy: string;
+  subjectId?: string | null;
+  contentHash?: string | null;
+  description?: string | null;
+}
+
+export interface AccountingPostingCommand {
+  commandId: string;
+  aggregateId: string;
+  periodId: string;
+  effectiveDate: string;
+  postingDate: string;
+  idempotencyKey: string;
+  intent: AccountingPostingIntent;
+  sourceEventId?: string | null;
+  correlationId?: string | null;
+  causationId?: string | null;
+  sourceJournalEntryId?: string | null;
+  expectedVersion?: number | null;
+  sourceEventType?: string | null;
+  treasuryContext?: TreasuryLedgerContext | null;
+  approvalState: AccountingPostingApprovalState;
+  approvalId?: string | null;
+  operatorRationale?: string | null;
+  evidence: AccountingPostingEvidenceReference[];
+  actionOrigin: OperationsActionOrigin;
+}
+
+export interface PostingRuleJournalCandidateRequest {
+  fundProfileId: string;
+  sourceEventType: string;
+  eventAmount: number;
+  currency: string;
+  effectiveDate: string;
+  actor: string;
+  aggregateId: string;
+  periodId: string;
+  accountingTimestamp: string;
+  description: string;
+  accountingBasis?: AccountingBasisKind;
+  ledgerBookId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+  counterpartyId?: string | null;
+  instrumentSymbol?: string | null;
+  correlationId?: string | null;
+  sourceEventId?: string | null;
+  sourceJournalEntryId?: string | null;
+  policyId?: string | null;
+  treatmentKind?: AccountingTreatmentKind | null;
+  postingKind?: LedgerPostingKind;
+  treasuryContext?: TreasuryLedgerContext | null;
+  evidenceLinks?: string[] | null;
+}
+
+export interface PostingRuleJournalCandidateIssue {
+  code: string;
+  severity: AccountingConfigurationValidationSeverity;
+  message: string;
+  blocksCandidate: boolean;
+  targetId?: string | null;
+  suggestedAction?: string | null;
+}
+
+export interface PostingRuleJournalCandidateResult {
+  dryRunResult: RuleDryRunResult;
+  selectedRuleId?: string | null;
+  selectedRuleVersion?: string | null;
+  generatedPostingLines: GeneratedPostingLine[];
+  postingCommand?: AccountingPostingCommand | null;
+  journalEntryId?: string | null;
+  totalDebits: number;
+  totalCredits: number;
+  imbalance: number;
+  isBalanced: boolean;
+  hasBlockingIssues: boolean;
+  canSubmitForApproval: boolean;
+  canPostWithoutAdditionalApproval: boolean;
+  evidenceLinks: string[];
+  issues: PostingRuleJournalCandidateIssue[];
+}
+
 export interface AccountingRuleTestCase {
   testCaseId: string;
   displayName: string;
@@ -6624,6 +6747,7 @@ export interface ActivateAccountingConfigurationRequest {
   evidenceLinks?: string[] | null;
   companyId?: string | null;
   reportGroupPrincipalIds?: string[] | null;
+  actionOrigin?: OperationsActionOrigin;
 }
 
 export interface LedgerTrialBalanceLine {

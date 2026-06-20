@@ -67,9 +67,17 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `meridian-code-architecture.toml` | Check architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-contract-governance.toml` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-accounting-posting-controls.toml` | Review accounting posting gates, approval, period locks, idempotency, and reversal/rebook safeguards |
+| `meridian-event-accounting-architecture.toml` | Design event-based accounting architecture and evidence-backed ledger controls |
+| `meridian-ledger-projection-replay-review.toml` | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
 | `meridian-codex-skill-builder.toml` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs.toml` | Maintain documentation and AI guidance |
+| `meridian-feasibility-sketcher.toml` | Add lightweight seams, dependency, validation, and size cards to brainstormed ideas |
+| `meridian-idea-critic.toml` | Critique brainstorm output for weak anchors, duplication, hidden cost, and wrong-lane routing |
+| `meridian-idea-to-blueprint-router.toml` | Route brainstorm candidates to blueprint, roadmap, docs, review, or no action |
 | `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
+| `meridian-opportunity-scout.toml` | Find repo-grounded opportunity areas before brainstorm generation |
+| `meridian-persona-signal-scout.toml` | Extract Persona Matrix pressure points before persona-sensitive ideation |
 | `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
 | `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
@@ -82,6 +90,20 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `safe-refactoring.toml` | Refactor desktop and shared code incrementally without behavior drift |
 | `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
 | `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
+
+### Brainstorm Companion Profiles
+
+These Codex-only profiles support `meridian-brainstorm` without becoming portable skills or
+duplicating roadmap, blueprint, competitive-pattern, or user-panel lanes:
+
+```text
+meridian-opportunity-scout -> meridian-persona-signal-scout -> meridian-brainstorm
+  -> meridian-idea-critic -> meridian-feasibility-sketcher -> meridian-idea-to-blueprint-router
+```
+
+Use `meridian-opportunity-scout` and the existing brainstorm competitive reference for competitor
+signals; do not add a separate `meridian-competitive-pattern-adapter` profile unless the lane proves
+it needs a distinct output contract.
 
 ### Persona Matrix User Testing Profiles
 
@@ -131,6 +153,9 @@ matrix facts plus domain experience, familiar programs, preferences, and testing
 | `meridian-code-architecture` | Review architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-contract-governance` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-accounting-posting-controls` | Review accounting posting gates, approval, period locks, idempotency, and reversal/rebook safeguards |
+| `meridian-event-accounting-architecture` | Design event-based accounting architecture, immutable journals, ledger projections, and evidence-backed controls |
+| `meridian-ledger-projection-replay-review` | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
 | `meridian-codex-skill-builder` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | Implement, certify, and improve changes with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
@@ -162,6 +187,9 @@ route by task phase:
 | Plan | `meridian-blueprint` | Turn one selected idea into an implementation-ready design. |
 | Architecture | `meridian-code-architecture` | Check module boundaries, dependency direction, ADR/source-doc alignment, and public seams. |
 | Contract governance | `meridian-contract-governance` | Trace DTO, route, provider-interface, and read-model impact across consumers. |
+| Accounting posting controls | `meridian-accounting-posting-controls` | Review posting gates, approval, period locks, idempotency, double-entry, and reversal/rebook safeguards. |
+| Event accounting architecture | `meridian-event-accounting-architecture` | Design event-based accounting, immutable journals, projection/replay, and evidence-backed posting controls. |
+| Ledger projection replay | `meridian-ledger-projection-replay-review` | Review replay ordering, duplicate handling, projection rebuilds, versioning, drift, and report handoff. |
 | Codex skill builder | `meridian-codex-skill-builder` | Create or audit Codex skill packages with scripts, evals, profiles, catalogs, and routes. |
 | Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence, docs sync, and gates. |
 | Review | `meridian-code-review` | Findings first; no patching unless explicitly requested. |
@@ -297,6 +325,8 @@ task-stop evidence checks.
   changed paths, branch, or explicit tags match a memory entry. Use `--explain` routing when scope
   sensitivity matters, and keep canonical docs and selected skills authoritative when memory
   disagrees.
+- Use `.codex/memory/goals/*.yml` inventories for very long Codex goals that need progress,
+  evidence, next actions, and active task descriptor state across compaction or continuation.
 - Promote session observations to task, branch, or repo memory only through
   [`memory-system.md`](memory-system.md); repo-level promotion requires current source references.
 - Keep the skill selection receipt in the Codex execution contract and quickstart: after selecting
@@ -347,6 +377,7 @@ Use the Codex skill checker for fast local drift detection:
 ```bash
 python3 build/scripts/docs/check-codex-memory.py --summary
 python3 build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary
+python3 build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --explain --summary
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-codex-skills.py --json-output docs/generated/codex-skills-check.json
 python3 build/scripts/docs/validate-roadmap-registry.py --summary

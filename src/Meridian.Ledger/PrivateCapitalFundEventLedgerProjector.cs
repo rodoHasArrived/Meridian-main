@@ -475,7 +475,8 @@ public static class PrivateCapitalFundEventLedgerProjector
 
     private static IReadOnlyList<string> ExtractEvidenceLinks(IReadOnlyList<JournalEntry> entries) =>
         entries
-            .SelectMany(static entry => ExtractEvidenceLinks(entry.Metadata.Tags))
+            .SelectMany(static entry => entry.Metadata.EvidenceReferences.Select(static evidence => evidence.Uri))
+            .Concat(entries.SelectMany(static entry => ExtractEvidenceLinks(entry.Metadata.Tags)))
             .Where(static link => !string.IsNullOrWhiteSpace(link))
             .Select(static link => link.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)

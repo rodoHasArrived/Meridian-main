@@ -6248,6 +6248,17 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               </Button>
               <Button
                 size="sm"
+                variant="secondary"
+                disabled={!view.canBuildJournalCandidate}
+                disabledReason={view.journalCandidateDisabledReason}
+                busy={view.journalCandidateBusy}
+                busyLabel={view.journalCandidateButtonLabel}
+                onClick={() => void view.buildJournalCandidate()}
+              >
+                {view.journalCandidateButtonLabel}
+              </Button>
+              <Button
+                size="sm"
                 variant="outline"
                 disabled={!view.canApplyThreshold}
                 disabledReason={view.applyThresholdDisabledReason}
@@ -6390,6 +6401,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                 {view.approveRulePromotionButtonLabel}
               </Button>
               {view.dryRunStatusText ? <span className="text-sm text-muted-foreground">{view.dryRunStatusText}</span> : null}
+              {view.journalCandidateStatusText ? <span className="text-sm text-muted-foreground">{view.journalCandidateStatusText}</span> : null}
               {view.applyEventPredicateStatusText ? <span className="text-sm text-muted-foreground">{view.applyEventPredicateStatusText}</span> : null}
               {view.applyThresholdStatusText ? <span className="text-sm text-muted-foreground">{view.applyThresholdStatusText}</span> : null}
               {view.applyEffectiveStartStatusText ? <span className="text-sm text-muted-foreground">{view.applyEffectiveStartStatusText}</span> : null}
@@ -6508,6 +6520,28 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                   ))}
                 </div>
               ) : null}
+            </div>
+          ) : null}
+
+          {view.journalCandidatePreview ? (
+            <div className="rounded-lg border border-border/70 bg-secondary/15 p-3" role="region" aria-label="Accounting rule journal draft candidate">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="font-semibold text-foreground">{view.journalCandidatePreview.title}</div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">{view.journalCandidatePreview.selectedRuleLabel}</div>
+                </div>
+                <Badge variant={view.journalCandidatePreview.balanceLabel.startsWith("Balanced") ? "success" : "warning"}>{view.journalCandidatePreview.balanceLabel}</Badge>
+              </div>
+              <div className="mt-3 grid gap-3 xl:grid-cols-3">
+                <RulesStudioList title="Draft command" rows={[view.journalCandidatePreview.commandLabel, view.journalCandidatePreview.approvalLabel, view.journalCandidatePreview.evidenceLabel]} />
+                <RulesStudioList title="Candidate posting lines" rows={view.journalCandidatePreview.generatedLineRows} />
+                <RulesStudioList
+                  title="Candidate issues"
+                  rows={view.journalCandidatePreview.issueRows.length > 0
+                    ? view.journalCandidatePreview.issueRows.map((issue) => `${issue.label}: ${issue.message}`)
+                    : ["No blocking candidate issues returned."]}
+                />
+              </div>
             </div>
           ) : null}
 

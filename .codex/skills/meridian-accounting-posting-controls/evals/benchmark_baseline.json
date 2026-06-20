@@ -1,0 +1,20 @@
+{
+  "baselines": [
+    {
+      "eval_id": 1,
+      "accepted_status": "pass"
+    },
+    {
+      "eval_id": 2,
+      "accepted_status": "pass"
+    },
+    {
+      "eval_id": 3,
+      "accepted_status": "pass"
+    },
+    {
+      "eval_id": 4,
+      "accepted_status": "pass"
+    }
+  ]
+}

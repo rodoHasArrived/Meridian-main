@@ -1,4 +1,6 @@
 using Meridian.Contracts.Ledger;
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
@@ -193,7 +195,8 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                         rule.RuleId,
                         rule.RuleVersion,
                         request.PostingKind,
-                        request.AdjustmentApproval),
+                        request.AdjustmentApproval,
+                        BuildPostingCommand(request, rule, draftEntry, treasuryContext, evidenceLinks, effectiveDate)),
                     ct)
                 .ConfigureAwait(false);
 
@@ -393,7 +396,93 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             InvestorId: NormalizeOptional(treasuryContext?.InvestorId),
             PaymentIntentId: NormalizeOptional(treasuryContext?.PaymentIntentId),
             SettlementReference: NormalizeOptional(treasuryContext?.SettlementReference),
-            Tags: tags.Count == 0 ? null : tags);
+            Tags: tags.Count == 0 ? null : tags,
+            EvidenceReferences: evidenceLinks.Select(link => new JournalEvidenceReference(
+                EvidenceId: link,
+                Uri: link,
+                Kind: AccountingPostingEvidenceKindDto.Source.ToString(),
+                SourceSystem: "FinancialOperations",
+                RetainedAtUtc: request.AccountingTimestamp,
+                RetainedBy: "financial-operations")).ToArray());
+    }
+
+    private static AccountingPostingCommandDto BuildPostingCommand(
+        AccountingJournalDraftRequest request,
+        AccountingPolicyRuleDto rule,
+        JournalEntry draftEntry,
+        TreasuryLedgerContextDto? treasuryContext,
+        IReadOnlyList<string> evidenceLinks,
+        DateOnly effectiveDate)
+    {
+        var idempotencyKey = treasuryContext?.IdempotencyKey
+                             ?? request.SourceEventId?.ToString("N")
+                             ?? NormalizeOptional(request.PolicyId)
+                             ?? draftEntry.JournalEntryId.ToString("N");
+        var commandId = request.CommandId ?? CreateDeterministicCommandId(
+            request.AggregateId,
+            request.PeriodId,
+            idempotencyKey,
+            request.SourceEventId,
+            rule.RuleId,
+            effectiveDate);
+        var approvalState = request.AdjustmentApproval?.Status == LedgerAdjustmentApprovalStatusDto.Approved
+            ? AccountingPostingApprovalStateDto.Approved
+            : rule.RequiresApproval
+                ? AccountingPostingApprovalStateDto.Pending
+                : AccountingPostingApprovalStateDto.NotRequired;
+        var intent = request.PostingKind == LedgerPostingKindDto.Adjustment
+            ? AccountingPostingIntentDto.Adjustment
+            : request.TreatmentKind switch
+            {
+                AccountingTreatmentKindDto.Reversal => AccountingPostingIntentDto.Reversal,
+                _ => AccountingPostingIntentDto.Originating
+            };
+
+        return new AccountingPostingCommandDto(
+            commandId,
+            request.AggregateId,
+            request.PeriodId,
+            effectiveDate,
+            request.AccountingTimestamp,
+            idempotencyKey,
+            intent,
+            SourceEventId: request.SourceEventId,
+            CorrelationId: request.CorrelationId,
+            CausationId: request.SourceEventId,
+            SourceJournalEntryId: request.SourceJournalEntryId,
+            SourceEventType: request.SourceEventType ?? rule.SourceEventType,
+            TreasuryContext: treasuryContext,
+            ApprovalState: approvalState,
+            ApprovalId: request.AdjustmentApproval?.ApprovalId,
+            OperatorRationale: evidenceLinks.Count == 0 ? draftEntry.Description : null,
+            Evidence: evidenceLinks.Select(link => new AccountingPostingEvidenceReferenceDto(
+                EvidenceId: link,
+                Uri: link,
+                Kind: AccountingPostingEvidenceKindDto.Source,
+                SourceSystem: "FinancialOperations",
+                RetainedAtUtc: request.AccountingTimestamp,
+                RetainedBy: "financial-operations")).ToArray());
+    }
+
+    private static Guid CreateDeterministicCommandId(
+        Guid aggregateId,
+        Guid periodId,
+        string idempotencyKey,
+        Guid? sourceEventId,
+        string ruleId,
+        DateOnly effectiveDate)
+    {
+        var input = string.Join(
+            '|',
+            "accounting-posting-command",
+            aggregateId.ToString("D"),
+            periodId.ToString("D"),
+            sourceEventId?.ToString("D") ?? string.Empty,
+            NormalizeOptional(ruleId),
+            effectiveDate.ToString("yyyy-MM-dd"),
+            NormalizeOptional(idempotencyKey));
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return new Guid(hash[..16]);
     }
 
     private static TreasuryLedgerContextDto? NormalizeTreasuryContext(

@@ -26,6 +26,7 @@ tests, scripts, and skill instructions; it never overrides them.
 - `index.yml` - machine-readable catalog, schema, routing metadata, and memory entries.
 - `repo/` - durable repository-level memory backed by current source references.
 - `tasks/` - task descriptors (`*.yml`) plus indexed task-scoped Markdown memory for active or recurring work.
+- `goals/` - long-running Codex goal inventories that track progress and active task descriptors.
 - `branches/` - branch-scoped notes that expire when the branch merges or is abandoned.
 - `sessions/` - temporary session notes and continuation breadcrumbs.
 - `archive/` - retired memory retained for auditability.
@@ -37,5 +38,7 @@ tests, scripts, and skill instructions; it never overrides them.
 - Keep temporary findings in `sessions/`, `tasks/`, or `branches/` until promotion is reviewed.
 - Use `tasks/*.yml` descriptors to route memory for active Codex tasks; do not treat descriptor
   files as durable memory entries.
+- Use `goals/*.yml` inventories for very long Codex goals; keep progress evidence compact and link
+  the active task descriptor instead of copying task memory into the goal file.
 - Do not store secrets, credentials, personal data, raw logs, or speculative assumptions here.
 - Run `python build/scripts/docs/check-codex-memory.py --summary` after memory changes.

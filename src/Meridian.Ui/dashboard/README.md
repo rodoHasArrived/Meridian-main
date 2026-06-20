@@ -195,6 +195,11 @@ version history, approval evidence, saved regression coverage, latest suite resu
 posting lines, dimensional scope coverage, and the activation gate. Activation controls surface the
 shared readiness blockers for promotion-gated rules, including missing approved promotion evidence,
 missing current-version saved regression coverage, and the latest failing rule-test suite.
+After a dry run selects a rule, operators can build a governed journal draft candidate through the
+shared posting-rule candidate endpoint. The browser carries the selected event, amount, dimensions,
+policy, counterparty, source evidence, and browser correlation metadata to the service, then renders
+the returned generated lines, retained evidence count, candidate issues, and pending approval-gated
+posting command without appending ledger entries or bypassing journal-entry lifecycle controls.
 The Accounting Manual Journal Entry workbench also exposes the shared lifecycle-action endpoint for
 evidence attachment, approve, reject, post, reverse, rebook, and lock-after-close. Browser evidence
 attachment posts the retained draft version, typed attachment metadata, actor, correlation id, and

@@ -14,8 +14,9 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 - `.github/workflows/README.md` for GitHub-hosted validation workflows, including manual targeted testing.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
 - `docs/ai/codex/quickstart.md` for the fastest Codex task startup path.
-- `docs/ai/codex/memory-system.md`, `.codex/memory/index.yml`, and `.codex/memory/tasks/*.yml`
-  descriptors for repo-local Codex memory routing, promotion, and validation rules.
+- `docs/ai/codex/memory-system.md`, `.codex/memory/index.yml`, `.codex/memory/tasks/*.yml`
+  descriptors, and `.codex/memory/goals/*.yml` inventories for repo-local Codex memory routing,
+  progress tracking, promotion, and validation rules.
 - `docs/ai/codex/self-improving-agents.md` for Codex agent improvement, eval promotion, and graph-memory guardrails.
 - `docs/product/meridian-design-document.md` for the canonical stakeholder design framing.
 - `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md` for MDIF architecture, domain, and AI context packs before broad generation or architecture-sensitive work.
@@ -29,8 +30,8 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 
 - Meridian is a .NET 10 fund-management and trading-platform codebase.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
-- Position new roadmap and docs work around the closed W1-W5 operational record baseline plus the active W5X productization targets: shared Financial Record Explorers and the Financial Operations control center.
-- Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment execution, full alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, no-code workflow design, mobile, and other expansion lanes unless the work directly strengthens that operational record workflow.
+- Position roadmap and docs work from current source evidence, the roadmap registry, and the current [Meridian Design Document](docs/product/meridian-design-document.md).
+- Treat prior baselines and named productization targets as roadmap/status evidence, not development ceilings. Expansion lanes can proceed when current source, roadmap, or user direction supports them.
 - Use the current [Meridian Design Document](docs/product/meridian-design-document.md) as the canonical product scope reference.
 - `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/` are both active operator UI surfaces.
 - `src/Meridian.Ui/wwwroot/workstation/` remains the built browser workstation asset lane served by the local host.
@@ -48,9 +49,9 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 6. Use the narrowest validation command that covers the files changed.
 7. If local machine capacity, restore, or MSBuild locks block validation, push the branch and use the manual GitHub-hosted `Targeted Test` workflow with a repo-relative test project under `tests/` plus `dotnet_filter` before retrying broad local scripts.
 8. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
-9. For Codex memory changes, update `.codex/memory/index.yml` plus the indexed Markdown entry or
-   task descriptor, keep user/global tiers disabled unless explicitly opted in, and run
-   `python build/scripts/docs/check-codex-memory.py --summary`.
+9. For Codex memory changes, update `.codex/memory/index.yml` plus the indexed Markdown entry, task
+   descriptor, or goal inventory, keep user/global tiers disabled unless explicitly opted in, and
+   run `python build/scripts/docs/check-codex-memory.py --summary`.
 10. For Codex development workflow changes, keep `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`, `.codex/skills/_shared/*`, `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md` synchronized when they teach the same rule.
 11. For documentation rebuild work, update the new canonical audience path first, then archive or redirect older hand-authored material in reviewable batches.
 

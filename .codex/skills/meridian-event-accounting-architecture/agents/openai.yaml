@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Event Accounting"
+  short_description: "Guide event-sourced accounting architecture"
+  default_prompt: "Use $meridian-event-accounting-architecture to design or review Meridian event-based accounting architecture, ledger projections, controls, and validation."

@@ -71,9 +71,17 @@ in user-level Codex config.
 | `meridian-code-architecture.toml` | Check architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-contract-governance.toml` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-accounting-posting-controls.toml` | Review accounting posting gates, approval, period locks, idempotency, and reversal/rebook safeguards |
+| `meridian-event-accounting-architecture.toml` | Design event-based accounting architecture and evidence-backed ledger controls |
+| `meridian-ledger-projection-replay-review.toml` | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
 | `meridian-codex-skill-builder.toml` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs.toml` | Maintain documentation and AI guidance |
+| `meridian-feasibility-sketcher.toml` | Add lightweight seams, dependency, validation, and size cards to brainstormed ideas |
+| `meridian-idea-critic.toml` | Critique brainstorm output for weak anchors, duplication, hidden cost, and wrong-lane routing |
+| `meridian-idea-to-blueprint-router.toml` | Route brainstorm candidates to blueprint, roadmap, docs, review, or no action |
 | `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
+| `meridian-opportunity-scout.toml` | Find repo-grounded opportunity areas before brainstorm generation |
+| `meridian-persona-signal-scout.toml` | Extract Persona Matrix pressure points before persona-sensitive ideation |
 | `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
 | `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
@@ -86,6 +94,29 @@ in user-level Codex config.
 | `safe-refactoring.toml` | Refactor desktop and shared code incrementally without behavior drift |
 | `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
 | `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
+
+### Brainstorm companion profiles
+
+These Codex-only profiles support `meridian-brainstorm` without replacing it or creating duplicate
+roadmap, blueprint, or user-panel brainstorm lanes. Use the full chain when ideation needs both
+grounding and post-processing:
+
+```text
+meridian-opportunity-scout -> meridian-persona-signal-scout -> meridian-brainstorm
+  -> meridian-idea-critic -> meridian-feasibility-sketcher -> meridian-idea-to-blueprint-router
+```
+
+| Profile | Output boundary |
+| ------ | --------------- |
+| `meridian-opportunity-scout` | Repo anchors, opportunity gaps, and avoid-list only |
+| `meridian-persona-signal-scout` | Persona pressure points from the current Persona Matrix only |
+| `meridian-idea-critic` | Keep, refine, reject, or reroute decisions for existing ideas |
+| `meridian-feasibility-sketcher` | Lightweight feasibility cards, not class-level blueprint details |
+| `meridian-idea-to-blueprint-router` | One recommended next lane per candidate and required input for that lane |
+
+Do not add a separate `meridian-competitive-pattern-adapter` in this layer. Competitive signals
+belong in `meridian-opportunity-scout` and the existing `meridian-brainstorm` competitive reference,
+then advance through the same critic, feasibility, and router gates as other ideas.
 
 ### Persona Matrix user-testing profiles
 
@@ -251,4 +282,4 @@ retrying broad local scripts.
 
 ---
 
-_Last Updated: 2026-06-10_
+_Last Updated: 2026-06-20_

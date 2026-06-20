@@ -14,9 +14,13 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
   route through a `.codex/memory/tasks/<task-id>.yml` descriptor. Load only entries selected by the
   current task descriptor, intent, skill, changed paths, branch, or explicit tags. Canonical docs
   and selected skills remain authoritative when memory disagrees.
+- For very long Codex goals, keep a `.codex/memory/goals/<goal-id>.yml` inventory with objective,
+  status, active task descriptor, progress items, evidence refs, next actions, blockers, and
+  promotion candidates. Refresh it before compaction, after validation, and when the active task
+  descriptor changes.
 - When memory is loaded or skipped for task/branch scope, include a compact receipt: selected memory
-  IDs, match reason, stale warnings, and task/branch entries skipped because their scope did not
-  match.
+  IDs, match reason, stale warnings, goal progress count when a goal inventory is active, and
+  task/branch entries skipped because their scope did not match.
 
 ## Workflow Disclosure Gate
 
@@ -149,7 +153,7 @@ For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistan
 
 **Concurrency And Scope**
 - Work split: <none | worker ownership>
-- Memory receipt: <loaded/skipped memory IDs or "none">
+- Memory receipt: <loaded/skipped memory IDs, active goal progress, or "none">
 - Isolation: <build/test isolation used>
 - Skipped churn: <cosmetic edits intentionally avoided>
 

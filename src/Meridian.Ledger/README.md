@@ -78,9 +78,9 @@ stakeholder delivery workflows.
 occurrence into a delivery manifest and regulator-facing XML summary artifact when requested by the
 schedule, preserving recipients, due date, requested formats, report-pack signature, and statement
 totals without claiming full XBRL/iXBRL coverage.
-`JournalEntryMetadata` and `LedgerQuery` now carry treasury-ledger audit context for private-capital
+`JournalEntryMetadata`, `JournalEvidenceReference`, and `LedgerQuery` now carry treasury-ledger audit context for private-capital
 and payment-linked postings: effective date, idempotency key, fund event, capital account, investor,
-payment intent, and settlement references. Keep those fields additive and metadata-owned so ledger
+payment intent, settlement references, and typed retained evidence references. Keep those fields additive and metadata-owned so ledger
 consumers can reconstruct capital-call, distribution, subscription, redemption, LP-transfer, and
 management-fee postings without introducing UI- or storage-specific query forks.
 `PrivateCapitalFundEventLedgerProjector` reconstructs a posted Fund Event Ledger view from those

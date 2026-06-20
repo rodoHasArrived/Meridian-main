@@ -21,6 +21,7 @@ import type {
   OperationsContinuityWorkflowSummary,
   CapitalAccountWorkbench,
   GeneratedPostingLine,
+  PostingRuleJournalCandidateResult,
   RuleDryRunResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
@@ -188,9 +189,11 @@ vi.mock("@/lib/api", async () => {
     getAccountingSystemMappingProfiles: vi.fn().mockResolvedValue([]),
     createAccountingSystemExportPackage: vi.fn(),
     getAccountingSystemExportPackageManifest: vi.fn(),
+    certifyAccountingSystemExportPackage: vi.fn(),
     getAccountingConfiguration: vi.fn(),
     previewAccountingConfigurationTemplate: vi.fn(),
     dryRunAccountingConfigurationPostingRule: vi.fn(),
+    buildAccountingPostingRuleJournalCandidate: vi.fn(),
     executeAccountingConfigurationPostingRuleTests: vi.fn(),
     upsertAccountingConfigurationPostingRule: vi.fn(),
     upsertAccountingConfigurationPostingRuleTestCase: vi.fn(),
@@ -1680,6 +1683,59 @@ describe("AccountingScreen", () => {
       generatedPostingLines: workspace.postingRules[0].generatedPostings,
       validationIssues: []
     };
+    const journalCandidateResult: PostingRuleJournalCandidateResult = {
+      dryRunResult,
+      selectedRuleId: "rule-trade-buy",
+      selectedRuleVersion: "v3",
+      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      postingCommand: {
+        commandId: "00000000-0000-4000-8000-000000000101",
+        aggregateId: "00000000-0000-4000-8000-000000000102",
+        periodId: "00000000-0000-4000-8000-000000000103",
+        effectiveDate: "2026-01-01",
+        postingDate: "2026-06-30T12:10:00Z",
+        idempotencyKey: "posting-candidate-rule-trade-buy",
+        intent: "Originating",
+        sourceEventId: "00000000-0000-4000-8000-000000000104",
+        correlationId: "00000000-0000-4000-8000-000000000105",
+        sourceEventType: "TradeExecuted",
+        treasuryContext: null,
+        approvalState: "Pending",
+        approvalId: "approval-rule-trade-buy",
+        evidence: [{
+          evidenceId: "evidence-rule-trade-buy",
+          uri: "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+          kind: "Source",
+          sourceSystem: "Meridian",
+          retainedAtUtc: "2026-06-30T12:10:00Z",
+          retainedBy: "browser-accounting-operator",
+          subjectId: "rule-trade-buy",
+          contentHash: null,
+          description: "Rules Studio dry-run evidence."
+        }],
+        actionOrigin: "HumanOperator"
+      },
+      journalEntryId: "00000000-0000-4000-8000-000000000106",
+      totalDebits: 250000,
+      totalCredits: 250000,
+      imbalance: 0,
+      isBalanced: true,
+      hasBlockingIssues: false,
+      canSubmitForApproval: true,
+      canPostWithoutAdditionalApproval: false,
+      evidenceLinks: [
+        "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+        "browser://accounting/rules-studio/journal-candidate/rule-trade-buy/00000000-0000-4000-8000-000000000105"
+      ],
+      issues: [{
+        code: "ApprovalRequired",
+        severity: "Info",
+        message: "Posting command remains pending until journal lifecycle approval.",
+        blocksCandidate: false,
+        targetId: "rule-trade-buy",
+        suggestedAction: "Submit the generated journal draft through lifecycle approval."
+      }]
+    };
     const ruleTestSuite = {
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",
@@ -1770,6 +1826,7 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getAccountingConfiguration).mockResolvedValueOnce(workspace);
     vi.mocked(api.approveAccountingConfigurationPostingRulePromotion).mockResolvedValueOnce(approvedWorkspace);
     vi.mocked(api.dryRunAccountingConfigurationPostingRule).mockResolvedValueOnce(dryRunResult);
+    vi.mocked(api.buildAccountingPostingRuleJournalCandidate).mockResolvedValueOnce(journalCandidateResult);
     vi.mocked(api.upsertAccountingConfigurationPostingRuleTestCase).mockResolvedValueOnce(savedWorkspace);
     vi.mocked(api.executeAccountingConfigurationPostingRuleTests).mockResolvedValueOnce(ruleTestSuite);
 
@@ -1821,6 +1878,38 @@ describe("AccountingScreen", () => {
       dimensions: expect.objectContaining({
         fundId: "fund-alpha"
       })
+    }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Build journal candidate" }));
+    const candidate = await screen.findByRole("region", { name: "Accounting rule journal draft candidate" });
+    expect(within(candidate).getByText("Governed journal draft candidate")).toBeInTheDocument();
+    expect(within(candidate).getByText("Selected rule rule-trade-buy version v3")).toBeInTheDocument();
+    expect(within(candidate).getByText("Balanced $250,000 / $250,000")).toBeInTheDocument();
+    expect(within(candidate).getByText(/Draft command 00000000-0000-4000-8000-000000000101 is pending and remains lifecycle-gated/)).toBeInTheDocument();
+    expect(within(candidate).getByText(/Approval Pending; post-without-approval blocked/)).toBeInTheDocument();
+    expect(within(candidate).getByText(/ApprovalRequired: Posting command remains pending until journal lifecycle approval/)).toBeInTheDocument();
+    expect(api.buildAccountingPostingRuleJournalCandidate).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      sourceEventType: "TradeExecuted",
+      eventAmount: 250000,
+      currency: "USD",
+      effectiveDate: "2026-01-01",
+      actor: "browser-accounting-operator",
+      accountingBasis: "Gaap",
+      policyId: "policy-gaap",
+      treatmentKind: "General",
+      postingKind: "Originating",
+      dimensions: expect.objectContaining({
+        fundId: "fund-alpha",
+        entityId: "entity-master",
+        strategyId: "strategy-long-only",
+        counterpartyId: "cp-001"
+      }),
+      counterpartyId: "cp-001",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/rules-studio/dry-run/rule-trade-buy"
+      ])
     }));
 
     fireEvent.click(screen.getByRole("button", { name: "Save dry-run as test case" }));
@@ -2045,10 +2134,10 @@ describe("AccountingScreen", () => {
       ],
       certification: {
         certificationId: "external-gl-export-cert-qbo-fixture",
-        state: "Draft",
+        state: "ReadyForReview",
         actor: "browser-accounting-operator",
         recordedAtUtc: "2026-02-01T00:10:00Z",
-        summary: "Export package is retained as a guarded review artifact.",
+        summary: "Export package is retained as a guarded review artifact and ready for certification.",
         evidenceLinks: ["external-gl-reconciliation:gl-recon-qbo-fixture-20260131"]
       },
       validationIssues: [
@@ -2061,6 +2150,21 @@ describe("AccountingScreen", () => {
         }
       ]
     };
+    const certifiedExportPackage: ExternalGlExportPackage = {
+      ...exportPackage,
+      certification: {
+        certificationId: "external-gl-export-cert-qbo-fixture",
+        state: "Certified",
+        actor: "browser-accounting-controller",
+        recordedAtUtc: "2026-02-01T00:15:00Z",
+        summary: "Controller certified the guarded external GL export package.",
+        evidenceLinks: [
+          ...exportPackage.evidenceLinks,
+          "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
+          `external-gl-export-certification:${exportPackage.exportPackageId}`
+        ]
+      }
+    };
     const exportManifest: ExternalGlExportPackageManifest = {
       exportPackageId: exportPackage.exportPackageId,
       providerId: exportPackage.providerId,
@@ -2068,7 +2172,7 @@ describe("AccountingScreen", () => {
       ledgerBookId: exportPackage.ledgerBookId,
       periodStart: exportPackage.periodStart,
       periodEnd: exportPackage.periodEnd,
-      certificationState: "Draft",
+      certificationState: "ReadyForReview",
       generatedAtUtc: "2026-02-01T00:10:00Z",
       contentHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       contentType: "application/json",
@@ -2080,13 +2184,22 @@ describe("AccountingScreen", () => {
       evidenceLinks: exportPackage.evidenceLinks,
       validationIssues: exportPackage.validationIssues
     };
+    const certifiedExportManifest: ExternalGlExportPackageManifest = {
+      ...exportManifest,
+      certificationState: "Certified",
+      generatedAtUtc: "2026-02-01T00:15:00Z",
+      contentHash: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+    };
 
     vi.mocked(api.getAccountingSystemProviders).mockResolvedValueOnce([provider, xeroProvider, netSuiteProvider]);
     vi.mocked(api.getLatestAccountingSystemImport).mockResolvedValueOnce(importDetail);
     vi.mocked(api.getLatestAccountingSystemReconciliation).mockResolvedValueOnce(reconciliation);
     vi.mocked(api.getAccountingSystemMappingProfiles).mockResolvedValueOnce(mappingProfiles);
     vi.mocked(api.createAccountingSystemExportPackage).mockResolvedValueOnce(exportPackage);
-    vi.mocked(api.getAccountingSystemExportPackageManifest).mockResolvedValueOnce(exportManifest);
+    vi.mocked(api.getAccountingSystemExportPackageManifest)
+      .mockResolvedValueOnce(exportManifest)
+      .mockResolvedValueOnce(certifiedExportManifest);
+    vi.mocked(api.certifyAccountingSystemExportPackage).mockResolvedValueOnce(certifiedExportPackage);
 
     await renderAccountingScreen(data, "/accounting");
 
@@ -2127,7 +2240,7 @@ describe("AccountingScreen", () => {
     const retainedPackage = await screen.findByLabelText("External GL export package");
     expect(retainedPackage).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20260131");
     expect(retainedPackage).toHaveTextContent("Posting disabled");
-    expect(retainedPackage).toHaveTextContent("Draft");
+    expect(retainedPackage).toHaveTextContent("ReadyForReview");
     expect(retainedPackage).toHaveTextContent("Validation issues");
     expect(retainedPackage).toHaveTextContent("Manifest hash");
     expect(retainedPackage).toHaveTextContent("0123456789ab");
@@ -2151,6 +2264,28 @@ describe("AccountingScreen", () => {
       ])
     }));
     expect(api.getAccountingSystemExportPackageManifest).toHaveBeenCalledWith(exportPackage.exportPackageId);
+
+    await userEvent.click(screen.getByRole("button", { name: "Certify export" }));
+
+    await screen.findByText("Certified external GL export package external-gl-export-quickbooks-fixture-default-fund-20260131.");
+    expect(retainedPackage).toHaveTextContent("Certified");
+    expect(retainedPackage).toHaveTextContent("Posting disabled");
+    expect(retainedPackage).toHaveTextContent("abcdef012345");
+    expect(retainedPackage).toHaveTextContent("External posting");
+    expect(retainedPackage).toHaveTextContent("Disabled");
+    expect(api.certifyAccountingSystemExportPackage).toHaveBeenCalledWith(expect.objectContaining({
+      exportPackageId: exportPackage.exportPackageId,
+      actor: "browser-accounting-controller",
+      notes: "Certified external GL export package external-gl-export-quickbooks-fixture-default-fund-20260131.",
+      evidenceLinks: expect.arrayContaining([
+        "external-gl-mapping-profile:qbo-default-fund-certified",
+        "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
+        `external-gl-export-certification:${exportPackage.exportPackageId}`
+      ]),
+      correlationId: `browser-external-gl-certify:${exportPackage.exportPackageId}`
+    }));
+    expect(api.getAccountingSystemExportPackageManifest).toHaveBeenCalledTimes(2);
+    expect(api.getAccountingSystemExportPackageManifest).toHaveBeenNthCalledWith(2, certifiedExportPackage.exportPackageId);
   });
 
   it("requests close late adjustments through the shared close-management endpoint", async () => {
@@ -2533,6 +2668,150 @@ describe("AccountingScreen", () => {
     expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenNthCalledWith(3, expect.objectContaining({
       action: "Reverse",
       version: 4,
+      rebookLines: []
+    }));
+  });
+
+  it("rebooks a posted manual journal entry through the shared lifecycle endpoint", async () => {
+    const user = userEvent.setup();
+    const postedDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      status: "Posted",
+      version: 4,
+      submittedAtUtc: "2026-06-30T01:00:00Z",
+      submittedBy: "browser-user",
+      approvedAtUtc: "2026-06-30T01:05:00Z",
+      approvedBy: "browser-user",
+      postedAtUtc: "2026-06-30T01:10:00Z",
+      postedBy: "browser-user"
+    };
+    const rebookDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      journalEntryId: "manual-je-1-rebook",
+      status: "Draft",
+      version: 1,
+      memo: "Rebook for manual-je-1",
+      rebookedFromJournalEntryId: "manual-je-1",
+      lines: manualJournalDraft.lines.map((line) => ({
+        ...line,
+        lineId: `${line.lineId}-rebook`
+      }))
+    };
+    const rebookedDraft: ManualJournalEntryDraft = {
+      ...postedDraft,
+      status: "Rebooked",
+      version: 5,
+      rebook: {
+        originalJournalEntryId: "manual-je-1",
+        rebookJournalEntryId: "manual-je-1-rebook",
+        createdAtUtc: "2026-06-30T01:20:00Z",
+        createdBy: "browser-user",
+        reason: "Create rebook draft for posted journal entry manual-je-1."
+      },
+      lifecycleTransitions: [{
+        transitionId: "transition-rebook",
+        fromStatus: "Posted",
+        toStatus: "Rebooked",
+        action: "Rebook",
+        actor: "browser-user",
+        recordedAtUtc: "2026-06-30T01:20:00Z",
+        notes: "Create rebook draft for posted journal entry manual-je-1.",
+        correlationId: "manual-je-rebook",
+        evidenceLinks: manualJournalDraft.evidenceLinks
+      }]
+    };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [postedDraft]
+    });
+    vi.mocked(api.applyManualJournalEntryLifecycleAction).mockResolvedValueOnce({
+      journalEntry: rebookedDraft,
+      transition: rebookedDraft.lifecycleTransitions![0],
+      generatedJournalEntries: [rebookDraft]
+    });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    await user.click(screen.getByRole("button", { name: "Rebook" }));
+
+    expect(await screen.findByText("Rebook recorded: Posted -> Rebooked")).toBeInTheDocument();
+    expect(screen.getByText("Rebook: Posted -> Rebooked")).toBeInTheDocument();
+    expect(screen.getAllByText("Rebook for manual-je-1").length).toBeGreaterThan(0);
+    expect(screen.getByText("Rebook from manual-je-1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Rebook");
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenCalledWith(expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      action: "Rebook",
+      version: 4,
+      notes: "Create rebook draft for posted journal entry manual-je-1.",
+      correlationId: "manual-je-rebook",
+      evidenceLinks: manualJournalDraft.evidenceLinks,
+      actionOrigin: "HumanOperator",
+      periodIsLocked: false,
+      rebookLines: postedDraft.lines
+    }));
+  });
+
+  it("close-locks a posted manual journal entry through the shared lifecycle endpoint", async () => {
+    const user = userEvent.setup();
+    const postedDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      status: "Posted",
+      version: 4,
+      submittedAtUtc: "2026-06-30T01:00:00Z",
+      submittedBy: "browser-user",
+      approvedAtUtc: "2026-06-30T01:05:00Z",
+      approvedBy: "browser-user",
+      postedAtUtc: "2026-06-30T01:10:00Z",
+      postedBy: "browser-user"
+    };
+    const closeLockedDraft: ManualJournalEntryDraft = {
+      ...postedDraft,
+      status: "CloseLocked",
+      version: 5,
+      closedLockedAtUtc: "2026-06-30T01:30:00Z",
+      closeLockedBy: "browser-user",
+      lifecycleTransitions: [{
+        transitionId: "transition-lock-after-close",
+        fromStatus: "Posted",
+        toStatus: "CloseLocked",
+        action: "LockAfterClose",
+        actor: "browser-user",
+        recordedAtUtc: "2026-06-30T01:30:00Z",
+        notes: "Lock posted journal entry manual-je-1 after close.",
+        correlationId: "manual-je-lockafterclose",
+        evidenceLinks: manualJournalDraft.evidenceLinks
+      }]
+    };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [postedDraft]
+    });
+    vi.mocked(api.applyManualJournalEntryLifecycleAction).mockResolvedValueOnce({
+      journalEntry: closeLockedDraft,
+      transition: closeLockedDraft.lifecycleTransitions![0],
+      generatedJournalEntries: []
+    });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    await user.click(screen.getByRole("button", { name: "Lock after close" }));
+
+    expect(await screen.findByText("LockAfterClose recorded: Posted -> CloseLocked")).toBeInTheDocument();
+    expect(screen.getByText("LockAfterClose: Posted -> CloseLocked")).toBeInTheDocument();
+    expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Locked");
+    expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Audit transitions");
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenCalledWith(expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      action: "LockAfterClose",
+      version: 4,
+      notes: "Lock posted journal entry manual-je-1 after close.",
+      correlationId: "manual-je-lockafterclose",
+      evidenceLinks: manualJournalDraft.evidenceLinks,
+      actionOrigin: "HumanOperator",
+      periodIsLocked: true,
       rebookLines: []
     }));
   });

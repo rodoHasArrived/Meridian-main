@@ -134,14 +134,14 @@
 <title>MERIDIAN</title>
 <path fill="#438dd5" stroke="black" d="M994.47,-284C994.47,-284 708.87,-284 708.87,-284 702.87,-284 696.87,-278 696.87,-272 696.87,-272 696.87,-156 696.87,-156 696.87,-150 702.87,-144 708.87,-144 708.87,-144 994.47,-144 994.47,-144 1000.47,-144 1006.47,-150 1006.47,-156 1006.47,-156 1006.47,-272 1006.47,-272 1006.47,-278 1000.47,-284 994.47,-284"/>
 <text xml:space="preserve" text-anchor="middle" x="851.67" y="-271" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Meridian</text>
-<text xml:space="preserve" text-anchor="middle" x="851.67" y="-259" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">[.NET 10 operational record platform]</text>
-<text xml:space="preserve" text-anchor="middle" x="851.67" y="-235" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Active scope: W1&#45;W5</text>
-<text xml:space="preserve" text-anchor="middle" x="851.67" y="-223" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Data confidence, retained evidence,</text>
-<text xml:space="preserve" text-anchor="middle" x="851.67" y="-211" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">reconciliation, approvals,</text>
-<text xml:space="preserve" text-anchor="middle" x="851.67" y="-199" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">accounting records, multi&#45;asset coverage,</text>
-<text xml:space="preserve" text-anchor="middle" x="851.67" y="-187" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">governed reports</text>
-<text xml:space="preserve" text-anchor="middle" x="851.67" y="-163" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Expansion lanes are deferred unless they</text>
-<text xml:space="preserve" text-anchor="middle" x="851.67" y="-151" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">strengthen the operational record workflow.</text>
+<text xml:space="preserve" text-anchor="middle" x="851.67" y="-259" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">[.NET 10 fund&#45;management platform]</text>
+<text xml:space="preserve" text-anchor="middle" x="851.67" y="-235" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Scope is evidence&#45;led</text>
+<text xml:space="preserve" text-anchor="middle" x="851.67" y="-223" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Use current source, roadmap status,</text>
+<text xml:space="preserve" text-anchor="middle" x="851.67" y="-211" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">and design charter direction</text>
+<text xml:space="preserve" text-anchor="middle" x="851.67" y="-199" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white"></text>
+<text xml:space="preserve" text-anchor="middle" x="851.67" y="-187" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white"></text>
+<text xml:space="preserve" text-anchor="middle" x="851.67" y="-163" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Expansion lanes can proceed when</text>
+<text xml:space="preserve" text-anchor="middle" x="851.67" y="-151" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">source, roadmap, or user direction supports them.</text>
 </g>
 <!-- STORE -->
 <g id="node13" class="node">

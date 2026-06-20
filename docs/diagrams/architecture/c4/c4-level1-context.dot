@@ -32,7 +32,7 @@ digraph C4_Context {
   }
 
   MERIDIAN [shape=box, width=4.3, fillcolor="#438dd5", fontcolor="white",
-    label="Meridian\n[.NET 10 operational record platform]\n\nActive scope: W1-W5\nData confidence, retained evidence,\nreconciliation, approvals,\naccounting records, multi-asset coverage,\ngoverned reports\n\nExpansion lanes are deferred unless they\nstrengthen the operational record workflow."];
+    label="Meridian\n[.NET 10 fund-management platform]\n\nScope is evidence-led\nUse current source, roadmap status,\nand design charter direction\n\nExpansion lanes can proceed when\nsource, roadmap, or user direction supports them."];
 
   subgraph cluster_surfaces {
     label="Active operator surfaces";

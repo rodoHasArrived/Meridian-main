@@ -36,7 +36,8 @@ public sealed record AccountingBasisProjectionRequest(
     string? RuleId = null,
     string? RuleVersion = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
-    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null);
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    AccountingPostingCommandDto? PostingCommand = null);
 
 public sealed record AccountingBasisProjectionResult(
     AccountingPolicyDto Policy,
@@ -289,7 +290,8 @@ public sealed class AccountingBasisProjectionService(IAccountingPolicyService ac
             request.SourceEventId,
             request.SourceJournalEntryId,
             request.PostingKind,
-            request.AdjustmentApproval);
+            request.AdjustmentApproval,
+            request.PostingCommand);
 
         return new AccountingBasisProjectionResult(policy, write);
     }

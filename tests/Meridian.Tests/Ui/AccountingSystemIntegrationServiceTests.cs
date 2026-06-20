@@ -627,6 +627,10 @@ public sealed class AccountingSystemIntegrationServiceTests
             RequireBalancedReconciliation: false,
             EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
 
+        package.MappingProfileId.Should().Be(profile.ProfileId);
+        package.ReconciliationId.Should().NotBeNullOrWhiteSpace();
+        package.RequireBalancedReconciliation.Should().BeFalse();
+
         var weakCertification = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
             package.ExportPackageId,
             "controller",
@@ -643,7 +647,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             ["approval:external-gl-export-certification:2026-02-01:2026-02-28"]));
 
         await stalePeriodCertification.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained export package id or exact export period*");
+            .WithMessage("*must reference the retained export package id, certification id, and exact export period in the same artifact*");
 
         var splitCertificationEvidence = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
             package.ExportPackageId,
@@ -655,9 +659,18 @@ public sealed class AccountingSystemIntegrationServiceTests
             ]));
 
         await splitCertificationEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained export package id or exact export period*");
+            .WithMessage("*must reference the retained export package id, certification id, and exact export period in the same artifact*");
 
-        var certificationEvidence = $"approval:external-gl-export-certification:{package.ExportPackageId}";
+        var missingCertificationIdEvidence = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Package and period evidence without certification id should not certify the guarded export package.",
+            [$"approval:external-gl-export-certification:{package.ExportPackageId}:2026-01-01:2026-01-31"]));
+
+        await missingCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained export package id, certification id, and exact export period in the same artifact*");
+
+        var certificationEvidence = ExportCertificationEvidence(package);
         var assistantCertification = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
             package.ExportPackageId,
             "assistant",
@@ -696,9 +709,82 @@ public sealed class AccountingSystemIntegrationServiceTests
         manifest.ContentType.Should().Be("application/json");
         manifest.ContentHash.Should().HaveLength(64);
         manifest.GeneratedLines.Should().HaveSameCount(certified.GeneratedLines);
+        manifest.MappingProfileId.Should().Be(profile.ProfileId);
+        manifest.ReconciliationId.Should().Be(package.ReconciliationId);
+        manifest.RequireBalancedReconciliation.Should().BeFalse();
         manifest.EvidenceLinks.Should().Contain(certificationEvidence);
         manifest.Payload.Should().Contain(certified.ExportPackageId);
         manifest.Payload.Should().Contain(certificationEvidence);
+    }
+
+    [Fact]
+    public async Task CertifyExportPackageAsync_RevalidatesCurrentMappingProfileBeforeCertification()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile with { DisplayName = "Default fund QBO mapping requiring recertification" },
+            "accounting-ops",
+            FundProfileId: "default-fund"));
+
+        var act = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Controller attempted to certify after mapping evidence changed.",
+            [ExportCertificationEvidence(package)]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*current mapping or reconciliation blockers*UncertifiedExternalGlMappingProfile*");
+    }
+
+    [Fact]
+    public async Task CertifyExportPackageAsync_RevalidatesCurrentReconciliationSnapshotBeforeCertification()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.ReconciliationId.Should().NotBeNullOrWhiteSpace();
+
+        RetainExportPackage(service, package with { ReconciliationId = "gl-recon-stale-retained-snapshot" });
+
+        var act = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Controller attempted to certify after reconciliation evidence changed.",
+            [ExportCertificationEvidence(package)]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*current mapping or reconciliation blockers*ExternalGlReconciliationSnapshotChanged*");
     }
 
     [Fact]
@@ -730,7 +816,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             package.ExportPackageId,
             "controller",
             "Attempt to certify a retained package with live posting enabled.",
-            [$"approval:external-gl-export-certification:{package.ExportPackageId}"]));
+            [ExportCertificationEvidence(package)]));
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*live external GL posting is enabled*posting-disabled reason*");
@@ -766,7 +852,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             package.ExportPackageId,
             "controller",
             "Attempt to certify stale reconciliation package.",
-            [$"approval:external-gl-export-certification:{package.ExportPackageId}"]));
+            [ExportCertificationEvidence(package)]));
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*must be ready for review*");
@@ -996,7 +1082,7 @@ public sealed class AccountingSystemIntegrationServiceTests
     [Fact]
     public async Task AccountingSystemEndpoints_ReturnProviderAndReconciliationContracts()
     {
-        await using var app = await CreateAppAsync(UserPermission.ManageFundStructure);
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
 
         var providersResponse = await app.GetTestClient().GetAsync("/api/accounting-system/providers");
         var reconciliationResponse = await app.GetTestClient().GetAsync("/api/accounting-system/reconciliation/latest");
@@ -1052,7 +1138,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 exportPackage.ExportPackageId,
                 "endpoint-controller",
                 "Endpoint controller certified the guarded export package.",
-                [$"approval:external-gl-export-certification:{exportPackage.ExportPackageId}"])));
+                [ExportCertificationEvidence(exportPackage)])));
 
         certificationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var certifiedExportPackage = await ReadAsync<ExternalGlExportPackageDto>(certificationResponse);
@@ -1060,7 +1146,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         certifiedExportPackage.Certification.Should().NotBeNull();
         certifiedExportPackage.Certification!.State.Should().Be(AccountingCertificationStateDto.Certified);
         certifiedExportPackage.Certification.Actor.Should().Be("endpoint-controller");
-        certifiedExportPackage.Certification.EvidenceLinks.Should().Contain($"approval:external-gl-export-certification:{exportPackage.ExportPackageId}");
+        certifiedExportPackage.Certification.EvidenceLinks.Should().Contain(ExportCertificationEvidence(exportPackage));
 
         var manifestResponse = await app.GetTestClient().GetAsync(
             UiApiRoutes.AccountingSystemExportPackageManifest.Replace("{exportPackageId}", certifiedExportPackage.ExportPackageId));
@@ -1071,10 +1157,52 @@ public sealed class AccountingSystemIntegrationServiceTests
         manifest.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
         manifest.ExternalPostingAllowed.Should().BeFalse();
         manifest.ContentHash.Should().HaveLength(64);
+        manifest.MappingProfileId.Should().Be("qbo-default-fund-certified");
+        manifest.ReconciliationId.Should().Be(exportPackage.ReconciliationId);
+        manifest.RequireBalancedReconciliation.Should().BeFalse();
         manifest.GeneratedLines.Should().Contain(line =>
             line.MeridianAccountCode == "Assets:Cash:Operating" &&
             line.ExternalAccountId == "qbo-1000");
-        manifest.EvidenceLinks.Should().Contain($"approval:external-gl-export-certification:{exportPackage.ExportPackageId}");
+        manifest.EvidenceLinks.Should().Contain(ExportCertificationEvidence(exportPackage));
+    }
+
+    [Fact]
+    public async Task AccountingSystemExportCertificationEndpoint_RequiresAdminMaintenance()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ManageFundStructure);
+
+        var mappingProfileResponse = await app.GetTestClient().PostAsync(
+            "/api/accounting-system/mapping-profiles",
+            JsonContent(new AccountingSystemMappingProfileUpsertRequestDto(
+                CertifiedQuickBooksMappingProfile(),
+                "endpoint-operator",
+                FundProfileId: "default-fund",
+                EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"])));
+        var exportPackageResponse = await app.GetTestClient().PostAsync(
+            "/api/accounting-system/export-packages",
+            JsonContent(new AccountingSystemExportPackageRequestDto(
+                "endpoint-operator",
+                ProviderId: "quickbooks-fixture",
+                FundProfileId: "default-fund",
+                PeriodStart: new DateOnly(2026, 1, 1),
+                PeriodEnd: new DateOnly(2026, 1, 31),
+                MappingProfileId: "qbo-default-fund-certified",
+                RequireBalancedReconciliation: false,
+                EvidenceLinks: ["approval:external-gl-export-package:endpoint-default-fund-2026-01-01-2026-01-31"])));
+
+        mappingProfileResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        exportPackageResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var exportPackage = await ReadAsync<ExternalGlExportPackageDto>(exportPackageResponse);
+
+        var certificationResponse = await app.GetTestClient().PostAsync(
+            UiApiRoutes.AccountingSystemExportPackageCertification,
+            JsonContent(new CertifyAccountingSystemExportPackageRequestDto(
+                exportPackage.ExportPackageId,
+                "endpoint-controller",
+                "Fund-structure operator attempted to certify the guarded export package.",
+                [ExportCertificationEvidence(exportPackage)])));
+
+        certificationResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -1320,6 +1448,12 @@ public sealed class AccountingSystemIntegrationServiceTests
         var packages = field!.GetValue(service) as ConcurrentDictionary<string, ExternalGlExportPackageDto>;
         packages.Should().NotBeNull();
         packages![package.ExportPackageId] = package;
+    }
+
+    private static string ExportCertificationEvidence(ExternalGlExportPackageDto package)
+    {
+        package.Certification.Should().NotBeNull();
+        return $"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification!.CertificationId}:{package.PeriodStart:yyyy-MM-dd}:{package.PeriodEnd:yyyy-MM-dd}";
     }
 
     private static ExternalGlMappingProfileDto CertifiedQuickBooksMappingProfile()

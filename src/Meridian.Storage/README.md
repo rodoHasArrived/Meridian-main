@@ -122,7 +122,7 @@ also include fund event id, fund event type, and capital account id so private-c
 be reconstructed from durable journal evidence. Postgres journal storage also keeps partial unique
 indexes for aggregate-scoped command id, source event id, and normalized metadata idempotency key so
 retry attempts fail closed at the durable ledger boundary instead of relying only on caller-side
-checks.
+checks. When LedgerJournalEntryWrite carries an AccountingPostingCommandDto, storage normalizes the write metadata from that command and rejects missing command identity, mismatched aggregate/period, pending reviewer state, non-human material origin, missing evidence/rationale, or correction intents without source journal lineage before append.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
