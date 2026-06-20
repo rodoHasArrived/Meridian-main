@@ -56,7 +56,8 @@ public sealed class AccountingProductionReadinessService
             rulesSummary,
             externalGlCounts.ProviderCount,
             externalGlCounts.CertifiedMappingProfileCount,
-            externalGlCounts.LivePostingEnabled);
+            externalGlCounts.LivePostingEnabled,
+            request.MigrationRunArtifacts);
     }
 
     private async Task<LedgerBookRolloutAssessmentDto?> BuildLedgerBookComponentAsync(
@@ -326,60 +327,51 @@ public sealed class AccountingProductionReadinessService
         ICollection<AccountingProductionReadinessComponentDto> components)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
-        if (!request.LedgerBookMigrationCertified)
-        {
-            issues.Add(Issue(
-                "migration.ledger-book-scope-not-certified",
-                AccountingProductionReadinessAreaDto.MigrationRollout,
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Ledger-book migration scope has not been certified for production rollout.",
-                "Certify ledger-book scoping and historical fund-level compatibility paths before production cutover.",
-                request.MigrationEvidenceLinks));
-        }
-
-        if (!request.HistoricalJournalBackfillCertified)
-        {
-            issues.Add(Issue(
-                "migration.historical-journal-backfill-not-certified",
-                AccountingProductionReadinessAreaDto.MigrationRollout,
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Historical journal backfill has not been certified.",
-                "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
-                request.MigrationEvidenceLinks));
-        }
-
-        if (!request.DimensionalBackfillCertified)
-        {
-            issues.Add(Issue(
-                "migration.dimensional-backfill-not-certified",
-                AccountingProductionReadinessAreaDto.MigrationRollout,
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Dimensional backfill has not been certified across retained journal lines and report inputs.",
-                "Backfill and verify fund, entity, sleeve, strategy, investor, capital account, instrument, tax lot, cost center, counterparty, and external-GL dimensions before production reporting certification.",
-                request.MigrationEvidenceLinks));
-        }
-
-        if (!request.AccountingConfigurationPromotionCertified)
-        {
-            issues.Add(Issue(
-                "migration.configuration-promotion-not-certified",
-                AccountingProductionReadinessAreaDto.MigrationRollout,
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Accounting configuration promotion evidence has not been certified.",
-                "Retain promotion evidence for chart, rule, policy, and approval-state migration before rollout.",
-                request.MigrationEvidenceLinks));
-        }
-
-        if (!request.CloseReportingEvidenceMigrationCertified)
-        {
-            issues.Add(Issue(
-                "migration.close-reporting-evidence-not-certified",
-                AccountingProductionReadinessAreaDto.MigrationRollout,
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Close and reporting evidence migration has not been certified.",
-                "Retain close checklist, report package, certification, and restatement evidence migration proof before production close.",
-                request.MigrationEvidenceLinks));
-        }
+        AddMigrationControlIssues(
+            request,
+            issues,
+            request.LedgerBookMigrationCertified,
+            AccountingMigrationRunKindDto.LedgerBookScope,
+            "migration.ledger-book-scope-not-certified",
+            "Ledger-book migration scope has not been certified for production rollout.",
+            "Certify ledger-book scoping and historical fund-level compatibility paths before production cutover.",
+            AccountingConfigurationValidationSeverityDto.Critical);
+        AddMigrationControlIssues(
+            request,
+            issues,
+            request.HistoricalJournalBackfillCertified,
+            AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+            "migration.historical-journal-backfill-not-certified",
+            "Historical journal backfill has not been certified.",
+            "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
+            AccountingConfigurationValidationSeverityDto.Critical);
+        AddMigrationControlIssues(
+            request,
+            issues,
+            request.DimensionalBackfillCertified,
+            AccountingMigrationRunKindDto.DimensionalBackfill,
+            "migration.dimensional-backfill-not-certified",
+            "Dimensional backfill has not been certified across retained journal lines and report inputs.",
+            "Backfill and verify fund, entity, sleeve, strategy, investor, capital account, instrument, tax lot, cost center, counterparty, and external-GL dimensions before production reporting certification.",
+            AccountingConfigurationValidationSeverityDto.Critical);
+        AddMigrationControlIssues(
+            request,
+            issues,
+            request.AccountingConfigurationPromotionCertified,
+            AccountingMigrationRunKindDto.AccountingConfigurationPromotion,
+            "migration.configuration-promotion-not-certified",
+            "Accounting configuration promotion evidence has not been certified.",
+            "Retain promotion evidence for chart, rule, policy, and approval-state migration before rollout.",
+            AccountingConfigurationValidationSeverityDto.Warning);
+        AddMigrationControlIssues(
+            request,
+            issues,
+            request.CloseReportingEvidenceMigrationCertified,
+            AccountingMigrationRunKindDto.CloseReportingEvidence,
+            "migration.close-reporting-evidence-not-certified",
+            "Close and reporting evidence migration has not been certified.",
+            "Retain close checklist, report package, certification, and restatement evidence migration proof before production close.",
+            AccountingConfigurationValidationSeverityDto.Warning);
 
         var certifiedCount = new[]
         {
@@ -389,17 +381,103 @@ public sealed class AccountingProductionReadinessService
             request.AccountingConfigurationPromotionCertified,
             request.CloseReportingEvidenceMigrationCertified
         }.Count(static certified => certified);
+        var evidenceReferences = request.MigrationRunArtifacts
+            .SelectMany(static artifact => artifact.EvidenceReferences)
+            .Concat(request.MigrationEvidenceLinks)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var certifiedArtifactCount = request.MigrationRunArtifacts.Count(static artifact =>
+            artifact.Status == AccountingMigrationRunStatusDto.Certified);
 
         components.Add(Component(
             AccountingProductionReadinessAreaDto.MigrationRollout,
             "Migration rollout",
             ResolveIssueStatus(issues),
-            ScoreFromIssues(issues, hasPositiveEvidence: request.MigrationEvidenceLinks.Count > 0),
-            $"{certifiedCount}/5 migration control(s) certified; {request.MigrationEvidenceLinks.Count} retained evidence link(s).",
+            ScoreFromIssues(issues, hasPositiveEvidence: evidenceReferences.Length > 0),
+            $"{certifiedCount}/5 migration control(s) certified; {certifiedArtifactCount} retained certified migration run artifact(s); {evidenceReferences.Length} retained evidence link(s).",
             issues,
             route: UiApiRoutes.AccountingSystemProductionReadiness,
-            evidenceReferences: request.MigrationEvidenceLinks));
+            evidenceReferences: evidenceReferences));
     }
+
+    private static void AddMigrationControlIssues(
+        AccountingProductionReadinessRequestDto request,
+        ICollection<AccountingProductionReadinessIssueDto> issues,
+        bool certified,
+        AccountingMigrationRunKindDto kind,
+        string notCertifiedCode,
+        string notCertifiedMessage,
+        string suggestedAction,
+        AccountingConfigurationValidationSeverityDto notCertifiedSeverity)
+    {
+        var artifacts = request.MigrationRunArtifacts
+            .Where(artifact => artifact.Kind == kind)
+            .ToArray();
+        var evidenceReferences = artifacts
+            .SelectMany(static artifact => artifact.EvidenceReferences)
+            .Concat(request.MigrationEvidenceLinks)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (!certified)
+        {
+            issues.Add(Issue(
+                notCertifiedCode,
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                notCertifiedSeverity,
+                notCertifiedMessage,
+                suggestedAction,
+                evidenceReferences));
+        }
+
+        if (artifacts.Any(static artifact => artifact.Status == AccountingMigrationRunStatusDto.Failed))
+        {
+            issues.Add(Issue(
+                $"migration.{MigrationKindCode(kind)}-run-failed",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"{MigrationKindLabel(kind)} has a retained failed migration run artifact.",
+                "Resolve the failed migration run and retain a certified rerun before production rollout.",
+                evidenceReferences));
+        }
+
+        if (certified && artifacts.All(static artifact => artifact.Status != AccountingMigrationRunStatusDto.Certified))
+        {
+            issues.Add(Issue(
+                $"migration.{MigrationKindCode(kind)}-certified-run-missing",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"{MigrationKindLabel(kind)} is marked certified but has no retained certified migration run artifact.",
+                "Attach the retained certified migration run artifact before production rollout certification.",
+                evidenceReferences));
+        }
+    }
+
+    private static string MigrationKindCode(AccountingMigrationRunKindDto kind)
+        => kind switch
+        {
+            AccountingMigrationRunKindDto.LedgerBookScope => "ledger-book-scope",
+            AccountingMigrationRunKindDto.HistoricalJournalBackfill => "historical-journal-backfill",
+            AccountingMigrationRunKindDto.DimensionalBackfill => "dimensional-backfill",
+            AccountingMigrationRunKindDto.AccountingConfigurationPromotion => "configuration-promotion",
+            AccountingMigrationRunKindDto.CloseReportingEvidence => "close-reporting-evidence",
+            _ => kind.ToString().ToLowerInvariant()
+        };
+
+    private static string MigrationKindLabel(AccountingMigrationRunKindDto kind)
+        => kind switch
+        {
+            AccountingMigrationRunKindDto.LedgerBookScope => "Ledger-book migration scope",
+            AccountingMigrationRunKindDto.HistoricalJournalBackfill => "Historical journal backfill",
+            AccountingMigrationRunKindDto.DimensionalBackfill => "Dimensional backfill",
+            AccountingMigrationRunKindDto.AccountingConfigurationPromotion => "Accounting configuration promotion",
+            AccountingMigrationRunKindDto.CloseReportingEvidence => "Close and reporting evidence migration",
+            _ => kind.ToString()
+        };
 
     private static List<AccountingProductionReadinessIssueDto> BuildDimensionalIssues(AccountingConfigurationWorkspaceDto workspace)
     {

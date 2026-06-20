@@ -192,8 +192,10 @@ assessment for production rollout. The payload aggregates ledger-book rollout, R
 posting-rule execution, journal lifecycle, dimensional accounting, external GL, close/reporting,
 tenant-administration posture, and migration-rollout controls for ledger-book migration,
 historical journal backfill, dimensional backfill, accounting configuration promotion, and
-close/reporting evidence migration with shared blocker codes so browser, WPF, and admin setup
-surfaces can render the same fail-closed readiness state instead of recomputing production gaps.
+close/reporting evidence migration with shared blocker codes and retained
+`AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can render the
+same fail-closed readiness state instead of recomputing production gaps or treating certification
+booleans as executable migration proof.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

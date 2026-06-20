@@ -103,9 +103,71 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
             component.Summary.Contains("migration control", StringComparison.OrdinalIgnoreCase));
+        readiness.MigrationRunArtifacts.Should().BeEmpty();
         readiness.ExternalGlProviderCount.Should().BeGreaterThan(0);
         readiness.CertifiedExternalGlMappingProfileCount.Should().Be(0);
         readiness.ExternalGlLivePostingEnabled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ProductionReadinessService_RequiresRetainedMigrationRunArtifactsForCertifiedControls()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookMigrationCertified: true,
+                HistoricalJournalBackfillCertified: true,
+                DimensionalBackfillCertified: true,
+                AccountingConfigurationPromotionCertified: true,
+                CloseReportingEvidenceMigrationCertified: true,
+                MigrationEvidenceLinks: ["evidence://migration/control-certification/default-fund"],
+                MigrationRunArtifacts:
+                [
+                    new AccountingMigrationRunArtifactDto(
+                        "migration-run-ledger-book-scope-default-fund",
+                        AccountingMigrationRunKindDto.LedgerBookScope,
+                        AccountingMigrationRunStatusDto.Certified,
+                        DateTimeOffset.Parse("2026-02-01T00:00:00Z"),
+                        CompletedAtUtc: DateTimeOffset.Parse("2026-02-01T00:05:00Z"),
+                        Actor: "controller",
+                        MigratedRecordCount: 24,
+                        IssueCount: 0,
+                        EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund"],
+                        FundProfileId: "default-fund",
+                        Summary: "Ledger-book scope migration completed and certified."),
+                    new AccountingMigrationRunArtifactDto(
+                        "migration-run-dimensional-backfill-default-fund",
+                        AccountingMigrationRunKindDto.DimensionalBackfill,
+                        AccountingMigrationRunStatusDto.Failed,
+                        DateTimeOffset.Parse("2026-02-01T00:06:00Z"),
+                        CompletedAtUtc: DateTimeOffset.Parse("2026-02-01T00:07:00Z"),
+                        Actor: "controller",
+                        MigratedRecordCount: 12,
+                        IssueCount: 3,
+                        EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/failed"],
+                        FundProfileId: "default-fund",
+                        Summary: "Dimensional backfill failed retained validation.")
+                ]));
+
+        readiness.MigrationRunArtifacts.Should().HaveCount(2);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.historical-journal-backfill-certified-run-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.dimensional-backfill-run-failed" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains("evidence://migration/dimensional-backfill/default-fund/failed"));
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Summary.Contains("retained certified migration run artifact", StringComparison.OrdinalIgnoreCase) &&
+            component.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund"));
     }
 
     [Fact]

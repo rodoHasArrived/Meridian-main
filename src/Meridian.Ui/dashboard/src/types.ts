@@ -5582,6 +5582,31 @@ export interface AccountingProductionReadinessRequest {
   accountingConfigurationPromotionCertified?: boolean;
   closeReportingEvidenceMigrationCertified?: boolean;
   migrationEvidenceLinks?: string[] | null;
+  migrationRunArtifacts?: AccountingMigrationRunArtifact[] | null;
+}
+
+export type AccountingMigrationRunKind =
+  | "LedgerBookScope"
+  | "HistoricalJournalBackfill"
+  | "DimensionalBackfill"
+  | "AccountingConfigurationPromotion"
+  | "CloseReportingEvidence";
+
+export type AccountingMigrationRunStatus = "Planned" | "Running" | "Completed" | "Failed" | "Certified";
+
+export interface AccountingMigrationRunArtifact {
+  runId: string;
+  kind: AccountingMigrationRunKind;
+  status: AccountingMigrationRunStatus;
+  startedAtUtc: string;
+  completedAtUtc?: string | null;
+  actor?: string | null;
+  migratedRecordCount: number;
+  issueCount: number;
+  evidenceReferences: string[];
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  summary?: string | null;
 }
 
 export interface AccountingProductionReadinessIssue {
@@ -5617,6 +5642,7 @@ export interface AccountingProductionReadiness {
   externalGlProviderCount: number;
   certifiedExternalGlMappingProfileCount: number;
   externalGlLivePostingEnabled: boolean;
+  migrationRunArtifacts?: AccountingMigrationRunArtifact[];
   criticalIssueCount: number;
   warningIssueCount: number;
 }

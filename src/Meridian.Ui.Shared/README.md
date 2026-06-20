@@ -212,9 +212,11 @@ configuration and Rules Studio, generated posting and dimensional coverage, manu
 lifecycle registration, close/report service registration, external-GL provider and certified
 mapping posture, migration-rollout certification for ledger-book scoping, historical journal
 backfill, dimensional backfill, accounting configuration promotion, close/reporting evidence
-migration, and tenant-admin rollout guidance into one shared fail-closed payload for browser, WPF,
-and admin setup surfaces. The route does not create ledger books, import external GL data, post
-journals, certify exports, or close periods.
+migration, retained migration run artifacts, and tenant-admin rollout guidance into one shared
+fail-closed payload for browser, WPF, and admin setup surfaces. Certification flags without retained
+certified migration run artifacts remain blocked, and failed retained migration runs are surfaced as
+critical rollout issues. The route does not create ledger books, run migrations, import external GL
+data, post journals, certify exports, or close periods.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers

@@ -3556,6 +3556,36 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
   externalGlProviderCount: fixtureAccountingSystemProviders.length,
   certifiedExternalGlMappingProfileCount: fixtureAccountingSystemMappingProfiles.filter((profile) => profile.certificationState === "Certified").length,
   externalGlLivePostingEnabled: false,
+  migrationRunArtifacts: [
+    {
+      runId: "migration-run-ledger-book-scope-default-fund",
+      kind: "LedgerBookScope",
+      status: "Certified",
+      startedAtUtc: "2026-02-01T00:00:00Z",
+      completedAtUtc: "2026-02-01T00:05:00Z",
+      actor: "controller",
+      migratedRecordCount: 24,
+      issueCount: 0,
+      evidenceReferences: ["fixture:migration:ledger-book-run"],
+      fundProfileId: "default-fund",
+      ledgerBookId: null,
+      summary: "Fixture ledger-book scope migration retained and certified."
+    },
+    {
+      runId: "migration-run-dimensions-default-fund",
+      kind: "DimensionalBackfill",
+      status: "Certified",
+      startedAtUtc: "2026-02-01T00:05:00Z",
+      completedAtUtc: "2026-02-01T00:12:00Z",
+      actor: "controller",
+      migratedRecordCount: 48,
+      issueCount: 0,
+      evidenceReferences: ["fixture:migration:dimensions-run"],
+      fundProfileId: "default-fund",
+      ledgerBookId: null,
+      summary: "Fixture dimensional backfill retained and certified."
+    }
+  ],
   ledgerBookRollout: {
     generatedAtUtc: "2026-02-01T00:15:00Z",
     fundProfileId: "default-fund",

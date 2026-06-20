@@ -88,6 +88,44 @@ public enum AccountingProductionReadinessAreaDto
     MigrationRollout = 8
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<AccountingMigrationRunKindDto>))]
+public enum AccountingMigrationRunKindDto
+{
+    LedgerBookScope = 0,
+    HistoricalJournalBackfill = 1,
+    DimensionalBackfill = 2,
+    AccountingConfigurationPromotion = 3,
+    CloseReportingEvidence = 4
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<AccountingMigrationRunStatusDto>))]
+public enum AccountingMigrationRunStatusDto
+{
+    Planned = 0,
+    Running = 1,
+    Completed = 2,
+    Failed = 3,
+    Certified = 4
+}
+
+public sealed record AccountingMigrationRunArtifactDto(
+    string RunId,
+    AccountingMigrationRunKindDto Kind,
+    AccountingMigrationRunStatusDto Status,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset? CompletedAtUtc = null,
+    string? Actor = null,
+    int MigratedRecordCount = 0,
+    int IssueCount = 0,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    string? Summary = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+}
+
 public sealed record AccountingProductionReadinessRequestDto(
     string? FundProfileId = null,
     Guid? LedgerBookId = null,
@@ -99,13 +137,17 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool DimensionalBackfillCertified = false,
     bool AccountingConfigurationPromotionCertified = false,
     bool CloseReportingEvidenceMigrationCertified = false,
-    IReadOnlyList<string>? MigrationEvidenceLinks = null)
+    IReadOnlyList<string>? MigrationEvidenceLinks = null,
+    IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null)
 {
     public IReadOnlyList<LedgerBookRequiredScopeDto> RequiredLedgerBookScopes { get; init; } =
         RequiredLedgerBookScopes ?? [];
 
     public IReadOnlyList<string> MigrationEvidenceLinks { get; init; } =
         MigrationEvidenceLinks ?? [];
+
+    public IReadOnlyList<AccountingMigrationRunArtifactDto> MigrationRunArtifacts { get; init; } =
+        MigrationRunArtifacts ?? [];
 }
 
 public sealed record AccountingProductionReadinessIssueDto(
@@ -149,13 +191,17 @@ public sealed record AccountingProductionReadinessDto(
     AccountingRulesStudioSummaryDto? RulesStudioSummary = null,
     int ExternalGlProviderCount = 0,
     int CertifiedExternalGlMappingProfileCount = 0,
-    bool ExternalGlLivePostingEnabled = false)
+    bool ExternalGlLivePostingEnabled = false,
+    IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null)
 {
     public IReadOnlyList<AccountingProductionReadinessComponentDto> Components { get; init; } =
         Components ?? [];
 
     public IReadOnlyList<AccountingProductionReadinessIssueDto> Issues { get; init; } =
         Issues ?? [];
+
+    public IReadOnlyList<AccountingMigrationRunArtifactDto> MigrationRunArtifacts { get; init; } =
+        MigrationRunArtifacts ?? [];
 
     public int CriticalIssueCount => Issues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 
