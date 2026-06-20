@@ -6520,6 +6520,94 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         ) : null}
       </div>
 
+      <Card className="panel-surface" aria-labelledby="accounting-production-readiness-heading">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle id="accounting-production-readiness-heading" className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+                {view.productionReadiness.title}
+              </CardTitle>
+              <CardDescription>{view.productionReadiness.scopeLabel}</CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={accountingToolingBadgeVariant(view.productionReadiness.components.length === 0 ? "default" : view.productionReadiness.components.some((component) => component.tone === "danger") ? "danger" : view.productionReadiness.components.some((component) => component.tone === "warning") ? "warning" : "success")} dot>
+                {view.productionReadiness.statusLabel}
+              </Badge>
+              <Badge variant="outline">{view.productionReadiness.scoreLabel}</Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {view.productionReadiness.errorText ? (
+            <div role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+              <div className="font-semibold">{view.productionReadiness.errorText}</div>
+              {view.productionReadiness.errorDetails.length > 0 ? (
+                <ul className="mt-2 list-disc pl-4">
+                  {view.productionReadiness.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Readiness</div>
+              <div className={cn("mt-2 text-sm font-semibold", view.productionReadiness.blockerIssues.some((issue) => issue.tone === "danger") ? "text-danger" : view.productionReadiness.blockerIssues.length > 0 ? "text-warning" : "text-success")}>{view.productionReadiness.issueSummaryLabel}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{view.productionReadiness.generatedAtLabel}</p>
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Ledger books</div>
+              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.ledgerBookRolloutLabel}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Rollout evidence remains service-owned.</p>
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">External GL</div>
+              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.externalGlLabel}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Import, mapping, reconciliation, and guarded export posture.</p>
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Control plane</div>
+              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.components.length} component checks</div>
+              <p className="mt-1 text-xs text-muted-foreground">Rules, posting, JE lifecycle, dimensions, close, and admin readiness.</p>
+            </div>
+          </div>
+
+          {view.productionReadiness.components.length > 0 ? (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Accounting production readiness components">
+              {view.productionReadiness.components.map((component) => (
+                <div key={component.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(component.tone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="font-semibold text-foreground">{component.label}</div>
+                    <Badge variant={accountingToolingBadgeVariant(component.tone)}>{component.statusLabel}</Badge>
+                  </div>
+                  <div className="mt-2 font-mono text-xs text-muted-foreground">{component.scoreLabel} | {component.issueCountLabel}</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{component.summary}</p>
+                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{component.evidenceLabel} | {component.routeLabel}</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {view.productionReadiness.blockerIssues.length > 0 ? (
+            <div className="space-y-2" aria-label="Accounting production readiness blockers">
+              {view.productionReadiness.blockerIssues.map((issue) => (
+                <div key={issue.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(issue.tone))}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-semibold text-foreground">{issue.label}</span>
+                    <Badge variant={accountingToolingBadgeVariant(issue.tone)}>{issue.tone === "danger" ? "Blocker" : "Review"}</Badge>
+                  </div>
+                  <p className="mt-1 text-muted-foreground">{issue.message}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{issue.suggestedAction} | {issue.evidenceLabel}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">No production-readiness blockers returned by the shared accounting control-plane assessment.</p>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="panel-surface">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">

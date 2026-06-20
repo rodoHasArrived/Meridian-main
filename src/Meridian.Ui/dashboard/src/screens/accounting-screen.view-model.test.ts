@@ -62,6 +62,7 @@ import type {
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
   AccountingConfigurationWorkspace,
+  AccountingProductionReadiness,
   AccountingReportPackageBundle,
   CapitalAccountWorkbench,
   ClosePeriodPlan,
@@ -2673,6 +2674,74 @@ describe("accounting-screen view model", () => {
       generatedPostingLines: workspace.postingRules[0].generatedPostings,
       validationIssues: []
     };
+    const productionReadiness: AccountingProductionReadiness = {
+      generatedAtUtc: "2026-06-30T12:15:00Z",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      status: "ReviewRequired",
+      score: 78,
+      externalGlProviderCount: 3,
+      certifiedExternalGlMappingProfileCount: 1,
+      externalGlLivePostingEnabled: false,
+      criticalIssueCount: 0,
+      warningIssueCount: 1,
+      ledgerBookRollout: {
+        generatedAtUtc: "2026-06-30T12:15:00Z",
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "entity-master",
+        fundStructureNodeKind: "Entity",
+        accountingBasis: "Gaap",
+        books: [],
+        issues: [],
+        isReady: true,
+        criticalIssueCount: 0,
+        warningIssueCount: 0,
+        bookCount: 1,
+        openPeriodCount: 1
+      },
+      rulesStudioSummary: workspace.rulesStudio.summary,
+      components: [
+        {
+          area: "RulesStudio",
+          label: "Rules Studio",
+          status: "Ready",
+          score: 92,
+          summary: "Rule versions, dry-run regression cases, and promotion approvals are retained.",
+          issues: [],
+          evidenceReferences: ["evidence://rule/v3"],
+          route: "/accounting/configure"
+        },
+        {
+          area: "TenantAdministration",
+          label: "Tenant administration",
+          status: "ReviewRequired",
+          score: 50,
+          summary: "Tenant setup operator workflow still needs completion.",
+          issues: [
+            {
+              code: "tenant-admin.operator-surface-required",
+              area: "TenantAdministration",
+              severity: "Warning",
+              message: "Production rollout still needs tenant setup controls.",
+              suggestedAction: "Bind admin setup screens to this shared readiness contract.",
+              evidenceReferences: ["evidence://tenant-admin/gap"]
+            }
+          ],
+          evidenceReferences: ["evidence://tenant-admin/gap"],
+          route: "/settings"
+        }
+      ],
+      issues: [
+        {
+          code: "tenant-admin.operator-surface-required",
+          area: "TenantAdministration",
+          severity: "Warning",
+          message: "Production rollout still needs tenant setup controls.",
+          suggestedAction: "Bind admin setup screens to this shared readiness contract.",
+          evidenceReferences: ["evidence://tenant-admin/gap"]
+        }
+      ]
+    };
     let retainedWorkspace = workspace;
     const upsertRule = vi.fn(async (request: Parameters<AccountingConfigurationServices["upsertRule"]>[0]) => {
       const existingRuleIndex = retainedWorkspace.postingRules.findIndex((rule) => rule.ruleId === request.rule.ruleId);
@@ -2703,6 +2772,7 @@ describe("accounting-screen view model", () => {
     });
     const services: AccountingConfigurationServices = {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
+      assessProductionReadiness: vi.fn().mockResolvedValue(productionReadiness),
       createLedgerBook: vi.fn(),
       previewTemplate: vi.fn().mockResolvedValue({
         templateId: "template-trade-buy",
@@ -2813,6 +2883,37 @@ describe("accounting-screen view model", () => {
         detail: "1 rule(s) covered; 0 current version gap(s)."
       })
     ]));
+    expect(services.assessProductionReadiness).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      requiredLedgerBookScopes: null
+    }));
+    expect(result.current.productionReadiness).toMatchObject({
+      statusLabel: "Review required",
+      scoreLabel: "78/100",
+      issueSummaryLabel: "1 warning requires review",
+      externalGlLabel: "3 providers | 1 certified mapping | live posting disabled",
+      ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers"
+    });
+    expect(result.current.productionReadiness.components).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "RulesStudio",
+        statusLabel: "Ready",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "TenantAdministration",
+        statusLabel: "Review required",
+        tone: "warning"
+      })
+    ]));
+    expect(result.current.productionReadiness.blockerIssues).toEqual([
+      expect.objectContaining({
+        label: "Tenant Administration | Warning",
+        message: "Production rollout still needs tenant setup controls.",
+        tone: "warning"
+      })
+    ]);
     expect(result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "server-readiness",
@@ -3251,6 +3352,7 @@ describe("accounting-screen view model", () => {
     };
     const services: AccountingConfigurationServices = {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
+      assessProductionReadiness: vi.fn().mockResolvedValue(null),
       createLedgerBook: vi.fn(),
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),
@@ -3434,6 +3536,7 @@ describe("accounting-screen view model", () => {
     const createLedgerBook = vi.fn().mockResolvedValue(createdBook);
     const services: AccountingConfigurationServices = {
       getConfiguration,
+      assessProductionReadiness: vi.fn().mockResolvedValue(null),
       createLedgerBook,
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),

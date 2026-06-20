@@ -5422,6 +5422,17 @@ export type AccountingBasisKind = "Primary" | "Gaap" | "Cash" | "Tax" | "Statuto
 
 export type AccountingConfigurationStatus = "Draft" | "Active" | "Archived";
 export type AccountingConfigurationValidationSeverity = "Info" | "Warning" | "Critical";
+export type AccountingProductionReadinessStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unavailable";
+export type AccountingProductionReadinessArea =
+  | "LedgerBooks"
+  | "RulesStudio"
+  | "PostingRules"
+  | "JournalLifecycle"
+  | "DimensionalAccounting"
+  | "ExternalGl"
+  | "CloseReporting"
+  | "TenantAdministration";
+export type LedgerBookRolloutIssueSeverity = "Info" | "Warning" | "Critical";
 export type AccountingTemplateLineSide = "Debit" | "Credit";
 export type ManualJournalEntryStatus = "Draft" | "NeedsFix" | "Submitted" | "Approved" | "Rejected" | "Posted" | "Reversed" | "Rebooked" | "CloseLocked";
 export type AccountingRuleConditionOperator = "Equals" | "NotEquals" | "Contains" | "AmountGreaterThanOrEqual" | "AmountLessThanOrEqual" | "AmountBetween" | "IsPresent";
@@ -5508,6 +5519,99 @@ export interface LedgerBookSetupCandidate {
   description?: string | null;
   sourceLedgerBookId?: string | null;
   requestedLedgerBookId?: string | null;
+}
+
+export interface LedgerBookRequiredScope {
+  fundStructureNodeId: string;
+  fundStructureNodeKind: string;
+  accountingBasis: AccountingBasisKind;
+  displayName?: string | null;
+}
+
+export interface LedgerBookRolloutBookStatus {
+  ledgerBookId: string;
+  fundProfileId: string;
+  fundStructureNodeId: string;
+  fundStructureNodeKind: string;
+  accountingBasis: AccountingBasisKind;
+  accountingPolicyId: string;
+  accountingPolicyVersion: string;
+  periodCount: number;
+  openPeriodCount: number;
+  softClosedPeriodCount: number;
+  hardClosedPeriodCount: number;
+  firstPeriodStart?: string | null;
+  lastPeriodEnd?: string | null;
+}
+
+export interface LedgerBookRolloutIssue {
+  code: string;
+  severity: LedgerBookRolloutIssueSeverity;
+  message: string;
+  scope?: string | null;
+  ledgerBookId?: string | null;
+  fundStructureNodeId?: string | null;
+  accountingBasis?: AccountingBasisKind | null;
+}
+
+export interface LedgerBookRolloutAssessment {
+  generatedAtUtc: string;
+  fundProfileId?: string | null;
+  fundStructureNodeId?: string | null;
+  fundStructureNodeKind?: string | null;
+  accountingBasis?: AccountingBasisKind | null;
+  books: LedgerBookRolloutBookStatus[];
+  issues: LedgerBookRolloutIssue[];
+  isReady: boolean;
+  criticalIssueCount: number;
+  warningIssueCount: number;
+  bookCount: number;
+  openPeriodCount: number;
+}
+
+export interface AccountingProductionReadinessRequest {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  accountingBasis?: AccountingBasisKind | null;
+  providerId?: string | null;
+  requiredLedgerBookScopes?: LedgerBookRequiredScope[] | null;
+}
+
+export interface AccountingProductionReadinessIssue {
+  code: string;
+  area: AccountingProductionReadinessArea;
+  severity: AccountingConfigurationValidationSeverity;
+  message: string;
+  suggestedAction: string;
+  evidenceReferences: string[];
+}
+
+export interface AccountingProductionReadinessComponent {
+  area: AccountingProductionReadinessArea;
+  label: string;
+  status: AccountingProductionReadinessStatus;
+  score: number;
+  summary: string;
+  issues: AccountingProductionReadinessIssue[];
+  evidenceReferences: string[];
+  route?: string | null;
+}
+
+export interface AccountingProductionReadiness {
+  generatedAtUtc: string;
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  status: AccountingProductionReadinessStatus;
+  score: number;
+  components: AccountingProductionReadinessComponent[];
+  issues: AccountingProductionReadinessIssue[];
+  ledgerBookRollout?: LedgerBookRolloutAssessment | null;
+  rulesStudioSummary?: AccountingRulesStudioSummary | null;
+  externalGlProviderCount: number;
+  certifiedExternalGlMappingProfileCount: number;
+  externalGlLivePostingEnabled: boolean;
+  criticalIssueCount: number;
+  warningIssueCount: number;
 }
 
 export interface ChartOfAccountsNode {

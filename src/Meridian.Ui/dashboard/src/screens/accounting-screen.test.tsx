@@ -11,6 +11,7 @@ import type {
   CorporateAction,
   AccountingWorkspaceResponse,
   AccountingConfigurationWorkspace,
+  AccountingProductionReadiness,
   ExternalGlExportPackage,
   ExternalGlExportPackageManifest,
   ExternalGlMappingProfile,
@@ -190,6 +191,7 @@ vi.mock("@/lib/api", async () => {
     createAccountingSystemExportPackage: vi.fn(),
     getAccountingSystemExportPackageManifest: vi.fn(),
     certifyAccountingSystemExportPackage: vi.fn(),
+    assessAccountingProductionReadiness: vi.fn(),
     getAccountingConfiguration: vi.fn(),
     previewAccountingConfigurationTemplate: vi.fn(),
     dryRunAccountingConfigurationPostingRule: vi.fn(),
@@ -1864,7 +1866,76 @@ describe("AccountingScreen", () => {
         }]
       }]
     };
+    const productionReadiness: AccountingProductionReadiness = {
+      generatedAtUtc: "2026-06-30T12:15:00Z",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      status: "ReviewRequired",
+      score: 78,
+      externalGlProviderCount: 3,
+      certifiedExternalGlMappingProfileCount: 1,
+      externalGlLivePostingEnabled: false,
+      criticalIssueCount: 0,
+      warningIssueCount: 1,
+      ledgerBookRollout: {
+        generatedAtUtc: "2026-06-30T12:15:00Z",
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "entity-master",
+        fundStructureNodeKind: "Entity",
+        accountingBasis: "Gaap",
+        books: [],
+        issues: [],
+        isReady: true,
+        criticalIssueCount: 0,
+        warningIssueCount: 0,
+        bookCount: 1,
+        openPeriodCount: 1
+      },
+      rulesStudioSummary: workspace.rulesStudio?.summary ?? null,
+      components: [
+        {
+          area: "RulesStudio",
+          label: "Rules Studio",
+          status: "Ready",
+          score: 92,
+          summary: "Rule versions, dry-run regression cases, and promotion approvals are retained.",
+          issues: [],
+          evidenceReferences: ["evidence://rule/v3"],
+          route: "/accounting/configure"
+        },
+        {
+          area: "TenantAdministration",
+          label: "Tenant administration",
+          status: "ReviewRequired",
+          score: 50,
+          summary: "Tenant setup operator workflow still needs completion.",
+          issues: [
+            {
+              code: "tenant-admin.operator-surface-required",
+              area: "TenantAdministration",
+              severity: "Warning",
+              message: "Production rollout still needs tenant setup controls.",
+              suggestedAction: "Bind admin setup screens to this shared readiness contract.",
+              evidenceReferences: ["evidence://tenant-admin/gap"]
+            }
+          ],
+          evidenceReferences: ["evidence://tenant-admin/gap"],
+          route: "/settings"
+        }
+      ],
+      issues: [
+        {
+          code: "tenant-admin.operator-surface-required",
+          area: "TenantAdministration",
+          severity: "Warning",
+          message: "Production rollout still needs tenant setup controls.",
+          suggestedAction: "Bind admin setup screens to this shared readiness contract.",
+          evidenceReferences: ["evidence://tenant-admin/gap"]
+        }
+      ]
+    };
     vi.mocked(api.getAccountingConfiguration).mockResolvedValueOnce(workspace);
+    vi.mocked(api.assessAccountingProductionReadiness).mockResolvedValueOnce(productionReadiness);
     vi.mocked(api.approveAccountingConfigurationPostingRulePromotion).mockResolvedValueOnce(approvedWorkspace);
     vi.mocked(api.dryRunAccountingConfigurationPostingRule).mockResolvedValueOnce(dryRunResult);
     vi.mocked(api.buildAccountingPostingRuleJournalCandidate).mockResolvedValueOnce(journalCandidateResult);
@@ -1874,6 +1945,14 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/configure");
 
     expect(await screen.findByText("Accounting Rules Studio")).toBeInTheDocument();
+    expect(screen.getByText("Accounting production readiness")).toBeInTheDocument();
+    expect(screen.getByText("78/100")).toBeInTheDocument();
+    expect(screen.getByText("Tenant administration")).toBeInTheDocument();
+    expect(api.assessAccountingProductionReadiness).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      requiredLedgerBookScopes: null
+    }));
     expect(screen.getAllByText("Trade buy posting").length).toBeGreaterThan(0);
     expect(screen.getByText("2026-01-01 -> 2026-12-31")).toBeInTheDocument();
     expect(screen.getByText("Fund: fund-alpha")).toBeInTheDocument();

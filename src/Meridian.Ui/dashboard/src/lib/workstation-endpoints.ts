@@ -323,12 +323,13 @@ export const PROVIDER_API_ENDPOINTS = {
 } as const;
 
 export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
-  providers: "/api/accounting-system/providers",
-  importPreview: "/api/accounting-system/import/preview",
-  importLatest: "/api/accounting-system/import/latest",
-  reconciliationLatest: "/api/accounting-system/reconciliation/latest",
-  mappingProfiles: "/api/accounting-system/mapping-profiles",
-  exportPackages: "/api/accounting-system/export-packages",
+  providers: UI_API_ROUTES.AccountingSystemProviders,
+  productionReadiness: UI_API_ROUTES.AccountingSystemProductionReadiness,
+  importPreview: UI_API_ROUTES.AccountingSystemImportPreview,
+  importLatest: UI_API_ROUTES.AccountingSystemImportLatest,
+  reconciliationLatest: UI_API_ROUTES.AccountingSystemReconciliationLatest,
+  mappingProfiles: UI_API_ROUTES.AccountingSystemMappingProfiles,
+  exportPackages: UI_API_ROUTES.AccountingSystemExportPackages,
   exportPackageManifest: UI_API_ROUTES.AccountingSystemExportPackageManifest,
   exportPackageCertification: UI_API_ROUTES.AccountingSystemExportPackageCertification
 } as const;

@@ -209,6 +209,12 @@ When shared validation reports a missing selected ledger book and the workspace 
 server-derived setup candidate, the browser Accounting Configure surface can create the ledger book
 through the shared `/api/ledger/books` endpoint and then refresh the workspace; React does not infer
 fund-structure node ids, accounting basis, or policy ids locally.
+The same Configure surface also calls the shared `/api/accounting-system/production-readiness`
+assessment for the active fund and ledger-book scope, then renders the service-owned control-plane
+posture for ledger books, Rules Studio, posting rules, JE lifecycle, dimensions, external GL,
+close/reporting, and tenant administration. The panel displays returned blockers, suggested
+actions, evidence counts, rollout posture, certified external-GL mapping coverage, and the disabled
+live-posting stance without deriving production-readiness policy in React.
 After a dry run selects a rule, operators can build a governed journal draft candidate through the
 shared posting-rule candidate endpoint. The browser carries the selected event, amount, dimensions,
 policy, counterparty, source evidence, and browser correlation metadata to the service, then renders

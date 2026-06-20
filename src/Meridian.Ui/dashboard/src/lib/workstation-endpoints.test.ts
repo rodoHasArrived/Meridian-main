@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   AUTH_API_ENDPOINTS,
+  ACCOUNTING_SYSTEM_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
   EXPORT_API_ENDPOINTS,
@@ -730,6 +731,7 @@ describe("workstation API endpoint catalog", () => {
     expect(backfillCheckpointResumeEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/resume");
     expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
+    expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness).toBe("/api/accounting-system/production-readiness");
     expect(PROVIDER_ROUTING_API_ENDPOINTS).toMatchObject({
       connections: "/api/provider-routing/connections",
       bindings: "/api/provider-routing/bindings",

@@ -3,6 +3,8 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
+  AccountingProductionReadiness,
+  AccountingProductionReadinessRequest,
   AccountingSystemExportPackageRequest,
   AccountingSystemImportDetail,
   AccountingSystemImportRequest,
@@ -1970,6 +1972,13 @@ export function applyManualJournalEntryLifecycleAction(
 
 export function getAccountingSystemProviders(options: ApiRequestOptions = {}) {
   return getJson<AccountingSystemProvider[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.providers, options);
+}
+
+export function assessAccountingProductionReadiness(
+  request: AccountingProductionReadinessRequest = {},
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingProductionReadiness>(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness, request, options);
 }
 
 export function previewAccountingSystemImport(

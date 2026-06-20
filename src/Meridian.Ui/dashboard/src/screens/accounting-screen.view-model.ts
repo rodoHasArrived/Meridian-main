@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
   activateAccountingConfiguration,
+  assessAccountingProductionReadiness,
   approveAccountingConfigurationPostingRulePromotion,
   applyManualJournalEntryLifecycleAction,
   attachManualJournalEntryEvidence,
@@ -74,6 +75,8 @@ import type {
   AccountingBasisKind,
   AccountingCertificationState,
   AccountingConfigurationWorkspace,
+  AccountingProductionReadiness,
+  AccountingProductionReadinessRequest,
   AccountingReportPackageBundle,
   AccountingReportPackageRequest,
   CertifyAccountingReportPackageRequest,
@@ -211,6 +214,7 @@ export interface AccountingReportingServices {
 
 export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
+  assessProductionReadiness: (request: AccountingProductionReadinessRequest) => Promise<AccountingProductionReadiness>;
   createLedgerBook: (request: CreateLedgerBookRequest) => Promise<LedgerBook>;
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
   upsertRule: (request: UpsertPostingRuleRequest) => Promise<AccountingConfigurationWorkspace>;
@@ -326,6 +330,43 @@ export interface AccountingConfigurationAuditViewModel {
   hashLabel: string;
 }
 
+export interface AccountingProductionReadinessComponentViewModel {
+  id: string;
+  label: string;
+  statusLabel: string;
+  scoreLabel: string;
+  summary: string;
+  issueCountLabel: string;
+  evidenceLabel: string;
+  routeLabel: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface AccountingProductionReadinessIssueViewModel {
+  id: string;
+  label: string;
+  message: string;
+  suggestedAction: string;
+  evidenceLabel: string;
+  tone: "default" | "warning" | "danger";
+}
+
+export interface AccountingProductionReadinessViewModel {
+  title: string;
+  statusLabel: string;
+  scoreLabel: string;
+  generatedAtLabel: string;
+  scopeLabel: string;
+  issueSummaryLabel: string;
+  externalGlLabel: string;
+  ledgerBookRolloutLabel: string;
+  components: AccountingProductionReadinessComponentViewModel[];
+  blockerIssues: AccountingProductionReadinessIssueViewModel[];
+  loading: boolean;
+  errorText: string | null;
+  errorDetails: string[];
+}
+
 export interface AccountingConfigurationPreviewViewModel {
   title: string;
   balanceLabel: string;
@@ -349,6 +390,7 @@ export interface AccountingConfigurationViewModel {
   errorDetails: string[];
   metricRows: AccountingConfigurationMetricViewModel[];
   setupReadinessRows: AccountingConfigurationMetricViewModel[];
+  productionReadiness: AccountingProductionReadinessViewModel;
   templates: AccountingConfigurationTemplateViewModel[];
   rules: AccountingRulesStudioRuleViewModel[];
   selectedRule: AccountingRulesStudioRuleViewModel | null;
@@ -2277,6 +2319,7 @@ const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageS
 
 const defaultAccountingConfigurationServices: AccountingConfigurationServices = {
   getConfiguration: () => getAccountingConfiguration(),
+  assessProductionReadiness: (request) => assessAccountingProductionReadiness(request),
   createLedgerBook: (request) => createLedgerBook(request),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
   dryRunRule: (request) => dryRunAccountingConfigurationPostingRule(request),
@@ -2996,6 +3039,9 @@ export function useAccountingConfigurationViewModel(
   const [workspace, setWorkspace] = useState<AccountingConfigurationWorkspace | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
+  const [productionReadiness, setProductionReadiness] = useState<AccountingProductionReadiness | null>(null);
+  const [productionReadinessLoading, setProductionReadinessLoading] = useState(false);
+  const [productionReadinessError, setProductionReadinessError] = useState<ApiErrorDisplay | null>(null);
   const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
@@ -3053,12 +3099,35 @@ export function useAccountingConfigurationViewModel(
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setProductionReadinessLoading(true);
+    setProductionReadinessError(null);
     try {
       const next = await services.getConfiguration();
       if (!next) {
         throw new Error("Accounting configuration response was empty.");
       }
       setWorkspace(next);
+      try {
+        const readiness = await services.assessProductionReadiness({
+          fundProfileId: next.fundProfileId,
+          ledgerBookId: next.ledgerBookId ?? null,
+          accountingBasis: next.ledgerBookSetupCandidate?.accountingBasis ?? null,
+          requiredLedgerBookScopes: next.ledgerBookSetupCandidate
+            ? [{
+                fundStructureNodeId: next.ledgerBookSetupCandidate.fundStructureNodeId,
+                fundStructureNodeKind: next.ledgerBookSetupCandidate.fundStructureNodeKind,
+                accountingBasis: next.ledgerBookSetupCandidate.accountingBasis,
+                displayName: next.ledgerBookSetupCandidate.displayName
+              }]
+            : null
+        });
+        setProductionReadiness(readiness);
+      } catch (readinessErr) {
+        setProductionReadiness(null);
+        setProductionReadinessError(describeApiError(readinessErr, "Accounting production readiness is unavailable."));
+      } finally {
+        setProductionReadinessLoading(false);
+      }
       setSelectedRuleId((current) => {
         if (current && next.postingRules.some((rule) => rule.ruleId === current && !rule.isArchived)) {
           return current;
@@ -3068,6 +3137,8 @@ export function useAccountingConfigurationViewModel(
       });
     } catch (err) {
       setError(describeApiError(err, "Accounting configuration is unavailable."));
+      setProductionReadiness(null);
+      setProductionReadinessLoading(false);
     } finally {
       setLoading(false);
     }
@@ -4230,6 +4301,12 @@ export function useAccountingConfigurationViewModel(
         tone: criticalIssueCount > 0 ? "danger" : "success"
       }
     ];
+    const productionReadinessView = buildAccountingProductionReadinessViewModel(
+      productionReadiness,
+      productionReadinessLoading,
+      productionReadinessError,
+      workspace
+    );
     const templates = (workspace?.journalTemplates ?? []).map<AccountingConfigurationTemplateViewModel>((template) => {
       const debitTotal = template.lines.filter((line) => line.side === "Debit").reduce((sum, line) => sum + line.amount, 0);
       const creditTotal = template.lines.filter((line) => line.side === "Credit").reduce((sum, line) => sum + line.amount, 0);
@@ -4301,6 +4378,7 @@ export function useAccountingConfigurationViewModel(
       errorDetails: error?.details ?? [],
       metricRows,
       setupReadinessRows,
+      productionReadiness: productionReadinessView,
       templates,
       rules,
       selectedRule: rules.find((rule) => rule.id === resolvedSelectedRuleId) ?? null,
@@ -4490,6 +4568,9 @@ export function useAccountingConfigurationViewModel(
     preview,
     previewBusy,
     previewError,
+    productionReadiness,
+    productionReadinessError,
+    productionReadinessLoading,
     refresh,
     previewFirstTemplate,
     ruleTestBusy,
@@ -4517,6 +4598,117 @@ function cloneLedgerDimensionSet(dimensions: PostingRule["scope"]): PostingRule[
   }
 
   return cloned;
+}
+
+function buildAccountingProductionReadinessViewModel(
+  readiness: AccountingProductionReadiness | null,
+  loading: boolean,
+  error: ApiErrorDisplay | null,
+  workspace: AccountingConfigurationWorkspace | null
+): AccountingProductionReadinessViewModel {
+  if (!readiness) {
+    return {
+      title: "Accounting production readiness",
+      statusLabel: loading ? "Assessing" : "Unavailable",
+      scoreLabel: loading ? "..." : "No score",
+      generatedAtLabel: loading ? "Refreshing assessment" : "No readiness assessment loaded.",
+      scopeLabel: workspace?.ledgerBookId
+        ? `Ledger book ${workspace.ledgerBookId}`
+        : workspace?.fundProfileId
+          ? `Fund ${workspace.fundProfileId}`
+          : "Accounting scope not loaded",
+      issueSummaryLabel: error?.summary ?? "Load accounting configuration to assess rollout readiness.",
+      externalGlLabel: "External GL posture unavailable",
+      ledgerBookRolloutLabel: "Ledger-book rollout unavailable",
+      components: [],
+      blockerIssues: [],
+      loading,
+      errorText: error?.summary ?? null,
+      errorDetails: error?.details ?? []
+    };
+  }
+
+  const criticalCount = readiness.criticalIssueCount ?? readiness.issues.filter((issue) => issue.severity === "Critical").length;
+  const warningCount = readiness.warningIssueCount ?? readiness.issues.filter((issue) => issue.severity === "Warning").length;
+  const blockerIssues = readiness.issues
+    .filter((issue) => issue.severity === "Critical" || issue.severity === "Warning")
+    .slice(0, 6)
+    .map<AccountingProductionReadinessIssueViewModel>((issue) => ({
+      id: `${issue.area}-${issue.code}`,
+      label: `${formatProductionReadinessArea(issue.area)} | ${issue.severity}`,
+      message: issue.message,
+      suggestedAction: issue.suggestedAction,
+      evidenceLabel: `${issue.evidenceReferences.length} evidence reference${issue.evidenceReferences.length === 1 ? "" : "s"}`,
+      tone: issue.severity === "Critical" ? "danger" : "warning"
+    }));
+
+  return {
+    title: "Accounting production readiness",
+    statusLabel: formatProductionReadinessStatus(readiness.status),
+    scoreLabel: `${readiness.score}/100`,
+    generatedAtLabel: `Generated ${formatDateTimeLabel(readiness.generatedAtUtc)}`,
+    scopeLabel: readiness.ledgerBookId
+      ? `Fund ${readiness.fundProfileId} | Ledger book ${readiness.ledgerBookId}`
+      : `Fund ${readiness.fundProfileId} | Fund-level assessment`,
+    issueSummaryLabel: criticalCount > 0
+      ? `${criticalCount} critical blocker${criticalCount === 1 ? "" : "s"} and ${warningCount} warning${warningCount === 1 ? "" : "s"}`
+      : warningCount > 0
+        ? `${warningCount} warning${warningCount === 1 ? " requires" : "s require"} review`
+        : "No critical production-readiness blockers",
+    externalGlLabel: `${readiness.externalGlProviderCount} provider${readiness.externalGlProviderCount === 1 ? "" : "s"} | ${readiness.certifiedExternalGlMappingProfileCount} certified mapping${readiness.certifiedExternalGlMappingProfileCount === 1 ? "" : "s"} | live posting ${readiness.externalGlLivePostingEnabled ? "enabled" : "disabled"}`,
+    ledgerBookRolloutLabel: readiness.ledgerBookRollout
+      ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"}`
+      : "Ledger-book rollout evidence unavailable",
+    components: readiness.components.map<AccountingProductionReadinessComponentViewModel>((component) => ({
+      id: component.area,
+      label: component.label || formatProductionReadinessArea(component.area),
+      statusLabel: formatProductionReadinessStatus(component.status),
+      scoreLabel: `${component.score}/100`,
+      summary: component.summary,
+      issueCountLabel: `${component.issues.length} issue${component.issues.length === 1 ? "" : "s"}`,
+      evidenceLabel: `${component.evidenceReferences.length} evidence reference${component.evidenceReferences.length === 1 ? "" : "s"}`,
+      routeLabel: component.route ?? "No route",
+      tone: productionReadinessStatusTone(component.status)
+    })),
+    blockerIssues,
+    loading,
+    errorText: error?.summary ?? null,
+    errorDetails: error?.details ?? []
+  };
+}
+
+function formatProductionReadinessStatus(status: AccountingProductionReadiness["status"]): string {
+  switch (status) {
+    case "Ready":
+      return "Ready";
+    case "ReviewRequired":
+      return "Review required";
+    case "Blocked":
+      return "Blocked";
+    case "Unavailable":
+      return "Unavailable";
+    default:
+      return String(status);
+  }
+}
+
+function formatProductionReadinessArea(area: string): string {
+  return area
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\bGl\b/g, "GL");
+}
+
+function productionReadinessStatusTone(status: AccountingProductionReadiness["status"]): AccountingProductionReadinessComponentViewModel["tone"] {
+  switch (status) {
+    case "Ready":
+      return "success";
+    case "Blocked":
+    case "Unavailable":
+      return "danger";
+    case "ReviewRequired":
+    default:
+      return "warning";
+  }
 }
 
 type LedgerScopeScalarKey = Exclude<keyof NonNullable<PostingRule["scope"]>, "externalGlDimensions">;

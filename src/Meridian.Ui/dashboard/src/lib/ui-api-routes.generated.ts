@@ -90,6 +90,7 @@ export const UI_API_ROUTES = {
   PlaidWebhook: "/api/plaid/webhook",
   PlaidSandboxTransfer: "/api/plaid/transfers/sandbox",
   AccountingSystemProviders: "/api/accounting-system/providers",
+  AccountingSystemProductionReadiness: "/api/accounting-system/production-readiness",
   AccountingSystemImportPreview: "/api/accounting-system/import/preview",
   AccountingSystemImportLatest: "/api/accounting-system/import/latest",
   AccountingSystemReconciliationLatest: "/api/accounting-system/reconciliation/latest",

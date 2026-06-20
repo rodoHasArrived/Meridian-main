@@ -9,6 +9,7 @@ import type {
   ClosePeriodPlan,
   ExternalGlExportPackage,
   ExternalGlMappingProfile,
+  AccountingProductionReadiness,
   AccountingSystemImportDetail,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
@@ -3544,6 +3545,179 @@ const fixtureAccountingSystemExportPackage: ExternalGlExportPackage = {
   ]
 };
 
+const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
+  generatedAtUtc: "2026-02-01T00:15:00Z",
+  fundProfileId: "default-fund",
+  ledgerBookId: null,
+  status: "ReviewRequired",
+  score: 72,
+  criticalIssueCount: 0,
+  warningIssueCount: 3,
+  externalGlProviderCount: fixtureAccountingSystemProviders.length,
+  certifiedExternalGlMappingProfileCount: fixtureAccountingSystemMappingProfiles.filter((profile) => profile.certificationState === "Certified").length,
+  externalGlLivePostingEnabled: false,
+  ledgerBookRollout: {
+    generatedAtUtc: "2026-02-01T00:15:00Z",
+    fundProfileId: "default-fund",
+    fundStructureNodeId: "fund-default",
+    fundStructureNodeKind: "Fund",
+    accountingBasis: "Gaap",
+    books: [],
+    issues: [
+      {
+        code: "ledger-books.period-open",
+        severity: "Warning",
+        message: "Fixture ledger book rollout still has open periods for close-review evidence.",
+        scope: "default-fund",
+        ledgerBookId: null,
+        fundStructureNodeId: "fund-default",
+        accountingBasis: "Gaap"
+      }
+    ],
+    isReady: false,
+    criticalIssueCount: 0,
+    warningIssueCount: 1,
+    bookCount: 1,
+    openPeriodCount: 1
+  },
+  rulesStudioSummary: fixtureAccountingConfiguration.rulesStudio?.summary ?? null,
+  components: [
+    {
+      area: "LedgerBooks",
+      label: "Ledger books",
+      status: "ReviewRequired",
+      score: 70,
+      summary: "Ledger-book setup exists in fixture mode, but open-period posture still needs close review.",
+      issues: [],
+      evidenceReferences: ["fixture:ledger-books:default-fund"],
+      route: "/accounting/configure"
+    },
+    {
+      area: "RulesStudio",
+      label: "Rules Studio",
+      status: "Ready",
+      score: 90,
+      summary: "Rules Studio fixture contains effective-dated generated posting rules, saved tests, and promotion evidence.",
+      issues: [],
+      evidenceReferences: ["fixture:accounting-rules-studio"],
+      route: "/accounting/configure"
+    },
+    {
+      area: "PostingRules",
+      label: "Posting rules",
+      status: "Ready",
+      score: 88,
+      summary: "Generated multi-line posting definitions are retained for the active fixture rule.",
+      issues: [],
+      evidenceReferences: ["fixture:posting-rule:trade-buy"],
+      route: "/accounting/configure"
+    },
+    {
+      area: "JournalLifecycle",
+      label: "Journal lifecycle",
+      status: "Ready",
+      score: 85,
+      summary: "Manual journal lifecycle controls are registered and remain approval-gated.",
+      issues: [],
+      evidenceReferences: ["fixture:manual-journal:lifecycle"],
+      route: "/accounting/journal-entries"
+    },
+    {
+      area: "DimensionalAccounting",
+      label: "Dimensional accounting",
+      status: "ReviewRequired",
+      score: 65,
+      summary: "Key dimensions flow through fixture rules, but line-level external GL coverage still requires review.",
+      issues: [
+        {
+          code: "dimensions.external-gl-missing",
+          area: "DimensionalAccounting",
+          severity: "Warning",
+          message: "Generated posting lines do not fully prove external-GL dimensions.",
+          suggestedAction: "Map generated postings to external GL dimensions before production export certification.",
+          evidenceReferences: ["fixture:posting-rule:trade-buy"]
+        }
+      ],
+      evidenceReferences: ["fixture:dimensions:default-fund"],
+      route: "/accounting/ledger"
+    },
+    {
+      area: "ExternalGl",
+      label: "External GL",
+      status: "ReviewRequired",
+      score: 72,
+      summary: "QuickBooks fixture import and certified mapping exist; live external posting remains disabled by policy.",
+      issues: [
+        {
+          code: "external-gl.live-posting-disabled",
+          area: "ExternalGl",
+          severity: "Info",
+          message: "Live external GL posting remains disabled by product policy.",
+          suggestedAction: "Use import, reconciliation, and guarded export artifacts until a separately approved live-posting adapter exists.",
+          evidenceReferences: ["fixture:external-gl:quickbooks"]
+        }
+      ],
+      evidenceReferences: ["fixture:external-gl:quickbooks"],
+      route: "/accounting/external-gl"
+    },
+    {
+      area: "CloseReporting",
+      label: "Close and reporting",
+      status: "Ready",
+      score: 82,
+      summary: "Close plan and report package fixtures expose sign-off, lock, certification, and restatement posture.",
+      issues: [],
+      evidenceReferences: ["fixture:close-reporting:default-fund"],
+      route: "/accounting/close"
+    },
+    {
+      area: "TenantAdministration",
+      label: "Tenant administration",
+      status: "ReviewRequired",
+      score: 50,
+      summary: "Production rollout still needs a complete tenant/company/report-group setup operator surface.",
+      issues: [
+        {
+          code: "tenant-admin.operator-surface-required",
+          area: "TenantAdministration",
+          severity: "Warning",
+          message: "Production rollout still needs a full tenant/company/report-group setup operator surface over shared controls.",
+          suggestedAction: "Bind browser and WPF admin setup screens to this shared readiness contract instead of local setup heuristics.",
+          evidenceReferences: ["fixture:tenant-admin:gap"]
+        }
+      ],
+      evidenceReferences: ["fixture:tenant-admin:gap"],
+      route: "/settings"
+    }
+  ],
+  issues: [
+    {
+      code: "dimensions.external-gl-missing",
+      area: "DimensionalAccounting",
+      severity: "Warning",
+      message: "Generated posting lines do not fully prove external-GL dimensions.",
+      suggestedAction: "Map generated postings to external GL dimensions before production export certification.",
+      evidenceReferences: ["fixture:posting-rule:trade-buy"]
+    },
+    {
+      code: "tenant-admin.operator-surface-required",
+      area: "TenantAdministration",
+      severity: "Warning",
+      message: "Production rollout still needs a full tenant/company/report-group setup operator surface over shared controls.",
+      suggestedAction: "Bind browser and WPF admin setup screens to this shared readiness contract instead of local setup heuristics.",
+      evidenceReferences: ["fixture:tenant-admin:gap"]
+    },
+    {
+      code: "external-gl.live-posting-disabled",
+      area: "ExternalGl",
+      severity: "Info",
+      message: "Live external GL posting remains disabled by product policy.",
+      suggestedAction: "Use import, reconciliation, and guarded export artifacts until a separately approved live-posting adapter exists.",
+      evidenceReferences: ["fixture:external-gl:quickbooks"]
+    }
+  ]
+};
+
 const fixtureLedgerClosePeriodPlan: ClosePeriodPlan = {
   closePlanId: "close-plan-fixture-202601",
   fundProfileId: "default-fund",
@@ -5845,6 +6019,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.accountingReportPackage]: fixtureAccountingReportPackage,
   [WORKSTATION_API_ENDPOINTS.accountingReportPackages]: [fixtureAccountingReportPackage],
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.providers]: fixtureAccountingSystemProviders,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness]: fixtureAccountingProductionReadiness,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importPreview]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest]: fixtureAccountingSystemReconciliation,
