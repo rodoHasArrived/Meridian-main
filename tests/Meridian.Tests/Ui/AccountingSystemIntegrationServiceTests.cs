@@ -171,6 +171,48 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_LoadsRetainedMigrationArtifactsFromStore()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingMigrationRunArtifactStore, InMemoryAccountingMigrationRunArtifactStore>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<IAccountingMigrationRunArtifactStore>();
+        var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+
+        await store.UpsertAsync(new AccountingMigrationRunArtifactUpsertRequestDto(
+            new AccountingMigrationRunArtifactDto(
+                "migration-run-ledger-book-scope-default-fund",
+                AccountingMigrationRunKindDto.LedgerBookScope,
+                AccountingMigrationRunStatusDto.Certified,
+                DateTimeOffset.Parse("2026-02-02T00:00:00Z"),
+                CompletedAtUtc: DateTimeOffset.Parse("2026-02-02T00:05:00Z"),
+                MigratedRecordCount: 42,
+                EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/certified"],
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                Summary: "Ledger-book migration scope certified."),
+            "controller",
+            CorrelationId: "migration-ledger-book-scope-default-fund"));
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                LedgerBookMigrationCertified: true));
+
+        readiness.MigrationRunArtifacts.Should().ContainSingle(artifact =>
+            artifact.RunId == "migration-run-ledger-book-scope-default-fund" &&
+            artifact.Actor == "controller" &&
+            artifact.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund/certified") &&
+            artifact.EvidenceReferences.Contains("correlation:migration-ledger-book-scope-default-fund"));
+        readiness.Issues.Should().NotContain(issue => issue.Code == "migration.ledger-book-scope-certified-run-missing");
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund/certified"));
+    }
+
+    [Fact]
     public async Task ReconcileLatestAsync_WithoutMeridianLedger_ReturnsMissingMeridianBreaksAndDisabledPosting()
     {
         var service = CreateService();
@@ -1607,6 +1649,60 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemMigrationRunArtifactEndpoints_PersistAndFeedReadiness()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRunArtifacts,
+            JsonContent(new AccountingMigrationRunArtifactUpsertRequestDto(
+                new AccountingMigrationRunArtifactDto(
+                    "migration-run-dimensional-backfill-default-fund",
+                    AccountingMigrationRunKindDto.DimensionalBackfill,
+                    AccountingMigrationRunStatusDto.Certified,
+                    DateTimeOffset.Parse("2026-03-01T00:00:00Z"),
+                    CompletedAtUtc: DateTimeOffset.Parse("2026-03-01T00:15:00Z"),
+                    MigratedRecordCount: 1250,
+                    IssueCount: 0,
+                    EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/certified"],
+                    FundProfileId: "default-fund",
+                    LedgerBookId: ledgerBookId,
+                    Summary: "Dimensional backfill certified for retained journal/report paths."),
+                "controller",
+                CorrelationId: "dimensional-backfill-default-fund",
+                EvidenceLinks: ["approval:dimensional-backfill:default-fund"])));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var upserted = await ReadAsync<AccountingMigrationRunArtifactDto>(upsertResponse);
+        upserted.Actor.Should().Be("controller");
+        upserted.FundProfileId.Should().Be("default-fund");
+        upserted.EvidenceReferences.Should().Contain("approval:dimensional-backfill:default-fund");
+
+        var listResponse = await client.GetAsync(
+            $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId=default-fund&ledgerBookId={ledgerBookId:D}");
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var listed = await ReadAsync<AccountingMigrationRunArtifactListDto>(listResponse);
+        listed.Artifacts.Should().ContainSingle(artifact => artifact.RunId == upserted.RunId);
+
+        var readinessResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionReadiness,
+            JsonContent(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                DimensionalBackfillCertified: true)));
+
+        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
+        readiness.MigrationRunArtifacts.Should().ContainSingle(artifact => artifact.RunId == upserted.RunId);
+        readiness.Issues.Should().NotContain(issue => issue.Code == "migration.dimensional-backfill-certified-run-missing");
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.EvidenceReferences.Contains("approval:dimensional-backfill:default-fund"));
+    }
+
+    [Fact]
     public async Task AccountingSystemEndpoints_WithoutAccountingAccess_ReturnForbidden()
     {
         await using var app = await CreateAppAsync(UserPermission.ViewMarketData);
@@ -1803,6 +1899,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
         builder.Services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
         builder.Services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        builder.Services.AddSingleton<IAccountingMigrationRunArtifactStore, InMemoryAccountingMigrationRunArtifactStore>();
         builder.Services.AddSingleton<AccountingProductionReadinessService>();
         builder.Services.AddRateLimiter(options =>
         {

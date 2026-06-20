@@ -66,7 +66,9 @@ the requirement end to end.
   journal backfill, dimensional backfill, configuration promotion, and close/reporting evidence
   migration plus retained migration run artifacts, and returns blocking shared issue codes when
   controls are not certified, certified controls lack retained certified run artifacts, or retained
-  run artifacts failed.
+  run artifacts failed. Retained migration run artifacts now have a shared file-backed store and
+  Accounting System list/upsert endpoints, and production readiness automatically merges stored
+  fund/book-scoped artifacts into the assessment.
 
 ## Still To Complete
 
@@ -91,9 +93,9 @@ the requirement end to end.
   policy, role-based segregation, and end-to-end mutation coverage remain open.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
-  evidence migration. The shared readiness contract now exposes fail-closed certification inputs and
-  retained migration run artifact blockers for these controls, but it does not yet execute migration
-  jobs or backfill data.
+  evidence migration. The shared readiness contract now exposes fail-closed certification inputs,
+  file-backed retained migration run artifacts, and retained-artifact blockers for these controls,
+  but it does not yet execute migration jobs or backfill data.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, but live credentialed import adapters, richer mapping fixtures, and controlled
   export certification still need provider-specific coverage before any separately approved live

@@ -98,6 +98,10 @@ and external-GL dimensions through the Financial Operations posting gate.
 Reconciliation break queue items carry optional `LedgerBookId` scope so shared Accounting,
 Reconciliation, and close-readiness surfaces can filter explicit book cases without inferring
 accounting ownership from fund labels, routes, or exception text.
+Accounting-system production-readiness contracts also expose retained migration run artifact list
+and upsert payloads so browser, WPF, and admin surfaces can store ledger-book scope, historical
+journal backfill, dimensional backfill, configuration-promotion, and close/reporting evidence
+migration proof under one shared route instead of passing one-off request-only evidence.
 Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
 workflows can block the draft gate before post-time journal-line validation when Security Master
 provenance exists but approved identity or accounting mapping proof is still missing.

@@ -26,13 +26,15 @@ public sealed class AccountingProductionReadinessService
         ArgumentNullException.ThrowIfNull(request);
 
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var migrationRunArtifacts = await LoadMigrationRunArtifactsAsync(request, fundProfileId, ct).ConfigureAwait(false);
+        var effectiveRequest = request with { FundProfileId = fundProfileId, MigrationRunArtifacts = migrationRunArtifacts };
         var components = new List<AccountingProductionReadinessComponentDto>();
-        var ledgerRollout = await BuildLedgerBookComponentAsync(request, fundProfileId, components, ct).ConfigureAwait(false);
-        var rulesSummary = await BuildRulesStudioComponentAsync(request, fundProfileId, components, ct).ConfigureAwait(false);
+        var ledgerRollout = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
+        var rulesSummary = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         BuildJournalLifecycleComponent(components);
         BuildCloseReportingComponent(components);
-        var externalGlCounts = await BuildExternalGlComponentAsync(request, fundProfileId, components, ct).ConfigureAwait(false);
-        BuildMigrationRolloutComponent(request, components);
+        var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
+        BuildMigrationRolloutComponent(effectiveRequest, components);
         BuildTenantAdministrationComponent(components);
 
         var issues = components
@@ -57,7 +59,36 @@ public sealed class AccountingProductionReadinessService
             externalGlCounts.ProviderCount,
             externalGlCounts.CertifiedMappingProfileCount,
             externalGlCounts.LivePostingEnabled,
-            request.MigrationRunArtifacts);
+            migrationRunArtifacts);
+    }
+
+    private async Task<IReadOnlyList<AccountingMigrationRunArtifactDto>> LoadMigrationRunArtifactsAsync(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        CancellationToken ct)
+    {
+        var artifacts = new Dictionary<string, AccountingMigrationRunArtifactDto>(StringComparer.OrdinalIgnoreCase);
+        var store = _services.GetService<IAccountingMigrationRunArtifactStore>();
+        if (store is not null)
+        {
+            foreach (var artifact in await store.ListAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false))
+            {
+                artifacts[MigrationArtifactKey(artifact)] = artifact;
+            }
+        }
+
+        foreach (var artifact in request.MigrationRunArtifacts)
+        {
+            artifacts[MigrationArtifactKey(artifact)] = artifact with
+            {
+                FundProfileId = NormalizeFundProfileId(artifact.FundProfileId ?? fundProfileId)
+            };
+        }
+
+        return artifacts.Values
+            .OrderByDescending(static item => item.StartedAtUtc)
+            .ThenBy(static item => item.RunId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private async Task<LedgerBookRolloutAssessmentDto?> BuildLedgerBookComponentAsync(
@@ -584,6 +615,9 @@ public sealed class AccountingProductionReadinessService
             LedgerBookRolloutIssueSeverityDto.Warning => AccountingConfigurationValidationSeverityDto.Warning,
             _ => AccountingConfigurationValidationSeverityDto.Info
         };
+
+    private static string MigrationArtifactKey(AccountingMigrationRunArtifactDto artifact)
+        => $"{NormalizeFundProfileId(artifact.FundProfileId)}|{artifact.LedgerBookId?.ToString("D") ?? "all"}|{artifact.RunId}";
 
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? DefaultFundProfileId : value.Trim();

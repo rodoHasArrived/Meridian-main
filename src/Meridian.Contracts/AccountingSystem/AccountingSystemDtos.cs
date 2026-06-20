@@ -126,6 +126,25 @@ public sealed record AccountingMigrationRunArtifactDto(
         EvidenceReferences ?? [];
 }
 
+public sealed record AccountingMigrationRunArtifactListDto(
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    IReadOnlyList<AccountingMigrationRunArtifactDto>? Artifacts = null)
+{
+    public IReadOnlyList<AccountingMigrationRunArtifactDto> Artifacts { get; init; } =
+        Artifacts ?? [];
+}
+
+public sealed record AccountingMigrationRunArtifactUpsertRequestDto(
+    AccountingMigrationRunArtifactDto Artifact,
+    string Actor,
+    string? CorrelationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
 public sealed record AccountingProductionReadinessRequestDto(
     string? FundProfileId = null,
     Guid? LedgerBookId = null,

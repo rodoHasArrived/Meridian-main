@@ -48,6 +48,54 @@ public static class AccountingSystemEndpoints
         .Produces<AccountingProductionReadinessDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 
+        group.MapGet(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            HttpContext context,
+            IAccountingMigrationRunArtifactStore store) =>
+        {
+            if (!HasAccountingAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var artifacts = await store.ListAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var result = new AccountingMigrationRunArtifactListDto(fundProfileId, ledgerBookId, artifacts);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ListAccountingMigrationRunArtifacts")
+        .Produces<AccountingMigrationRunArtifactListDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapPost(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
+            AccountingMigrationRunArtifactUpsertRequestDto request,
+            HttpContext context,
+            IAccountingMigrationRunArtifactStore store) =>
+        {
+            if (!HasAccountingCertificationAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            try
+            {
+                var result = await store.UpsertAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("UpsertAccountingMigrationRunArtifact")
+        .Produces<AccountingMigrationRunArtifactDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         group.MapPost(UiApiRoutes.AccountingSystemImportPreview, async (
             AccountingSystemImportRequestDto request,
             HttpContext context,

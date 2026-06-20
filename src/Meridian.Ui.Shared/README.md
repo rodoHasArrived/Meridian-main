@@ -281,7 +281,12 @@ fallback stores under the resolved workstation data root. `FileAccountingConfigu
 persists chart accounts, templates, posting rules, saved rule test cases, and accounting action audit events at
 `workstation/accounting/accounting-configuration.json`, while `FileManualJournalEntryDraftStore`
 persists draft and submitted manual journal records at
-`workstation/accounting/manual-journal-drafts.json`. Manual journal drafts carry a shared
+`workstation/accounting/manual-journal-drafts.json`. `FileAccountingMigrationRunArtifactStore`
+persists retained accounting migration run evidence at
+`workstation/accounting/migration-run-artifacts.json`, and shared Accounting System endpoints let
+operators list/upsert scoped migration artifacts before the production-readiness endpoint merges
+them into ledger-book, historical journal backfill, dimensional backfill, configuration promotion,
+and close/reporting migration checks. Manual journal drafts carry a shared
 `ManualJournalEntryTypeDto` so accrual, prepaid expense, expense, amortization, deferral,
 reclassification, reversal, capital-call, distribution, subscription, redemption, LP-transfer,
 management-fee, and general adjustment workflows persist as typed accounting records instead of
