@@ -259,6 +259,7 @@ const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRowViewMod
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.accountLabel}</span>
         <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.financialAccountId ?? "Unassigned"}</span>
+        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.dimensionLabel}</span>
       </span>
     )
   },

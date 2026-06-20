@@ -746,6 +746,10 @@ attached ledger-line support when the shared payload includes journal references
 review packets, source events, journal references, and approval evidence without moving posting
 logic into React. Missing journal, source-event, or approval references remain explicit empty states
 instead of browser-derived support rows.
+Trial-balance rows also render and search retained dimensional scope when the shared payload carries
+`LedgerDimensionSetDto` data, including fund, entity, sleeve, strategy, investor, capital account,
+instrument, tax lot, cost center, counterparty, and external GL dimensions; dimensionless legacy
+rows remain explicit rather than being inferred from account names.
 The same `/accounting/ledger` route is the first browser implementation of the shared Financial
 Record Explorer pattern from the design document. It wraps the existing shared trial-balance,
 ledger-line, reconciliation, evidence-packet, audit-packet, and report-usage read models with

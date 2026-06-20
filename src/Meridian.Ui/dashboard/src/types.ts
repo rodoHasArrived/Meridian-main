@@ -7007,6 +7007,15 @@ export interface LedgerTrialBalanceLine {
   balance: number;
   entryCount: number;
   security: WorkstationSecurityReference | null;
+  accountScopeId?: string | null;
+  accountScopeDisplayName?: string | null;
+  entityScopeId?: string | null;
+  entityScopeDisplayName?: string | null;
+  sleeveScopeId?: string | null;
+  sleeveScopeDisplayName?: string | null;
+  vehicleScopeId?: string | null;
+  vehicleScopeDisplayName?: string | null;
+  dimensions?: LedgerDimensionSet | null;
   accountingBasis?: AccountingBasisKind;
   accountingPolicyId?: string;
   accountingPolicyVersion?: string;

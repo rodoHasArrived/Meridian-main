@@ -1902,6 +1902,8 @@ export interface AccountingTrialBalanceRowViewModel extends LedgerTrialBalanceLi
   basisLabel: string;
   basisTone: "default" | "outline" | "success" | "warning" | "danger";
   policyLabel: string;
+  dimensionLabel: string;
+  dimensionDetailLabel: string;
   balanceLabel: string;
   balanceTone: "default" | "success" | "danger";
   entryCountLabel: string;
@@ -11316,12 +11318,16 @@ function buildTrialBalanceRow(
   const balanceLabel = formatCurrency(line.balance);
   const entryCountLabel = line.entryCount.toLocaleString();
   const securityLabel = line.security?.primaryIdentifier?.trim() || line.symbol?.trim() || line.security?.displayName.trim() || null;
+  const dimensionLabels = buildTrialBalanceDimensionLabels(line);
+  const dimensionLabel = dimensionLabels.summary;
+  const dimensionDetailLabel = dimensionLabels.detail;
   const rowId = [
     line.accountingBasis,
     accountLabel,
     accountTypeLabel,
     line.financialAccountId,
-    securityLabel
+    securityLabel,
+    dimensionLabel === "No dimensions" ? null : dimensionLabel
   ].filter(Boolean).join("-");
 
   return {
@@ -11332,6 +11338,8 @@ function buildTrialBalanceRow(
     basisLabel,
     basisTone: trialBalanceBasisTone(line.accountingBasis),
     policyLabel,
+    dimensionLabel,
+    dimensionDetailLabel,
     balanceLabel,
     balanceTone: line.balance < 0 ? "danger" : line.balance > 0 ? "success" : "default",
     entryCountLabel,
@@ -11339,6 +11347,7 @@ function buildTrialBalanceRow(
       `${accountLabel} ${accountTypeLabel}`,
       basisLabel,
       `Policy ${policyLabel}`,
+      dimensionLabel !== "No dimensions" ? `Dimensions ${dimensionLabel}` : null,
       `Balance ${balanceLabel}`,
       `${entryCountLabel} entries`,
       securityLabel ? `Security ${securityLabel}` : null
@@ -11347,6 +11356,45 @@ function buildTrialBalanceRow(
     detailPanelId,
     isExpanded: false
   };
+}
+
+function buildTrialBalanceDimensionLabels(line: LedgerTrialBalanceLine): { summary: string; detail: string } {
+  const dimensions = line.dimensions ?? null;
+  const labels: string[] = [];
+
+  appendDimensionLabel(labels, "Fund", dimensions?.fundId);
+  appendDimensionLabel(labels, "Entity", dimensions?.entityId ?? line.entityScopeDisplayName ?? line.entityScopeId);
+  appendDimensionLabel(labels, "Sleeve", dimensions?.sleeveId ?? line.sleeveScopeDisplayName ?? line.sleeveScopeId);
+  appendDimensionLabel(labels, "Strategy", dimensions?.strategyId);
+  appendDimensionLabel(labels, "Investor", dimensions?.investorId);
+  appendDimensionLabel(labels, "Capital account", dimensions?.capitalAccountId ?? line.accountScopeDisplayName ?? line.accountScopeId);
+  appendDimensionLabel(labels, "Instrument", dimensions?.instrumentId);
+  appendDimensionLabel(labels, "Tax lot", dimensions?.taxLotId);
+  appendDimensionLabel(labels, "Cost center", dimensions?.costCenterId);
+  appendDimensionLabel(labels, "Counterparty", dimensions?.counterpartyId);
+
+  for (const [key, value] of Object.entries(dimensions?.externalGlDimensions ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
+    appendDimensionLabel(labels, `External ${key}`, value);
+  }
+
+  if (labels.length === 0) {
+    return {
+      summary: "No dimensions",
+      detail: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached."
+    };
+  }
+
+  return {
+    summary: labels.slice(0, 3).join(" / ") + (labels.length > 3 ? ` +${labels.length - 3}` : ""),
+    detail: labels.join(" | ")
+  };
+}
+
+function appendDimensionLabel(labels: string[], label: string, value: string | null | undefined): void {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  if (normalized) {
+    labels.push(`${label}: ${normalized}`);
+  }
 }
 
 function normalizeLedgerAccountFilter(value: string | null | undefined): string {
@@ -11367,7 +11415,9 @@ function ledgerAccountRowMatchesFilter(
     row.financialAccountId,
     row.symbol,
     row.security?.displayName,
-    row.security?.primaryIdentifier
+    row.security?.primaryIdentifier,
+    row.dimensionLabel,
+    row.dimensionDetailLabel
   ]
     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     .join(" ")
@@ -11470,6 +11520,7 @@ function buildTrialBalanceDetail(
       { label: "Balance", value: line.balanceLabel },
       { label: "Entries", value: line.entryCountLabel },
       { label: "Financial account", value: financialAccountId },
+      { label: "Dimensions", value: line.dimensionDetailLabel },
       { label: "Security", value: securityLabel },
       { label: "Journal entries", value: sourceJournalEntryIds.length > 0 ? sourceJournalEntryIds.join(", ") : "No journal entry references linked" },
       { label: "Source events", value: sourceEventIds.length > 0 ? sourceEventIds.join(", ") : "No source events linked" },

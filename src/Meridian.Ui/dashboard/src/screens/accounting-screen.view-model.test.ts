@@ -604,6 +604,16 @@ const trialBalanceLines: LedgerTrialBalanceLine[] = [
     balance: 120500,
     entryCount: 12,
     security: null,
+    dimensions: {
+      fundId: "fund-alpha",
+      entityId: "entity-alpha",
+      sleeveId: "sleeve-credit",
+      costCenterId: "ops-close",
+      externalGlDimensions: {
+        class: "private-fund",
+        department: "finance"
+      }
+    },
     sourceJournalEntryId: "je-cash-1",
     sourceEventIds: ["evt-cash-1"],
     approvalIds: ["approval-cash-1"]
@@ -5100,20 +5110,22 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "Gaap", rowCount: 0, rowCountLabel: "0 rows", isSelected: false })
     ]));
     expect(state.rows[0]).toMatchObject({
-      rowId: "Primary-Cash-Asset-acct-cash",
+      rowId: "Primary-Cash-Asset-acct-cash-Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3",
       accountLabel: "Cash",
       accountTypeLabel: "Asset",
       basisLabel: "Primary basis",
       policyLabel: "legacy-v1/legacy-v1",
+      dimensionLabel: "Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3",
+      dimensionDetailLabel: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund | External department: finance",
       balanceLabel: "$120,500",
       balanceTone: "success",
       entryCountLabel: "12",
-      ariaLabel: "Cash Asset. Primary basis. Policy legacy-v1/legacy-v1. Balance $120,500. 12 entries",
+      ariaLabel: "Cash Asset. Primary basis. Policy legacy-v1/legacy-v1. Dimensions Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3. Balance $120,500. 12 entries",
       selectAriaLabel: "Inspect trial-balance account Cash for Asset",
       detailPanelId: "trial-balance-account-detail",
       isExpanded: true
     });
-    expect(state.selectedRowId).toBe("Primary-Cash-Asset-acct-cash");
+    expect(state.selectedRowId).toBe("Primary-Cash-Asset-acct-cash-Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3");
     expect(state.selectedDetail).toMatchObject({
       eyebrow: "Trial-balance detail",
       title: "Cash",
@@ -5125,6 +5137,7 @@ describe("accounting-screen view model", () => {
       supportingDocumentsTitle: "Supporting documentation"
     });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Dimensions", value: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund | External department: finance" },
       { label: "Journal entries", value: "je-cash-1" },
       { label: "Source events", value: "evt-cash-1" },
       { label: "Approvals", value: "approval-cash-1" }
@@ -5164,6 +5177,7 @@ describe("accounting-screen view model", () => {
       statusVariant: "danger"
     });
     expect(selectedFinancing.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Dimensions", value: "No fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, or external GL dimensions are attached." },
       { label: "Journal entries", value: "No journal entry references linked" },
       { label: "Source events", value: "No source events linked" },
       { label: "Approvals", value: "No approvals linked" }
@@ -5202,6 +5216,26 @@ describe("accounting-screen view model", () => {
     expect(empty.rows).toHaveLength(0);
     expect(empty.hasRows).toBe(false);
     expect(empty.emptyDetail).toContain("No Primary ledger accounts match \"management fee\"");
+  });
+
+  it("filters ledger account inquiry rows by retained dimensional scope", () => {
+    const state = buildAccountingTrialBalanceViewState({
+      runId: "run-42",
+      rows: trialBalanceLines,
+      accountFilter: "private-fund",
+      loading: false,
+      error: null
+    });
+
+    expect(state.filteredRowCountLabel).toBe("1 of 2 GL account rows");
+    expect(state.rows).toHaveLength(1);
+    expect(state.rows[0]).toMatchObject({
+      accountLabel: "Cash",
+      dimensionLabel: "Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +3"
+    });
+    expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
+      { label: "Dimensions", value: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund | External department: finance" }
+    ]));
   });
 
   it("adds source-event and approval drill-through details to legacy and array trial-balance selections", () => {
