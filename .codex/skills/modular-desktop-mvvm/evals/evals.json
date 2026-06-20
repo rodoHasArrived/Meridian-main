@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Modular desktop mvvm package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/modular_desktop_mvvm_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 5
+        }
+      },
+      "prompt": "Use $modular-desktop-mvvm to implement a WPF screen with MVVM boundaries, shared services, and focused validation."
+    },
+    {
+      "id": 2,
+      "description": "Desktop mvvm guidance preserves bindings, commands, and view-model boundaries.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/modular_desktop_mvvm_check.py",
+        "--scenario",
+        "mvvm-boundary",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $modular-desktop-mvvm to keep bindings, commands, view models, and code-behind boundaries clear."
+    },
+    {
+      "id": 3,
+      "description": "Desktop implementation guidance includes focused wpf validation.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/modular_desktop_mvvm_check.py",
+        "--scenario",
+        "wpf-validation",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $modular-desktop-mvvm to run focused Meridian.Wpf.Tests validation with Windows targeting."
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Performance resource review package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/performance_resource_review_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 4
+        }
+      },
+      "prompt": "Use $performance-resource-review to review memory, CPU, I/O, rendering, concurrency, lifecycle, and hot-path resource risks."
+    },
+    {
+      "id": 2,
+      "description": "Resource review covers memory, cpu, i/o, rendering, and lifecycle.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/performance_resource_review_check.py",
+        "--scenario",
+        "resource-risk",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 5
+        }
+      },
+      "prompt": "Use $performance-resource-review to cover memory, CPU, I/O, rendering, and lifecycle risk."
+    },
+    {
+      "id": 3,
+      "description": "Resource review covers concurrency and hot path risk.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/performance_resource_review_check.py",
+        "--scenario",
+        "concurrency-hotpath",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $performance-resource-review to identify concurrency, hot path, and resource risk."
+    }
+  ]
+}

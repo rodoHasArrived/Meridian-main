@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Dense data grid inspector panel package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/dense_data_grid_inspector_panel_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 5
+        }
+      },
+      "prompt": "Use $dense-data-grid-inspector-panel to build a virtualized WPF grid with stable selection, inspector detail tabs, and command state."
+    },
+    {
+      "id": 2,
+      "description": "Dense grid guidance preserves selection and inspector state.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/dense_data_grid_inspector_panel_check.py",
+        "--scenario",
+        "selection-inspector",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $dense-data-grid-inspector-panel to preserve stable selection, inspector state, detail tabs, and command state."
+    },
+    {
+      "id": 3,
+      "description": "Dense grid guidance covers virtualization and large dataset risk.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/dense_data_grid_inspector_panel_check.py",
+        "--scenario",
+        "virtualized-scale",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $dense-data-grid-inspector-panel to cover virtualization, lightweight row view models, and large dataset resource risk."
+    }
+  ]
+}

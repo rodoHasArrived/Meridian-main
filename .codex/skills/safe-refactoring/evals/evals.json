@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Safe refactoring package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/safe_refactoring_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 4
+        }
+      },
+      "prompt": "Use $safe-refactoring to plan behavior-preserving refactors with characterization tests, small reversible steps, and narrow validation."
+    },
+    {
+      "id": 2,
+      "description": "Safe refactor guidance uses characterization tests and narrow validation.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/safe_refactoring_check.py",
+        "--scenario",
+        "characterization",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $safe-refactoring to require characterization tests and narrow validation before behavior-preserving refactors."
+    },
+    {
+      "id": 3,
+      "description": "Safe refactor guidance protects contracts, boundaries, and unrelated churn.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/safe_refactoring_check.py",
+        "--scenario",
+        "boundary-churn",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $safe-refactoring to protect public contracts, module boundaries, no unrelated churn, and rollback posture."
+    }
+  ]
+}

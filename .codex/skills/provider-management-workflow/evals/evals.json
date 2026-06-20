@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Provider management workflow package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/provider_management_workflow_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 5
+        }
+      },
+      "prompt": "Use $provider-management-workflow to build a secure WPF provider setup workflow with credentials, health, fallback, and recovery."
+    },
+    {
+      "id": 2,
+      "description": "Provider workflow guidance covers credentials, health, degradation, and fallback.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/provider_management_workflow_check.py",
+        "--scenario",
+        "credential-health",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $provider-management-workflow to cover credentials, provider health, degradation, and fallback behavior."
+    },
+    {
+      "id": 3,
+      "description": "Provider workflow guidance covers validation and operator recovery.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/provider_management_workflow_check.py",
+        "--scenario",
+        "recovery-validation",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $provider-management-workflow to validate operator recovery and focused desktop tests."
+    }
+  ]
+}
