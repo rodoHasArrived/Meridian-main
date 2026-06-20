@@ -238,6 +238,20 @@
                                                Margin="0,0,0,16"
                                                TextWrapping="Wrap"
                                                AutomationProperties.AutomationId="AccountingConfigureLedgerBookSetupStatusText" />
+                                    <TextBlock Text="Ledger Book Administration" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding LedgerBookAdministrationText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingLedgerBookAdministrationText" />
+                                    <DataGrid ItemsSource="{Binding LedgerBookRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="AccountingLedgerBookAdministrationGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Book" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="90" />
+                                            <DataGridTextColumn Header="Scope" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Policy / Evidence" Binding="{Binding Evidence}" Width="260" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Validation" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding ValidationRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingConfigurationValidationGrid">
                                         <DataGrid.Columns>

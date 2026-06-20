@@ -181,6 +181,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _postingCandidateDetailText = "Build a governed draft candidate from the selected posting rule without posting to the ledger.";
     private string _manualJournalLifecycleStatusText = "Manual journal lifecycle actions have not run.";
     private string _ledgerBookSetupStatusText = "Ledger-book setup action has not run.";
+    private string _ledgerBookAdministrationText = "Ledger-book administration has not loaded.";
     private string _productionReadinessStatusText = "Production readiness has not loaded.";
     private string _productionReadinessDetailText = "Shared accounting rollout posture has not been assessed.";
     private string _productionReadinessScoreText = "No score";
@@ -284,6 +285,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> RulesStudioPromotionRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> RulesStudioActionRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> SetupReadinessRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> LedgerBookRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> AuditRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProviderRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ExternalGlEvidencePackageRows { get; } = [];
@@ -449,6 +451,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _ledgerBookSetupStatusText;
         private set => SetProperty(ref _ledgerBookSetupStatusText, value);
+    }
+
+    public string LedgerBookAdministrationText
+    {
+        get => _ledgerBookAdministrationText;
+        private set => SetProperty(ref _ledgerBookAdministrationText, value);
     }
 
     public string ProductionReadinessStatusText
@@ -1335,6 +1343,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         PostingCandidateDetailText = "Posting candidates require a fund-linked configuration and retained evidence.";
         ManualJournalLifecycleStatusText = "Locked until a fund context is selected.";
         LedgerBookSetupStatusText = "Locked until a fund context is selected.";
+        LedgerBookAdministrationText = "Locked until a fund context is selected.";
         ProductionReadinessStatusText = "Locked";
         ProductionReadinessDetailText = "Select a fund-linked context before assessing accounting production readiness.";
         ProductionReadinessScoreText = "No score";
@@ -1358,6 +1367,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         AuditRows.ReplaceWith(workspace.AuditTrail.Take(20).Select(audit =>
             new AccountingWorkbenchRow(audit.Action, audit.Actor, audit.RecordedAtUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture), audit.CorrelationId ?? string.Empty)));
         ApplySetupReadinessRows(workspace);
+        ApplyLedgerBookRows(workspace);
         ApplyManualJournalValidationRows(workspace.ValidationIssues);
 
         var critical = workspace.ValidationIssues.Count(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
@@ -1411,6 +1421,37 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 missingLedgerBookIssue?.SuggestedAction ?? "Activation can use the current shared configuration scope.",
                 $"critical:{criticalCount}")
         ]);
+    }
+
+    private void ApplyLedgerBookRows(AccountingConfigurationWorkspaceDto workspace)
+    {
+        var selectedLedgerBookId = workspace.LedgerBookId ?? ResolveActiveLedgerBook(workspace)?.LedgerBookId;
+        var rows = workspace.LedgerBooks
+            .OrderByDescending(book => selectedLedgerBookId.HasValue && book.LedgerBookId == selectedLedgerBookId.Value)
+            .ThenBy(static book => book.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .Select(book =>
+            {
+                var selected = selectedLedgerBookId.HasValue && book.LedgerBookId == selectedLedgerBookId.Value;
+                var scope = $"{book.FundProfileId} / {book.FundStructureNodeKind} {book.FundStructureNodeId:D}";
+                var detail =
+                    $"{book.AccountingBasis} basis | {book.BaseCurrency} | {scope} | Updated {book.UpdatedAt:yyyy-MM-dd}";
+                var evidence = string.IsNullOrWhiteSpace(book.Description)
+                    ? $"Policy {book.AccountingPolicyId}/{book.AccountingPolicyVersion}"
+                    : $"{book.Description} | Policy {book.AccountingPolicyId}/{book.AccountingPolicyVersion}";
+
+                return new AccountingWorkbenchRow(
+                    book.DisplayName,
+                    selected ? "Selected" : "Available",
+                    detail,
+                    evidence,
+                    book.LedgerBookId.ToString("D", CultureInfo.InvariantCulture));
+            })
+            .ToArray();
+
+        LedgerBookRows.ReplaceWith(rows);
+        LedgerBookAdministrationText = rows.Length == 0
+            ? "No ledger books are registered for this accounting configuration workspace."
+            : $"{rows.Length} ledger book(s) registered; selected {rows.FirstOrDefault(row => row.Status == "Selected")?.Name ?? "none"}.";
     }
 
     private void ApplyRulesStudio(AccountingRulesStudioDto? rulesStudio)
@@ -2483,6 +2524,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         RulesStudioPromotionRows.Clear();
         RulesStudioActionRows.Clear();
         SetupReadinessRows.Clear();
+        LedgerBookRows.Clear();
         AuditRows.Clear();
         ProviderRows.Clear();
         ExternalGlEvidencePackageRows.Clear();

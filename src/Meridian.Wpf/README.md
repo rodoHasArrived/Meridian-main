@@ -60,7 +60,9 @@ through the shared accounting configuration service, renders the shared accounti
 assessment across ledger books, Rules Studio, posting execution, dimensions, external GL,
 close/reporting, and tenant-admin blockers, surfaces shared ledger-book setup candidate guidance and
 can create the ledger book through the shared ledger-book service when book-scoped
-configuration targets a missing registered book, offers type-specific
+configuration targets a missing registered book, renders a shared-workspace ledger-book
+administration grid with selected/available books, fund-structure scope, basis, currency, policy,
+description, and update timestamps, offers type-specific
 draft presets for accrued
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management

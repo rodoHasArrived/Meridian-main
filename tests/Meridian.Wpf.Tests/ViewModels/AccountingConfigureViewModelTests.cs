@@ -137,6 +137,18 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "Activation readiness"
             && row.Status == "Ready"
             && row.Detail.Contains("no critical blockers", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.LedgerBookAdministrationText.Should()
+            .Be("1 ledger book(s) registered; selected Alpha Fund primary book.");
+        harness.ViewModel.LedgerBookRows.Should().ContainSingle(row =>
+            row.Name == "Alpha Fund primary book"
+            && row.Status == "Selected"
+            && row.Detail.Contains("Primary basis", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("USD", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("alpha-fund / Fund 9bf8609d-d4d0-4ff6-bf1f-31d2205710d7", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("Updated 2026-06-01", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("WPF accounting configure test book", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("legacy-v1/legacy-v1", StringComparison.OrdinalIgnoreCase)
+            && row.Key == "7e0be005-49e1-46eb-9d4f-89d75e2328bd");
         harness.ViewModel.ProductionReadinessStatusText.Should().Contain("/100");
         harness.ViewModel.ProductionReadinessDetailText.Should().Contain("component");
         harness.ViewModel.ProductionReadinessLedgerBookText.Should().Contain("book");
@@ -646,6 +658,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ConfigurationStatusText.Should().Be("Locked");
         harness.ViewModel.ActiveFundText.Should().Be("No fund selected");
         harness.ViewModel.SetupReadinessRows.Should().BeEmpty();
+        harness.ViewModel.LedgerBookRows.Should().BeEmpty();
+        harness.ViewModel.LedgerBookAdministrationText.Should().Contain("Locked");
         harness.ViewModel.ChartRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalDraftRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalCapitalAccountSubledgerRows.Should().BeEmpty();
@@ -838,6 +852,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureActivateButton");
         xaml.Should().Contain("AccountingConfigureCreateLedgerBookSetupButton");
         xaml.Should().Contain("AccountingConfigureLedgerBookSetupStatusText");
+        xaml.Should().Contain("AccountingLedgerBookAdministrationText");
+        xaml.Should().Contain("AccountingLedgerBookAdministrationGrid");
+        xaml.Should().Contain("LedgerBookRows");
         xaml.Should().Contain("AccountingProductionReadinessStatusText");
         xaml.Should().Contain("AccountingProductionReadinessComponentGrid");
         xaml.Should().Contain("AccountingProductionReadinessIssueGrid");
