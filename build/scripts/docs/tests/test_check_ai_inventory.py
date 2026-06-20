@@ -646,7 +646,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             payload = check_ai_inventory.build_payload(root, [], [])
 
             self.assertEqual(".", payload["repositoryRoot"])
-            self.assertEqual(root.name, payload["repositoryName"])
+            self.assertEqual("Meridian-main", payload["repositoryName"])
             self.assertNotIn(str(root), check_ai_inventory.render_markdown(payload))
 
 

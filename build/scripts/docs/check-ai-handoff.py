@@ -6,13 +6,13 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List, Sequence, Tuple
 
 
 H = Path("docs/ai/agent-handoff-checklist.md")
 HOST_TARGETS_CONFIG = Path("build/scripts/docs/ai-handoff-host-targets.json")
+STABLE_GENERATED_AT_UTC = "1970-01-01T00:00:00+00:00"
 HANDOFF_REQUIRED_SECTIONS = ("required handoff packet",)
 HANDOFF_REQUIRED_FIELDS = (
     "scope",
@@ -200,7 +200,7 @@ def run(
     strict: bool = False,
     host_targets: Path | None = None,
 ) -> int:
-    start = datetime.now(timezone.utc).isoformat()
+    start = STABLE_GENERATED_AT_UTC
     failures: List[str] = []
     details: List[dict[str, str]] = []
     checklist_path = root / H

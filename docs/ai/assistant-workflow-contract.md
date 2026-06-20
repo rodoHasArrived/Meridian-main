@@ -72,6 +72,26 @@ Before behavior changes, run this sequence:
 - Update generator inputs and rerun generation commands.
 - Keep registry files (`docs/source/data/*.yml`, `docs/roadmap/data/*.yml`) as source-of-truth for generated views.
 
+### Human-in-the-loop Gates
+
+Pause and get explicit human confirmation before taking any provider-agnostic assistant action in
+these cases:
+
+- Applying migrations, deleting or archive-moving large sets of files, rewriting generated
+  inventories, or changing root AI policy.
+- Taking actions that could affect trading, portfolio accounting, approvals, credentials,
+  permissions, or audit evidence.
+- Proceeding after validation fails when the next step would change the implementation plan rather
+  than only rerun, narrow, or repair the failed check.
+- Continuing when repository instructions conflict with user instructions and the safer
+  interpretation is unclear.
+- Performing broad multi-surface edits across `.codex/`, `.agents/`, `.github/`, `CLAUDE.md`,
+  `AGENTS.md`, and `docs/ai/`.
+
+These pause-and-confirm rules apply to ordinary assistant sessions regardless of provider. Use the
+Chief of Staff approval path for multi-domain, approval-gated, or evidence-synthesis work that needs
+structured sign-off, trace retention, or operator-facing briefing.
+
 ### Agent Orchestration
 
 - Use `docs/ai/parallel-task-manifest-template.md` for parallel lanes.
@@ -88,6 +108,118 @@ Before behavior changes, run this sequence:
   specialists should load only the required context for that scoped lane before asking for more.
 - Coordinators own working memory updates; specialist lanes update their own claims, facts,
   assumptions, and validation notes before handoff or integration.
+
+### Intent Verification
+
+Before acting on a request, classify the user's intent and choose the least intrusive gate that
+keeps the work safe and reviewable. Intent verification is a scope-control step; it does not
+override higher-priority system, developer, repository, or security instructions.
+
+| Intent state | Condition | Assistant behavior |
+| --- | --- | --- |
+| `clear-low-risk` | The desired outcome, target surface, and acceptance path are explicit, and the impact is narrow. | Proceed after a brief scope statement. |
+| `clear-medium-risk` | The desired outcome is clear, but the work touches shared workflow, validation policy, AI guidance, provider/workstation behavior, docs mirrors, or other review-sensitive surfaces. | State assumptions, intended paths or subsystems, and validation intent before continuing. |
+| `ambiguous-medium-risk` | The outcome is plausible but target surface, output type, acceptance criteria, or affected workflow is unclear. | Ask one concise clarification question with two or three concrete options. |
+| `high-risk-or-governed` | The task could affect trading, execution, accounting, approvals, reconciliation, audit evidence, credentials, permissions, destructive file operations, generated governance artifacts, or shared AI policy. | Pause for human confirmation before editing or executing irreversible actions. |
+
+Use this clarification format when intent is ambiguous or the requested scope needs confirmation:
+
+```md
+**Intent Check**
+I understand the goal as: <one-sentence outcome>.
+I plan to work in: <paths, docs, subsystems, or workflow surfaces>.
+Validation would be: <narrow checks or evidence>.
+
+Please confirm one:
+1. <recommended scope>
+2. <narrower scope>
+3. <broader or approval-gated scope>
+```
+
+Proceed without clarification only when the target surface, requested action, validation path, and
+risk level are clear; no destructive or generated-file action is involved; no instruction conflict is
+present; and no user-owned worktree change affects the files to edit.
+
+### AI User Notifications
+
+Use compact notifications to make AI state visible without turning routine work into a transcript.
+For medium- or high-risk tasks, shared-policy edits, scope changes, blockers, validation pivots, or
+long-running investigations, use this label-value format. Keep field values short and omit optional
+fields when they would only repeat the surrounding message.
+
+```md
+**AI Workflow Update**
+Phase: <orienting | inspecting | planning | editing | validating | blocked | handoff | complete>
+Intent: <one-sentence goal>
+Scope: <paths, subsystem, docs lane, or workflow surface>
+Evidence: <files, commands, docs, tests, or artifacts>
+Next: <what happens next>
+Gate: <none | confirm intent | approve scope | approve risk | resolve conflict | accept residual risk>
+Validation: <planned check or "not applicable: <reason>">
+```
+
+Emit a notification at startup or orientation for medium/high-risk tasks, before editing shared
+policy, before widening scope, when a blocker changes the plan, when validation failure requires a
+pivot, and before final validation for gated work. Skip the full format for tiny low-risk tasks, when
+a skill-specific receipt already provides equivalent fields, or when the final response will supply
+the same evidence. Do not paste broad command output, raw file dumps, or step-by-step transcripts
+unless the user explicitly asks for a trace.
+
+Use these smaller notices when the full workflow update would be too heavy but the user still needs
+to see context, validation, or scope boundaries:
+
+```md
+Workflow: <lane>; Skill: <skill-or-none>; Context loaded: <files/docs>; Next evidence: <next source>.
+```
+
+```md
+Context update: loading <source> because <reason>. <edit/scope status>.
+```
+
+```md
+Validation plan: <scope>; if this becomes implementation work, narrow checks would be <checks>.
+```
+
+```md
+Mode: advisory only; edits disabled by user request.
+```
+
+```md
+Context used: <files/docs>. Tools used: <commands/tools>. Files changed: <paths or none>.
+```
+
+### Human-in-the-Loop Escalation
+
+Human approval gates apply only to the named scope, paths, and risk level. If new surfaces, broader
+file ownership, or higher-risk actions appear later, stop and request a new confirmation before
+continuing.
+
+| Level | Name | Behavior |
+| --- | --- | --- |
+| 0 | No gate | Proceed after normal scope disclosure. |
+| 1 | Confirm intent | Ask a concise clarification question before choosing a scope. |
+| 2 | Approve scope | Ask the user to approve target files, subsystems, or docs surfaces before edits. |
+| 3 | Approve risk | Ask the user to approve governed or high-impact actions before edits or execution. |
+| 4 | Stop or handoff | Do not continue; produce a blocker report or handoff packet with the unresolved decision. |
+
+Require a human gate before broad shared-AI-policy updates; destructive deletes, archives, mass
+moves, or generated-doc rewrites; credential, permission, authentication, provider-secret, or
+security guidance changes; trading, execution, accounting, approvals, reconciliation, audit-evidence,
+or governed-reporting behavior changes; scope expansion after validation failure; direct edits to
+generated docs instead of generator inputs; or action under unresolved instruction conflicts.
+
+Use this prompt when approval is required:
+
+```md
+**Human Gate Required**
+- Trigger: <why approval is required>
+- Proposed action: <what would happen next>
+- Affected surfaces: <paths or subsystems>
+- Risk if wrong: <brief consequence>
+- Validation after approval: <planned checks>
+
+Please confirm whether to proceed.
+```
 
 ### Token and Context Management
 
@@ -179,25 +311,30 @@ When launching parallel AI work:
 Every assistant and automation should use the same high-level flow:
 
 1. **Read the request literally.** Restate the desired outcome and identify acceptance criteria.
-2. **Orient before broad search.** Start with `docs/ai/navigation/README.md` and
+2. **Verify intent and classify risk.** Apply the intent verification states above, ask for
+   confirmation when scope is ambiguous or governed, and record any assumptions before proceeding.
+3. **Notify when the task warrants it.** Emit an AI workflow update for medium/high-risk tasks,
+   shared-policy edits, blockers, scope changes, and validation pivots so the user can see the
+   current phase, scope, evidence, next action, human-gate status, and validation intent.
+4. **Orient before broad search.** Start with `docs/ai/navigation/README.md` and
    `docs/ai/generated/repo-navigation.md`. If MCP is available, prefer the repo-navigation tools
    and resources before broad recursive search.
-3. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
+5. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
    Copilot agent, prompt template, path instruction, or MCP tool based on the routed subsystem.
    If the task crosses multiple subsystems, requires an approval gate or operator sign-off, or
    needs a structured briefing with trace/evidence retention, use the repository docs, skills,
    prompts, and scripts that currently own that workflow instead of inventing a new surface.
-4. **Load MDIF when architecture drift is a risk.** For broad code generation, domain modeling,
+6. **Load MDIF when architecture drift is a risk.** For broad code generation, domain modeling,
    workflow design, report generation, UI surface creation, service design, migrations, or
    architecture-sensitive refactors, load the MDIF constitution, matching domain dictionary pages,
    and relevant context packs before implementation.
-5. **Use a shared handoff format.** For multi-agent or multi-phase work, use
+7. **Use a shared handoff format.** For multi-agent or multi-phase work, use
    [`agent-handoff-checklist.md`](agent-handoff-checklist.md) as the required compact handoff packet
    between specialist lanes.
-6. **Declare mode and parallel ownership up front.** Select a mode from [`work-modes.md`](work-modes.md)
+8. **Declare mode and parallel ownership up front.** Select a mode from [`work-modes.md`](work-modes.md)
    and, for parallel lanes, initialize [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md)
    before implementation so ownership and context boundaries stay explicit.
-7. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
+9. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
    WPF names as legacy workspace aliases rather than new root workspaces.
@@ -211,9 +348,9 @@ Every assistant and automation should use the same high-level flow:
    surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
    mobile-first workflows. Existing responsive browser checks may continue only as validation for
    the browser workstation.
-8. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
+10. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
    broad cleanup, and unrelated formatting churn.
-9. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
+11. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
    that covers the touched surface; expand only when the change risk justifies it. For local .NET
    tests, prefer `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
    so validation uses a local lock, active-process checks, and isolated build outputs. When local
@@ -221,10 +358,10 @@ Every assistant and automation should use the same high-level flow:
    push the branch and use the manual GitHub-hosted `Targeted Test` workflow as the remote proof
    lane before retrying broad local scripts. Its .NET lane requires a repo-relative test project
    under `tests/` plus a non-empty filter.
-10. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
+12. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
    update the nearest `docs/ai/*/README.md` index and any mirrored host surfaces that teach the
    same workflow.
-11. **Report evidence.** Summaries must include what changed, why, affected files, validation
+13. **Report evidence.** Summaries must include what changed, why, affected files, validation
    commands, and any residual risks.
 
 ## Rebuild-Native AI Requirements

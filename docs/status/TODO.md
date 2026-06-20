@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **181**
+Total items: **197**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -10,6 +10,8 @@ Total items: **181**
 | `.codex/agents/meridian-cleanup.toml` | 417 | `TODO` | ❌ | - Open-work comments (for example, `// TODO:` or `// FIXME:`) that describe genuine pending tasks — flag them\r |
 | `.github/agents/cleanup-agent.md` | 385 | `TODO` | ❌ | - placeholder implementation comments (for example, `// TODO: implement`) in methods that are already implemented. |
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - Open-work comments (for example, `// TODO:` or `// FIXME:`) that describe genuine pending tasks — flag |
+| `Meridian Design System/_ds_bundle.js` | 2754 | `NOTE` | ❌ | // Note: caller must provide all IDs; this component only tracks selection state. |
+| `Meridian Design System/components/core/MultiSelect.jsx` | 22 | `NOTE` | ❌ | // Note: caller must provide all IDs; this component only tracks selection state. |
 | `benchmarks/run-bottleneck-benchmarks.sh` | 111 | `NOTE` | ❌ | # Note: --filter is intentionally not added here; each phase below supplies its own |
 | `config/appsettings.sample.json` | 387 | `NOTE` | ❌ | // NOTE: This key is a duplicate of the one near the top of this file for documentation purposes. |
 | `config/appsettings.sample.json` | 396 | `NOTE` | ❌ | // NOTE: Credentials are resolved from environment variables - do NOT add them here. |
@@ -67,13 +69,16 @@ Total items: **181**
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.ts` | 509 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.ts` | 517 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.ts` | 725 | `NOTE` | ❌ | note: buildDraftField({ |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 646 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 660 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1312 | `NOTE` | ❌ | note: "Board portal delivery." |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1318 | `NOTE` | ❌ | note: "Investor email-link delivery." |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1340 | `NOTE` | ❌ | note: "Board portal delivery.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1364 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
-| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1469 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 818 | `NOTE` | ❌ | note: "Promote ready rows", |
+| `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 828 | `NOTE` | ❌ | note: "Reviewed" |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 671 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 685 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1337 | `NOTE` | ❌ | note: "Board portal delivery." |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1343 | `NOTE` | ❌ | note: "Investor email-link delivery." |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1365 | `NOTE` | ❌ | note: "Board portal delivery.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1389 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 1494 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 2180 | `NOTE` | ❌ | note: "Fixture handoff retained after identity review.", |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 145 | `NOTE` | ❌ | note: alert.note |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts` | 227 | `NOTE` | ❌ | note: draft.note?.trim() ? draft.note.trim() : null, |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.test.ts` | 31 | `NOTE` | ❌ | note: null, |
@@ -82,16 +87,16 @@ Total items: **181**
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.ts` | 154 | `NOTE` | ❌ | note: asString(raw.note) ?? null |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/types.ts` | 11 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/types.ts` | 30 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 218 | `NOTE` | ❌ | note: "Coupon posted." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 238 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 3441 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 219 | `NOTE` | ❌ | note: "Coupon posted." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 239 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 3510 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 304 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1717 | `NOTE` | ❌ | note: "Semi-annual fixed coupon projected from the reference coupon schedule." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1737 | `NOTE` | ❌ | note: "Principal paydown carries a small expected-versus-actual variance for operator review." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1757 | `NOTE` | ❌ | note: "Final coupon and principal repayment remain pending until trustee schedule confirmation." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1779 | `NOTE` | ❌ | note: "Fixture coupon row used by browser workbench tests." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1799 | `NOTE` | ❌ | note: "Fixture amortization row keeps schedule selection deterministic." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 7573 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1761 | `NOTE` | ❌ | note: "Semi-annual fixed coupon projected from the reference coupon schedule." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1781 | `NOTE` | ❌ | note: "Principal paydown carries a small expected-versus-actual variance for operator review." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1801 | `NOTE` | ❌ | note: "Final coupon and principal repayment remain pending until trustee schedule confirmation." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1823 | `NOTE` | ❌ | note: "Fixture coupon row used by browser workbench tests." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1843 | `NOTE` | ❌ | note: "Fixture amortization row keeps schedule selection deterministic." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 7753 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 80 | `NOTE` | ❌ | note: string; |
@@ -125,41 +130,52 @@ Total items: **181**
 | `src/Meridian.Ui/dashboard/src/screens/price-alerts-screen.view-model.ts` | 601 | `NOTE` | ❌ | note: { |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 686 | `NOTE` | ❌ | note: "Built-in template catalog" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 694 | `NOTE` | ❌ | note: "Controller approved investor statement baseline." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 1238 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 2125 | `NOTE` | ❌ | note: "Added exposure columns." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3291 | `NOTE` | ❌ | note: "Approved custom exposure report-writer pack." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3513 | `NOTE` | ❌ | note: "Email link pack." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3594 | `NOTE` | ❌ | note: "Email link pack." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3633 | `NOTE` | ❌ | note: "Board portal pack." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3639 | `NOTE` | ❌ | note: "Email link archive." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3684 | `NOTE` | ❌ | note: "Board portal pack." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3690 | `NOTE` | ❌ | note: "Email link archive." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3726 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3732 | `NOTE` | ❌ | note: "Investor package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3754 | `NOTE` | ❌ | note: "Board package.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3831 | `NOTE` | ❌ | note: "Investor package.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3855 | `NOTE` | ❌ | note: "Delivered after approval.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4100 | `NOTE` | ❌ | note: "Board portal package cleared." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4414 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4454 | `NOTE` | ❌ | note: "Board package.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4496 | `NOTE` | ❌ | note: "Delivered after approval.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4535 | `NOTE` | ❌ | note: "Delivery failure recorded from Reporting workspace for Board reporting committee.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4555 | `NOTE` | ❌ | note: "Delivery failure recorded from Reporting workspace for Board reporting committee.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4603 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4625 | `NOTE` | ❌ | note: "Board package.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4671 | `NOTE` | ❌ | note: "Board package.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4727 | `NOTE` | ❌ | note: "Board package." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4770 | `NOTE` | ❌ | note: "Board package.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4921 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 1267 | `NOTE` | ❌ | note: "Board package." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 2172 | `NOTE` | ❌ | note: "Added exposure columns." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3338 | `NOTE` | ❌ | note: "Approved custom exposure report-writer pack." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3560 | `NOTE` | ❌ | note: "Email link pack." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3641 | `NOTE` | ❌ | note: "Email link pack." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3680 | `NOTE` | ❌ | note: "Board portal pack." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3686 | `NOTE` | ❌ | note: "Email link archive." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3731 | `NOTE` | ❌ | note: "Board portal pack." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3737 | `NOTE` | ❌ | note: "Email link archive." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3773 | `NOTE` | ❌ | note: "Board package." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3779 | `NOTE` | ❌ | note: "Investor package." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3801 | `NOTE` | ❌ | note: "Board package.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3878 | `NOTE` | ❌ | note: "Investor package.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 3902 | `NOTE` | ❌ | note: "Delivered after approval.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4147 | `NOTE` | ❌ | note: "Board portal package cleared." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4461 | `NOTE` | ❌ | note: "Board package." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4501 | `NOTE` | ❌ | note: "Board package.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4543 | `NOTE` | ❌ | note: "Delivered after approval.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4582 | `NOTE` | ❌ | note: "Delivery failure recorded from Reporting workspace for Board reporting committee.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4602 | `NOTE` | ❌ | note: "Delivery failure recorded from Reporting workspace for Board reporting committee.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4650 | `NOTE` | ❌ | note: "Board package." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4672 | `NOTE` | ❌ | note: "Board package.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4718 | `NOTE` | ❌ | note: "Board package.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4774 | `NOTE` | ❌ | note: "Board package." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4817 | `NOTE` | ❌ | note: "Board package.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4968 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 4908 | `NOTE` | ❌ | note: note \|\| null |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 4919 | `NOTE` | ❌ | note: draft.deliveryNote, |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6557 | `NOTE` | ❌ | note: "Delivered from browser Reporting workspace.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6582 | `NOTE` | ❌ | note: "Published from browser Reporting workspace." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6682 | `NOTE` | ❌ | note: `Delivery failure recorded from Reporting workspace for ${attempt.recipient}.`, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6549 | `NOTE` | ❌ | note: "Delivered from browser Reporting workspace.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6574 | `NOTE` | ❌ | note: "Published from browser Reporting workspace." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6674 | `NOTE` | ❌ | note: `Delivery failure recorded from Reporting workspace for ${attempt.recipient}.`, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 180 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 482 | `NOTE` | ❌ | note: "Board package." |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 369 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 1769 | `NOTE` | ❌ | note: plan.note, |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1261 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1269 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1279 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1401 | `NOTE` | ❌ | note: "Approved after identity review.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1501 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1583 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1600 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1647 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1667 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1266 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1393 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 429 | `NOTE` | ❌ | note: "Close evidence reviewed." |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 437 | `NOTE` | ❌ | note: "Published to investor portal." |
 | `src/Meridian.Ui/dashboard/src/types.ts` | 2997 | `NOTE` | ❌ | note: string; |

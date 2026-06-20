@@ -122,7 +122,10 @@ tasks. Route work through it when any of the following apply:
   reconciliation summaries, report-pack approvals).
 
 Use specialist agents (blueprint, test-writer, code-review, etc.) for single-domain tasks; route
-multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime.
+multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime. Ordinary
+assistant sessions still follow the provider-agnostic Human-in-the-loop Gates in
+`docs/ai/assistant-workflow-contract.md`; those gates define when to pause and confirm, while CoS
+remains the heavy-duty path for structured approval, evidence synthesis, and retained sign-off.
 
 ### Agent Design Patterns
 

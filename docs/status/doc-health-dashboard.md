@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-16T21:42:51.866547+00:00_
+_Generated: 1970-01-01T00:00:00+00:00_
 Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-06-16T21:42:51.855951+00:00
+> Last updated: 1970-01-01T00:00:00+00:00
 
 ## Overall Health Score
 
@@ -19,13 +19,13 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 594 |
-| Total lines | 84,791 |
-| Average file size (lines) | 142.7 |
-| Orphaned files | 236 |
-| Files without headings | 21 |
+| Total documentation files | 559 |
+| Total lines | 82,097 |
+| Average file size (lines) | 146.9 |
+| Orphaned files | 210 |
+| Files without headings | 38 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 236 |
+| TODO/FIXME markers | 195 |
 | **Health score** | **83/100** |
 
 ### Score Breakdown
@@ -44,22 +44,22 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 These files lack a Markdown heading, making them harder to navigate:
 
-- `benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md`
-- `benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md`
-- `benchmarks/results/20260521_111257/composite/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md`
-- `benchmarks/results/20260521_111257/wal/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md`
-- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md`
-- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CanonicalizingPublisherThroughputBenchmarks-report-github.md`
-- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md`
-- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.DepthCollectorBenchmarks-report-github.md`
-- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.EndToEndPipelineBenchmarks-report-github.md`
-- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.TradeCollectorBenchmarks-report-github.md`
-- `benchmarks/results/20260521_180245/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md`
-- `benchmarks/results/20260521_181635/results/Meridian.Benchmarks.EventPipelineBenchmarks-report-github.md`
-- `benchmarks/results/20260521_181812/results/Meridian.Benchmarks.EventBufferBenchmarks-report-github.md`
-- `benchmarks/results/20260521_182021/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md`
-- `benchmarks/results/20260521_182313/results/Meridian.Benchmarks.JsonSerializationBenchmarks-report-github.md`
-- ... and 6 more
+- `Meridian Design System/SKILL.md`
+- `Meridian Design System/components/charts/CandleChart.prompt.md`
+- `Meridian Design System/components/charts/ChartCard.prompt.md`
+- `Meridian Design System/components/charts/EquityCurve.prompt.md`
+- `Meridian Design System/components/core/Badge.prompt.md`
+- `Meridian Design System/components/core/Button.prompt.md`
+- `Meridian Design System/components/core/Eyebrow.prompt.md`
+- `Meridian Design System/components/core/Input.prompt.md`
+- `Meridian Design System/components/core/PanelSurface.prompt.md`
+- `Meridian Design System/components/core/StatusBanner.prompt.md`
+- `Meridian Design System/components/data/DenseDataTable.prompt.md`
+- `Meridian Design System/components/data/EntitySummary.prompt.md`
+- `Meridian Design System/components/data/KeyValueGrid.prompt.md`
+- `Meridian Design System/components/data/MetricCard.prompt.md`
+- `Meridian Design System/components/shell/NavRail.prompt.md`
+- ... and 23 more
 
 ### Orphaned Documentation
 
@@ -78,14 +78,14 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/SKILL.md`
 - `.agents/skills/meridian-test-writer/SKILL.md`
 - `AGENTS.md`
-- `Meridian Design System/BRAND_GUIDELINES.md`
 - `Meridian Design System/CONTENT_FUNDAMENTALS.md`
 - `Meridian Design System/ICONOGRAPHY.md`
 - `Meridian Design System/INSPIRATION_BRIEF.md`
 - `Meridian Design System/SKILL.md`
 - `Meridian Design System/VISUAL_FOUNDATIONS.md`
-- `benchmarks/BOTTLENECK_REPORT.md`
-- ... and 216 more
+- `Meridian Design System/components/charts/CandleChart.prompt.md`
+- `Meridian Design System/components/charts/ChartCard.prompt.md`
+- ... and 190 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-06-16 | 83 | 594 | 236 | 0 |
+| 1970-01-01 | 83 | 559 | 210 | 0 |
 
 ---
 

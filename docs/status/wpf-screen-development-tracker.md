@@ -15,10 +15,10 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `6914e45a93a3`
+- Source fingerprint: `ebe2ce41ebdc`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `91`
-- Open automated tasks: `79`
+- Open automated tasks: `76`
 
 ## Workspace Summary
 
@@ -29,8 +29,8 @@ This tracker is generated from the live WPF shell registry, the maintained deskt
 | Accounting | 13 | 6 | 7 | 0 | 0 | 13 | 13 |
 | Reporting | 8 | 5 | 3 | 0 | 1 | 8 | 7 |
 | Strategy | 13 | 6 | 3 | 3 | 4 | 13 | 9 |
-| Data | 25 | 6 | 9 | 10 | 7 | 23 | 20 |
-| Settings | 17 | 5 | 6 | 6 | 2 | 16 | 16 |
+| Data | 25 | 6 | 9 | 10 | 7 | 25 | 18 |
+| Settings | 17 | 5 | 6 | 6 | 2 | 17 | 15 |
 
 ## Gantt Chart
 
@@ -151,7 +151,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as TradingShell (TradingWorkspaceShellPage).
 - [ ] Capture a fixture-mode desktop screenshot for TradingShell or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +18 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +19 more.
 
 #### Live data (`LiveData`)
 
@@ -159,7 +159,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as LiveData (LiveDataViewerPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-live-data.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/LiveDataViewerViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +2 more.
 
 #### Order book (`OrderBook`)
 
@@ -167,7 +167,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as OrderBook (OrderBookPage).
 - [ ] Capture a fixture-mode desktop screenshot for OrderBook or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +7 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +8 more.
 
 #### Position blotter (`PositionBlotter`)
 
@@ -175,7 +175,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as PositionBlotter (PositionBlotterPage).
 - [ ] Capture a fixture-mode desktop screenshot for PositionBlotter or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +9 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +10 more.
 
 #### Run risk (`RunRisk`)
 
@@ -183,7 +183,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as RunRisk (RunRiskPage).
 - [ ] Capture a fixture-mode desktop screenshot for RunRisk or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +8 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more.
 
 #### Trading hours (`TradingHours`)
 
@@ -191,7 +191,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as TradingHours (TradingHoursPage).
 - [ ] Capture a fixture-mode desktop screenshot for TradingHours or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more.
 
 ### Portfolio
 
@@ -201,7 +201,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as DirectLending (DirectLendingPage).
 - [ ] Capture a fixture-mode desktop screenshot for DirectLending or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +1 more.
 
 #### Portfolio Workspace (`PortfolioShell`)
 
@@ -209,7 +209,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as PortfolioShell (PortfolioWorkspaceShellPage).
 - [ ] Capture a fixture-mode desktop screenshot for PortfolioShell or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, +8 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +9 more.
 
 #### Account portfolio (`AccountPortfolio`)
 
@@ -217,7 +217,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AccountPortfolio (AccountPortfolioPage).
 - [ ] Capture a fixture-mode desktop screenshot for AccountPortfolio or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountPortfolioViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundAccountsViewModelTests.cs, +8 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more.
 
 #### Aggregate portfolio (`AggregatePortfolio`)
 
@@ -225,7 +225,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AggregatePortfolio (AggregatePortfolioPage).
 - [ ] Capture a fixture-mode desktop screenshot for AggregatePortfolio or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs, +1 more.
 
 #### Run portfolio (`RunPortfolio`)
 
@@ -233,7 +233,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as RunPortfolio (RunPortfolioPage).
 - [ ] Capture a fixture-mode desktop screenshot for RunPortfolio or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +7 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more.
 
 #### Portfolio explorer (`PortfolioExplorer`)
 
@@ -241,7 +241,7 @@ gantt
 - Status: `Needs screenshot index row`.
 - [x] Registered in the WPF shell registry as PortfolioExplorer (FinancialRecordExplorerPage).
 - [ ] Add PortfolioExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more.
 
 #### Fund portfolio (`FundPortfolio`)
 
@@ -249,7 +249,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundPortfolio (FundLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundPortfolio or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more.
 
 #### Fund accounts (`FundAccounts`)
 
@@ -257,7 +257,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundAccounts (FundAccountsPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundAccounts or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +7 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more.
 
 #### Portfolio import (`PortfolioImport`)
 
@@ -265,7 +265,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as PortfolioImport (PortfolioImportPage).
 - [ ] Capture a fixture-mode desktop screenshot for PortfolioImport or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/PortfolioImportViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +2 more.
 
 ### Accounting
 
@@ -275,7 +275,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AccountingShell (AccountingWorkspaceShellPage).
 - [ ] Capture a fixture-mode desktop screenshot for AccountingShell or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +15 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +16 more.
 
 #### Entity setup (`FundStructureSetup`)
 
@@ -283,7 +283,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundStructureSetup (FundStructureSetupPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundStructureSetup or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/FundStructureSetupViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundStructureSetupViewModelTests.cs.
 
 #### Fund operations (`FundLedger`)
 
@@ -291,7 +291,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundLedger (FundLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundLedger or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs, +15 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +17 more.
 
 #### Run ledger (`RunLedger`)
 
@@ -299,7 +299,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as RunLedger (RunLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for RunLedger or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +3 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +5 more.
 
 #### Run cash flow (`RunCashFlow`)
 
@@ -307,7 +307,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as RunCashFlow (RunCashFlowPage).
 - [ ] Capture a fixture-mode desktop screenshot for RunCashFlow or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, tests/Meridian.Wpf.Tests/ViewModels/CashFlowViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +2 more.
 
 #### Fund reconciliation (`FundReconciliation`)
 
@@ -315,7 +315,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundReconciliation (FundLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundReconciliation or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs, +13 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +15 more.
 
 #### Fund banking (`FundBanking`)
 
@@ -323,7 +323,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundBanking (FundLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundBanking or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +3 more.
 
 #### Fund cash and financing (`FundCashFinancing`)
 
@@ -331,7 +331,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundCashFinancing (FundLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundCashFinancing or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more.
 
 #### Accounting configure (`FundAccountingConfigure`)
 
@@ -339,7 +339,7 @@ gantt
 - Status: `Needs screenshot index row`.
 - [x] Registered in the WPF shell registry as FundAccountingConfigure (AccountingConfigurePage).
 - [ ] Add FundAccountingConfigure to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +3 more.
 
 #### Fund trial balance (`FundTrialBalance`)
 
@@ -347,7 +347,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundTrialBalance (FundLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundTrialBalance or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, +7 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more.
 
 #### Ledger explorer (`LedgerExplorer`)
 
@@ -355,7 +355,7 @@ gantt
 - Status: `Needs screenshot index row`.
 - [x] Registered in the WPF shell registry as LedgerExplorer (FinancialRecordExplorerPage).
 - [ ] Add LedgerExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more.
 
 #### Fund audit trail (`FundAuditTrail`)
 
@@ -363,7 +363,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundAuditTrail (FundLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundAuditTrail or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +12 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more.
 
 #### Security and instrument explorer (`SecurityInstrumentExplorer`)
 
@@ -371,7 +371,7 @@ gantt
 - Status: `Needs screenshot index row`.
 - [x] Registered in the WPF shell registry as SecurityInstrumentExplorer (FinancialRecordExplorerPage).
 - [ ] Add SecurityInstrumentExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more.
 
 ### Reporting
 
@@ -381,7 +381,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as ReportingShell (ReportingWorkspaceShellPage).
 - [ ] Capture a fixture-mode desktop screenshot for ReportingShell or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, +6 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, +7 more.
 
 #### Fund report pack (`FundReportPack`)
 
@@ -389,7 +389,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as FundReportPack (FundLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for FundReportPack or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs, +7 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more.
 
 #### Report run status (`ReportRunStatus`)
 
@@ -397,7 +397,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as ReportRunStatus (DashboardPage).
 - [ ] Capture a fixture-mode desktop screenshot for ReportRunStatus or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/DashboardPageSmokeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +1 more.
 
 #### Reporting dashboard (`Dashboard`)
 
@@ -405,7 +405,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Dashboard (DashboardPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-dashboard.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/KeyboardShortcutServiceTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +7 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/KeyboardShortcutServiceTests.cs, +8 more.
 
 #### Analysis export (`AnalysisExport`)
 
@@ -413,7 +413,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AnalysisExport (AnalysisExportPage).
 - [ ] Capture a fixture-mode desktop screenshot for AnalysisExport or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs, +3 more.
 
 #### Report-line provenance (`ReportLineProvenanceExplorer`)
 
@@ -421,7 +421,7 @@ gantt
 - Status: `Needs screenshot index row`.
 - [x] Registered in the WPF shell registry as ReportLineProvenanceExplorer (FinancialRecordExplorerPage).
 - [ ] Add ReportLineProvenanceExplorer to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +2 more.
 
 #### Analysis export wizard (`AnalysisExportWizard`)
 
@@ -429,7 +429,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AnalysisExportWizard (AnalysisExportWizardPage).
 - [ ] Capture a fixture-mode desktop screenshot for AnalysisExportWizard or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs.
 
 #### Export presets (`ExportPresets`)
 
@@ -437,7 +437,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as ExportPresets (ExportPresetsPage).
 - [ ] Capture a fixture-mode desktop screenshot for ExportPresets or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/ExportPresetsViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ExportPresetsViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs.
 
 ### Strategy
 
@@ -447,7 +447,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as LeanIntegration (LeanIntegrationPage).
 - [ ] Capture a fixture-mode desktop screenshot for LeanIntegration or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Views/NavigationPageSmokeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +1 more.
 
 #### Event replay (`EventReplay`)
 
@@ -455,7 +455,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as EventReplay (EventReplayPage).
 - [ ] Capture a fixture-mode desktop screenshot for EventReplay or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs, +2 more.
 
 #### Watchlist (`Watchlist`)
 
@@ -463,7 +463,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as Watchlist (WatchlistPage).
 - [ ] Capture a fixture-mode desktop screenshot for Watchlist or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/MessagingServiceTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/StrategyBriefingWorkspaceServiceTests.cs, +10 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/MessagingServiceTests.cs, +12 more.
 
 #### Strategy Workspace (`StrategyShell`)
 
@@ -471,7 +471,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as StrategyShell (StrategyWorkspaceShellPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-workspace.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +15 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +16 more.
 
 #### Backtest (`Backtest`)
 
@@ -479,7 +479,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Backtest (BacktestPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-backtest.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +20 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +22 more.
 
 #### Strategy runs (`StrategyRuns`)
 
@@ -487,7 +487,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as StrategyRuns (StrategyRunsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-strategy-runs.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +7 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, +8 more.
 
 #### Run detail (`RunDetail`)
 
@@ -495,7 +495,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as RunDetail (RunDetailPage).
 - [ ] Capture a fixture-mode desktop screenshot for RunDetail or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs, +15 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +17 more.
 
 #### Charts (`Charts`)
 
@@ -503,7 +503,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as Charts (ChartingPage).
 - [ ] Capture a fixture-mode desktop screenshot for Charts or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ChartingPageViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more.
 
 #### Run scripts (`RunMat`)
 
@@ -511,7 +511,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as RunMat (RunMatPage).
 - [ ] Capture a fixture-mode desktop screenshot for RunMat or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/DesktopAuthenticationSessionTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +75 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +77 more.
 
 #### Batch backtest (`BatchBacktest`)
 
@@ -519,7 +519,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as BatchBacktest (BatchBacktestPage).
 - [ ] Capture a fixture-mode desktop screenshot for BatchBacktest or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs.
 
 #### Advanced analytics (`AdvancedAnalytics`)
 
@@ -527,7 +527,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AdvancedAnalytics (AdvancedAnalyticsPage).
 - [ ] Capture a fixture-mode desktop screenshot for AdvancedAnalytics or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs.
 
 #### Quant script (`QuantScript`)
 
@@ -535,7 +535,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as QuantScript (QuantScriptPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-quant-script.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs, tests/Meridian.Wpf.Tests/Services/QuantScriptTemplateCatalogServiceTests.cs, tests/Meridian.Wpf.Tests/Services/StrategyRunWorkspaceServiceTests.cs, +5 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs, +7 more.
 
 #### Home (`HomeWorkspace`)
 
@@ -543,7 +543,7 @@ gantt
 - Status: `Needs screenshot index row`.
 - [x] Registered in the WPF shell registry as HomeWorkspace (HomeWorkspacePage).
 - [ ] Add HomeWorkspace to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs.
 
 ### Data
 
@@ -553,7 +553,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as DataBrowser (DataBrowserPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-browser.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataBrowserViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataBrowserViewModelTests.cs.
 
 #### Data calendar (`DataCalendar`)
 
@@ -561,7 +561,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as DataCalendar (DataCalendarPage).
 - [ ] Capture a fixture-mode desktop screenshot for DataCalendar or record an explicit non-capture decision.
-- [ ] Add or link WPF route/view-model test evidence for DataCalendar; the scanner found no test reference to DataCalendarPage, DataCalendarViewModel, or the page tag.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs.
 
 #### Data sampling (`DataSampling`)
 
@@ -569,7 +569,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as DataSampling (DataSamplingPage).
 - [ ] Capture a fixture-mode desktop screenshot for DataSampling or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/DataSamplingViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataSamplingViewModelTests.cs.
 
 #### Time series alignment (`TimeSeriesAlignment`)
 
@@ -577,7 +577,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as TimeSeriesAlignment (TimeSeriesAlignmentPage).
 - [ ] Capture a fixture-mode desktop screenshot for TimeSeriesAlignment or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs.
 
 #### Index subscription (`IndexSubscription`)
 
@@ -585,7 +585,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as IndexSubscription (IndexSubscriptionPage).
 - [ ] Capture a fixture-mode desktop screenshot for IndexSubscription or record an explicit non-capture decision.
-- [ ] Add or link WPF route/view-model test evidence for IndexSubscription; the scanner found no test reference to IndexSubscriptionPage, IndexSubscriptionViewModel, or the page tag.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs.
 
 #### Options (`Options`)
 
@@ -593,7 +593,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as Options (OptionsPage).
 - [ ] Capture a fixture-mode desktop screenshot for Options or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +26 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +27 more.
 
 #### Add provider wizard (`AddProviderWizard`)
 
@@ -601,7 +601,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AddProviderWizard (AddProviderWizardPage).
 - [ ] Capture a fixture-mode desktop screenshot for AddProviderWizard or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs, +1 more.
 
 #### Archive health (`ArchiveHealth`)
 
@@ -609,7 +609,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as ArchiveHealth (ArchiveHealthPage).
 - [ ] Capture a fixture-mode desktop screenshot for ArchiveHealth or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Views/PageLifecycleCleanupTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Views/PageLifecycleCleanupTests.cs.
 
 #### Storage optimization (`StorageOptimization`)
 
@@ -617,7 +617,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as StorageOptimization (StorageOptimizationPage).
 - [ ] Capture a fixture-mode desktop screenshot for StorageOptimization or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/StorageOptimizationViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/StorageOptimizationViewModelTests.cs.
 
 #### Retention assurance (`RetentionAssurance`)
 
@@ -625,7 +625,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as RetentionAssurance (RetentionAssurancePage).
 - [ ] Capture a fixture-mode desktop screenshot for RetentionAssurance or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs, +1 more.
 
 #### Data Workspace (`DataShell`)
 
@@ -633,7 +633,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as DataShell (DataWorkspaceShellPage).
 - [ ] Capture a fixture-mode desktop screenshot for DataShell or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +12 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more.
 
 #### Providers (`Provider`)
 
@@ -641,7 +641,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Provider (ProviderPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-providers.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +59 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +68 more.
 
 #### Backfill (`Backfill`)
 
@@ -649,7 +649,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Backfill (BackfillPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-backfill.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, +27 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +30 more.
 
 #### Symbols (`Symbols`)
 
@@ -657,7 +657,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as Symbols (SymbolsPage).
 - [ ] Capture a fixture-mode desktop screenshot for Symbols or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +39 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, +40 more.
 
 #### Storage (`Storage`)
 
@@ -665,7 +665,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Storage (StoragePage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-storage.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +32 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +34 more.
 
 #### Data export (`DataExport`)
 
@@ -673,7 +673,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as DataExport (DataExportPage).
 - [ ] Capture a fixture-mode desktop screenshot for DataExport or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataExportViewModelTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more.
 
 #### Data sources (`DataSources`)
 
@@ -681,7 +681,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as DataSources (DataSourcesPage).
 - [ ] Capture a fixture-mode desktop screenshot for DataSources or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataSourcesViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataSourcesViewModelTests.cs, +2 more.
 
 #### Provider health (`ProviderHealth`)
 
@@ -689,7 +689,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as ProviderHealth (ProviderHealthPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider-health.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +9 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more.
 
 #### Data quality (`DataQuality`)
 
@@ -697,7 +697,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as DataQuality (DataQualityPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-data-quality.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkstationWorkflowSummaryServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataQualityViewModelCharacterizationTests.cs, +3 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +5 more.
 
 #### Security master (`SecurityMaster`)
 
@@ -705,7 +705,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as SecurityMaster (SecurityMasterPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-master.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +18 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +21 more.
 
 #### Symbol mapping (`SymbolMapping`)
 
@@ -713,7 +713,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as SymbolMapping (SymbolMappingPage).
 - [ ] Capture a fixture-mode desktop screenshot for SymbolMapping or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs, +1 more.
 
 #### Symbol storage (`SymbolStorage`)
 
@@ -721,7 +721,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as SymbolStorage (SymbolStoragePage).
 - [ ] Capture a fixture-mode desktop screenshot for SymbolStorage or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/SymbolStorageViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SymbolStorageViewModelTests.cs.
 
 #### Schedules (`Schedules`)
 
@@ -729,7 +729,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as Schedules (ScheduleManagerPage).
 - [ ] Capture a fixture-mode desktop screenshot for Schedules or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs, +1 more.
 
 #### Collection sessions (`CollectionSessions`)
 
@@ -737,7 +737,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as CollectionSessions (CollectionSessionPage).
 - [ ] Capture a fixture-mode desktop screenshot for CollectionSessions or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/ViewModels/CollectionSessionViewModelTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +3 more.
 
 #### Package manager (`PackageManager`)
 
@@ -745,7 +745,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as PackageManager (PackageManagerPage).
 - [ ] Capture a fixture-mode desktop screenshot for PackageManager or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs.
 
 ### Settings
 
@@ -755,7 +755,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as ActivityLog (ActivityLogPage).
 - [ ] Capture a fixture-mode desktop screenshot for ActivityLog or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs, +2 more.
 
 #### Keyboard shortcuts (`KeyboardShortcuts`)
 
@@ -763,7 +763,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as KeyboardShortcuts (KeyboardShortcutsPage).
 - [ ] Capture a fixture-mode desktop screenshot for KeyboardShortcuts or record an explicit non-capture decision.
-- [ ] Add or link WPF route/view-model test evidence for KeyboardShortcuts; the scanner found no test reference to KeyboardShortcutsPage, KeyboardShortcutsViewModel, or the page tag.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs.
 
 #### Help and support (`Help`)
 
@@ -779,7 +779,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as SetupWizard (SetupWizardPage).
 - [ ] Capture a fixture-mode desktop screenshot for SetupWizard or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, +2 more.
 
 #### Workspace layouts (`Workspaces`)
 
@@ -787,7 +787,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as Workspaces (WorkspacePage).
 - [ ] Capture a fixture-mode desktop screenshot for Workspaces or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +9 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, +11 more.
 
 #### Welcome (`Welcome`)
 
@@ -795,7 +795,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as Welcome (WelcomePage).
 - [ ] Capture a fixture-mode desktop screenshot for Welcome or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs, +1 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs, +2 more.
 
 #### Settings Workspace (`SettingsShell`)
 
@@ -803,7 +803,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as SettingsShell (SettingsWorkspaceShellPage).
 - [ ] Capture a fixture-mode desktop screenshot for SettingsShell or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +6 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +7 more.
 
 #### Settings (`Settings`)
 
@@ -811,7 +811,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Settings (SettingsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-settings.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +25 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, +27 more.
 
 #### Credential management (`CredentialManagement`)
 
@@ -819,7 +819,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as CredentialManagement (CredentialManagementPage).
 - [ ] Capture a fixture-mode desktop screenshot for CredentialManagement or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +1 more.
 
 #### System health (`SystemHealth`)
 
@@ -827,7 +827,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as SystemHealth (SystemHealthPage).
 - [ ] Capture a fixture-mode desktop screenshot for SystemHealth or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +3 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +4 more.
 
 #### Diagnostics (`Diagnostics`)
 
@@ -835,7 +835,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Diagnostics (DiagnosticsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-diagnostics.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +11 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +12 more.
 
 #### Service manager (`ServiceManager`)
 
@@ -843,7 +843,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as ServiceManager (ServiceManagerPage).
 - [ ] Capture a fixture-mode desktop screenshot for ServiceManager or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/BackendServiceManagerTests.cs, tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ServiceManagerViewModelTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/BackendServiceManagerTests.cs, tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, +3 more.
 
 #### Admin maintenance (`AdminMaintenance`)
 
@@ -851,7 +851,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AdminMaintenance (AdminMaintenancePage).
 - [ ] Capture a fixture-mode desktop screenshot for AdminMaintenance or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AdminMaintenanceViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +2 more.
 
 #### Environment designer (`EnvironmentDesigner`)
 
@@ -859,7 +859,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as EnvironmentDesigner (EnvironmentDesignerPage).
 - [ ] Capture a fixture-mode desktop screenshot for EnvironmentDesigner or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/WorkstationOperatingContextServiceTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +1 more.
 
 #### Messaging hub (`MessagingHub`)
 
@@ -867,7 +867,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as MessagingHub (MessagingHubPage).
 - [ ] Capture a fixture-mode desktop screenshot for MessagingHub or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/MessagingHubViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MessagingHubViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs.
 
 #### Notification center (`NotificationCenter`)
 
@@ -875,7 +875,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as NotificationCenter (NotificationCenterPage).
 - [ ] Capture a fixture-mode desktop screenshot for NotificationCenter or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, +5 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +6 more.
 
 #### Workflow library (`WorkflowLibrary`)
 
@@ -883,4 +883,4 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as WorkflowLibrary (WorkflowLibraryPage).
 - [ ] Capture a fixture-mode desktop screenshot for WorkflowLibrary or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +1 more.

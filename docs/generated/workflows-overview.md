@@ -8,25 +8,25 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 
 | Workflow File | Name | Triggers |
 |---|---|---|
-| `.github\workflows\ci.yml` | CI | pull_request, push, schedule, workflow_dispatch |
-| `.github\workflows\codeql.yml` | CodeQL | pull_request, push, schedule, workflow_dispatch |
-| `.github\workflows\copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |
-| `.github\workflows\desktop-installer-packaging.yml` | Desktop Installer Release | push, workflow_dispatch |
-| `.github\workflows\desktop-screenshot-capture.yml` | Desktop Screenshot Capture | workflow_dispatch |
-| `.github\workflows\desktop-standalone-publish.yml` | Desktop Standalone Publish | workflow_dispatch |
-| `.github\workflows\desktop-user-manual.yml` | Desktop User Manual | workflow_dispatch |
-| `.github\workflows\desktop-workflow-runner.yml` | Desktop Workflow Runner | workflow_dispatch |
-| `.github\workflows\documentation.yml` | Documentation Automation | workflow_dispatch, pull_request, push |
-| `.github\workflows\golden-path-validation.yml` | Golden Path Validation | pull_request, push, workflow_dispatch |
-| `.github\workflows\ibapi-smoke.yml` | IB API Smoke Build | pull_request, push, workflow_dispatch |
-| `.github\workflows\maintenance.yml` | Maintenance | pull_request, push, schedule, workflow_dispatch |
-| `.github\workflows\provider-validation.yml` | Provider Validation | workflow_dispatch, schedule |
-| `.github\workflows\publish-smoke.yml` | Publish Smoke | workflow_dispatch |
-| `.github\workflows\roadmap-source-docs.yml` | Roadmap Source Docs | workflow_dispatch, pull_request, push |
-| `.github\workflows\roadmap-tools-manual.yml` | Roadmap Tools (Manual) | workflow_dispatch |
-| `.github\workflows\robinhood-options-smoke.yml` | Robinhood Options Smoke | workflow_dispatch |
-| `.github\workflows\targeted-test.yml` | Targeted Test | workflow_dispatch |
-| `.github\workflows\web-screenshot-capture.yml` | Web Screenshot Capture | workflow_dispatch |
-| `.github\workflows\windows-desktop-build.yml` | Windows Desktop Build | pull_request, push, workflow_dispatch |
-| `.github\workflows\wpf-dev-validation.yml` | WPF Dev Loop Validation | pull_request, push, workflow_dispatch |
-| `.github\workflows\wpf-route-validation.yml` | WPF Route Validation | pull_request, push, workflow_dispatch |
+| `.github/workflows/ci.yml` | CI | pull_request, push, schedule, workflow_dispatch |
+| `.github/workflows/codeql.yml` | CodeQL | pull_request, push, schedule, workflow_dispatch |
+| `.github/workflows/copilot-setup-steps.yml` | Copilot Setup Steps | workflow_dispatch, push, pull_request |
+| `.github/workflows/desktop-installer-packaging.yml` | Desktop Installer Release | push, workflow_dispatch |
+| `.github/workflows/desktop-screenshot-capture.yml` | Desktop Screenshot Capture | workflow_dispatch |
+| `.github/workflows/desktop-standalone-publish.yml` | Desktop Standalone Publish | workflow_dispatch |
+| `.github/workflows/desktop-user-manual.yml` | Desktop User Manual | workflow_dispatch |
+| `.github/workflows/desktop-workflow-runner.yml` | Desktop Workflow Runner | workflow_dispatch |
+| `.github/workflows/documentation.yml` | Documentation Automation | workflow_dispatch, pull_request, push |
+| `.github/workflows/golden-path-validation.yml` | Golden Path Validation | pull_request, push, workflow_dispatch |
+| `.github/workflows/ibapi-smoke.yml` | IB API Smoke Build | pull_request, push, workflow_dispatch |
+| `.github/workflows/maintenance.yml` | Maintenance | pull_request, push, schedule, workflow_dispatch |
+| `.github/workflows/provider-validation.yml` | Provider Validation | workflow_dispatch, schedule |
+| `.github/workflows/publish-smoke.yml` | Publish Smoke | workflow_dispatch |
+| `.github/workflows/roadmap-source-docs.yml` | Roadmap Source Docs | workflow_dispatch, pull_request, push |
+| `.github/workflows/roadmap-tools-manual.yml` | Roadmap Tools (Manual) | workflow_dispatch |
+| `.github/workflows/robinhood-options-smoke.yml` | Robinhood Options Smoke | workflow_dispatch |
+| `.github/workflows/targeted-test.yml` | Targeted Test | workflow_dispatch |
+| `.github/workflows/web-screenshot-capture.yml` | Web Screenshot Capture | workflow_dispatch |
+| `.github/workflows/windows-desktop-build.yml` | Windows Desktop Build | pull_request, push, workflow_dispatch |
+| `.github/workflows/wpf-dev-validation.yml` | WPF Dev Loop Validation | pull_request, push, workflow_dispatch |
+| `.github/workflows/wpf-route-validation.yml` | WPF Route Validation | pull_request, push, workflow_dispatch |

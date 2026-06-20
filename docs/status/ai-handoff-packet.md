@@ -15,8 +15,8 @@
 
 ## Route outcome
 - Final status: partial
-- Route assessment: possible-misroute
-- Inferred lanes from changes: docs
+- Route assessment: unknown
+- Inferred lanes from changes: (none)
 
 ## Telemetry
 - route_id: provider-integration
@@ -34,14 +34,7 @@
 - git diff: Changed-file evidence for handoff packet.
 
 ## Changes made
-- docs/generated/repository-structure.md: Touched in current git diff.
-- docs/status/TODO.md: Touched in current git diff.
-- docs/status/ai-handoff-checklist-report.json: Touched in current git diff.
-- docs/status/ai-inventory-report.json: Touched in current git diff.
-- docs/status/doc-health-dashboard.json: Touched in current git diff.
-- docs/status/doc-health-dashboard.md: Touched in current git diff.
-- docs/status/example-validation.md: Touched in current git diff.
-- docs/status/prompt-route-lint-report.json: Touched in current git diff.
+- (none): Git diff evidence suppressed for deterministic docs automation.
 
 ## Validation
 - [pass] python build/scripts/docs/prompt-route-linter.py --summary

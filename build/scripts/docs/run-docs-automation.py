@@ -139,6 +139,7 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
             "--next-lane",
             "implementation-assurance",
             "--allow-incomplete",
+            "--suppress-changed-files",
             "--model",
             "docs-automation-profile",
             "--input-tokens",
@@ -428,6 +429,28 @@ def run_script(name: str, root: Path) -> ScriptResult:
     return run_script_with_args(name, root, extra_args=None)
 
 
+def stable_command(command: Sequence[str], root: Path) -> List[str]:
+    stable: List[str] = []
+    resolved_root = root.resolve()
+    for part in command:
+        try:
+            path = Path(part)
+            if path.is_absolute():
+                stable.append(path.resolve().relative_to(resolved_root).as_posix())
+            else:
+                stable.append(part)
+        except (OSError, ValueError):
+            stable.append(part)
+    return stable
+
+
+def stable_result(result: ScriptResult, root: Path) -> dict:
+    payload = asdict(result)
+    payload["command"] = stable_command(result.command, root)
+    payload["duration_seconds"] = 0.0
+    return payload
+
+
 def write_markdown_summary(path: Path, results: Iterable[ScriptResult], dry_run: bool) -> None:
     rows = list(results)
     lines = [
@@ -443,7 +466,7 @@ def write_markdown_summary(path: Path, results: Iterable[ScriptResult], dry_run:
     for result in rows:
         output = result.output_file or "-"
         lines.append(
-            f"| `{result.name}` | `{result.status}` | `{result.duration_seconds:.3f}` | `{output}` |"
+            f"| `{result.name}` | `{result.status}` | `0.000` | `{output}` |"
         )
 
     failures = [r for r in rows if r.status == "failed"]
@@ -569,7 +592,7 @@ def main() -> int:  # noqa: C901
             "dry_run": args.dry_run,
             "profile": args.profile,
             "selected_scripts": selected,
-            "results": [asdict(result) for result in results],
+            "results": [stable_result(result, root) for result in results],
         }
         out = Path(args.json_output)
         out.parent.mkdir(parents=True, exist_ok=True)

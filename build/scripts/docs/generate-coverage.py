@@ -20,10 +20,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -40,10 +40,14 @@ EXCLUDE_DIRS: Set[str] = {
     "__pycache__",
     ".vs",
 }
+STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
 DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
+DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
+    "docs/status/",
+)
 
 # Regex: public (static )?(sealed )?(partial )?(class|interface|record|enum) Name
 PUBLIC_TYPE_RE = re.compile(
@@ -144,11 +148,18 @@ def _should_skip(path: Path) -> bool:
 def _collect_files(root: Path, extensions: Tuple[str, ...]) -> List[Path]:
     """Recursively collect files matching *extensions*, honouring exclusions."""
     results: List[Path] = []
-    for ext in extensions:
-        for p in root.rglob(f"*{ext}"):
-            if not _should_skip(p):
-                results.append(p)
-    return results
+    for current, dirs, files in os.walk(root):
+        dirs[:] = sorted(
+            (name for name in dirs if name not in EXCLUDE_DIRS),
+            key=str.casefold,
+        )
+        current_path = Path(current)
+        if _should_skip(current_path):
+            continue
+        for file_name in sorted(files, key=str.casefold):
+            if file_name.endswith(extensions):
+                results.append(current_path / file_name)
+    return sorted(results, key=lambda path: path.as_posix().casefold())
 
 
 def _read_text_safe(path: Path) -> str:
@@ -162,9 +173,9 @@ def _read_text_safe(path: Path) -> str:
 def _rel(path: Path, root: Path) -> str:
     """Return a portable relative path string."""
     try:
-        return str(path.relative_to(root))
+        return path.relative_to(root).as_posix()
     except ValueError:
-        return str(path)
+        return path.as_posix()
 
 
 # ---------------------------------------------------------------------------
@@ -521,7 +532,10 @@ def _load_doc_contents(root: Path) -> Dict[str, str]:
     contents: Dict[str, str] = {}
     if docs_dir.is_dir():
         for md_file in _collect_files(docs_dir, DOC_FILE_EXTENSIONS):
-            contents[_rel(md_file, root)] = _read_text_safe(md_file)
+            rel_path = _rel(md_file, root)
+            if rel_path.startswith(DOC_CONTENT_EXCLUDE_PREFIXES):
+                continue
+            contents[rel_path] = _read_text_safe(md_file)
     # Also include CLAUDE.md at repo root
     claude_md = root / "CLAUDE.md"
     if claude_md.is_file():
@@ -740,7 +754,7 @@ def generate_summary(report: CoverageReport) -> str:
 def build_report(root: Path) -> CoverageReport:
     """Run all analyses and assemble the coverage report."""
     report = CoverageReport(
-        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        generated_at=STABLE_GENERATED_AT,
     )
 
     # Load documentation content once for type-mention scanning.

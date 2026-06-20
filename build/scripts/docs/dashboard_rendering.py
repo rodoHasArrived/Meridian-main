@@ -7,14 +7,16 @@ then render Markdown from that JSON payload to avoid drift between formats.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
+STABLE_GENERATED_AT = "1970-01-01T00:00:00+00:00"
+REPOSITORY_DISPLAY_NAME = "Meridian-main"
+
 
 def current_utc_timestamp() -> str:
-    """Return an ISO-8601 UTC timestamp string."""
-    return datetime.now(timezone.utc).isoformat()
+    """Return a stable ISO-8601 UTC timestamp for generated docs."""
+    return STABLE_GENERATED_AT
 
 
 def write_canonical_json(payload: dict[str, Any], json_output: Path) -> dict[str, Any]:
@@ -177,7 +179,7 @@ def build_text_signal_dashboard(
         "title": title,
         "description": description,
         "generated_at": current_utc_timestamp(),
-        "root": root.name,
+        "root": REPOSITORY_DISPLAY_NAME,
         "score_percent": score_percent,
         "passed_weight": passed_weight,
         "total_weight": total_weight,

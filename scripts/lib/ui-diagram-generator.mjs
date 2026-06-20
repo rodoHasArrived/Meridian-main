@@ -202,7 +202,7 @@ export function parseTransientPages(content) {
 function createFingerprint(inputs) {
   const hash = crypto.createHash('sha256');
   for (const value of inputs) {
-    hash.update(value);
+    hash.update(value.replace(/\r\n/g, '\n').replace(/\r/g, '\n'));
     hash.update('\n---\n');
   }
   return hash.digest('hex').slice(0, 12);

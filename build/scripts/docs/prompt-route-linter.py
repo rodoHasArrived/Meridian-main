@@ -13,13 +13,13 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
 DEFAULT_RULES_PATH = Path("docs/ai/codex/prompt-route-rules.json")
 DEFAULT_JSON_OUTPUT = Path("docs/status/prompt-route-lint-report.json")
+STABLE_GENERATED_AT = "1970-01-01T00:00:00+00:00"
 ALLOWED_MODES = {"Lightweight", "Standard", "Deep Review"}
 
 
@@ -254,8 +254,8 @@ def match_route(prompt: str, data: dict[str, Any]) -> MatchResult:
 def write_json_report(path: Path, valid: bool, rules_path: str, result: MatchResult | None) -> None:
     payload: dict[str, Any] = {
         "valid": valid,
-        "rulesPath": rules_path,
-        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "rulesPath": Path(rules_path).as_posix(),
+        "generatedAt": STABLE_GENERATED_AT,
     }
     if result:
         payload["match"] = {
@@ -322,7 +322,7 @@ def main() -> int:
         print(f"default_skill={data['defaultRoute']['skill']}")
         print(f"confidence_threshold={float(data.get('confidenceThreshold', 0.55)):.2f}")
 
-    write_json_report(Path(args.json_output), True, str(rules_path), result)
+    write_json_report(Path(args.json_output), True, rules_path.as_posix(), result)
     return 0
 
 
