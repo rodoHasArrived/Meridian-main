@@ -41,7 +41,13 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.AssessAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var trustedRequest = request with
+            {
+                TenantId = string.IsNullOrWhiteSpace(request.TenantId) ? tenantContext.TenantId : request.TenantId,
+                CompanyId = string.IsNullOrWhiteSpace(request.CompanyId) ? tenantContext.CompanyId : request.CompanyId
+            };
+            var result = await service.AssessAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("AssessAccountingProductionReadiness")

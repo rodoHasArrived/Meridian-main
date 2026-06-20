@@ -150,7 +150,15 @@ public sealed record AccountingProductionReadinessRequestDto(
     Guid? LedgerBookId = null,
     AccountingBasisKindDto? AccountingBasis = null,
     string? ProviderId = null,
+    string? TenantId = null,
+    string? CompanyId = null,
     IReadOnlyList<LedgerBookRequiredScopeDto>? RequiredLedgerBookScopes = null,
+    bool TenantScopeConfigured = false,
+    bool AdminRoleProfileConfigured = false,
+    bool ScopedAccessPoliciesConfigured = false,
+    bool ReportingGroupsConfigured = false,
+    bool AccountingAdminSurfaceConfigured = false,
+    IReadOnlyList<string>? TenantAdministrationEvidenceLinks = null,
     bool LedgerBookMigrationCertified = false,
     bool HistoricalJournalBackfillCertified = false,
     bool DimensionalBackfillCertified = false,
@@ -162,11 +170,48 @@ public sealed record AccountingProductionReadinessRequestDto(
     public IReadOnlyList<LedgerBookRequiredScopeDto> RequiredLedgerBookScopes { get; init; } =
         RequiredLedgerBookScopes ?? [];
 
+    public IReadOnlyList<string> TenantAdministrationEvidenceLinks { get; init; } =
+        TenantAdministrationEvidenceLinks ?? [];
+
     public IReadOnlyList<string> MigrationEvidenceLinks { get; init; } =
         MigrationEvidenceLinks ?? [];
 
     public IReadOnlyList<AccountingMigrationRunArtifactDto> MigrationRunArtifacts { get; init; } =
         MigrationRunArtifacts ?? [];
+}
+
+public sealed record AccountingTenantAdministrationReadinessDto(
+    string? TenantId,
+    string? CompanyId,
+    bool TenantScopeConfigured,
+    bool AdminRoleProfileConfigured,
+    bool ScopedAccessPoliciesConfigured,
+    bool ReportingGroupsConfigured,
+    bool AccountingAdminSurfaceConfigured,
+    IReadOnlyList<string>? EvidenceReferences = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public int CompletedControlCount =>
+        new[]
+        {
+            HasTenantScope,
+            HasCompanyScope,
+            TenantScopeConfigured,
+            AdminRoleProfileConfigured,
+            ScopedAccessPoliciesConfigured,
+            ReportingGroupsConfigured,
+            AccountingAdminSurfaceConfigured
+        }.Count(static control => control);
+
+    public int RequiredControlCount => 7;
+
+    public bool HasTenantScope => !string.IsNullOrWhiteSpace(TenantId);
+
+    public bool HasCompanyScope => !string.IsNullOrWhiteSpace(CompanyId);
+
+    public bool HasRetainedEvidence => EvidenceReferences.Count > 0;
 }
 
 public sealed record AccountingProductionReadinessIssueDto(
@@ -211,7 +256,8 @@ public sealed record AccountingProductionReadinessDto(
     int ExternalGlProviderCount = 0,
     int CertifiedExternalGlMappingProfileCount = 0,
     bool ExternalGlLivePostingEnabled = false,
-    IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null)
+    IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null,
+    AccountingTenantAdministrationReadinessDto? TenantAdministration = null)
 {
     public IReadOnlyList<AccountingProductionReadinessComponentDto> Components { get; init; } =
         Components ?? [];

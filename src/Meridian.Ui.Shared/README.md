@@ -221,6 +221,10 @@ fail-closed payload for browser, WPF, and admin setup surfaces. Certification fl
 certified migration run artifacts remain blocked, and failed retained migration runs are surfaced as
 critical rollout issues. The route does not create ledger books, run migrations, import external GL
 data, post journals, certify exports, or close periods.
+The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
+session when the request omits it, and the service now blocks tenant administration readiness until
+tenant scope, company scope, admin roles, scoped accounting access, reporting groups, operator setup,
+and retained setup evidence are present.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers

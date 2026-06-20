@@ -35,7 +35,7 @@ public sealed class AccountingProductionReadinessService
         BuildCloseReportingComponent(components);
         var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         BuildMigrationRolloutComponent(effectiveRequest, components);
-        BuildTenantAdministrationComponent(components);
+        var tenantAdministration = BuildTenantAdministrationComponent(effectiveRequest, components);
 
         var issues = components
             .SelectMany(static component => component.Issues)
@@ -59,7 +59,8 @@ public sealed class AccountingProductionReadinessService
             externalGlCounts.ProviderCount,
             externalGlCounts.CertifiedMappingProfileCount,
             externalGlCounts.LivePostingEnabled,
-            migrationRunArtifacts);
+            migrationRunArtifacts,
+            tenantAdministration);
     }
 
     private async Task<IReadOnlyList<AccountingMigrationRunArtifactDto>> LoadMigrationRunArtifactsAsync(
@@ -338,19 +339,122 @@ public sealed class AccountingProductionReadinessService
         return new ExternalGlCounts(providers.Count, certifiedMappings, livePostingEnabled);
     }
 
-    private static void BuildTenantAdministrationComponent(ICollection<AccountingProductionReadinessComponentDto> components)
+    private static AccountingTenantAdministrationReadinessDto BuildTenantAdministrationComponent(
+        AccountingProductionReadinessRequestDto request,
+        ICollection<AccountingProductionReadinessComponentDto> components)
     {
-        var issues = new[]
+        var evidenceReferences = request.TenantAdministrationEvidenceLinks
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var readiness = new AccountingTenantAdministrationReadinessDto(
+            TrimOrNull(request.TenantId),
+            TrimOrNull(request.CompanyId),
+            request.TenantScopeConfigured,
+            request.AdminRoleProfileConfigured,
+            request.ScopedAccessPoliciesConfigured,
+            request.ReportingGroupsConfigured,
+            request.AccountingAdminSurfaceConfigured,
+            evidenceReferences);
+        var issues = new List<AccountingProductionReadinessIssueDto>();
+        if (!readiness.HasTenantScope)
         {
-            Issue("tenant-admin.operator-surface-required", AccountingProductionReadinessAreaDto.TenantAdministration, AccountingConfigurationValidationSeverityDto.Warning, "Production rollout still needs a full tenant/company/report-group setup operator surface over these shared controls.", "Bind browser and WPF admin setup screens to this shared readiness contract instead of local setup heuristics.")
-        };
+            issues.Add(Issue(
+                "tenant-admin.tenant-scope-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting production readiness is not scoped to a tenant.",
+                "Resolve tenant scope from the authenticated workstation session or provide the target tenant id before rollout certification.",
+                evidenceReferences));
+        }
+
+        if (!readiness.HasCompanyScope)
+        {
+            issues.Add(Issue(
+                "tenant-admin.company-scope-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting production readiness is not scoped to a company.",
+                "Bind the rollout to a company principal before enabling production accounting workflows.",
+                evidenceReferences));
+        }
+
+        if (!readiness.TenantScopeConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-scope-not-certified",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant-scoped accounting configuration has not been certified.",
+                "Certify tenant-scoped ledger, provider, evidence, and workstation storage setup before production rollout.",
+                evidenceReferences));
+        }
+
+        if (!readiness.AdminRoleProfileConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.role-profile-not-certified",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting administrator role profile setup has not been certified.",
+                "Configure and retain approval evidence for accounting administrator role profiles before production rollout.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ScopedAccessPoliciesConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.scoped-access-not-certified",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Scoped access policies for accounting workflows have not been certified.",
+                "Configure fund, entity, account, and report-package scoped access before production rollout.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ReportingGroupsConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.reporting-groups-not-certified",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Reporting delivery groups have not been certified for accounting outputs.",
+                "Retain reporting group and entitlement setup evidence before investor, board, tax, or compliance delivery.",
+                evidenceReferences));
+        }
+
+        if (!readiness.AccountingAdminSurfaceConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.operator-surface-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Production rollout still needs a full tenant/company/report-group setup operator surface over these shared controls.",
+                "Bind browser and WPF admin setup screens to this shared readiness contract instead of local setup heuristics.",
+                evidenceReferences));
+        }
+
+        if (!readiness.HasRetainedEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant administration setup has no retained evidence links.",
+                "Attach retained tenant, company, role-profile, scoped-access, and report-group setup evidence before production certification."));
+        }
+
         components.Add(Component(
             AccountingProductionReadinessAreaDto.TenantAdministration,
             "Tenant administration",
-            AccountingProductionReadinessStatusDto.ReviewRequired,
-            70,
-            "Shared setup-readiness contract is available; full admin UX remains a rollout item.",
-            issues));
+            ResolveIssueStatus(issues),
+            ScoreFromIssues(issues, hasPositiveEvidence: readiness.HasRetainedEvidence),
+            $"{readiness.CompletedControlCount}/{readiness.RequiredControlCount} tenant administration control(s) complete; {evidenceReferences.Length} retained evidence link(s).",
+            issues,
+            route: UiApiRoutes.AccountingSystemProductionReadiness,
+            evidenceReferences: evidenceReferences));
+        return readiness;
     }
 
     private static void BuildMigrationRolloutComponent(
@@ -621,6 +725,9 @@ public sealed class AccountingProductionReadinessService
 
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? DefaultFundProfileId : value.Trim();
+
+    private static string? TrimOrNull(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ExternalGlCounts(
         int ProviderCount,

@@ -202,6 +202,9 @@ close/reporting evidence migration with shared blocker codes and retained
 `AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can render the
 same fail-closed readiness state instead of recomputing production gaps or treating certification
 booleans as executable migration proof.
+`AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
+reporting-group, operator-surface, and retained-evidence readiness so production accounting setup is
+blocked by shared contract state rather than workstation-local assumptions.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

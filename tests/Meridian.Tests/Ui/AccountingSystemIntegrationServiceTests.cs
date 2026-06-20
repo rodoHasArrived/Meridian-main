@@ -96,9 +96,19 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.Issues.Should().Contain(issue =>
             issue.Code == "external-gl.live-posting-disabled" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.tenant-scope-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.TenantAdministration.Should().NotBeNull();
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(0);
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.RulesStudio &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Summary.Contains("tenant administration control", StringComparison.OrdinalIgnoreCase));
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
@@ -107,6 +117,52 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.ExternalGlProviderCount.Should().BeGreaterThan(0);
         readiness.CertifiedExternalGlMappingProfileCount.Should().Be(0);
         readiness.ExternalGlLivePostingEnabled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ProductionReadinessService_RequiresTenantAdministrationControlsAndEvidence()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var blocked = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(FundProfileId: "default-fund"));
+
+        blocked.TenantAdministration.Should().NotBeNull();
+        blocked.TenantAdministration!.HasTenantScope.Should().BeFalse();
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+
+        var readyControls = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                TenantScopeConfigured: true,
+                AdminRoleProfileConfigured: true,
+                ScopedAccessPoliciesConfigured: true,
+                ReportingGroupsConfigured: true,
+                AccountingAdminSurfaceConfigured: true,
+                TenantAdministrationEvidenceLinks:
+                [
+                    "evidence://tenant-admin/tenant-alpha/setup-certified",
+                    "approval:tenant-admin:tenant-alpha"
+                ]));
+
+        readyControls.TenantAdministration.Should().NotBeNull();
+        readyControls.TenantAdministration!.TenantId.Should().Be("tenant-alpha");
+        readyControls.TenantAdministration.CompanyId.Should().Be("company-alpha");
+        readyControls.TenantAdministration.CompletedControlCount.Should().Be(7);
+        readyControls.TenantAdministration.HasRetainedEvidence.Should().BeTrue();
+        readyControls.Issues.Should().NotContain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        readyControls.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            component.Status == AccountingProductionReadinessStatusDto.Ready &&
+            component.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/setup-certified"));
     }
 
     [Fact]
@@ -1644,6 +1700,10 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.Components.Should().Contain(component => component.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
         readiness.Components.Should().Contain(component => component.Area == AccountingProductionReadinessAreaDto.ExternalGl);
         readiness.Components.Should().Contain(component => component.Area == AccountingProductionReadinessAreaDto.MigrationRollout);
+        readiness.TenantAdministration.Should().NotBeNull();
+        readiness.TenantAdministration!.TenantId.Should().Be("company-alpha");
+        readiness.TenantAdministration.CompanyId.Should().Be("company-alpha");
+        readiness.Issues.Should().NotContain(issue => issue.Code == "tenant-admin.tenant-scope-missing");
         readiness.Issues.Should().Contain(issue => issue.Code == "migration.historical-journal-backfill-not-certified");
         readiness.Issues.Should().Contain(issue => issue.Code == "external-gl.live-posting-disabled");
     }
@@ -1910,6 +1970,9 @@ public sealed class AccountingSystemIntegrationServiceTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "controller.admin";
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-alpha";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "company-alpha";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             await next();
         });
