@@ -19,6 +19,7 @@ using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -44,6 +45,55 @@ public sealed class AccountingSystemIntegrationServiceTests
         detail.Summary.Warnings.Should().Contain(warning => warning.Contains("source of all ledger truth", StringComparison.OrdinalIgnoreCase));
         detail.Summary.Warnings.Should().Contain(warning => warning.Contains("posting/export is disabled", StringComparison.OrdinalIgnoreCase));
         detail.JournalEntries.Should().OnlyContain(entry => entry.TotalDebits == entry.TotalCredits);
+    }
+
+    [Fact]
+    public async Task ProductionReadinessService_ReturnsConsolidatedFailClosedAccountingPosture()
+    {
+        var services = new ServiceCollection();
+        var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var missingGaapBookNodeId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        services.AddSingleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>();
+        services.AddSingleton<ILedgerJournalStore>(_ => CreateMatchedQuickBooksFixtureLedgerStore(ledgerBookId));
+        services.AddSingleton<ILedgerBookService>(sp => new PostgresLedgerBookService(sp.GetRequiredService<ILedgerJournalStore>()));
+        services.AddSingleton<AccountingSystemIntegrationService>();
+        services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
+        services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                RequiredLedgerBookScopes:
+                [
+                    new LedgerBookRequiredScopeDto(
+                        missingGaapBookNodeId,
+                        FundStructureNodeKindDto.Fund,
+                        AccountingBasisKindDto.Gaap,
+                        "Default fund GAAP")
+                ]));
+
+        readiness.Status.Should().Be(AccountingProductionReadinessStatusDto.Blocked);
+        readiness.LedgerBookRollout.Should().NotBeNull();
+        readiness.LedgerBookRollout!.Issues.Should().Contain(issue => issue.Code == "LedgerBookRequiredScopeMissing");
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.LedgerBookRequiredScopeMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "external-gl.certified-mapping-missing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "external-gl.live-posting-disabled" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.RulesStudio &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
+        readiness.ExternalGlProviderCount.Should().BeGreaterThan(0);
+        readiness.CertifiedExternalGlMappingProfileCount.Should().Be(0);
+        readiness.ExternalGlLivePostingEnabled.Should().BeFalse();
     }
 
     [Fact]
@@ -1454,6 +1504,33 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemProductionReadinessEndpoint_ReturnsSharedControlPlanePosture()
+    {
+        await using var app = await CreateAppAsync(UserPermission.ManageFundStructure);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionReadiness,
+            JsonContent(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                RequiredLedgerBookScopes:
+                [
+                    new LedgerBookRequiredScopeDto(
+                        Guid.Parse("99999999-2222-3333-4444-555555555555"),
+                        FundStructureNodeKindDto.Fund,
+                        AccountingBasisKindDto.Gaap,
+                        "Default fund GAAP")
+                ])));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var readiness = await ReadAsync<AccountingProductionReadinessDto>(response);
+        readiness.Status.Should().Be(AccountingProductionReadinessStatusDto.Blocked);
+        readiness.Components.Should().Contain(component => component.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+        readiness.Components.Should().Contain(component => component.Area == AccountingProductionReadinessAreaDto.ExternalGl);
+        readiness.Issues.Should().Contain(issue => issue.Code == "external-gl.live-posting-disabled");
+    }
+
+    [Fact]
     public async Task AccountingSystemEndpoints_WithoutAccountingAccess_ReturnForbidden()
     {
         await using var app = await CreateAppAsync(UserPermission.ViewMarketData);
@@ -1476,9 +1553,9 @@ public sealed class AccountingSystemIntegrationServiceTests
             new NetSuiteFixtureAccountingProvider()
         }.Concat(additionalProviders), ledgerJournalStore);
 
-    private static ILedgerJournalStore CreateMatchedQuickBooksFixtureLedgerStore()
+    private static ILedgerJournalStore CreateMatchedQuickBooksFixtureLedgerStore(Guid? ledgerBookIdOverride = null)
     {
-        var ledgerBookId = Guid.NewGuid();
+        var ledgerBookId = ledgerBookIdOverride ?? Guid.NewGuid();
         var periodId = Guid.NewGuid();
         var timestamp = new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero);
         var journalEntryId = Guid.NewGuid();
@@ -1645,7 +1722,12 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>();
         builder.Services.AddSingleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>();
         builder.Services.AddSingleton<ILedgerJournalStore>(_ => CreateMatchedQuickBooksFixtureLedgerStore());
+        builder.Services.AddSingleton<ILedgerBookService>(sp => new PostgresLedgerBookService(sp.GetRequiredService<ILedgerJournalStore>()));
         builder.Services.AddSingleton<AccountingSystemIntegrationService>();
+        builder.Services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
+        builder.Services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        builder.Services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        builder.Services.AddSingleton<AccountingProductionReadinessService>();
         builder.Services.AddRateLimiter(options =>
         {
             options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ =>

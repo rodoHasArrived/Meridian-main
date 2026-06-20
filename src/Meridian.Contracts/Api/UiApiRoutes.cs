@@ -109,6 +109,7 @@ public static class UiApiRoutes
 
     // Accounting system / external GL provider endpoints
     public const string AccountingSystemProviders = "/api/accounting-system/providers";
+    public const string AccountingSystemProductionReadiness = "/api/accounting-system/production-readiness";
     public const string AccountingSystemImportPreview = "/api/accounting-system/import/preview";
     public const string AccountingSystemImportLatest = "/api/accounting-system/import/latest";
     public const string AccountingSystemReconciliationLatest = "/api/accounting-system/reconciliation/latest";

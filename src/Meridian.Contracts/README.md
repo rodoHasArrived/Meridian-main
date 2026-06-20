@@ -187,6 +187,11 @@ recomputing approval or validation state locally.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.
+Accounting-system contracts also publish `AccountingProductionReadinessDto`, a read-only control-plane
+assessment for production rollout. The payload aggregates ledger-book rollout, Rules Studio,
+posting-rule execution, journal lifecycle, dimensional accounting, external GL, close/reporting,
+and tenant-administration posture with shared blocker codes so browser, WPF, and admin setup
+surfaces can render the same fail-closed readiness state instead of recomputing production gaps.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

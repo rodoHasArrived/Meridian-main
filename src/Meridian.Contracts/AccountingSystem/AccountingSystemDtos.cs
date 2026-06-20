@@ -65,6 +65,93 @@ public sealed record AccountingSystemConnectionMetadataDto(
     string StatusDetail,
     IReadOnlyList<string> MissingFields);
 
+[JsonConverter(typeof(JsonStringEnumConverter<AccountingProductionReadinessStatusDto>))]
+public enum AccountingProductionReadinessStatusDto
+{
+    Ready = 0,
+    ReviewRequired = 1,
+    Blocked = 2,
+    Unavailable = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<AccountingProductionReadinessAreaDto>))]
+public enum AccountingProductionReadinessAreaDto
+{
+    LedgerBooks = 0,
+    RulesStudio = 1,
+    PostingRules = 2,
+    JournalLifecycle = 3,
+    DimensionalAccounting = 4,
+    ExternalGl = 5,
+    CloseReporting = 6,
+    TenantAdministration = 7
+}
+
+public sealed record AccountingProductionReadinessRequestDto(
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    AccountingBasisKindDto? AccountingBasis = null,
+    string? ProviderId = null,
+    IReadOnlyList<LedgerBookRequiredScopeDto>? RequiredLedgerBookScopes = null)
+{
+    public IReadOnlyList<LedgerBookRequiredScopeDto> RequiredLedgerBookScopes { get; init; } =
+        RequiredLedgerBookScopes ?? [];
+}
+
+public sealed record AccountingProductionReadinessIssueDto(
+    string Code,
+    AccountingProductionReadinessAreaDto Area,
+    AccountingConfigurationValidationSeverityDto Severity,
+    string Message,
+    string SuggestedAction,
+    IReadOnlyList<string>? EvidenceReferences = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+}
+
+public sealed record AccountingProductionReadinessComponentDto(
+    AccountingProductionReadinessAreaDto Area,
+    string Label,
+    AccountingProductionReadinessStatusDto Status,
+    int Score,
+    string Summary,
+    IReadOnlyList<AccountingProductionReadinessIssueDto>? Issues = null,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? Route = null)
+{
+    public IReadOnlyList<AccountingProductionReadinessIssueDto> Issues { get; init; } =
+        Issues ?? [];
+
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+}
+
+public sealed record AccountingProductionReadinessDto(
+    DateTimeOffset GeneratedAtUtc,
+    string FundProfileId,
+    Guid? LedgerBookId,
+    AccountingProductionReadinessStatusDto Status,
+    int Score,
+    IReadOnlyList<AccountingProductionReadinessComponentDto> Components,
+    IReadOnlyList<AccountingProductionReadinessIssueDto> Issues,
+    LedgerBookRolloutAssessmentDto? LedgerBookRollout = null,
+    AccountingRulesStudioSummaryDto? RulesStudioSummary = null,
+    int ExternalGlProviderCount = 0,
+    int CertifiedExternalGlMappingProfileCount = 0,
+    bool ExternalGlLivePostingEnabled = false)
+{
+    public IReadOnlyList<AccountingProductionReadinessComponentDto> Components { get; init; } =
+        Components ?? [];
+
+    public IReadOnlyList<AccountingProductionReadinessIssueDto> Issues { get; init; } =
+        Issues ?? [];
+
+    public int CriticalIssueCount => Issues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+
+    public int WarningIssueCount => Issues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
+}
+
 public sealed record AccountingSystemOAuthStartRequestDto(
     string? ClientId = null,
     string? ClientSecret = null,

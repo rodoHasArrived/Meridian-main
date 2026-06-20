@@ -57,6 +57,11 @@ the requirement end to end.
   ledger-book-scoped Accounting/Reconciliation workstation payloads filter break queues,
   calibration summaries, open-break metrics, and control-center state to explicit book cases while
   excluding unscoped legacy queue items.
+- [x] Shared accounting production-readiness assessment now aggregates ledger-book rollout,
+  Rules Studio, posting-rule execution, dimensional coverage, external-GL mapping/posting posture,
+  journal lifecycle service registration, close/report service registration, and tenant-admin
+  rollout blockers into one read-only fail-closed contract and endpoint for browser, WPF, and admin
+  setup surfaces.
 
 ## Still To Complete
 
@@ -90,4 +95,6 @@ the requirement end to end.
   export evidence across all relevant ledger-book and dimension scopes.
 - [ ] Add broader operational hardening: admin UX, tenant-level setup workflows, authorization and
   report-group scoping, audit review tooling, bulk import/export safeguards, performance tests, and
-  disaster-recovery validation.
+  disaster-recovery validation. The shared production-readiness endpoint now exposes the blocker
+  contract for these lanes, but full browser/WPF admin setup workflows and operating runbooks are
+  still open.

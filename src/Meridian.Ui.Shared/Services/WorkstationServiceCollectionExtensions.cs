@@ -169,6 +169,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksOnlineAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
+        services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
             new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp)));

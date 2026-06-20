@@ -4,6 +4,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -29,6 +30,23 @@ public static class AccountingSystemEndpoints
         })
         .WithName("ListAccountingSystemProviders")
         .Produces<IReadOnlyList<AccountingSystemProviderDto>>(StatusCodes.Status200OK);
+
+        group.MapPost(UiApiRoutes.AccountingSystemProductionReadiness, async (
+            AccountingProductionReadinessRequestDto request,
+            HttpContext context,
+            AccountingProductionReadinessService service) =>
+        {
+            if (!HasAccountingAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var result = await service.AssessAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("AssessAccountingProductionReadiness")
+        .Produces<AccountingProductionReadinessDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapPost(UiApiRoutes.AccountingSystemImportPreview, async (
             AccountingSystemImportRequestDto request,
