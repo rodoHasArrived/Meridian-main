@@ -1,6 +1,8 @@
 #if WINDOWS
 using System.Windows.Controls;
 using FluentAssertions;
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -135,6 +137,52 @@ public sealed class StrategyRunLedgerViewModelTests
     }
 
     [Fact]
+    public void BuildTrialBalanceInspector_ProjectsCanonicalLedgerDimensions()
+    {
+        var line = new LedgerTrialBalanceLine(
+            AccountName: "Receivable",
+            AccountType: "Asset",
+            Symbol: null,
+            FinancialAccountId: "acct-receivable",
+            Balance: 1_250m,
+            EntryCount: 3,
+            AccountScopeDisplayName: "Legacy account scope",
+            Dimensions: new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                EntityId: "entity-master",
+                SleeveId: "sleeve-credit",
+                StrategyId: "strategy-income",
+                InvestorId: "investor-lp-1",
+                CapitalAccountId: "capital-lp-1",
+                InstrumentId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                TaxLotId: "taxlot-2026-01",
+                CostCenterId: "cost-center-ops",
+                CounterpartyId: "counterparty-bank",
+                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["Department"] = "InvestmentOps",
+                    ["Class"] = "PrivateCredit"
+                },
+                PortfolioId: "portfolio-credit",
+                AccountId: "acct-receivable"));
+
+        var inspector = StrategyRunLedgerViewModel.BuildTrialBalanceInspector(line);
+
+        inspector.Facts.Should().Contain(f => f.Label == "Fund" && f.Value == "fund-alpha");
+        inspector.Facts.Should().Contain(f => f.Label == "Entity" && f.Value == "entity-master");
+        inspector.Facts.Should().Contain(f => f.Label == "Cost center" && f.Value == "cost-center-ops");
+        inspector.Facts.Should().Contain(f =>
+            f.Label == "External GL" &&
+            f.Value.Contains("Class: PrivateCredit", StringComparison.Ordinal) &&
+            f.Value.Contains("Department: InvestmentOps", StringComparison.Ordinal));
+        inspector.Facts.Should().Contain(f =>
+            f.Label == "Scope" &&
+            f.Value.Contains("fund-alpha", StringComparison.Ordinal) &&
+            f.Value.Contains("acct-receivable", StringComparison.Ordinal));
+        inspector.Facts.Single(f => f.Label == "Scope").Value.Should().NotContain("Legacy account scope");
+    }
+
+    [Fact]
     public void RunLedgerPageSource_UsesCompactDenseTablesAndSelectionInspector()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunLedgerPage.xaml"));
@@ -153,6 +201,8 @@ public sealed class StrategyRunLedgerViewModelTests
         viewModel.Should().Contain("public WorkstationTableModel<LedgerTrialBalanceLine> TrialBalanceTable");
         viewModel.Should().Contain("public WorkstationTableModel<LedgerJournalLine> JournalTable");
         viewModel.Should().Contain("public InspectorPanelModel SelectedTrialBalanceInspector");
+        viewModel.Should().Contain("new(\"Fund\", \"Dimensions.FundId\"");
+        viewModel.Should().Contain("BuildExternalGlDimensionText");
     }
 }
 #endif

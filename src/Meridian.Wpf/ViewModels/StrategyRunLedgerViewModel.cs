@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -169,6 +170,10 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
                 new("Security", "Security.DisplayName", 170),
                 new("Asset Class", "Security.AssetClass", 105),
                 new("Identifier", "Security.PrimaryIdentifier", 120),
+                new("Fund", "Dimensions.FundId", 120),
+                new("Entity", "Dimensions.EntityId", 120),
+                new("Strategy", "Dimensions.StrategyId", 130),
+                new("Cost Center", "Dimensions.CostCenterId", 120),
                 new("Financial Account", nameof(LedgerTrialBalanceLine.FinancialAccountId), 150),
                 new("Balance", nameof(LedgerTrialBalanceLine.Balance), 115, "{0:C2}"),
                 new("Entries", nameof(LedgerTrialBalanceLine.EntryCount), 75, "{0:N0}")
@@ -181,6 +186,9 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
             [
                 new("Timestamp", nameof(LedgerJournalLine.Timestamp), 150, "{0:g}"),
                 new("Description", nameof(LedgerJournalLine.Description), 320),
+                new("Fund", "Dimensions.FundId", 120),
+                new("Entity", "Dimensions.EntityId", 120),
+                new("Strategy", "Dimensions.StrategyId", 130),
                 new("Debits", nameof(LedgerJournalLine.TotalDebits), 115, "{0:C2}"),
                 new("Credits", nameof(LedgerJournalLine.TotalCredits), 115, "{0:C2}"),
                 new("Lines", nameof(LedgerJournalLine.LineCount), 70, "{0:N0}")
@@ -331,6 +339,17 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
                 new("Financial account", string.IsNullOrWhiteSpace(selected.FinancialAccountId) ? "-" : selected.FinancialAccountId),
                 new("Asset class", security?.AssetClass ?? "-", security?.SubType ?? string.Empty),
                 new("Identifier", security?.PrimaryIdentifier ?? "-", security?.MatchedIdentifierKind ?? string.Empty),
+                new("Fund", DisplayDimension(selected.Dimensions?.FundId)),
+                new("Entity", DisplayDimension(selected.Dimensions?.EntityId)),
+                new("Sleeve", DisplayDimension(selected.Dimensions?.SleeveId)),
+                new("Strategy", DisplayDimension(selected.Dimensions?.StrategyId)),
+                new("Investor", DisplayDimension(selected.Dimensions?.InvestorId)),
+                new("Capital account", DisplayDimension(selected.Dimensions?.CapitalAccountId)),
+                new("Instrument", selected.Dimensions?.InstrumentId?.ToString("D") ?? "-"),
+                new("Tax lot", DisplayDimension(selected.Dimensions?.TaxLotId)),
+                new("Cost center", DisplayDimension(selected.Dimensions?.CostCenterId)),
+                new("Counterparty", DisplayDimension(selected.Dimensions?.CounterpartyId)),
+                new("External GL", BuildExternalGlDimensionText(selected.Dimensions)),
                 new("Scope", BuildScopeText(selected))
             ]
         };
@@ -346,6 +365,12 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
 
     private static string BuildScopeText(LedgerTrialBalanceLine selected)
     {
+        var dimensionScope = BuildDimensionScopeText(selected.Dimensions);
+        if (!string.IsNullOrWhiteSpace(dimensionScope))
+        {
+            return dimensionScope;
+        }
+
         var scopes = new[]
             {
                 selected.AccountScopeDisplayName,
@@ -360,6 +385,55 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
             ? "Run ledger scope"
             : string.Join(" / ", scopes);
     }
+
+    private static string BuildDimensionScopeText(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return string.Empty;
+        }
+
+        var scopes = new[]
+            {
+                dimensions.FundId,
+                dimensions.EntityId,
+                dimensions.SleeveId,
+                dimensions.StrategyId,
+                dimensions.InvestorId,
+                dimensions.CapitalAccountId,
+                dimensions.InstrumentId?.ToString("D"),
+                dimensions.TaxLotId,
+                dimensions.CostCenterId,
+                dimensions.CounterpartyId,
+                dimensions.PortfolioId,
+                dimensions.AccountId
+            }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .ToArray();
+
+        return scopes.Length == 0
+            ? string.Empty
+            : string.Join(" / ", scopes);
+    }
+
+    private static string BuildExternalGlDimensionText(LedgerDimensionSetDto? dimensions)
+    {
+        var externalDimensions = dimensions?.ExternalGlDimensions;
+        if (externalDimensions is null || externalDimensions.Count == 0)
+        {
+            return "-";
+        }
+
+        return string.Join(
+            ", ",
+            externalDimensions
+                .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => $"{pair.Key.Trim()}: {pair.Value.Trim()}"));
+    }
+
+    private static string DisplayDimension(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
 
     private void OpenRunDetail()
     {

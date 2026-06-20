@@ -382,7 +382,11 @@ retained detail loads, run evidence is projected through the shared inspector, a
 parameters render through the shared dense table with selected-parameter inspection. Run Ledger now
 uses the same compact drill-in treatment for Accounting review: retained trial-balance and journal
 rows render through dense shared tables, the selected trial-balance line owns the inspector rail, and
-Security Master actions fail closed unless the selected line carries a security or symbol. Run Risk
+Security Master actions fail closed unless the selected line carries a security or symbol. The Run
+Ledger dense tables and selected-line inspector now surface the shared `LedgerDimensionSetDto`
+scope, including fund, entity, sleeve, strategy, investor, capital account, instrument, tax lot,
+cost center, counterparty, account/portfolio scope, and external GL dimension values, with legacy
+scope labels used only when canonical dimensions are absent. Run Risk
 now follows that focused attribution pattern: the oversized hero is replaced by compact run actions,
 retained symbol attribution uses the shared dense table, and the selected symbol owns the inspector
 rail plus Security Master lookup readiness.

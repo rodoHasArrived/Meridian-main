@@ -66,6 +66,11 @@ the requirement end to end.
   capital account, instrument, tax lot, cost center, counterparty, and external GL dimension keys,
   so workstreams can request server-filtered ledger evidence instead of relying only on
   client-side display/search.
+- [x] WPF Run Ledger dense tables and selected-line inspector now project canonical
+  `LedgerDimensionSetDto` scope from shared trial-balance and journal rows, including fund, entity,
+  sleeve, strategy, investor, capital account, instrument, tax lot, cost center, counterparty,
+  account/portfolio scope, and external GL dimensions, with legacy scope labels used only when
+  canonical dimensions are absent.
 - [x] Cross-period ledger trial-balance and P&L report endpoints now fail closed when retained
   closed-period summary metadata belongs to a different ledger book than the selected period,
   preventing stale summary drift from leaking totals across parallel books.
@@ -105,8 +110,9 @@ the requirement end to end.
   GL dimensions across all journal lines, report filters, close checks, and export mappings; close
   trial-balance projection, browser ledger inquiry, and browser retained-journal evidence rows now
   have dimension bucketing/filter/display proof, and browser run-ledger helpers can now request
-  server-scoped dimension filters for trial-balance and journal reads, but not every durable query
-  and report surface is covered.
+  server-scoped dimension filters for trial-balance and journal reads. WPF Run Ledger also projects
+  canonical dimensions from retained run ledger rows, but not every durable query and report surface
+  is covered.
 - [ ] Finish JE lifecycle hardening across every mutation path: version guards, actor/segregation
   checks, evidence requirements, period locks, immutable posted entries, reversal/rebook correction
   paths, lifecycle idempotency, and transition audit coverage. Manual journal lifecycle commands now
