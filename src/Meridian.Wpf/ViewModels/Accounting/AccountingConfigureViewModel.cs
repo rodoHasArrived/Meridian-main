@@ -153,6 +153,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly IAccountingPostingCandidateService? _accountingPostingCandidateService;
     private readonly IManualJournalEntryLifecycleService? _manualJournalEntryLifecycleService;
     private readonly ILedgerBookService? _ledgerBookService;
+    private readonly AccountingProductionReadinessService? _accountingProductionReadinessService;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
@@ -179,6 +180,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _postingCandidateDetailText = "Build a governed draft candidate from the selected posting rule without posting to the ledger.";
     private string _manualJournalLifecycleStatusText = "Manual journal lifecycle actions have not run.";
     private string _ledgerBookSetupStatusText = "Ledger-book setup action has not run.";
+    private string _productionReadinessStatusText = "Production readiness has not loaded.";
+    private string _productionReadinessDetailText = "Shared accounting rollout posture has not been assessed.";
+    private string _productionReadinessScoreText = "No score";
+    private string _productionReadinessLedgerBookText = "Ledger-book rollout readiness has not loaded.";
+    private string _productionReadinessExternalGlText = "External GL readiness has not loaded.";
     private string _selectedReconciliationView = "Open breaks";
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
     private string _draftMemo = "Manual accounting adjustment";
@@ -202,7 +208,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ICapitalAccountWorkbenchService? capitalAccountWorkbenchService = null,
         IAccountingPostingCandidateService? accountingPostingCandidateService = null,
         IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null,
-        ILedgerBookService? ledgerBookService = null)
+        ILedgerBookService? ledgerBookService = null,
+        AccountingProductionReadinessService? accountingProductionReadinessService = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -217,6 +224,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         _manualJournalEntryLifecycleService = manualJournalEntryLifecycleService
             ?? manualJournalEntryWorkbenchService as IManualJournalEntryLifecycleService;
         _ledgerBookService = ledgerBookService;
+        _accountingProductionReadinessService = accountingProductionReadinessService;
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
         SeedBaselineConfigurationCommand = new AsyncRelayCommand(() => SeedBaselineConfigurationAsync());
@@ -298,6 +306,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> PolicyRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> PostingCandidateRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLifecycleRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessComponentRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessIssueRows { get; } = [];
     public ObservableCollection<string> ReconciliationViewOptions { get; } =
     [
         "Open breaks",
@@ -440,6 +450,36 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         private set => SetProperty(ref _ledgerBookSetupStatusText, value);
     }
 
+    public string ProductionReadinessStatusText
+    {
+        get => _productionReadinessStatusText;
+        private set => SetProperty(ref _productionReadinessStatusText, value);
+    }
+
+    public string ProductionReadinessDetailText
+    {
+        get => _productionReadinessDetailText;
+        private set => SetProperty(ref _productionReadinessDetailText, value);
+    }
+
+    public string ProductionReadinessScoreText
+    {
+        get => _productionReadinessScoreText;
+        private set => SetProperty(ref _productionReadinessScoreText, value);
+    }
+
+    public string ProductionReadinessLedgerBookText
+    {
+        get => _productionReadinessLedgerBookText;
+        private set => SetProperty(ref _productionReadinessLedgerBookText, value);
+    }
+
+    public string ProductionReadinessExternalGlText
+    {
+        get => _productionReadinessExternalGlText;
+        private set => SetProperty(ref _productionReadinessExternalGlText, value);
+    }
+
     public string SelectedReconciliationView
     {
         get => _selectedReconciliationView;
@@ -578,6 +618,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
             await LoadOperationsPostureAsync(ct).ConfigureAwait(false);
             await RefreshExternalGlAsync(ct).ConfigureAwait(false);
+            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
             StatusText = "Accounting configuration, journal drafts, close evidence, external GL evidence, reconciliation triage, and policies are loaded from shared services.";
         }
         catch (Exception ex)
@@ -703,6 +744,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             _configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
             ApplyConfiguration(_configuration);
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
+            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
             StatusText = "Baseline chart, template, and posting policy were saved with audit evidence.";
         }
         catch (Exception ex)
@@ -730,6 +772,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     EvidenceLinks: ["accounting-config://desktop-activation"]),
                 ct).ConfigureAwait(false);
             ApplyConfiguration(_configuration);
+            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
             StatusText = "Accounting configuration is active.";
         }
         catch (Exception ex)
@@ -786,6 +829,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
             await LoadOperationsPostureAsync(ct).ConfigureAwait(false);
             await RefreshExternalGlAsync(ct).ConfigureAwait(false);
+            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
 
             LedgerBookSetupStatusText = $"Created ledger book {created.DisplayName} ({created.LedgerBookId:D}) from shared setup candidate.";
             StatusText = LedgerBookSetupStatusText;
@@ -1290,6 +1334,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         PostingCandidateDetailText = "Posting candidates require a fund-linked configuration and retained evidence.";
         ManualJournalLifecycleStatusText = "Locked until a fund context is selected.";
         LedgerBookSetupStatusText = "Locked until a fund context is selected.";
+        ProductionReadinessStatusText = "Locked";
+        ProductionReadinessDetailText = "Select a fund-linked context before assessing accounting production readiness.";
+        ProductionReadinessScoreText = "No score";
+        ProductionReadinessLedgerBookText = "Locked until a fund context is selected.";
+        ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
         BatchReconciliationActionText = "No reconciliation rows are loaded.";
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
@@ -1403,6 +1452,122 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var from = effectiveFrom?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "open";
         var to = effectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "open";
         return $"{from} to {to}";
+    }
+
+    private async Task RefreshProductionReadinessAsync(CancellationToken ct)
+    {
+        if (_activeFundProfile is null)
+        {
+            ProductionReadinessStatusText = "Locked";
+            ProductionReadinessDetailText = "Select a fund-linked context before assessing accounting production readiness.";
+            ProductionReadinessScoreText = "No score";
+            ProductionReadinessLedgerBookText = "Locked until a fund context is selected.";
+            ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
+            ProductionReadinessComponentRows.Clear();
+            ProductionReadinessIssueRows.Clear();
+            return;
+        }
+
+        if (_accountingProductionReadinessService is null)
+        {
+            ProductionReadinessStatusText = "Unavailable";
+            ProductionReadinessDetailText = "Accounting production-readiness service is not registered for this desktop session.";
+            ProductionReadinessScoreText = "No score";
+            ProductionReadinessLedgerBookText = "Ledger-book readiness cannot be assessed.";
+            ProductionReadinessExternalGlText = "External GL readiness cannot be assessed.";
+            ProductionReadinessComponentRows.Clear();
+            ProductionReadinessIssueRows.ReplaceWith(
+            [
+                new AccountingWorkbenchRow(
+                    "production-readiness.service-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical.ToString(),
+                    ProductionReadinessDetailText,
+                    "Register AccountingProductionReadinessService in the Accounting feature module.")
+            ]);
+            return;
+        }
+
+        try
+        {
+            var request = BuildProductionReadinessRequest();
+            var readiness = await _accountingProductionReadinessService.AssessAsync(request, ct).ConfigureAwait(false);
+            ApplyProductionReadiness(readiness);
+        }
+        catch (Exception ex)
+        {
+            ProductionReadinessStatusText = "Unavailable";
+            ProductionReadinessDetailText = $"Accounting production readiness could not be assessed: {ex.Message}";
+            ProductionReadinessScoreText = "No score";
+            ProductionReadinessLedgerBookText = "Ledger-book readiness could not be assessed.";
+            ProductionReadinessExternalGlText = "External GL readiness could not be assessed.";
+            ProductionReadinessComponentRows.Clear();
+            ProductionReadinessIssueRows.ReplaceWith(
+            [
+                new AccountingWorkbenchRow(
+                    "production-readiness.assessment-failed",
+                    AccountingConfigurationValidationSeverityDto.Critical.ToString(),
+                    ProductionReadinessDetailText,
+                    "Resolve shared accounting service registration or configuration errors before rollout.")
+            ]);
+        }
+    }
+
+    private AccountingProductionReadinessRequestDto BuildProductionReadinessRequest()
+    {
+        var workspace = _configuration;
+        var setupCandidate = workspace?.LedgerBookSetupCandidate;
+        var requiredScopes = setupCandidate is null
+            ? Array.Empty<LedgerBookRequiredScopeDto>()
+            :
+            [
+                new LedgerBookRequiredScopeDto(
+                    setupCandidate.FundStructureNodeId,
+                    setupCandidate.FundStructureNodeKind,
+                    setupCandidate.AccountingBasis,
+                    setupCandidate.DisplayName)
+            ];
+
+        return new AccountingProductionReadinessRequestDto(
+            _activeFundProfile?.FundProfileId,
+            workspace?.LedgerBookId,
+            setupCandidate?.AccountingBasis ?? (workspace is null ? null : ResolveActiveLedgerBook(workspace)?.AccountingBasis),
+            ProviderId: null,
+            RequiredLedgerBookScopes: requiredScopes);
+    }
+
+    private void ApplyProductionReadiness(AccountingProductionReadinessDto readiness)
+    {
+        ProductionReadinessStatusText = $"{readiness.Status} | {readiness.Score}/100";
+        ProductionReadinessScoreText = $"{readiness.Score}/100";
+        ProductionReadinessDetailText =
+            $"{readiness.Components.Count} component(s), {readiness.CriticalIssueCount} critical issue(s), {readiness.WarningIssueCount} warning issue(s); generated {readiness.GeneratedAtUtc.ToLocalTime():g}.";
+        ProductionReadinessLedgerBookText = readiness.LedgerBookRollout is null
+            ? "Ledger-book rollout assessment is unavailable."
+            : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s).";
+        ProductionReadinessExternalGlText =
+            $"{readiness.ExternalGlProviderCount} provider(s), {readiness.CertifiedExternalGlMappingProfileCount} certified mapping profile(s); live posting {(readiness.ExternalGlLivePostingEnabled ? "available" : "disabled")}.";
+
+        ProductionReadinessComponentRows.ReplaceWith(readiness.Components.Select(component =>
+            new AccountingWorkbenchRow(
+                component.Label,
+                $"{component.Status} | {component.Score}/100",
+                component.Summary,
+                component.EvidenceReferences.Count > 0
+                    ? string.Join("; ", component.EvidenceReferences)
+                    : component.Route ?? string.Empty,
+                component.Area.ToString())));
+
+        ProductionReadinessIssueRows.ReplaceWith(readiness.Issues
+            .Where(static issue => issue.Severity is AccountingConfigurationValidationSeverityDto.Critical or AccountingConfigurationValidationSeverityDto.Warning)
+            .Take(12)
+            .Select(issue => new AccountingWorkbenchRow(
+                issue.Code,
+                issue.Severity.ToString(),
+                issue.Message,
+                issue.SuggestedAction,
+                issue.EvidenceReferences.Count > 0
+                    ? string.Join("; ", issue.EvidenceReferences)
+                    : issue.Area.ToString())));
     }
 
     private PostingRuleDto? ResolvePostingCandidateRule(AccountingConfigurationWorkspaceDto workspace)
@@ -2330,6 +2495,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ManualJournalLedgerImpactRows.Clear();
         ManualJournalReportOutputRows.Clear();
         ManualJournalLifecycleRows.Clear();
+        ProductionReadinessComponentRows.Clear();
+        ProductionReadinessIssueRows.Clear();
         ClearCapitalAccountWorkbenchRows();
         EvidenceRows.Clear();
         ReconciliationRows.Clear();

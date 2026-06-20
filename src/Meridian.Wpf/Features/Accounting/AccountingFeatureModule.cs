@@ -105,6 +105,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
+        services.TryAddSingleton<AccountingProductionReadinessService>();
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();
         services.AddTransient<AccountingCloseViewModel>();

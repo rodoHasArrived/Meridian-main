@@ -11,6 +11,7 @@ using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
@@ -136,6 +137,22 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "Activation readiness"
             && row.Status == "Ready"
             && row.Detail.Contains("no critical blockers", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessStatusText.Should().Contain("/100");
+        harness.ViewModel.ProductionReadinessDetailText.Should().Contain("component");
+        harness.ViewModel.ProductionReadinessLedgerBookText.Should().Contain("book");
+        harness.ViewModel.ProductionReadinessExternalGlText.Should().Contain("live posting disabled");
+        harness.ViewModel.ProductionReadinessComponentRows.Should().Contain(row =>
+            row.Name == "Ledger books"
+            && row.Detail.Contains("ledger book", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessComponentRows.Should().Contain(row =>
+            row.Name == "Rules Studio"
+            && row.Detail.Contains("rule", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessComponentRows.Should().Contain(row =>
+            row.Name == "External GL"
+            && row.Detail.Contains("certified", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessIssueRows.Should().Contain(row =>
+            row.Name == "external-gl.certified-mapping-missing"
+            && row.Status == AccountingConfigurationValidationSeverityDto.Critical.ToString());
         harness.ViewModel.ChartRows.Select(static row => row.Name)
             .Should()
             .Contain([
@@ -818,6 +835,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureActivateButton");
         xaml.Should().Contain("AccountingConfigureCreateLedgerBookSetupButton");
         xaml.Should().Contain("AccountingConfigureLedgerBookSetupStatusText");
+        xaml.Should().Contain("AccountingProductionReadinessStatusText");
+        xaml.Should().Contain("AccountingProductionReadinessComponentGrid");
+        xaml.Should().Contain("AccountingProductionReadinessIssueGrid");
         xaml.Should().Contain("AccountingPostingCandidateButton");
         xaml.Should().Contain("AccountingConfigurationSetupReadinessGrid");
         xaml.Should().Contain("SetupReadinessRows");
@@ -888,6 +908,13 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             [new QuickBooksFixtureAccountingProvider()]);
         var policyService = new AccountingPolicyService();
         var postingCandidateService = new TestAccountingPostingCandidateService();
+        var services = new ServiceCollection();
+        services.AddSingleton<ILedgerBookService>(ledgerBookService);
+        services.AddSingleton<IAccountingConfigurationService>(configurationService);
+        services.AddSingleton<IManualJournalEntryWorkbenchService>(manualJournalService);
+        services.AddSingleton<IManualJournalEntryLifecycleService>(manualJournalService);
+        services.AddSingleton(accountingSystemIntegrationService);
+        var productionReadinessService = new AccountingProductionReadinessService(services.BuildServiceProvider());
         var viewModel = new AccountingConfigureViewModel(
             fundContext,
             configurationService,
@@ -899,7 +926,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             policyService,
             capitalAccountWorkbenchService,
             postingCandidateService,
-            ledgerBookService: ledgerBookService);
+            ledgerBookService: ledgerBookService,
+            accountingProductionReadinessService: productionReadinessService);
 
         return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath, configurationService, postingCandidateService);
     }
@@ -971,6 +999,50 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                 (!query.FundStructureNodeKind.HasValue || query.FundStructureNodeKind == _book.FundStructureNodeKind) &&
                 (!query.AccountingBasis.HasValue || query.AccountingBasis == _book.AccountingBasis);
             return Task.FromResult<IReadOnlyList<LedgerBookDto>>(matches ? [_book] : []);
+        }
+
+        public Task<LedgerBookRolloutAssessmentDto> AssessRolloutAsync(
+            LedgerBookRolloutAssessmentRequest request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matchesFund = string.IsNullOrWhiteSpace(request.FundProfileId) ||
+                string.Equals(request.FundProfileId, _book.FundProfileId, StringComparison.OrdinalIgnoreCase);
+            var matchesNode = !request.FundStructureNodeId.HasValue ||
+                request.FundStructureNodeId == _book.FundStructureNodeId ||
+                request.FundStructureNodeId == _book.LedgerBookId;
+            var matchesKind = !request.FundStructureNodeKind.HasValue ||
+                request.FundStructureNodeKind == _book.FundStructureNodeKind;
+            var matchesBasis = !request.AccountingBasis.HasValue ||
+                request.AccountingBasis == _book.AccountingBasis;
+            IReadOnlyList<LedgerBookRolloutBookStatusDto> books = matchesFund && matchesNode && matchesKind && matchesBasis
+                ? new[]
+                {
+                    new LedgerBookRolloutBookStatusDto(
+                        _book.LedgerBookId,
+                        _book.FundProfileId,
+                        _book.FundStructureNodeId,
+                        _book.FundStructureNodeKind,
+                        _book.AccountingBasis,
+                        _book.AccountingPolicyId,
+                        _book.AccountingPolicyVersion,
+                        PeriodCount: 0,
+                        OpenPeriodCount: 0,
+                        SoftClosedPeriodCount: 0,
+                        HardClosedPeriodCount: 0,
+                        FirstPeriodStart: null,
+                        LastPeriodEnd: null)
+                }
+                : [];
+
+            return Task.FromResult(new LedgerBookRolloutAssessmentDto(
+                DateTimeOffset.UtcNow,
+                string.IsNullOrWhiteSpace(request.FundProfileId) ? _book.FundProfileId : request.FundProfileId,
+                request.FundStructureNodeId,
+                request.FundStructureNodeKind,
+                request.AccountingBasis,
+                books,
+                []));
         }
 
         public Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default)

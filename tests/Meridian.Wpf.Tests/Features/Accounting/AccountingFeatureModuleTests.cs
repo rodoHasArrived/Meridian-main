@@ -83,6 +83,7 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingJournalDraftService, AccountingJournalDraftService>(services, ServiceLifetime.Singleton);
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IAccountingSystemProvider) && descriptor.ImplementationType == typeof(QuickBooksFixtureAccountingProvider) && descriptor.Lifetime == ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingSystemIntegrationService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingProductionReadinessService>(services, ServiceLifetime.Singleton);
     }
 
     [Theory]

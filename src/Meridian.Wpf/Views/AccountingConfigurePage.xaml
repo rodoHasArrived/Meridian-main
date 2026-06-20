@@ -187,6 +187,35 @@
                         <StackPanel Grid.Column="0">
                             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
+                                    <TextBlock Text="Production Readiness" Style="{StaticResource CardHeaderStyle}" />
+                                    <UniformGrid Columns="2" Margin="0,12,0,12">
+                                        <StackPanel Margin="0,0,12,0">
+                                            <TextBlock Text="Status" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding ProductionReadinessStatusText}" Style="{StaticResource CardHeaderStyle}" Margin="0,6,0,0" AutomationProperties.AutomationId="AccountingProductionReadinessStatusText" />
+                                            <TextBlock Text="{Binding ProductionReadinessDetailText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="Rollout" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding ProductionReadinessLedgerBookText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding ProductionReadinessExternalGlText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </UniformGrid>
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessComponentRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,0,0,12" AutomationProperties.AutomationId="AccountingProductionReadinessComponentGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Area" Binding="{Binding Name}" Width="160" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
+                                            <DataGridTextColumn Header="Summary" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="220" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessIssueRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,0,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessIssueGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Issue" Binding="{Binding Name}" Width="210" />
+                                            <DataGridTextColumn Header="Severity" Binding="{Binding Status}" Width="100" />
+                                            <DataGridTextColumn Header="Message" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="220" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Setup Readiness" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding SetupReadinessRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="AccountingConfigurationSetupReadinessGrid">
                                         <DataGrid.Columns>
