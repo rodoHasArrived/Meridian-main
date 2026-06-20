@@ -151,6 +151,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly FundOperationsWorkspaceReadService? _fundOperationsWorkspaceReadService;
     private readonly IAccountingPolicyService? _accountingPolicyService;
     private readonly IAccountingPostingCandidateService? _accountingPostingCandidateService;
+    private readonly IManualJournalEntryLifecycleService? _manualJournalEntryLifecycleService;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
@@ -172,6 +173,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _policyPostureText = "Accounting policy posture has not loaded.";
     private string _postingCandidateStatusText = "Posting-rule journal candidate has not been built.";
     private string _postingCandidateDetailText = "Build a governed draft candidate from the selected posting rule without posting to the ledger.";
+    private string _manualJournalLifecycleStatusText = "Manual journal lifecycle actions have not run.";
     private string _selectedReconciliationView = "Open breaks";
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
     private string _draftMemo = "Manual accounting adjustment";
@@ -193,7 +195,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         FundOperationsWorkspaceReadService? fundOperationsWorkspaceReadService = null,
         IAccountingPolicyService? accountingPolicyService = null,
         ICapitalAccountWorkbenchService? capitalAccountWorkbenchService = null,
-        IAccountingPostingCandidateService? accountingPostingCandidateService = null)
+        IAccountingPostingCandidateService? accountingPostingCandidateService = null,
+        IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -205,6 +208,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService;
         _accountingPolicyService = accountingPolicyService;
         _accountingPostingCandidateService = accountingPostingCandidateService;
+        _manualJournalEntryLifecycleService = manualJournalEntryLifecycleService
+            ?? manualJournalEntryWorkbenchService as IManualJournalEntryLifecycleService;
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
         SeedBaselineConfigurationCommand = new AsyncRelayCommand(() => SeedBaselineConfigurationAsync());
@@ -215,6 +220,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         RefreshExternalGlCommand = new AsyncRelayCommand(() => RefreshExternalGlAsync());
         CreateFundScopedPolicyCommand = new AsyncRelayCommand(() => CreateFundScopedPolicyAsync());
         BuildPostingCandidateCommand = new AsyncRelayCommand(() => BuildPostingCandidateAsync());
+        ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve));
+        PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post));
+        ReverseManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse));
+        RebookManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Rebook));
+        LockManualJournalAfterCloseCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.LockAfterClose));
 
         AccountingBasisOptions = new ObservableCollection<AccountingBasisKindDto>(
             Enum.GetValues<AccountingBasisKindDto>());
@@ -238,6 +248,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public IAsyncRelayCommand RefreshExternalGlCommand { get; }
     public IAsyncRelayCommand CreateFundScopedPolicyCommand { get; }
     public IAsyncRelayCommand BuildPostingCandidateCommand { get; }
+    public IAsyncRelayCommand ApproveManualJournalCommand { get; }
+    public IAsyncRelayCommand PostManualJournalCommand { get; }
+    public IAsyncRelayCommand ReverseManualJournalCommand { get; }
+    public IAsyncRelayCommand RebookManualJournalCommand { get; }
+    public IAsyncRelayCommand LockManualJournalAfterCloseCommand { get; }
 
     public ObservableCollection<AccountingWorkbenchRow> ValidationRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ChartRows { get; } = [];
@@ -265,6 +280,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ReconciliationRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> PolicyRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> PostingCandidateRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ManualJournalLifecycleRows { get; } = [];
     public ObservableCollection<string> ReconciliationViewOptions { get; } =
     [
         "Open breaks",
@@ -375,6 +391,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _postingCandidateDetailText;
         private set => SetProperty(ref _postingCandidateDetailText, value);
+    }
+
+    public string ManualJournalLifecycleStatusText
+    {
+        get => _manualJournalLifecycleStatusText;
+        private set => SetProperty(ref _manualJournalLifecycleStatusText, value);
     }
 
     public string SelectedReconciliationView
@@ -739,6 +761,43 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         }
     }
 
+    public async Task ApplyManualJournalLifecycleActionAsync(
+        JournalEntryLifecycleActionDto action,
+        CancellationToken ct = default)
+    {
+        if (_manualJournalEntryLifecycleService is null)
+        {
+            ManualJournalLifecycleStatusText = "Manual journal lifecycle service is not registered for this desktop session.";
+            return;
+        }
+
+        if (_selectedDraft is null)
+        {
+            ManualJournalLifecycleStatusText = "Save or select a manual journal draft before applying lifecycle actions.";
+            return;
+        }
+
+        try
+        {
+            var request = BuildManualJournalLifecycleRequest(_selectedDraft, action);
+            var result = await _manualJournalEntryLifecycleService
+                .ApplyLifecycleActionAsync(request, ct)
+                .ConfigureAwait(false);
+            _selectedDraft = result.JournalEntry;
+            await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
+            ApplyManualJournalLifecycleRows(result);
+            ManualJournalLifecycleStatusText =
+                $"{action} moved journal {_selectedDraft.JournalEntryId:D} from {result.Transition.FromStatus} to {result.Transition.ToStatus}; {result.GeneratedJournalEntries.Count} correction draft(s) generated.";
+            ManualJournalStatusText = $"Manual journal lifecycle action {action} completed as {_selectedDraft.Status}.";
+            RaisePropertyChanged(nameof(CanSubmitManualJournal));
+            RaiseManualJournalDraftComputedProperties();
+        }
+        catch (Exception ex)
+        {
+            ManualJournalLifecycleStatusText = $"Manual journal lifecycle action {action} is blocked: {ex.Message}";
+        }
+    }
+
     public async Task RefreshExternalGlAsync(CancellationToken ct = default)
     {
         ProviderRows.Clear();
@@ -944,6 +1003,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         PolicyPostureText = "Locked";
         PostingCandidateStatusText = "Locked until a fund context is selected.";
         PostingCandidateDetailText = "Posting candidates require a fund-linked configuration and retained evidence.";
+        ManualJournalLifecycleStatusText = "Locked until a fund context is selected.";
         BatchReconciliationActionText = "No reconciliation rows are loaded.";
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
@@ -1079,6 +1139,104 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             $"{result.GeneratedPostingLines.Count} generated line(s), debits {result.TotalDebits:0.##}, credits {result.TotalCredits:0.##}, {result.EvidenceLinks.Count} evidence link(s); posting remains governed by JE lifecycle.";
     }
 
+    private JournalEntryLifecycleActionRequestDto BuildManualJournalLifecycleRequest(
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionDto action)
+    {
+        var notes = action switch
+        {
+            JournalEntryLifecycleActionDto.Approve => "Approved from WPF Accounting Configure with retained reviewer evidence.",
+            JournalEntryLifecycleActionDto.Post => "Posted from WPF Accounting Configure after approval review.",
+            JournalEntryLifecycleActionDto.Reverse => "Reverse from WPF Accounting Configure with retained correction review.",
+            JournalEntryLifecycleActionDto.Rebook => "Rebook from WPF Accounting Configure with retained correction review.",
+            JournalEntryLifecycleActionDto.LockAfterClose => "Close lock from WPF Accounting Configure with retained period-lock evidence.",
+            _ => $"Lifecycle action {action} from WPF Accounting Configure."
+        };
+        return new JournalEntryLifecycleActionRequestDto(
+            draft.JournalEntryId,
+            draft.FundProfileId,
+            action,
+            DefaultActor,
+            draft.Version,
+            notes,
+            CorrelationId: $"wpf-manual-je-{action.ToString().ToLowerInvariant()}",
+            EvidenceLinks: BuildManualJournalLifecycleEvidenceLinks(draft, action),
+            RebookLines: action == JournalEntryLifecycleActionDto.Rebook
+                ? BuildManualJournalRebookLines(draft)
+                : []);
+    }
+
+    private static IReadOnlyList<string> BuildManualJournalLifecycleEvidenceLinks(
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionDto action)
+    {
+        var journalId = draft.JournalEntryId.ToString("D");
+        var period = string.IsNullOrWhiteSpace(draft.PeriodId)
+            ? draft.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : draft.PeriodId;
+        var actionToken = action.ToString().ToLowerInvariant();
+        var required = action switch
+        {
+            JournalEntryLifecycleActionDto.Approve => $"approval://manual-je/{journalId}/review-approval/{period}",
+            JournalEntryLifecycleActionDto.Post => $"posting://manual-je/{journalId}/ledger-posting-review/{period}",
+            JournalEntryLifecycleActionDto.Reverse => $"correction://manual-je/{journalId}/reversal-review/{period}",
+            JournalEntryLifecycleActionDto.Rebook => $"correction://manual-je/{journalId}/rebook-review/{period}",
+            JournalEntryLifecycleActionDto.LockAfterClose => $"close://manual-je/{journalId}/period-lock-close-certification/{period}",
+            JournalEntryLifecycleActionDto.Reject => $"rejection://manual-je/{journalId}/review-rejection/{period}",
+            _ => $"review://manual-je/{journalId}/{actionToken}/{period}"
+        };
+
+        return draft.EvidenceLinks
+            .Append(required)
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ManualJournalEntryLineDto> BuildManualJournalRebookLines(ManualJournalEntryDraftDto draft)
+        => draft.Lines
+            .Select(line => line with
+            {
+                LineId = $"rebook-{line.LineId}",
+                Description = string.IsNullOrWhiteSpace(line.Description)
+                    ? "Rebooked line from WPF Accounting Configure."
+                    : $"{line.Description} Rebooked from WPF Accounting Configure.",
+                EvidenceLink = line.EvidenceLink ?? draft.EvidenceLinks.FirstOrDefault()
+            })
+            .ToArray();
+
+    private void ApplyManualJournalLifecycleRows(JournalEntryLifecycleActionResultDto result)
+    {
+        var rows = new List<AccountingWorkbenchRow>
+        {
+            new(
+                result.Transition.Action.ToString(),
+                $"{result.Transition.FromStatus} -> {result.Transition.ToStatus}",
+                $"{result.Transition.Actor} at {result.Transition.RecordedAtUtc.ToLocalTime():g}",
+                $"{result.Transition.EvidenceLinks.Count} evidence link(s); {result.Transition.Notes ?? "no notes"}",
+                result.Transition.TransitionId)
+        };
+        rows.AddRange(result.GeneratedJournalEntries.Select(entry =>
+            new AccountingWorkbenchRow(
+                entry.JournalEntryId.ToString("D"),
+                entry.Status.ToString(),
+                $"{FormatManualJournalEntryType(entry.EntryType)} | {entry.Memo}",
+                $"{entry.TotalDebits:0.##} / {entry.TotalCredits:0.##} {entry.Currency}; reversal {entry.ReversalOfJournalEntryId?.ToString("D") ?? "none"}; rebook {entry.RebookedFromJournalEntryId?.ToString("D") ?? "none"}",
+                entry.JournalEntryId.ToString("D"))));
+        rows.AddRange((result.JournalEntry.LifecycleTransitions ?? [])
+            .Reverse()
+            .Take(8)
+            .Select(transition => new AccountingWorkbenchRow(
+                transition.Action.ToString(),
+                $"{transition.FromStatus} -> {transition.ToStatus}",
+                $"{transition.Actor} at {transition.RecordedAtUtc.ToLocalTime():g}",
+                $"{transition.EvidenceLinks.Count} evidence link(s); {transition.Notes ?? "no notes"}",
+                transition.TransitionId)));
+
+        ManualJournalLifecycleRows.ReplaceWith(rows);
+    }
+
     private async Task LoadManualJournalWorkbenchAsync(CancellationToken ct)
     {
         if (_activeFundProfile is null)
@@ -1100,9 +1258,29 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ApplyPrivateCapitalActivityRows(workbench.PrivateCapitalActivity);
         await LoadCapitalAccountWorkbenchAsync(ct).ConfigureAwait(false);
         _selectedDraft ??= workbench.Drafts.FirstOrDefault();
+        ApplyManualJournalLifecycleRows(_selectedDraft);
         ManualJournalStatusText = BuildManualJournalStatusText(workbench);
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
         RaiseManualJournalDraftComputedProperties();
+    }
+
+    private void ApplyManualJournalLifecycleRows(ManualJournalEntryDraftDto? draft)
+    {
+        if (draft is null)
+        {
+            ManualJournalLifecycleRows.Clear();
+            return;
+        }
+
+        ManualJournalLifecycleRows.ReplaceWith(draft.LifecycleTransitions
+            .Reverse()
+            .Take(10)
+            .Select(transition => new AccountingWorkbenchRow(
+                transition.Action.ToString(),
+                $"{transition.FromStatus} -> {transition.ToStatus}",
+                $"{transition.Actor} at {transition.RecordedAtUtc.ToLocalTime():g}",
+                $"{transition.EvidenceLinks.Count} evidence link(s); {transition.Notes ?? "no notes"}",
+                transition.TransitionId)));
     }
 
     private void RaiseManualJournalDraftComputedProperties()
@@ -1287,6 +1465,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var ledgerBookId = _configuration?.LedgerBookId ?? _configuration?.LedgerBooks.FirstOrDefault()?.LedgerBookId;
         var journalEntryId = _selectedDraft?.JournalEntryId ?? Guid.NewGuid();
         var accountingDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var entityId = (_activeFundProfile?.EntityIds ?? []).FirstOrDefault();
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: fundProfileId,
+            EntityId: entityId,
+            SleeveId: (_activeFundProfile?.SleeveIds ?? []).FirstOrDefault());
         return new ManualJournalEntryDraftDto(
             journalEntryId,
             _selectedDraft?.Status ?? ManualJournalEntryStatusDto.Draft,
@@ -1295,7 +1478,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             SelectedAccountingBasis,
             accountingDate,
             PeriodId: null,
-            EntityId: null,
+            EntityId: entityId,
             FundNodeId: null,
             currency,
             DraftMemo,
@@ -1304,8 +1487,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             now,
             _selectedDraft?.Version ?? 0,
             [
-                new ManualJournalEntryLineDto("debit-line", AccountingTemplateLineSideDto.Debit, DraftAmount, currency, DraftDebitAccountPath, Description: "Desktop debit line", EvidenceLink: NormalizeEvidenceLink(DraftEvidenceLink).FirstOrDefault()),
-                new ManualJournalEntryLineDto("credit-line", AccountingTemplateLineSideDto.Credit, DraftAmount, currency, DraftCreditAccountPath, Description: "Desktop credit line", EvidenceLink: NormalizeEvidenceLink(DraftEvidenceLink).FirstOrDefault())
+                new ManualJournalEntryLineDto("debit-line", AccountingTemplateLineSideDto.Debit, DraftAmount, currency, DraftDebitAccountPath, EntityId: entityId, Description: "Desktop debit line", EvidenceLink: NormalizeEvidenceLink(DraftEvidenceLink).FirstOrDefault(), Dimensions: dimensions),
+                new ManualJournalEntryLineDto("credit-line", AccountingTemplateLineSideDto.Credit, DraftAmount, currency, DraftCreditAccountPath, EntityId: entityId, Description: "Desktop credit line", EvidenceLink: NormalizeEvidenceLink(DraftEvidenceLink).FirstOrDefault(), Dimensions: dimensions)
             ],
             NormalizeEvidenceLink(DraftEvidenceLink),
             ValidationIssues: [],
@@ -1320,7 +1503,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     DefaultActor))
                 .ToArray(),
             EntryType: SelectedEntryType,
-            TreasuryContext: BuildManualJournalTreasuryContext(fundProfileId, SelectedEntryType, accountingDate, journalEntryId));
+            TreasuryContext: BuildManualJournalTreasuryContext(fundProfileId, SelectedEntryType, accountingDate, journalEntryId),
+            Dimensions: dimensions);
     }
 
     private void ApplyManualJournalEntryTypePreset(ManualJournalEntryTypeDto entryType)
@@ -1765,6 +1949,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ManualJournalFundEventRows.Clear();
         ManualJournalLedgerImpactRows.Clear();
         ManualJournalReportOutputRows.Clear();
+        ManualJournalLifecycleRows.Clear();
         ClearCapitalAccountWorkbenchRows();
         EvidenceRows.Clear();
         ReconciliationRows.Clear();

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -216,7 +217,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ManualJournalReportOutputRows.Should().ContainSingle(row =>
             row.Name.Contains("CapitalCallNotice", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("evidence", StringComparison.OrdinalIgnoreCase));
-        harness.ViewModel.ValidationRows.Should().Contain(row => row.Name == "manual-je.book-missing");
+        harness.ViewModel.ValidationRows.Should().NotContain(row => row.Name == "manual-je.book-missing");
+        harness.ViewModel.ValidationRows.Should().NotContain(row => row.Name == "manual-je.dimension-entity-missing");
         harness.ViewModel.ProviderRows.Should().Contain(row => row.Evidence == "quickbooks-fixture");
         harness.ViewModel.ProviderRows.Should().Contain(row => row.Evidence == "quickbooks" && row.Status == "Planned");
         harness.ViewModel.ExternalGlEvidencePackageRows.Should().Contain(row =>
@@ -430,6 +432,67 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ManualJournalLifecycleCommands_RunThroughSharedServiceAndRetainCorrectionDraft()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            SleeveIds: ["sleeve-credit"],
+            VehicleIds: ["vehicle-master"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(fundContext);
+
+        await harness.ViewModel.LoadAsync();
+        await harness.ViewModel.SeedBaselineConfigurationAsync();
+        harness.ViewModel.SelectedEntryType = ManualJournalEntryTypeDto.CapitalCall;
+        harness.ViewModel.DraftAmount = 275m;
+        await harness.ViewModel.SaveManualJournalDraftAsync();
+        await harness.ViewModel.SubmitManualJournalDraftAsync();
+
+        await harness.ViewModel.ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve);
+        harness.ViewModel.ManualJournalLifecycleStatusText.Should().Contain("Approve");
+        harness.ViewModel.ManualJournalLifecycleRows.Should().Contain(row =>
+            row.Name == JournalEntryLifecycleActionDto.Approve.ToString()
+            && row.Status.Contains("Submitted -> Approved", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("evidence", StringComparison.OrdinalIgnoreCase));
+
+        await harness.ViewModel.ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post);
+        harness.ViewModel.ManualJournalLifecycleStatusText.Should().Contain("Post");
+        harness.ViewModel.ManualJournalLifecycleRows.Should().Contain(row =>
+            row.Name == JournalEntryLifecycleActionDto.Post.ToString()
+            && row.Status.Contains("Approved -> Posted", StringComparison.OrdinalIgnoreCase));
+
+        await harness.ViewModel.ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse);
+        harness.ViewModel.ManualJournalLifecycleStatusText.Should().Contain("Reverse");
+        harness.ViewModel.ManualJournalLifecycleStatusText.Should().Contain("1 correction draft");
+        harness.ViewModel.ManualJournalLifecycleRows.Should().Contain(row =>
+            row.Name == JournalEntryLifecycleActionDto.Reverse.ToString()
+            && row.Status.Contains("Posted -> Reversed", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ManualJournalLifecycleRows.Should().Contain(row =>
+            row.Status == ManualJournalEntryStatusDto.Draft.ToString()
+            && row.Evidence.Contains("reversal", StringComparison.OrdinalIgnoreCase));
+
+        var reloadedDraftStore = new FileManualJournalEntryDraftStore(harness.DraftsPath);
+        var retainedDrafts = await reloadedDraftStore.ListAsync(profile.FundProfileId);
+        var reversed = retainedDrafts.Should()
+            .ContainSingle(draft => draft.Status == ManualJournalEntryStatusDto.Reversed)
+            .Subject;
+        retainedDrafts.Should().ContainSingle(draft =>
+            draft.EntryType == ManualJournalEntryTypeDto.Reversal
+            && draft.ReversalOfJournalEntryId == reversed.JournalEntryId
+            && draft.Status == ManualJournalEntryStatusDto.Draft);
+    }
+
+    [Fact]
     public async Task LoadAsync_WithoutFundContext_FailsClosedAndKeepsRowsEmpty()
     {
         Directory.CreateDirectory(_root);
@@ -443,6 +506,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ManualJournalDraftRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalCapitalAccountSubledgerRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalPaymentIntentRows.Should().BeEmpty();
+        harness.ViewModel.ManualJournalLifecycleRows.Should().BeEmpty();
         harness.ViewModel.CapitalAccountInvestorRows.Should().BeEmpty();
         harness.ViewModel.CapitalAccountAllocationRuleRows.Should().BeEmpty();
         harness.ViewModel.CapitalAccountStatementLineageRows.Should().BeEmpty();
@@ -483,6 +547,13 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingPostingCandidateGrid");
         xaml.Should().Contain("Posting Candidate Preview");
         xaml.Should().Contain("ManualJournalDoubleEntryWorkbench");
+        xaml.Should().Contain("ManualJournalLifecycleWorkbench");
+        xaml.Should().Contain("ManualJournalApproveButton");
+        xaml.Should().Contain("ManualJournalPostButton");
+        xaml.Should().Contain("ManualJournalReverseButton");
+        xaml.Should().Contain("ManualJournalRebookButton");
+        xaml.Should().Contain("ManualJournalCloseLockButton");
+        xaml.Should().Contain("ManualJournalLifecycleGrid");
         xaml.Should().Contain("MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY");
         xaml.Should().Contain("ManualJournalDoubleEntryGrid");
         xaml.Should().Contain("ManualJournalDebitAmountPreview");
@@ -524,7 +595,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var configurationPath = Path.Combine(_root, "accounting-configuration.json");
         var draftsPath = Path.Combine(_root, "manual-journal-drafts.json");
         var configurationStore = new FileAccountingConfigurationStore(configurationPath);
-        var configurationService = new AccountingConfigurationService(configurationStore, configurationStore);
+        var ledgerBookService = new TestLedgerBookService();
+        var configurationService = new AccountingConfigurationService(configurationStore, configurationStore, ledgerBookService);
         var draftStore = new FileManualJournalEntryDraftStore(draftsPath);
         var manualJournalService = new ManualJournalEntryWorkbenchService(
             draftStore,
@@ -564,6 +636,75 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         string DebitAccountPath,
         string CreditAccountPath,
         string EvidenceLink);
+
+    private sealed class TestLedgerBookService : ILedgerBookService
+    {
+        private readonly LedgerBookDto _book = new(
+            Guid.Parse("7e0be005-49e1-46eb-9d4f-89d75e2328bd"),
+            "alpha-fund",
+            Guid.Parse("9bf8609d-d4d0-4ff6-bf1f-31d2205710d7"),
+            Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Fund,
+            "Alpha Fund primary book",
+            "USD",
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", CultureInfo.InvariantCulture),
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", CultureInfo.InvariantCulture),
+            "WPF accounting configure test book",
+            AccountingBasisKindDto.Primary,
+            "legacy-v1",
+            "legacy-v1");
+
+        public Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(_book with
+            {
+                FundProfileId = string.IsNullOrWhiteSpace(request.FundProfileId) ? _book.FundProfileId : request.FundProfileId,
+                BaseCurrency = string.IsNullOrWhiteSpace(request.BaseCurrency) ? _book.BaseCurrency : request.BaseCurrency,
+                DisplayName = string.IsNullOrWhiteSpace(request.DisplayName) ? _book.DisplayName : request.DisplayName
+            });
+        }
+
+        public Task<LedgerBookDto?> GetBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerBookDto?>(ledgerBookId == _book.LedgerBookId ? _book : null);
+        }
+
+        public Task<IReadOnlyList<LedgerBookDto>> ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (string.IsNullOrWhiteSpace(query.FundProfileId) || string.Equals(query.FundProfileId, _book.FundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!query.FundStructureNodeId.HasValue || query.FundStructureNodeId == _book.FundStructureNodeId) &&
+                (!query.FundStructureNodeKind.HasValue || query.FundStructureNodeKind == _book.FundStructureNodeKind) &&
+                (!query.AccountingBasis.HasValue || query.AccountingBasis == _book.AccountingBasis);
+            return Task.FromResult<IReadOnlyList<LedgerBookDto>>(matches ? [_book] : []);
+        }
+
+        public Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default)
+            => Task.FromException<LedgerPeriodDto>(new NotSupportedException("Accounting configure tests do not create ledger periods."));
+
+        public Task<IReadOnlyList<LedgerPeriodDto>> ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerPeriodDto>>([]);
+        }
+
+        public Task<IReadOnlyList<LedgerPeriodDto>> ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerPeriodDto>>([]);
+        }
+
+        public Task<LedgerPeriodSummaryDto?> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerPeriodSummaryDto?>(null);
+        }
+
+        public Task<LedgerPeriodCloseResultDto> ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default)
+            => Task.FromException<LedgerPeriodCloseResultDto>(new NotSupportedException("Accounting configure tests do not close ledger periods."));
+    }
 
     private static PrivateCapitalActivityProjectionDto CreatePostedPrivateCapitalProjection(string fundProfileId)
     {

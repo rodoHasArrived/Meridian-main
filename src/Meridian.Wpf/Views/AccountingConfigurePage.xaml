@@ -452,6 +452,34 @@
                                     <Button Content="Validate" Command="{Binding ValidateManualJournalDraftCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8" />
                                     <Button Content="Submit" Command="{Binding SubmitManualJournalDraftCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                                 </WrapPanel>
+                                <Border BorderBrush="{StaticResource BorderSubtleBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="12"
+                                        Margin="0,14,0,0"
+                                        Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                        AutomationProperties.AutomationId="ManualJournalLifecycleWorkbench"
+                                        AutomationProperties.Name="Manual journal lifecycle workbench">
+                                    <StackPanel>
+                                        <TextBlock Text="Lifecycle Actions" Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="{Binding ManualJournalLifecycleStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                        <WrapPanel Margin="0,12,0,0">
+                                            <Button Content="Approve" Command="{Binding ApproveManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalApproveButton" />
+                                            <Button Content="Post" Command="{Binding PostManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalPostButton" />
+                                            <Button Content="Reverse" Command="{Binding ReverseManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalReverseButton" />
+                                            <Button Content="Rebook" Command="{Binding RebookManualJournalCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalRebookButton" />
+                                            <Button Content="Lock Close" Command="{Binding LockManualJournalAfterCloseCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" AutomationProperties.AutomationId="ManualJournalCloseLockButton" />
+                                        </WrapPanel>
+                                        <DataGrid ItemsSource="{Binding ManualJournalLifecycleRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalLifecycleGrid">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Action" Binding="{Binding Name}" Width="110" />
+                                                <DataGridTextColumn Header="Transition" Binding="{Binding Status}" Width="150" />
+                                                <DataGridTextColumn Header="Actor / Time" Binding="{Binding Detail}" Width="180" />
+                                                <DataGridTextColumn Header="Evidence / Notes" Binding="{Binding Evidence}" Width="*" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </Border>
                         <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}">

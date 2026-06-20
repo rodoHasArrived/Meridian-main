@@ -56,7 +56,9 @@ entry drafts through the shared workbench service, offers type-specific draft pr
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management
 fees, builds governed posting-rule journal draft candidate previews through the shared posting
-candidate service without posting to the ledger, shows read-only external GL evidence and retained package readiness, projects
+candidate service without posting to the ledger, exposes approve, post, reverse, rebook, and
+close-lock lifecycle buttons over the shared journal-entry lifecycle service, shows read-only
+external GL evidence and retained package readiness, projects
 close/evidence/reconciliation posture from shared operations continuity when available, and creates
 fund-scoped accounting-basis policy records through the Financial Operations policy service.
 Private-capital presets attach the shared
