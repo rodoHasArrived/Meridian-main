@@ -431,6 +431,42 @@ entries:
             self.assertEqual("task-a", payload["task_descriptor"]["task_id"])
             self.assertEqual(["repo:validation"], [entry["id"] for entry in payload["selected_entries"]])
 
+    def test_receipt_reports_referenced_and_dereferenced_entries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            generic = generic_tag_repo_entry()
+            write(root / ".codex" / "memory" / "index.yml", valid_index() + index_entry(generic))
+            write(root / ".codex" / "memory" / "repo" / "generic-tag.md", memory_file_from_entry(generic))
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+            json_path = root / "receipt.json"
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                status = check_codex_memory.main(
+                    [
+                        "--root",
+                        str(root),
+                        "--task",
+                        ".codex/memory/tasks/task-a.yml",
+                        "--receipt",
+                        "--summary",
+                        "--json-output",
+                        str(json_path),
+                    ]
+                )
+
+            self.assertEqual(0, status)
+            output = stdout.getvalue()
+            self.assertIn("referenced: repo:validation", output)
+            self.assertIn("dereferenced: repo:generic-tag", output)
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+            receipt = payload["memory_receipt"]
+            self.assertEqual(1, receipt["referenced_count"])
+            self.assertEqual(1, receipt["dereferenced_count"])
+            self.assertEqual(["repo:validation"], [entry["id"] for entry in receipt["referenced"]])
+            self.assertEqual(["repo:generic-tag"], [entry["id"] for entry in receipt["dereferenced"]])
+
     def test_goal_inventory_rejects_unknown_progress_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -451,6 +487,82 @@ entries:
             findings, _ = check_codex_memory.collect_findings(root)
 
             self.assertFalse(any(".codex/memory/goals/goal-a.yml" in finding.path for finding in findings))
+
+    def test_record_goal_progress_creates_inventory_item(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+            write(root / ".codex" / "memory" / "goals" / "goal-a.yml", goal_inventory())
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                status = check_codex_memory.main(
+                    [
+                        "--root",
+                        str(root),
+                        "--goal",
+                        ".codex/memory/goals/goal-a.yml",
+                        "--record-goal-progress",
+                        "dynamic-memory-use",
+                        "--progress-status",
+                        "completed",
+                        "--progress-summary",
+                        "Recorded memory receipt and progress update behavior.",
+                        "--progress-evidence-ref",
+                        "docs/ai/tooling/README.md",
+                        "--progress-updated-at",
+                        "2026-06-20T00:20:00Z",
+                        "--next-action",
+                        "Keep receipts visible during long goals.",
+                    ]
+                )
+
+            self.assertEqual(0, status)
+            self.assertIn("Memory update: goal progress recorded", stdout.getvalue())
+            goal, findings = check_codex_memory.load_goal_inventory(root, ".codex/memory/goals/goal-a.yml")
+            self.assertEqual([], [finding for finding in findings if finding.severity == "error"])
+            assert goal is not None
+            progress = {
+                item["id"]: item
+                for item in goal["progress_inventory"]
+                if isinstance(item, dict)
+            }
+            self.assertEqual("completed", progress["dynamic-memory-use"]["status"])
+            self.assertEqual(
+                ["docs/ai/tooling/README.md"],
+                progress["dynamic-memory-use"]["evidence_refs"],
+            )
+            self.assertEqual("2026-06-20T00:20:00Z", progress["dynamic-memory-use"]["updated_at"])
+            self.assertIn("Keep receipts visible during long goals.", goal["next_actions"])
+            goal_text = (root / ".codex" / "memory" / "goals" / "goal-a.yml").read_text(encoding="utf-8")
+            self.assertIn("progress_inventory:\n  -", goal_text)
+            self.assertNotIn("00:00:00+00:00", goal_text)
+
+    def test_record_goal_progress_requires_goal(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            stderr = io.StringIO()
+
+            with contextlib.redirect_stderr(stderr):
+                status = check_codex_memory.main(
+                    [
+                        "--root",
+                        str(root),
+                        "--record-goal-progress",
+                        "dynamic-memory-use",
+                        "--progress-status",
+                        "completed",
+                        "--progress-summary",
+                        "Recorded memory receipt and progress update behavior.",
+                        "--progress-evidence-ref",
+                        "docs/ai/tooling/README.md",
+                    ]
+                )
+
+            self.assertEqual(1, status)
+            self.assertIn("requires --goal", stderr.getvalue())
 
     def test_write_stub_refuses_existing_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

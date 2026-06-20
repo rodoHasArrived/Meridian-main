@@ -159,6 +159,7 @@ different work:
 - Preserve `.agents/skills/` and `.claude/skills/` as host-neutral mirrors. Update them only when
   the changed workflow is shared across hosts, not when the change is Codex-specific structure or
   execution guidance.
+- Keep Codex-only package hardening in `.codex/skills/`: skill-owned evals, scripts, Codex agent profiles, route coverage, and package-audit fixtures are not mirrored into `.agents/skills/` or `.claude/skills/` unless a host-neutral package contract is explicitly introduced.
 
 ## Recommended Flow
 

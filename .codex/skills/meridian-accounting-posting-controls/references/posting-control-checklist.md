@@ -5,7 +5,8 @@ consequences.
 
 ## Required Inputs
 
-- Event identity: tenant, fund, book, period, event type, event id, correlation id, and causation id.
+- Event identity: tenant, organization/entity/portfolio/account/fund scope where applicable, book,
+  period, event type, event id, correlation id, and causation id.
 - Evidence: retained source evidence or explicit operator rationale, source version/hash, reviewer
   state, and audit link.
 - Dates: effective date and posting date are both explicit.

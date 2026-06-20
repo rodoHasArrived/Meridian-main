@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Meridian cleanup package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/cleanup_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 3
+        }
+      },
+      "prompt": "Use $meridian-cleanup to remove stale docs or dead code without changing observable behavior."
+    },
+    {
+      "id": 2,
+      "description": "Dead-code cleanup checks references, reflection, and xaml binding risk.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/cleanup_check.py",
+        "--scenario",
+        "dead-code-safe",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-cleanup to remove dead code only after checking references, reflection, and XAML bindings."
+    },
+    {
+      "id": 3,
+      "description": "Cleanup avoids broad formatters and cosmetic-only rewrites outside target.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/cleanup_check.py",
+        "--scenario",
+        "cosmetic-churn",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $meridian-cleanup to keep cleanup target-scoped and avoid broad formatters or cosmetic-only rewrites."
+    }
+  ]
+}

@@ -1,13 +1,19 @@
-# Meridian Design Document — Version 0.19
+# Meridian Design Document — Version 0.20
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-16
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`.
+**Reviewed:** 2026-06-20
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail.
 
 ## 1. Product Vision
 
 Meridian is a modular, configurable financial operations platform for fund administrators, registered investment advisors, family offices, and other investment organizations. The platform helps financial operations professionals acquire, validate, reconcile, govern, analyze, forecast, and report on financial data through a single auditable workflow.
+
+Fund management is a supported specialization, not the platform root model. Core product language,
+contracts, and new architecture should use customer-neutral concepts such as organization, entity,
+portfolio, account, book, period, transaction, operational event, obligation, evidence, approval,
+journal, report, and audit trail. Use fund, investor, capital account, and fund event only where
+the workflow is explicitly fund/private-capital specific.
 
 Meridian should not initially try to replace every external system. Instead, it should become the operational system of record for validated workflows, evidence, reconciliations, decisions, and certified reporting outputs. For ledger records specifically, Meridian is the source of all ledger truth; external accounting systems contribute read-only evidence and reconciliation signals unless an approved publishing workflow explicitly exports Meridian-owned entries.
 
@@ -64,9 +70,11 @@ operator evidence. Those remain separate product decisions unless the roadmap mo
 External offerings should translate into Meridian-owned software capabilities, not copied service
 promises:
 
-* Fund events should become first-class operational records: formation/closing, subscription packet,
-  capital call, contribution receipt, investment, distribution, valuation, fee/expense, tax request,
-  audit request, and dissolution/wind-down support.
+* Operational events should become first-class operational records across customer types: trades,
+  cash movements, invoices, fees, subscriptions, redemptions, transfers, corporate actions,
+  capital events, valuations, reconciliations, adjustments, approvals, close tasks, and fund-event
+  specializations such as formation/closing, capital calls, distributions, tax requests, audit
+  requests, and dissolution/wind-down support.
 * Capital accounts should be governed ledger projections with commitment, contribution,
   distribution, allocation, NAV, statement, and evidence lineage.
 * LP support should start as governed package production and delivery evidence: capital notices,
@@ -77,18 +85,19 @@ promises:
 * Management-company administration should cover expense allocation, intercompany balances,
   management-fee evidence, bank/card feeds, cash reconciliation, budget/cash-plan snapshots, and
   bill-pay or payment-intent linkage. Native live bill pay remains later productization.
-* FundStudio-style admin controls should drive fund/book/period/report administration: multi-book
-  ledgers, locked periods, period reopen evidence, journal templates, recurring journals,
-  year-end-close workflows, portfolio-specific pricing rules, fund cloning/onboarding templates, and
-  immutable logs for every posting, lock, export, and delivery event.
+* FundStudio-style admin controls should drive organization/entity/portfolio/account/book/period/report
+  administration: multi-book ledgers, locked periods, period reopen evidence, journal templates,
+  recurring journals, year-end-close workflows, portfolio-specific pricing rules, onboarding
+  templates, and immutable logs for every posting, lock, export, and delivery event.
 * Middle-office managed-service patterns should become internal workflow primitives: T+0 booking,
   T+1 trade/cash/position reconciliation, true-break escalation, SLA timers, normalized file
   distribution to admins/custodians/counterparties, and archived delivery logs.
 * AI or agent-like automation is acceptable only as reviewed discrepancy detection, extraction, or
   draft-preparation assistance; it cannot bypass operator approval, evidence, ledger controls, or
   period locks.
-* Fund events should become end-to-end operating objects that connect evidence, workflow, treasury,
-  ledger, capital accounts, reconciliation, reporting, delivery, tax, and audit impact.
+* Fund events should remain fund/private-capital specializations of the broader operational-event
+  command spine that connects evidence, workflow, treasury, ledger, capital accounts,
+  reconciliation, reporting, delivery, tax, and audit impact.
 * Shadow accounting and administrator tie-outs should be evidence-native: every variance needs
   source records, a root-cause explanation, reviewer state, ledger impact, close effect, and report
   effect before it can be treated as resolved.
@@ -104,8 +113,9 @@ promises:
 * Payment work should begin as payment intent and cash evidence, not premature live execution:
   request, approval, expected cash movement, bank confirmation, ledger intent, reconciliation, and
   report linkage are the near-term product surface.
-* Authority must be scoped by tenant, organization, fund, legal entity, account, book, period,
-  document, report package, delivery record, amount limit, and segregation-of-duties posture.
+* Authority must be scoped by tenant, organization, legal entity, portfolio, account, book, period,
+  document, report package, delivery record, amount limit, segregation-of-duties posture, and fund
+  or investor scope where the workflow is fund/private-capital specific.
 
 ---
 
@@ -491,20 +501,20 @@ The cockpit's primary status bands are:
   informational breaks even when both are assigned to the same operator.
 * **Release safety:** report packages and period-close actions remain unsafe when any material
   reconciliation break, missing evidence item, stale valuation, unapproved journal, failed import,
-  blocked report line, or late delivery item is still open for the applicable fund, book, period,
-  account, or recipient package.
+  blocked report line, or late delivery item is still open for the applicable organization, entity,
+  portfolio, account, book, period, fund where applicable, or recipient package.
 
 Drill-through is part of the cockpit contract, not a separate reporting convenience. A queue row or
-status tile should open the relevant proof surface with the same fund/book/period/account/report
-context preserved:
+status tile should open the relevant proof surface with the same organization/entity/portfolio/
+account/book/period/fund/report context preserved:
 
 * **Ledger Explorer** for journal detail, account activity, trial-balance impact, reversal chains,
   approval state, and close-lock effect.
 * **Evidence Vault** for retained source files, request lists, extraction status, missing-support
   tasks, frozen manifests, and legal-hold or retention signals.
-* **Fund Event Command Center** for capital calls, distributions, fees, expenses, subscriptions,
-  redemptions, transfers, valuation updates, treasury expectations, and event-level completion
-  blockers.
+* **Operational Event Command Spine** for trades, cash movements, invoices, fees, subscriptions,
+  redemptions, transfers, corporate actions, capital events, valuation updates, fund-event
+  specializations, treasury expectations, and event-level completion blockers.
 * **Report-Line Provenance Explorer** for report-line inputs, source records, reconciliations,
   journals, approvals, template version, delivery package, and restatement lineage.
 
@@ -2803,12 +2813,12 @@ The companion planned roadmap item `W5X-FINOPS-001` turns Financial Operations i
 control center for reconciliation queues, exception casework, close checklists, workflow controls,
 and audit evidence packet readiness over the same W1-W5 evidence baseline.
 
-### v0.18 Product Direction Addendum: Operational Proof Layer
+### v0.20 Product Direction Addendum: Customer-Neutral Operational Proof Layer
 
-The v0.18 design direction sharpens Meridian's market wedge: the product should not compete as
+The v0.20 design direction sharpens Meridian's market wedge: the product should not compete as
 another standalone fund accounting system, reconciliation tool, investor portal, treasury dashboard,
-or document extractor. Those categories already have mature point solutions. Meridian should make
-the proof chain across those categories the product.
+corporate close tool, or document extractor. Those categories already have mature point solutions.
+Meridian should make the proof chain across those categories the product.
 
 The operating chain to own is:
 
@@ -2818,6 +2828,7 @@ Source document / provider file
 → validation
 → reconciliation
 → exception resolution
+→ posting candidate
 → journal / ledger impact
 → capital account impact
 → close package
@@ -2826,18 +2837,20 @@ Source document / provider file
 → audit evidence
 ```
 
-This reframes Meridian as a service-neutral private-capital and investment-operations control plane.
-It should help a GP, fund CFO, family office, RIA, investment accountant, or fund administrator keep
-internal control over the operating record without requiring the customer to replace every external
-administrator, custodian, GL, bank, tax provider, audit provider, BI tool, or investor portal.
+This reframes Meridian as a service-neutral operational finance control plane. It should help a GP,
+fund CFO, family office, RIA, investment accountant, fund administrator, asset owner, corporate
+treasury team, wealth platform, auditor, or multi-entity finance team keep internal control over the
+operating record without requiring the customer to replace every external administrator, custodian,
+GL, bank, tax provider, audit provider, BI tool, ERP, close tool, or stakeholder portal.
 
-The central v0.18 product object is the Operational Evidence Graph:
+The central v0.20 product object is the Operational Evidence Graph:
 
 | Layer | Meridian-owned proof |
 | --- | --- |
 | Source | file, API payload, document, provider record, source hash, receipt timestamp |
 | Normalization | mapping version, import run, validation result, extraction confidence, reviewer state |
 | Reconciliation | match rule, break, true-break narrative, resolution code, owner, SLA, approval |
+| Posting candidate | previewed journal impact, selected rule/version, reviewer state, disabled reason |
 | Ledger | draft journal, posted journal, posting policy, reversal chain, period lock, version |
 | Capital accounts | commitment, contribution, distribution, allocation, NAV impact, statement lineage |
 | Close | readiness lane, blocker status, period lock, reopen evidence, late adjustment |
@@ -2850,25 +2863,27 @@ The highest-value feature gaps should be prioritized in this order:
 | Tier | Product target | Product intent |
 | --- | --- | --- |
 | 1 | Operational Evidence Graph | Differentiate Meridian from dashboards and point tools by proving the chain from source to output. |
-| 1 | Fund Event Command Center | Make capital calls, distributions, investments, fees, valuations, closings, tax requests, audit requests, and wind-downs the universal operating spine. |
+| 1 | Operational Event Command Spine | Make trades, cash movements, invoices, fees, subscriptions, redemptions, transfers, corporate actions, capital events, valuations, reconciliations, adjustments, approvals, close tasks, and fund-event specializations the universal operating spine. |
 | 1 | Capital Account Workbench | Treat capital accounts as governed ledger projections with investor-level evidence, allocation rules, statements, restatements, and audit support. |
 | 1 | Private-Capital Close Cockpit | Connect data receipt, reconciliation, journals, capital accounts, NAV support, valuation evidence, reporting, delivery, and period locks. |
 | 1 | Evidence Vault with Request Lists | Turn document intake and extraction into close, tax, audit, and reporting support packages with frozen manifests. |
 | 2 | Shadow NAV and Admin Tie-Out Workbench | Explain administrator-versus-Meridian differences through source records, evidence, reviewer state, ledger impact, close effect, and report effect. |
-| 2 | Certified Operational Data Marts | Publish certified cash, positions, transactions, journal entries, capital accounts, fund events, valuations, trial balance, report lines, and evidence indexes with row-level lineage. |
+| 2 | Certified Operational Data Marts | Publish certified cash, positions, transactions, journal entries, capital accounts, operational events, fund events, valuations, trial balance, report lines, and evidence indexes with row-level lineage. |
 | 2 | SLA-Driven Exception Operations | Make each break operational by showing owner, SLA, materiality, root cause, supporting evidence, approval state, and blocked outputs. |
 | 2 | Payment Intent and Cash Evidence Layer | Capture payment requests, approval chains, expected cash movement, bank confirmations, return/reversal evidence, ledger intent, reconciliation, and report linkage before live payment execution. |
 | 2 | Scoped Access Assignment Console | Govern authority by role, permission, scope kind, scope ID, approval limit, segregation-of-duties rule, effective date, version, revocation evidence, and audit event. |
 | 3 | Management Company Administration Lite | Support expense allocation, intercompany balances, management fees, bank/card evidence, budget snapshots, cash-plan snapshots, and reimbursements without becoming full ERP. |
 | 3 | Report-Line Provenance Explorer | Let operators drill from a report number to source records, reconciliations, journals, approvals, delivery history, and restatements. |
 | 3 | Reviewed Automation Assistant | Use AI only for extraction, suggested matches, variance explanations, duplicate detection, journal-template drafts, evidence summaries, missing-support flags, report commentary drafts, and audit request lists. |
-| 3 | Hybrid Tenant Profiles | Serve fund administrators, private fund CFOs, RIAs, family offices, and insurance investment accounting teams through one core model with profile-specific emphasis. |
+| 3 | Hybrid Tenant Profiles | Serve fund administrators, private fund CFOs, RIAs, family offices, asset owners, corporate treasury teams, wealth platforms, administrators, auditors, and insurance investment accounting teams through one core model with profile-specific emphasis. |
 
-The Fund Event Command Center should make each event navigable by evidence, workflow, ledger impact,
-capital-account impact, treasury expectation, reconciliation status, report usage, delivery record,
-tax support, and audit history. The event is not complete merely because accounting output exists;
-it is complete when the event's evidence, approvals, journals, investor impact, reporting outputs,
-delivery records, and support package can be reconstructed.
+The Operational Event Command Spine should make each event navigable by evidence, workflow, posting
+candidate, journal lifecycle, ledger impact, account or capital-account impact, treasury
+expectation, reconciliation status, report usage, delivery record, tax support, and audit history.
+Fund events remain private-capital specializations of that spine. The event is not complete merely
+because accounting output exists; it is complete when the event's evidence, approvals, journals,
+account or investor impact, reporting outputs, delivery records, and support package can be
+reconstructed.
 
 The Private-Capital Close Cockpit should operate by fund, book, period, and entity. A close lane is
 ready only when required data arrived, imports validated, reconciliation blockers cleared, journals

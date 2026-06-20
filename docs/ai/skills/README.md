@@ -7,6 +7,7 @@ Shared skill policy, cross-provider safety rules, and alignment checks live in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 Codex-specific execution gates, current skill validation, and repo-local skill maintenance live in
 [`../codex/README.md`](../codex/README.md).
+Treat `.codex/skills/` as the execution source for repo-local Codex package structure, evals, scripts, agent profiles, and route coverage. Mirror only host-neutral workflow behavior into `.agents/skills/` and `.claude/skills/`; do not copy Codex-only eval/script package surfaces into portable mirrors unless a host-neutral package contract is explicitly added.
 
 When a skill lane needs validator, route, handoff-packet, or maintenance-script selection, load
 [`../tooling/README.md`](../tooling/README.md) before widening repository context or repeating
@@ -99,7 +100,7 @@ Shared grounding files:
 
 Portable packages are mirrored under [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills)
 for Agent Skills-compatible hosts and [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills)
-for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavior changes.
+for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavior changes, but keep Codex-only package evals, scripts, profile wiring, and route rules in `.codex/skills/`.
 
 | Skill | SKILL.md | Purpose |
 | ------ | --------- | --------- |

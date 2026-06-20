@@ -4,7 +4,7 @@
 > routing, runtime semantics, or key architecture guidance changes; mirrored Codex and GitHub AI
 > surfaces should follow from here.
 >
-> **Last verified:** 2026-06-16
+> **Last verified:** 2026-06-20
 > **Primary grounding docs:** `README.md`, `docs/roadmap/data/*.yml`,
 > `docs/roadmap/generated/ROADMAP_SUMMARY.md`,
 > `docs/product/meridian-design-document.md`,
@@ -14,7 +14,7 @@
 
 ## Platform Snapshot
 
-- Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
+- Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery; fund management is a first-class specialization, not the root model for every workflow.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already contains strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.

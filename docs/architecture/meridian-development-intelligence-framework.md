@@ -8,11 +8,16 @@
 
 The Meridian Development Intelligence Framework (MDIF) makes future AI-assisted development sessions understand Meridian as consistently as a senior architect would. It provides a compact, repeatable context spine for code, tests, migrations, UI components, services, reports, and documentation.
 
-MDIF is not a product feature embedded into Meridian. It is a repository governance and generation framework that keeps a growing fund-operations platform architecturally coherent.
+MDIF is not a product feature embedded into Meridian. It is a repository governance and generation framework that keeps a growing operational-finance platform architecturally coherent.
 
-The framework is intentionally scoped to Meridian's current product direction: an operational proof layer for fund, portfolio, accounting, reconciliation, close, reporting, delivery, and audit workflows. It should make agents better at preserving Meridian's shared contracts and proof chains, not encourage broad autonomous AI features inside the product.
+The framework is intentionally scoped to Meridian's current product direction: an operational proof layer for organization, entity, portfolio, account, book, fund, accounting, reconciliation, close, reporting, delivery, and audit workflows. It should make agents better at preserving Meridian's shared contracts and proof chains, not encourage broad autonomous AI features inside the product.
 
 ## Meridian-Specific Operating Thesis
+
+Meridian should be modeled as a customer-neutral operational finance platform. Fund operations are
+an important specialization, but generated architecture should start from neutral scope concepts:
+organization, entity, portfolio, account, book, period, operational event, evidence, approval,
+journal, report, and audit trail.
 
 AI-assisted work in Meridian should optimize for one outcome: every generated artifact should make it easier to prove an operational record from source evidence to governed output.
 
@@ -89,6 +94,7 @@ Before broad implementation, an AI session should:
 Generated code, tests, UI, and docs should pass these filters before implementation:
 
 - Does it strengthen data confidence, retained evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, governed reports, or audit evidence?
+- Does it avoid requiring fund scope unless the workflow is explicitly fund, investor, or private-capital specific?
 - Does it preserve the active operator navigation model: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`?
 - Does it use shared contracts, endpoint read models, and services before creating separate browser or WPF logic?
 - Does it keep AI inside reviewed assistance, extraction, explanation, draft preparation, or discrepancy detection rather than autonomous posting, approval, payment release, or report publication?

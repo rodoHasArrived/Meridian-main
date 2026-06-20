@@ -8,13 +8,18 @@
 
 Use this context before generating or reviewing code, tests, UI, reports, or documentation that changes source evidence, normalized records, reconciliation, exception casework, ledger impact, capital-account impact, close readiness, report provenance, delivery records, or audit support.
 
+Use customer-neutral scope first: organization, entity, portfolio, account, book, period,
+operational event, evidence, approval, journal, report, and audit trail. Fund, investor,
+capital-account, and fund-event scope are specializations for fund/private-capital workflows, not
+requirements for every customer.
+
 ## Meridian Evidence Rules
 
 - Meridian should prove operational records, not just display them.
 - Source evidence must retain enough identity to reconstruct origin, receipt time, source hash or version, provider/file/API context, and review state.
 - Normalized records must remain traceable back to source evidence and mapping or extraction version.
 - Reconciliation breaks need owner, age, due date or SLA posture, materiality, root cause, supporting evidence, approval state, and blocked outputs where applicable.
-- Exceptions that affect close, reporting, ledger, capital accounts, or delivery must fail closed until evidence and review state satisfy the relevant policy.
+- Exceptions that affect close, reporting, ledger, operating accounts, capital accounts, books, or delivery must fail closed until evidence and review state satisfy the relevant policy.
 - Report lines should link to approved source records, calculations, ledger or capital-account impact, package version, delivery evidence, approval, and restatement history where applicable.
 - Audit evidence must be retained as a manifest or support packet that can explain what changed, why it changed, who approved it, and where it was used.
 
@@ -26,6 +31,7 @@ source evidence
 -> validation
 -> reconciliation
 -> exception resolution
+-> posting candidate
 -> journal / ledger impact
 -> capital account impact
 -> close package
@@ -39,7 +45,7 @@ source evidence
 Load this context before work on:
 
 - Operational Evidence Graph features.
-- Fund Event Command Center flows.
+- Operational Event Command Spine and fund-event command-center flows.
 - close cockpit, exception queues, and reconciliation casework.
 - report-line provenance, governed report packages, exports, and restatement workflows.
 - evidence vault, request lists, audit support, tax support, and retained support packages.

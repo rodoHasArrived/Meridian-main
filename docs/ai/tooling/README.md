@@ -121,9 +121,16 @@ Use these for multi-agent, parallel, or route-aware work:
   - Shows selected and skipped memory decisions for a scoped Codex task descriptor.
 - `build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --explain`
   - Shows goal progress inventory plus routing through the goal's active task descriptor.
+- `build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt`
+  - Prints the user-facing reference/dereference receipt: loaded memory IDs, skipped memory IDs,
+    match reasons, stale warnings, and active task or goal context.
 - `build/scripts/docs/check-codex-memory.py --json-output <path>`
-  - Emits selected entries, routing decisions, task-scope conflicts, stale warnings, and validation
-    findings for downstream inspection.
+  - Emits selected entries, routing decisions, the same memory receipt, task-scope conflicts, stale
+    warnings, and validation findings for downstream inspection.
+- `build/scripts/docs/check-codex-memory.py --goal <file> --record-goal-progress <id>`
+  - Creates or updates one long-goal progress item with explicit status, summary, evidence refs,
+    and optional next actions or open questions. The command validates the updated inventory before
+    writing and prints a compact memory-update notice.
 - `build/scripts/docs/check-codex-memory.py --promote-session`
   - Reviews session-to-task, session-to-branch, or session-to-repo promotion. It is dry-run unless
     `--apply` is passed; repo promotion requires source references.

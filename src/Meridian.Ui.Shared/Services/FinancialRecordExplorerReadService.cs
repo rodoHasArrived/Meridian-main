@@ -1,5 +1,7 @@
 using System.Globalization;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 
@@ -25,17 +27,23 @@ public sealed class FinancialRecordExplorerReadService
     private readonly StrategyRunReadService? _runReadService;
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
     private readonly ReportPackDeliveryService? _reportPackDeliveryService;
+    private readonly ISecurityMasterWorkbenchQueryService? _securityMasterWorkbenchQueryService;
+    private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
 
     public FinancialRecordExplorerReadService(
         IFinancialRecordExplorerSavedViewStore savedViewStore,
         StrategyRunReadService? runReadService = null,
         ReportPackWorkflowService? reportPackWorkflowService = null,
-        ReportPackDeliveryService? reportPackDeliveryService = null)
+        ReportPackDeliveryService? reportPackDeliveryService = null,
+        ISecurityMasterWorkbenchQueryService? securityMasterWorkbenchQueryService = null,
+        IAssetOperationsQueryService? assetOperationsQueryService = null)
     {
         _savedViewStore = savedViewStore ?? throw new ArgumentNullException(nameof(savedViewStore));
         _runReadService = runReadService;
         _reportPackWorkflowService = reportPackWorkflowService;
         _reportPackDeliveryService = reportPackDeliveryService;
+        _securityMasterWorkbenchQueryService = securityMasterWorkbenchQueryService;
+        _assetOperationsQueryService = assetOperationsQueryService;
     }
 
     public static bool IsKnownExplorerId(string explorerId)
@@ -271,9 +279,41 @@ public sealed class FinancialRecordExplorerReadService
 
         var run = source.Summary;
         var references = CollectSecurityReferences(source);
-        var rows = references
-            .Select((reference, index) => BuildSecurityRow(run, source, reference, index))
-            .ToArray();
+        var reportRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
+        var enrichedRows = new List<(FinancialRecordExplorerRowDto Row, SecurityInstrumentEnrichment Enrichment)>(references.Count);
+        for (var index = 0; index < references.Count; index++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var reference = references[index];
+            var enrichment = await BuildSecurityInstrumentEnrichmentAsync(reference, reportRecords, ct).ConfigureAwait(false);
+            enrichedRows.Add((BuildSecurityRow(run, source, reference, index, enrichment), enrichment));
+        }
+
+        var rows = enrichedRows.Select(static entry => entry.Row).ToArray();
+        var enrichments = enrichedRows.Select(static entry => entry.Enrichment).ToArray();
+        var passportCount = enrichments.Count(static enrichment => enrichment.Passport is not null);
+        var operationsCount = enrichments.Count(static enrichment => enrichment.Readiness is not null);
+        var reportLineUsageCount = enrichments.Sum(static enrichment => enrichment.ReportLineUsages.Count);
+        var summaryItems = new List<FinancialRecordExplorerSummaryItemDto>
+        {
+            new("Securities", rows.Length.ToString(CultureInfo.InvariantCulture), "Distinct resolved or referenced instruments."),
+            new("Resolved", references.Count(reference => reference.CoverageStatus == WorkstationSecurityCoverageStatus.Resolved).ToString(CultureInfo.InvariantCulture), "Security Master references with resolved coverage.", FinancialRecordExplorerTone.Success),
+            new("Missing", references.Count(reference => reference.CoverageStatus is WorkstationSecurityCoverageStatus.Missing or WorkstationSecurityCoverageStatus.Unavailable).ToString(CultureInfo.InvariantCulture), "References requiring operator follow-up.", FinancialRecordExplorerTone.Warning)
+        };
+        if (passportCount > 0)
+        {
+            summaryItems.Add(new("Passports", passportCount.ToString(CultureInfo.InvariantCulture), "Security Master passport/trust payloads available.", FinancialRecordExplorerTone.Info));
+        }
+
+        if (operationsCount > 0)
+        {
+            summaryItems.Add(new("Operations", operationsCount.ToString(CultureInfo.InvariantCulture), "AssetOperations readiness payloads available.", FinancialRecordExplorerTone.Info));
+        }
+
+        if (reportLineUsageCount > 0)
+        {
+            summaryItems.Add(new("Report Usage", reportLineUsageCount.ToString(CultureInfo.InvariantCulture), "Retained report-line provenance rows reference these instruments.", FinancialRecordExplorerTone.Info));
+        }
 
         return await CreateExplorerAsync(
             SecurityInstrumentExplorerId,
@@ -281,11 +321,7 @@ public sealed class FinancialRecordExplorerReadService
             "Explore Security Master references used by retained accounting and portfolio records.",
             $"Source-backed Security Master references from run {run.RunId}.",
             BuildScope(run, source.Portfolio?.AsOf ?? source.Ledger?.AsOf ?? run.LastUpdatedAt, "Security Master"),
-            [
-                new("Securities", rows.Length.ToString(CultureInfo.InvariantCulture), "Distinct resolved or referenced instruments."),
-                new("Resolved", references.Count(reference => reference.CoverageStatus == WorkstationSecurityCoverageStatus.Resolved).ToString(CultureInfo.InvariantCulture), "Security Master references with resolved coverage.", FinancialRecordExplorerTone.Success),
-                new("Missing", references.Count(reference => reference.CoverageStatus is WorkstationSecurityCoverageStatus.Missing or WorkstationSecurityCoverageStatus.Unavailable).ToString(CultureInfo.InvariantCulture), "References requiring operator follow-up.", FinancialRecordExplorerTone.Warning)
-            ],
+            summaryItems,
             BuildSystemViews(SecurityInstrumentExplorerId, "Security references", "Instrument references used by portfolio and ledger records."),
             BuildSecurityFilters(references),
             [
@@ -294,6 +330,11 @@ public sealed class FinancialRecordExplorerReadService
                 new("currency", "Currency", Width: 90),
                 new("status", "Status", Width: 110),
                 new("coverage", "Coverage", Width: 120),
+                new("trust", "Trust", Width: 120),
+                new("identifierConfidence", "Identifier Confidence", Width: 170),
+                new("operations", "Operations", Width: 140),
+                new("cashFlow", "Cash Flow", Width: 120),
+                new("ledger", "Ledger", Width: 120),
                 new("identifier", "Identifier", Width: 160),
                 new("source", "Source", Width: 120)
             ],
@@ -745,7 +786,8 @@ public sealed class FinancialRecordExplorerReadService
         StrategyRunSummary run,
         StrategyRunDetail detail,
         WorkstationSecurityReference reference,
-        int index)
+        int index,
+        SecurityInstrumentEnrichment enrichment)
     {
         var recordId = reference.SecurityId == Guid.Empty
             ? $"security:{run.RunId}:{index}"
@@ -753,7 +795,15 @@ public sealed class FinancialRecordExplorerReadService
         var href = reference.SecurityId == Guid.Empty
             ? UiApiRoutes.WorkstationSecurityMasterSearch
             : UiApiRoutes.WithParam(UiApiRoutes.WorkstationSecurityMasterById, "securityId", reference.SecurityId.ToString("D"));
-        var usedIn = BuildSecurityUsedIn(detail, reference, href);
+        var usedIn = BuildSecurityUsedIn(detail, reference, href, enrichment);
+        var fields = BuildSecurityFields(reference, enrichment);
+        var proofActions = BuildSecurityProofActions(reference, href, enrichment);
+        var impacts = BuildSecurityImpacts(reference, href, enrichment);
+        var trustCell = BuildTrustCell(enrichment.Passport);
+        var identifierConfidenceCell = BuildIdentifierConfidenceCell(enrichment.Passport);
+        var operationsCell = BuildAssetOperationsCell(enrichment.Readiness);
+        var cashFlowCell = BuildCashFlowCell(enrichment.Operations);
+        var ledgerCell = BuildLedgerCell(enrichment.Operations);
         var selected = new FinancialRecordExplorerSelectedRecordDto(
             recordId,
             "Security instrument",
@@ -761,25 +811,10 @@ public sealed class FinancialRecordExplorerReadService
             $"{reference.AssetClass} - {reference.Currency}",
             reference.ResolutionReason ?? "Security reference retained by source-backed portfolio or ledger records.",
             ToneFromCoverage(reference.CoverageStatus),
-            Fields:
-            [
-                new("Asset Class", reference.AssetClass),
-                new("Sub Type", reference.SubType ?? "None"),
-                new("Currency", reference.Currency),
-                new("Status", reference.Status.ToString()),
-                new("Primary Identifier", reference.PrimaryIdentifier ?? "None"),
-                new("Matched Provider", reference.MatchedProvider ?? "None"),
-                new("Coverage", reference.CoverageStatus.ToString(), Tone: ToneFromCoverage(reference.CoverageStatus))
-            ],
-            ProofActions:
-            [
-                new("open-security-master", "Open Security Master", "Open the retained Security Master record.", href, reference.SecurityId != Guid.Empty, "Security reference is not resolved.", ToneFromCoverage(reference.CoverageStatus))
-            ],
+            Fields: fields,
+            ProofActions: proofActions,
             UsedIn: usedIn,
-            Impacts:
-            [
-                new("instrument-coverage", "Instrument coverage", $"Coverage state is {reference.CoverageStatus}.", href, ToneFromCoverage(reference.CoverageStatus))
-            ],
+            Impacts: impacts,
             FullRecordHref: href);
 
         return new FinancialRecordExplorerRowDto(
@@ -796,11 +831,488 @@ public sealed class FinancialRecordExplorerReadService
                 new("currency", reference.Currency),
                 new("status", reference.Status.ToString()),
                 new("coverage", reference.CoverageStatus.ToString(), Tone: ToneFromCoverage(reference.CoverageStatus)),
+                trustCell,
+                identifierConfidenceCell,
+                operationsCell,
+                cashFlowCell,
+                ledgerCell,
                 new("identifier", reference.PrimaryIdentifier ?? reference.MatchedIdentifierValue ?? "-"),
                 new("source", reference.LookupSource ?? "Security Master")
             ],
             selected);
     }
+
+    private async Task<SecurityInstrumentEnrichment> BuildSecurityInstrumentEnrichmentAsync(
+        WorkstationSecurityReference reference,
+        IReadOnlyList<ReportPackWorkflowRecordDto> reportRecords,
+        CancellationToken ct)
+    {
+        var reportLineUsages = CollectSecurityReportLineUsages(reference, reportRecords);
+        if (reference.SecurityId == Guid.Empty)
+        {
+            return new(null, null, null, reportLineUsages);
+        }
+
+        InstrumentPassportDto? passport = null;
+        if (_securityMasterWorkbenchQueryService is not null)
+        {
+            passport = await _securityMasterWorkbenchQueryService
+                .GetInstrumentPassportAsync(reference.SecurityId, fundProfileId: null, ct)
+                .ConfigureAwait(false);
+        }
+
+        AssetOperationsDetailDto? operations = null;
+        AssetOperationsReadinessDto? readiness = null;
+        if (_assetOperationsQueryService is not null)
+        {
+            operations = await _assetOperationsQueryService
+                .GetOperationsAsync(reference.SecurityId, ct)
+                .ConfigureAwait(false);
+            readiness = operations?.Readiness;
+            if (readiness is null)
+            {
+                readiness = await _assetOperationsQueryService
+                    .GetReadinessAsync(reference.SecurityId, ct)
+                    .ConfigureAwait(false);
+            }
+        }
+
+        return new(passport, operations, readiness, reportLineUsages);
+    }
+
+    private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildSecurityFields(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+    {
+        var fields = new List<FinancialRecordExplorerSummaryItemDto>
+        {
+            new("Asset Class", reference.AssetClass),
+            new("Sub Type", reference.SubType ?? "None"),
+            new("Currency", reference.Currency),
+            new("Status", reference.Status.ToString()),
+            new("Primary Identifier", reference.PrimaryIdentifier ?? "None"),
+            new("Matched Provider", reference.MatchedProvider ?? "None"),
+            new("Coverage", reference.CoverageStatus.ToString(), Tone: ToneFromCoverage(reference.CoverageStatus))
+        };
+
+        if (enrichment.Passport is not null)
+        {
+            var passport = enrichment.Passport;
+            fields.Add(new(
+                "Trust Posture",
+                BuildTrustPostureLabel(passport.TrustPosture),
+                passport.TrustPosture.Summary,
+                ToneFromTrustPosture(passport.TrustPosture.Tone)));
+            fields.Add(new(
+                "Identifier Confidence",
+                BuildIdentifierConfidenceLabel(passport),
+                BuildIdentifierConfidenceDetail(passport),
+                ToneFromIdentifierConfidence(passport)));
+        }
+
+        if (enrichment.Readiness is not null)
+        {
+            fields.Add(new(
+                "AssetOperations Readiness",
+                enrichment.Readiness.Status,
+                BuildReadinessDetail(enrichment.Readiness),
+                ToneFromAssetOperationsReadiness(enrichment.Readiness)));
+        }
+
+        if (enrichment.Operations is not null)
+        {
+            fields.Add(new(
+                "Projected Cash Flows",
+                BuildCashFlowSummary(enrichment.Operations),
+                BuildCashFlowDetail(enrichment.Operations),
+                ToneFromCashFlows(enrichment.Operations)));
+            fields.Add(new(
+                "Ledger Projection",
+                BuildLedgerProjectionSummary(enrichment.Operations),
+                BuildLedgerProjectionDetail(enrichment.Operations),
+                ToneFromLedgerProjections(enrichment.Operations)));
+        }
+
+        if (enrichment.ReportLineUsages.Count > 0)
+        {
+            fields.Add(new(
+                "Report Usage",
+                $"{enrichment.ReportLineUsages.Count.ToString(CultureInfo.InvariantCulture)} retained line{Plural(enrichment.ReportLineUsages.Count)}",
+                BuildReportLineUsageDetail(enrichment.ReportLineUsages),
+                FinancialRecordExplorerTone.Info));
+        }
+
+        return fields;
+    }
+
+    private static IReadOnlyList<FinancialRecordExplorerProofActionDto> BuildSecurityProofActions(
+        WorkstationSecurityReference reference,
+        string securityHref,
+        SecurityInstrumentEnrichment enrichment)
+    {
+        var actions = new List<FinancialRecordExplorerProofActionDto>
+        {
+            new(
+                "open-security-master",
+                "Open Security Master",
+                "Open the retained Security Master record.",
+                securityHref,
+                reference.SecurityId != Guid.Empty,
+                "Security reference is not resolved.",
+                ToneFromCoverage(reference.CoverageStatus))
+        };
+
+        if (reference.SecurityId != Guid.Empty)
+        {
+            actions.Add(new(
+                "open-instrument-passport",
+                "Open instrument passport",
+                "Open Security Master passport and trust evidence for this instrument.",
+                BuildInstrumentPassportHref(reference.SecurityId),
+                enrichment.Passport is not null,
+                "Security Master passport evidence is not available.",
+                enrichment.Passport is null ? FinancialRecordExplorerTone.Warning : ToneFromTrustPosture(enrichment.Passport.TrustPosture.Tone)));
+            actions.Add(new(
+                "open-asset-operations",
+                "Open AssetOperations",
+                "Open operations readiness, projected cash-flow, and ledger-projection evidence.",
+                BuildAssetOperationsHref(reference.SecurityId),
+                enrichment.Readiness is not null,
+                "AssetOperations readiness evidence is not available.",
+                ToneFromAssetOperationsReadiness(enrichment.Readiness)));
+        }
+
+        if (enrichment.ReportLineUsages.Count > 0)
+        {
+            actions.Add(new(
+                "open-report-line-provenance",
+                "Open report-line provenance",
+                "Open retained report-line provenance rows that reference this security.",
+                BuildReportLineProvenanceHref(),
+                true,
+                string.Empty,
+                FinancialRecordExplorerTone.Info));
+        }
+
+        return actions;
+    }
+
+    private static IReadOnlyList<FinancialRecordExplorerRelationshipDto> BuildSecurityImpacts(
+        WorkstationSecurityReference reference,
+        string securityHref,
+        SecurityInstrumentEnrichment enrichment)
+    {
+        var impacts = new List<FinancialRecordExplorerRelationshipDto>
+        {
+            new("instrument-coverage", "Instrument coverage", $"Coverage state is {reference.CoverageStatus}.", securityHref, ToneFromCoverage(reference.CoverageStatus))
+        };
+
+        if (enrichment.Passport is not null)
+        {
+            var passportHref = BuildInstrumentPassportHref(enrichment.Passport.SecurityId);
+            impacts.Add(new(
+                "instrument-passport",
+                "Instrument passport",
+                enrichment.Passport.TrustPosture.Summary,
+                passportHref,
+                ToneFromTrustPosture(enrichment.Passport.TrustPosture.Tone)));
+
+            if (enrichment.Passport.TrustPosture.HasOpenConflicts)
+            {
+                impacts.Add(new(
+                    "security-master-conflicts",
+                    "Conflict blockers",
+                    $"{enrichment.Passport.TrustPosture.OpenConflictCount.ToString(CultureInfo.InvariantCulture)} Security Master conflict{Plural(enrichment.Passport.TrustPosture.OpenConflictCount)} require steward review.",
+                    passportHref,
+                    FinancialRecordExplorerTone.Warning));
+            }
+        }
+
+        if (enrichment.Readiness is not null)
+        {
+            var assetHref = BuildAssetOperationsHref(enrichment.Readiness.SecurityId);
+            impacts.Add(new(
+                "asset-operations-readiness",
+                "AssetOperations readiness",
+                BuildReadinessDetail(enrichment.Readiness),
+                assetHref,
+                ToneFromAssetOperationsReadiness(enrichment.Readiness)));
+
+            if (enrichment.Readiness.MissingCapabilities.Count > 0 || enrichment.Readiness.Warnings.Count > 0)
+            {
+                impacts.Add(new(
+                    "asset-operations-validation-blockers",
+                    "Validation blockers",
+                    BuildReadinessBlockerDetail(enrichment.Readiness),
+                    assetHref,
+                    FinancialRecordExplorerTone.Warning));
+            }
+        }
+
+        if (enrichment.Operations is not null)
+        {
+            var assetHref = BuildAssetOperationsHref(enrichment.Operations.Subject.SecurityId);
+            impacts.Add(new(
+                "projected-cash-flows",
+                "Projected cash flows",
+                BuildCashFlowDetail(enrichment.Operations),
+                assetHref,
+                ToneFromCashFlows(enrichment.Operations)));
+            impacts.Add(new(
+                "ledger-projection",
+                "Ledger projection",
+                BuildLedgerProjectionDetail(enrichment.Operations),
+                assetHref,
+                ToneFromLedgerProjections(enrichment.Operations)));
+        }
+
+        return impacts;
+    }
+
+    private static FinancialRecordExplorerCellDto BuildTrustCell(InstrumentPassportDto? passport)
+    {
+        if (passport is null)
+        {
+            return new("trust", "-");
+        }
+
+        return new(
+            "trust",
+            passport.TrustPosture.Tone.ToString(),
+            passport.TrustPosture.TrustScore.ToString(CultureInfo.InvariantCulture),
+            ToneFromTrustPosture(passport.TrustPosture.Tone),
+            BuildInstrumentPassportHref(passport.SecurityId));
+    }
+
+    private static FinancialRecordExplorerCellDto BuildIdentifierConfidenceCell(InstrumentPassportDto? passport)
+    {
+        if (passport is null)
+        {
+            return new("identifierConfidence", "-");
+        }
+
+        return new(
+            "identifierConfidence",
+            BuildIdentifierConfidenceLabel(passport),
+            BuildIdentifierConfidenceDetail(passport),
+            ToneFromIdentifierConfidence(passport),
+            BuildInstrumentPassportHref(passport.SecurityId));
+    }
+
+    private static FinancialRecordExplorerCellDto BuildAssetOperationsCell(AssetOperationsReadinessDto? readiness)
+        => readiness is null
+            ? new("operations", "-")
+            : new(
+                "operations",
+                readiness.Status,
+                BuildReadinessDetail(readiness),
+                ToneFromAssetOperationsReadiness(readiness),
+                BuildAssetOperationsHref(readiness.SecurityId));
+
+    private static FinancialRecordExplorerCellDto BuildCashFlowCell(AssetOperationsDetailDto? operations)
+        => operations is null
+            ? new("cashFlow", "-")
+            : new(
+                "cashFlow",
+                BuildCashFlowSummary(operations),
+                BuildCashFlowDetail(operations),
+                ToneFromCashFlows(operations),
+                BuildAssetOperationsHref(operations.Subject.SecurityId));
+
+    private static FinancialRecordExplorerCellDto BuildLedgerCell(AssetOperationsDetailDto? operations)
+        => operations is null
+            ? new("ledger", "-")
+            : new(
+                "ledger",
+                BuildLedgerProjectionSummary(operations),
+                BuildLedgerProjectionDetail(operations),
+                ToneFromLedgerProjections(operations),
+                BuildAssetOperationsHref(operations.Subject.SecurityId));
+
+    private static string BuildTrustPostureLabel(SecurityMasterTrustPostureDto posture)
+        => $"{posture.Tone} ({posture.TrustScore.ToString(CultureInfo.InvariantCulture)})";
+
+    private static string BuildIdentifierConfidenceLabel(InstrumentPassportDto passport)
+    {
+        var confidence = SelectBestProviderConfidence(passport);
+        if (confidence is not null)
+        {
+            return $"{EmptyFallback(confidence.Provider, "Provider")} {FormatConfidence(confidence.ConfidenceScore)}";
+        }
+
+        if (passport.IdentifierSummary.HasPrimaryIdentifier)
+        {
+            var kind = EmptyFallback(passport.IdentifierSummary.PrimaryIdentifierKind, "Identifier");
+            return $"{kind}: {passport.IdentifierSummary.PrimaryIdentifierValue}";
+        }
+
+        return "No primary identifier";
+    }
+
+    private static string BuildIdentifierConfidenceDetail(InstrumentPassportDto passport)
+    {
+        var confidence = SelectBestProviderConfidence(passport);
+        if (confidence is null)
+        {
+            return passport.IdentifierSummary.Summary;
+        }
+
+        return $"{confidence.ProviderSource} {confidence.MappingKind} mapping for {confidence.Symbol}: {confidence.ConfidenceReason}";
+    }
+
+    private static string BuildReadinessDetail(AssetOperationsReadinessDto readiness)
+    {
+        var total = readiness.Capabilities.Count;
+        var ready = readiness.ReadyCapabilities.Count;
+        if (readiness.MissingCapabilities.Count == 0 && readiness.Warnings.Count == 0)
+        {
+            return $"{ready.ToString(CultureInfo.InvariantCulture)}/{total.ToString(CultureInfo.InvariantCulture)} capability{Plural(total)} ready.";
+        }
+
+        return BuildReadinessBlockerDetail(readiness);
+    }
+
+    private static string BuildReadinessBlockerDetail(AssetOperationsReadinessDto readiness)
+    {
+        var blockers = readiness.MissingCapabilities
+            .Concat(readiness.Warnings)
+            .Where(HasText)
+            .Take(4)
+            .ToArray();
+        return blockers.Length == 0
+            ? "No validation blockers retained."
+            : string.Join("; ", blockers);
+    }
+
+    private static string BuildCashFlowSummary(AssetOperationsDetailDto operations)
+    {
+        var count = operations.ProjectedCashFlows.Count;
+        return count == 0
+            ? "No projection"
+            : $"{count.ToString(CultureInfo.InvariantCulture)} projected";
+    }
+
+    private static string BuildCashFlowDetail(AssetOperationsDetailDto operations)
+    {
+        var next = operations.ProjectedCashFlows
+            .OrderBy(static flow => flow.DueDate)
+            .FirstOrDefault();
+        if (next is null)
+        {
+            return "No retained projected cash-flow row is available.";
+        }
+
+        return $"Next {next.FlowType} due {next.DueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} for {FormatAmountCurrency(next.Amount, next.Currency)} ({next.Status}).";
+    }
+
+    private static string BuildLedgerProjectionSummary(AssetOperationsDetailDto operations)
+    {
+        var count = operations.LedgerProjections.Count;
+        return count == 0
+            ? "No projection"
+            : $"{count.ToString(CultureInfo.InvariantCulture)} projection{Plural(count)}";
+    }
+
+    private static string BuildLedgerProjectionDetail(AssetOperationsDetailDto operations)
+    {
+        var latest = operations.LedgerProjections
+            .OrderByDescending(static projection => projection.AccountingDate)
+            .FirstOrDefault();
+        if (latest is null)
+        {
+            return "No retained ledger-projection row is available.";
+        }
+
+        var amount = latest.DebitAmount ?? latest.CreditAmount ?? 0m;
+        return $"{latest.ProjectionType} {latest.Status} on {latest.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} for {FormatAmountCurrency(amount, latest.Currency)}.";
+    }
+
+    private static string BuildReportLineUsageDetail(IReadOnlyList<SecurityReportLineUsage> usages)
+    {
+        var lineKeys = usages
+            .Select(static usage => usage.Line.LineKey)
+            .Where(HasText)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(3)
+            .ToArray();
+        return lineKeys.Length == 0
+            ? "Retained report-line provenance references this security."
+            : $"Lines: {string.Join(", ", lineKeys)}.";
+    }
+
+    private static InstrumentPassportProviderConfidenceDto? SelectBestProviderConfidence(InstrumentPassportDto passport)
+        => passport.ProviderConfidence
+            .OrderByDescending(static confidence => confidence.ConfidenceScore)
+            .FirstOrDefault();
+
+    private static IReadOnlyList<SecurityReportLineUsage> CollectSecurityReportLineUsages(
+        WorkstationSecurityReference reference,
+        IReadOnlyList<ReportPackWorkflowRecordDto> records)
+    {
+        var usages = new List<SecurityReportLineUsage>();
+        foreach (var record in records)
+        {
+            foreach (var line in record.LineProvenance ?? [])
+            {
+                if (IsSameSecurityReportLine(reference, line))
+                {
+                    usages.Add(new(record, line));
+                }
+            }
+        }
+
+        return usages;
+    }
+
+    private static bool IsSameSecurityReportLine(
+        WorkstationSecurityReference reference,
+        ReportPackLineProvenanceDto line)
+    {
+        if (reference.SecurityId != Guid.Empty && HasText(line.SecurityMasterId))
+        {
+            if (Guid.TryParse(line.SecurityMasterId, out var lineSecurityId) && lineSecurityId == reference.SecurityId)
+            {
+                return true;
+            }
+
+            if (string.Equals(line.SecurityMasterId, reference.SecurityId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        var candidateIdentifiers = new[]
+            {
+                reference.PrimaryIdentifier,
+                reference.MatchedIdentifierValue,
+                reference.DisplayName
+            }
+            .Where(HasText)
+            .Select(static value => value!.Trim())
+            .ToArray();
+
+        return candidateIdentifiers.Any(identifier =>
+            string.Equals(line.SecurityDefinitionId, identifier, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(line.SourceId, identifier, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string BuildInstrumentPassportHref(Guid securityId)
+        => UiApiRoutes.WithParam(UiApiRoutes.WorkstationSecurityMasterInstrumentPassport, "securityId", securityId.ToString("D"));
+
+    private static string BuildAssetOperationsHref(Guid securityId)
+        => UiApiRoutes.WithParam(UiApiRoutes.WorkstationAssetOperations, "securityId", securityId.ToString("D"));
+
+    private static string BuildReportLineProvenanceHref()
+        => UiApiRoutes.WithParam(UiApiRoutes.WorkstationFinancialRecordExplorer, "explorerId", ReportLineProvenanceExplorerId);
+
+    private static string FormatConfidence(decimal score)
+    {
+        var percentage = score <= 1m ? score * 100m : score;
+        return $"{percentage.ToString("0.#", CultureInfo.InvariantCulture)}%";
+    }
+
+    private static string FormatAmountCurrency(decimal amount, string currency)
+        => $"{amount.ToString("N2", CultureInfo.InvariantCulture)} {currency}";
 
     private static IReadOnlyList<FinancialRecordExplorerScopeItemDto> BuildReportLineProvenanceScope(
         IReadOnlyList<ReportPackWorkflowRecordDto> records,
@@ -1004,7 +1516,8 @@ public sealed class FinancialRecordExplorerReadService
     private static IReadOnlyList<FinancialRecordExplorerRelationshipDto> BuildSecurityUsedIn(
         StrategyRunDetail detail,
         WorkstationSecurityReference reference,
-        string href)
+        string href,
+        SecurityInstrumentEnrichment enrichment)
     {
         var relationships = new List<FinancialRecordExplorerRelationshipDto>();
         if (detail.Portfolio?.Positions.Any(position => IsSameSecurity(position.Security, reference)) == true)
@@ -1015,6 +1528,26 @@ public sealed class FinancialRecordExplorerReadService
         if (detail.Ledger?.TrialBalance.Any(line => IsSameSecurity(line.Security, reference)) == true)
         {
             relationships.Add(new("ledger-line", "Ledger trial balance", "Referenced by retained ledger trial-balance rows.", UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", detail.Summary.RunId)));
+        }
+
+        if (enrichment.ReportLineUsages.Count > 0)
+        {
+            relationships.Add(new(
+                "report-line-provenance",
+                "Report-line provenance",
+                $"{enrichment.ReportLineUsages.Count.ToString(CultureInfo.InvariantCulture)} retained report line{Plural(enrichment.ReportLineUsages.Count)} reference this security.",
+                BuildReportLineProvenanceHref(),
+                FinancialRecordExplorerTone.Info));
+        }
+
+        if (enrichment.Operations?.ReconciliationResults.Count > 0)
+        {
+            relationships.Add(new(
+                "asset-operations-reconciliation",
+                "AssetOperations reconciliation",
+                $"{enrichment.Operations.ReconciliationResults.Count.ToString(CultureInfo.InvariantCulture)} retained reconciliation result{Plural(enrichment.Operations.ReconciliationResults.Count)} reference projected or actual activity for this security.",
+                BuildAssetOperationsHref(enrichment.Operations.Subject.SecurityId),
+                ToneFromReconciliationResults(enrichment.Operations)));
         }
 
         if (relationships.Count == 0)
@@ -1679,6 +2212,104 @@ public sealed class FinancialRecordExplorerReadService
             _ => FinancialRecordExplorerTone.Warning
         };
 
+    private static FinancialRecordExplorerTone ToneFromTrustPosture(SecurityMasterTrustTone tone)
+        => tone switch
+        {
+            SecurityMasterTrustTone.Trusted => FinancialRecordExplorerTone.Success,
+            SecurityMasterTrustTone.Review => FinancialRecordExplorerTone.Warning,
+            SecurityMasterTrustTone.Blocked => FinancialRecordExplorerTone.Danger,
+            _ => FinancialRecordExplorerTone.Default
+        };
+
+    private static FinancialRecordExplorerTone ToneFromIdentifierConfidence(InstrumentPassportDto passport)
+    {
+        var confidence = SelectBestProviderConfidence(passport);
+        if (confidence is not null)
+        {
+            return ToneFromConfidence(confidence.ConfidenceScore);
+        }
+
+        return passport.IdentifierSummary.HasPrimaryIdentifier
+            ? FinancialRecordExplorerTone.Info
+            : FinancialRecordExplorerTone.Warning;
+    }
+
+    private static FinancialRecordExplorerTone ToneFromConfidence(decimal score)
+    {
+        var percentage = score <= 1m ? score * 100m : score;
+        return percentage >= 80m ? FinancialRecordExplorerTone.Success :
+            percentage >= 50m ? FinancialRecordExplorerTone.Warning :
+            FinancialRecordExplorerTone.Danger;
+    }
+
+    private static FinancialRecordExplorerTone ToneFromAssetOperationsReadiness(AssetOperationsReadinessDto? readiness)
+    {
+        if (readiness is null)
+        {
+            return FinancialRecordExplorerTone.Default;
+        }
+
+        if (readiness.MissingCapabilities.Count == 0 &&
+            readiness.Warnings.Count == 0 &&
+            ContainsStatusToken(readiness.Status, "ready"))
+        {
+            return FinancialRecordExplorerTone.Success;
+        }
+
+        return ToneFromStatusText(readiness.Status, FinancialRecordExplorerTone.Warning);
+    }
+
+    private static FinancialRecordExplorerTone ToneFromCashFlows(AssetOperationsDetailDto operations)
+        => operations.ProjectedCashFlows.Count == 0
+            ? FinancialRecordExplorerTone.Warning
+            : operations.ProjectedCashFlows.Any(static flow => IsNegativeStatus(flow.Status))
+                ? FinancialRecordExplorerTone.Warning
+                : FinancialRecordExplorerTone.Success;
+
+    private static FinancialRecordExplorerTone ToneFromLedgerProjections(AssetOperationsDetailDto operations)
+        => operations.LedgerProjections.Count == 0
+            ? FinancialRecordExplorerTone.Warning
+            : operations.LedgerProjections.Any(static projection => IsNegativeStatus(projection.Status))
+                ? FinancialRecordExplorerTone.Warning
+                : FinancialRecordExplorerTone.Success;
+
+    private static FinancialRecordExplorerTone ToneFromReconciliationResults(AssetOperationsDetailDto operations)
+        => operations.ReconciliationResults.Count == 0
+            ? FinancialRecordExplorerTone.Default
+            : operations.ReconciliationResults.Any(static result => IsNegativeStatus(result.MatchStatus))
+                ? FinancialRecordExplorerTone.Warning
+                : FinancialRecordExplorerTone.Success;
+
+    private static FinancialRecordExplorerTone ToneFromStatusText(string? status, FinancialRecordExplorerTone fallback)
+    {
+        if (!HasText(status))
+        {
+            return fallback;
+        }
+
+        return IsNegativeStatus(status) ? FinancialRecordExplorerTone.Warning :
+            ContainsStatusToken(status, "ready") ||
+            ContainsStatusToken(status, "matched") ||
+            ContainsStatusToken(status, "complete") ||
+            ContainsStatusToken(status, "posted") ||
+            ContainsStatusToken(status, "projected") ||
+            ContainsStatusToken(status, "generated")
+                ? FinancialRecordExplorerTone.Success
+                : fallback;
+    }
+
+    private static bool IsNegativeStatus(string? status)
+        => ContainsStatusToken(status, "block") ||
+           ContainsStatusToken(status, "missing") ||
+           ContainsStatusToken(status, "fail") ||
+           ContainsStatusToken(status, "break") ||
+           ContainsStatusToken(status, "mismatch") ||
+           ContainsStatusToken(status, "error");
+
+    private static bool ContainsStatusToken(string? status, string token)
+        => !string.IsNullOrWhiteSpace(status) &&
+           status.IndexOf(token, StringComparison.OrdinalIgnoreCase) >= 0;
+
     private static FinancialRecordExplorerTone ToneFromReportPackState(ReportPackWorkflowStateDto state)
         => state switch
         {
@@ -1734,4 +2365,14 @@ public sealed class FinancialRecordExplorerReadService
 
         return string.IsNullOrWhiteSpace(slug) ? "view" : slug;
     }
+
+    private sealed record SecurityInstrumentEnrichment(
+        InstrumentPassportDto? Passport,
+        AssetOperationsDetailDto? Operations,
+        AssetOperationsReadinessDto? Readiness,
+        IReadOnlyList<SecurityReportLineUsage> ReportLineUsages);
+
+    private sealed record SecurityReportLineUsage(
+        ReportPackWorkflowRecordDto Record,
+        ReportPackLineProvenanceDto Line);
 }

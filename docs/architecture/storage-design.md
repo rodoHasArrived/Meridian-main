@@ -11,7 +11,7 @@ This document captures the Meridian storage architecture as it exists today, plu
 
 > ## Primary Mission: Evidence-Backed Data Collection & Archival
 >
-> Meridian storage is designed as a **collection and archival subsystem** that supports the broader fund-management platform. Its primary storage mission is:
+> Meridian storage is designed as a **collection and archival subsystem** that supports the broader operational-finance platform. Its primary storage mission is:
 >
 > 1. **Reliable Data Collection**: Capture market data from multiple sources with minimal gaps
 > 2. **Long-Term Archival**: Store data securely with integrity verification for years or indefinitely

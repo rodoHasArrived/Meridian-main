@@ -59,6 +59,7 @@ Non-trigger examples:
 - Do not remove code that may be used indirectly by reflection, DI, source generation, attributes, or XAML bindings without evidence.
 - Do not change public contracts, ADR traceability attributes, cancellation flow, or project boundaries as part of cleanup.
 - Keep large cleanup requests theme-based; avoid mixing unrelated edits in one pass.
+- Do not run broad formatters or cosmetic-only rewrites outside the chosen cleanup target.
 - Prefer notes over risky rewrites when a "cleanup" request is really an architectural refactor.
 
 ## Cleanup Lenses

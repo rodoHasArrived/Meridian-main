@@ -322,11 +322,13 @@ task-stop evidence checks.
   and quickstart so users can see the active lane, loaded context, next evidence, and reason for
   meaningful tool or context expansion.
 - Use `.codex/memory/index.yml` selectively when a task descriptor, current intent, selected skill,
-  changed paths, branch, or explicit tags match a memory entry. Use `--explain` routing when scope
-  sensitivity matters, and keep canonical docs and selected skills authoritative when memory
-  disagrees.
+  changed paths, branch, or explicit tags match a memory entry. Use `--receipt` for user-visible
+  reference/dereference notices, add `--explain` when scope sensitivity needs full routing detail,
+  and keep canonical docs and selected skills authoritative when memory disagrees.
 - Use `.codex/memory/goals/*.yml` inventories for very long Codex goals that need progress,
-  evidence, next actions, and active task descriptor state across compaction or continuation.
+  evidence, next actions, and active task descriptor state across compaction or continuation. Update
+  them through `--record-goal-progress` so the checker validates the write and prints a memory
+  update notice.
 - Promote session observations to task, branch, or repo memory only through
   [`memory-system.md`](memory-system.md); repo-level promotion requires current source references.
 - Keep the skill selection receipt in the Codex execution contract and quickstart: after selecting

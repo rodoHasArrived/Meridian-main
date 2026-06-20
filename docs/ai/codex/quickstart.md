@@ -156,7 +156,7 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 | Prompt-routed handoff packet generation | `docs/ai/agent-handoff-checklist.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`; `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`; `git diff --check -- <paths>` |
 | Scoped repository text rewrite | `docs/ai/codex/quickstart.md`, `src/Meridian.Mcp/README.md` when MCP exposure changes | `python -m unittest build.scripts.ai.tests.test_ai_edit_tool`; `dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj`; `git diff --check -- build/scripts/ai src/Meridian.Mcp docs/ai/codex/quickstart.md` |
 | Codex skill, prompt, checklist, or AI index | `docs/ai/codex/README.md`, `.codex/skills/README.md`, nearest skill or prompt index | `python build/scripts/docs/check-codex-skills.py --summary`; `python build/scripts/docs/check-ai-inventory.py --summary`; `git diff --check -- <paths>` |
-| Codex memory index, entry, descriptor, goal inventory, or promotion workflow | `docs/ai/codex/memory-system.md`, `.codex/memory/README.md` | `python build/scripts/docs/check-codex-memory.py --summary`; `python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary`; `python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --explain --summary`; `python -m unittest build.scripts.docs.tests.test_check_codex_memory`; `git diff --check -- <paths>` |
+| Codex memory index, entry, descriptor, goal inventory, or promotion workflow | `docs/ai/codex/memory-system.md`, `.codex/memory/README.md` | `python build/scripts/docs/check-codex-memory.py --summary`; `python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary`; `python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary`; `python -m unittest build.scripts.docs.tests.test_check_codex_memory`; `git diff --check -- <paths>` |
 | Shared AI policy | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, affected host index | `python build/scripts/docs/check-ai-inventory.py --summary`; contract-drift check when policy JSON changes |
 | Repo navigation or MCP routing | `docs/ai/navigation/README.md`, generated navigation inputs | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary`; `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |
 | Browser workstation | `src/Meridian.Ui/dashboard/README.md` when present, related screen docs | `npm --prefix src/Meridian.Ui/dashboard run test`; targeted Vitest file when the change is narrow; `npm --prefix src/Meridian.Ui/dashboard run build` for build-facing changes |
@@ -204,8 +204,8 @@ browser workstation, or product UI code.
 ## Final Response Checklist
 
 - Skill selection receipt with selected skill, mode, reason, and required opening shape.
-- Memory entries loaded, skipped, or updated when `.codex/memory/index.yml`, a task descriptor, or
-  a goal inventory matched the task.
+- Memory receipt from `--receipt` when `.codex/memory/index.yml`, a task descriptor, or a goal
+  inventory matched the task, plus any `--record-goal-progress` update made during the run.
 - Files changed and why.
 - Validation commands with pass/fail results.
 - Unrelated dirty-worktree changes explicitly excluded.

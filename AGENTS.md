@@ -28,7 +28,7 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 
 ## Current Direction
 
-- Meridian is a .NET 10 fund-management and trading-platform codebase.
+- Meridian is a .NET 10 operational-finance and trading-platform codebase; fund management is a first-class specialization, not the root model for every workflow.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - Position roadmap and docs work from current source evidence, the roadmap registry, and the current [Meridian Design Document](docs/product/meridian-design-document.md).
 - Treat prior baselines and named productization targets as roadmap/status evidence, not development ceilings. Expansion lanes can proceed when current source, roadmap, or user direction supports them.
@@ -50,8 +50,9 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 7. If local machine capacity, restore, or MSBuild locks block validation, push the branch and use the manual GitHub-hosted `Targeted Test` workflow with a repo-relative test project under `tests/` plus `dotnet_filter` before retrying broad local scripts.
 8. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
 9. For Codex memory changes, update `.codex/memory/index.yml` plus the indexed Markdown entry, task
-   descriptor, or goal inventory, keep user/global tiers disabled unless explicitly opted in, and
-   run `python build/scripts/docs/check-codex-memory.py --summary`.
+   descriptor, or goal inventory, keep user/global tiers disabled unless explicitly opted in, use
+   `--receipt` when routing memory for a task or long goal, and run
+   `python build/scripts/docs/check-codex-memory.py --summary`.
 10. For Codex development workflow changes, keep `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`, `.codex/skills/_shared/*`, `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md` synchronized when they teach the same rule.
 11. For documentation rebuild work, update the new canonical audience path first, then archive or redirect older hand-authored material in reviewable batches.
 

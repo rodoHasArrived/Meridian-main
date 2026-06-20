@@ -8,7 +8,7 @@ import fnmatch
 import json
 import sys
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -124,7 +124,16 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
     try:
         import yaml  # type: ignore
 
-        return yaml.safe_dump(data, sort_keys=False, allow_unicode=False)
+        class IndentedSafeDumper(yaml.SafeDumper):
+            def increase_indent(self, flow: bool = False, indentless: bool = False) -> Any:  # type: ignore[override]
+                return super().increase_indent(flow, False)
+
+        return yaml.dump(
+            normalize_yaml_dump_value(data),
+            Dumper=IndentedSafeDumper,
+            sort_keys=False,
+            allow_unicode=False,
+        )
     except Exception:
         lines: list[str] = []
         prefix = " " * indent
@@ -145,6 +154,18 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         else:
             lines.append(f"{prefix}{format_scalar(data)}")
         return "\n".join(lines) + "\n"
+
+
+def normalize_yaml_dump_value(value: Any) -> Any:
+    if isinstance(value, datetime):
+        return value.isoformat().replace("+00:00", "Z")
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {key: normalize_yaml_dump_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [normalize_yaml_dump_value(item) for item in value]
+    return value
 
 
 def format_scalar(value: Any) -> str:
@@ -1003,6 +1024,52 @@ def goal_inventory_summary(goal_inventory: dict[str, Any] | None) -> dict[str, A
     }
 
 
+def primary_text(values: Sequence[str]) -> str:
+    return next((value for value in values if value), "no reason recorded")
+
+
+def receipt_entry(decision: RoutingDecision, reason: str) -> dict[str, Any]:
+    return {
+        "id": decision.id,
+        "tier": decision.tier,
+        "scope": decision.scope,
+        "file": decision.file,
+        "reason": reason,
+        "warnings": list(decision.warnings),
+    }
+
+
+def build_memory_receipt(
+    decisions: Sequence[RoutingDecision],
+    task_descriptor: dict[str, Any] | None,
+    goal_inventory: dict[str, Any] | None,
+) -> dict[str, Any]:
+    referenced: list[dict[str, Any]] = []
+    dereferenced: list[dict[str, Any]] = []
+    stale_warnings: list[dict[str, str]] = []
+
+    for decision in decisions:
+        if decision.selected:
+            item = receipt_entry(decision, primary_text(decision.reasons))
+            referenced.append(item)
+        else:
+            item = receipt_entry(decision, primary_text(decision.skipped_reasons))
+            dereferenced.append(item)
+        for warning in decision.warnings:
+            stale_warnings.append({"id": decision.id, "warning": warning})
+
+    return {
+        "task_id": task_descriptor.get("task_id") if task_descriptor else None,
+        "goal_id": goal_inventory.get("goal_id") if goal_inventory else None,
+        "referenced_count": len(referenced),
+        "dereferenced_count": len(dereferenced),
+        "stale_warning_count": len(stale_warnings),
+        "referenced": referenced,
+        "dereferenced": dereferenced,
+        "stale_warnings": stale_warnings,
+    }
+
+
 def build_payload(
     root: Path,
     findings: Sequence[Finding],
@@ -1038,6 +1105,7 @@ def build_payload(
         "routing_conflicts": [
             asdict(decision) for decision in decisions or [] if decision.task_scope_conflict
         ],
+        "memory_receipt": build_memory_receipt(decisions or [], task_descriptor, goal_inventory),
         "task_descriptor": task_descriptor_summary(task_descriptor),
         "goal_inventory": goal_inventory_summary(goal_inventory),
         "findings": [asdict(finding) for finding in findings],
@@ -1077,8 +1145,53 @@ def print_summary(payload: dict[str, Any], explain: bool = False) -> None:
         print(f"{finding['severity']}: {finding['path']}: {finding['message']}")
 
 
+def print_receipt(payload: dict[str, Any]) -> None:
+    receipt = payload.get("memory_receipt", {})
+    print("Memory receipt:")
+    if receipt.get("goal_id"):
+        print(f"goal: {receipt['goal_id']}")
+    if receipt.get("task_id"):
+        print(f"task: {receipt['task_id']}")
+
+    referenced = receipt.get("referenced", [])
+    if referenced:
+        for entry in referenced:
+            print(f"referenced: {entry['id']} -> {entry['file']} ({entry['reason']})")
+    else:
+        print("referenced: none")
+
+    dereferenced = receipt.get("dereferenced", [])
+    display_limit = 12
+    if dereferenced:
+        for entry in dereferenced[:display_limit]:
+            print(f"dereferenced: {entry['id']} -> {entry['file']} ({entry['reason']})")
+        hidden_count = len(dereferenced) - display_limit
+        if hidden_count > 0:
+            print(f"dereferenced: {hidden_count} additional entrie(s); use --explain or --json-output for details")
+    else:
+        print("dereferenced: none")
+
+    for warning in receipt.get("stale_warnings", []):
+        print(f"stale-warning: {warning['id']}: {warning['warning']}")
+
+
 def list_arg(values: Sequence[str] | None) -> list[str]:
     return list(values or [])
+
+
+def current_utc_timestamp() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def append_unique_strings(existing: Any, additions: Sequence[str]) -> list[str]:
+    values = string_values(existing)
+    seen = set(values)
+    for value in additions:
+        if value in seen:
+            continue
+        values.append(value)
+        seen.add(value)
+    return values
 
 
 def default_review_after(tier: str) -> str:
@@ -1282,6 +1395,92 @@ def promote_session(root: Path, args: argparse.Namespace) -> int:
     return 0
 
 
+def resolve_goal_inventory_write_path(root: Path, raw_path: str) -> tuple[Path | None, list[Finding]]:
+    goal_path, findings = safe_memory_path(root, raw_path, raw_path)
+    if goal_path is None:
+        return None, findings
+    goals_root = (root / MEMORY_ROOT_REL / "goals").resolve()
+    try:
+        goal_path.relative_to(goals_root)
+    except ValueError:
+        findings.append(Finding("error", raw_path, f"Goal inventory must live under {MEMORY_ROOT_REL}/goals."))
+        return None, findings
+    if goal_path.suffix.lower() not in {".yml", ".yaml"}:
+        findings.append(Finding("error", rel(root, goal_path), "Goal inventory must be a .yml or .yaml file."))
+    if not goal_path.is_file():
+        findings.append(Finding("error", rel(root, goal_path), "Goal inventory does not exist."))
+    return goal_path, findings
+
+
+def record_goal_progress(root: Path, args: argparse.Namespace) -> int:
+    goal_path, path_findings = resolve_goal_inventory_write_path(root, args.goal)
+    if path_findings:
+        for finding in path_findings:
+            print(f"{finding.severity}: {finding.path}: {finding.message}", file=sys.stderr)
+        return 1
+    assert goal_path is not None
+
+    goal, findings = load_goal_inventory(root, args.goal)
+    errors = [finding for finding in findings if finding.severity == "error"]
+    if goal is None or errors:
+        for finding in findings:
+            print(f"{finding.severity}: {finding.path}: {finding.message}", file=sys.stderr)
+        return 1
+
+    progress_items = goal.get("progress_inventory")
+    if not isinstance(progress_items, list):
+        print(f"error: {rel(root, goal_path)}: progress_inventory must be a list.", file=sys.stderr)
+        return 1
+
+    timestamp = args.progress_updated_at or current_utc_timestamp()
+    evidence_refs = list_arg(args.progress_evidence_ref)
+    progress_id = args.record_goal_progress
+    action = "updated"
+    target = next(
+        (item for item in progress_items if isinstance(item, dict) and item.get("id") == progress_id),
+        None,
+    )
+    if target is None:
+        target = {
+            "id": progress_id,
+            "status": args.progress_status,
+            "summary": args.progress_summary,
+            "evidence_refs": evidence_refs,
+            "updated_at": timestamp,
+        }
+        progress_items.append(target)
+        action = "created"
+    else:
+        target["status"] = args.progress_status
+        target["summary"] = args.progress_summary
+        target["evidence_refs"] = evidence_refs
+        target["updated_at"] = timestamp
+
+    goal["updated_at"] = timestamp
+    if args.next_action:
+        goal["next_actions"] = append_unique_strings(goal.get("next_actions"), list_arg(args.next_action))
+    if args.open_question:
+        goal["open_questions"] = append_unique_strings(goal.get("open_questions"), list_arg(args.open_question))
+
+    _, validation_findings = validate_goal_inventory(root, goal, rel(root, goal_path))
+    validation_errors = [finding for finding in validation_findings if finding.severity == "error"]
+    if validation_errors:
+        for finding in validation_findings:
+            print(f"{finding.severity}: {finding.path}: {finding.message}", file=sys.stderr)
+        return 1
+
+    write_text_if_changed(goal_path, dump_yaml(goal))
+    print("Memory update: goal progress recorded")
+    print(f"goal: {goal.get('goal_id')} ({goal.get('status')})")
+    print(f"progress: {progress_id} -> {args.progress_status} ({action})")
+    print(f"evidence_refs: {len(evidence_refs)}")
+    if args.next_action:
+        print(f"next_actions_added: {len(args.next_action)}")
+    if args.open_question:
+        print(f"open_questions_added: {len(args.open_question)}")
+    return 0
+
+
 def markdown_body(text: str) -> str:
     if not text.startswith("---\n"):
         return text
@@ -1341,6 +1540,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--task", help="Repo-relative .codex/memory/tasks/*.yml task descriptor used for routing.")
     parser.add_argument("--goal", help="Repo-relative .codex/memory/goals/*.yml long-goal inventory used for progress and routing.")
     parser.add_argument("--explain", action="store_true", help="Print selected and skipped routing reasons.")
+    parser.add_argument("--receipt", action="store_true", help="Print a user-facing memory reference/dereference receipt.")
     parser.add_argument("--paths", nargs="*", default=[], help="Repo-relative paths used for routing selection.")
     parser.add_argument("--tags", nargs="*", default=[], help="Explicit tags used for routing selection.")
     parser.add_argument("--skills", nargs="*", default=[], help="Skill names used for routing selection.")
@@ -1388,10 +1588,22 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--promote-review-after")
     parser.add_argument("--apply", action="store_true", help="Apply --promote-session. Without this, promotion is dry-run.")
     parser.add_argument("--archive-source", action="store_true", help="Archive the source session file after applied promotion.")
+
+    parser.add_argument("--record-goal-progress", metavar="ID", help="Create or update one progress item in --goal.")
+    parser.add_argument("--progress-status", choices=sorted(ALLOWED_PROGRESS_STATUS))
+    parser.add_argument("--progress-summary")
+    parser.add_argument("--progress-evidence-ref", action="append", default=[])
+    parser.add_argument("--progress-updated-at")
+    parser.add_argument("--next-action", action="append", default=[])
+    parser.add_argument("--open-question", action="append", default=[])
     return parser.parse_args(argv)
 
 
 def validate_write_args(args: argparse.Namespace) -> int:
+    write_modes = [bool(args.write_stub), bool(args.promote_session), bool(args.record_goal_progress)]
+    if sum(write_modes) > 1:
+        print("error: choose only one write mode: --write-stub, --promote-session, or --record-goal-progress.", file=sys.stderr)
+        return 1
     if args.write_stub:
         if not args.stub_file:
             print("error: --write-stub requires --stub-file.", file=sys.stderr)
@@ -1413,9 +1625,25 @@ def validate_write_args(args: argparse.Namespace) -> int:
         if not args.promote_invalidates_when:
             print("error: --promote-session requires --promote-invalidates-when.", file=sys.stderr)
             return 1
-    if args.write_stub and args.promote_session:
-        print("error: choose either --write-stub or --promote-session, not both.", file=sys.stderr)
-        return 1
+    if args.record_goal_progress:
+        if not args.goal:
+            print("error: --record-goal-progress requires --goal.", file=sys.stderr)
+            return 1
+        if not args.progress_status:
+            print("error: --record-goal-progress requires --progress-status.", file=sys.stderr)
+            return 1
+        if not args.progress_summary:
+            print("error: --record-goal-progress requires --progress-summary.", file=sys.stderr)
+            return 1
+        if not args.progress_evidence_ref:
+            print("error: --record-goal-progress requires at least one --progress-evidence-ref.", file=sys.stderr)
+            return 1
+        if args.progress_updated_at:
+            timestamp_findings = validate_iso_timestamp(args.progress_updated_at, "progress_updated_at", "--progress-updated-at")
+            if timestamp_findings:
+                for finding in timestamp_findings:
+                    print(f"{finding.severity}: {finding.path}: {finding.message}", file=sys.stderr)
+                return 1
     return 0
 
 
@@ -1430,6 +1658,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return write_stub(root, args)
     if args.promote_session:
         return promote_session(root, args)
+    if args.record_goal_progress:
+        return record_goal_progress(root, args)
 
     goal_inventory: dict[str, Any] | None = None
     goal_findings: list[Finding] = []
@@ -1465,8 +1695,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
+    printed_summary = False
     if args.summary or not args.json_output:
         print_summary(payload, args.explain)
+        printed_summary = True
+    if args.receipt:
+        if printed_summary:
+            print()
+        print_receipt(payload)
 
     return 0 if payload["status"] == "pass" else 1
 

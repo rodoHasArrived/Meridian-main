@@ -2,8 +2,12 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +17,8 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class WorkstationEndpointsTests
 {
+    private static readonly Guid FinancialRecordExplorerAaplSecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
     [Theory]
     [InlineData("ledger")]
     [InlineData("portfolio")]
@@ -162,6 +168,76 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExposePassportOperationsAndReportUsage()
+    {
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-security-run", withBreaks: false));
+        workflow.Create(
+            "northwind-income",
+            "acct-investments",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "report.author",
+            [
+                new ReportPackLineProvenanceDto(
+                    LineKey: "holdings.aapl.market-value",
+                    SourceKind: "position",
+                    SourceId: "AAPL",
+                    EvidenceId: "position-aapl-evidence",
+                    RunId: "financial-record-explorer-security-run",
+                    LedgerEntryId: "ledger-aapl-position",
+                    ReconciliationCaseId: "recon-aapl",
+                    ReportValue: "400.00",
+                    SourceSessionId: "provider-session-aapl",
+                    ReconciliationRunId: "recon-run-aapl",
+                    ProviderEventId: "provider-event-aapl",
+                    SecurityMasterId: FinancialRecordExplorerAaplSecurityId.ToString("D"),
+                    SecurityDefinitionId: "AAPL",
+                    ReconciliationOutcome: "matched",
+                    ApprovalId: "approval-aapl")
+            ]);
+
+        var explorer = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/security-instrument",
+            ServerJsonOptions);
+
+        explorer.Should().NotBeNull();
+        explorer!.ExplorerId.Should().Be("security-instrument");
+        explorer.SummaryItems.Select(static item => item.Label).Should().Contain(["Passports", "Operations", "Report Usage"]);
+        explorer.Columns.Select(static column => column.ColumnId).Should().Contain(
+            ["trust", "identifierConfidence", "operations", "cashFlow", "ledger"]);
+
+        var row = explorer.Rows.Should()
+            .ContainSingle(item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}")
+            .Subject;
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "trust" && cell.DisplayValue == "Trusted");
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "identifierConfidence" && cell.DisplayValue.Contains("96%", StringComparison.Ordinal));
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "operations" && cell.DisplayValue == "Ready");
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "cashFlow" && cell.DisplayValue == "1 projected");
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "ledger" && cell.DisplayValue == "1 projection");
+
+        row.Detail.Fields.Select(static field => field.Label).Should().Contain(
+            ["Trust Posture", "Identifier Confidence", "AssetOperations Readiness", "Projected Cash Flows", "Ledger Projection", "Report Usage"]);
+        row.Detail.UsedIn.Select(static relationship => relationship.Label).Should().Contain(
+            ["Portfolio position", "Ledger trial balance", "Report-line provenance", "AssetOperations reconciliation"]);
+        row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
+            ["Instrument passport", "AssetOperations readiness", "Projected cash flows", "Ledger projection"]);
+
+        var actions = row.Detail.ProofActions.ToDictionary(static action => action.ActionId, StringComparer.OrdinalIgnoreCase);
+        actions["open-security-master"].IsEnabled.Should().BeTrue();
+        actions["open-instrument-passport"].IsEnabled.Should().BeTrue();
+        actions["open-instrument-passport"].Href.Should().Contain($"/api/workstation/security-master/securities/{FinancialRecordExplorerAaplSecurityId:D}/passport");
+        actions["open-asset-operations"].IsEnabled.Should().BeTrue();
+        actions["open-asset-operations"].Href.Should().Contain($"/api/workstation/assets/{FinancialRecordExplorerAaplSecurityId:D}/operations");
+        actions["open-report-line-provenance"].IsEnabled.Should().BeTrue();
+        actions["open-report-line-provenance"].Href.Should().Contain("/api/workstation/financial-record-explorers/report-line-provenance");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerUnknownId_ShouldReturnNotFound()
     {
         await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
@@ -281,9 +357,29 @@ public sealed partial class WorkstationEndpointsTests
 
     private static void RegisterFinancialRecordExplorerTestServices(IServiceCollection services, string savedViewRoot)
     {
+        var lookup = new StubSecurityReferenceLookup();
+        lookup.Register("AAPL", new WorkstationSecurityReference(
+            SecurityId: FinancialRecordExplorerAaplSecurityId,
+            DisplayName: "Apple Inc.",
+            AssetClass: "Equity",
+            Currency: "USD",
+            Status: SecurityStatusDto.Active,
+            PrimaryIdentifier: "AAPL",
+            SubType: "CommonShare",
+            MatchedIdentifierKind: "Ticker",
+            MatchedIdentifierValue: "AAPL",
+            MatchedProvider: "alpaca",
+            ResolutionReason: "Resolved through retained Security Master test fixture.",
+            LookupSource: "Security Master"));
+
+        services.AddSingleton<ISecurityReferenceLookup>(lookup);
         RegisterRunReadServices(services);
         services.AddSingleton<ReportPackWorkflowService>();
         services.AddSingleton<ReportPackDeliveryService>();
+        services.AddSingleton<ISecurityMasterWorkbenchQueryService>(
+            new FinancialRecordExplorerSecurityMasterWorkbenchQueryService(FinancialRecordExplorerAaplSecurityId));
+        services.AddSingleton<IAssetOperationsQueryService>(
+            new FinancialRecordExplorerAssetOperationsQueryService(FinancialRecordExplorerAaplSecurityId));
         services.AddSingleton<IFinancialRecordExplorerSavedViewStore>(_ =>
             new FileFinancialRecordExplorerSavedViewStore(
                 savedViewRoot,

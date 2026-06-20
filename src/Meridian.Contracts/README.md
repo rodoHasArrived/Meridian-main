@@ -851,10 +851,19 @@ evidence attachment, and lifecycle mutations can be rejected once close manageme
 accounting period; validation requests stay non-posting and return `manual-je.period-locked` as a
 critical issue.
 `LedgerDimensionSetDto` is the canonical dimensional accounting envelope for rules, generated
-postings, manual JE headers/lines, mapping profiles, close checks, and reporting/export filters.
-Manual journal normalization trims and retains header dimensions, merges deterministic external GL
-dimension keys, and propagates fund/entity scope to line dimensions while allowing line-specific
-entity, instrument, tax-lot, cost-center, and external GL overrides.
+postings, manual JE headers/lines, mapping profiles, close checks, and reporting/export filters. It
+now supports neutral operational-finance scope across organization, entity, portfolio, book,
+account, customer, vendor, project, counterparty, instrument, cost center, and external GL
+dimensions; fund, investor, and capital-account fields remain first-class specializations for
+fund/private-capital workflows. Manual journal normalization trims and retains header dimensions,
+merges deterministic external GL dimension keys, and propagates fund/entity scope to line
+dimensions while allowing line-specific organization, entity, portfolio, account, instrument,
+tax-lot, cost-center, and external GL overrides.
+`OperationalFinanceScopeDto`, `OperationalEventCommandContextDto`,
+`OperationalFinanceTraceNodeDto`, and `OperationalFinanceRecordTraceDto` provide the read-only
+trace contract for the customer-neutral proof path from operational event through evidence,
+posting candidate, journal lifecycle, ledger impact, report line, package, and audit event without
+introducing a new posting command or bypassing manual journal lifecycle controls.
 `AccountingReportPackageBundleDto` carries close-plan validation and optional retained close workflow
 lineage into financial statement, investor capital, realized gain/loss, NAV, line-level provenance,
 export-artifact manifest, certification, and restatement outputs. Package

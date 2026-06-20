@@ -174,6 +174,37 @@ public enum PrivateCapitalPaymentIntentEvidenceStatusDto
     SettlementMatched = 3
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<OperationalFinanceScopeKindDto>))]
+public enum OperationalFinanceScopeKindDto
+{
+    Organization = 0,
+    Entity = 1,
+    Portfolio = 2,
+    Account = 3,
+    Book = 4,
+    Period = 5,
+    Fund = 6,
+    Investor = 7,
+    CapitalAccount = 8,
+    TreasuryBook = 9,
+    ExternalGl = 10
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<OperationalFinanceTraceStageDto>))]
+public enum OperationalFinanceTraceStageDto
+{
+    OperationalEvent = 0,
+    Evidence = 1,
+    Validation = 2,
+    Reconciliation = 3,
+    PostingCandidate = 4,
+    JournalLifecycle = 5,
+    LedgerImpact = 6,
+    ReportLine = 7,
+    Package = 8,
+    AuditEvent = 9
+}
+
 public sealed record ChartOfAccountsNodeDto(
     string NodeId,
     string Path,
@@ -211,10 +242,76 @@ public sealed record LedgerDimensionSetDto(
     string? TaxLotId = null,
     string? CostCenterId = null,
     string? CounterpartyId = null,
-    IReadOnlyDictionary<string, string>? ExternalGlDimensions = null)
+    IReadOnlyDictionary<string, string>? ExternalGlDimensions = null,
+    string? OrganizationId = null,
+    string? PortfolioId = null,
+    string? BookId = null,
+    string? AccountId = null,
+    string? CustomerId = null,
+    string? VendorId = null,
+    string? ProjectId = null)
 {
     public IReadOnlyDictionary<string, string> ExternalGlDimensions { get; init; } =
         ExternalGlDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+}
+
+public sealed record OperationalFinanceScopeDto(
+    string ScopeId,
+    OperationalFinanceScopeKindDto ScopeKind,
+    string DisplayName,
+    LedgerDimensionSetDto? Dimensions = null,
+    string? OrganizationId = null,
+    string? EntityId = null,
+    string? PortfolioId = null,
+    string? BookId = null,
+    string? AccountId = null);
+
+public sealed record OperationalEventCommandContextDto(
+    string OperationalEventId,
+    string OperationalEventType,
+    DateOnly EffectiveDate,
+    string Actor,
+    OperationalFinanceScopeDto Scope,
+    string? SourceSystem = null,
+    Guid? CorrelationId = null,
+    Guid? CausationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record OperationalFinanceTraceNodeDto(
+    string NodeId,
+    OperationalFinanceTraceStageDto Stage,
+    string DisplayName,
+    string Status,
+    string? RecordId = null,
+    string? Route = null,
+    LedgerDimensionSetDto? Dimensions = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record OperationalFinanceRecordTraceDto(
+    string TraceId,
+    OperationalEventCommandContextDto OperationalEvent,
+    IReadOnlyList<OperationalFinanceTraceNodeDto> Nodes,
+    ManualJournalEntryStatusDto? JournalStatus = null,
+    bool RequiresFundScope = false,
+    IReadOnlyList<string>? BlockedOutputs = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<OperationalFinanceTraceNodeDto> Nodes { get; init; } =
+        Nodes ?? [];
+
+    public IReadOnlyList<string> BlockedOutputs { get; init; } =
+        BlockedOutputs ?? [];
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
 }
 
 public sealed record AccountingRuleConditionDto(

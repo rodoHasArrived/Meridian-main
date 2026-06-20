@@ -13,11 +13,14 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 - For memory-aware Codex tasks, inspect `.codex/memory/index.yml` and, when a scoped task is known,
   route through a `.codex/memory/tasks/<task-id>.yml` descriptor. Load only entries selected by the
   current task descriptor, intent, skill, changed paths, branch, or explicit tags. Canonical docs
-  and selected skills remain authoritative when memory disagrees.
+  and selected skills remain authoritative when memory disagrees. Use
+  `python build/scripts/docs/check-codex-memory.py --task <descriptor> --receipt --summary` or the
+  corresponding `--goal <inventory> --receipt --summary` command to produce the user-visible
+  reference/dereference receipt.
 - For very long Codex goals, keep a `.codex/memory/goals/<goal-id>.yml` inventory with objective,
   status, active task descriptor, progress items, evidence refs, next actions, blockers, and
-  promotion candidates. Refresh it before compaction, after validation, and when the active task
-  descriptor changes.
+  promotion candidates. Refresh it with `--record-goal-progress` before compaction, after
+  validation, and when the active task descriptor changes.
 - When memory is loaded or skipped for task/branch scope, include a compact receipt: selected memory
   IDs, match reason, stale warnings, goal progress count when a goal inventory is active, and
   task/branch entries skipped because their scope did not match.

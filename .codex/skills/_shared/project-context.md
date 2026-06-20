@@ -1,6 +1,6 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-06-16
+> Last verified: 2026-06-20
 > Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`,
 > `docs/product/meridian-design-document.md`,
 > `docs/architecture/meridian-development-intelligence-framework.md`, and
@@ -12,7 +12,7 @@ repeating the same facts in every `SKILL.md`.
 
 ## Platform Snapshot
 
-- Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
+- Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery; fund management is a first-class specialization, not the root model for every workflow.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
@@ -138,8 +138,8 @@ validation stack before broad build or test runs:
 ```bash
 python build/scripts/docs/check-codex-skills.py --summary
 python build/scripts/docs/check-codex-memory.py --summary
-python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary
-python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --explain --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/validate-skill-packages.py
 python build/scripts/docs/validate-roadmap-registry.py --summary

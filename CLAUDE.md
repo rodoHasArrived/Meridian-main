@@ -6,7 +6,7 @@ of copying generated trees into this file.
 
 ## What Meridian Is
 
-Meridian is a .NET 10 trading and fund-operations platform with:
+Meridian is a .NET 10 trading and operational-finance platform with fund operations as a first-class specialization and:
 
 - market data ingestion, streaming, and historical backfill,
 - strategy, backtesting, paper validation, and execution workflows,

@@ -47,7 +47,7 @@ current source instead.
 
 ## Current Product Framing
 
-Meridian is a .NET 10 fund-management and trading platform. Active operator UI work spans
+Meridian is a .NET 10 operational-finance and trading platform where fund management is a first-class specialization. Active operator UI work spans
 [`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/) and
 [`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/), with built browser assets in
 [`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).

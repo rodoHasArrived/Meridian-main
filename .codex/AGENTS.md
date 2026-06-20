@@ -147,8 +147,8 @@ Generator scripts are dry-run by default. Use `-Apply` only after reviewing the 
   `.codex/skills/_shared/codex-execution-contract.md` when available, or report exactly why they
   were not run.
 - Codex memory edits: run `python build/scripts/docs/check-codex-memory.py --summary`,
-  descriptor routing with `--task .codex/memory/tasks/example.yml --explain --summary`, and the
-  long-goal inventory check with `--goal .codex/memory/goals/example.yml --explain --summary`.
+  descriptor routing with `--task .codex/memory/tasks/example.yml --receipt --summary`, and the
+  long-goal inventory check with `--goal .codex/memory/goals/example.yml --receipt --summary`.
   Run the focused memory-checker tests when `build/scripts/docs/check-codex-memory.py` changes.
 - Command guidance edits: verify the referenced script, Make target, project, or `--help` output
   before describing the command as current.

@@ -382,6 +382,46 @@
       }
     },
     {
+      "id": "cleanup-maintainability",
+      "description": "Route focused behavior-preserving cleanup, dead code, stale docs, and tidy maintainability requests to cleanup.",
+      "matchWeighted": {
+        "clean up": 3.0,
+        "cleanup": 3.0,
+        "tidy": 2.5,
+        "dead code": 2.5,
+        "stale docs": 2.2,
+        "maintainability": 2.0,
+        "remove unused": 2.0,
+        "log hygiene": 1.8
+      },
+      "route": {
+        "lane": "cleanup",
+        "skill": "meridian-cleanup",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Focused cleanup prompts must preserve observable behavior, avoid unrelated formatter churn, and prove the touched surface with narrow validation.",
+        "validationFloor": [
+          "git diff --check",
+          "python .codex/skills/meridian-cleanup/scripts/run_evals.py --all --dry-run --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "cleanup-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "cleanup uncovers a likely behavioral bug",
+          "stale material belongs in archive instead of in-place cleanup",
+          "cleanup would change public contracts or architecture boundaries"
+        ]
+      }
+    },
+    {
       "id": "implementation-assurance",
       "description": "Route implementation, rollout certification, and evidence-backed validation requests to implementation assurance.",
       "matchWeighted": {
@@ -900,8 +940,7 @@
         "behavior-preserving": 2.5,
         "extract helper": 1.8,
         "consolidate": 1.8,
-        "modularize without changing": 2.5,
-        "cleanup duplication": 2.0
+        "modularize without changing": 2.5
       },
       "route": {
         "lane": "safe-refactor",

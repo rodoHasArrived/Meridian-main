@@ -232,19 +232,35 @@ Required fields are `version`, `goal_id`, `objective`, `status`, `started_at`, `
 Goal inventories should stay compact. They track progress and evidence, not durable guidance. Put
 reusable facts into task, branch, or repo memory through the normal promotion workflow.
 
+Update goal progress through the checker instead of hand-editing inventory items during a long run:
+
+```bash
+python build/scripts/docs/check-codex-memory.py \
+  --goal .codex/memory/goals/<goal-id>.yml \
+  --record-goal-progress <progress-id> \
+  --progress-status completed \
+  --progress-summary "Recorded the validated memory checkpoint." \
+  --progress-evidence-ref build/scripts/docs/check-codex-memory.py
+```
+
+The command creates or updates one `progress_inventory` item, refreshes `updated_at`, validates the
+result before writing, and prints a compact `Memory update` notice. Add `--next-action` or
+`--open-question` only when the checkpoint changes those lists.
+
 ## Loading Rules
 
 Memory loading must be selective and explainable.
 
 By goal inventory:
 
-- Use `--goal .codex/memory/goals/<goal-id>.yml` for very long Codex goals.
+- Use `--goal .codex/memory/goals/<goal-id>.yml --receipt` for very long Codex goals.
 - When `--goal` is provided and `--task` is not, route through the goal's
   `active_task_descriptor`.
 - Include goal status, completed/total progress count, active task descriptor, next actions, and
   blockers in the memory receipt or handoff summary.
-- Update the goal inventory at natural checkpoints: after a validation pass, before compaction,
-  after resuming a thread, and when the active task descriptor changes.
+- Update the goal inventory with `--record-goal-progress` at natural checkpoints: after a
+  validation pass, before compaction, after resuming a thread, and when the active task descriptor
+  changes.
 
 By task descriptor:
 
@@ -310,6 +326,10 @@ Memory receipt:
 
 - At startup or route changes, report selected memory IDs, the reason they matched, stale warnings,
   and task/branch entries skipped because their scope did not match.
+- Use `--receipt` to print the same reference/dereference summary the JSON payload exposes as
+  `memory_receipt`.
+- Treat `referenced` entries as eligible context to read; treat `dereferenced` entries as explicitly
+  skipped for the current task, branch, goal, path, or tag route.
 - Keep the receipt compact and inside the existing Codex workflow disclosure shape; it is context
   provenance, not a separate audit log.
 
@@ -436,10 +456,12 @@ Optional helper modes:
 python build/scripts/docs/check-codex-memory.py --summary --stale-only
 python build/scripts/docs/check-codex-memory.py --paths docs/ai/codex/quickstart.md
 python build/scripts/docs/check-codex-memory.py --tags ai-guidance validation
-python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
 python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --explain --summary
 python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --json-output artifacts/codex/memory-routing.json
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --record-goal-progress validated-routing --progress-status completed --progress-summary "Validated memory routing." --progress-evidence-ref build/scripts/docs/check-codex-memory.py
 ```
 
-Use `--write-stub` and `--promote-session` only for reviewed memory maintenance. They are explicit
-write paths and must keep repo promotion source-backed.
+Use `--write-stub`, `--promote-session`, and `--record-goal-progress` only for reviewed memory
+maintenance. They are explicit write paths and must keep repo promotion source-backed.
