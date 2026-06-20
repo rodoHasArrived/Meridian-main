@@ -19,6 +19,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
   dataUploadPreview: UI_API_ROUTES.WorkstationDataUploadPreview,
   accounting: UI_API_ROUTES.WorkstationAccounting,
+  ledgerBooks: UI_API_ROUTES.LedgerBooks,
   accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
   accountingConfigurationChart: UI_API_ROUTES.LedgerAccountingConfigurationChart,
   accountingConfigurationTemplates: UI_API_ROUTES.LedgerAccountingConfigurationTemplates,

@@ -112,7 +112,10 @@ browser and WPF accounting screens can behave like a configuration studio withou
 approval logic in clients. Book-scoped configuration reads and activation readiness now also verify
 the selected ledger book against the registered ledger-book service when that service is available,
 returning a critical `configuration.ledger-book-missing` issue instead of letting operators activate
-rules for an unconfigured book.
+rules for an unconfigured book. When the requested book is missing but the fund has registered
+ledger-book scope, the same workspace carries a server-derived ledger-book setup candidate so
+clients can call the shared ledger-book endpoint without reconstructing fund-structure node details
+locally.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained

@@ -205,6 +205,10 @@ version history, approval evidence, saved regression coverage, latest suite resu
 posting lines, dimensional scope coverage, and the activation gate. Activation controls surface the
 shared readiness blockers for promotion-gated rules, including missing approved promotion evidence,
 missing current-version saved regression coverage, and the latest failing rule-test suite.
+When shared validation reports a missing selected ledger book and the workspace includes a
+server-derived setup candidate, the browser Accounting Configure surface can create the ledger book
+through the shared `/api/ledger/books` endpoint and then refresh the workspace; React does not infer
+fund-structure node ids, accounting basis, or policy ids locally.
 After a dry run selects a rule, operators can build a governed journal draft candidate through the
 shared posting-rule candidate endpoint. The browser carries the selected event, amount, dimensions,
 policy, counterparty, source evidence, and browser correlation metadata to the service, then renders

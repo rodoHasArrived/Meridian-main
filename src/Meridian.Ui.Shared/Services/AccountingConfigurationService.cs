@@ -253,7 +253,8 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             LedgerBooks = ledgerBooks,
             ValidationIssues = validation,
             AuditTrail = audit,
-            RulesStudio = BuildRulesStudio(scopedWorkspace, validation)
+            RulesStudio = BuildRulesStudio(scopedWorkspace, validation),
+            LedgerBookSetupCandidate = BuildLedgerBookSetupCandidate(scopedWorkspace, validation)
         };
     }
 
@@ -905,9 +906,13 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             .ListBooksAsync(new LedgerBookQuery(fundProfileId, FundStructureNodeId: null), ct)
             .ConfigureAwait(false);
 
-        return ledgerBookId.HasValue
-            ? books.Where(book => book.LedgerBookId == ledgerBookId.Value).ToArray()
-            : books;
+        if (!ledgerBookId.HasValue)
+        {
+            return books;
+        }
+
+        var scopedBooks = books.Where(book => book.LedgerBookId == ledgerBookId.Value).ToArray();
+        return scopedBooks.Length > 0 ? scopedBooks : books;
     }
 
     private static AccountingRulesStudioDto BuildRulesStudio(
@@ -2487,6 +2492,39 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         }
 
         return issues;
+    }
+
+    private static LedgerBookSetupCandidateDto? BuildLedgerBookSetupCandidate(
+        AccountingConfigurationWorkspaceDto workspace,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues)
+    {
+        var missingLedgerBookIssue = validationIssues.FirstOrDefault(issue =>
+            string.Equals(issue.Code, "configuration.ledger-book-missing", StringComparison.OrdinalIgnoreCase));
+        if (missingLedgerBookIssue is null)
+        {
+            return null;
+        }
+
+        var sourceBook = workspace.LedgerBooks.FirstOrDefault(book => book.LedgerBookId == workspace.LedgerBookId)
+            ?? workspace.LedgerBooks.FirstOrDefault();
+        if (sourceBook is null)
+        {
+            return null;
+        }
+
+        return new LedgerBookSetupCandidateDto(
+            workspace.FundProfileId,
+            sourceBook.FundStructureNodeId,
+            sourceBook.FundStructureNodeKind,
+            $"{sourceBook.DisplayName} configuration book",
+            sourceBook.BaseCurrency,
+            sourceBook.AccountingBasis,
+            sourceBook.AccountingPolicyId,
+            sourceBook.AccountingPolicyVersion,
+            "Create a ledger book using the registered fund-structure scope before activating book-scoped accounting configuration.",
+            Description: $"Created from Accounting Configure setup readiness for requested ledger book {workspace.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund scope"}.",
+            SourceLedgerBookId: sourceBook.LedgerBookId,
+            RequestedLedgerBookId: workspace.LedgerBookId);
     }
 
     private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidateGeneratedPostingLineIdentity(PostingRuleDto rule)

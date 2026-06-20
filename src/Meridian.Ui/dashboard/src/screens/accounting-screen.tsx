@@ -6503,6 +6503,22 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
           </div>
         ))}
       </div>
+      <div className="flex flex-wrap items-center gap-3 rounded-md border border-border/70 bg-background px-4 py-3">
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={!view.canCreateLedgerBook}
+          disabledReason={view.createLedgerBookDisabledReason}
+          busy={view.createLedgerBookBusy}
+          busyLabel={view.createLedgerBookButtonLabel}
+          onClick={() => void view.createLedgerBookFromSetupCandidate()}
+        >
+          {view.createLedgerBookButtonLabel}
+        </Button>
+        {view.createLedgerBookStatusText ? (
+          <p className="text-xs leading-5 text-muted-foreground">{view.createLedgerBookStatusText}</p>
+        ) : null}
+      </div>
 
       <Card className="panel-surface">
         <CardHeader>

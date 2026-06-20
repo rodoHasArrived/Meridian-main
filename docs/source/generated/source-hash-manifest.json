@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "c9abb4c9f434e0d57443c88b33a1739c138bedc7c18e920cd05aab790746fda5",
-      "source_hash": "2a709af8a90f5e275cd76dc835e4c5946cd294c6fedfc0985c0bac7617d1403a"
+      "readme_hash": "916fb2d01134e91dc4557b2fdfb9d1450a669b0e562a1b93761c45fd032ab2d8",
+      "source_hash": "0d031b6ecdfa541d67aea097d0265bfac934debc30a761dcd438405684f2e292"
     },
     {
       "id": "SRC-CORE",
@@ -254,8 +254,8 @@
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "e17d2c01559521e2c3351f9febcf8f2fe4ec70d02b75bb1855e8bf84043a4199",
-      "source_hash": "ff188f76bd80eedf47fba8c12fa7f0395a65d4a5372c503add3bcc0697a89418"
+      "readme_hash": "3e32f25dcea28204c821ad3606a9065edd044a62bf564c3bc11315ce98e74842",
+      "source_hash": "77d341968e0a3a1554d6cf32d75ca2df33e309b2674d3f0c0c75808fd0c181f2"
     },
     {
       "id": "SRC-UI-SERVICES",
@@ -268,15 +268,15 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "f7ad1279829d9c12805ec094498339dde17cf166a2c2fadbebc7e63889a9f244",
-      "source_hash": "4c0cd98d2ffaee312edd9c5c0264e701921c5acfa8d6b33f4335b483b5dba8b7"
+      "readme_hash": "4ebf479154855cc5369d8649057d53cbf8cf751b7ea4efb2c72b2a672eb36e24",
+      "source_hash": "80cc6c0b491581b905121ab3c521d61cbd3539415e79d1a17706bdc1f7dec483"
     },
     {
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "dd99c011d982180fec5448b4f1b963c50d27ad78b6a79d9944c88a02a02f87d6",
-      "source_hash": "ada85713fb631e9b5201c53a9dd09f303f032321b96313ac092fe30662a32552"
+      "readme_hash": "fdae38bfc06a92d13a6672e9a7be057580782d54870af627e8442a60f3a40846",
+      "source_hash": "eb0e36176404a5a1918ef1980d0ac9288e99da47c4dfd09cb96136a618949b10"
     }
   ],
   "schema": {

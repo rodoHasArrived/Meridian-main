@@ -8,6 +8,7 @@ import {
   buildAccountingPostingRuleJournalCandidate,
   buildLedgerAccountingReportPackage,
   certifyLedgerAccountingReportPackage,
+  createLedgerBook,
   createLedgerCloseManagementLateAdjustment,
   dryRunAccountingConfigurationPostingRule,
   executeAccountingConfigurationPostingRuleTests,
@@ -83,6 +84,7 @@ import type {
   AccountingRuleTestCase,
   AccountingRuleTestSuiteResult,
   AllocationRule,
+  CreateLedgerBookRequest,
   CorporateAction,
   ExportAnalysisResult,
   GeneratedPostingLine,
@@ -101,6 +103,7 @@ import type {
   CreateLateAdjustmentRequest,
   ReviewLateAdjustmentRequest,
   SignOffCloseTaskRequest,
+  LedgerBook,
   LedgerTrialBalanceLine,
   LateAdjustmentRequest,
   MultiAssetCoverageSummary,
@@ -208,6 +211,7 @@ export interface AccountingReportingServices {
 
 export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
+  createLedgerBook: (request: CreateLedgerBookRequest) => Promise<LedgerBook>;
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
   upsertRule: (request: UpsertPostingRuleRequest) => Promise<AccountingConfigurationWorkspace>;
   dryRunRule: (request: RuleDryRunRequest) => Promise<RuleDryRunResult>;
@@ -357,6 +361,12 @@ export interface AccountingConfigurationViewModel {
   dryRunBusy: boolean;
   canDryRun: boolean;
   dryRunSelectedRule: () => Promise<void>;
+  createLedgerBookButtonLabel: string;
+  createLedgerBookDisabledReason: string | null;
+  createLedgerBookStatusText: string | null;
+  createLedgerBookBusy: boolean;
+  canCreateLedgerBook: boolean;
+  createLedgerBookFromSetupCandidate: () => Promise<void>;
   journalCandidatePreview: AccountingRulesStudioJournalCandidateViewModel | null;
   journalCandidateStatusText: string | null;
   journalCandidateButtonLabel: string;
@@ -2267,6 +2277,7 @@ const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageS
 
 const defaultAccountingConfigurationServices: AccountingConfigurationServices = {
   getConfiguration: () => getAccountingConfiguration(),
+  createLedgerBook: (request) => createLedgerBook(request),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
   dryRunRule: (request) => dryRunAccountingConfigurationPostingRule(request),
   buildJournalCandidate: (request) => buildAccountingPostingRuleJournalCandidate(request),
@@ -2992,6 +3003,9 @@ export function useAccountingConfigurationViewModel(
   const [dryRunPreview, setDryRunPreview] = useState<RuleDryRunResult | null>(null);
   const [dryRunBusy, setDryRunBusy] = useState(false);
   const [dryRunError, setDryRunError] = useState<ApiErrorDisplay | null>(null);
+  const [createLedgerBookBusy, setCreateLedgerBookBusy] = useState(false);
+  const [createLedgerBookError, setCreateLedgerBookError] = useState<ApiErrorDisplay | null>(null);
+  const [createdLedgerBookName, setCreatedLedgerBookName] = useState<string | null>(null);
   const [journalCandidatePreview, setJournalCandidatePreview] = useState<PostingRuleJournalCandidateResult | null>(null);
   const [journalCandidateBusy, setJournalCandidateBusy] = useState(false);
   const [journalCandidateError, setJournalCandidateError] = useState<ApiErrorDisplay | null>(null);
@@ -3118,6 +3132,44 @@ export function useAccountingConfigurationViewModel(
       setDryRunBusy(false);
     }
   }, [dryRunBusy, selectedRuleId, services, workspace]);
+
+  const createLedgerBookFromSetupCandidate = useCallback(async () => {
+    const candidate = workspace?.ledgerBookSetupCandidate ?? null;
+    if (!workspace || !candidate || createLedgerBookBusy) {
+      return;
+    }
+
+    setCreateLedgerBookBusy(true);
+    setCreateLedgerBookError(null);
+    setCreatedLedgerBookName(null);
+    try {
+      const created = await services.createLedgerBook({
+        fundProfileId: candidate.fundProfileId,
+        fundStructureNodeId: candidate.fundStructureNodeId,
+        fundStructureNodeKind: candidate.fundStructureNodeKind,
+        displayName: candidate.displayName,
+        baseCurrency: candidate.baseCurrency,
+        description: candidate.description ?? null,
+        accountingBasis: candidate.accountingBasis,
+        accountingPolicyId: candidate.accountingPolicyId,
+        accountingPolicyVersion: candidate.accountingPolicyVersion
+      });
+      setCreatedLedgerBookName(created.displayName);
+      const refreshed = await services.getConfiguration();
+      setWorkspace(refreshed);
+      setSelectedRuleId((current) => {
+        if (current && refreshed.postingRules.some((rule) => rule.ruleId === current && !rule.isArchived)) {
+          return current;
+        }
+
+        return refreshed.postingRules.find((rule) => !rule.isArchived)?.ruleId ?? null;
+      });
+    } catch (err) {
+      setCreateLedgerBookError(describeApiError(err, "Ledger book setup could not be created."));
+    } finally {
+      setCreateLedgerBookBusy(false);
+    }
+  }, [createLedgerBookBusy, services, workspace]);
 
   const runRuleTests = useCallback(async () => {
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
@@ -3895,6 +3947,13 @@ export function useAccountingConfigurationViewModel(
         : !resolvedSelectedRuleId
           ? "Create at least one active posting rule before dry run preview."
           : null;
+    const createLedgerBookDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before creating ledger-book setup."
+        : !workspace.ledgerBookSetupCandidate
+          ? "No server-provided ledger-book setup candidate is available for this configuration scope."
+          : null;
     const applyThresholdDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -4254,6 +4313,12 @@ export function useAccountingConfigurationViewModel(
       dryRunBusy,
       canDryRun: dryRunDisabledReason === null && !dryRunBusy,
       dryRunSelectedRule,
+      createLedgerBookButtonLabel: createLedgerBookBusy ? "Creating ledger book" : "Create ledger book setup",
+      createLedgerBookDisabledReason,
+      createLedgerBookStatusText: createLedgerBookError?.summary ?? (createdLedgerBookName ? `Created ${createdLedgerBookName}.` : workspace?.ledgerBookSetupCandidate?.suggestedAction ?? null),
+      createLedgerBookBusy,
+      canCreateLedgerBook: createLedgerBookDisabledReason === null && !createLedgerBookBusy,
+      createLedgerBookFromSetupCandidate,
       journalCandidatePreview: journalCandidatePreviewView,
       journalCandidateStatusText: journalCandidateError?.summary ?? (journalCandidatePreviewView ? journalCandidatePreviewView.commandLabel : null),
       journalCandidateButtonLabel: journalCandidateBusy ? "Building candidate" : "Build journal candidate",
@@ -4388,6 +4453,10 @@ export function useAccountingConfigurationViewModel(
     capturePostingsBusy,
     capturePostingsError,
     capturedPostingsRuleId,
+    createLedgerBookBusy,
+    createLedgerBookError,
+    createLedgerBookFromSetupCandidate,
+    createdLedgerBookName,
     raisePriorityBusy,
     raisePriorityError,
     raiseSelectedRulePriority,

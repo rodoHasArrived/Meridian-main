@@ -184,6 +184,9 @@ posting-rule, version, approval, dry-run, and regression-test DTOs. Browser and 
 render rule counts, generated-posting coverage, effective-dated rule posture, saved-test coverage,
 promotion queues, and activation readiness from this shared studio read model instead of
 recomputing approval or validation state locally.
+The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
+but the server can derive a safe setup target from registered ledger-book scope. Clients should use
+that candidate for ledger-book setup actions instead of guessing fund-structure node context.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

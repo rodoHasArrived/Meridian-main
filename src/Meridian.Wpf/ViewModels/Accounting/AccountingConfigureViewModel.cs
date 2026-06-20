@@ -1251,6 +1251,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var selectedBook = ResolveActiveLedgerBook(workspace);
         var missingLedgerBookIssue = workspace.ValidationIssues.FirstOrDefault(issue =>
             string.Equals(issue.Code, "configuration.ledger-book-missing", StringComparison.OrdinalIgnoreCase));
+        var setupCandidate = workspace.LedgerBookSetupCandidate;
         var criticalCount = workspace.ValidationIssues.Count(issue =>
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var selectedBookStatus = missingLedgerBookIssue is not null
@@ -1267,6 +1268,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     ? $"Ledger book {workspace.LedgerBookId.Value:D} is selected; setup details are not loaded."
                     : "Configuration is using the fund-level setup scope.");
         var selectedBookAction = missingLedgerBookIssue?.SuggestedAction
+            ?? setupCandidate?.SuggestedAction
             ?? (workspace.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture) ?? "fund");
         var activationDetail = criticalCount > 0
             ? $"{criticalCount} critical shared validation issue(s) must be resolved before activation."

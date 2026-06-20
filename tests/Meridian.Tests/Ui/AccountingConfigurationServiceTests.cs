@@ -814,7 +814,12 @@ public sealed class AccountingConfigurationServiceTests
 
         var workspace = await service.GetWorkspaceAsync("fund-alpha", missingBookId);
 
-        workspace.LedgerBooks.Should().BeEmpty();
+        workspace.LedgerBooks.Should().ContainSingle(book => book.LedgerBookId == configuredBookId);
+        workspace.LedgerBookSetupCandidate.Should().NotBeNull();
+        workspace.LedgerBookSetupCandidate!.RequestedLedgerBookId.Should().Be(missingBookId);
+        workspace.LedgerBookSetupCandidate.SourceLedgerBookId.Should().Be(configuredBookId);
+        workspace.LedgerBookSetupCandidate.FundStructureNodeId.Should().Be(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
+        workspace.LedgerBookSetupCandidate.FundStructureNodeKind.Should().Be(FundStructureNodeKindDto.Fund);
         workspace.ValidationIssues.Should().ContainSingle(issue =>
             issue.Code == "configuration.ledger-book-missing" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&

@@ -56,7 +56,9 @@ entry drafts through the shared workbench service with selected ledger-book scop
 validation, submit, and lifecycle actions, shows the shared Rules Studio projection for
 effective-dated rule versions, generated posting readiness, saved regression tests, and promotion
 approval queues, runs saved rule-test suites, and approves promotion-gated posting-rule versions
-through the shared accounting configuration service, offers type-specific draft presets for accrued
+through the shared accounting configuration service, surfaces shared ledger-book setup candidate
+guidance when book-scoped configuration targets a missing registered book, offers type-specific
+draft presets for accrued
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management
 fees, builds governed posting-rule journal draft candidate previews through the shared posting

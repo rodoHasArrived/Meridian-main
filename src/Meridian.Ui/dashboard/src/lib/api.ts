@@ -1771,6 +1771,13 @@ export function getAccountingConfiguration(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfiguration, options);
 }
 
+export function createLedgerBook(
+  request: import("@/types").CreateLedgerBookRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").LedgerBook>(WORKSTATION_API_ENDPOINTS.ledgerBooks, request, options);
+}
+
 export function getManualJournalEntryWorkbench(options: ApiRequestOptions = {}) {
   return getJson<ManualJournalEntryWorkbench>(WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench, options);
 }

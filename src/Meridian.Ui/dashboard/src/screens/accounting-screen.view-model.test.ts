@@ -2703,6 +2703,7 @@ describe("accounting-screen view model", () => {
     });
     const services: AccountingConfigurationServices = {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
+      createLedgerBook: vi.fn(),
       previewTemplate: vi.fn().mockResolvedValue({
         templateId: "template-trade-buy",
         displayName: "Trade buy settlement",
@@ -3250,6 +3251,7 @@ describe("accounting-screen view model", () => {
     };
     const services: AccountingConfigurationServices = {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
+      createLedgerBook: vi.fn(),
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),
       dryRunRule: vi.fn(),
@@ -3389,10 +3391,50 @@ describe("accounting-screen view model", () => {
         suggestedAction: "Create or select the ledger book before activating book-scoped accounting configuration."
       }],
       auditTrail: [],
-      ruleTestCases: []
+      ruleTestCases: [],
+      ledgerBookSetupCandidate: {
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        fundStructureNodeKind: "Fund",
+        displayName: "Alpha Fund primary book",
+        baseCurrency: "USD",
+        accountingBasis: "Primary",
+        accountingPolicyId: "legacy-v1",
+        accountingPolicyVersion: "legacy-v1",
+        suggestedAction: "Create a ledger book using the registered fund-structure scope before activating book-scoped accounting configuration.",
+        description: "Created from Accounting Configure setup readiness for requested ledger book book-missing.",
+        sourceLedgerBookId: "book-template",
+        requestedLedgerBookId: "book-missing"
+      }
     };
+    const createdBook = {
+      ledgerBookId: "book-created",
+      fundProfileId: "fund-alpha",
+      fundStructureNodeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      fundStructureNodeKind: "Fund",
+      displayName: "Alpha Fund primary book",
+      baseCurrency: "USD",
+      createdAt: "2026-06-30T12:00:00Z",
+      updatedAt: "2026-06-30T12:00:00Z",
+      description: "Created from Accounting Configure setup readiness for requested ledger book book-missing.",
+      accountingBasis: "Primary" as const,
+      accountingPolicyId: "legacy-v1",
+      accountingPolicyVersion: "legacy-v1"
+    };
+    const updatedWorkspace: AccountingConfigurationWorkspace = {
+      ...workspace,
+      ledgerBookId: "book-created",
+      ledgerBooks: [createdBook],
+      validationIssues: [],
+      ledgerBookSetupCandidate: null
+    };
+    const getConfiguration = vi.fn()
+      .mockResolvedValueOnce(workspace)
+      .mockResolvedValue(updatedWorkspace);
+    const createLedgerBook = vi.fn().mockResolvedValue(createdBook);
     const services: AccountingConfigurationServices = {
-      getConfiguration: vi.fn().mockResolvedValue(workspace),
+      getConfiguration,
+      createLedgerBook,
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),
       dryRunRule: vi.fn(),
@@ -3420,8 +3462,30 @@ describe("accounting-screen view model", () => {
         detail: "Create or select the ledger book before activating book-scoped accounting configuration."
       })
     ]);
-    expect(result.current.activateDisabledReason).toBe("Resolve critical validation issues before activation.");
-    expect(result.current.canActivate).toBe(false);
+    expect(result.current.canCreateLedgerBook).toBe(true);
+    expect(result.current.createLedgerBookStatusText).toBe("Create a ledger book using the registered fund-structure scope before activating book-scoped accounting configuration.");
+
+    await act(async () => {
+      await result.current.createLedgerBookFromSetupCandidate();
+    });
+
+    expect(createLedgerBook).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      fundStructureNodeId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+      fundStructureNodeKind: "Fund",
+      displayName: "Alpha Fund primary book",
+      baseCurrency: "USD",
+      accountingBasis: "Primary",
+      accountingPolicyId: "legacy-v1",
+      accountingPolicyVersion: "legacy-v1"
+    }));
+    await waitFor(() => expect(result.current.setupReadinessRows[0]).toEqual(expect.objectContaining({
+      value: "Alpha Fund primary book",
+      tone: "success"
+    })));
+    expect(result.current.createLedgerBookStatusText).toBe("Created Alpha Fund primary book.");
+    expect(result.current.activateDisabledReason).toBeNull();
+    expect(result.current.canActivate).toBe(true);
   });
 
   it("loads the Capital Account Workbench with investor evidence, allocation rules, lineage, and audit drill-through rows", async () => {

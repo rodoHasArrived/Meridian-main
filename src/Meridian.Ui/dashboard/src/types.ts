@@ -5483,6 +5483,33 @@ export interface LedgerBook {
   accountingPolicyVersion: string;
 }
 
+export interface CreateLedgerBookRequest {
+  fundProfileId: string;
+  fundStructureNodeId: string;
+  fundStructureNodeKind: string;
+  displayName: string;
+  baseCurrency: string;
+  description?: string | null;
+  accountingBasis?: AccountingBasisKind;
+  accountingPolicyId?: string;
+  accountingPolicyVersion?: string;
+}
+
+export interface LedgerBookSetupCandidate {
+  fundProfileId: string;
+  fundStructureNodeId: string;
+  fundStructureNodeKind: string;
+  displayName: string;
+  baseCurrency: string;
+  accountingBasis: AccountingBasisKind;
+  accountingPolicyId: string;
+  accountingPolicyVersion: string;
+  suggestedAction: string;
+  description?: string | null;
+  sourceLedgerBookId?: string | null;
+  requestedLedgerBookId?: string | null;
+}
+
 export interface ChartOfAccountsNode {
   nodeId: string;
   path: string;
@@ -5708,6 +5735,7 @@ export interface AccountingConfigurationWorkspace {
   auditTrail: AccountingActionAuditEvent[];
   ruleTestCases?: AccountingRuleTestCase[] | null;
   rulesStudio?: AccountingRulesStudio | null;
+  ledgerBookSetupCandidate?: LedgerBookSetupCandidate | null;
 }
 
 export interface AccountingJournalPreviewLine {

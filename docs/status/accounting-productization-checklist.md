@@ -17,9 +17,14 @@ the requirement end to end.
   approval metadata in shared DTOs/services.
 - [x] Browser Accounting Rules Studio uses shared endpoints for dry-runs, saved tests, rule edits,
   generated-posting capture, promotion approvals, and workspace refresh.
+- [x] Accounting Configure now receives a server-derived ledger-book setup candidate when a
+  book-scoped workspace references a missing book but the fund has registered ledger-book scope,
+  and the browser setup surface can create the ledger book through the shared ledger-book endpoint
+  instead of guessing fund-structure node context locally.
 - [x] WPF Accounting Configure loads the active ledger-book workspace before rendering accounting
   configuration and now runs saved Rules Studio test suites plus promotion approvals through the
-  shared accounting configuration service.
+  shared accounting configuration service; desktop setup-readiness rows surface the shared
+  ledger-book setup action guidance.
 - [x] Posting-rule dry-runs can produce ledger-book-scoped governed journal draft candidates with
   generated multi-line postings, dimensions, evidence links, and approval-gated posting commands;
   source-event candidates without a ledger book fail closed before draft/write creation.
@@ -54,8 +59,8 @@ the requirement end to end.
 - [ ] Prove every accounting workflow is ledger-book-native end to end, including close, reporting,
   reconciliation, external GL, direct-lending projections, strategy ledger reads, and any remaining
   fund-level compatibility paths.
-- [ ] Turn Accounting Configure into a complete enterprise configuration studio: ledger-book
-  creation/editing, chart administration, rule authoring, rule test management, approval queues,
+- [ ] Turn Accounting Configure into a complete enterprise configuration studio: richer ledger-book
+  editing/selection, chart administration, rule authoring, rule test management, approval queues,
   close setup, provider mapping setup, and tenant/company/report-group controls from both browser
   and WPF.
 - [ ] Complete durable dimensional ledger persistence and query coverage for fund, entity, sleeve,

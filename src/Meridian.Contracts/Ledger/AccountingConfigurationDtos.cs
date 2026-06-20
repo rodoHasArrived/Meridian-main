@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Ledger;
@@ -558,6 +559,20 @@ public sealed record AccountingRulesStudioDto(
         PromotionQueue ?? [];
 }
 
+public sealed record LedgerBookSetupCandidateDto(
+    string FundProfileId,
+    Guid FundStructureNodeId,
+    FundStructureNodeKindDto FundStructureNodeKind,
+    string DisplayName,
+    string BaseCurrency,
+    AccountingBasisKindDto AccountingBasis,
+    string AccountingPolicyId,
+    string AccountingPolicyVersion,
+    string SuggestedAction,
+    string? Description = null,
+    Guid? SourceLedgerBookId = null,
+    Guid? RequestedLedgerBookId = null);
+
 public sealed record AccountingConfigurationWorkspaceDto(
     string FundProfileId,
     Guid? LedgerBookId,
@@ -571,7 +586,8 @@ public sealed record AccountingConfigurationWorkspaceDto(
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
     IReadOnlyList<AccountingActionAuditEventDto> AuditTrail,
     IReadOnlyList<AccountingRuleTestCaseDto>? RuleTestCases = null,
-    AccountingRulesStudioDto? RulesStudio = null)
+    AccountingRulesStudioDto? RulesStudio = null,
+    LedgerBookSetupCandidateDto? LedgerBookSetupCandidate = null)
 {
     public IReadOnlyList<AccountingRuleTestCaseDto> RuleTestCases { get; init; } =
         RuleTestCases ?? [];
