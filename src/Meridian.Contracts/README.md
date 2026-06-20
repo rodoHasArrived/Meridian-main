@@ -84,7 +84,9 @@ clients can inspect close-package publication without rebuilding package metadat
 Strategy-run trial-balance and journal DTOs expose the canonical `LedgerDimensionSetDto` beside
 legacy account/entity/sleeve/vehicle scope fields so browser and WPF ledger drill-throughs can use
 the same dimensional accounting vocabulary as rules, drafts, period reports, and external GL
-mapping flows. Ledger journal line DTOs carry optional Security Master identity, client-observed active status, approval
+mapping flows. Fund-level ledger trial-balance, journal, and reconciliation snapshot rows carry the
+same dimension envelope so Accounting and Reporting exports can retain fund/entity/sleeve/account
+scope instead of collapsing fund-ledger evidence to account-only rows. Ledger journal line DTOs carry optional Security Master identity, client-observed active status, approval
 reference, provenance, and ledger-mapping evidence, and the shared blocker vocabulary includes the
 posting gate failures used when an instrument-bearing posting lacks authoritative server-side
 Security Master active-status proof or when journal/line provenance does not reference the resolved

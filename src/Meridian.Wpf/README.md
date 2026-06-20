@@ -349,7 +349,9 @@ Fund Ledger and Fund Accounts drill-in surfaces use Accounting wording for route
 report-pack preview, account queues, and reconciliation guidance while preserving compatibility
 type names where needed. Fund Ledger now reduces its duplicate hero to a compact action strip and
 uses a shared dense account table plus selected-account inspector for the Accounts tab, with account
-portfolio drill-through blocked until a row is selected. Fund Accounts now opens on a compact action
+portfolio drill-through blocked until a row is selected. Its local fund-ledger read service now
+populates the shared `LedgerDimensionSetDto` on fund trial-balance, journal, and reconciliation
+snapshot rows so desktop Accounting review matches the shared reporting/export contract. Fund Accounts now opens on a compact action
 strip and combined dense account table plus selected-account inspector, with provider binding and
 route-preview evidence kept as supporting workbench panels below the primary account queue.
 Fund Ledger report-pack handoff preview copy also names the Accounting workspace so downstream

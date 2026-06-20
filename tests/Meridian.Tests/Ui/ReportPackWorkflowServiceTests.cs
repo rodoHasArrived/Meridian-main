@@ -2226,7 +2226,7 @@ public sealed class ReportPackWorkflowServiceTests
         response.Content.Headers.ContentDisposition?.FileName.Should().Be("regulatory-trial-balance-20260411160000.csv");
         AssertStructuredExportAuditHeaders(response);
         var csv = await response.Content.ReadAsStringAsync();
-        csv.Should().StartWith("accountName,accountType,symbol,financialAccountId,currency,balance,entryCount,securityId,securityDisplayName,sourceAsOfUtc");
+        csv.Should().StartWith("accountName,accountType,symbol,financialAccountId,fundId,entityId,sleeveId,strategyId,investorId,capitalAccountId,instrumentId,taxLotId,costCenterId,counterpartyId,organizationId,portfolioId,bookId,accountId,customerId,vendorId,projectId,externalGlDimensionsJson,currency,balance,entryCount,securityId,securityDisplayName,sourceAsOfUtc");
         csv.Should().NotContain("\"exportId\"");
         xlsxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         xlsxResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -2347,7 +2347,11 @@ public sealed class ReportPackWorkflowServiceTests
         warehousePayload.DataDictionary!.Should().Contain(field =>
             field.Name == "ledgerEntryCount" &&
             field.DataType == "integer" &&
-            field.Ordinal == 8);
+            field.Ordinal == 26);
+        warehousePayload.DataDictionary.Should().Contain(field =>
+            field.Name == "fundId" &&
+            field.DataType == "string" &&
+            field.Ordinal == 6);
         warehousePayload.ValidationChecks.Should().NotBeNull();
         warehousePayload.ValidationChecks!.Should().Contain(check =>
             check.CheckId == "source-count" &&
@@ -2358,6 +2362,24 @@ public sealed class ReportPackWorkflowServiceTests
             "accountType",
             "symbol",
             "financialAccountId",
+            "fundId",
+            "entityId",
+            "sleeveId",
+            "strategyId",
+            "investorId",
+            "capitalAccountId",
+            "instrumentId",
+            "taxLotId",
+            "costCenterId",
+            "counterpartyId",
+            "organizationId",
+            "portfolioId",
+            "bookId",
+            "accountId",
+            "customerId",
+            "vendorId",
+            "projectId",
+            "externalGlDimensionsJson",
             "balance",
             "journalEntryCount",
             "ledgerEntryCount",
@@ -2376,7 +2398,7 @@ public sealed class ReportPackWorkflowServiceTests
         warehouseCsvResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("warehouse-ledger-facts-20260411160000.csv");
         AssertStructuredExportAuditHeaders(warehouseCsvResponse);
         var warehouseCsv = await warehouseCsvResponse.Content.ReadAsStringAsync();
-        warehouseCsv.Should().StartWith("scope,accountName,accountType,symbol,financialAccountId,balance,journalEntryCount,ledgerEntryCount,sourceAsOfUtc");
+        warehouseCsv.Should().StartWith("scope,accountName,accountType,symbol,financialAccountId,fundId,entityId,sleeveId,strategyId,investorId,capitalAccountId,instrumentId,taxLotId,costCenterId,counterpartyId,organizationId,portfolioId,bookId,accountId,customerId,vendorId,projectId,externalGlDimensionsJson,balance,journalEntryCount,ledgerEntryCount,sourceAsOfUtc");
 
         static void AssertStructuredExportAuditHeaders(HttpResponseMessage exportResponse)
         {

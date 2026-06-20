@@ -127,6 +127,10 @@ instrument, tax lot, cost center, counterparty, and external GL scope, including
 `externalGl.<name>` and `externalGlDimensionKey`/`externalGlDimensionValue` query forms. They
 return the shared `LedgerDimensionSetDto` on rows where the source run provides that scope. Filters
 for unavailable dimensions fail closed rather than inferring accounting scope from display text.
+Fund-operations regulatory trial-balance and warehouse-ledger structured exports also project the
+canonical fund-ledger dimension envelope, including fund, entity, sleeve, account, instrument,
+cost-center, counterparty, and external-GL fields, so report consumers can load ledger facts without
+reconstructing dimensions from account names or route scope.
 Report-pack delivery package access stays server-owned: email-link manifests use
 `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package`, secure-portal
 manifests use `/portal/reporting/packages/{packageId}`, and retained artifact downloads use the

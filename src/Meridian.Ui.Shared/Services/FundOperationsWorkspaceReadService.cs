@@ -8,6 +8,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
@@ -72,6 +73,24 @@ public sealed class FundOperationsWorkspaceReadService
         new("accountType", "string", "Ledger account type."),
         new("symbol", "string", "Security symbol when the line is security-scoped."),
         new("financialAccountId", "string", "Linked financial account identifier."),
+        new("fundId", "string", "Canonical fund dimension retained on the ledger row."),
+        new("entityId", "string", "Canonical entity dimension retained on the ledger row."),
+        new("sleeveId", "string", "Canonical sleeve dimension retained on the ledger row."),
+        new("strategyId", "string", "Canonical strategy dimension retained on the ledger row."),
+        new("investorId", "string", "Canonical investor dimension retained on the ledger row."),
+        new("capitalAccountId", "string", "Canonical capital-account dimension retained on the ledger row."),
+        new("instrumentId", "guid", "Canonical instrument dimension retained on the ledger row."),
+        new("taxLotId", "string", "Canonical tax-lot dimension retained on the ledger row."),
+        new("costCenterId", "string", "Canonical cost-center dimension retained on the ledger row."),
+        new("counterpartyId", "string", "Canonical counterparty dimension retained on the ledger row."),
+        new("organizationId", "string", "Canonical organization dimension retained on the ledger row."),
+        new("portfolioId", "string", "Canonical portfolio dimension retained on the ledger row."),
+        new("bookId", "string", "Canonical ledger-book dimension retained on the ledger row."),
+        new("accountId", "string", "Canonical account dimension retained on the ledger row."),
+        new("customerId", "string", "Canonical customer dimension retained on the ledger row."),
+        new("vendorId", "string", "Canonical vendor dimension retained on the ledger row."),
+        new("projectId", "string", "Canonical project dimension retained on the ledger row."),
+        new("externalGlDimensionsJson", "json", "Deterministic external-GL dimension map retained on the ledger row."),
         new("currency", "string", "Workspace base currency."),
         new("balance", "decimal", "Signed trial-balance amount."),
         new("entryCount", "integer", "Ledger entry count behind the balance."),
@@ -87,6 +106,24 @@ public sealed class FundOperationsWorkspaceReadService
         new("accountType", "string", "Ledger account type."),
         new("symbol", "string", "Security symbol when the balance is security-scoped."),
         new("financialAccountId", "string", "Linked financial account identifier."),
+        new("fundId", "string", "Canonical fund dimension retained on the ledger row."),
+        new("entityId", "string", "Canonical entity dimension retained on the ledger row."),
+        new("sleeveId", "string", "Canonical sleeve dimension retained on the ledger row."),
+        new("strategyId", "string", "Canonical strategy dimension retained on the ledger row."),
+        new("investorId", "string", "Canonical investor dimension retained on the ledger row."),
+        new("capitalAccountId", "string", "Canonical capital-account dimension retained on the ledger row."),
+        new("instrumentId", "guid", "Canonical instrument dimension retained on the ledger row."),
+        new("taxLotId", "string", "Canonical tax-lot dimension retained on the ledger row."),
+        new("costCenterId", "string", "Canonical cost-center dimension retained on the ledger row."),
+        new("counterpartyId", "string", "Canonical counterparty dimension retained on the ledger row."),
+        new("organizationId", "string", "Canonical organization dimension retained on the ledger row."),
+        new("portfolioId", "string", "Canonical portfolio dimension retained on the ledger row."),
+        new("bookId", "string", "Canonical ledger-book dimension retained on the ledger row."),
+        new("accountId", "string", "Canonical account dimension retained on the ledger row."),
+        new("customerId", "string", "Canonical customer dimension retained on the ledger row."),
+        new("vendorId", "string", "Canonical vendor dimension retained on the ledger row."),
+        new("projectId", "string", "Canonical project dimension retained on the ledger row."),
+        new("externalGlDimensionsJson", "json", "Deterministic external-GL dimension map retained on the ledger row."),
         new("balance", "decimal", "Signed ledger snapshot amount."),
         new("journalEntryCount", "integer", "Journal entries in the source snapshot."),
         new("ledgerEntryCount", "integer", "Ledger entries in the source snapshot."),
@@ -1255,8 +1292,8 @@ public sealed class FundOperationsWorkspaceReadService
         FundLedgerBook fundLedgerBook,
         CancellationToken ct)
     {
-        var journal = BuildJournal(fundLedgerBook, scopeKind, scopeId, asOf);
-        var trialBalance = await BuildTrialBalanceAsync(fundLedgerBook, scopeKind, scopeId, asOf, ct).ConfigureAwait(false);
+        var journal = BuildJournal(fundProfileId, fundLedgerBook, scopeKind, scopeId, asOf);
+        var trialBalance = await BuildTrialBalanceAsync(fundProfileId, fundLedgerBook, scopeKind, scopeId, asOf, ct).ConfigureAwait(false);
         var entityCount = fundLedgerBook.EntitySnapshotsAsOf(asOf).Count;
         var sleeveCount = fundLedgerBook.SleeveSnapshotsAsOf(asOf).Count;
         var vehicleCount = fundLedgerBook.VehicleSnapshotsAsOf(asOf).Count;
@@ -1286,22 +1323,26 @@ public sealed class FundOperationsWorkspaceReadService
         return new FundLedgerReconciliationSnapshot(
             FundProfileId: snapshot.FundId,
             AsOf: snapshot.AsOf,
-            Consolidated: ProjectDimensionSnapshot(snapshot.Consolidated),
+            Consolidated: ProjectDimensionSnapshot(snapshot.FundId, FundLedgerScope.Consolidated, null, snapshot.Consolidated),
             Entities: snapshot.Entities.ToDictionary(
-                static pair => pair.Key,
-                static pair => ProjectDimensionSnapshot(pair.Value),
+                pair => pair.Key,
+                pair => ProjectDimensionSnapshot(snapshot.FundId, FundLedgerScope.Entity, pair.Key, pair.Value),
                 StringComparer.OrdinalIgnoreCase),
             Sleeves: snapshot.Sleeves.ToDictionary(
-                static pair => pair.Key,
-                static pair => ProjectDimensionSnapshot(pair.Value),
+                pair => pair.Key,
+                pair => ProjectDimensionSnapshot(snapshot.FundId, FundLedgerScope.Sleeve, pair.Key, pair.Value),
                 StringComparer.OrdinalIgnoreCase),
             Vehicles: snapshot.Vehicles.ToDictionary(
-                static pair => pair.Key,
-                static pair => ProjectDimensionSnapshot(pair.Value),
+                pair => pair.Key,
+                pair => ProjectDimensionSnapshot(snapshot.FundId, FundLedgerScope.Vehicle, pair.Key, pair.Value),
                 StringComparer.OrdinalIgnoreCase));
     }
 
-    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(LedgerSnapshot snapshot) =>
+    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(
+        string fundProfileId,
+        FundLedgerScope scopeKind,
+        string? scopeId,
+        LedgerSnapshot snapshot) =>
         new(
             Timestamp: snapshot.Timestamp,
             JournalEntryCount: snapshot.JournalEntryCount,
@@ -1309,12 +1350,13 @@ public sealed class FundOperationsWorkspaceReadService
             Balances: snapshot.Balances
                 .OrderBy(static pair => pair.Key.AccountType)
                 .ThenBy(static pair => pair.Key.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(static pair => new FundLedgerSnapshotBalanceLine(
+                .Select(pair => new FundLedgerSnapshotBalanceLine(
                     AccountName: pair.Key.Name,
                     AccountType: pair.Key.AccountType.ToString(),
                     Symbol: pair.Key.Symbol,
                     FinancialAccountId: pair.Key.FinancialAccountId,
-                    Balance: pair.Value))
+                    Balance: pair.Value,
+                    Dimensions: BuildFundLedgerDimensions(fundProfileId, scopeKind, scopeId, pair.Key.FinancialAccountId)))
                 .ToArray());
 
     private static FundLedgerBook BuildLedgerBook(
@@ -1335,6 +1377,7 @@ public sealed class FundOperationsWorkspaceReadService
     }
 
     private async Task<IReadOnlyList<FundTrialBalanceLine>> BuildTrialBalanceAsync(
+        string fundProfileId,
         FundLedgerBook book,
         FundLedgerScope scopeKind,
         string? scopeId,
@@ -1368,11 +1411,13 @@ public sealed class FundOperationsWorkspaceReadService
                 FinancialAccountId: pair.Key.FinancialAccountId,
                 Balance: pair.Value,
                 EntryCount: entryCounts.TryGetValue(pair.Key, out var count) ? count : 0,
-                Security: pair.Key.Symbol is not null ? securityLookup.GetValueOrDefault(pair.Key.Symbol) : null))
+                Security: pair.Key.Symbol is not null ? securityLookup.GetValueOrDefault(pair.Key.Symbol) : null,
+                Dimensions: BuildFundLedgerDimensions(fundProfileId, scopeKind, scopeId, pair.Key.FinancialAccountId)))
             .ToArray();
     }
 
     private static IReadOnlyList<FundJournalLine> BuildJournal(
+        string fundProfileId,
         FundLedgerBook book,
         FundLedgerScope scopeKind,
         string? scopeId,
@@ -1391,15 +1436,49 @@ public sealed class FundOperationsWorkspaceReadService
             .Where(entry => entry.Timestamp <= asOf)
             .OrderByDescending(static entry => entry.Timestamp)
             .ThenByDescending(static entry => entry.JournalEntryId)
-            .Select(entry => new FundJournalLine(
-                JournalEntryId: entry.JournalEntryId,
-                Timestamp: entry.Timestamp,
-                Description: entry.Description,
-                TotalDebits: entry.Lines.Sum(static line => line.Debit),
-                TotalCredits: entry.Lines.Sum(static line => line.Credit),
-                LineCount: entry.Lines.Count))
+            .Select(entry =>
+            {
+                var financialAccountIds = entry.Lines
+                    .Select(static line => line.Account.FinancialAccountId)
+                    .Where(static accountId => !string.IsNullOrWhiteSpace(accountId))
+                    .Select(static accountId => accountId!.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static accountId => accountId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                return new FundJournalLine(
+                    JournalEntryId: entry.JournalEntryId,
+                    Timestamp: entry.Timestamp,
+                    Description: entry.Description,
+                    TotalDebits: entry.Lines.Sum(static line => line.Debit),
+                    TotalCredits: entry.Lines.Sum(static line => line.Credit),
+                    LineCount: entry.Lines.Count,
+                    FinancialAccountIds: financialAccountIds,
+                    Dimensions: BuildFundLedgerDimensions(
+                        fundProfileId,
+                        scopeKind,
+                        scopeId,
+                        financialAccountIds.Length == 1 ? financialAccountIds[0] : null));
+            })
             .ToArray();
     }
+
+    private static LedgerDimensionSetDto BuildFundLedgerDimensions(
+        string fundProfileId,
+        FundLedgerScope scopeKind,
+        string? scopeId,
+        string? financialAccountId)
+    {
+        var normalizedScopeId = TrimOrNull(scopeId);
+        return new LedgerDimensionSetDto(
+            FundId: TrimOrNull(fundProfileId),
+            EntityId: scopeKind == FundLedgerScope.Entity ? normalizedScopeId : null,
+            SleeveId: scopeKind == FundLedgerScope.Sleeve ? normalizedScopeId : null,
+            AccountId: TrimOrNull(financialAccountId));
+    }
+
+    private static string? TrimOrNull(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static Dictionary<LedgerAccount, int> BuildEntryCounts(
         FundLedgerBook book,
@@ -3917,6 +3996,24 @@ public sealed class FundOperationsWorkspaceReadService
                     ("accountType", row.AccountType),
                     ("symbol", row.Symbol),
                     ("financialAccountId", row.FinancialAccountId),
+                    ("fundId", row.Dimensions?.FundId),
+                    ("entityId", row.Dimensions?.EntityId),
+                    ("sleeveId", row.Dimensions?.SleeveId),
+                    ("strategyId", row.Dimensions?.StrategyId),
+                    ("investorId", row.Dimensions?.InvestorId),
+                    ("capitalAccountId", row.Dimensions?.CapitalAccountId),
+                    ("instrumentId", FormatStructuredGuid(row.Dimensions?.InstrumentId)),
+                    ("taxLotId", row.Dimensions?.TaxLotId),
+                    ("costCenterId", row.Dimensions?.CostCenterId),
+                    ("counterpartyId", row.Dimensions?.CounterpartyId),
+                    ("organizationId", row.Dimensions?.OrganizationId),
+                    ("portfolioId", row.Dimensions?.PortfolioId),
+                    ("bookId", row.Dimensions?.BookId),
+                    ("accountId", row.Dimensions?.AccountId),
+                    ("customerId", row.Dimensions?.CustomerId),
+                    ("vendorId", row.Dimensions?.VendorId),
+                    ("projectId", row.Dimensions?.ProjectId),
+                    ("externalGlDimensionsJson", FormatExternalGlDimensions(row.Dimensions)),
                     ("currency", workspace.BaseCurrency),
                     ("balance", FormatStructuredDecimal(row.Balance)),
                     ("entryCount", row.EntryCount.ToString(CultureInfo.InvariantCulture)),
@@ -3945,6 +4042,24 @@ public sealed class FundOperationsWorkspaceReadService
                     ("accountType", row.AccountType),
                     ("symbol", row.Symbol),
                     ("financialAccountId", row.FinancialAccountId),
+                    ("fundId", row.Dimensions?.FundId),
+                    ("entityId", row.Dimensions?.EntityId),
+                    ("sleeveId", row.Dimensions?.SleeveId),
+                    ("strategyId", row.Dimensions?.StrategyId),
+                    ("investorId", row.Dimensions?.InvestorId),
+                    ("capitalAccountId", row.Dimensions?.CapitalAccountId),
+                    ("instrumentId", FormatStructuredGuid(row.Dimensions?.InstrumentId)),
+                    ("taxLotId", row.Dimensions?.TaxLotId),
+                    ("costCenterId", row.Dimensions?.CostCenterId),
+                    ("counterpartyId", row.Dimensions?.CounterpartyId),
+                    ("organizationId", row.Dimensions?.OrganizationId),
+                    ("portfolioId", row.Dimensions?.PortfolioId),
+                    ("bookId", row.Dimensions?.BookId),
+                    ("accountId", row.Dimensions?.AccountId),
+                    ("customerId", row.Dimensions?.CustomerId),
+                    ("vendorId", row.Dimensions?.VendorId),
+                    ("projectId", row.Dimensions?.ProjectId),
+                    ("externalGlDimensionsJson", FormatExternalGlDimensions(row.Dimensions)),
                     ("balance", FormatStructuredDecimal(row.Balance)),
                     ("journalEntryCount", snapshot.JournalEntryCount.ToString(CultureInfo.InvariantCulture)),
                     ("ledgerEntryCount", snapshot.LedgerEntryCount.ToString(CultureInfo.InvariantCulture)),
@@ -4242,8 +4357,27 @@ public sealed class FundOperationsWorkspaceReadService
     private static string FormatStructuredPercent(decimal value) =>
         value.ToString("0.0###", CultureInfo.InvariantCulture);
 
+    private static string? FormatStructuredGuid(Guid? value) =>
+        value?.ToString("D");
+
     private static string FormatStructuredDateTime(DateTimeOffset value) =>
         value.UtcDateTime.ToString("O", CultureInfo.InvariantCulture);
+
+    private static string? FormatExternalGlDimensions(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions?.ExternalGlDimensions is not { Count: > 0 } externalGlDimensions)
+        {
+            return null;
+        }
+
+        var ordered = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in externalGlDimensions)
+        {
+            ordered[key] = value;
+        }
+
+        return JsonSerializer.Serialize(ordered);
+    }
 
     private static string NormalizeCutId(string value)
     {

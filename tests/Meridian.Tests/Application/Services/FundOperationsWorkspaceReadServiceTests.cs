@@ -397,6 +397,14 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.RowCount == workspace.Ledger.TrialBalance.Count &&
             export.RowLineageCount == export.RowCount &&
             export.IsReady);
+        workspace.Ledger.TrialBalance.Should().Contain(row =>
+            row.AccountName == "Cash" &&
+            row.Dimensions != null &&
+            row.Dimensions.FundId == fundProfileId);
+        workspace.LedgerReconciliationSnapshot.Consolidated.Balances.Should().Contain(row =>
+            row.AccountName == "Cash" &&
+            row.Dimensions != null &&
+            row.Dimensions.FundId == fundProfileId);
         workspace.Reporting.StructuredExports.Should().Contain(export =>
             export.ExportId == "warehouse-ledger-facts" &&
             export.Purpose == StructuredReportingExportPurposeDto.DataWarehouse &&
@@ -404,7 +412,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Dataset == "ledger-reconciliation-facts" &&
             export.RowCount == workspace.LedgerReconciliationSnapshot.Consolidated.Balances.Count &&
             export.RowLineageCount == export.RowCount &&
-            export.FieldCount == 9 &&
+            export.FieldCount == 27 &&
             export.Route.Contains("warehouse-ledger-facts", StringComparison.Ordinal) &&
             export.ValidationSummary!.Contains("downstream warehouse loading", StringComparison.Ordinal) &&
             export.IsReady);
@@ -460,6 +468,24 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             "accountType",
             "symbol",
             "financialAccountId",
+            "fundId",
+            "entityId",
+            "sleeveId",
+            "strategyId",
+            "investorId",
+            "capitalAccountId",
+            "instrumentId",
+            "taxLotId",
+            "costCenterId",
+            "counterpartyId",
+            "organizationId",
+            "portfolioId",
+            "bookId",
+            "accountId",
+            "customerId",
+            "vendorId",
+            "projectId",
+            "externalGlDimensionsJson",
             "balance",
             "journalEntryCount",
             "ledgerEntryCount",
@@ -467,6 +493,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         warehouseExport.Rows.Should().Contain(row =>
             row["scope"] == "Consolidated" &&
             row["accountName"] == "Cash" &&
+            row["fundId"] == fundProfileId &&
+            row.ContainsKey("accountId") &&
             row["journalEntryCount"] == workspace.LedgerReconciliationSnapshot.Consolidated.JournalEntryCount.ToString() &&
             row["ledgerEntryCount"] == workspace.LedgerReconciliationSnapshot.Consolidated.LedgerEntryCount.ToString());
         warehouseExport.RowLineage.Should().NotBeNull();

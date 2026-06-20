@@ -1,3 +1,5 @@
+using Meridian.Contracts.Ledger;
+
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>
@@ -39,7 +41,8 @@ public sealed record FundTrialBalanceLine(
     string? FinancialAccountId,
     decimal Balance,
     int EntryCount,
-    WorkstationSecurityReference? Security = null);
+    WorkstationSecurityReference? Security = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 /// <summary>
 /// Journal row for a fund ledger view.
@@ -51,7 +54,8 @@ public sealed record FundJournalLine(
     decimal TotalDebits,
     decimal TotalCredits,
     int LineCount,
-    IReadOnlyList<string>? FinancialAccountIds = null);
+    IReadOnlyList<string>? FinancialAccountIds = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 /// <summary>
 /// Aggregated ledger totals for a ledger scope or slice.
@@ -113,7 +117,8 @@ public sealed record FundLedgerSnapshotBalanceLine(
     string? Symbol,
     string? FinancialAccountId,
     decimal Balance,
-    WorkstationSecurityReference? Security = null);
+    WorkstationSecurityReference? Security = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 /// <summary>
 /// Point-in-time ledger snapshot used by reconciliation views.
