@@ -468,6 +468,46 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationRunLedgerJournalEndpoint("run / 1", { from: "2026-01-01", to: "2026-01-31" })).toBe(
       "/api/workstation/runs/run%20%2F%201/ledger/journal?from=2026-01-01&to=2026-01-31"
     );
+    expect(
+      workstationRunLedgerJournalEndpoint("run / 1", {
+        from: "2026-01-01",
+        fundId: "fund-alpha",
+        entityId: "entity-a",
+        instrumentId: "loan-1",
+        counterpartyId: "borrower-1",
+        costCenterId: "ops",
+        externalGlDimensions: {
+          Department: "InvestmentOps",
+          Class: "PrivateCredit"
+        }
+      })
+    ).toBe(
+      "/api/workstation/runs/run%20%2F%201/ledger/journal?from=2026-01-01&fundId=fund-alpha&entityId=entity-a&instrumentId=loan-1&costCenterId=ops&counterpartyId=borrower-1&externalGl.Class=PrivateCredit&externalGl.Department=InvestmentOps"
+    );
+    expect(workstationRunLedgerTrialBalanceEndpoint("run / 1", "Asset")).toBe(
+      "/api/workstation/runs/run%20%2F%201/ledger/trial-balance?accountType=Asset"
+    );
+    expect(
+      workstationRunLedgerTrialBalanceEndpoint("run / 1", {
+        accountType: "Asset",
+        fundId: "fund-alpha",
+        entityId: "entity-a",
+        sleeveId: "sleeve-a",
+        strategyId: "strategy-a",
+        investorId: "investor-1",
+        capitalAccountId: "capital-1",
+        instrumentId: "loan-1",
+        taxLotId: "taxlot-1",
+        costCenterId: "ops",
+        counterpartyId: "borrower-1",
+        externalGlDimensions: {
+          Department: "InvestmentOps",
+          Class: "PrivateCredit"
+        }
+      })
+    ).toBe(
+      "/api/workstation/runs/run%20%2F%201/ledger/trial-balance?accountType=Asset&fundId=fund-alpha&entityId=entity-a&sleeveId=sleeve-a&strategyId=strategy-a&investorId=investor-1&capitalAccountId=capital-1&instrumentId=loan-1&taxLotId=taxlot-1&costCenterId=ops&counterpartyId=borrower-1&externalGl.Class=PrivateCredit&externalGl.Department=InvestmentOps"
+    );
     expect(workstationRunContinuityEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/continuity");
     expect(workstationRunReviewPacketEndpoint("run / 1", "fund / 1")).toBe(
       "/api/workstation/runs/run%20%2F%201/review-packet?fundAccountId=fund+%2F+1"

@@ -876,12 +876,68 @@ export function workstationChiefOfStaffHealthEndpoint(): string {
   return `${WORKSTATION_API_ENDPOINTS.chiefOfStaff}/health`;
 }
 
+export interface LedgerDimensionQueryOptions {
+  fundId?: string;
+  entityId?: string;
+  sleeveId?: string;
+  strategyId?: string;
+  portfolioId?: string;
+  accountId?: string;
+  investorId?: string;
+  capitalAccountId?: string;
+  instrumentId?: string;
+  taxLotId?: string;
+  costCenterId?: string;
+  counterpartyId?: string;
+  externalGlDimensions?: Record<string, string | null | undefined>;
+}
+
+export interface LedgerJournalQueryOptions extends LedgerDimensionQueryOptions {
+  from?: string;
+  to?: string;
+}
+
+export interface LedgerTrialBalanceQueryOptions extends LedgerDimensionQueryOptions {
+  accountType?: string;
+}
+
+function ledgerDimensionQueryParams(options: LedgerDimensionQueryOptions): Record<string, string | undefined> {
+  const params: Record<string, string | undefined> = {
+    fundId: options.fundId,
+    entityId: options.entityId,
+    sleeveId: options.sleeveId,
+    strategyId: options.strategyId,
+    portfolioId: options.portfolioId,
+    accountId: options.accountId,
+    investorId: options.investorId,
+    capitalAccountId: options.capitalAccountId,
+    instrumentId: options.instrumentId,
+    taxLotId: options.taxLotId,
+    costCenterId: options.costCenterId,
+    counterpartyId: options.counterpartyId
+  };
+
+  for (const [key, value] of Object.entries(options.externalGlDimensions ?? {}).sort(([left], [right]) =>
+    left.localeCompare(right)
+  )) {
+    if (key.trim()) {
+      params[`externalGl.${key.trim()}`] = value ?? undefined;
+    }
+  }
+
+  return params;
+}
+
 export function workstationRunLedgerEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.RunsLedger, "runId", runId);
 }
 
-export function workstationRunLedgerJournalEndpoint(runId: string, options: { from?: string; to?: string } = {}): string {
-  return `${workstationRunLedgerEndpoint(runId)}/journal${queryString(options)}`;
+export function workstationRunLedgerJournalEndpoint(runId: string, options: LedgerJournalQueryOptions = {}): string {
+  return `${workstationRunLedgerEndpoint(runId)}/journal${queryString({
+    from: options.from,
+    to: options.to,
+    ...ledgerDimensionQueryParams(options)
+  })}`;
 }
 
 export function workstationRunContinuityEndpoint(runId: string): string {
@@ -1114,8 +1170,16 @@ export function portfolioRunCashFlowsEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.PortfolioCashFlows, "runId", runId);
 }
 
-export function workstationRunLedgerTrialBalanceEndpoint(runId: string, accountType?: string): string {
-  return `${routeWithParam(UI_API_ROUTES.RunsLedgerTrialBalance, "runId", runId)}${queryString({ accountType })}`;
+export function workstationRunLedgerTrialBalanceEndpoint(
+  runId: string,
+  accountTypeOrOptions?: string | LedgerTrialBalanceQueryOptions
+): string {
+  const options =
+    typeof accountTypeOrOptions === "string" ? { accountType: accountTypeOrOptions } : accountTypeOrOptions ?? {};
+  return `${routeWithParam(UI_API_ROUTES.RunsLedgerTrialBalance, "runId", runId)}${queryString({
+    accountType: options.accountType,
+    ...ledgerDimensionQueryParams(options)
+  })}`;
 }
 
 export function workstationSecurityMasterSearchEndpoint(options: {

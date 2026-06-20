@@ -52,6 +52,7 @@ import {
   getRunContinuity,
   getRunHistory,
   getRunLedgerJournal,
+  getRunTrialBalance,
   getRunReconciliation,
   getRunReconciliationHistory,
   getRunReviewPacket,
@@ -579,7 +580,29 @@ describe("trading endpoint wiring", () => {
   });
 
   it("wires run continuity, reconciliation, security, and portfolio workstation endpoints", async () => {
-    await getRunLedgerJournal("run-1", { from: "2026-01-01", to: "2026-01-31" });
+    await getRunLedgerJournal("run-1", {
+      from: "2026-01-01",
+      to: "2026-01-31",
+      fundId: "fund-alpha",
+      entityId: "entity-a",
+      instrumentId: "loan-1",
+      counterpartyId: "borrower-1",
+      externalGlDimensions: { Department: "InvestmentOps" }
+    });
+    await getRunTrialBalance("run-1", {
+      accountType: "Asset",
+      fundId: "fund-alpha",
+      entityId: "entity-a",
+      sleeveId: "sleeve-a",
+      strategyId: "strategy-a",
+      investorId: "investor-1",
+      capitalAccountId: "capital-1",
+      instrumentId: "loan-1",
+      taxLotId: "taxlot-1",
+      costCenterId: "ops",
+      counterpartyId: "borrower-1",
+      externalGlDimensions: { Department: "InvestmentOps" }
+    });
     await getRunContinuity("run-1");
     await getRunReviewPacket("run-1", "fund-1");
     await getRunReconciliation("run-1");
@@ -601,7 +624,14 @@ describe("trading endpoint wiring", () => {
     await getPortfolioExposure();
     await getPortfolioSymbolExposure("AAPL");
 
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/ledger/journal?from=2026-01-01&to=2026-01-31", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/runs/run-1/ledger/journal?from=2026-01-01&to=2026-01-31&fundId=fund-alpha&entityId=entity-a&instrumentId=loan-1&counterpartyId=borrower-1&externalGl.Department=InvestmentOps",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/runs/run-1/ledger/trial-balance?accountType=Asset&fundId=fund-alpha&entityId=entity-a&sleeveId=sleeve-a&strategyId=strategy-a&investorId=investor-1&capitalAccountId=capital-1&instrumentId=loan-1&taxLotId=taxlot-1&costCenterId=ops&counterpartyId=borrower-1&externalGl.Department=InvestmentOps",
+      expect.anything()
+    );
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/continuity", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/review-packet?fundAccountId=fund-1", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/reconciliation", expect.anything());

@@ -500,6 +500,8 @@ import {
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
   workstationWorkflowPresetUsedEndpoint,
+  type LedgerJournalQueryOptions,
+  type LedgerTrialBalanceQueryOptions,
   type ReferenceDataEndpointDefinition,
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
@@ -2541,11 +2543,11 @@ export function getRunLedger(runId: string) {
   return getJson<LedgerSummary>(workstationRunLedgerEndpoint(runId));
 }
 
-export function getRunTrialBalance(runId: string, accountType?: string) {
-  return getJson<LedgerTrialBalanceLine[]>(workstationRunLedgerTrialBalanceEndpoint(runId, accountType));
+export function getRunTrialBalance(runId: string, accountTypeOrOptions?: string | LedgerTrialBalanceQueryOptions) {
+  return getJson<LedgerTrialBalanceLine[]>(workstationRunLedgerTrialBalanceEndpoint(runId, accountTypeOrOptions));
 }
 
-export function getRunLedgerJournal(runId: string, options: { from?: string; to?: string } = {}) {
+export function getRunLedgerJournal(runId: string, options: LedgerJournalQueryOptions = {}) {
   return getJson<LedgerJournalLine[]>(workstationRunLedgerJournalEndpoint(runId, options));
 }
 

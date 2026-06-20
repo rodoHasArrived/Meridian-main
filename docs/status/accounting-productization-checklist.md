@@ -61,6 +61,11 @@ the requirement end to end.
 - [x] Browser retained ledger journal contracts now mirror the shared journal dimension fields, and
   the Accounting view model has a reusable journal-evidence dimension projection/filter for rows
   returned by the shared run ledger journal endpoint.
+- [x] Browser run-ledger API helpers now accept canonical dimension-scoped query options for
+  trial-balance and retained journal reads, including fund, entity, sleeve, strategy, investor,
+  capital account, instrument, tax lot, cost center, counterparty, and external GL dimension keys,
+  so workstreams can request server-filtered ledger evidence instead of relying only on
+  client-side display/search.
 - [x] Cross-period ledger trial-balance and P&L report endpoints now fail closed when retained
   closed-period summary metadata belongs to a different ledger book than the selected period,
   preventing stale summary drift from leaking totals across parallel books.
@@ -99,8 +104,9 @@ the requirement end to end.
   strategy, investor, capital account, instrument, tax lot, cost center, counterparty, and external
   GL dimensions across all journal lines, report filters, close checks, and export mappings; close
   trial-balance projection, browser ledger inquiry, and browser retained-journal evidence rows now
-  have dimension bucketing/filter/display proof, but not every durable query and report surface is
-  covered.
+  have dimension bucketing/filter/display proof, and browser run-ledger helpers can now request
+  server-scoped dimension filters for trial-balance and journal reads, but not every durable query
+  and report surface is covered.
 - [ ] Finish JE lifecycle hardening across every mutation path: version guards, actor/segregation
   checks, evidence requirements, period locks, immutable posted entries, reversal/rebook correction
   paths, lifecycle idempotency, and transition audit coverage. Manual journal lifecycle commands now
