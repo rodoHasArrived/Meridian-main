@@ -6,8 +6,8 @@ Use this checklist for PRs that touch:
 
 ### Validation
 
-- [ ] Ran `make test-desktop-services`
-- [ ] Ran `make build-wpf` (or CI equivalent)
+- [ ] Ran `make desktop-test`
+- [ ] Ran `make desktop-build` (or CI equivalent)
 
 ### Reliability and lifecycle
 

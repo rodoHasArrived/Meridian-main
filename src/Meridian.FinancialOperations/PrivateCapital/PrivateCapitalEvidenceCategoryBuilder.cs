@@ -1,8 +1,8 @@
 using Meridian.Contracts.Ledger;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.FinancialOperations.PrivateCapital;
 
-internal static class PrivateCapitalEvidenceCategoryBuilder
+public static class PrivateCapitalEvidenceCategoryBuilder
 {
     public static IReadOnlyList<PrivateCapitalEvidenceCategoryDto> BuildForFundEvent(
         PrivateCapitalFundEventDto fundEvent,

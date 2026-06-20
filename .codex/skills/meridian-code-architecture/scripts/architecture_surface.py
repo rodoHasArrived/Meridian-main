@@ -12,6 +12,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[4]
 MODULE_MAP = REPO_ROOT / "docs" / "architecture" / "module-map.md"
 PROJECT_STRUCTURE = REPO_ROOT / "docs" / "architecture" / "project-structure.md"
+PROJECT_FILE_SUFFIXES = {".csproj", ".fsproj"}
+PROJECT_FILE_PATTERNS = ("*.csproj", "*.fsproj")
 
 LAYER_HINTS = {
     "Meridian": "host",
@@ -26,6 +28,8 @@ LAYER_HINTS = {
     "Meridian.Risk": "risk",
     "Meridian.Strategies": "strategy",
     "Meridian.Backtesting": "backtesting",
+    "Meridian.FSharp.Ledger": "ledger",
+    "Meridian.FSharp": "domain",
     "Meridian.Ledger": "ledger",
     "Meridian.Reporting": "reporting",
     "Meridian.Identity": "identity",
@@ -80,16 +84,16 @@ def layer_for(name: str) -> str:
 
 
 def find_project_for_path(path: Path) -> Path | None:
-    if path.is_file() and path.suffix == ".csproj":
+    if path.is_file() and path.suffix in PROJECT_FILE_SUFFIXES:
         return path
     if path.is_dir():
-        projects = sorted(path.glob("*.csproj"))
+        projects = find_project_files(path)
         if projects:
             return projects[0]
 
     current = path if path.is_dir() else path.parent
     while current != current.parent:
-        projects = sorted(current.glob("*.csproj"))
+        projects = find_project_files(current)
         if projects:
             return projects[0]
         if current == REPO_ROOT:
@@ -98,8 +102,19 @@ def find_project_for_path(path: Path) -> Path | None:
     return None
 
 
+def find_project_files(directory: Path) -> list[Path]:
+    projects: list[Path] = []
+    for pattern in PROJECT_FILE_PATTERNS:
+        projects.extend(directory.glob(pattern))
+    return sorted(projects)
+
+
 def all_projects() -> list[Path]:
-    return sorted((REPO_ROOT / "src").glob("**/*.csproj"))
+    projects: list[Path] = []
+    for pattern in PROJECT_FILE_PATTERNS:
+        projects.extend((REPO_ROOT / "src").glob(f"**/{pattern}"))
+    return sorted(projects)
+
 
 
 def find_nearest_readme(path: Path) -> Path | None:
@@ -154,7 +169,7 @@ def inspect_target(path: Path) -> dict[str, object]:
             "layer": "unknown",
             "source_readme": repo_relative(readme) if readme else None,
             "project_references": [],
-            "boundary_violations": ["No containing .csproj was found for this target."],
+            "boundary_violations": ["No containing .csproj or .fsproj was found for this target."],
         }
 
     refs = parse_project_references(project)

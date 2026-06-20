@@ -82,6 +82,10 @@ export function FinancialRecordExplorerShell({
   const [searchText, setSearchText] = useState("");
   const [selectedRecordId, setSelectedRecordId] = useState(dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "");
   const [saving, setSaving] = useState(false);
+  const selectedDtoSavedView = useMemo(
+    () => dtoMode?.savedViews.find((view) => view.viewId === selectedViewId) ?? null,
+    [dtoMode?.savedViews, selectedViewId]
+  );
 
   useEffect(() => {
     setSelectedViewId(activeSavedView?.id ?? "");
@@ -89,24 +93,40 @@ export function FinancialRecordExplorerShell({
     setSelectedRecordId(dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "");
   }, [activeSavedView?.id, dtoMode?.explorerId, dtoMode?.selectedRecord?.recordId, dtoMode?.rows]);
 
+  function handleSelectSavedView(viewId: string) {
+    setSelectedViewId(viewId);
+    const savedView = dtoMode?.savedViews.find((view) => view.viewId === viewId);
+    if (savedView) {
+      setSearchText(savedView.searchText ?? "");
+    }
+  }
+
+  const selectedFilters = selectedDtoSavedView?.filters ?? [];
+  const selectedColumnIds = selectedDtoSavedView?.columnIds?.filter((columnId) => columnId.trim().length > 0) ?? [];
+  const visibleColumns = useMemo(() => {
+    if (!dtoMode || selectedColumnIds.length === 0) {
+      return dtoMode?.columns ?? [];
+    }
+
+    const selected = new Set(selectedColumnIds.map((columnId) => columnId.toLowerCase()));
+    const columns = dtoMode.columns.filter((column) => selected.has(column.columnId.toLowerCase()));
+    return columns.length > 0 ? columns : dtoMode.columns;
+  }, [dtoMode, selectedColumnIds]);
+
   const rows = useMemo(() => {
     if (!dtoMode) {
       return [];
     }
 
     const query = searchText.trim().toLowerCase();
-    if (!query) {
-      return dtoMode.rows;
-    }
-
     return dtoMode.rows.filter((row) =>
-      [row.label, row.recordType, row.source, row.status, ...row.cells.map((cell) => cell.displayValue)]
-        .some((value) => value.toLowerCase().includes(query))
+      rowMatchesSavedViewFilters(row, selectedFilters) &&
+      (!query || rowMatchesSearch(row, query))
     );
-  }, [dtoMode, searchText]);
+  }, [dtoMode, searchText, selectedFilters]);
 
   const selectedRow = rows.find((row) => row.recordId === selectedRecordId) ?? rows[0] ?? null;
-  const selectedRecord = selectedRow?.detail ?? dtoMode?.selectedRecord ?? null;
+  const selectedRecord = selectedRow?.detail ?? null;
   const materialChange = Boolean(dtoMode && onSaveView && (searchText.trim() || (selectedViewId && selectedViewId !== activeSavedView?.id)));
   const headerTitle = dtoMode?.title ?? title;
   const headerDescription = dtoMode?.description ?? description;
@@ -126,7 +146,8 @@ export function FinancialRecordExplorerShell({
           ? `Search: ${searchText.trim()}`
           : `Saved from ${selectedView?.label ?? "current explorer filters"}.`,
         searchText,
-        filters
+        filters,
+        columnIds: selectedView?.columnIds ?? []
       });
       setSearchText("");
     } finally {
@@ -146,7 +167,7 @@ export function FinancialRecordExplorerShell({
           ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{activeSavedView?.label ?? "Unsaved view"}</Badge>
+          <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge>
           <Button
             size="sm"
             variant="outline"
@@ -164,9 +185,9 @@ export function FinancialRecordExplorerShell({
       <div className="grid gap-3 xl:grid-cols-[minmax(0,0.72fr)_minmax(260px,0.28fr)]">
         <div className="space-y-3">
           <ExplorerScopeBar items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: item.value })) : scopeItems} />
-          <SavedViewSelector views={normalizedViews} selectedViewId={selectedViewId} onSelect={setSelectedViewId} />
+          <SavedViewSelector views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} />
           <ExplorerSummaryStrip items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: item.label, value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
-          <AppliedFilterStrip filters={dtoMode ? dtoMode.filters : appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
+          <AppliedFilterStrip filters={dtoMode ? selectedFilters.length > 0 ? selectedFilters : dtoMode.filters : appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
         </div>
         <ProofSummary title={headerTitle} actions={actions} explorer={dtoMode} />
       </div>
@@ -185,7 +206,7 @@ export function FinancialRecordExplorerShell({
               />
               {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{rows.length} rows</Badge>}
             </div>
-            <ExplorerGrid explorer={dtoMode} rows={rows} selectedRecordId={selectedRow?.recordId ?? null} onSelect={setSelectedRecordId} />
+            <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={setSelectedRecordId} />
             <RecordGraph explorer={dtoMode} />
           </div>
           <ProofDrawer record={selectedRecord} blockedReason={dtoMode.isBlocked ? dtoMode.blockedReason : ""} />
@@ -312,11 +333,13 @@ function ProofSummary({
 function ExplorerGrid({
   explorer,
   rows,
+  columns,
   selectedRecordId,
   onSelect
 }: {
   explorer: FinancialRecordExplorerDto;
   rows: FinancialRecordExplorerRowDto[];
+  columns: FinancialRecordExplorerDto["columns"];
   selectedRecordId: string | null;
   onSelect: (recordId: string) => void;
 }) {
@@ -333,7 +356,7 @@ function ExplorerGrid({
       <table className="min-w-full text-sm">
         <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
           <tr>
-            {explorer.columns.map((column) => (
+            {columns.map((column) => (
               <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{column.header}</th>
             ))}
           </tr>
@@ -345,7 +368,7 @@ function ExplorerGrid({
               className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
               onClick={() => onSelect(row.recordId)}
             >
-              {explorer.columns.map((column) => {
+              {columns.map((column) => {
                 const cell = row.cells.find((candidate) => candidate.columnId === column.columnId);
                 return (
                   <td key={column.columnId} className={cn("px-3 py-2 align-top", column.isRightAligned ? "text-right font-mono" : "")}>
@@ -365,6 +388,45 @@ function ExplorerGrid({
       </table>
     </div>
   );
+}
+
+function rowMatchesSavedViewFilters(row: FinancialRecordExplorerRowDto, filters: FinancialRecordExplorerFilterDto[]): boolean {
+  if (filters.length === 0) {
+    return true;
+  }
+
+  return filters.every((filter) => {
+    const expected = normalizeSearchToken(filter.value);
+    if (!expected) {
+      return true;
+    }
+
+    const filterId = normalizeSearchToken(filter.filterId);
+    const directCell = filterId ? row.cells.find((cell) => normalizeSearchToken(cell.columnId) === filterId) : undefined;
+    if (directCell) {
+      return cellMatchesToken(directCell, expected);
+    }
+
+    return rowMatchesSearch(row, expected);
+  });
+}
+
+function rowMatchesSearch(row: FinancialRecordExplorerRowDto, query: string): boolean {
+  const token = normalizeSearchToken(query);
+  if (!token) {
+    return true;
+  }
+
+  return [row.label, row.recordType, row.source, row.status].some((value) => normalizeSearchToken(value).includes(token)) ||
+    row.cells.some((cell) => cellMatchesToken(cell, token));
+}
+
+function cellMatchesToken(cell: FinancialRecordExplorerRowDto["cells"][number], token: string): boolean {
+  return [cell.displayValue, cell.rawValue].some((value) => normalizeSearchToken(value).includes(token));
+}
+
+function normalizeSearchToken(value: string): string {
+  return value.trim().toLowerCase();
 }
 
 function ProofDrawer({

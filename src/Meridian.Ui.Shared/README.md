@@ -190,7 +190,21 @@ store is available. The reconciliation response carries provider-side refs, Meri
 and package posture for external import, Meridian ledger support, and the GL tie-out. The same
 endpoint group now lists and upserts scoped external-GL mapping profiles and creates guarded export
 packages that require certified mapping and reconciliation evidence before reaching ready-for-review
-state. UI Shared maps these routes and registers the Data Integration-owned credential-backed
+state. Export package creation also requires retained export-control evidence that identifies the
+export fund, provider/fund scope, or exact export period. Export packages carry generated mapped
+lines from Meridian-owned ledger totals so
+reviewers inspect the exact artifact that would be exported while external-only evidence remains
+reconciliation support. It also exposes a certification route for retained ready-for-review export
+artifacts so reviewer notes and evidence are handled by Financial Operations while live posting
+stays disabled.
+The controlled export-package manifest route returns generated mapped lines, retained evidence,
+validation state, a deterministic content hash, and explicit posting-disabled posture without
+creating a live external posting path.
+Export certification evidence must reference the retained export package id or exact export period
+on the same retained artifact, so a generic approval packet cannot certify a different guarded GL
+artifact. Assistant or automation-origin export certification requests are rejected before the
+service certifies the artifact.
+UI Shared maps these routes and registers the Data Integration-owned credential-backed
 connection store, but it does not own GL evidence reconciliation, mapping-profile validation,
 export-package certification safeguards, or QuickBooks credential-persistence mapping.
 The Data Integration-owned QuickBooks Online lane refreshes access through the server-side token
@@ -203,36 +217,65 @@ Meridian-owned ledger entries, so browser and WPF clients inherit the same guard
 read-only reconciliation posture.
 Shared accounting configuration and manual journal entry services also provide durable file-backed
 fallback stores under the resolved workstation data root. `FileAccountingConfigurationStore`
-persists chart accounts, templates, posting rules, and accounting action audit events at
+persists chart accounts, templates, posting rules, saved rule test cases, and accounting action audit events at
 `workstation/accounting/accounting-configuration.json`, while `FileManualJournalEntryDraftStore`
 persists draft and submitted manual journal records at
 `workstation/accounting/manual-journal-drafts.json`. Manual journal drafts carry a shared
 `ManualJournalEntryTypeDto` so accrual, prepaid expense, expense, amortization, deferral,
 reclassification, reversal, capital-call, distribution, subscription, redemption, LP-transfer,
 management-fee, and general adjustment workflows persist as typed accounting records instead of
-client-local labels. Private-capital entry types require shared treasury ledger context before
+client-local labels. Accounting Rules Studio dry-runs merge rule scope, event dimensions,
+counterparty, generated-line dimensions, allocation target dimensions, and external GL keys into
+generated posting lines before returning preview results, so browser and WPF clients do not
+reconstruct dimensional accounting context locally. Text rule predicates without retained
+comparison values fail closed as validation issues during dry-run preview and activation so
+incomplete operator predicates cannot accidentally select a posting rule. Private-capital entry types require shared treasury ledger context before
 approval submission: effective date, idempotency key, fund-event type/id, and capital account
 context, with optional investor, payment-intent, and settlement references. Stronger host
 registrations can still replace those stores, but browser and WPF clients should consume the shared
 services instead of keeping process-local accounting configuration, treasury-context validation, or
-draft state. `ManualJournalEntryWorkbenchService` now derives a private-capital activity projection
-from retained manual JE drafts and, when registered, `ILedgerJournalStore` posted journals plus
-`ReportPackWorkflowService` workflow records. Posted ledger-backed fund events win over same-id
-drafts, and the projection keeps fund-event rows, ordered capital-account subledger entries,
-ledger-impact rows, capital-account aggregates, published report-output state, signed net activity,
-and incomplete-context warnings server-owned for both browser and WPF consumers. Posted
+draft state. Manual journal evidence attachment is exposed through
+`/api/ledger/journal-entry-workbench/evidence`; it requires the current draft version, validates
+line-scoped attachments, writes `manual-je.attach-evidence` audit, and refuses posted, reversed,
+rebooked, or close-locked entries so evidence changes happen before posting or through correction
+drafts. The same workbench service now enforces request-level period-lock posture across save,
+submit, evidence attachment, and lifecycle mutations; validation remains read-only and returns a
+critical `manual-je.period-locked` issue for locked periods. It also normalizes
+`LedgerDimensionSetDto` on manual journal headers and lines, carrying fund/entity scope and
+external GL dimensions from the header while enriching line dimensions from entity, instrument,
+tax-lot, and cost-center fields. `ManualJournalEntryWorkbenchService` now loads retained manual JE
+drafts and, when registered, `ILedgerJournalStore` posted journals plus `ReportPackWorkflowService`
+workflow records, then delegates private-capital activity projection semantics to Financial
+Operations. Posted ledger-backed fund events win over same-id drafts, and the projection keeps
+fund-event rows, ordered capital-account subledger entries, ledger-impact rows, capital-account
+aggregates, published report-output state, signed net activity, and incomplete-context warnings
+Financial Operations-owned for both browser and WPF consumers. Posted
 capital-account subledger rows and ledger-impact account scopes are reconstructed from the
 shared ledger journal evidence. Close-management endpoints under `/api/ledger/close-management/*`
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
-lock posture, and validation issues from Operations Continuity, while the late-adjustment route
-retains review requests without mutating posted journal entries.
+  lock posture, and validation issues from Operations Continuity, while the task sign-off and
+  late-adjustment routes retain evidence-backed task, review request, approval, or rejection
+  decisions without mutating posted journal entries. Assistant or automation-origin close sign-off
+  and late-adjustment commands are rejected before retaining decisions. Late-adjustment request evidence must identify
+the journal entry, workflow, or close period, and late-adjustment review evidence must identify the
+retained request, journal entry, workflow, or close period. Task sign-off requests are rejected when a
+projected dependency task has not been signed off or when the requested role is outside the
+projected role-scoped sign-off requirements, so browser and WPF clients cannot bypass close
+checklist order or approval-count governance.
 The `/api/ledger/reports/accounting-package` route adapts the Financial Operations report-package
 service, returning the shared financial statement package, investor capital statement, realized
-gain/loss report, NAV package, certification, validation issues, and restatement workflow metadata
+gain/loss report, NAV package, line-level provenance rows, certification, validation issues, and restatement workflow metadata
 without requiring browser or WPF clients to reconstruct accounting report state locally. The
 companion `/api/ledger/reports/accounting-packages` route lists retained package history by optional
-fund profile and period filters from the same shared service.
+fund profile and period filters from the same shared service. The
+`/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}` route returns the
+retained controlled export-artifact manifest with evidence, content hash, certification state, and
+live external posting disabled. The
+`/api/ledger/reports/accounting-package/certification` route requires ledger mutation permission
+and forwards the shared certification request to the same service so endpoint adapters resolve the
+authenticated actor, reject assistant or automation-origin certification, return 404 for missing
+packages, and fail closed on draft, duplicate, or critically blocked retained packages.
 ledger-owned capital-account impacts, so a posted fund event that touches multiple capital accounts
 keeps those account/investor identities visible in shared Accounting, browser, and WPF projections
 instead of collapsing every row to the event-level fallback account. When a posted fund event
@@ -253,14 +296,69 @@ Published workflow records can also match through retained publication/restateme
 evidence pointers to the fund-event id, journal id, or ledger-entry id, so an event-level evidence
 packet can keep the report output attached even before line provenance is populated.
 Accounting configuration posting rules now carry effective dates, priority, dimensional scope,
-event conditions, formula/allocation metadata, generated posting lines, version history, and
+flat and grouped `All`/`Any` event conditions, formula/allocation metadata, generated posting lines, version history, and
 promotion-approval metadata in the shared ledger contracts. `/api/ledger/accounting-configuration/posting-rules/dry-run`
 evaluates those rules without posting, returning the selected rule, generated lines, explanations,
-and validation issues for browser and WPF clients. Manual journal lifecycle actions are exposed
+and validation issues for browser and WPF clients. Dry-run previews also fail closed with the shared
+`posting-rule.priority-conflict` critical issue and no selected generated posting preview when
+multiple matched rules share the selected top priority, so ambiguous priority resolution is visible
+before activation or promotion. Allocation rules now split generated/template
+posting lines by static or formula-backed positive weights, round each allocation to cents, place
+any residual on the final allocation line, and merge allocation target dimensions into the generated
+line preview. Rule scope matching includes external GL dimension key/value pairs, so department,
+class, book, or other external GL scoped rules do not match dry-run events from a different external
+dimension. Dry-run and workspace validation fail closed on duplicate active chart account paths,
+missing or duplicate generated posting
+line ids, missing or archived generated posting account references, missing or duplicate allocation ids, event-specific non-positive allocation weights, missing or duplicate condition ids, malformed amount-threshold predicate values,
+inverted amount-between ranges, duplicate formula ids, missing generated-posting formula references, missing allocation
+formula references, and formula-backed allocation weights that resolve non-positive while surfacing
+rule-match validation issues for operator repair. Condition groups evaluate as required
+`All` or `Any` predicate sets and surface service-owned explanations when a required group does not
+match.
+`/api/ledger/accounting-configuration/posting-rules/tests`
+executes ad-hoc or saved non-posting regression test cases through the same dry-run engine and returns
+per-case pass/fail assertion evidence for selected rule, selected rule version, balanced posting, expected generated posting lines,
+generated line dimensions, and expected issue-code
+checks. `/api/ledger/accounting-configuration/posting-rules/test-cases` saves workspace-owned
+regression cases with mutation permission, audit evidence, and retained evidence links on the test
+case itself; activation and promotion readiness validate that saved-case evidence references the
+test case id, expected rule id, or expected rule version. Posting-rule upserts retain
+service-owned version rows when a rule is created or its `RuleVersion` changes, capturing actor,
+timestamp, mutation evidence, and the current promotion approval snapshot.
+`/api/ledger/accounting-configuration/posting-rules/promotion-approvals` approves only the current
+retained rule version, rejects stale-version approvals, requires approver notes plus retained
+approval/review evidence that references the retained rule, current version, or approval id,
+requires retained saved regression coverage for that current version, runs those saved tests through
+the dry-run assertion engine, rejects assistant or automation-origin approval requests before
+mutation, updates the matching version snapshot, and appends
+`posting-rule.promotion-approve` audit evidence. Replaying the same approved promotion id is
+idempotent and does not append a second audit event; submitting a different approval id for an
+already approved rule version is rejected so the retained approval lineage cannot be overwritten.
+  Configuration activation
+  now evaluates the same readiness path: the activation request itself requires retained activation,
+  approval, certification, sign-off, or review evidence before `configuration.activate` can be
+  audited; promotion-gated posting rules require approved promotion
+  evidence plus saved current-version test coverage with retained regression evidence that identifies
+  the test case, expected rule, or expected version, same-priority overlapping
+  effective rules are rejected as deterministic selection conflicts, and any failing or evidence-weak
+  saved regression case blocks activation before a
+`configuration.activate` audit event is appended.
+Manual journal lifecycle actions are exposed
 through `/api/ledger/journal-entry-workbench/lifecycle-action`; approve, post, reject, close-lock,
 reverse-draft, and rebook-draft transitions stay server-owned, require human action origin, and
-append accounting action audit evidence. Reversal and rebook requests create separate correction
-drafts instead of mutating the posted entry.
+append accounting action audit evidence. Approval and rejection requests require reviewer notes,
+while posting and close-lock requests require operator notes. Close-lock requests also require
+retained close, period-lock, sign-off, certification, approval, or review evidence that identifies
+the journal entry or accounting period.
+Draft save and approval submission remain mutable only for `Draft`, `NeedsFix`, and `Rejected`
+entries; submitted, approved, posted, reversed, rebooked, and close-locked entries reject direct
+draft edits or duplicate submission and must use lifecycle actions or correction workflows.
+Reversal and rebook requests create separate correction drafts instead of mutating the posted entry,
+and require retained reversal, rebook, correction, approval, or review evidence before the original
+posted entry transitions; that evidence must identify the posted journal entry or accounting
+period. Direct reversal/rebook is available only while the entry is `Posted`;
+`CloseLocked` entries reject direct correction actions and must use governed late-adjustment or
+restatement workflows.
 `/api/ledger/private-capital/activity` can also be filtered by `fundEventId`, `capitalAccountId`,
 `investorId`, and `paymentIntentId`; the endpoint returns a recomputed slice so report-package and
 payment-intent drill-throughs retain matching events, subledger rows, ledger impacts, report
@@ -269,7 +367,7 @@ leaking unrelated capital-account rows. Account, investor, and payment-intent fi
 posted fund event when any child capital-account subledger row, GL impact, report-output row, or
 payment-intent workflow matches, then derive filtered account totals and net activity from the
 retained subledger rows before falling back to event-level rows. Each fund-event ledger record is
-rebuilt server-side through `PrivateCapitalFundEventLedgerRecordBuilder` from the filtered
+rebuilt server-side through the Financial Operations-owned `PrivateCapitalFundEventLedgerRecordBuilder` from the filtered
 projection rows so browser and desktop clients receive a
 single event-level view containing event state, subledger impact, GL impact, evidence, approval,
 and report-output posture. Those rows also carry top-level journal, memo, gross/net activity,
@@ -318,7 +416,7 @@ support packages. The support package rows cover operational evidence, payment i
 output, delivery, tax support, and audit support readiness, with review-required actions when
 retained package evidence is missing. It requires `fundEventId`, returns 400 when the selector is
 missing, and returns 404 when the event is absent.
-`PrivateCapitalCapitalAccountSubledgerBuilder` also groups those event-level records with the
+The Financial Operations-owned `PrivateCapitalCapitalAccountSubledgerBuilder` also groups those event-level records with the
 running capital-account subledger, ledger impacts, report outputs, retained evidence, approval
 queue, posted/published counts, and validation issues into a capital-account-level record.
 The subledger builder now emits the same readiness enum, label, reason, next action, and
@@ -1121,14 +1219,26 @@ treasury context, and version state before save or approval submission. Draft sa
 permissive for in-progress work, but approval submission requires retained source evidence and, for
 private-capital entry types, retry-safe fund-event/capital-account context so browser and WPF
 clients do not present process-local accounting work as durable ledger evidence. Approval
-submission also rejects assistant or automation-origin requests before the submitted record and
-audit event are written, preserving reviewed automation as a draft/suggestion lane. The workbench
+submission also rejects assistant or automation-origin requests, and duplicate submission of an
+already submitted or later-status entry, before the submitted record and audit event are written,
+preserving reviewed automation as a draft/suggestion lane. The workbench
 response includes the shared private-capital activity projection, which skips incomplete fund-event
 drafts and surfaces ledger-impact, projection, and report-output readiness warnings instead of
 inventing capital-account, GL-impact, or stakeholder-package rows. The read-only
 `/api/ledger/private-capital/activity` endpoint returns that same projection directly, giving
 Reporting, browser diagnostics, WPF, and later LP/audit review surfaces a first-class activity
 read model without loading the manual journal authoring payload.
+Lifecycle correction actions return the same typed reversal/rebook link objects on the transitioned
+source entry and generated correction draft, and generated drafts carry a lifecycle transition row
+back to the posted source. Endpoint callers should render those shared correction links instead of
+reconstructing reversal or rebook lineage from audit action strings. Correction and close-lock
+evidence must identify the correction or close-lock intent plus the journal entry or accounting
+period on the same retained evidence artifact; split support and approval links are rejected before
+the posted source is mutated. The lifecycle service validates the generated correction draft before
+mutating the posted source entry, so invalid custom rebook lines cannot leave the source entry in a
+corrected terminal state without a valid correction draft. Once the source entry is close-locked,
+direct lifecycle correction actions are blocked and post-close changes must flow through
+late-adjustment or restatement governance.
 Closed Operations Continuity workflow detail payloads include the governed close-package
 publication manifest metadata produced by the close command: signer, sign-off rationale, retained
 manifest id/route, evidence hash, report pack id, linked evidence, and checklist approvals.

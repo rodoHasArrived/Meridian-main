@@ -58,7 +58,7 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
         var auditDrillThroughs = BuildAuditDrillThroughs(activity, subledgers, statementLineage);
         var status = BuildStatus(investorAccounts, allocationRules, statementLineage, validationIssues);
         var selectedCurrency = normalizedCurrency ?? subledgers.FirstOrDefault()?.Currency ?? activity.Currency;
-        var workbenchRoute = PrivateCapitalActivityRouteBuilder.BuildCapitalAccountWorkbenchRoute(
+        var workbenchRoute = PrivateCapitalActivityRoutes.BuildCapitalAccountWorkbenchRoute(
             activity.FundProfileId,
             activity.LedgerBookId,
             normalizedFundEventId,
@@ -264,7 +264,7 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
                 "activity",
                 "Private-capital activity projection",
                 "Shared projection backing fund events, capital-account subledger entries, ledger impact, evidence, and report output.",
-                PrivateCapitalActivityRouteBuilder.BuildCapitalAccountWorkbenchRoute(activity.FundProfileId, activity.LedgerBookId),
+                PrivateCapitalActivityRoutes.BuildCapitalAccountWorkbenchRoute(activity.FundProfileId, activity.LedgerBookId),
                 true,
                 activity.FundEvents.SelectMany(static item => item.EvidenceLinks).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
                 Normalize(activity.FundEvents.SelectMany(static item => item.EvidenceLinks)),

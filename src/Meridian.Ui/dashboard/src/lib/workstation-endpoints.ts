@@ -23,12 +23,17 @@ export const WORKSTATION_API_ENDPOINTS = {
   accountingConfigurationChart: UI_API_ROUTES.LedgerAccountingConfigurationChart,
   accountingConfigurationTemplates: UI_API_ROUTES.LedgerAccountingConfigurationTemplates,
   accountingConfigurationPostingRules: UI_API_ROUTES.LedgerAccountingConfigurationPostingRules,
+  accountingConfigurationPostingRulePromotionApprovals: UI_API_ROUTES.LedgerAccountingConfigurationPostingRulePromotionApprovals,
   accountingConfigurationPreview: UI_API_ROUTES.LedgerAccountingConfigurationPreview,
   accountingConfigurationPostingRuleDryRun: UI_API_ROUTES.LedgerAccountingConfigurationPostingRuleDryRun,
+  accountingConfigurationPostingRuleTests: UI_API_ROUTES.LedgerAccountingConfigurationPostingRuleTests,
+  accountingConfigurationPostingRuleTestCases: UI_API_ROUTES.LedgerAccountingConfigurationPostingRuleTestCases,
   accountingConfigurationActivate: UI_API_ROUTES.LedgerAccountingConfigurationActivate,
   accountingConfigurationAudit: UI_API_ROUTES.LedgerAccountingConfigurationAudit,
   closeManagementPeriodPlan: UI_API_ROUTES.LedgerCloseManagementPeriodPlan,
   closeManagementLateAdjustments: UI_API_ROUTES.LedgerCloseManagementLateAdjustments,
+  closeManagementLateAdjustmentReview: UI_API_ROUTES.LedgerCloseManagementLateAdjustmentReview,
+  closeManagementTaskSignOffs: UI_API_ROUTES.LedgerCloseManagementTaskSignOffs,
   manualJournalEntryWorkbench: UI_API_ROUTES.LedgerManualJournalEntryWorkbench,
   privateCapitalActivity: UI_API_ROUTES.LedgerPrivateCapitalActivity,
   privateCapitalFundEventRecord: UI_API_ROUTES.LedgerPrivateCapitalFundEventRecord,
@@ -39,9 +44,12 @@ export const WORKSTATION_API_ENDPOINTS = {
   manualJournalEntryDrafts: UI_API_ROUTES.LedgerManualJournalEntryDrafts,
   manualJournalEntryValidate: UI_API_ROUTES.LedgerManualJournalEntryValidate,
   manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
+  manualJournalEntryEvidence: UI_API_ROUTES.LedgerManualJournalEntryEvidence,
   manualJournalEntryLifecycleAction: UI_API_ROUTES.LedgerManualJournalEntryLifecycleAction,
   accountingReportPackage: UI_API_ROUTES.LedgerReportsAccountingPackage,
   accountingReportPackages: UI_API_ROUTES.LedgerReportsAccountingPackages,
+  accountingReportPackageExport: UI_API_ROUTES.LedgerReportsAccountingPackageExport,
+  accountingReportPackageCertification: UI_API_ROUTES.LedgerReportsAccountingPackageCertification,
   reporting: UI_API_ROUTES.WorkstationReporting,
   reportingStructuredExport: UI_API_ROUTES.WorkstationReportingStructuredExport,
   workflowSummary: UI_API_ROUTES.WorkstationWorkflowSummary,
@@ -221,7 +229,9 @@ export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
   importLatest: "/api/accounting-system/import/latest",
   reconciliationLatest: "/api/accounting-system/reconciliation/latest",
   mappingProfiles: "/api/accounting-system/mapping-profiles",
-  exportPackages: "/api/accounting-system/export-packages"
+  exportPackages: "/api/accounting-system/export-packages",
+  exportPackageManifest: UI_API_ROUTES.AccountingSystemExportPackageManifest,
+  exportPackageCertification: UI_API_ROUTES.AccountingSystemExportPackageCertification
 } as const;
 
 export const PLAID_API_ENDPOINTS = {

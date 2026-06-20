@@ -1804,7 +1804,7 @@ public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContri
                     Artifact(
                         $"{rootId}:record-route",
                         "fund-event-ledger-record-route",
-                        route: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(activity.FundProfileId, activity.LedgerBookId, record.FundEventId),
+                        route: PrivateCapitalActivityRoutes.BuildFundEventRecordRoute(activity.FundProfileId, activity.LedgerBookId, record.FundEventId),
                         generatedAt: generatedAt),
                     Artifact(
                         $"{rootId}:activity-route",
@@ -1869,7 +1869,7 @@ public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContri
                 Artifact(
                     $"{capitalAccountId}:subledger-route",
                     "capital-account-subledger-route",
-                    route: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+                    route: PrivateCapitalActivityRoutes.BuildCapitalAccountSubledgerRoute(
                         activity.FundProfileId,
                         activity.LedgerBookId,
                         record.CapitalAccountId,
@@ -2254,7 +2254,7 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
                 Artifact(
                     $"{fundEventId}:record-route",
                     "fund-event-ledger-record-route",
-                    route: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(activity.FundProfileId, activity.LedgerBookId, record.FundEventId),
+                    route: PrivateCapitalActivityRoutes.BuildFundEventRecordRoute(activity.FundProfileId, activity.LedgerBookId, record.FundEventId),
                     generatedAt: generatedAt)
             ]));
         edges.Add(new EvidenceEdgeDto(rootId, fundEventId, "originates-from", "Payment intent originates from the private-capital fund event."));
@@ -2275,7 +2275,7 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
                 Artifact(
                     $"{capitalAccountId}:subledger-route",
                     "capital-account-subledger-route",
-                    route: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+                    route: PrivateCapitalActivityRoutes.BuildCapitalAccountSubledgerRoute(
                         activity.FundProfileId,
                         activity.LedgerBookId,
                         record.CapitalAccountId,

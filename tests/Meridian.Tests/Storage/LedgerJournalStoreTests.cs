@@ -578,6 +578,22 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void LedgerJournalIdempotencyMigration_DefinesDurableDuplicateGuards()
+    {
+        var sql = ReadMigration("V_ledger_013__journal_idempotency_guards.sql");
+
+        sql.Should().Contain("ux_journal_entries_aggregate_command");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (aggregate_id, command_id)");
+        sql.Should().Contain("where command_id is not null");
+        sql.Should().Contain("ux_journal_entries_aggregate_source_event");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (aggregate_id, source_event_id)");
+        sql.Should().Contain("where source_event_id is not null");
+        sql.Should().Contain("ux_journal_entries_aggregate_idempotency_key");
+        sql.Should().Contain("lower(metadata ->> 'idempotencyKey')");
+        sql.Should().Contain("where nullif(btrim(metadata ->> 'idempotencyKey'), '') is not null");
+    }
+
+    [Fact]
     public void LedgerPostingKindMigration_DefinesJournalPostingKindColumnsAndIndexes()
     {
         var sql = ReadMigration("V_ledger_006__journal_posting_kind.sql");

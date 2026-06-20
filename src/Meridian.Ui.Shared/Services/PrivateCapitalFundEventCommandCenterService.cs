@@ -63,7 +63,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             activity.FundProfileId,
             activity.LedgerBookId,
             activity.ProjectedAtUtc,
-            PrivateCapitalActivityRouteBuilder.BuildFundEventCommandCenterRoute(activity.FundProfileId, activity.LedgerBookId, record.FundEventId),
+            PrivateCapitalActivityRoutes.BuildFundEventCommandCenterRoute(activity.FundProfileId, activity.LedgerBookId, record.FundEventId),
             record.Readiness,
             record.ReadinessLabel,
             record.ReadinessReason,
@@ -158,7 +158,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             isReady
                 ? $"{record.CapitalAccountSubledgerEntryCount} capital-account subledger row(s) are linked."
                 : "No capital-account subledger movement is linked to this fund event.",
-            PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+            PrivateCapitalActivityRoutes.BuildCapitalAccountSubledgerRoute(
                 fundProfileId,
                 ledgerBookId,
                 record.CapitalAccountId,

@@ -1,4 +1,5 @@
 using Meridian.Wpf.Tests.Features;
+using Meridian.Contracts.Services;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Workflow.EnvironmentDesign;
@@ -7,6 +8,7 @@ using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using WpfCredentialService = Meridian.Wpf.Services.CredentialService;
 
 namespace Meridian.Wpf.Tests.Features.Settings;
 
@@ -33,7 +35,7 @@ public sealed class SettingsFeatureServiceRegistrationTests
         services.SingleDescriptor<IEnvironmentValidationService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<IEnvironmentPublishService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<IEnvironmentRuntimeProjectionService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
-        services.SingleDescriptor<CredentialService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
+        services.SingleDescriptor<WpfCredentialService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<PluginManagementPage>().Lifetime.Should().Be(ServiceLifetime.Transient);
         services.SingleDescriptor<PluginManagementViewModel>().Lifetime.Should().Be(ServiceLifetime.Transient);
         services.SingleDescriptor<SettingsViewModel>().Lifetime.Should().Be(ServiceLifetime.Transient);

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.AccountingSystem;
 
@@ -242,6 +243,18 @@ public sealed record AccountingSystemExportPackageRequestDto(
     public IReadOnlyList<Guid> JournalEntryIds { get; init; } =
         JournalEntryIds ?? [];
 
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record CertifyAccountingSystemExportPackageRequestDto(
+    string ExportPackageId,
+    string Actor,
+    string Notes,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
 }

@@ -10,6 +10,7 @@ Checks the repo metadata that most often drifts:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import shlex
@@ -22,6 +23,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXECUTORS = {"bash", "node", "python", "python3", "sh"}
 POWERSHELL_EXECUTORS = {"powershell", "pwsh"}
 CANONICAL_NODE_TOOL_TARGETS = ("generate-icons", "generate-diagrams")
+MAKE_TARGET_PATTERN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9_-]+)\s*:(?![=])")
+MAKE_TARGET_HELP_PATTERN = re.compile(r"^([A-Za-z0-9][A-Za-z0-9_-]+)\s*:.*?##\s*(.+)$")
 
 
 @dataclass(frozen=True)
@@ -33,6 +36,14 @@ class ToolingReference:
     @property
     def expect_dir(self) -> bool:
         return self.kind == "directory"
+
+
+@dataclass(frozen=True)
+class MakeTarget:
+    name: str
+    source: str
+    line: int
+    has_help: bool
 
 
 def _try_import_yaml() -> Any:
@@ -88,6 +99,59 @@ def _logical_make_lines(text: str) -> list[str]:
 def _makefiles(root: Path) -> list[Path]:
     make_dir = root / "make"
     return [root / "Makefile", *sorted(make_dir.glob("*.mk"))]
+
+
+def _load_make_help_categories(root: Path = REPO_ROOT) -> tuple[tuple[str, str], ...]:
+    renderer = root / "build" / "scripts" / "docs" / "render-make-help.py"
+    spec = importlib.util.spec_from_file_location("render_make_help", renderer)
+    if spec is None or spec.loader is None:
+        return ()
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    categories = getattr(module, "CATEGORIES", ())
+    return tuple((str(name), str(pattern)) for name, pattern in categories)
+
+
+def _phony_targets(text: str) -> set[str]:
+    phonies: set[str] = set()
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if not line.startswith(".PHONY:"):
+            continue
+        chunk = line.split(":", 1)[1]
+        next_index = index + 1
+        while chunk.rstrip().endswith("\\") and next_index < len(lines):
+            chunk = chunk.rstrip()[:-1] + " " + lines[next_index].strip()
+            next_index += 1
+        phonies.update(chunk.split())
+    return phonies
+
+
+def load_makefile_targets(root: Path = REPO_ROOT) -> tuple[list[MakeTarget], set[str]]:
+    targets: list[MakeTarget] = []
+    phonies: set[str] = set()
+    for makefile in _makefiles(root):
+        if not makefile.exists():
+            continue
+        source = makefile.relative_to(root).as_posix()
+        text = makefile.read_text(encoding="utf-8")
+        phonies.update(_phony_targets(text))
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            if line.startswith("\t") or not line.strip() or line.startswith(("#", ".")):
+                continue
+            if ":=" in line or "?=" in line or "+=" in line or line.startswith(("ifeq", "endif", "include")):
+                continue
+            match = MAKE_TARGET_PATTERN.match(line)
+            if match:
+                targets.append(
+                    MakeTarget(
+                        name=match.group(1),
+                        source=source,
+                        line=line_number,
+                        has_help=MAKE_TARGET_HELP_PATTERN.match(line) is not None,
+                    )
+                )
+    return targets, phonies
 
 
 def load_package_references(root: Path = REPO_ROOT) -> list[ToolingReference]:
@@ -208,6 +272,42 @@ def validate_canonical_node_entrypoints(root: Path = REPO_ROOT) -> list[str]:
     return errors
 
 
+def validate_makefile_targets(root: Path = REPO_ROOT) -> list[str]:
+    targets, phonies = load_makefile_targets(root)
+    errors: list[str] = []
+    by_name: dict[str, list[MakeTarget]] = {}
+    for target in targets:
+        by_name.setdefault(target.name, []).append(target)
+
+    for name, definitions in sorted(by_name.items()):
+        if len(definitions) > 1:
+            locations = ", ".join(f"{definition.source}:{definition.line}" for definition in definitions)
+            errors.append(f"Makefile target '{name}' is defined multiple times: {locations}")
+
+    target_names = set(by_name)
+    for name in sorted(target_names - phonies):
+        definition = by_name[name][0]
+        errors.append(f"Makefile target '{name}' is missing from .PHONY ({definition.source}:{definition.line})")
+
+    for name in sorted(phonies - target_names):
+        errors.append(f".PHONY lists missing Makefile target '{name}'")
+
+    for target in targets:
+        if not target.has_help:
+            errors.append(f"Makefile target '{target.name}' is missing a help description ({target.source}:{target.line})")
+
+    categories = _load_make_help_categories(root)
+    if not categories:
+        errors.append("Make help categories could not be loaded from build/scripts/docs/render-make-help.py")
+        return errors
+
+    uncategorized = sorted(name for name in target_names if not any(re.search(pattern, name) for _, pattern in categories))
+    for name in uncategorized:
+        errors.append(f"Makefile target '{name}' is not assigned to a make help category")
+
+    return errors
+
+
 def validate_references(references: list[ToolingReference], root: Path = REPO_ROOT) -> list[str]:
     errors: list[str] = []
     for reference in references:
@@ -225,6 +325,7 @@ def validate_tooling_metadata(root: Path = REPO_ROOT) -> list[str]:
     references.extend(load_dependabot_references(root))
     errors = validate_references(references, root)
     errors.extend(validate_canonical_node_entrypoints(root))
+    errors.extend(validate_makefile_targets(root))
     return errors
 
 

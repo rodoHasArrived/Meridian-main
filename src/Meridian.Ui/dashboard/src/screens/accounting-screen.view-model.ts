@@ -2,11 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
   activateAccountingConfiguration,
+  approveAccountingConfigurationPostingRulePromotion,
   applyManualJournalEntryLifecycleAction,
+  attachManualJournalEntryEvidence,
   buildLedgerAccountingReportPackage,
+  certifyLedgerAccountingReportPackage,
   createLedgerCloseManagementLateAdjustment,
   dryRunAccountingConfigurationPostingRule,
+  executeAccountingConfigurationPostingRuleTests,
   getLedgerCloseManagementPeriodPlan,
+  getLedgerAccountingReportPackageExport,
+  reviewLedgerCloseManagementLateAdjustment,
+  signOffLedgerCloseManagementTask,
   getAccountingConfiguration,
   getCapitalAccountWorkbench,
   getManualJournalEntryWorkbench,
@@ -31,6 +38,8 @@ import {
   reviewReconciliationBreak,
   searchSecurities,
   submitManualJournalEntryApproval,
+  upsertAccountingConfigurationPostingRule,
+  upsertAccountingConfigurationPostingRuleTestCase,
   validateManualJournalEntryDraft,
   type AccountingReportPackageHistoryQuery,
   type CapitalAccountWorkbenchQuery
@@ -60,9 +69,13 @@ import type {
   AccountingConfigurationWorkspace,
   AccountingReportPackageBundle,
   AccountingReportPackageRequest,
+  CertifyAccountingReportPackageRequest,
+  ReportExportArtifactManifest,
   AccountingJournalTemplatePreview,
   AccountingTemplateLineSide,
   AccountingRuleDryRunMatch,
+  AccountingRuleTestCase,
+  AccountingRuleTestSuiteResult,
   AllocationRule,
   CorporateAction,
   ExportAnalysisResult,
@@ -74,9 +87,12 @@ import type {
   AccountingSystemImportDetail,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
+  CloseCalendarMilestone,
   ClosePeriodPlan,
   CloseTask,
   CreateLateAdjustmentRequest,
+  ReviewLateAdjustmentRequest,
+  SignOffCloseTaskRequest,
   LedgerTrialBalanceLine,
   LateAdjustmentRequest,
   MultiAssetCoverageSummary,
@@ -92,7 +108,12 @@ import type {
   PostingRule,
   RuleDryRunRequest,
   RuleDryRunResult,
+  ExecuteAccountingRuleTestCasesRequest,
+  ApprovePostingRulePromotionRequest,
+  UpsertAccountingRuleTestCaseRequest,
+  UpsertPostingRuleRequest,
   ActivateAccountingConfigurationRequest,
+  AttachManualJournalEntryEvidenceRequest,
   JournalEntryLifecycleAction,
   JournalEntryLifecycleActionRequest,
   JournalEntryLifecycleActionResult,
@@ -176,7 +197,11 @@ export interface AccountingReportingServices {
 export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
+  upsertRule: (request: UpsertPostingRuleRequest) => Promise<AccountingConfigurationWorkspace>;
   dryRunRule: (request: RuleDryRunRequest) => Promise<RuleDryRunResult>;
+  runRuleTests: (request: ExecuteAccountingRuleTestCasesRequest) => Promise<AccountingRuleTestSuiteResult>;
+  saveRuleTestCase: (request: UpsertAccountingRuleTestCaseRequest) => Promise<AccountingConfigurationWorkspace>;
+  approveRulePromotion: (request: ApprovePostingRulePromotionRequest) => Promise<AccountingConfigurationWorkspace>;
   activate: (request: ActivateAccountingConfigurationRequest) => Promise<AccountingConfigurationWorkspace>;
 }
 
@@ -213,12 +238,21 @@ export interface AccountingRulesStudioRuleViewModel {
   allocationRows: string[];
   generatedPostingRows: string[];
   versionRows: string[];
+  promotionReadiness: AccountingRulesStudioPromotionReadinessViewModel[];
   promotionLabel: string;
   promotionTone: "success" | "warning" | "danger" | "outline";
   statusLabel: string;
   statusTone: "success" | "warning" | "danger" | "outline";
   isSelected: boolean;
   selectAriaLabel: string;
+}
+
+export interface AccountingRulesStudioPromotionReadinessViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AccountingToolingTone;
 }
 
 export interface AccountingRulesStudioDryRunViewModel {
@@ -229,6 +263,24 @@ export interface AccountingRulesStudioDryRunViewModel {
   generatedLineRows: string[];
   generatedPostingRows: string[];
   validationRows: AccountingConfigurationIssueViewModel[];
+}
+
+export interface AccountingRulesStudioTestSuiteViewModel {
+  title: string;
+  summaryLabel: string;
+  executedLabel: string;
+  statusTone: "success" | "warning" | "danger";
+  resultRows: string[];
+  validationRows: AccountingConfigurationIssueViewModel[];
+}
+
+export interface AccountingRulesStudioTestCaseViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  assertionLabel: string;
+  evidenceLabel: string;
+  evidenceTone: "success" | "warning";
 }
 
 export interface AccountingConfigurationIssueViewModel {
@@ -280,6 +332,86 @@ export interface AccountingConfigurationViewModel {
   dryRunBusy: boolean;
   canDryRun: boolean;
   dryRunSelectedRule: () => Promise<void>;
+  applyEventPredicateButtonLabel: string;
+  applyEventPredicateDisabledReason: string | null;
+  applyEventPredicateStatusText: string | null;
+  applyEventPredicateBusy: boolean;
+  canApplyEventPredicate: boolean;
+  applyDryRunEventPredicate: () => Promise<void>;
+  applyThresholdButtonLabel: string;
+  applyThresholdDisabledReason: string | null;
+  applyThresholdStatusText: string | null;
+  applyThresholdBusy: boolean;
+  canApplyThreshold: boolean;
+  applyDryRunAmountThreshold: () => Promise<void>;
+  applyEffectiveStartButtonLabel: string;
+  applyEffectiveStartDisabledReason: string | null;
+  applyEffectiveStartStatusText: string | null;
+  applyEffectiveStartBusy: boolean;
+  canApplyEffectiveStart: boolean;
+  applyDryRunEffectiveStart: () => Promise<void>;
+  applyScopeButtonLabel: string;
+  applyScopeDisabledReason: string | null;
+  applyScopeStatusText: string | null;
+  applyScopeBusy: boolean;
+  canApplyScope: boolean;
+  applyDryRunScope: () => Promise<void>;
+  capturePostingsButtonLabel: string;
+  capturePostingsDisabledReason: string | null;
+  capturePostingsStatusText: string | null;
+  capturePostingsBusy: boolean;
+  canCapturePostings: boolean;
+  captureDryRunGeneratedPostings: () => Promise<void>;
+  applyFormulaButtonLabel: string;
+  applyFormulaDisabledReason: string | null;
+  applyFormulaStatusText: string | null;
+  applyFormulaBusy: boolean;
+  canApplyFormula: boolean;
+  applyDryRunFormulaAmount: () => Promise<void>;
+  applyAllocationButtonLabel: string;
+  applyAllocationDisabledReason: string | null;
+  applyAllocationStatusText: string | null;
+  applyAllocationBusy: boolean;
+  canApplyAllocation: boolean;
+  applyDryRunAllocationTargets: () => Promise<void>;
+  raisePriorityButtonLabel: string;
+  raisePriorityDisabledReason: string | null;
+  raisePriorityStatusText: string | null;
+  raisePriorityBusy: boolean;
+  canRaisePriority: boolean;
+  raiseSelectedRulePriority: () => Promise<void>;
+  ruleTestSuite: AccountingRulesStudioTestSuiteViewModel | null;
+  ruleTestStatusText: string | null;
+  ruleTestButtonLabel: string;
+  ruleTestDisabledReason: string | null;
+  ruleTestBusy: boolean;
+  canRunRuleTests: boolean;
+  runRuleTests: () => Promise<void>;
+  saveDryRunAsRuleTestButtonLabel: string;
+  saveDryRunAsRuleTestDisabledReason: string | null;
+  saveDryRunAsRuleTestStatusText: string | null;
+  saveDryRunAsRuleTestBusy: boolean;
+  canSaveDryRunAsRuleTest: boolean;
+  saveDryRunAsRuleTest: () => Promise<void>;
+  duplicateRuleButtonLabel: string;
+  duplicateRuleDisabledReason: string | null;
+  duplicateRuleStatusText: string | null;
+  duplicateRuleBusy: boolean;
+  canDuplicateRule: boolean;
+  duplicateSelectedRule: () => Promise<void>;
+  archiveRuleButtonLabel: string;
+  archiveRuleDisabledReason: string | null;
+  archiveRuleStatusText: string | null;
+  archiveRuleBusy: boolean;
+  canArchiveRule: boolean;
+  archiveSelectedRule: () => Promise<void>;
+  approveRulePromotionButtonLabel: string;
+  approveRulePromotionDisabledReason: string | null;
+  approveRulePromotionStatusText: string | null;
+  approveRulePromotionBusy: boolean;
+  canApproveRulePromotion: boolean;
+  approveRulePromotion: () => Promise<void>;
+  ruleTestCases: AccountingRulesStudioTestCaseViewModel[];
   validationIssues: AccountingConfigurationIssueViewModel[];
   auditTrail: AccountingConfigurationAuditViewModel[];
   preview: AccountingConfigurationPreviewViewModel | null;
@@ -831,6 +963,7 @@ export interface ManualJournalEntryWorkbenchServices {
   saveDraft: (request: SaveManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
   validateDraft: (request: ValidateManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
   submitApproval: (request: SubmitManualJournalEntryApprovalRequest) => Promise<ManualJournalEntryDraft>;
+  attachEvidence: (request: AttachManualJournalEntryEvidenceRequest) => Promise<ManualJournalEntryDraft>;
   applyLifecycleAction: (request: JournalEntryLifecycleActionRequest) => Promise<JournalEntryLifecycleActionResult>;
 }
 
@@ -858,7 +991,11 @@ export interface ManualJournalLifecycleTransitionViewModel {
   id: string;
   title: string;
   detail: string;
+  auditLabel: string;
+  correlationLabel: string;
   evidenceLabel: string;
+  evidenceTone: "outline" | "success";
+  evidenceRows: string[];
 }
 
 export interface ManualJournalLifecycleCorrectionViewModel {
@@ -867,6 +1004,14 @@ export interface ManualJournalLifecycleCorrectionViewModel {
   subtitle: string;
   balanceLabel: string;
   sourceLabel: string;
+}
+
+export interface ManualJournalLifecycleChecklistItemViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AccountingToolingTone;
 }
 
 export interface ManualJournalEvidenceAttachmentDraft {
@@ -1256,6 +1401,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   privateCapitalActivity: ManualJournalPrivateCapitalActivityViewModel;
   validationIssues: AccountingConfigurationIssueViewModel[];
   lifecycleCommands: ManualJournalLifecycleCommandViewModel[];
+  lifecycleChecklist: ManualJournalLifecycleChecklistItemViewModel[];
   lifecycleTransitions: ManualJournalLifecycleTransitionViewModel[];
   lifecycleCorrectionRows: ManualJournalLifecycleCorrectionViewModel[];
   lifecycleStatusText: string | null;
@@ -1263,6 +1409,8 @@ export interface ManualJournalEntryWorkbenchViewModel {
   saveBusy: boolean;
   validateBusy: boolean;
   submitBusy: boolean;
+  attachEvidenceBusy: boolean;
+  attachEvidenceStatusText: string | null;
   canSubmit: boolean;
   submitDisabledReason: string | null;
   refresh: () => Promise<void>;
@@ -1278,7 +1426,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   addLine: (side: AccountingTemplateLineSide) => void;
   removeLine: (lineId: string) => void;
   updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
-  addAttachment: () => void;
+  addAttachment: () => Promise<void>;
   removeAttachment: (attachmentId: string) => void;
   applyLifecycleAction: (action: JournalEntryLifecycleAction) => Promise<void>;
   save: () => Promise<void>;
@@ -1755,8 +1903,24 @@ export interface AccountingClosePlanTaskRowViewModel {
   statusTone: AccountingToolingTone;
   dependencyLabel: string;
   signOffLabel: string;
+  signOffDetailLabel: string | null;
+  signOffRequirementLabel: string;
   evidenceLabel: string;
   blockerLabel: string | null;
+}
+
+export interface AccountingCloseCalendarMilestoneViewModel {
+  milestoneId: string;
+  displayName: string;
+  ownerLabel: string;
+  dueDateLabel: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  dependencyLabel: string;
+  signOffLabel: string;
+  evidenceLabel: string;
+  blockerLabel: string | null;
+  lockedLabel: string;
 }
 
 export interface AccountingLateAdjustmentRowViewModel {
@@ -1765,7 +1929,18 @@ export interface AccountingLateAdjustmentRowViewModel {
   amountLabel: string;
   requestedByLabel: string;
   statusLabel: string;
+  decisionLabel: string | null;
   evidenceLabel: string;
+  materialityLabel: string;
+  materialityTone: AccountingToolingTone;
+  reason: string;
+  reviewDisabledReason: string | null;
+}
+
+export interface AccountingLateAdjustmentDraftViewModel {
+  journalEntryId: string;
+  amount: string;
+  currency: string;
   reason: string;
 }
 
@@ -1778,9 +1953,19 @@ export interface AccountingReportPackageRowViewModel {
   investorStatementLabel: string;
   realizedGainLossLabel: string;
   restatementLabel: string;
+  exportArtifactLabel: string;
+  exportArtifactTone: AccountingToolingTone;
   evidenceLabel: string;
   validationLabel: string;
   selected: boolean;
+}
+
+export interface AccountingReportCertificationSafeguardViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AccountingToolingTone;
 }
 
 export interface AccountingCloseReportPackageViewModel {
@@ -1799,24 +1984,74 @@ export interface AccountingCloseReportPackageViewModel {
   buildBusy: boolean;
   buildStatusText: string | null;
   buildStatusTone: "neutral" | "success" | "danger";
+  certifyBusy: boolean;
+  certifyStatusText: string | null;
+  certifyStatusTone: "neutral" | "success" | "danger";
+  signOffBusy: boolean;
+  signOffStatusText: string | null;
+  signOffStatusTone: "neutral" | "success" | "danger";
+  createLateAdjustmentBusy: boolean;
+  createLateAdjustmentStatusText: string | null;
+  createLateAdjustmentStatusTone: "neutral" | "success" | "danger";
+  reviewLateAdjustmentBusy: boolean;
+  reviewLateAdjustmentStatusText: string | null;
+  reviewLateAdjustmentStatusTone: "neutral" | "success" | "danger";
+  exportManifestBusy: boolean;
+  exportManifestStatusText: string | null;
+  exportManifestStatusTone: "neutral" | "success" | "danger";
+  exportManifest: AccountingReportExportManifestViewModel | null;
   buildButtonLabel: string;
   buildDisabledReason: string | null;
+  certifyButtonLabel: string;
+  certifyDisabledReason: string | null;
+  signOffButtonLabel: string;
+  signOffDisabledReason: string | null;
+  createLateAdjustmentDisabledReason: string | null;
+  lateAdjustmentDraft: AccountingLateAdjustmentDraftViewModel;
+  exportManifestButtonLabel: string;
+  exportManifestDisabledReason: string | null;
   metrics: AccountingReportPackageHistoryMetricViewModel[];
+  closeCalendar: AccountingCloseCalendarMilestoneViewModel[];
   tasks: AccountingClosePlanTaskRowViewModel[];
   lateAdjustments: AccountingLateAdjustmentRowViewModel[];
   packageRows: AccountingReportPackageRowViewModel[];
   selectedPackage: AccountingReportPackageRowViewModel | null;
+  certificationSafeguards: AccountingReportCertificationSafeguardViewModel[];
   validationIssues: AccountingConfigurationIssueViewModel[];
   liveRegionText: string;
   refresh: () => Promise<void>;
   buildReportPackage: () => Promise<void>;
+  certifyPackage: () => Promise<void>;
+  signOffNextTask: () => Promise<void>;
+  updateLateAdjustmentDraft: (patch: Partial<AccountingLateAdjustmentDraftViewModel>) => void;
+  createLateAdjustment: () => Promise<void>;
+  reviewLateAdjustment: (requestId: string, decision: "Approved" | "Rejected") => Promise<void>;
+  inspectSelectedPackageExport: () => Promise<void>;
   selectPackage: (packageId: string) => void;
+}
+
+export interface AccountingReportExportManifestViewModel {
+  packageId: string;
+  artifactId: string;
+  displayName: string;
+  formatLabel: string;
+  fileName: string;
+  certificationLabel: string;
+  generatedLabel: string;
+  hashLabel: string;
+  evidenceLabel: string;
+  postingLabel: string;
+  routeLabel: string;
 }
 
 export interface AccountingCloseReportPackageServices {
   getClosePlan: (workflowId: string) => Promise<ClosePeriodPlan>;
   createLateAdjustment: (request: CreateLateAdjustmentRequest) => Promise<ClosePeriodPlan>;
+  reviewLateAdjustment: (request: ReviewLateAdjustmentRequest) => Promise<ClosePeriodPlan>;
+  signOffCloseTask: (request: SignOffCloseTaskRequest) => Promise<ClosePeriodPlan>;
   buildPackage: (request: AccountingReportPackageRequest) => Promise<AccountingReportPackageBundle>;
+  certifyPackage: (request: CertifyAccountingReportPackageRequest) => Promise<AccountingReportPackageBundle>;
+  getExportManifest: (packageId: string, artifactId: string) => Promise<ReportExportArtifactManifest>;
   listPackages: (query: AccountingReportPackageHistoryQuery) => Promise<AccountingReportPackageBundle[]>;
 }
 
@@ -1897,7 +2132,11 @@ const defaultAccountingReportingServices: AccountingReportingServices = {
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
   createLateAdjustment: (request) => createLedgerCloseManagementLateAdjustment(request),
+  reviewLateAdjustment: (request) => reviewLedgerCloseManagementLateAdjustment(request),
+  signOffCloseTask: (request) => signOffLedgerCloseManagementTask(request),
   buildPackage: (request) => buildLedgerAccountingReportPackage(request),
+  certifyPackage: (request) => certifyLedgerAccountingReportPackage(request),
+  getExportManifest: (packageId, artifactId) => getLedgerAccountingReportPackageExport(packageId, artifactId),
   listPackages: (query) => listLedgerAccountingReportPackages(query)
 };
 
@@ -1905,6 +2144,10 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   getConfiguration: () => getAccountingConfiguration(),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
   dryRunRule: (request) => dryRunAccountingConfigurationPostingRule(request),
+  runRuleTests: (request) => executeAccountingConfigurationPostingRuleTests(request),
+  saveRuleTestCase: (request) => upsertAccountingConfigurationPostingRuleTestCase(request),
+  upsertRule: (request) => upsertAccountingConfigurationPostingRule(request),
+  approveRulePromotion: (request) => approveAccountingConfigurationPostingRulePromotion(request),
   activate: (request) => activateAccountingConfiguration(request)
 };
 
@@ -1914,6 +2157,7 @@ const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchSer
   saveDraft: (request) => saveManualJournalEntryDraft(request),
   validateDraft: (request) => validateManualJournalEntryDraft(request),
   submitApproval: (request) => submitManualJournalEntryApproval(request),
+  attachEvidence: (request) => attachManualJournalEntryEvidence(request),
   applyLifecycleAction: (request) => applyManualJournalEntryLifecycleAction(request)
 };
 
@@ -2244,6 +2488,23 @@ export function useAccountingCloseReportPackageViewModel(
   const [buildBusy, setBuildBusy] = useState(false);
   const [buildStatusText, setBuildStatusText] = useState<string | null>(null);
   const [buildStatusTone, setBuildStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [certifyBusy, setCertifyBusy] = useState(false);
+  const [certifyStatusText, setCertifyStatusText] = useState<string | null>(null);
+  const [certifyStatusTone, setCertifyStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [signOffBusy, setSignOffBusy] = useState(false);
+  const [signOffStatusText, setSignOffStatusText] = useState<string | null>(null);
+  const [signOffStatusTone, setSignOffStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [createLateAdjustmentBusy, setCreateLateAdjustmentBusy] = useState(false);
+  const [createLateAdjustmentStatusText, setCreateLateAdjustmentStatusText] = useState<string | null>(null);
+  const [createLateAdjustmentStatusTone, setCreateLateAdjustmentStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [lateAdjustmentDraft, setLateAdjustmentDraft] = useState<AccountingLateAdjustmentDraftViewModel>(() => createAccountingLateAdjustmentDraft());
+  const [reviewLateAdjustmentBusy, setReviewLateAdjustmentBusy] = useState(false);
+  const [reviewLateAdjustmentStatusText, setReviewLateAdjustmentStatusText] = useState<string | null>(null);
+  const [reviewLateAdjustmentStatusTone, setReviewLateAdjustmentStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [exportManifestBusy, setExportManifestBusy] = useState(false);
+  const [exportManifestStatusText, setExportManifestStatusText] = useState<string | null>(null);
+  const [exportManifestStatusTone, setExportManifestStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [exportManifest, setExportManifest] = useState<ReportExportArtifactManifest | null>(null);
 
   const refresh = useCallback(async () => {
     if (!workflow) {
@@ -2301,6 +2562,7 @@ export function useAccountingCloseReportPackageViewModel(
         ...current.filter((item) => item.financialStatements.packageId !== bundle.financialStatements.packageId)
       ]);
       setSelectedPackageId(bundle.financialStatements.packageId);
+      setExportManifest(null);
       setBuildStatusText(`Built report package ${bundle.financialStatements.packageId}.`);
       setBuildStatusTone("success");
     } catch (error) {
@@ -2310,6 +2572,207 @@ export function useAccountingCloseReportPackageViewModel(
       setBuildBusy(false);
     }
   }, [closePlan, packages, services, workflow]);
+
+  const certifyPackage = useCallback(async () => {
+    const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
+    if (!selectedBundle) {
+      setCertifyStatusText("A ready report package is required before certification.");
+      setCertifyStatusTone("danger");
+      return;
+    }
+
+    setCertifyBusy(true);
+    setCertifyStatusText(null);
+    setCertifyStatusTone("neutral");
+    try {
+      const request = buildCertifyAccountingReportPackageRequest(selectedBundle);
+      const certified = await services.certifyPackage(request);
+      setPackages((current) => [
+        certified,
+        ...current.filter((item) => item.financialStatements.packageId !== certified.financialStatements.packageId)
+      ]);
+      setSelectedPackageId(certified.financialStatements.packageId);
+      setExportManifest(null);
+      setCertifyStatusText(`Certified report package ${certified.financialStatements.packageId}.`);
+      setCertifyStatusTone("success");
+    } catch (error) {
+      setCertifyStatusText(formatAccountingWorkflowError(error, "Report package could not be certified."));
+      setCertifyStatusTone("danger");
+    } finally {
+      setCertifyBusy(false);
+    }
+  }, [packages, selectedPackageId, services]);
+
+  const signOffNextTask = useCallback(async () => {
+    if (!workflow || !closePlan) {
+      setSignOffStatusText("A close plan is required before signing off a checklist task.");
+      setSignOffStatusTone("danger");
+      return;
+    }
+
+    const signOffTarget = resolveCloseTaskSignOffTarget(closePlan);
+    if (!signOffTarget) {
+      setSignOffStatusText("No close checklist task is ready for sign-off.");
+      setSignOffStatusTone("danger");
+      return;
+    }
+
+    setSignOffBusy(true);
+    setSignOffStatusText(null);
+    setSignOffStatusTone("neutral");
+    try {
+      const nextPlan = await services.signOffCloseTask({
+        workflowId: workflow.workflowId,
+        taskId: signOffTarget.task.taskId,
+        role: signOffTarget.role,
+        decision: "Approved",
+        actor: "browser-accounting-controller",
+        notes: `Approved ${signOffTarget.task.displayName} close checklist task from the Accounting close cockpit.`,
+        evidenceLinks: [
+          `browser://accounting/close/sign-off/${workflow.workflowId}/${signOffTarget.task.taskId}`,
+          ...signOffTarget.task.evidenceLinks
+        ],
+        correlationId: `browser-close-signoff-${workflow.workflowId}-${signOffTarget.task.taskId}`
+      });
+      setClosePlan(nextPlan);
+      setSignOffStatusText(`Signed off ${signOffTarget.task.displayName}.`);
+      setSignOffStatusTone("success");
+    } catch (error) {
+      setSignOffStatusText(formatAccountingWorkflowError(error, "Close checklist task could not be signed off."));
+      setSignOffStatusTone("danger");
+    } finally {
+      setSignOffBusy(false);
+    }
+  }, [closePlan, services, workflow]);
+
+  const updateLateAdjustmentDraft = useCallback((patch: Partial<AccountingLateAdjustmentDraftViewModel>) => {
+    setLateAdjustmentDraft((current) => ({ ...current, ...patch }));
+  }, []);
+
+  const createLateAdjustment = useCallback(async () => {
+    if (!workflow || !closePlan) {
+      setCreateLateAdjustmentStatusText("A close plan is required before requesting a late adjustment.");
+      setCreateLateAdjustmentStatusTone("danger");
+      return;
+    }
+
+    if (closePlan.isPeriodLocked) {
+      setCreateLateAdjustmentStatusText("The period is locked; late adjustments must use governed reopen or remediation.");
+      setCreateLateAdjustmentStatusTone("danger");
+      return;
+    }
+
+    const journalEntryId = lateAdjustmentDraft.journalEntryId.trim();
+    const reason = lateAdjustmentDraft.reason.trim();
+    const amount = Number(lateAdjustmentDraft.amount);
+    const currency = (lateAdjustmentDraft.currency.trim() || closePlan.materialityPolicy.currency || "USD").toUpperCase();
+    if (!journalEntryId || !reason || !Number.isFinite(amount) || amount === 0) {
+      setCreateLateAdjustmentStatusText("Journal entry, non-zero amount, currency, and reason are required before requesting a late adjustment.");
+      setCreateLateAdjustmentStatusTone("danger");
+      return;
+    }
+
+    setCreateLateAdjustmentBusy(true);
+    setCreateLateAdjustmentStatusText(null);
+    setCreateLateAdjustmentStatusTone("neutral");
+    try {
+      const nextPlan = await services.createLateAdjustment({
+        workflowId: workflow.workflowId,
+        journalEntryId,
+        amount,
+        currency,
+        reason,
+        requestedBy: "browser-accounting-controller",
+        evidenceLinks: [
+          `browser://accounting/close/late-adjustment/${workflow.workflowId}/${journalEntryId}`,
+          `browser://accounting/close/materiality-review/${workflow.workflowId}`
+        ],
+        correlationId: `browser-late-adjustment-${workflow.workflowId}-${journalEntryId}`
+      });
+      setClosePlan(nextPlan);
+      setLateAdjustmentDraft(createAccountingLateAdjustmentDraft(currency));
+      setCreateLateAdjustmentStatusText(`Late adjustment requested for ${journalEntryId}.`);
+      setCreateLateAdjustmentStatusTone("success");
+    } catch (error) {
+      setCreateLateAdjustmentStatusText(formatAccountingWorkflowError(error, "Late adjustment request could not be retained."));
+      setCreateLateAdjustmentStatusTone("danger");
+    } finally {
+      setCreateLateAdjustmentBusy(false);
+    }
+  }, [closePlan, lateAdjustmentDraft, services, workflow]);
+
+  const reviewLateAdjustment = useCallback(async (requestId: string, decision: "Approved" | "Rejected") => {
+    if (!workflow || !closePlan) {
+      setReviewLateAdjustmentStatusText("A close plan is required before reviewing a late adjustment.");
+      setReviewLateAdjustmentStatusTone("danger");
+      return;
+    }
+
+    const adjustment = closePlan.lateAdjustments.find((item) => item.requestId === requestId) ?? null;
+    if (!adjustment) {
+      setReviewLateAdjustmentStatusText(`Late adjustment ${requestId} is no longer loaded.`);
+      setReviewLateAdjustmentStatusTone("danger");
+      return;
+    }
+
+    if (adjustment.approvalState === "Approved" || adjustment.approvalState === "Rejected") {
+      setReviewLateAdjustmentStatusText(`Late adjustment ${requestId} is already ${adjustment.approvalState.toLowerCase()}.`);
+      setReviewLateAdjustmentStatusTone("danger");
+      return;
+    }
+
+    setReviewLateAdjustmentBusy(true);
+    setReviewLateAdjustmentStatusText(null);
+    setReviewLateAdjustmentStatusTone("neutral");
+    try {
+      const action = decision === "Approved" ? "approved" : "rejected";
+      const nextPlan = await services.reviewLateAdjustment({
+        workflowId: workflow.workflowId,
+        requestId,
+        decision,
+        actor: "browser-accounting-controller",
+        notes: `${decision} late adjustment ${requestId} from the Accounting close cockpit.`,
+        evidenceLinks: [
+          `browser://accounting/close/late-adjustments/review/${workflow.workflowId}/${requestId}/${decision.toLowerCase()}`,
+          ...adjustment.evidenceLinks
+        ],
+        correlationId: `browser-late-adjustment-review-${workflow.workflowId}-${requestId}-${decision.toLowerCase()}`
+      });
+      setClosePlan(nextPlan);
+      setReviewLateAdjustmentStatusText(`Late adjustment ${requestId} ${action}.`);
+      setReviewLateAdjustmentStatusTone("success");
+    } catch (error) {
+      setReviewLateAdjustmentStatusText(formatAccountingWorkflowError(error, "Late adjustment review could not be retained."));
+      setReviewLateAdjustmentStatusTone("danger");
+    } finally {
+      setReviewLateAdjustmentBusy(false);
+    }
+  }, [closePlan, services, workflow]);
+
+  const inspectSelectedPackageExport = useCallback(async () => {
+    const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
+    const artifact = selectedBundle?.exportArtifacts?.[0] ?? null;
+    if (!selectedBundle || !artifact) {
+      setExportManifestStatusText("A report package with retained export artifacts is required before manifest inspection.");
+      setExportManifestStatusTone("danger");
+      return;
+    }
+
+    setExportManifestBusy(true);
+    setExportManifestStatusText(null);
+    setExportManifestStatusTone("neutral");
+    try {
+      const manifest = await services.getExportManifest(selectedBundle.financialStatements.packageId, artifact.artifactId);
+      setExportManifest(manifest);
+      setExportManifestStatusText(`Loaded export manifest ${manifest.artifactId}.`);
+      setExportManifestStatusTone(manifest.externalPostingAllowed ? "danger" : "success");
+    } catch (error) {
+      setExportManifestStatusText(formatAccountingWorkflowError(error, "Report export manifest could not be loaded."));
+      setExportManifestStatusTone("danger");
+    } finally {
+      setExportManifestBusy(false);
+    }
+  }, [packages, selectedPackageId, services]);
 
   return useMemo(
     () => buildAccountingCloseReportPackageViewState({
@@ -2322,8 +2785,31 @@ export function useAccountingCloseReportPackageViewModel(
       buildBusy,
       buildStatusText,
       buildStatusTone,
+      certifyBusy,
+      certifyStatusText,
+      certifyStatusTone,
+      signOffBusy,
+      signOffStatusText,
+      signOffStatusTone,
+      createLateAdjustmentBusy,
+      createLateAdjustmentStatusText,
+      createLateAdjustmentStatusTone,
+      lateAdjustmentDraft,
+      reviewLateAdjustmentBusy,
+      reviewLateAdjustmentStatusText,
+      reviewLateAdjustmentStatusTone,
+      exportManifestBusy,
+      exportManifestStatusText,
+      exportManifestStatusTone,
+      exportManifest,
       refresh,
       buildReportPackage,
+      certifyPackage,
+      signOffNextTask,
+      updateLateAdjustmentDraft,
+      createLateAdjustment,
+      reviewLateAdjustment,
+      inspectSelectedPackageExport,
       selectPackage: setSelectedPackageId
     }),
     [
@@ -2331,12 +2817,35 @@ export function useAccountingCloseReportPackageViewModel(
       buildReportPackage,
       buildStatusText,
       buildStatusTone,
+      certifyBusy,
+      certifyPackage,
+      certifyStatusText,
+      certifyStatusTone,
       closePlan,
+      createLateAdjustment,
+      createLateAdjustmentBusy,
+      createLateAdjustmentStatusText,
+      createLateAdjustmentStatusTone,
       errorText,
+      exportManifest,
+      exportManifestBusy,
+      exportManifestStatusText,
+      exportManifestStatusTone,
+      inspectSelectedPackageExport,
+      lateAdjustmentDraft,
       loading,
       packages,
       refresh,
+      reviewLateAdjustment,
+      reviewLateAdjustmentBusy,
+      reviewLateAdjustmentStatusText,
+      reviewLateAdjustmentStatusTone,
       selectedPackageId,
+      signOffBusy,
+      signOffNextTask,
+      signOffStatusText,
+      signOffStatusTone,
+      updateLateAdjustmentDraft,
       workflow
     ]
   );
@@ -2355,6 +2864,44 @@ export function useAccountingConfigurationViewModel(
   const [dryRunPreview, setDryRunPreview] = useState<RuleDryRunResult | null>(null);
   const [dryRunBusy, setDryRunBusy] = useState(false);
   const [dryRunError, setDryRunError] = useState<ApiErrorDisplay | null>(null);
+  const [applyEventPredicateBusy, setApplyEventPredicateBusy] = useState(false);
+  const [applyEventPredicateError, setApplyEventPredicateError] = useState<ApiErrorDisplay | null>(null);
+  const [eventPredicateRuleId, setEventPredicateRuleId] = useState<string | null>(null);
+  const [applyThresholdBusy, setApplyThresholdBusy] = useState(false);
+  const [applyThresholdError, setApplyThresholdError] = useState<ApiErrorDisplay | null>(null);
+  const [thresholdRuleId, setThresholdRuleId] = useState<string | null>(null);
+  const [applyEffectiveStartBusy, setApplyEffectiveStartBusy] = useState(false);
+  const [applyEffectiveStartError, setApplyEffectiveStartError] = useState<ApiErrorDisplay | null>(null);
+  const [effectiveStartRuleId, setEffectiveStartRuleId] = useState<string | null>(null);
+  const [applyScopeBusy, setApplyScopeBusy] = useState(false);
+  const [applyScopeError, setApplyScopeError] = useState<ApiErrorDisplay | null>(null);
+  const [scopedRuleId, setScopedRuleId] = useState<string | null>(null);
+  const [capturePostingsBusy, setCapturePostingsBusy] = useState(false);
+  const [capturePostingsError, setCapturePostingsError] = useState<ApiErrorDisplay | null>(null);
+  const [capturedPostingsRuleId, setCapturedPostingsRuleId] = useState<string | null>(null);
+  const [applyFormulaBusy, setApplyFormulaBusy] = useState(false);
+  const [applyFormulaError, setApplyFormulaError] = useState<ApiErrorDisplay | null>(null);
+  const [formulaRuleId, setFormulaRuleId] = useState<string | null>(null);
+  const [applyAllocationBusy, setApplyAllocationBusy] = useState(false);
+  const [applyAllocationError, setApplyAllocationError] = useState<ApiErrorDisplay | null>(null);
+  const [allocationRuleId, setAllocationRuleId] = useState<string | null>(null);
+  const [raisePriorityBusy, setRaisePriorityBusy] = useState(false);
+  const [raisePriorityError, setRaisePriorityError] = useState<ApiErrorDisplay | null>(null);
+  const [raisedPriorityRuleId, setRaisedPriorityRuleId] = useState<string | null>(null);
+  const [ruleTestSuite, setRuleTestSuite] = useState<AccountingRuleTestSuiteResult | null>(null);
+  const [ruleTestBusy, setRuleTestBusy] = useState(false);
+  const [ruleTestError, setRuleTestError] = useState<ApiErrorDisplay | null>(null);
+  const [saveRuleTestBusy, setSaveRuleTestBusy] = useState(false);
+  const [saveRuleTestError, setSaveRuleTestError] = useState<ApiErrorDisplay | null>(null);
+  const [duplicateRuleBusy, setDuplicateRuleBusy] = useState(false);
+  const [duplicateRuleError, setDuplicateRuleError] = useState<ApiErrorDisplay | null>(null);
+  const [duplicatedRuleId, setDuplicatedRuleId] = useState<string | null>(null);
+  const [archiveRuleBusy, setArchiveRuleBusy] = useState(false);
+  const [archiveRuleError, setArchiveRuleError] = useState<ApiErrorDisplay | null>(null);
+  const [archivedRuleId, setArchivedRuleId] = useState<string | null>(null);
+  const [approveRulePromotionBusy, setApproveRulePromotionBusy] = useState(false);
+  const [approveRulePromotionError, setApproveRulePromotionError] = useState<ApiErrorDisplay | null>(null);
+  const [approvedRulePromotionId, setApprovedRulePromotionId] = useState<string | null>(null);
   const [activateBusy, setActivateBusy] = useState(false);
   const [activateError, setActivateError] = useState<ApiErrorDisplay | null>(null);
 
@@ -2441,6 +2988,653 @@ export function useAccountingConfigurationViewModel(
     }
   }, [dryRunBusy, selectedRuleId, services, workspace]);
 
+  const runRuleTests = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const savedTestCases = workspace?.ruleTestCases ?? [];
+    if (!workspace || (activeRules.length === 0 && savedTestCases.length === 0) || ruleTestBusy) {
+      return;
+    }
+
+    setRuleTestBusy(true);
+    setRuleTestError(null);
+    try {
+      const result = await services.runRuleTests({
+        fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
+        actor: "browser-accounting-operator",
+        correlationId: `browser-accounting-rule-tests-${Date.now()}`,
+        testCases: savedTestCases.length > 0
+          ? null
+          : activeRules.map((rule) => buildAccountingRuleTestCase(workspace, rule))
+      });
+      setRuleTestSuite(result);
+    } catch (err) {
+      setRuleTestError(describeApiError(err, "Accounting rule test cases failed."));
+    } finally {
+      setRuleTestBusy(false);
+    }
+  }, [ruleTestBusy, services, workspace]);
+
+  const saveDryRunAsRuleTest = useCallback(async () => {
+    if (!workspace || !dryRunPreview || saveRuleTestBusy) {
+      return;
+    }
+
+    const selectedRuleId = dryRunPreview.selectedRuleId;
+    if (!selectedRuleId) {
+      setSaveRuleTestError({ summary: "Dry-run did not select a posting rule.", details: [] });
+      return;
+    }
+
+    const selectedRule = workspace.postingRules.find((rule) => rule.ruleId === selectedRuleId) ?? null;
+    const testCase: AccountingRuleTestCase = {
+      testCaseId: `rule-test-${selectedRuleId}`,
+      displayName: `${selectedRule?.displayName ?? selectedRuleId} retained dry-run regression`,
+      request: {
+        fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
+        sourceEventType: dryRunPreview.sourceEventType,
+        eventAmount: dryRunPreview.eventAmount,
+        currency: dryRunPreview.currency,
+        effectiveDate: dryRunPreview.effectiveDate,
+        actor: "browser-accounting-operator",
+        dimensions: selectedRule?.scope ?? null,
+        counterpartyId: selectedRule?.scope?.counterpartyId ?? null,
+        instrumentSymbol: null,
+        correlationId: `browser-accounting-rule-test-${selectedRuleId}`
+      },
+      expectedRuleId: selectedRuleId,
+      expectedRuleVersion: selectedRule?.ruleVersion ?? null,
+      expectBalancedPosting: dryRunPreview.isPostingBalanced,
+      expectedIssueCodes: dryRunPreview.validationIssues.map((issue) => issue.code),
+      expectedGeneratedPostingLines: (dryRunPreview.generatedPostingLines ?? []).map((line) => ({
+        ...line,
+        dimensions: cloneLedgerDimensionSet(line.dimensions)
+      })),
+      evidenceLinks: [
+        `browser://accounting/rules-studio/dry-run/${selectedRuleId}`,
+        `browser://accounting/rules-studio/test-case/${selectedRuleId}`
+      ]
+    };
+
+    setSaveRuleTestBusy(true);
+    setSaveRuleTestError(null);
+    try {
+      const next = await services.saveRuleTestCase({
+        fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
+        actor: "browser-accounting-operator",
+        correlationId: `browser-accounting-rule-test-save-${Date.now()}`,
+        evidenceLinks: testCase.evidenceLinks,
+        testCase
+      });
+      setWorkspace(next);
+    } catch (err) {
+      setSaveRuleTestError(describeApiError(err, "Accounting rule test case could not be saved."));
+    } finally {
+      setSaveRuleTestBusy(false);
+    }
+  }, [dryRunPreview, saveRuleTestBusy, services, workspace]);
+
+  const applyDryRunEventPredicate = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    if (!workspace || !rule || !dryRunPreview || applyEventPredicateBusy) {
+      return;
+    }
+
+    const sourceEventConditionId = `${rule.ruleId}-source-event`;
+    const existingConditions = rule.conditions ?? [];
+    const eventPredicateRule: PostingRule = {
+      ...rule,
+      ruleVersion: `${rule.ruleVersion}.event`,
+      conditions: [
+        ...existingConditions
+          .filter((condition) =>
+            condition.conditionId !== sourceEventConditionId &&
+            !(condition.field === "event.kind" && condition.operator === "Equals"))
+          .map((condition) => ({ ...condition })),
+        {
+          conditionId: sourceEventConditionId,
+          field: "event.kind",
+          operator: "Equals",
+          value: dryRunPreview.sourceEventType,
+          secondValue: null,
+          isRequired: true,
+          description: `Source event predicate captured from dry-run ${dryRunPreview.effectiveDate}.`
+        }
+      ],
+      scope: cloneLedgerDimensionSet(rule.scope),
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null,
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    const timestamp = Date.now();
+    setApplyEventPredicateBusy(true);
+    setApplyEventPredicateError(null);
+    setEventPredicateRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: eventPredicateRule,
+        correlationId: `browser-accounting-rule-event-predicate-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/event-predicate/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setEventPredicateRuleId(rule.ruleId);
+    } catch (err) {
+      setApplyEventPredicateError(describeApiError(err, "Posting rule event predicate could not be applied."));
+    } finally {
+      setApplyEventPredicateBusy(false);
+    }
+  }, [applyEventPredicateBusy, dryRunPreview, selectedRuleId, services, workspace]);
+
+  const applyDryRunAmountThreshold = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    if (!workspace || !rule || !dryRunPreview || applyThresholdBusy) {
+      return;
+    }
+
+    const thresholdConditionId = `${rule.ruleId}-minimum-amount`;
+    const existingConditions = rule.conditions ?? [];
+    const thresholdRule: PostingRule = {
+      ...rule,
+      ruleVersion: `${rule.ruleVersion}.threshold`,
+      conditions: [
+        ...existingConditions
+          .filter((condition) => condition.conditionId !== thresholdConditionId)
+          .map((condition) => ({ ...condition })),
+        {
+          conditionId: thresholdConditionId,
+          field: "event.amount",
+          operator: "AmountGreaterThanOrEqual",
+          value: String(dryRunPreview.eventAmount),
+          secondValue: null,
+          isRequired: true,
+          description: `Minimum amount captured from dry-run ${dryRunPreview.effectiveDate}.`
+        }
+      ],
+      scope: cloneLedgerDimensionSet(rule.scope),
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null,
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    const timestamp = Date.now();
+    setApplyThresholdBusy(true);
+    setApplyThresholdError(null);
+    setThresholdRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: thresholdRule,
+        correlationId: `browser-accounting-rule-threshold-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/threshold/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setThresholdRuleId(rule.ruleId);
+    } catch (err) {
+      setApplyThresholdError(describeApiError(err, "Posting rule threshold could not be applied."));
+    } finally {
+      setApplyThresholdBusy(false);
+    }
+  }, [applyThresholdBusy, dryRunPreview, selectedRuleId, services, workspace]);
+
+  const applyDryRunEffectiveStart = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    if (!workspace || !rule || !dryRunPreview || applyEffectiveStartBusy) {
+      return;
+    }
+
+    const effectiveRule: PostingRule = {
+      ...rule,
+      ruleVersion: `${rule.ruleVersion}.effective`,
+      effectiveFrom: dryRunPreview.effectiveDate,
+      effectiveTo: rule.effectiveTo && rule.effectiveTo < dryRunPreview.effectiveDate ? null : rule.effectiveTo ?? null,
+      conditions: rule.conditions?.map((condition) => ({ ...condition })) ?? null,
+      scope: cloneLedgerDimensionSet(rule.scope),
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null,
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    const timestamp = Date.now();
+    setApplyEffectiveStartBusy(true);
+    setApplyEffectiveStartError(null);
+    setEffectiveStartRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: effectiveRule,
+        correlationId: `browser-accounting-rule-effective-start-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/effective-start/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setEffectiveStartRuleId(rule.ruleId);
+    } catch (err) {
+      setApplyEffectiveStartError(describeApiError(err, "Posting rule effective start could not be applied."));
+    } finally {
+      setApplyEffectiveStartBusy(false);
+    }
+  }, [applyEffectiveStartBusy, dryRunPreview, selectedRuleId, services, workspace]);
+
+  const applyDryRunScope = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    const generatedPostings = dryRunPreview?.generatedPostingLines ?? [];
+    if (!workspace || !rule || !dryRunPreview || generatedPostings.length === 0 || applyScopeBusy) {
+      return;
+    }
+
+    const nextScope = mergeRuleScopeFromGeneratedPostings(rule.scope, generatedPostings);
+    const scopedRule: PostingRule = {
+      ...rule,
+      ruleVersion: `${rule.ruleVersion}.scope`,
+      conditions: rule.conditions?.map((condition) => ({ ...condition })) ?? null,
+      scope: nextScope,
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null,
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    const timestamp = Date.now();
+    setApplyScopeBusy(true);
+    setApplyScopeError(null);
+    setScopedRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: scopedRule,
+        correlationId: `browser-accounting-rule-scope-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/scope/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setScopedRuleId(rule.ruleId);
+    } catch (err) {
+      setApplyScopeError(describeApiError(err, "Posting rule scope could not be applied."));
+    } finally {
+      setApplyScopeBusy(false);
+    }
+  }, [applyScopeBusy, dryRunPreview, selectedRuleId, services, workspace]);
+
+  const captureDryRunGeneratedPostings = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    const generatedPostings = dryRunPreview?.generatedPostingLines ?? [];
+    if (!workspace || !rule || !dryRunPreview || generatedPostings.length === 0 || capturePostingsBusy) {
+      return;
+    }
+
+    const capturedRule: PostingRule = {
+      ...rule,
+      ruleVersion: `${rule.ruleVersion}.postings`,
+      conditions: rule.conditions?.map((condition) => ({ ...condition })) ?? null,
+      scope: cloneLedgerDimensionSet(rule.scope),
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: generatedPostings.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })),
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    const timestamp = Date.now();
+    setCapturePostingsBusy(true);
+    setCapturePostingsError(null);
+    setCapturedPostingsRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: capturedRule,
+        correlationId: `browser-accounting-rule-generated-postings-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/generated-postings/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setCapturedPostingsRuleId(rule.ruleId);
+    } catch (err) {
+      setCapturePostingsError(describeApiError(err, "Generated posting lines could not be captured."));
+    } finally {
+      setCapturePostingsBusy(false);
+    }
+  }, [capturePostingsBusy, dryRunPreview, selectedRuleId, services, workspace]);
+
+  const applyDryRunFormulaAmount = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    const formulaCandidate = rule && dryRunPreview
+      ? resolveDryRunFormulaCandidate(rule, dryRunPreview)
+      : null;
+    if (!workspace || !rule || !dryRunPreview || !formulaCandidate || applyFormulaBusy) {
+      return;
+    }
+
+    const formulaRule: PostingRule = {
+      ...rule,
+      ruleVersion: `${rule.ruleVersion}.formula`,
+      conditions: rule.conditions?.map((condition) => ({ ...condition })) ?? null,
+      scope: cloneLedgerDimensionSet(rule.scope),
+      formulas: (rule.formulas ?? []).map((formula) => formula.formulaId === formulaCandidate.formulaId
+        ? {
+            ...formula,
+            value: formulaCandidate.amount,
+            currency: formulaCandidate.currency,
+            description: `Formula amount retained from dry-run ${dryRunPreview.effectiveDate}.`
+          }
+        : { ...formula }),
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null,
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    const timestamp = Date.now();
+    setApplyFormulaBusy(true);
+    setApplyFormulaError(null);
+    setFormulaRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: formulaRule,
+        correlationId: `browser-accounting-rule-formula-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/formula/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setFormulaRuleId(rule.ruleId);
+    } catch (err) {
+      setApplyFormulaError(describeApiError(err, "Posting rule formula amount could not be applied."));
+    } finally {
+      setApplyFormulaBusy(false);
+    }
+  }, [applyFormulaBusy, dryRunPreview, selectedRuleId, services, workspace]);
+
+  const applyDryRunAllocationTargets = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    const nextAllocations = rule && dryRunPreview
+      ? mergeAllocationTargetsFromGeneratedPostings(rule.allocations ?? [], dryRunPreview.generatedPostingLines ?? [])
+      : null;
+    if (!workspace || !rule || !dryRunPreview || !nextAllocations || applyAllocationBusy) {
+      return;
+    }
+
+    const allocationRule: PostingRule = {
+      ...rule,
+      ruleVersion: `${rule.ruleVersion}.allocation`,
+      conditions: rule.conditions?.map((condition) => ({ ...condition })) ?? null,
+      scope: cloneLedgerDimensionSet(rule.scope),
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: nextAllocations,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null,
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    const timestamp = Date.now();
+    setApplyAllocationBusy(true);
+    setApplyAllocationError(null);
+    setAllocationRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: allocationRule,
+        correlationId: `browser-accounting-rule-allocation-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/allocation/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setAllocationRuleId(rule.ruleId);
+    } catch (err) {
+      setApplyAllocationError(describeApiError(err, "Posting rule allocation targets could not be applied."));
+    } finally {
+      setApplyAllocationBusy(false);
+    }
+  }, [applyAllocationBusy, dryRunPreview, selectedRuleId, services, workspace]);
+
+  const raiseSelectedRulePriority = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    if (!workspace || !rule || raisePriorityBusy) {
+      return;
+    }
+
+    const prioritizedRule: PostingRule = {
+      ...rule,
+      ruleVersion: `${rule.ruleVersion}.priority`,
+      priority: (rule.priority ?? 0) + 1,
+      conditions: rule.conditions?.map((condition) => ({ ...condition })) ?? null,
+      scope: cloneLedgerDimensionSet(rule.scope),
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null,
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    const timestamp = Date.now();
+    setRaisePriorityBusy(true);
+    setRaisePriorityError(null);
+    setRaisedPriorityRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: prioritizedRule,
+        correlationId: `browser-accounting-rule-priority-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/priority/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setRaisedPriorityRuleId(rule.ruleId);
+    } catch (err) {
+      setRaisePriorityError(describeApiError(err, "Posting rule priority could not be raised."));
+    } finally {
+      setRaisePriorityBusy(false);
+    }
+  }, [raisePriorityBusy, selectedRuleId, services, workspace]);
+
+  const duplicateSelectedRule = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    if (!workspace || !rule || duplicateRuleBusy) {
+      return;
+    }
+
+    const timestamp = Date.now();
+    const draftRuleId = `${rule.ruleId}-draft-${timestamp}`;
+    const duplicatedRule: PostingRule = {
+      ...rule,
+      ruleId: draftRuleId,
+      displayName: `${rule.displayName} draft`,
+      description: rule.description
+        ? `${rule.description} Drafted from ${rule.ruleId}.`
+        : `Drafted from ${rule.ruleId}.`,
+      ruleVersion: `${rule.ruleVersion}.draft`,
+      isArchived: false,
+      priority: (rule.priority ?? 0) + 1,
+      scope: cloneLedgerDimensionSet(rule.scope),
+      conditions: rule.conditions?.map((condition) => ({ ...condition })) ?? null,
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null,
+      versions: [],
+      promotionApproval: null,
+      requiresPromotionApproval: true
+    };
+
+    setDuplicateRuleBusy(true);
+    setDuplicateRuleError(null);
+    setDuplicatedRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: duplicatedRule,
+        correlationId: `browser-accounting-rule-duplicate-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/duplicate/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(draftRuleId);
+      setDuplicatedRuleId(draftRuleId);
+    } catch (err) {
+      setDuplicateRuleError(describeApiError(err, "Posting rule could not be duplicated."));
+    } finally {
+      setDuplicateRuleBusy(false);
+    }
+  }, [duplicateRuleBusy, selectedRuleId, services, workspace]);
+
+  const archiveSelectedRule = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    if (!workspace || !rule || archiveRuleBusy) {
+      return;
+    }
+
+    const archivedRule: PostingRule = {
+      ...rule,
+      isArchived: true,
+      scope: cloneLedgerDimensionSet(rule.scope),
+      conditions: rule.conditions?.map((condition) => ({ ...condition })) ?? null,
+      formulas: rule.formulas?.map((formula) => ({ ...formula })) ?? null,
+      allocations: rule.allocations?.map((allocation) => ({
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      })) ?? null,
+      generatedPostings: rule.generatedPostings?.map((posting) => ({
+        ...posting,
+        dimensions: cloneLedgerDimensionSet(posting.dimensions)
+      })) ?? null
+    };
+
+    const timestamp = Date.now();
+    setArchiveRuleBusy(true);
+    setArchiveRuleError(null);
+    setArchivedRuleId(null);
+    try {
+      const next = await services.upsertRule({
+        fundProfileId: workspace.fundProfileId,
+        actor: "browser-accounting-operator",
+        rule: archivedRule,
+        correlationId: `browser-accounting-rule-archive-${timestamp}`,
+        evidenceLinks: [`browser://accounting/rules-studio/archive/${rule.ruleId}`]
+      });
+      setWorkspace(next);
+      setSelectedRuleId(next.postingRules.find((item) => !item.isArchived)?.ruleId ?? null);
+      setDryRunPreview(null);
+      setArchivedRuleId(rule.ruleId);
+    } catch (err) {
+      setArchiveRuleError(describeApiError(err, "Posting rule could not be archived."));
+    } finally {
+      setArchiveRuleBusy(false);
+    }
+  }, [archiveRuleBusy, selectedRuleId, services, workspace]);
+
+  const approveRulePromotion = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    if (!workspace || !rule || approveRulePromotionBusy || isApprovedRulePromotion(rule.promotionApproval)) {
+      return;
+    }
+
+    const evidenceLink = `browser://accounting/rules-studio/promotion-review/${rule.ruleId}/${rule.ruleVersion}`;
+    setApproveRulePromotionBusy(true);
+    setApproveRulePromotionError(null);
+    try {
+      const next = await services.approveRulePromotion({
+        fundProfileId: workspace.fundProfileId,
+        ruleId: rule.ruleId,
+        ruleVersion: rule.ruleVersion,
+        actor: "browser-accounting-operator",
+        approvalId: `browser-approval-${rule.ruleId}-${rule.ruleVersion}`,
+        notes: `Approved ${rule.displayName} ${rule.ruleVersion} from Accounting Rules Studio.`,
+        evidenceLinks: [evidenceLink],
+        requestedBy: rule.promotionApproval?.requestedBy ?? "browser-accounting-operator",
+        requestedAtUtc: rule.promotionApproval?.requestedAtUtc ?? new Date().toISOString(),
+        correlationId: `browser-accounting-rule-promotion-${Date.now()}`
+      });
+      setWorkspace(next);
+      setSelectedRuleId(rule.ruleId);
+      setApprovedRulePromotionId(rule.ruleId);
+    } catch (err) {
+      setApproveRulePromotionError(describeApiError(err, "Posting rule promotion approval failed."));
+    } finally {
+      setApproveRulePromotionBusy(false);
+    }
+  }, [approveRulePromotionBusy, selectedRuleId, services, workspace]);
+
   const activate = useCallback(async () => {
     if (!workspace || activateBusy) {
       return;
@@ -2474,9 +3668,20 @@ export function useAccountingConfigurationViewModel(
     const hasChart = activeChartNodeCount > 0;
     const hasRule = activeRuleCount > 0;
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const savedRuleTestCases = workspace?.ruleTestCases ?? [];
+    const promotionApprovalBlockedRules = activeRules.filter((rule) =>
+      rule.requiresPromotionApproval === true && !isApprovedRulePromotion(rule.promotionApproval));
+    const savedRuleTestExpectedRuleVersions = new Set(savedRuleTestCases
+      .filter((testCase) => Boolean(testCase.expectedRuleId) && Boolean(testCase.expectedRuleVersion))
+      .map((testCase) => `${testCase.expectedRuleId}:${testCase.expectedRuleVersion}`));
+    const promotionTestCoverageBlockedRules = activeRules.filter((rule) =>
+      rule.requiresPromotionApproval === true &&
+      !savedRuleTestExpectedRuleVersions.has(`${rule.ruleId}:${rule.ruleVersion ?? "v1"}`));
+    const lastRuleTestSuiteFailed = (ruleTestSuite?.failedCount ?? 0) > 0;
     const resolvedSelectedRuleId = selectedRuleId && activeRules.some((rule) => rule.ruleId === selectedRuleId)
       ? selectedRuleId
       : activeRules[0]?.ruleId ?? null;
+    const selectedPostingRule = activeRules.find((rule) => rule.ruleId === resolvedSelectedRuleId) ?? null;
     const dryRunDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -2484,6 +3689,152 @@ export function useAccountingConfigurationViewModel(
         : !resolvedSelectedRuleId
           ? "Create at least one active posting rule before dry run preview."
           : null;
+    const applyThresholdDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before applying a threshold."
+        : !selectedPostingRule
+          ? "Select an active posting rule before applying a threshold."
+          : !dryRunPreview
+            ? "Run a dry-run preview before applying an amount threshold."
+            : dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedPostingRule.ruleId
+              ? "Dry-run preview must match the selected posting rule before applying a threshold."
+              : null;
+    const applyEventPredicateDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before applying an event predicate."
+        : !selectedPostingRule
+          ? "Select an active posting rule before applying an event predicate."
+          : !dryRunPreview
+            ? "Run a dry-run preview before applying an event predicate."
+            : dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedPostingRule.ruleId
+              ? "Dry-run preview must match the selected posting rule before applying an event predicate."
+              : null;
+    const applyEffectiveStartDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before applying an effective start date."
+        : !selectedPostingRule
+          ? "Select an active posting rule before applying an effective start date."
+          : !dryRunPreview
+            ? "Run a dry-run preview before applying an effective start date."
+            : dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedPostingRule.ruleId
+              ? "Dry-run preview must match the selected posting rule before applying an effective start date."
+              : null;
+    const applyScopeDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before applying dry-run scope."
+        : !selectedPostingRule
+          ? "Select an active posting rule before applying dry-run scope."
+          : !dryRunPreview
+            ? "Run a dry-run preview before applying dry-run scope."
+            : dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedPostingRule.ruleId
+              ? "Dry-run preview must match the selected posting rule before applying dry-run scope."
+              : (dryRunPreview.generatedPostingLines?.length ?? 0) === 0
+                ? "Dry-run preview did not return generated posting-line dimensions."
+                : ledgerDimensionSetsEqual(
+                    selectedPostingRule.scope,
+                    mergeRuleScopeFromGeneratedPostings(selectedPostingRule.scope, dryRunPreview.generatedPostingLines ?? [])
+                  )
+                  ? "Dry-run generated postings do not add new unambiguous rule-scope dimensions."
+                  : null;
+    const capturePostingsDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before capturing generated postings."
+        : !selectedPostingRule
+          ? "Select an active posting rule before capturing generated postings."
+          : !dryRunPreview
+            ? "Run a dry-run preview before capturing generated posting lines."
+            : dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedPostingRule.ruleId
+              ? "Dry-run preview must match the selected posting rule before capturing generated postings."
+              : (dryRunPreview.generatedPostingLines?.length ?? 0) === 0
+                ? "Dry-run preview did not return generated posting-line metadata."
+                : null;
+    const formulaCandidate = selectedPostingRule && dryRunPreview
+      ? resolveDryRunFormulaCandidate(selectedPostingRule, dryRunPreview)
+      : null;
+    const applyFormulaDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before applying formula amounts."
+        : !selectedPostingRule
+          ? "Select an active posting rule before applying formula amounts."
+          : !dryRunPreview
+            ? "Run a dry-run preview before applying formula amounts."
+            : dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedPostingRule.ruleId
+              ? "Dry-run preview must match the selected posting rule before applying formula amounts."
+              : !formulaCandidate
+                ? "Dry-run generated postings did not reference a retained rule formula."
+                : null;
+    const allocationCandidate = selectedPostingRule && dryRunPreview
+      ? mergeAllocationTargetsFromGeneratedPostings(selectedPostingRule.allocations ?? [], dryRunPreview.generatedPostingLines ?? [])
+      : null;
+    const applyAllocationDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before applying allocation targets."
+        : !selectedPostingRule
+          ? "Select an active posting rule before applying allocation targets."
+          : !dryRunPreview
+            ? "Run a dry-run preview before applying allocation targets."
+            : dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedPostingRule.ruleId
+              ? "Dry-run preview must match the selected posting rule before applying allocation targets."
+              : (selectedPostingRule.allocations?.length ?? 0) === 0
+                ? "Selected posting rule has no allocation rules to update."
+                : (dryRunPreview.generatedPostingLines?.length ?? 0) === 0
+                  ? "Dry-run preview did not return generated posting-line dimensions."
+                  : !allocationCandidate
+                    ? "Dry-run generated postings do not add new allocation target dimensions."
+                    : null;
+    const raisePriorityDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before raising posting-rule priority."
+        : !selectedPostingRule
+          ? "Select an active posting rule before raising priority."
+          : null;
+    const ruleTestDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before running rule test cases."
+        : activeRules.length === 0 && savedRuleTestCases.length === 0
+          ? "Create at least one active posting rule or saved test case before running test cases."
+          : null;
+    const saveDryRunAsRuleTestDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before saving rule test cases."
+        : !dryRunPreview
+          ? "Run a dry-run preview before saving a regression test case."
+          : !dryRunPreview.selectedRuleId
+            ? "Dry-run preview must select a posting rule before saving."
+            : null;
+    const duplicateRuleDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before drafting a posting rule."
+        : !selectedPostingRule
+          ? "Select an active posting rule before drafting a copy."
+          : null;
+    const archiveRuleDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before archiving a posting rule."
+        : !selectedPostingRule
+          ? "Select an active posting rule before archiving."
+          : null;
+    const approveRulePromotionDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before approving rule promotion."
+        : !selectedPostingRule
+          ? "Select an active posting rule before approving promotion."
+          : isApprovedRulePromotion(selectedPostingRule.promotionApproval)
+            ? "Selected posting rule already has an approved promotion."
+            : null;
     const previewDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -2505,7 +3856,13 @@ export function useAccountingConfigurationViewModel(
                 ? "Create at least one active journal template before activation."
                 : !hasRule
                   ? "Create at least one active posting rule before activation."
-                  : null;
+                  : promotionApprovalBlockedRules.length > 0
+                    ? `Approve promotion for ${promotionApprovalBlockedRules.length} required posting rule${promotionApprovalBlockedRules.length === 1 ? "" : "s"} before activation.`
+                    : promotionTestCoverageBlockedRules.length > 0
+                      ? `Save regression test cases for ${promotionTestCoverageBlockedRules.length} promotion-gated posting rule${promotionTestCoverageBlockedRules.length === 1 ? "" : "s"} before activation.`
+                      : lastRuleTestSuiteFailed
+                        ? "Resolve failing rule test cases before activation."
+                        : null;
     const statusTone: AccountingConfigurationViewModel["statusTone"] = !workspace
       ? "default"
       : criticalIssueCount > 0
@@ -2550,6 +3907,13 @@ export function useAccountingConfigurationViewModel(
         value: String(workspace?.auditTrail.length ?? 0),
         detail: "Append-only action evidence for configuration changes.",
         tone: (workspace?.auditTrail.length ?? 0) > 0 ? "success" : "warning"
+      },
+      {
+        id: "rule-tests",
+        label: "Rule tests",
+        value: String(savedRuleTestCases.length),
+        detail: "Persisted dry-run regression cases for posting-rule promotion.",
+        tone: savedRuleTestCases.length > 0 ? "success" : "warning"
       }
     ];
     const templates = (workspace?.journalTemplates ?? []).map<AccountingConfigurationTemplateViewModel>((template) => {
@@ -2565,10 +3929,14 @@ export function useAccountingConfigurationViewModel(
       };
     });
     const rules = activeRules.map<AccountingRulesStudioRuleViewModel>((rule) =>
-      buildAccountingRulesStudioRuleViewModel(rule, rule.ruleId === resolvedSelectedRuleId));
+      buildAccountingRulesStudioRuleViewModel(rule, rule.ruleId === resolvedSelectedRuleId, savedRuleTestCases, ruleTestSuite));
     const dryRunPreviewView = dryRunPreview
       ? buildAccountingRulesStudioDryRunViewModel(dryRunPreview)
       : null;
+    const ruleTestSuiteView = ruleTestSuite
+      ? buildAccountingRulesStudioTestSuiteViewModel(ruleTestSuite)
+      : null;
+    const ruleTestCases = savedRuleTestCases.map(buildAccountingRulesStudioTestCaseViewModel);
     const validationIssues = (workspace?.validationIssues ?? []).map<AccountingConfigurationIssueViewModel>((issue, index) => ({
       id: `${issue.code}-${issue.targetId ?? index}`,
       label: `${issue.severity} | ${issue.code}`,
@@ -2596,6 +3964,9 @@ export function useAccountingConfigurationViewModel(
           }))
         }
       : null;
+    const selectedDryRunRuleVersion = dryRunPreview
+      ? workspace.postingRules.find((rule) => rule.ruleId === dryRunPreview.selectedRuleId)?.ruleVersion ?? "v1"
+      : null;
 
     return {
       title: "Configure accounting",
@@ -2618,6 +3989,90 @@ export function useAccountingConfigurationViewModel(
       dryRunBusy,
       canDryRun: dryRunDisabledReason === null && !dryRunBusy,
       dryRunSelectedRule,
+      applyEventPredicateButtonLabel: applyEventPredicateBusy ? "Applying event predicate" : "Apply event predicate",
+      applyEventPredicateDisabledReason,
+      applyEventPredicateStatusText: applyEventPredicateError?.summary ?? (eventPredicateRuleId ? `Applied event predicate to ${eventPredicateRuleId}.` : null),
+      applyEventPredicateBusy,
+      canApplyEventPredicate: applyEventPredicateDisabledReason === null && !applyEventPredicateBusy,
+      applyDryRunEventPredicate,
+      applyThresholdButtonLabel: applyThresholdBusy ? "Applying threshold" : "Apply amount threshold",
+      applyThresholdDisabledReason,
+      applyThresholdStatusText: applyThresholdError?.summary ?? (thresholdRuleId ? `Applied amount threshold to ${thresholdRuleId}.` : null),
+      applyThresholdBusy,
+      canApplyThreshold: applyThresholdDisabledReason === null && !applyThresholdBusy,
+      applyDryRunAmountThreshold,
+      applyEffectiveStartButtonLabel: applyEffectiveStartBusy ? "Applying effective date" : "Set effective start",
+      applyEffectiveStartDisabledReason,
+      applyEffectiveStartStatusText: applyEffectiveStartError?.summary ?? (effectiveStartRuleId ? `Applied effective start to ${effectiveStartRuleId}.` : null),
+      applyEffectiveStartBusy,
+      canApplyEffectiveStart: applyEffectiveStartDisabledReason === null && !applyEffectiveStartBusy,
+      applyDryRunEffectiveStart,
+      applyScopeButtonLabel: applyScopeBusy ? "Applying scope" : "Apply dry-run scope",
+      applyScopeDisabledReason,
+      applyScopeStatusText: applyScopeError?.summary ?? (scopedRuleId ? `Applied dry-run scope to ${scopedRuleId}.` : null),
+      applyScopeBusy,
+      canApplyScope: applyScopeDisabledReason === null && !applyScopeBusy,
+      applyDryRunScope,
+      capturePostingsButtonLabel: capturePostingsBusy ? "Capturing postings" : "Capture generated postings",
+      capturePostingsDisabledReason,
+      capturePostingsStatusText: capturePostingsError?.summary ?? (capturedPostingsRuleId ? `Captured generated postings for ${capturedPostingsRuleId}.` : null),
+      capturePostingsBusy,
+      canCapturePostings: capturePostingsDisabledReason === null && !capturePostingsBusy,
+      captureDryRunGeneratedPostings,
+      applyFormulaButtonLabel: applyFormulaBusy ? "Applying formula amount" : "Apply formula amount",
+      applyFormulaDisabledReason,
+      applyFormulaStatusText: applyFormulaError?.summary ?? (formulaRuleId ? `Applied formula amount to ${formulaRuleId}.` : null),
+      applyFormulaBusy,
+      canApplyFormula: applyFormulaDisabledReason === null && !applyFormulaBusy,
+      applyDryRunFormulaAmount,
+      applyAllocationButtonLabel: applyAllocationBusy ? "Applying allocation targets" : "Apply allocation targets",
+      applyAllocationDisabledReason,
+      applyAllocationStatusText: applyAllocationError?.summary ?? (allocationRuleId ? `Applied allocation targets to ${allocationRuleId}.` : null),
+      applyAllocationBusy,
+      canApplyAllocation: applyAllocationDisabledReason === null && !applyAllocationBusy,
+      applyDryRunAllocationTargets,
+      raisePriorityButtonLabel: raisePriorityBusy ? "Raising priority" : "Raise priority",
+      raisePriorityDisabledReason,
+      raisePriorityStatusText: raisePriorityError?.summary ?? (raisedPriorityRuleId ? `Raised priority for ${raisedPriorityRuleId}.` : null),
+      raisePriorityBusy,
+      canRaisePriority: raisePriorityDisabledReason === null && !raisePriorityBusy,
+      raiseSelectedRulePriority,
+      ruleTestSuite: ruleTestSuiteView,
+      ruleTestStatusText: ruleTestError?.summary ?? (ruleTestSuiteView ? ruleTestSuiteView.summaryLabel : null),
+      ruleTestButtonLabel: ruleTestBusy ? "Running rule tests" : "Run rule tests",
+      ruleTestDisabledReason,
+      ruleTestBusy,
+      canRunRuleTests: ruleTestDisabledReason === null && !ruleTestBusy,
+      runRuleTests,
+      saveDryRunAsRuleTestButtonLabel: saveRuleTestBusy ? "Saving test case" : "Save dry-run as test case",
+      saveDryRunAsRuleTestDisabledReason,
+      saveDryRunAsRuleTestStatusText: saveRuleTestError?.summary ?? (dryRunPreview && savedRuleTestCases.some((testCase) =>
+        testCase.expectedRuleId === dryRunPreview.selectedRuleId &&
+        testCase.expectedRuleVersion === selectedDryRunRuleVersion) ? "Selected dry-run has a saved regression case." : null),
+      saveDryRunAsRuleTestBusy: saveRuleTestBusy,
+      canSaveDryRunAsRuleTest: saveDryRunAsRuleTestDisabledReason === null && !saveRuleTestBusy,
+      saveDryRunAsRuleTest,
+      duplicateRuleButtonLabel: duplicateRuleBusy ? "Duplicating rule" : "Duplicate as draft",
+      duplicateRuleDisabledReason,
+      duplicateRuleStatusText: duplicateRuleError?.summary ?? (duplicatedRuleId ? `Draft rule ${duplicatedRuleId} saved.` : null),
+      duplicateRuleBusy,
+      canDuplicateRule: duplicateRuleDisabledReason === null && !duplicateRuleBusy,
+      duplicateSelectedRule,
+      archiveRuleButtonLabel: archiveRuleBusy ? "Archiving rule" : "Archive rule",
+      archiveRuleDisabledReason,
+      archiveRuleStatusText: archiveRuleError?.summary ?? (archivedRuleId ? `Archived posting rule ${archivedRuleId}.` : null),
+      archiveRuleBusy,
+      canArchiveRule: archiveRuleDisabledReason === null && !archiveRuleBusy,
+      archiveSelectedRule,
+      approveRulePromotionButtonLabel: approveRulePromotionBusy ? "Approving rule" : "Approve rule promotion",
+      approveRulePromotionDisabledReason,
+      approveRulePromotionStatusText: approveRulePromotionError?.summary ?? (approvedRulePromotionId && selectedPostingRule?.ruleId === approvedRulePromotionId
+        ? `Approved promotion for ${selectedPostingRule.displayName}.`
+        : null),
+      approveRulePromotionBusy,
+      canApproveRulePromotion: approveRulePromotionDisabledReason === null && !approveRulePromotionBusy,
+      approveRulePromotion,
+      ruleTestCases,
       validationIssues,
       auditTrail,
       preview: previewView,
@@ -2639,32 +4094,252 @@ export function useAccountingConfigurationViewModel(
     activate,
     activateBusy,
     activateError,
+    applyAllocationBusy,
+    applyAllocationError,
+    applyDryRunEventPredicate,
+    applyDryRunEffectiveStart,
+    applyDryRunAllocationTargets,
+    applyDryRunAmountThreshold,
+    applyDryRunFormulaAmount,
+    applyDryRunScope,
+    applyEventPredicateBusy,
+    applyEventPredicateError,
+    applyEffectiveStartBusy,
+    applyEffectiveStartError,
+    applyFormulaBusy,
+    applyFormulaError,
+    applyScopeBusy,
+    applyScopeError,
+    applyThresholdBusy,
+    applyThresholdError,
+    captureDryRunGeneratedPostings,
+    capturePostingsBusy,
+    capturePostingsError,
+    capturedPostingsRuleId,
+    raisePriorityBusy,
+    raisePriorityError,
+    raiseSelectedRulePriority,
+    raisedPriorityRuleId,
+    archiveRuleBusy,
+    archiveRuleError,
+    archiveSelectedRule,
+    archivedRuleId,
+    allocationRuleId,
+    duplicateRuleBusy,
+    duplicateRuleError,
+    duplicateSelectedRule,
+    duplicatedRuleId,
+    approveRulePromotion,
+    approveRulePromotionBusy,
+    approveRulePromotionError,
+    approvedRulePromotionId,
     dryRunBusy,
     dryRunError,
     dryRunPreview,
     dryRunSelectedRule,
     error,
+    eventPredicateRuleId,
+    effectiveStartRuleId,
+    formulaRuleId,
     loading,
     preview,
     previewBusy,
     previewError,
     refresh,
     previewFirstTemplate,
+    ruleTestBusy,
+    ruleTestError,
+    ruleTestSuite,
+    runRuleTests,
+    saveDryRunAsRuleTest,
+    saveRuleTestBusy,
+    saveRuleTestError,
     selectedRuleId,
+    scopedRuleId,
+    thresholdRuleId,
     workspace
   ]);
 }
 
+function cloneLedgerDimensionSet(dimensions: PostingRule["scope"]): PostingRule["scope"] {
+  if (!dimensions) {
+    return dimensions ?? null;
+  }
+
+  const cloned = { ...dimensions };
+  if (dimensions.externalGlDimensions) {
+    cloned.externalGlDimensions = { ...dimensions.externalGlDimensions };
+  }
+
+  return cloned;
+}
+
+type LedgerScopeScalarKey = Exclude<keyof NonNullable<PostingRule["scope"]>, "externalGlDimensions">;
+
+const LEDGER_SCOPE_SCALAR_KEYS: LedgerScopeScalarKey[] = [
+  "fundId",
+  "entityId",
+  "sleeveId",
+  "strategyId",
+  "investorId",
+  "capitalAccountId",
+  "instrumentId",
+  "taxLotId",
+  "costCenterId",
+  "counterpartyId"
+];
+
+function mergeRuleScopeFromGeneratedPostings(
+  scope: PostingRule["scope"],
+  generatedPostings: readonly GeneratedPostingLine[]
+): PostingRule["scope"] {
+  const merged = cloneLedgerDimensionSet(scope) ?? {};
+
+  for (const key of LEDGER_SCOPE_SCALAR_KEYS) {
+    const existing = normalizeDimensionValue(merged[key]);
+    if (existing) {
+      continue;
+    }
+
+    const values = new Set(
+      generatedPostings
+        .map((posting) => normalizeDimensionValue(posting.dimensions?.[key]))
+        .filter((value): value is string => Boolean(value))
+    );
+    if (values.size === 1) {
+      merged[key] = [...values][0];
+    }
+  }
+
+  const externalGlDimensions = { ...(merged.externalGlDimensions ?? {}) };
+  const externalKeys = new Set<string>();
+  for (const posting of generatedPostings) {
+    for (const key of Object.keys(posting.dimensions?.externalGlDimensions ?? {})) {
+      externalKeys.add(key);
+    }
+  }
+
+  for (const key of externalKeys) {
+    if (normalizeDimensionValue(externalGlDimensions[key])) {
+      continue;
+    }
+
+    const values = new Set(
+      generatedPostings
+        .map((posting) => normalizeDimensionValue(posting.dimensions?.externalGlDimensions?.[key]))
+        .filter((value): value is string => Boolean(value))
+    );
+    if (values.size === 1) {
+      externalGlDimensions[key] = [...values][0];
+    }
+  }
+
+  merged.externalGlDimensions = Object.keys(externalGlDimensions).length > 0 ? externalGlDimensions : null;
+  return merged;
+}
+
+function ledgerDimensionSetsEqual(left: PostingRule["scope"], right: PostingRule["scope"]): boolean {
+  const normalizedLeft = normalizeLedgerDimensionSet(left);
+  const normalizedRight = normalizeLedgerDimensionSet(right);
+  return JSON.stringify(normalizedLeft) === JSON.stringify(normalizedRight);
+}
+
+function resolveDryRunFormulaCandidate(
+  rule: PostingRule,
+  dryRun: RuleDryRunResult
+): { formulaId: string; amount: number; currency: string } | null {
+  const formulaIds = new Set((rule.formulas ?? []).map((formula) => formula.formulaId));
+  for (const posting of dryRun.generatedPostingLines ?? []) {
+    if (formulaIds.has(posting.amountFormulaId) && posting.amount > 0) {
+      return {
+        formulaId: posting.amountFormulaId,
+        amount: posting.amount,
+        currency: posting.currency
+      };
+    }
+  }
+
+  return null;
+}
+
+function mergeAllocationTargetsFromGeneratedPostings(
+  allocations: readonly AllocationRule[],
+  generatedPostings: readonly GeneratedPostingLine[]
+): AllocationRule[] | null {
+  if (allocations.length === 0 || generatedPostings.length === 0) {
+    return null;
+  }
+
+  let changed = false;
+  const nextAllocations = allocations.map((allocation) => {
+    const matchingPostings = allocation.formulaId
+      ? generatedPostings.filter((posting) => posting.amountFormulaId === allocation.formulaId)
+      : generatedPostings;
+    if (matchingPostings.length === 0) {
+      return {
+        ...allocation,
+        targetDimensions: cloneLedgerDimensionSet(allocation.targetDimensions)
+      };
+    }
+
+    const targetDimensions = mergeRuleScopeFromGeneratedPostings(
+      allocation.targetDimensions,
+      matchingPostings
+    );
+    if (!ledgerDimensionSetsEqual(allocation.targetDimensions, targetDimensions)) {
+      changed = true;
+    }
+
+    return {
+      ...allocation,
+      targetDimensions
+    };
+  });
+
+  return changed ? nextAllocations : null;
+}
+
+function normalizeLedgerDimensionSet(dimensions: PostingRule["scope"]): Record<string, string> {
+  const normalized: Record<string, string> = {};
+  if (!dimensions) {
+    return normalized;
+  }
+
+  for (const key of LEDGER_SCOPE_SCALAR_KEYS) {
+    const value = normalizeDimensionValue(dimensions[key]);
+    if (value) {
+      normalized[key] = value;
+    }
+  }
+
+  for (const [key, value] of Object.entries(dimensions.externalGlDimensions ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
+    const normalizedValue = normalizeDimensionValue(value);
+    if (normalizedValue) {
+      normalized[`externalGlDimensions.${key}`] = normalizedValue;
+    }
+  }
+
+  return normalized;
+}
+
+function normalizeDimensionValue(value: string | null | undefined): string | null {
+  const normalized = value?.trim();
+  return normalized ? normalized : null;
+}
+
 function buildAccountingRulesStudioRuleViewModel(
   rule: PostingRule,
-  isSelected: boolean
+  isSelected: boolean,
+  savedRuleTestCases: AccountingRuleTestCase[],
+  ruleTestSuite: AccountingRuleTestSuiteResult | null
 ): AccountingRulesStudioRuleViewModel {
   const conditions = rule.conditions ?? [];
+  const conditionGroups = rule.conditionGroups ?? [];
   const formulas = rule.formulas ?? [];
   const allocations = rule.allocations ?? [];
   const generatedPostings = rule.generatedPostings ?? [];
   const versions = rule.versions ?? [];
-  const promotion = rule.promotionApproval ?? versions.find((version) => version.promotionApproval)?.promotionApproval ?? null;
+  const promotion = resolvePostingRulePromotion(rule);
   const needsApproval = rule.requiresPromotionApproval && promotion?.approvalState !== "Approved";
   const statusLabel = rule.isArchived
     ? "Archived"
@@ -2682,8 +4357,11 @@ function buildAccountingRulesStudioRuleViewModel(
     effectiveLabel: formatRuleEffectiveRange(rule),
     priorityLabel: `Priority ${rule.priority ?? 0}`,
     scopeLabels: formatLedgerDimensionSet(rule.scope),
-    conditionRows: conditions.length > 0
-      ? conditions.map(formatAccountingRuleCondition)
+    conditionRows: conditions.length > 0 || conditionGroups.length > 0
+      ? [
+          ...conditions.map(formatAccountingRuleCondition),
+          ...conditionGroups.map(formatAccountingRuleConditionGroup)
+        ]
       : ["No predicates configured; rule falls back to source-event matching."],
     formulaRows: formulas.length > 0
       ? formulas.map(formatAccountingRuleFormula)
@@ -2697,6 +4375,7 @@ function buildAccountingRulesStudioRuleViewModel(
     versionRows: versions.length > 0
       ? versions.map((version) => `${version.version} by ${version.createdBy} on ${formatDateOnly(version.createdAtUtc)} - ${version.changeSummary}`)
       : [`${rule.ruleVersion} is the only retained rule version.`],
+    promotionReadiness: buildAccountingRulesStudioPromotionReadiness(rule, savedRuleTestCases, ruleTestSuite),
     promotionLabel: promotion
       ? `${promotion.approvalState} by ${promotion.approvedBy ?? promotion.requestedBy}`
       : rule.requiresPromotionApproval
@@ -2708,6 +4387,114 @@ function buildAccountingRulesStudioRuleViewModel(
     isSelected,
     selectAriaLabel: `Inspect accounting posting rule ${rule.displayName}`
   };
+}
+
+function resolvePostingRulePromotion(rule: PostingRule): PostingRule["promotionApproval"] {
+  return rule.promotionApproval ?? rule.versions?.find((version) => version.promotionApproval)?.promotionApproval ?? null;
+}
+
+function buildAccountingRulesStudioPromotionReadiness(
+  rule: PostingRule,
+  savedRuleTestCases: AccountingRuleTestCase[],
+  ruleTestSuite: AccountingRuleTestSuiteResult | null
+): AccountingRulesStudioPromotionReadinessViewModel[] {
+  const versions = rule.versions ?? [];
+  const promotion = resolvePostingRulePromotion(rule);
+  const promotionApproved = isApprovedRulePromotion(promotion);
+  const savedCases = savedRuleTestCases.filter((testCase) =>
+    testCase.expectedRuleId === rule.ruleId &&
+    testCase.expectedRuleVersion === (rule.ruleVersion ?? "v1"));
+  const generatedPostings = rule.generatedPostings ?? [];
+  const scopeRows = formatLedgerDimensionSet(rule.scope);
+  const latestVersion = versions[0];
+  const suiteTone: AccountingToolingTone = !ruleTestSuite
+    ? "warning"
+    : ruleTestSuite.failedCount > 0
+      ? "danger"
+      : ruleTestSuite.totalCount > 0
+        ? "success"
+        : "warning";
+  const activationBlockedReason = rule.isArchived
+    ? "Archived rules cannot be activated."
+    : rule.requiresPromotionApproval && !promotionApproved
+      ? "Promotion approval is required before activation."
+      : rule.requiresPromotionApproval && savedCases.length === 0
+        ? "A saved regression case is required before activation."
+        : (ruleTestSuite?.failedCount ?? 0) > 0
+          ? "Latest regression suite has failing cases."
+          : "Rule satisfies current promotion gates.";
+
+  return [
+    {
+      id: "version-history",
+      label: "Version history",
+      value: versions.length > 0 ? `${versions.length} retained` : "Current only",
+      detail: latestVersion
+        ? `${latestVersion.version} by ${latestVersion.createdBy} on ${formatDateOnly(latestVersion.createdAtUtc)}.`
+        : `${rule.ruleVersion} has no prior retained versions.`,
+      tone: versions.length > 0 ? "success" : "warning"
+    },
+    {
+      id: "promotion-approval",
+      label: "Promotion approval",
+      value: promotionApproved
+        ? "Approved"
+        : rule.requiresPromotionApproval
+          ? "Required"
+          : "Not required",
+      detail: promotion
+        ? `${promotion.approvalState} by ${promotion.approvedBy ?? promotion.requestedBy}.`
+        : rule.requiresPromotionApproval
+          ? "No approval evidence has been attached."
+          : "This rule can remain in draft configuration without a promotion gate.",
+      tone: promotionApproved ? "success" : rule.requiresPromotionApproval ? "warning" : "default"
+    },
+    {
+      id: "saved-regression",
+      label: "Saved regression",
+      value: savedCases.length > 0 ? `${savedCases.length} saved` : "Missing",
+      detail: savedCases.length > 0
+        ? `${savedCases[0].displayName} anchors promotion coverage.`
+        : "Save a dry-run regression case for this rule before promotion.",
+      tone: savedCases.length > 0 ? "success" : rule.requiresPromotionApproval ? "warning" : "default"
+    },
+    {
+      id: "latest-suite",
+      label: "Latest suite",
+      value: ruleTestSuite
+        ? `${ruleTestSuite.passedCount}/${ruleTestSuite.totalCount} passed`
+        : "Not run",
+      detail: ruleTestSuite
+        ? `Executed ${ruleTestSuite.executedAtUtc} by ${ruleTestSuite.actor}.`
+        : "Run rule tests to verify current rules against saved and generated cases.",
+      tone: suiteTone
+    },
+    {
+      id: "generated-postings",
+      label: "Generated postings",
+      value: generatedPostings.length > 0 ? `${generatedPostings.length} lines` : "Template only",
+      detail: generatedPostings.length > 0
+        ? "Rule can generate explicit multi-line postings."
+        : `Rule still maps to template ${rule.templateId || "none"}.`,
+      tone: generatedPostings.length > 0 ? "success" : "warning"
+    },
+    {
+      id: "scope-coverage",
+      label: "Scope coverage",
+      value: scopeRows.length > 0 ? `${scopeRows.length} scoped` : "Unscoped",
+      detail: scopeRows.length > 0
+        ? scopeRows.slice(0, 3).join(", ")
+        : "No fund, entity, instrument, counterparty, or external GL dimensions are scoped.",
+      tone: scopeRows.length > 0 ? "success" : "warning"
+    },
+    {
+      id: "activation-gate",
+      label: "Activation gate",
+      value: activationBlockedReason === "Rule satisfies current promotion gates." ? "Ready" : "Blocked",
+      detail: activationBlockedReason,
+      tone: activationBlockedReason === "Rule satisfies current promotion gates." ? "success" : "warning"
+    }
+  ];
 }
 
 function buildAccountingRulesStudioDryRunViewModel(result: RuleDryRunResult): AccountingRulesStudioDryRunViewModel {
@@ -2735,12 +4522,110 @@ function buildAccountingRulesStudioDryRunViewModel(result: RuleDryRunResult): Ac
   };
 }
 
+function buildAccountingRulesStudioTestCaseViewModel(testCase: AccountingRuleTestCase): AccountingRulesStudioTestCaseViewModel {
+  const request = testCase.request;
+  const expectedRule = testCase.expectedRuleId ?? "any matching rule";
+  const expectedVersion = testCase.expectedRuleVersion ? ` version ${testCase.expectedRuleVersion}` : "";
+  const expectedIssueCodes = testCase.expectedIssueCodes ?? [];
+  const expectedGeneratedPostings = testCase.expectedGeneratedPostingLines?.length ?? 0;
+  const evidenceCount = testCase.evidenceLinks?.length ?? 0;
+  const expectedIssues = expectedIssueCodes.length > 0
+    ? `${expectedIssueCodes.length} expected issue code${expectedIssueCodes.length === 1 ? "" : "s"}`
+    : "no expected issue codes";
+  const expectedPostings = expectedGeneratedPostings > 0
+    ? `${expectedGeneratedPostings} expected generated posting line${expectedGeneratedPostings === 1 ? "" : "s"}`
+    : "no expected generated posting lines";
+  return {
+    id: testCase.testCaseId,
+    title: testCase.displayName,
+    subtitle: `${request.sourceEventType} | ${request.effectiveDate} | ${formatCurrency(request.eventAmount)} ${request.currency}`,
+    assertionLabel: `Expect ${expectedRule}${expectedVersion}, ${testCase.expectBalancedPosting ? "balanced" : "unbalanced"}, ${expectedIssues}, ${expectedPostings}.`,
+    evidenceLabel: evidenceCount > 0
+      ? `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
+      : "Evidence required",
+    evidenceTone: evidenceCount > 0 ? "success" : "warning"
+  };
+}
+
+function isApprovedRulePromotion(approval: PostingRule["promotionApproval"]): boolean {
+  return approval?.approvalState === "Approved" &&
+    Boolean(approval.approvedBy) &&
+    Boolean(approval.approvedAtUtc) &&
+    (approval.evidenceLinks?.length ?? 0) > 0;
+}
+
+function buildAccountingRulesStudioTestSuiteViewModel(result: AccountingRuleTestSuiteResult): AccountingRulesStudioTestSuiteViewModel {
+  const validationRows = result.results.flatMap((testCase) =>
+    testCase.assertionIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+      id: `${testCase.testCaseId}-${issue.code}-${issue.targetId ?? index}`,
+      label: `${testCase.displayName} | ${issue.severity} | ${issue.code}`,
+      message: issue.message,
+      detail: issue.suggestedAction ?? issue.targetId ?? "No additional action supplied.",
+      tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+    }))
+  );
+  const statusTone: AccountingRulesStudioTestSuiteViewModel["statusTone"] = result.failedCount > 0
+    ? "danger"
+    : result.passedCount === result.totalCount
+      ? "success"
+      : "warning";
+
+  return {
+    title: "Accounting rule regression tests",
+    summaryLabel: `${result.passedCount}/${result.totalCount} passed`,
+    executedLabel: `${result.executedAtUtc} by ${result.actor}`,
+    statusTone,
+    resultRows: result.results.map((testCase) => {
+      const selected = testCase.dryRunResult.selectedRuleId ?? "none";
+      const balance = testCase.dryRunResult.isPostingBalanced ? "balanced" : "unbalanced";
+      const issueCount = testCase.assertionIssues.length;
+      return `${testCase.passed ? "Pass" : "Fail"}: ${testCase.displayName} selected ${selected}, ${balance}${issueCount > 0 ? `, ${issueCount} assertion issue(s)` : ""}.`;
+    }),
+    validationRows
+  };
+}
+
+function buildAccountingRuleTestCase(
+  workspace: AccountingConfigurationWorkspace,
+  rule: PostingRule
+): AccountingRuleTestCase {
+  return {
+    testCaseId: `rule-test-${rule.ruleId}`,
+    displayName: `${rule.displayName} regression`,
+    request: {
+      fundProfileId: workspace.fundProfileId,
+      ledgerBookId: workspace.ledgerBookId ?? null,
+      sourceEventType: rule.sourceEventType,
+      eventAmount: resolveDryRunEventAmount(rule),
+      currency: resolveDryRunCurrency(rule),
+      effectiveDate: resolveDryRunEffectiveDate(rule),
+      actor: "browser-accounting-operator",
+      dimensions: rule.scope ?? null,
+      counterpartyId: rule.scope?.counterpartyId ?? null,
+      instrumentSymbol: null,
+      correlationId: `browser-accounting-rule-test-${rule.ruleId}`
+    },
+    expectedRuleId: rule.ruleId,
+    expectedRuleVersion: rule.ruleVersion ?? "v1",
+    expectBalancedPosting: true,
+    expectedIssueCodes: []
+  };
+}
+
 function formatAccountingRuleCondition(condition: NonNullable<PostingRule["conditions"]>[number]): string {
   const value = condition.secondValue
     ? `${condition.value ?? "missing"} -> ${condition.secondValue}`
     : condition.value ?? "present";
   const required = condition.isRequired ? "required" : "optional";
   return `${condition.field} ${condition.operator} ${value} (${required})${condition.description ? ` - ${condition.description}` : ""}`;
+}
+
+function formatAccountingRuleConditionGroup(group: NonNullable<PostingRule["conditionGroups"]>[number]): string {
+  const required = group.isRequired ? "required" : "optional";
+  const conditions = group.conditions.length > 0
+    ? group.conditions.map(formatAccountingRuleCondition).join("; ")
+    : "no child predicates";
+  return `${group.groupId}: ${group.operator} (${required}) -> ${conditions}${group.description ? ` - ${group.description}` : ""}`;
 }
 
 function formatAccountingRuleFormula(formula: NonNullable<PostingRule["formulas"]>[number]): string {
@@ -3418,6 +5303,8 @@ export function useManualJournalEntryWorkbenchViewModel(
   const [saveBusy, setSaveBusy] = useState(false);
   const [validateBusy, setValidateBusy] = useState(false);
   const [submitBusy, setSubmitBusy] = useState(false);
+  const [attachEvidenceBusy, setAttachEvidenceBusy] = useState(false);
+  const [attachEvidenceStatusText, setAttachEvidenceStatusText] = useState<string | null>(null);
   const [securitySearchQuery, setSecuritySearchQuery] = useState("");
   const [securitySearchResults, setSecuritySearchResults] = useState<SecurityMasterEntry[]>([]);
   const [securitySearchBusy, setSecuritySearchBusy] = useState(false);
@@ -3566,13 +5453,14 @@ export function useManualJournalEntryWorkbenchViewModel(
     setAttachmentDraft((current) => ({ ...current, ...patch }));
   }, []);
 
-  const addAttachment = useCallback(() => {
+  const addAttachment = useCallback(async () => {
     const displayName = attachmentDraft.displayName.trim();
     const uri = attachmentDraft.uri.trim();
     if (!displayName || !uri) {
       return;
     }
 
+    const draftForAttachment = withManualJournalTotals(draft);
     const attachment: ManualJournalEntryEvidenceAttachment = {
       attachmentId: newClientId(),
       displayName,
@@ -3584,13 +5472,31 @@ export function useManualJournalEntryWorkbenchViewModel(
       lineId: attachmentDraft.lineId,
       description: attachmentDraft.description.trim() || null
     };
-    setDraft((current) => ({
-      ...current,
-      evidenceAttachments: [...(current.evidenceAttachments ?? []), attachment],
-      evidenceLinks: Array.from(new Set([...(current.evidenceLinks ?? []), uri]))
-    }));
-    setAttachmentDraft(createManualJournalAttachmentDraft());
-  }, [attachmentDraft]);
+    setAttachEvidenceBusy(true);
+    setAttachEvidenceStatusText(null);
+    setError(null);
+    try {
+      applyServerDraft(await services.attachEvidence({
+        journalEntryId: draftForAttachment.journalEntryId,
+        fundProfileId: draftForAttachment.fundProfileId,
+        actor: "browser-user",
+        version: draftForAttachment.version,
+        attachment,
+        correlationId: `manual-je-attach-evidence-${attachment.attachmentId}`,
+        evidenceLinks: [uri],
+        actionOrigin: "HumanOperator",
+        periodIsLocked: draftForAttachment.status === "CloseLocked"
+      }));
+      setAttachmentDraft(createManualJournalAttachmentDraft());
+      setAttachEvidenceStatusText(`Evidence attached: ${displayName}.`);
+    } catch (err) {
+      const errorDisplay = describeApiError(err, "Manual journal evidence could not be attached.");
+      setError(errorDisplay);
+      setAttachEvidenceStatusText(errorDisplay.summary);
+    } finally {
+      setAttachEvidenceBusy(false);
+    }
+  }, [applyServerDraft, attachmentDraft, draft, services]);
 
   const removeAttachment = useCallback<ManualJournalEntryWorkbenchViewModel["removeAttachment"]>((attachmentId) => {
     setDraft((current) => {
@@ -3738,6 +5644,12 @@ export function useManualJournalEntryWorkbenchViewModel(
   const lifecycleCommands = buildManualJournalLifecycleCommands(balancedDraft, lifecycleBusyAction);
   const lifecycleTransitions = (balancedDraft.lifecycleTransitions ?? []).slice().reverse().map(formatManualJournalLifecycleTransition);
   const lifecycleCorrectionRows = lifecycleCorrectionDrafts.map(formatManualJournalLifecycleCorrection);
+  const lifecycleChecklist = buildManualJournalLifecycleChecklist(
+    balancedDraft,
+    lifecycleCommands,
+    lifecycleTransitions,
+    lifecycleCorrectionRows
+  );
   const securitySearchStatusText = securitySearchBusy
     ? "Searching Security Master."
     : securitySearchError?.summary ?? (securitySearchResults.length > 0
@@ -3772,6 +5684,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     privateCapitalActivity,
     validationIssues,
     lifecycleCommands,
+    lifecycleChecklist,
     lifecycleTransitions,
     lifecycleCorrectionRows,
     lifecycleStatusText,
@@ -3779,6 +5692,8 @@ export function useManualJournalEntryWorkbenchViewModel(
     saveBusy,
     validateBusy,
     submitBusy,
+    attachEvidenceBusy,
+    attachEvidenceStatusText,
     canSubmit,
     submitDisabledReason: canSubmit ? null : "Resolve critical validation issues, balance debits to credits, and attach source evidence before approval submission.",
     refresh,
@@ -4876,6 +6791,143 @@ function buildManualJournalLifecycleCommands(
   ];
 }
 
+function buildManualJournalLifecycleChecklist(
+  draft: ManualJournalEntryDraft,
+  commands: ManualJournalLifecycleCommandViewModel[],
+  transitions: ManualJournalLifecycleTransitionViewModel[],
+  correctionRows: ManualJournalLifecycleCorrectionViewModel[]
+): ManualJournalLifecycleChecklistItemViewModel[] {
+  const evidenceCount = new Set([
+    ...(draft.evidenceLinks ?? []),
+    ...(draft.evidenceAttachments ?? []).map((attachment) => attachment.uri)
+  ].filter((value) => value.trim().length > 0)).size;
+  const criticalIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Critical").length;
+  const warningIssueCount = draft.validationIssues.filter((issue) => issue.severity === "Warning").length;
+  const isBalanced = Math.abs(draft.imbalance) === 0;
+  const commandByAction = new Map(commands.map((command) => [command.action, command]));
+  const lifecycleState = new Set([draft.status, ...transitions.map((transition) => transition.title)]);
+  const approved = draft.status === "Approved" || draft.status === "Posted" || draft.status === "Reversed" || draft.status === "Rebooked" || draft.status === "CloseLocked" || Boolean(draft.approvedAtUtc);
+  const posted = draft.status === "Posted" || draft.status === "Reversed" || draft.status === "Rebooked" || draft.status === "CloseLocked" || Boolean(draft.postedAtUtc);
+  const reversed = draft.status === "Reversed" || Boolean(draft.reversalOfJournalEntryId) || correctionRows.some((row) => /reversal/i.test(row.sourceLabel));
+  const rebooked = draft.status === "Rebooked" || Boolean(draft.rebookedFromJournalEntryId) || correctionRows.some((row) => /rebook/i.test(row.sourceLabel));
+  const locked = draft.status === "CloseLocked" || Boolean(draft.closedLockedAtUtc);
+
+  const commandReadiness = (action: JournalEntryLifecycleAction): { value: string; detail: string; tone: AccountingToolingTone } => {
+    const command = commandByAction.get(action);
+    if (!command) {
+      return { value: "Unavailable", detail: "Lifecycle command is not surfaced for this journal entry.", tone: "default" };
+    }
+
+    if (command.disabledReason) {
+      return { value: "Blocked", detail: command.disabledReason, tone: "warning" };
+    }
+
+    return { value: "Ready", detail: command.description, tone: command.tone === "danger" ? "danger" : command.tone === "success" ? "success" : "warning" };
+  };
+  const approveReadiness = commandReadiness("Approve");
+  const postReadiness = commandReadiness("Post");
+  const reverseReadiness = commandReadiness("Reverse");
+  const rebookReadiness = commandReadiness("Rebook");
+  const lockReadiness = commandReadiness("LockAfterClose");
+
+  return [
+    {
+      id: "draft",
+      label: "Draft",
+      value: draft.version > 0 ? `v${draft.version}` : "Unsaved",
+      detail: draft.version > 0
+        ? `Retained draft ${draft.journalEntryId} is loaded for ${draft.accountingDate}.`
+        : "Save the draft before relying on version-guarded lifecycle actions.",
+      tone: draft.version > 0 ? "success" : "warning"
+    },
+    {
+      id: "validate",
+      label: "Validate",
+      value: criticalIssueCount > 0 ? `${criticalIssueCount} critical` : warningIssueCount > 0 ? `${warningIssueCount} warning` : "Clear",
+      detail: criticalIssueCount > 0
+        ? "Critical validation issues block approval and posting."
+        : warningIssueCount > 0
+          ? "Warnings are retained for reviewer attention."
+          : isBalanced
+            ? "No validation issues are attached and debits equal credits."
+            : `Entry is out of balance by ${formatCurrencyWithCode(Math.abs(draft.imbalance), draft.currency)}.`,
+      tone: criticalIssueCount > 0 ? "danger" : warningIssueCount > 0 || !isBalanced ? "warning" : "success"
+    },
+    {
+      id: "evidence",
+      label: "Attach evidence",
+      value: evidenceCount > 0 ? formatCount(evidenceCount, "evidence link") : "Missing",
+      detail: evidenceCount > 0
+        ? "Source support is retained on the header or line evidence set."
+        : "Approval, posting, reversal, rebook, and close-lock transitions require retained evidence.",
+      tone: evidenceCount > 0 ? "success" : "warning"
+    },
+    {
+      id: "submit",
+      label: "Submit",
+      value: draft.status === "Submitted" || approved || posted ? "Submitted" : draft.status === "Draft" ? "Draft" : draft.status,
+      detail: draft.status === "Submitted" || approved || posted
+        ? "Journal entry has crossed the approval submission gate."
+        : "Use Submit approval after validation, balance, and evidence are ready.",
+      tone: draft.status === "Submitted" || approved || posted ? "success" : "warning"
+    },
+    {
+      id: "approve",
+      label: "Approve",
+      value: approved ? "Approved" : approveReadiness.value,
+      detail: approved
+        ? `${draft.approvedBy ?? "Reviewer"} approved the entry${draft.approvedAtUtc ? ` on ${formatDateTimeLabel(draft.approvedAtUtc)}` : ""}.`
+        : approveReadiness.detail,
+      tone: approved ? "success" : approveReadiness.tone
+    },
+    {
+      id: "post",
+      label: "Post",
+      value: posted ? "Posted" : postReadiness.value,
+      detail: posted
+        ? `${draft.postedBy ?? "Operator"} posted the immutable entry${draft.postedAtUtc ? ` on ${formatDateTimeLabel(draft.postedAtUtc)}` : ""}.`
+        : postReadiness.detail,
+      tone: posted ? "success" : postReadiness.tone
+    },
+    {
+      id: "reverse",
+      label: "Reverse",
+      value: reversed ? "Linked" : reverseReadiness.value,
+      detail: reversed
+        ? "A reversal relationship or generated reversal draft is retained; the posted entry was not edited in place."
+        : reverseReadiness.detail,
+      tone: reversed ? "success" : reverseReadiness.tone
+    },
+    {
+      id: "rebook",
+      label: "Rebook",
+      value: rebooked ? "Linked" : rebookReadiness.value,
+      detail: rebooked
+        ? "A rebook relationship or generated rebook draft is retained; the original posted entry remains immutable."
+        : rebookReadiness.detail,
+      tone: rebooked ? "success" : rebookReadiness.tone
+    },
+    {
+      id: "lock-after-close",
+      label: "Lock after close",
+      value: locked ? "Locked" : lockReadiness.value,
+      detail: locked
+        ? `${draft.closeLockedBy ?? "Close controller"} locked the entry after close${draft.closedLockedAtUtc ? ` on ${formatDateTimeLabel(draft.closedLockedAtUtc)}` : ""}.`
+        : lockReadiness.detail,
+      tone: locked ? "success" : lockReadiness.tone
+    },
+    {
+      id: "audit",
+      label: "Audit transitions",
+      value: transitions.length > 0 ? formatCount(transitions.length, "transition") : "None",
+      detail: transitions.length > 0
+        ? "Lifecycle transitions retain audit id, correlation id, actor, notes, and evidence routes."
+        : "No lifecycle transition audit rows are retained on this journal entry yet.",
+      tone: transitions.length > 0 ? "success" : lifecycleState.has("Draft") ? "warning" : "default"
+    }
+  ];
+}
+
 function lifecycleCommand(
   action: JournalEntryLifecycleAction,
   label: string,
@@ -4897,13 +6949,21 @@ function lifecycleCommand(
 function formatManualJournalLifecycleTransition(
   transition: JournalEntryLifecycleTransition
 ): ManualJournalLifecycleTransitionViewModel {
+  const evidenceRows = transition.evidenceLinks.length > 0
+    ? transition.evidenceLinks
+    : ["No transition evidence links retained."];
+
   return {
     id: transition.transitionId,
     title: `${transition.action}: ${transition.fromStatus} -> ${transition.toStatus}`,
     detail: `${transition.actor} / ${formatDateTimeLabel(transition.recordedAtUtc)}${transition.notes ? ` / ${transition.notes}` : ""}`,
+    auditLabel: `Audit ${transition.transitionId}`,
+    correlationLabel: transition.correlationId ? `Correlation ${transition.correlationId}` : "No correlation id retained",
     evidenceLabel: transition.evidenceLinks.length > 0
       ? `${transition.evidenceLinks.length.toLocaleString()} evidence link(s)`
-      : "No transition evidence links"
+      : "No transition evidence links",
+    evidenceTone: transition.evidenceLinks.length > 0 ? "success" : "outline",
+    evidenceRows
   };
 }
 
@@ -7013,8 +9073,31 @@ function buildAccountingCloseReportPackageViewState({
   buildBusy,
   buildStatusText,
   buildStatusTone,
+  certifyBusy,
+  certifyStatusText,
+  certifyStatusTone,
+  signOffBusy,
+  signOffStatusText,
+  signOffStatusTone,
+  createLateAdjustmentBusy,
+  createLateAdjustmentStatusText,
+  createLateAdjustmentStatusTone,
+  lateAdjustmentDraft,
+  reviewLateAdjustmentBusy,
+  reviewLateAdjustmentStatusText,
+  reviewLateAdjustmentStatusTone,
+  exportManifestBusy,
+  exportManifestStatusText,
+  exportManifestStatusTone,
+  exportManifest,
   refresh,
   buildReportPackage,
+  certifyPackage,
+  signOffNextTask,
+  updateLateAdjustmentDraft,
+  createLateAdjustment,
+  reviewLateAdjustment,
+  inspectSelectedPackageExport,
   selectPackage
 }: {
   workflow: OperationsContinuityWorkflow | null;
@@ -7026,8 +9109,31 @@ function buildAccountingCloseReportPackageViewState({
   buildBusy: boolean;
   buildStatusText: string | null;
   buildStatusTone: "neutral" | "success" | "danger";
+  certifyBusy: boolean;
+  certifyStatusText: string | null;
+  certifyStatusTone: "neutral" | "success" | "danger";
+  signOffBusy: boolean;
+  signOffStatusText: string | null;
+  signOffStatusTone: "neutral" | "success" | "danger";
+  createLateAdjustmentBusy: boolean;
+  createLateAdjustmentStatusText: string | null;
+  createLateAdjustmentStatusTone: "neutral" | "success" | "danger";
+  lateAdjustmentDraft: AccountingLateAdjustmentDraftViewModel;
+  reviewLateAdjustmentBusy: boolean;
+  reviewLateAdjustmentStatusText: string | null;
+  reviewLateAdjustmentStatusTone: "neutral" | "success" | "danger";
+  exportManifestBusy: boolean;
+  exportManifestStatusText: string | null;
+  exportManifestStatusTone: "neutral" | "success" | "danger";
+  exportManifest: ReportExportArtifactManifest | null;
   refresh: () => Promise<void>;
   buildReportPackage: () => Promise<void>;
+  certifyPackage: () => Promise<void>;
+  signOffNextTask: () => Promise<void>;
+  updateLateAdjustmentDraft: (patch: Partial<AccountingLateAdjustmentDraftViewModel>) => void;
+  createLateAdjustment: () => Promise<void>;
+  reviewLateAdjustment: (requestId: string, decision: "Approved" | "Rejected") => Promise<void>;
+  inspectSelectedPackageExport: () => Promise<void>;
   selectPackage: (packageId: string) => void;
 }): AccountingCloseReportPackageViewModel {
   const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
@@ -7037,12 +9143,16 @@ function buildAccountingCloseReportPackageViewState({
     selectedBundle?.financialStatements.packageId ?? selectedPackageId
   ));
   const tasks = (closePlan?.tasks ?? []).map(buildClosePlanTaskRow);
-  const lateAdjustments = (closePlan?.lateAdjustments ?? []).map(buildLateAdjustmentRow);
+  const closeCalendar = (closePlan?.closeCalendar ?? []).map(buildCloseCalendarMilestoneRow);
   const locked = closePlan?.isPeriodLocked === true;
+  const lateAdjustments = (closePlan?.lateAdjustments ?? []).map((adjustment) => buildLateAdjustmentRow(adjustment, locked));
   const openTaskCount = closePlan?.tasks.filter((task) => task.status !== "SignedOff").length ?? 0;
+  const blockedCalendarCount = closeCalendar.filter((item) => item.statusTone === "danger").length;
+  const closeValidationIssues = closePlan?.validationIssues ?? [];
+  const packageValidationIssues = selectedBundle?.validationIssues ?? [];
   const validationIssues = [
-    ...(closePlan?.validationIssues ?? []),
-    ...(selectedBundle?.validationIssues ?? [])
+    ...closeValidationIssues,
+    ...packageValidationIssues
   ].map<AccountingConfigurationIssueViewModel>((issue, index) => ({
     id: `${issue.code}-${issue.targetId ?? index}`,
     label: `${issue.severity} | ${issue.code}`,
@@ -7074,9 +9184,57 @@ function buildAccountingCloseReportPackageViewState({
     : "Materiality policy pending";
   const buildDisabledReason = !workflow
     ? "A close workflow must be loaded before building a package."
-    : loading || buildBusy
+    : loading || buildBusy || certifyBusy || signOffBusy
       ? "Close/report package refresh is running."
       : null;
+  const criticalIssueCount = [...closeValidationIssues, ...packageValidationIssues].filter((issue) => issue.severity === "Critical").length;
+  const certifyDisabledReason = !selectedBundle
+    ? "A report package must be built before certification."
+    : selectedBundle.certification.state === "Certified"
+      ? "The selected report package is already certified."
+      : selectedBundle.certification.state !== "ReadyForReview"
+        ? `Certification requires Ready for review state; current state is ${formatAccountingCertificationState(selectedBundle.certification.state)}.`
+        : criticalIssueCount > 0
+          ? "Critical validation issues must be cleared before certification."
+          : loading || buildBusy || certifyBusy || signOffBusy
+            ? "Close/report package certification is running."
+            : null;
+  const signOffTarget = closePlan ? resolveCloseTaskSignOffTarget(closePlan) : null;
+  const signOffDisabledReason = !workflow
+    ? "A close workflow must be loaded before signing off a task."
+    : !closePlan
+      ? "A close plan must be loaded before signing off a task."
+      : locked
+        ? "The period is locked; close task sign-off is disabled."
+        : !signOffTarget
+          ? "No close checklist task is ready for sign-off."
+          : loading || buildBusy || certifyBusy || signOffBusy
+            ? "Close/report package action is running."
+            : null;
+  const createLateAdjustmentAmount = Number(lateAdjustmentDraft.amount);
+  const createLateAdjustmentDisabledReason = !workflow
+    ? "A close workflow must be loaded before requesting a late adjustment."
+    : !closePlan
+      ? "A close plan must be loaded before requesting a late adjustment."
+      : locked
+        ? "The period is locked; late adjustment requests are disabled."
+        : !lateAdjustmentDraft.journalEntryId.trim()
+          ? "Enter the journal entry id for the late adjustment."
+          : !Number.isFinite(createLateAdjustmentAmount) || createLateAdjustmentAmount === 0
+            ? "Enter a non-zero late adjustment amount."
+            : !lateAdjustmentDraft.reason.trim()
+              ? "Enter the late adjustment reason."
+              : loading || buildBusy || certifyBusy || signOffBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
+                ? "Close/report package action is running."
+                : null;
+  const selectedExportArtifact = selectedBundle?.exportArtifacts?.[0] ?? null;
+  const exportManifestDisabledReason = !selectedBundle
+    ? "A report package must be selected before export manifest inspection."
+    : !selectedExportArtifact
+      ? "The selected report package has no retained export artifacts."
+      : loading || buildBusy || certifyBusy || signOffBusy || reviewLateAdjustmentBusy || exportManifestBusy
+        ? "Close/report package action is running."
+        : null;
 
   return {
     title: "Close and report package certification",
@@ -7096,8 +9254,32 @@ function buildAccountingCloseReportPackageViewState({
     buildBusy,
     buildStatusText,
     buildStatusTone,
+    certifyBusy,
+    certifyStatusText,
+    certifyStatusTone,
+    signOffBusy,
+    signOffStatusText,
+    signOffStatusTone,
+    createLateAdjustmentBusy,
+    createLateAdjustmentStatusText,
+    createLateAdjustmentStatusTone,
+    reviewLateAdjustmentBusy,
+    reviewLateAdjustmentStatusText,
+    reviewLateAdjustmentStatusTone,
+    exportManifestBusy,
+    exportManifestStatusText,
+    exportManifestStatusTone,
+    exportManifest: exportManifest ? buildAccountingReportExportManifestViewModel(exportManifest) : null,
     buildButtonLabel: packages.length > 0 ? "Rebuild package" : "Build package",
     buildDisabledReason,
+    certifyButtonLabel: selectedBundle?.certification.state === "Certified" ? "Certified" : "Certify package",
+    certifyDisabledReason,
+    signOffButtonLabel: signOffTarget ? `Sign off ${signOffTarget.task.displayName}` : "Sign off next task",
+    signOffDisabledReason,
+    createLateAdjustmentDisabledReason,
+    lateAdjustmentDraft,
+    exportManifestButtonLabel: selectedExportArtifact ? `Inspect ${selectedExportArtifact.displayName}` : "Inspect export manifest",
+    exportManifestDisabledReason,
     metrics: [
       {
         id: "checklist",
@@ -7114,6 +9296,17 @@ function buildAccountingCloseReportPackageViewState({
         tone: lateAdjustments.length > 0 ? "warning" : "success"
       },
       {
+        id: "calendar",
+        label: "Calendar",
+        value: String(closeCalendar.length),
+        detail: closeCalendar.length > 0
+          ? blockedCalendarCount > 0
+            ? `${formatCount(blockedCalendarCount, "calendar milestone")} blocked.`
+            : `${formatCount(closeCalendar.length, "calendar milestone")} sequenced.`
+          : "Close calendar milestones have not been loaded.",
+        tone: blockedCalendarCount > 0 ? "danger" : closeCalendar.length > 0 ? "success" : "default"
+      },
+      {
         id: "packages",
         label: "Packages",
         value: String(packageRows.length),
@@ -7128,20 +9321,182 @@ function buildAccountingCloseReportPackageViewState({
         tone: validationIssues.length > 0 ? "warning" : "success"
       }
     ],
+    closeCalendar,
     tasks,
     lateAdjustments,
     packageRows,
     selectedPackage,
+    certificationSafeguards: buildAccountingReportCertificationSafeguards(closePlan, selectedBundle, criticalIssueCount),
     validationIssues,
     liveRegionText: `Close report package ${statusLabel}. ${formatCount(openTaskCount, "open task")}. ${formatCount(packageRows.length, "package")}.`,
     refresh,
     buildReportPackage,
+    certifyPackage,
+    signOffNextTask,
+    updateLateAdjustmentDraft,
+    createLateAdjustment,
+    reviewLateAdjustment,
+    inspectSelectedPackageExport,
     selectPackage
+  };
+}
+
+function buildAccountingReportCertificationSafeguards(
+  closePlan: ClosePeriodPlan | null,
+  bundle: AccountingReportPackageBundle | null,
+  criticalIssueCount: number
+): AccountingReportCertificationSafeguardViewModel[] {
+  const tasks = closePlan?.tasks ?? [];
+  const signedOffTaskCount = tasks.filter((task) => task.status === "SignedOff").length;
+  const openTaskCount = tasks.filter((task) => task.status !== "SignedOff").length;
+  const exportArtifacts = bundle?.exportArtifacts ?? [];
+  const certifiedExportCount = exportArtifacts.filter((artifact) => artifact.certificationState === "Certified").length;
+  const restatement = bundle?.financialStatements.restatement ?? bundle?.navPackage.restatement ?? null;
+  const evidenceCount = bundle ? collectAccountingReportPackageEvidenceLinks(bundle).length : 0;
+
+  return [
+    {
+      id: "checklist-signoff",
+      label: "Checklist sign-off",
+      value: closePlan ? `${signedOffTaskCount}/${tasks.length}` : "Not loaded",
+      detail: closePlan
+        ? openTaskCount > 0
+          ? `${formatCount(openTaskCount, "close task")} still requires retained sign-off evidence.`
+          : "All close checklist tasks are signed off with retained evidence."
+        : "Load the close plan before report package certification.",
+      tone: closePlan
+        ? openTaskCount > 0
+          ? "warning"
+          : "success"
+        : "default"
+    },
+    {
+      id: "period-lock",
+      label: "Period lock",
+      value: closePlan?.isPeriodLocked ? "Locked after close" : closePlan ? "Open for adjustments" : "Not loaded",
+      detail: closePlan
+        ? closePlan.isPeriodLocked
+          ? "Close lock is retained; posted entries require reversal or rebook workflows."
+          : "Period remains open, so late adjustments can still change the package evidence set."
+        : "Load the close plan before evaluating period-lock posture.",
+      tone: closePlan?.isPeriodLocked ? "success" : closePlan ? "warning" : "default"
+    },
+    {
+      id: "critical-validation",
+      label: "Critical validation blockers",
+      value: criticalIssueCount > 0 ? String(criticalIssueCount) : "Clear",
+      detail: criticalIssueCount > 0
+        ? `${formatCount(criticalIssueCount, "critical issue")} must clear before certification.`
+        : "No critical close or report package validation issues are surfaced.",
+      tone: criticalIssueCount > 0 ? "danger" : "success"
+    },
+    {
+      id: "export-certification",
+      label: "Export certification",
+      value: bundle
+        ? exportArtifacts.length > 0
+          ? `${certifiedExportCount}/${exportArtifacts.length}`
+          : "No artifacts"
+        : "Not loaded",
+      detail: bundle
+        ? exportArtifacts.length > 0
+          ? certifiedExportCount === exportArtifacts.length
+            ? "Every retained export artifact is certified."
+            : `${formatCount(exportArtifacts.length - certifiedExportCount, "export artifact")} remains ready for review.`
+          : "No retained export artifacts are attached to the selected package."
+        : "Build or select a package before export certification review.",
+      tone: bundle
+        ? exportArtifacts.length === 0
+          ? "default"
+          : certifiedExportCount === exportArtifacts.length
+            ? "success"
+            : "warning"
+        : "default"
+    },
+    {
+      id: "restatement-workflow",
+      label: "Restatement workflow",
+      value: restatement ? restatement.approvalState : "No restatement",
+      detail: restatement
+        ? `${restatement.reasonCode} restates ${restatement.priorPackageId}; approval evidence is retained with the package.`
+        : "No restatement workflow is attached to the selected package.",
+      tone: restatement
+        ? restatement.approvalState === "Approved"
+          ? "success"
+          : restatement.approvalState === "Rejected"
+            ? "danger"
+            : "warning"
+        : "success"
+    },
+    {
+      id: "evidence-package",
+      label: "Evidence package",
+      value: bundle ? formatCount(evidenceCount, "evidence link") : "Not loaded",
+      detail: bundle
+        ? "Certification will submit the retained financial statement, investor capital, realized gain/loss, NAV, restatement, and package evidence links."
+        : "Build or select a package before evidence certification review.",
+      tone: bundle ? evidenceCount > 0 ? "success" : "warning" : "default"
+    }
+  ];
+}
+
+function buildAccountingReportExportManifestViewModel(
+  manifest: ReportExportArtifactManifest
+): AccountingReportExportManifestViewModel {
+  return {
+    packageId: manifest.packageId,
+    artifactId: manifest.artifactId,
+    displayName: manifest.displayName,
+    formatLabel: `${manifest.format} | ${manifest.contentType}`,
+    fileName: manifest.fileName,
+    certificationLabel: formatAccountingCertificationState(manifest.certificationState),
+    generatedLabel: formatDateTimeLabel(manifest.generatedAtUtc),
+    hashLabel: manifest.contentHash,
+    evidenceLabel: formatCount(manifest.evidenceLinks.length, "evidence link"),
+    postingLabel: manifest.externalPostingAllowed ? "External posting allowed" : "External posting disabled",
+    routeLabel: manifest.route
+  };
+}
+
+function resolveCloseTaskSignOffTarget(closePlan: ClosePeriodPlan): { task: CloseTask; role: string } | null {
+  if (closePlan.isPeriodLocked) {
+    return null;
+  }
+
+  for (const task of closePlan.tasks) {
+    if (task.status !== "ReadyForSignOff") {
+      continue;
+    }
+
+    const unsatisfiedRequirement = (task.signOffRequirements ?? []).find(
+      (requirement) => !requirement.isSatisfied && requirement.approvedCount < requirement.requiredApprovalCount
+    );
+    if (unsatisfiedRequirement) {
+      return { task, role: unsatisfiedRequirement.role };
+    }
+
+    if ((task.signOffRequirements ?? []).length === 0 && task.signOffs.length === 0) {
+      return { task, role: task.owner || "controller" };
+    }
+  }
+
+  return null;
+}
+
+function createAccountingLateAdjustmentDraft(currency = "USD"): AccountingLateAdjustmentDraftViewModel {
+  return {
+    journalEntryId: "",
+    amount: "",
+    currency,
+    reason: ""
   };
 }
 
 function buildClosePlanTaskRow(task: CloseTask): AccountingClosePlanTaskRowViewModel {
   const signedOffCount = task.signOffs.filter((signOff) => signOff.approvalState === "Approved").length;
+  const requirements = task.signOffRequirements ?? [];
+  const requiredCount = requirements.reduce((total, requirement) => total + Math.max(0, requirement.requiredApprovalCount), 0);
+  const approvedRequirementCount = requirements.reduce((total, requirement) => total + Math.max(0, requirement.approvedCount), 0);
 
   return {
     taskId: task.taskId,
@@ -7153,23 +9508,85 @@ function buildClosePlanTaskRow(task: CloseTask): AccountingClosePlanTaskRowViewM
     dependencyLabel: task.dependencies.length > 0
       ? `${formatCount(task.dependencies.length, "dependency")}: ${task.dependencies.map((dependency) => dependency.dependsOnTaskId).join(", ")}`
       : "No dependencies",
-    signOffLabel: task.signOffs.length > 0
-      ? `${signedOffCount}/${task.signOffs.length} sign-offs approved`
-      : "No sign-off required",
+    signOffLabel: requirements.length > 0
+      ? `${approvedRequirementCount}/${requiredCount} required sign-offs approved`
+      : task.signOffs.length > 0
+        ? `${signedOffCount}/${task.signOffs.length} sign-offs approved`
+        : "No sign-off required",
+    signOffDetailLabel: buildCloseTaskSignOffDetail(task),
+    signOffRequirementLabel: requirements.length > 0
+      ? requirements.map((requirement) => `${requirement.role}: ${requirement.approvedCount}/${requirement.requiredApprovalCount}`).join(" | ")
+      : "No sign-off matrix supplied",
     evidenceLabel: formatCount(task.evidenceLinks.length, "evidence link"),
     blockerLabel: task.blockerReason?.trim() || null
   };
 }
 
-function buildLateAdjustmentRow(adjustment: LateAdjustmentRequest): AccountingLateAdjustmentRowViewModel {
+function buildCloseCalendarMilestoneRow(milestone: CloseCalendarMilestone): AccountingCloseCalendarMilestoneViewModel {
+  const statusTone = closeTaskStatusTone(milestone.status);
+  return {
+    milestoneId: milestone.milestoneId,
+    displayName: milestone.displayName,
+    ownerLabel: milestone.owner || "Unassigned",
+    dueDateLabel: formatDateOnly(milestone.dueDate),
+    statusLabel: formatCloseTaskStatus(milestone.status),
+    statusTone: milestone.isBlocked ? "danger" : milestone.isSatisfied ? "success" : statusTone,
+    dependencyLabel: milestone.dependencyCount > 0
+      ? formatCount(milestone.dependencyCount, "dependency")
+      : "No dependencies",
+    signOffLabel: milestone.requiredSignOffCount > 0
+      ? `${milestone.approvedSignOffCount}/${milestone.requiredSignOffCount} sign-offs`
+      : "No sign-off requirement",
+    evidenceLabel: formatCount(milestone.evidenceLinks.length, "evidence link"),
+    blockerLabel: milestone.blockerReason?.trim() || null,
+    lockedLabel: milestone.isPeriodLocked ? "Locked after close" : "Open period"
+  };
+}
+
+function buildCloseTaskSignOffDetail(task: CloseTask): string | null {
+  const latest = [...task.signOffs]
+    .sort((left, right) => String(right.signedAtUtc ?? "").localeCompare(String(left.signedAtUtc ?? "")))[0];
+  if (!latest) {
+    return null;
+  }
+
+  const actor = latest.actor?.trim() || "unassigned reviewer";
+  const signedAt = latest.signedAtUtc ? ` on ${formatDateTimeLabel(latest.signedAtUtc)}` : "";
+  const notes = latest.notes?.trim();
+  return `${latest.approvalState} by ${actor}${signedAt}${notes ? ` | ${notes}` : ""}`;
+}
+
+function buildLateAdjustmentRow(
+  adjustment: LateAdjustmentRequest,
+  periodLocked: boolean
+): AccountingLateAdjustmentRowViewModel {
+  const materiality = adjustment.materialityPolicy;
+  const absoluteAmount = Math.abs(adjustment.amount);
+  const exceedsAmountThreshold = absoluteAmount > materiality.amountThreshold;
+  const thresholdLabel = formatCurrencyWithCode(materiality.amountThreshold, materiality.currency);
+  const materialityLabel = exceedsAmountThreshold
+    ? `Material adjustment: exceeds ${thresholdLabel}; ${materiality.reviewRole} review required`
+    : `Within materiality: at or below ${thresholdLabel}; ${materiality.reviewRole} review policy`;
+  const reviewDisabledReason = periodLocked
+    ? "The period is locked; late-adjustment review is disabled."
+    : adjustment.approvalState === "Approved" || adjustment.approvalState === "Rejected"
+      ? `Late adjustment is already ${adjustment.approvalState.toLowerCase()}.`
+      : null;
+
   return {
     requestId: adjustment.requestId,
     journalEntryId: adjustment.journalEntryId,
     amountLabel: formatCurrencyWithCode(adjustment.amount, adjustment.currency, true),
     requestedByLabel: `${adjustment.requestedBy} on ${formatDateTimeLabel(adjustment.requestedAtUtc)}`,
     statusLabel: adjustment.approvalState,
+    decisionLabel: adjustment.decidedBy
+      ? `${adjustment.approvalState} by ${adjustment.decidedBy}${adjustment.decidedAtUtc ? ` on ${formatDateTimeLabel(adjustment.decidedAtUtc)}` : ""}`
+      : null,
     evidenceLabel: formatCount(adjustment.evidenceLinks.length, "evidence link"),
-    reason: adjustment.reason
+    materialityLabel,
+    materialityTone: exceedsAmountThreshold ? "warning" : "success",
+    reason: adjustment.reason,
+    reviewDisabledReason
   };
 }
 
@@ -7180,6 +9597,8 @@ function buildAccountingReportPackageRow(
   const packageId = bundle.financialStatements.packageId;
   const certificationState = bundle.certification.state ?? bundle.financialStatements.certificationState;
   const restatement = bundle.financialStatements.restatement ?? bundle.navPackage.restatement ?? null;
+  const exportArtifacts = bundle.exportArtifacts ?? [];
+  const certifiedArtifactCount = exportArtifacts.filter((artifact) => artifact.certificationState === "Certified").length;
   const evidenceCount = new Set([
     ...bundle.financialStatements.evidenceLinks,
     ...bundle.investorCapitalStatements.flatMap((statement) => statement.evidenceLinks),
@@ -7204,6 +9623,14 @@ function buildAccountingReportPackageRow(
     restatementLabel: restatement
       ? `${restatement.reasonCode} | ${restatement.approvalState}`
       : "No restatement",
+    exportArtifactLabel: exportArtifacts.length > 0
+      ? `${certifiedArtifactCount}/${exportArtifacts.length} exports certified`
+      : "No export artifacts",
+    exportArtifactTone: exportArtifacts.length === 0
+      ? "default"
+      : certifiedArtifactCount === exportArtifacts.length
+        ? "success"
+        : "warning",
     evidenceLabel: formatCount(evidenceCount, "evidence link"),
     validationLabel: formatCount(bundle.validationIssues.length, "validation issue"),
     selected: packageId === selectedPackageId
@@ -7236,6 +9663,18 @@ function buildAccountingReportPackageRequest(
   };
 }
 
+function buildCertifyAccountingReportPackageRequest(
+  bundle: AccountingReportPackageBundle
+): CertifyAccountingReportPackageRequest {
+  return {
+    packageId: bundle.financialStatements.packageId,
+    actor: "browser-accounting-controller",
+    notes: `Certified accounting report package ${bundle.financialStatements.packageId} for ${bundle.financialStatements.periodId}.`,
+    evidenceLinks: collectAccountingReportPackageEvidenceLinks(bundle),
+    correlationId: `browser-certify-report-${bundle.financialStatements.packageId}`
+  };
+}
+
 function collectAccountingCloseEvidenceLinks(
   workflow: OperationsContinuityWorkflow,
   closePlan: ClosePeriodPlan | null
@@ -7265,6 +9704,27 @@ function collectAccountingCloseEvidenceLinks(
   closePlan?.lateAdjustments.forEach((adjustment) => adjustment.evidenceLinks.forEach(add));
 
   return [...links];
+}
+
+function collectAccountingReportPackageEvidenceLinks(bundle: AccountingReportPackageBundle): string[] {
+  const links = new Set<string>();
+  for (const link of [
+    ...bundle.financialStatements.evidenceLinks,
+    ...bundle.investorCapitalStatements.flatMap((statement) => statement.evidenceLinks),
+    ...bundle.realizedGainLoss.evidenceLinks,
+    ...bundle.navPackage.evidenceLinks,
+    ...bundle.certification.evidenceLinks,
+    ...(bundle.financialStatements.restatement?.evidenceLinks ?? []),
+    ...(bundle.navPackage.restatement?.evidenceLinks ?? [])
+  ]) {
+    const trimmed = link.trim();
+    if (trimmed.length > 0) {
+      links.add(trimmed);
+    }
+  }
+
+  links.add(`evidence:report-certification:${bundle.financialStatements.packageId}`);
+  return [...links].sort((left, right) => left.localeCompare(right));
 }
 
 function formatCloseTaskStatus(status: CloseTask["status"]): string {

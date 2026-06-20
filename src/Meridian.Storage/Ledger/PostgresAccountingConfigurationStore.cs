@@ -50,6 +50,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         var chart = await LoadChartAsync(connection, normalizedFundProfileId, ct).ConfigureAwait(false);
         var templates = await LoadTemplatesAsync(connection, normalizedFundProfileId, ct).ConfigureAwait(false);
         var rules = await LoadRulesAsync(connection, normalizedFundProfileId, ct).ConfigureAwait(false);
+        var testCases = await LoadRuleTestCasesAsync(connection, normalizedFundProfileId, ct).ConfigureAwait(false);
 
         return new AccountingConfigurationWorkspaceDto(
             normalizedFundProfileId,
@@ -62,7 +63,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             JournalTemplates: templates,
             PostingRules: rules,
             ValidationIssues: validationIssues,
-            AuditTrail: []);
+            AuditTrail: [],
+            RuleTestCases: testCases);
     }
 
     public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default)
@@ -76,6 +78,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await ReplaceChartAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
         await ReplaceTemplatesAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
         await ReplaceRulesAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
+        await ReplaceRuleTestCasesAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
@@ -291,6 +294,31 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         return rules;
     }
 
+    private async Task<IReadOnlyList<AccountingRuleTestCaseDto>> LoadRuleTestCasesAsync(NpgsqlConnection connection, string fundProfileId, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select test_case_payload
+            from {Qualified("accounting_configuration_rule_test_cases")}
+            where fund_profile_id = @fund_profile_id
+            order by display_name, test_case_id;
+            """;
+        command.Parameters.AddWithValue("fund_profile_id", fundProfileId);
+
+        var testCases = new List<AccountingRuleTestCaseDto>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            if (Deserialize<AccountingRuleTestCaseDto>(reader.GetString(0)) is { } testCase)
+            {
+                testCases.Add(testCase);
+            }
+        }
+
+        return testCases;
+    }
+
     private async Task UpsertWorkspaceAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, AccountingConfigurationWorkspaceDto workspace, CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
@@ -393,6 +421,27 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             command.Parameters.AddWithValue("is_archived", rule.IsArchived);
             AddTextOrNull(command, "description", rule.Description);
             AddJson(command, "rule_payload", rule);
+            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+    }
+
+    private async Task ReplaceRuleTestCasesAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, AccountingConfigurationWorkspaceDto workspace, CancellationToken ct)
+    {
+        await DeleteScopedAsync(connection, transaction, "accounting_configuration_rule_test_cases", workspace.FundProfileId, ct).ConfigureAwait(false);
+        foreach (var testCase in workspace.RuleTestCases)
+        {
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText =
+                $"""
+                insert into {Qualified("accounting_configuration_rule_test_cases")} (
+                    fund_profile_id, test_case_id, display_name, test_case_payload)
+                values (@fund_profile_id, @test_case_id, @display_name, @test_case_payload);
+                """;
+            AddScope(command, workspace.FundProfileId);
+            command.Parameters.AddWithValue("test_case_id", testCase.TestCaseId);
+            command.Parameters.AddWithValue("display_name", testCase.DisplayName);
+            AddJson(command, "test_case_payload", testCase);
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }

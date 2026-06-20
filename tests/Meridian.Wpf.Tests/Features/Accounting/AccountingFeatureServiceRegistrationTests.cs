@@ -1,5 +1,7 @@
 using Meridian.Wpf.Tests.Features;
 using Meridian.Application.FundStructure;
+using Meridian.Contracts.Services;
+using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Ui.Services.Services.Accounting;

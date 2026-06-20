@@ -1,3 +1,5 @@
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
@@ -6,6 +8,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Services.Services.Accounting;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Features.Accounting;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;

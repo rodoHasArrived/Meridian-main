@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -2585,8 +2586,8 @@ public sealed class EvidenceWorkflowFabricTests
                 "Capital call for Fund Alpha LP",
                 "Controller approval retained before execution-deferred reliance",
                 ["/evidence/fund-alpha/bank-cash-capital-call.pdf"]),
-            PrivateCapitalActivityRouteBuilder.BuildPaymentIntentEvidenceRoute(fundEvent.PaymentIntentId!),
-            PrivateCapitalActivityRouteBuilder.BuildPaymentIntentWorkbenchRoute("fund-alpha", null, fundEvent.PaymentIntentId!),
+            PrivateCapitalActivityRoutes.BuildPaymentIntentEvidenceRoute(fundEvent.PaymentIntentId!),
+            PrivateCapitalActivityRoutes.BuildPaymentIntentWorkbenchRoute("fund-alpha", null, fundEvent.PaymentIntentId!),
             ApprovalChain:
             [
                 new PaymentIntentApprovalStepDto(
@@ -2595,14 +2596,14 @@ public sealed class EvidenceWorkflowFabricTests
                     "fund-controller",
                     "Approved",
                     now,
-                    PrivateCapitalActivityRouteBuilder.BuildApprovalRoute("fund-alpha", journalEntryId, fundEvent.ApprovalId)),
+                    PrivateCapitalActivityRoutes.BuildApprovalRoute("fund-alpha", journalEntryId, fundEvent.ApprovalId)),
                 new PaymentIntentApprovalStepDto(
                     2,
                     "Controller",
                     "fund-controller",
                     "Approved",
                     now,
-                    PrivateCapitalActivityRouteBuilder.BuildApprovalRoute("fund-alpha", journalEntryId, fundEvent.ApprovalId))
+                    PrivateCapitalActivityRoutes.BuildApprovalRoute("fund-alpha", journalEntryId, fundEvent.ApprovalId))
             ],
             BankEvidence:
             [

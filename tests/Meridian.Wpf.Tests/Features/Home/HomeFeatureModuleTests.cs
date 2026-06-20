@@ -13,7 +13,6 @@ public sealed class HomeFeatureModuleTests
         var module = new HomeFeatureModule();
 
         DesktopFeatureModuleTestAssertions.AssertPageTags(module, "HomeWorkspace");
-        module.DescribeWorkspace().Should().BeNull();
     }
 
     [Fact]

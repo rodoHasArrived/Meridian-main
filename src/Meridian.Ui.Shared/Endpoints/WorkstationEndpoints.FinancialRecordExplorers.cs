@@ -4,8 +4,8 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -15,16 +15,9 @@ public static partial class WorkstationEndpoints
     {
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFinancialRecordExplorer), async (
             string explorerId,
+            [FromServices] FinancialRecordExplorerReadService service,
             HttpContext context) =>
         {
-            var service = context.RequestServices.GetService<FinancialRecordExplorerReadService>();
-            if (service is null)
-            {
-                return Results.Problem(
-                    "Financial record explorer service is not registered.",
-                    statusCode: StatusCodes.Status501NotImplemented);
-            }
-
             if (!TryResolveRequiredTenantId(context, out var tenantId))
             {
                 return Results.Unauthorized();
@@ -37,22 +30,14 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationFinancialRecordExplorer")
         .Produces<FinancialRecordExplorerDto>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFinancialRecordExplorerRecord), async (
             string explorerId,
             string recordId,
+            [FromServices] FinancialRecordExplorerReadService service,
             HttpContext context) =>
         {
-            var service = context.RequestServices.GetService<FinancialRecordExplorerReadService>();
-            if (service is null)
-            {
-                return Results.Problem(
-                    "Financial record explorer service is not registered.",
-                    statusCode: StatusCodes.Status501NotImplemented);
-            }
-
             if (!FinancialRecordExplorerReadService.IsKnownExplorerId(explorerId))
             {
                 return Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." });
@@ -70,22 +55,14 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationFinancialRecordExplorerRecord")
         .Produces<FinancialRecordExplorerSelectedRecordDto>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationFinancialRecordExplorerSavedViews), async (
             string explorerId,
             FinancialRecordExplorerSavedViewSaveRequestDto request,
+            [FromServices] FinancialRecordExplorerReadService service,
             HttpContext context) =>
         {
-            var service = context.RequestServices.GetService<FinancialRecordExplorerReadService>();
-            if (service is null)
-            {
-                return Results.Problem(
-                    "Financial record explorer service is not registered.",
-                    statusCode: StatusCodes.Status501NotImplemented);
-            }
-
             try
             {
                 if (!TryResolveRequiredTenantId(context, out var tenantId))
@@ -98,7 +75,7 @@ public static partial class WorkstationEndpoints
                     ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                     : Results.Json(savedView, jsonOptions);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
@@ -106,7 +83,6 @@ public static partial class WorkstationEndpoints
         .WithName("SaveWorkstationFinancialRecordExplorerView")
         .Produces<FinancialRecordExplorerSavedViewDto>(200)
         .Produces(400)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
     }
 }

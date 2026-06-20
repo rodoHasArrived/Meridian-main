@@ -54,6 +54,34 @@
           "summary.project_count": 1
         }
       }
+    },
+    {
+      "id": 3,
+      "description": "F# ledger project architecture surface is recognized as a ledger layer",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/architecture_surface.py",
+        "--path",
+        "src/Meridian.FSharp.Ledger",
+        "--json"
+      ],
+      "prompt": "Use $meridian-code-architecture to assess src/Meridian.FSharp.Ledger without treating the F# project file as missing.",
+      "assertions": [
+        "Must identify the F# project file",
+        "Must classify the project as ledger",
+        "Must not report a missing containing project"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "results.0.project_name": "Meridian.FSharp.Ledger",
+          "results.0.layer": "ledger"
+        },
+        "json_min": {
+          "summary.project_count": 1
+        }
+      }
     }
   ]
 }

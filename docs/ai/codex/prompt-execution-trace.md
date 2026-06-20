@@ -2,7 +2,7 @@
 
 **Status:** draft
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-06-19
 
 ## Purpose
 
@@ -31,6 +31,65 @@ flowchart TD
     N --> L
     M -->|Yes| O[Sync Docs/Indexes if behavior or AI workflow changed]
     O --> P[Final Evidence Output\nreceipt/files/commands/results/risks]
+```
+
+## Current Workflow Decision Tree
+
+Use this tree to decide the current Codex workflow for a Meridian task. The shared operating rules
+come from `../assistant-workflow-contract.md`; Codex-specific gates come from `quickstart.md`,
+`.codex/skills/_shared/codex-execution-contract.md`, and `prompt-route-rules.json`.
+
+```mermaid
+flowchart TD
+    A["User request"] --> B["Run start gate\n`git status --short`\nseparate user-owned changes"]
+    B --> C{"Is the request scoped\nto one known file or lane?"}
+
+    C -- "No / unclear" --> D["Orient first\n`docs/ai/navigation/README.md`\n`docs/ai/generated/repo-navigation.md`"]
+    D --> E["Choose likely lane\nroute cards or prompt-route linter"]
+    C -- "Yes" --> E
+
+    E --> F{"What kind of work is it?"}
+
+    F -- "Find owner / entrypoints" --> G["Use `meridian-repo-navigation`\nReturn route, docs, entrypoints,\nand next specialist lane"]
+    F -- "Idea options" --> H["Use `meridian-brainstorm`\nGenerate options only"]
+    F -- "Design / spec" --> I["Use `meridian-blueprint`\nProduce implementation-ready design"]
+    F -- "Review / audit" --> J["Use `meridian-code-review`\nFindings first; patch only if asked"]
+    F -- "Docs / AI guidance" --> K["Use `meridian-docs`\nEdit canonical docs and nearest index"]
+    F -- "Code implementation" --> L["Use narrow implementation skill\nbrowser, WPF, provider, storage,\ncontracts, tests, or assurance"]
+    F -- "Skill / agent / route change" --> M["Use Codex skill-builder or assurance\nBaseline, candidate change, evals,\ninventory, and package checks"]
+
+    K --> N{"Shared policy changed?"}
+    N -- "Yes" --> O["Update shared contract first\nthen affected host mirrors/indexes"]
+    N -- "No" --> P["Keep edit in nearest Codex or AI doc"]
+
+    L --> Q{"Touches `src/**`?"}
+    Q -- "Yes" --> R["Read nearest source README\nand `docs/source/data/source-modules.yml`"]
+    Q -- "No" --> S["Stay in docs/tooling/test lane"]
+
+    M --> T{"Public skill IDs or host-neutral\nworkflow affected?"}
+    T -- "Yes" --> U["Preserve IDs unless explicitly renamed\nsync affected catalogs/mirrors"]
+    T -- "No" --> V["Keep change Codex-local\nand update Codex index only"]
+
+    O --> W{"One lane or multiple lanes?"}
+    P --> W
+    R --> W
+    S --> W
+    U --> W
+    V --> W
+    G --> X["Final route handoff or answer"]
+    H --> X
+    I --> X
+    J --> W
+
+    W -- "Single lane" --> Y["Make smallest safe change\nor produce requested artifact"]
+    W -- "Multiple lanes" --> Z["Initialize parallel manifest\nassign disjoint ownership\nrecord handoff packet"]
+    Z --> Y
+
+    Y --> AA["Run narrowest validation\nfor touched surface"]
+    AA --> AB{"Validation passed?"}
+    AB -- "No" --> AC["Diagnose failure\nretry narrowly or report blocker"]
+    AC --> AA
+    AB -- "Yes" --> AD["Final evidence\nfiles, commands, outcomes,\nexcluded dirty changes, residual risk"]
 ```
 
 ## Per-Prompt Execution Contract

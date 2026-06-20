@@ -1,15 +1,15 @@
 using Meridian.Contracts.Ledger;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.FinancialOperations.PrivateCapital;
 
-internal sealed record PrivateCapitalFundEventLedgerReadinessProjection(
+public sealed record PrivateCapitalFundEventLedgerReadinessProjection(
     PrivateCapitalFundEventLedgerReadinessDto Readiness,
     string Label,
     string Reason,
     string NextAction,
     string? NextActionRoute);
 
-internal static class PrivateCapitalFundEventLedgerReadinessBuilder
+public static class PrivateCapitalFundEventLedgerReadinessBuilder
 {
     public static PrivateCapitalFundEventLedgerReadinessProjection Build(
         ManualJournalEntryStatusDto approvalState,

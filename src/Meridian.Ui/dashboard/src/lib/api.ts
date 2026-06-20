@@ -11,6 +11,9 @@ import type {
   AccountingSystemReconciliationSummary,
   AccountingReportPackageBundle,
   AccountingReportPackageRequest,
+  CertifyAccountingReportPackageRequest,
+  CertifyAccountingSystemExportPackageRequest,
+  ReportExportArtifactManifest,
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   CellExecuteRequest,
@@ -28,7 +31,9 @@ import type {
   ClosePeriodPlan,
   CorporateAction,
   CreateLateAdjustmentRequest,
+  ReviewLateAdjustmentRequest,
   ExternalGlExportPackage,
+  ExternalGlExportPackageManifest,
   ExternalGlMappingProfile,
   DataFetchRequest,
   DataFetchResult,
@@ -60,6 +65,7 @@ import type {
   AccountingWorkspaceResponse,
   AssetOperationsDetail,
   ReportingWorkspaceResponse,
+  SignOffCloseTaskRequest,
   InvestmentAccountingTransactionLabPreview,
   InvestmentAccountingTransactionLabRequest,
   InstrumentPassport,
@@ -238,6 +244,7 @@ import type {
   UserPasswordResetRequest,
   UserSessionRevokeRequest,
   UserSessionRevokeResult,
+  AttachManualJournalEntryEvidenceRequest,
   JournalEntryLifecycleActionRequest,
   JournalEntryLifecycleActionResult,
   ManualJournalEntryDraft,
@@ -1620,6 +1627,13 @@ export function submitManualJournalEntryApproval(
   return postJson<ManualJournalEntryDraft>(WORKSTATION_API_ENDPOINTS.manualJournalEntrySubmitApproval, request, options);
 }
 
+export function attachManualJournalEntryEvidence(
+  request: AttachManualJournalEntryEvidenceRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ManualJournalEntryDraft>(WORKSTATION_API_ENDPOINTS.manualJournalEntryEvidence, request, options);
+}
+
 export function applyManualJournalEntryLifecycleAction(
   request: JournalEntryLifecycleActionRequest,
   options: ApiRequestOptions = {}
@@ -1664,6 +1678,22 @@ export function createAccountingSystemExportPackage(
   return postJson<ExternalGlExportPackage>(ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages, request, options);
 }
 
+export function getAccountingSystemExportPackageManifest(
+  exportPackageId: string,
+  options: ApiRequestOptions = {}
+) {
+  const route = ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackageManifest
+    .replace("{exportPackageId}", encodeURIComponent(exportPackageId));
+  return getJson<ExternalGlExportPackageManifest>(route, options);
+}
+
+export function certifyAccountingSystemExportPackage(
+  request: CertifyAccountingSystemExportPackageRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ExternalGlExportPackage>(ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackageCertification, request, options);
+}
+
 export function getLedgerCloseManagementPeriodPlan(workflowId: string, options: ApiRequestOptions = {}) {
   const endpoint = WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan.replace("{workflowId:guid}", workflowId);
   return getJson<ClosePeriodPlan>(endpoint, options);
@@ -1676,11 +1706,36 @@ export function createLedgerCloseManagementLateAdjustment(
   return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementLateAdjustments, request, options);
 }
 
+export function reviewLedgerCloseManagementLateAdjustment(
+  request: ReviewLateAdjustmentRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementLateAdjustmentReview, request, options);
+}
+
+export function signOffLedgerCloseManagementTask(
+  request: SignOffCloseTaskRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementTaskSignOffs, request, options);
+}
+
 export function buildLedgerAccountingReportPackage(
   request: AccountingReportPackageRequest,
   options: ApiRequestOptions = {}
 ) {
   return postJson<AccountingReportPackageBundle>(WORKSTATION_API_ENDPOINTS.accountingReportPackage, request, options);
+}
+
+export function certifyLedgerAccountingReportPackage(
+  request: CertifyAccountingReportPackageRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingReportPackageBundle>(
+    WORKSTATION_API_ENDPOINTS.accountingReportPackageCertification,
+    request,
+    options
+  );
 }
 
 export interface AccountingReportPackageHistoryQuery {
@@ -1704,6 +1759,17 @@ export function listLedgerAccountingReportPackages(
     `${WORKSTATION_API_ENDPOINTS.accountingReportPackages}${suffix ? `?${suffix}` : ""}`,
     options
   );
+}
+
+export function getLedgerAccountingReportPackageExport(
+  packageId: string,
+  artifactId: string,
+  options: ApiRequestOptions = {}
+) {
+  const route = WORKSTATION_API_ENDPOINTS.accountingReportPackageExport
+    .replace("{packageId}", encodeURIComponent(packageId))
+    .replace("{artifactId}", encodeURIComponent(artifactId));
+  return getJson<ReportExportArtifactManifest>(route, options);
 }
 
 export function previewAccountingConfigurationTemplate(
@@ -1734,11 +1800,36 @@ export function upsertAccountingConfigurationPostingRule(
   return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRules, request, options);
 }
 
+export function approveAccountingConfigurationPostingRulePromotion(
+  request: import("@/types").ApprovePostingRulePromotionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(
+    WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRulePromotionApprovals,
+    request,
+    options
+  );
+}
+
 export function dryRunAccountingConfigurationPostingRule(
   request: import("@/types").RuleDryRunRequest,
   options: ApiRequestOptions = {}
 ) {
   return postJson<import("@/types").RuleDryRunResult>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun, request, options);
+}
+
+export function executeAccountingConfigurationPostingRuleTests(
+  request: import("@/types").ExecuteAccountingRuleTestCasesRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingRuleTestSuiteResult>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleTests, request, options);
+}
+
+export function upsertAccountingConfigurationPostingRuleTestCase(
+  request: import("@/types").UpsertAccountingRuleTestCaseRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleTestCases, request, options);
 }
 
 export function activateAccountingConfiguration(

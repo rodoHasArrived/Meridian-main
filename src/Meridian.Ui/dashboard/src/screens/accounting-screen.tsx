@@ -14,7 +14,9 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import {
   approveOperationsContinuityWorkflow,
+  certifyAccountingSystemExportPackage,
   createAccountingSystemExportPackage,
+  getAccountingSystemExportPackageManifest,
   getAccountingSystemMappingProfiles,
   getAccountingSystemProviders,
   getLatestAccountingSystemImport,
@@ -50,6 +52,7 @@ import type {
   CalibrationSummaryViewModel,
   AccountingWorkstream,
   AccountingConfigurationViewModel,
+  AccountingRulesStudioPromotionReadinessViewModel,
   CapitalAccountWorkbenchViewModel,
   ManualJournalEntryWorkbenchViewModel,
   CorporateActionsViewState,
@@ -78,6 +81,7 @@ import type {
   AccountingSystemExportPackageRequest,
   AccountingSystemReconciliationEvidencePackage,
   ExternalGlExportPackage,
+  ExternalGlExportPackageManifest,
   ExternalGlMappingProfile,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
@@ -473,26 +477,32 @@ function AccountingSystemReconciliationPanel({
   reconciliation,
   mappingProfiles,
   exportPackage,
+  exportManifest,
   exportBusy,
+  certifyBusy,
   actionMessage,
   actionTone,
   loading,
   error,
   onRefresh,
-  onCreateExportPackage
+  onCreateExportPackage,
+  onCertifyExportPackage
 }: {
   providers: AccountingSystemProvider[];
   importDetail: AccountingSystemImportDetail | null;
   reconciliation: AccountingSystemReconciliationSummary | null;
   mappingProfiles: ExternalGlMappingProfile[];
   exportPackage: ExternalGlExportPackage | null;
+  exportManifest: ExternalGlExportPackageManifest | null;
   exportBusy: boolean;
+  certifyBusy: boolean;
   actionMessage: string | null;
   actionTone: "success" | "warning" | "danger" | null;
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
   onCreateExportPackage: () => void;
+  onCertifyExportPackage: () => void;
 }) {
   const activeProvider = providers.find((provider) => provider.providerId === importDetail?.summary.providerId)
     ?? providers.find((provider) => provider.providerId === "quickbooks" && provider.state === "Available")
@@ -503,17 +513,31 @@ function AccountingSystemReconciliationPanel({
   const selectedCompanyLabel = activeProvider?.connection?.companyName ?? activeProvider?.connection?.companyId ?? null;
   const rows = reconciliation?.rows.slice(0, 5) ?? [];
   const evidencePackages = reconciliation?.evidencePackages?.slice(0, 4) ?? [];
+  const mappedProviderIds = new Set(mappingProfiles.map((profile) => profile.providerId));
   const selectedMappingProfile = activeProvider
     ? mappingProfiles.find((profile) => profile.providerId === activeProvider.providerId) ?? null
     : mappingProfiles[0] ?? null;
   const statementBalance = reconciliation ? reconciliation.totalExternalDebits - reconciliation.totalExternalCredits : 0;
   const ledgerBalance = reconciliation ? reconciliation.totalMeridianDebits - reconciliation.totalMeridianCredits : 0;
   const varianceBalance = statementBalance - ledgerBalance;
+  const exportSafeguards = reconciliation
+    ? buildExternalGlExportSafeguards(reconciliation, selectedMappingProfile, exportPackage, exportManifest)
+    : [];
   const exportDisabledReason = !reconciliation
     ? "Load external GL reconciliation before creating an export package."
     : !selectedMappingProfile
       ? "Create or certify an external GL mapping profile before export package preparation."
       : "";
+  const certificationState = exportPackage?.certification?.state ?? null;
+  const certifyDisabledReason = !exportPackage
+    ? "Create an external GL export package before certification."
+    : certificationState === "Certified"
+      ? "This external GL export package is already certified."
+      : certificationState !== "ReadyForReview"
+        ? `Certification requires Ready for review state; current state is ${certificationState ?? "missing"}.`
+        : exportPackage.validationIssues.some((issue) => issue.severity === "Critical")
+          ? "Critical export package validation issues must be cleared before certification."
+          : "";
 
   return (
     <Card className="panel-surface" role="region" aria-label="External GL reconciliation">
@@ -554,6 +578,49 @@ function AccountingSystemReconciliationPanel({
           <AccountingValue label="Matched rows" value={String(reconciliation?.matchedCount ?? 0)} />
           <AccountingValue label="Break rows" value={String(reconciliation?.breakCount ?? 0)} />
         </div>
+        {providers.length > 0 ? (
+          <div className="grid gap-2 md:grid-cols-3" aria-label="External GL provider import posture">
+            {providers.slice(0, 6).map((provider) => {
+              const hasMappingProfile = mappedProviderIds.has(provider.providerId);
+              const importKinds = [
+                provider.supportsChartOfAccounts ? "chart" : null,
+                provider.supportsJournalEntries ? "journals" : null,
+                provider.supportsTrialBalance ? "trial balance" : null
+              ].filter((item): item is string => Boolean(item));
+              const connectionLabel = provider.connection?.statusLabel
+                ?? (provider.requiresCredentials ? "Credentials required" : "No credentials required");
+              const postingLabel = provider.supportsPosting
+                ? "Posting gated by export certification"
+                : "Live posting disabled";
+
+              return (
+                <div
+                  key={provider.providerId}
+                  className={cn(
+                    "rounded-md border bg-secondary/15 px-3 py-2 text-sm",
+                    provider.providerId === activeProvider?.providerId ? "border-primary/45" : "border-border/70"
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-semibold text-foreground">{provider.displayName}</div>
+                      <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{provider.providerId}</div>
+                    </div>
+                    <Badge variant={provider.state === "Available" ? "success" : provider.state === "Planned" ? "outline" : "warning"}>
+                      {provider.state}
+                    </Badge>
+                  </div>
+                  <div className="mt-2 space-y-1 text-[11px] leading-4 text-muted-foreground">
+                    <div>{connectionLabel}</div>
+                    <div>{importKinds.length > 0 ? `Import: ${importKinds.join(", ")}` : "Import: not configured"}</div>
+                    <div>{hasMappingProfile ? "Mapping profile retained" : "Mapping profile needed"}</div>
+                    <div>{postingLabel}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
         {mappingProfiles.length > 0 ? (
           <div className="grid gap-2 md:grid-cols-2" aria-label="External GL mapping profiles">
             {mappingProfiles.slice(0, 4).map((profile) => {
@@ -666,15 +733,40 @@ function AccountingSystemReconciliationPanel({
                   size="sm"
                   variant="outline"
                   onClick={onCreateExportPackage}
-                  disabled={exportBusy || Boolean(exportDisabledReason)}
+                  disabled={exportBusy || certifyBusy || Boolean(exportDisabledReason)}
                   disabledReason={exportDisabledReason}
                   busy={exportBusy}
                   busyLabel="Creating export package"
                 >
                   Create export package
                 </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={onCertifyExportPackage}
+                  disabled={certifyBusy || Boolean(certifyDisabledReason)}
+                  disabledReason={certifyDisabledReason}
+                  busy={certifyBusy}
+                  busyLabel="Certifying export package"
+                >
+                  Certify export
+                </Button>
               </div>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">{reconciliation.postingDisabledReason}</p>
+              <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2" aria-label="External GL export safeguards">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Export safeguards</div>
+                <div className="mt-2 grid gap-2">
+                  {exportSafeguards.map((safeguard) => (
+                    <div key={safeguard.id} className="flex items-start justify-between gap-3 rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-foreground">{safeguard.label}</div>
+                        <div className="mt-0.5 text-muted-foreground">{safeguard.detail}</div>
+                      </div>
+                      <Badge variant={safeguard.tone}>{safeguard.value}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
               {actionMessage ? (
                 <div
                   role={actionTone === "danger" ? "alert" : "status"}
@@ -706,6 +798,9 @@ function AccountingSystemReconciliationPanel({
                     <AccountingValue label="Certification" value={exportPackage.certification?.state ?? "Not certified"} />
                     <AccountingValue label="Evidence" value={String(exportPackage.evidenceLinks.length)} />
                     <AccountingValue label="Validation issues" value={String(exportPackage.validationIssues.length)} />
+                    <AccountingValue label="Manifest hash" value={exportManifest?.contentHash.slice(0, 12) ?? "Not loaded"} />
+                    <AccountingValue label="Manifest lines" value={String(exportManifest?.generatedLines.length ?? exportPackage.generatedLines?.length ?? 0)} />
+                    <AccountingValue label="External posting" value={exportManifest?.externalPostingAllowed === false ? "Disabled" : "Not allowed"} />
                   </div>
                 </div>
               ) : null}
@@ -761,6 +856,65 @@ function AccountingSystemEvidencePackageRow({
       ) : null}
     </div>
   );
+}
+
+function buildExternalGlExportSafeguards(
+  reconciliation: AccountingSystemReconciliationSummary,
+  mappingProfile: ExternalGlMappingProfile | null,
+  exportPackage: ExternalGlExportPackage | null,
+  exportManifest: ExternalGlExportPackageManifest | null
+): Array<{ id: string; label: string; value: string; detail: string; tone: "outline" | "success" | "warning" | "danger" }> {
+  const criticalIssueCount = exportPackage?.validationIssues.filter((issue) => issue.severity === "Critical").length ?? 0;
+  const mappingCertified = mappingProfile?.certificationState === "Certified";
+  const manifestLineCount = exportManifest?.generatedLines.length ?? exportPackage?.generatedLines?.length ?? 0;
+  const manifestHash = exportManifest?.contentHash ? exportManifest.contentHash.slice(0, 12) : "Not loaded";
+  const externalPostingAllowed = exportManifest?.externalPostingAllowed === true || exportPackage?.postingEnabled === true;
+
+  return [
+    {
+      id: "balanced-reconciliation",
+      label: "Balanced reconciliation required",
+      value: reconciliation.breakCount === 0 ? "Ready" : "Blocked",
+      detail: reconciliation.breakCount === 0
+        ? "No open reconciliation breaks are returned for this external GL period."
+        : `${reconciliation.breakCount} reconciliation break(s) must clear before certification.`,
+      tone: reconciliation.breakCount === 0 ? "success" : "warning"
+    },
+    {
+      id: "mapping-certification",
+      label: "Certified mapping profile",
+      value: mappingProfile?.certificationState ?? "Missing",
+      detail: mappingProfile
+        ? `${mappingProfile.displayName} maps ${Object.keys(mappingProfile.accountMappings).length} account(s) and ${mappingProfile.dimensionMappings.length} dimension set(s).`
+        : "A retained account and dimension mapping profile is required before export.",
+      tone: mappingCertified ? "success" : "warning"
+    },
+    {
+      id: "validation-blockers",
+      label: "Critical validation blockers",
+      value: String(criticalIssueCount),
+      detail: exportPackage
+        ? criticalIssueCount > 0
+          ? "Critical package issues must clear before certification."
+          : `${exportPackage.validationIssues.length} package validation issue(s) retained; none are critical.`
+        : "No export package has been retained yet.",
+      tone: criticalIssueCount > 0 ? "danger" : exportPackage ? "success" : "outline"
+    },
+    {
+      id: "manifest-control",
+      label: "Controlled export manifest",
+      value: manifestHash,
+      detail: `${manifestLineCount} generated mapped export line(s) retained for review.`,
+      tone: exportManifest ? "success" : "outline"
+    },
+    {
+      id: "live-posting-gate",
+      label: "Live external posting gate",
+      value: externalPostingAllowed ? "Enabled" : "Disabled",
+      detail: exportManifest?.postingDisabledReason ?? exportPackage?.postingDisabledReason ?? reconciliation.postingDisabledReason,
+      tone: externalPostingAllowed ? "danger" : "success"
+    }
+  ];
 }
 
 function formatGlAmount(value: number, currency: string): string {
@@ -1260,7 +1414,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const [accountingSystemMappingProfiles, setAccountingSystemMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
   const [accountingSystemExportPackage, setAccountingSystemExportPackage] = useState<ExternalGlExportPackage | null>(null);
+  const [accountingSystemExportManifest, setAccountingSystemExportManifest] = useState<ExternalGlExportPackageManifest | null>(null);
   const [accountingSystemExportBusy, setAccountingSystemExportBusy] = useState(false);
+  const [accountingSystemCertifyBusy, setAccountingSystemCertifyBusy] = useState(false);
   const [accountingSystemActionMessage, setAccountingSystemActionMessage] = useState<string | null>(null);
   const [accountingSystemActionTone, setAccountingSystemActionTone] = useState<"success" | "warning" | "danger" | null>(null);
   const [accountingSystemLoading, setAccountingSystemLoading] = useState(false);
@@ -1427,6 +1583,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       setAccountingSystemMappingProfiles(mappingProfiles);
       setAccountingSystemImport(importDetail);
       setAccountingSystemReconciliation(reconciliationDetail);
+      setAccountingSystemExportManifest(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to load external GL reconciliation.";
       setAccountingSystemError(message);
@@ -1480,7 +1637,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         correlationId: `browser-external-gl-export:${accountingSystemReconciliation.reconciliationId}`
       };
       const exportPackage = await createAccountingSystemExportPackage(request);
+      const manifest = await getAccountingSystemExportPackageManifest(exportPackage.exportPackageId);
       setAccountingSystemExportPackage(exportPackage);
+      setAccountingSystemExportManifest(manifest);
       setAccountingSystemActionMessage(`Export package ${exportPackage.exportPackageId} created as a guarded artifact.`);
       setAccountingSystemActionTone(exportPackage.validationIssues.length > 0 ? "warning" : "success");
     } catch (error) {
@@ -1488,6 +1647,42 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       setAccountingSystemActionTone("danger");
     } finally {
       setAccountingSystemExportBusy(false);
+    }
+  };
+
+  const certifyExternalGlExportPackage = async () => {
+    if (!accountingSystemExportPackage) {
+      setAccountingSystemActionMessage("Create an external GL export package before certification.");
+      setAccountingSystemActionTone("warning");
+      return;
+    }
+
+    setAccountingSystemCertifyBusy(true);
+    setAccountingSystemActionMessage(null);
+    setAccountingSystemActionTone(null);
+    try {
+      const evidenceLinks = Array.from(new Set([
+        ...accountingSystemExportPackage.evidenceLinks,
+        ...(accountingSystemExportPackage.certification?.evidenceLinks ?? []),
+        `external-gl-export-certification:${accountingSystemExportPackage.exportPackageId}`
+      ]));
+      const certified = await certifyAccountingSystemExportPackage({
+        exportPackageId: accountingSystemExportPackage.exportPackageId,
+        actor: "browser-accounting-controller",
+        notes: `Certified external GL export package ${accountingSystemExportPackage.exportPackageId}.`,
+        evidenceLinks,
+        correlationId: `browser-external-gl-certify:${accountingSystemExportPackage.exportPackageId}`
+      });
+      const manifest = await getAccountingSystemExportPackageManifest(certified.exportPackageId);
+      setAccountingSystemExportPackage(certified);
+      setAccountingSystemExportManifest(manifest);
+      setAccountingSystemActionMessage(`Certified external GL export package ${certified.exportPackageId}.`);
+      setAccountingSystemActionTone("success");
+    } catch (error) {
+      setAccountingSystemActionMessage(formatApprovalError(error, "External GL export package could not be certified."));
+      setAccountingSystemActionTone("danger");
+    } finally {
+      setAccountingSystemCertifyBusy(false);
     }
   };
 
@@ -1714,13 +1909,16 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         reconciliation={accountingSystemReconciliation}
         mappingProfiles={accountingSystemMappingProfiles}
         exportPackage={accountingSystemExportPackage}
+        exportManifest={accountingSystemExportManifest}
         exportBusy={accountingSystemExportBusy}
+        certifyBusy={accountingSystemCertifyBusy}
         actionMessage={accountingSystemActionMessage}
         actionTone={accountingSystemActionTone}
         loading={accountingSystemLoading}
         error={accountingSystemError}
         onRefresh={() => void refreshAccountingSystem(true)}
         onCreateExportPackage={() => void createExternalGlExportPackage()}
+        onCertifyExportPackage={() => void certifyExternalGlExportPackage()}
       />
 
       {workstream === "configure" ? (
@@ -3848,6 +4046,45 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
             <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
             {view.buildButtonLabel}
           </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={Boolean(view.certifyDisabledReason)}
+            disabledReason={view.certifyDisabledReason ?? undefined}
+            busy={view.certifyBusy}
+            busyLabel="Certifying accounting report package"
+            onClick={() => void view.certifyPackage()}
+          >
+            <BookCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            {view.certifyButtonLabel}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={Boolean(view.exportManifestDisabledReason)}
+            disabledReason={view.exportManifestDisabledReason ?? undefined}
+            busy={view.exportManifestBusy}
+            busyLabel="Loading report export manifest"
+            onClick={() => void view.inspectSelectedPackageExport()}
+          >
+            <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+            {view.exportManifestButtonLabel}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={Boolean(view.signOffDisabledReason)}
+            disabledReason={view.signOffDisabledReason ?? undefined}
+            busy={view.signOffBusy}
+            busyLabel="Signing off close checklist task"
+            onClick={() => void view.signOffNextTask()}
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+            {view.signOffButtonLabel}
+          </Button>
         </div>
       </div>
 
@@ -3887,6 +4124,71 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
               {view.buildStatusText}
             </div>
           ) : null}
+          {view.certifyStatusText ? (
+            <div
+              role={view.certifyStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.certifyStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.certifyStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.certifyStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.certifyStatusText}
+            </div>
+          ) : null}
+          {view.signOffStatusText ? (
+            <div
+              role={view.signOffStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.signOffStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.signOffStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.signOffStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.signOffStatusText}
+            </div>
+          ) : null}
+          {view.createLateAdjustmentStatusText ? (
+            <div
+              role={view.createLateAdjustmentStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.createLateAdjustmentStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.createLateAdjustmentStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.createLateAdjustmentStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.createLateAdjustmentStatusText}
+            </div>
+          ) : null}
+          {view.reviewLateAdjustmentStatusText ? (
+            <div
+              role={view.reviewLateAdjustmentStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.reviewLateAdjustmentStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.reviewLateAdjustmentStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.reviewLateAdjustmentStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.reviewLateAdjustmentStatusText}
+            </div>
+          ) : null}
+          {view.exportManifestStatusText ? (
+            <div
+              role={view.exportManifestStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.exportManifestStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.exportManifestStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.exportManifestStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.exportManifestStatusText}
+            </div>
+          ) : null}
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {view.metrics.map((metric) => (
@@ -3898,6 +4200,46 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
               </div>
             ))}
+          </div>
+
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="Accounting report certification safeguards">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">Certification safeguards</div>
+            <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+              {view.certificationSafeguards.map((safeguard) => (
+                <div key={safeguard.id} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(safeguard.tone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <span className="font-semibold text-foreground">{safeguard.label}</span>
+                    <Badge variant={accountingToolingBadgeVariant(safeguard.tone)}>{safeguard.value}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{safeguard.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">Close calendar</div>
+            {view.closeCalendar.length > 0 ? (
+              <div role="list" className="mt-3 grid gap-2 lg:grid-cols-2 xl:grid-cols-3" aria-label="Close calendar milestones">
+                {view.closeCalendar.map((milestone) => (
+                  <div key={milestone.milestoneId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(milestone.statusTone))}>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="font-semibold text-foreground">{milestone.displayName}</span>
+                      <Badge variant={accountingToolingBadgeVariant(milestone.statusTone)}>{milestone.statusLabel}</Badge>
+                    </div>
+                    <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                      <span>Due: {milestone.dueDateLabel}</span>
+                      <span>Owner: {milestone.ownerLabel}</span>
+                      <span>{milestone.dependencyLabel}; {milestone.signOffLabel}</span>
+                      <span>{milestone.evidenceLabel}; {milestone.lockedLabel}</span>
+                      {milestone.blockerLabel ? <span className="text-warning">{milestone.blockerLabel}</span> : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">Close calendar milestones are not loaded.</p>
+            )}
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
@@ -3917,13 +4259,17 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                         <span>{task.dependencyLabel}</span>
                         <span>{task.signOffLabel}</span>
                       </div>
-                      <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        <span>{task.evidenceLabel}</span>
-                        {task.blockerLabel ? <span className="text-warning">{task.blockerLabel}</span> : null}
+                      <div className="mt-2 text-xs text-muted-foreground">{task.signOffRequirementLabel}</div>
+                        <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                          <span>{task.evidenceLabel}</span>
+                          {task.blockerLabel ? <span className="text-warning">{task.blockerLabel}</span> : null}
+                        </div>
+                        {task.signOffDetailLabel ? (
+                          <div className="mt-2 text-xs text-muted-foreground">{task.signOffDetailLabel}</div>
+                        ) : null}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
               ) : (
                 <p className="mt-3 text-sm text-muted-foreground">Close checklist detail is not loaded.</p>
               )}
@@ -3954,10 +4300,28 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                         <span>{item.investorStatementLabel}</span>
                         <span>Realized gain/loss {item.realizedGainLossLabel}</span>
                         <span>{item.restatementLabel}</span>
+                        <span>{item.exportArtifactLabel}</span>
                         <span>{item.evidenceLabel}; {item.validationLabel}</span>
                       </div>
                     </button>
                   ))}
+                  {view.exportManifest ? (
+                    <div className="rounded-md border border-border/70 bg-background/45 px-3 py-2" aria-label="Accounting report export manifest">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <span className="font-semibold text-foreground">{view.exportManifest.displayName}</span>
+                        <Badge variant="outline">{view.exportManifest.certificationLabel}</Badge>
+                      </div>
+                      <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                        <span className="break-all font-mono">{view.exportManifest.artifactId}</span>
+                        <span>{view.exportManifest.formatLabel}</span>
+                        <span>{view.exportManifest.fileName}</span>
+                        <span>Generated {view.exportManifest.generatedLabel}</span>
+                        <span>{view.exportManifest.evidenceLabel}; {view.exportManifest.postingLabel}</span>
+                        <span className="break-all font-mono">Hash {view.exportManifest.hashLabel}</span>
+                        <span className="break-all font-mono">{view.exportManifest.routeLabel}</span>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <p className="mt-3 text-sm text-muted-foreground">No accounting report packages have been built for the selected close workflow.</p>
@@ -3967,7 +4331,58 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
 
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
-              <div className="text-xs font-semibold uppercase text-muted-foreground">Late adjustments</div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Late adjustments</div>
+                <Badge variant={view.lateAdjustments.length > 0 ? "warning" : "outline"}>{view.lateAdjustments.length}</Badge>
+              </div>
+              <div className="mt-3 grid gap-2 rounded-md border border-border/70 bg-background/45 px-3 py-3">
+                <div className="grid gap-2 md:grid-cols-[minmax(0,0.34fr)_minmax(0,0.18fr)_minmax(0,0.16fr)]">
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Journal entry</span>
+                    <Input
+                      value={view.lateAdjustmentDraft.journalEntryId}
+                      onChange={(event) => view.updateLateAdjustmentDraft({ journalEntryId: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Amount</span>
+                    <Input
+                      inputMode="decimal"
+                      value={view.lateAdjustmentDraft.amount}
+                      onChange={(event) => view.updateLateAdjustmentDraft({ amount: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Currency</span>
+                    <Input
+                      value={view.lateAdjustmentDraft.currency}
+                      onChange={(event) => view.updateLateAdjustmentDraft({ currency: event.target.value })}
+                    />
+                  </label>
+                </div>
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Reason</span>
+                  <Input
+                    value={view.lateAdjustmentDraft.reason}
+                    onChange={(event) => view.updateLateAdjustmentDraft({ reason: event.target.value })}
+                  />
+                </label>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={Boolean(view.createLateAdjustmentDisabledReason)}
+                    disabledReason={view.createLateAdjustmentDisabledReason ?? undefined}
+                    busy={view.createLateAdjustmentBusy}
+                    busyLabel="Requesting late adjustment"
+                    onClick={() => void view.createLateAdjustment()}
+                  >
+                    <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+                    Request late adjustment
+                  </Button>
+                </div>
+              </div>
               {view.lateAdjustments.length > 0 ? (
                 <div role="list" className="mt-3 space-y-2" aria-label="Late adjustment requests">
                   {view.lateAdjustments.map((adjustment) => (
@@ -3979,8 +4394,36 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">{adjustment.reason}</p>
                       <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                         <span>{adjustment.amountLabel}</span>
+                        <Badge variant={accountingToolingBadgeVariant(adjustment.materialityTone)} className="w-fit">{adjustment.materialityLabel}</Badge>
                         <span>{adjustment.requestedByLabel}</span>
+                        {adjustment.decisionLabel ? <span>{adjustment.decisionLabel}</span> : null}
                         <span>{adjustment.evidenceLabel}</span>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          disabled={Boolean(adjustment.reviewDisabledReason) || view.reviewLateAdjustmentBusy}
+                          disabledReason={adjustment.reviewDisabledReason ?? undefined}
+                          busy={view.reviewLateAdjustmentBusy}
+                          busyLabel="Reviewing late adjustment"
+                          onClick={() => void view.reviewLateAdjustment(adjustment.requestId, "Approved")}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                          Approve
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={Boolean(adjustment.reviewDisabledReason) || view.reviewLateAdjustmentBusy}
+                          disabledReason={adjustment.reviewDisabledReason ?? undefined}
+                          onClick={() => void view.reviewLateAdjustment(adjustment.requestId, "Rejected")}
+                        >
+                          <X className="h-3.5 w-3.5" aria-hidden="true" />
+                          Reject
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -5521,12 +5964,23 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                   </select>
                 </label>
                 <div className="flex items-end">
-                  <Button size="sm" variant="outline" onClick={view.addAttachment}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    busy={view.attachEvidenceBusy}
+                    busyLabel="Attaching evidence"
+                    onClick={() => void view.addAttachment()}
+                  >
                     <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
                     Attach
                   </Button>
                 </div>
               </div>
+              {view.attachEvidenceStatusText ? (
+                <p role="status" className="mt-3 rounded border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
+                  {view.attachEvidenceStatusText}
+                </p>
+              ) : null}
               <div className="mt-3 grid gap-2 md:grid-cols-2">
                 {(view.draft.evidenceAttachments ?? []).length > 0 ? (view.draft.evidenceAttachments ?? []).map((attachment) => (
                   <div key={attachment.attachmentId} className="flex items-start justify-between gap-3 rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
@@ -5572,6 +6026,20 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                 </Button>
               ))}
             </div>
+            <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-3 py-3" aria-label="Manual journal lifecycle checklist">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lifecycle checklist</div>
+              <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+                {view.lifecycleChecklist.map((item) => (
+                  <div key={item.id} role="listitem" className={cn("rounded border bg-secondary/20 px-2.5 py-2 text-xs", accountingToolingBorderClass(item.tone))}>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="font-semibold text-foreground">{item.label}</span>
+                      <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.value}</Badge>
+                    </div>
+                    <p className="mt-2 leading-5 text-muted-foreground">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
             {view.lifecycleStatusText ? (
               <p role="status" className="mt-3 rounded border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary">
                 {view.lifecycleStatusText}
@@ -5599,7 +6067,18 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                   <div key={transition.id} className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
                     <div className="font-semibold text-foreground">{transition.title}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{transition.detail}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{transition.evidenceLabel}</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Badge variant="outline" className="font-mono text-[11px]">{transition.auditLabel}</Badge>
+                      <Badge variant="outline" className="font-mono text-[11px]">{transition.correlationLabel}</Badge>
+                      <Badge variant={transition.evidenceTone}>{transition.evidenceLabel}</Badge>
+                    </div>
+                    <div className="mt-2 space-y-1">
+                      {transition.evidenceRows.map((evidence) => (
+                        <div key={`${transition.id}-${evidence}`} className="break-all rounded border border-border/60 bg-secondary/30 px-2 py-1 font-mono text-[11px] text-muted-foreground">
+                          {evidence}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )) : (
                   <p className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
@@ -5767,7 +6246,163 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               >
                 {view.dryRunButtonLabel}
               </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canApplyThreshold}
+                disabledReason={view.applyThresholdDisabledReason}
+                busy={view.applyThresholdBusy}
+                busyLabel={view.applyThresholdButtonLabel}
+                onClick={() => void view.applyDryRunAmountThreshold()}
+              >
+                {view.applyThresholdButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canApplyEventPredicate}
+                disabledReason={view.applyEventPredicateDisabledReason}
+                busy={view.applyEventPredicateBusy}
+                busyLabel={view.applyEventPredicateButtonLabel}
+                onClick={() => void view.applyDryRunEventPredicate()}
+              >
+                {view.applyEventPredicateButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canApplyEffectiveStart}
+                disabledReason={view.applyEffectiveStartDisabledReason}
+                busy={view.applyEffectiveStartBusy}
+                busyLabel={view.applyEffectiveStartButtonLabel}
+                onClick={() => void view.applyDryRunEffectiveStart()}
+              >
+                {view.applyEffectiveStartButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canCapturePostings}
+                disabledReason={view.capturePostingsDisabledReason}
+                busy={view.capturePostingsBusy}
+                busyLabel={view.capturePostingsButtonLabel}
+                onClick={() => void view.captureDryRunGeneratedPostings()}
+              >
+                {view.capturePostingsButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canApplyFormula}
+                disabledReason={view.applyFormulaDisabledReason}
+                busy={view.applyFormulaBusy}
+                busyLabel={view.applyFormulaButtonLabel}
+                onClick={() => void view.applyDryRunFormulaAmount()}
+              >
+                {view.applyFormulaButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canApplyAllocation}
+                disabledReason={view.applyAllocationDisabledReason}
+                busy={view.applyAllocationBusy}
+                busyLabel={view.applyAllocationButtonLabel}
+                onClick={() => void view.applyDryRunAllocationTargets()}
+              >
+                {view.applyAllocationButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canApplyScope}
+                disabledReason={view.applyScopeDisabledReason}
+                busy={view.applyScopeBusy}
+                busyLabel={view.applyScopeButtonLabel}
+                onClick={() => void view.applyDryRunScope()}
+              >
+                {view.applyScopeButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canDuplicateRule}
+                disabledReason={view.duplicateRuleDisabledReason}
+                busy={view.duplicateRuleBusy}
+                busyLabel={view.duplicateRuleButtonLabel}
+                onClick={() => void view.duplicateSelectedRule()}
+              >
+                {view.duplicateRuleButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canRaisePriority}
+                disabledReason={view.raisePriorityDisabledReason}
+                busy={view.raisePriorityBusy}
+                busyLabel={view.raisePriorityButtonLabel}
+                onClick={() => void view.raiseSelectedRulePriority()}
+              >
+                {view.raisePriorityButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canSaveDryRunAsRuleTest}
+                disabledReason={view.saveDryRunAsRuleTestDisabledReason}
+                busy={view.saveDryRunAsRuleTestBusy}
+                busyLabel={view.saveDryRunAsRuleTestButtonLabel}
+                onClick={() => void view.saveDryRunAsRuleTest()}
+              >
+                {view.saveDryRunAsRuleTestButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canArchiveRule}
+                disabledReason={view.archiveRuleDisabledReason}
+                busy={view.archiveRuleBusy}
+                busyLabel={view.archiveRuleButtonLabel}
+                onClick={() => void view.archiveSelectedRule()}
+              >
+                {view.archiveRuleButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!view.canRunRuleTests}
+                disabledReason={view.ruleTestDisabledReason}
+                busy={view.ruleTestBusy}
+                busyLabel={view.ruleTestButtonLabel}
+                onClick={() => void view.runRuleTests()}
+              >
+                {view.ruleTestButtonLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={!view.canApproveRulePromotion}
+                disabledReason={view.approveRulePromotionDisabledReason}
+                busy={view.approveRulePromotionBusy}
+                busyLabel={view.approveRulePromotionButtonLabel}
+                onClick={() => void view.approveRulePromotion()}
+              >
+                {view.approveRulePromotionButtonLabel}
+              </Button>
               {view.dryRunStatusText ? <span className="text-sm text-muted-foreground">{view.dryRunStatusText}</span> : null}
+              {view.applyEventPredicateStatusText ? <span className="text-sm text-muted-foreground">{view.applyEventPredicateStatusText}</span> : null}
+              {view.applyThresholdStatusText ? <span className="text-sm text-muted-foreground">{view.applyThresholdStatusText}</span> : null}
+              {view.applyEffectiveStartStatusText ? <span className="text-sm text-muted-foreground">{view.applyEffectiveStartStatusText}</span> : null}
+              {view.capturePostingsStatusText ? <span className="text-sm text-muted-foreground">{view.capturePostingsStatusText}</span> : null}
+              {view.applyFormulaStatusText ? <span className="text-sm text-muted-foreground">{view.applyFormulaStatusText}</span> : null}
+              {view.applyAllocationStatusText ? <span className="text-sm text-muted-foreground">{view.applyAllocationStatusText}</span> : null}
+              {view.applyScopeStatusText ? <span className="text-sm text-muted-foreground">{view.applyScopeStatusText}</span> : null}
+              {view.duplicateRuleStatusText ? <span className="text-sm text-muted-foreground">{view.duplicateRuleStatusText}</span> : null}
+              {view.raisePriorityStatusText ? <span className="text-sm text-muted-foreground">{view.raisePriorityStatusText}</span> : null}
+              {view.archiveRuleStatusText ? <span className="text-sm text-muted-foreground">{view.archiveRuleStatusText}</span> : null}
+              {view.saveDryRunAsRuleTestStatusText ? <span className="text-sm text-muted-foreground">{view.saveDryRunAsRuleTestStatusText}</span> : null}
+              {view.ruleTestStatusText ? <span className="text-sm text-muted-foreground">{view.ruleTestStatusText}</span> : null}
+              {view.approveRulePromotionStatusText ? <span className="text-sm text-muted-foreground">{view.approveRulePromotionStatusText}</span> : null}
             </div>
           </div>
         </CardHeader>
@@ -5814,6 +6449,25 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                       </div>
                       <Badge variant={view.selectedRule.promotionTone}>{view.selectedRule.promotionLabel}</Badge>
                     </div>
+                    <div className="rounded-lg border border-border/70 bg-secondary/10 p-3" role="region" aria-label="Posting rule promotion readiness">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Promotion readiness</div>
+                        <Badge variant={accountingToolingBadgeVariant(hasPromotionReadinessBlocker(view.selectedRule.promotionReadiness) ? "warning" : "success")}>
+                          {view.selectedRule.promotionReadiness.find((item) => item.id === "activation-gate")?.value ?? "Review"}
+                        </Badge>
+                      </div>
+                      <div className="mt-3 grid gap-2 md:grid-cols-2">
+                        {view.selectedRule.promotionReadiness.map((item) => (
+                          <div key={item.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(item.tone))}>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="font-semibold text-foreground">{item.label}</span>
+                              <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.value}</Badge>
+                            </div>
+                            <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                     <RulesStudioList title="Scope" rows={view.selectedRule.scopeLabels.length > 0 ? view.selectedRule.scopeLabels : ["No dimensional scope configured."]} />
                     <RulesStudioList title="Predicates" rows={view.selectedRule.conditionRows} />
                     <RulesStudioList title="Formulas" rows={view.selectedRule.formulaRows} />
@@ -5854,6 +6508,51 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                   ))}
                 </div>
               ) : null}
+            </div>
+          ) : null}
+
+          <div className="rounded-lg border border-border/70 bg-background p-3" role="region" aria-label="Saved accounting rule test cases">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="font-semibold text-foreground">Saved regression cases</div>
+                <div className="mt-1 text-xs text-muted-foreground">Persisted dry-run assertions used for rule promotion checks.</div>
+              </div>
+              <Badge variant={view.ruleTestCases.length > 0 ? "success" : "warning"}>{view.ruleTestCases.length} saved</Badge>
+            </div>
+            <div className="mt-3 grid gap-2 md:grid-cols-2">
+              {view.ruleTestCases.length > 0 ? view.ruleTestCases.map((testCase) => (
+                <div key={testCase.id} className="rounded-md border border-border/70 bg-secondary/10 px-3 py-2 text-sm">
+                  <div className="font-semibold text-foreground">{testCase.title}</div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">{testCase.subtitle}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{testCase.assertionLabel}</div>
+                  <Badge variant={testCase.evidenceTone} className="mt-2">{testCase.evidenceLabel}</Badge>
+                </div>
+              )) : (
+                <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning md:col-span-2">
+                  No saved rule test cases. Running tests will generate temporary cases from active posting rules.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {view.ruleTestSuite ? (
+            <div className="rounded-lg border border-border/70 bg-secondary/15 p-3" role="region" aria-label="Accounting rule test cases">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <div className="font-semibold text-foreground">{view.ruleTestSuite.title}</div>
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">{view.ruleTestSuite.executedLabel}</div>
+                </div>
+                <Badge variant={view.ruleTestSuite.statusTone}>{view.ruleTestSuite.summaryLabel}</Badge>
+              </div>
+              <div className="mt-3 grid gap-3 xl:grid-cols-2">
+                <RulesStudioList title="Regression cases" rows={view.ruleTestSuite.resultRows} />
+                <RulesStudioList
+                  title="Assertion issues"
+                  rows={view.ruleTestSuite.validationRows.length > 0
+                    ? view.ruleTestSuite.validationRows.map((issue) => `${issue.label}: ${issue.message}`)
+                    : ["No rule-test assertion issues returned."]}
+                />
+              </div>
             </div>
           ) : null}
         </CardContent>
@@ -5985,6 +6684,10 @@ function RulesStudioList({ title, rows }: { title: string; rows: string[] }) {
       </div>
     </div>
   );
+}
+
+function hasPromotionReadinessBlocker(items: AccountingRulesStudioPromotionReadinessViewModel[]): boolean {
+  return items.some((item) => item.tone === "danger" || (item.id === "activation-gate" && item.tone === "warning"));
 }
 
 function AccountingValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {

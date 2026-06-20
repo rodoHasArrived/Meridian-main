@@ -1,6 +1,11 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
@@ -30,11 +35,17 @@ public sealed class AccountingSystemIntegrationService
             "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
             ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"])
     ];
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     private readonly IReadOnlyList<IAccountingSystemProvider> _providers;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
     private readonly ConcurrentDictionary<string, AccountingSystemImportDetailDto> _latestImports = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ScopedExternalGlMappingProfile> _mappingProfiles = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ExternalGlExportPackageDto> _exportPackages = new(StringComparer.OrdinalIgnoreCase);
 
     public AccountingSystemIntegrationService(
         IEnumerable<IAccountingSystemProvider> providers,
@@ -102,13 +113,20 @@ public sealed class AccountingSystemIntegrationService
         var actor = RequireText(request.Actor, "Actor");
         var providerId = NormalizeProviderId(request.ProviderId ?? request.Profile.ProviderId);
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var evidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
+        var certificationState = ResolveMappingProfileCertificationState(
+            request.Profile,
+            providerId,
+            fundProfileId,
+            profileId,
+            evidenceLinks);
         var normalizedProfile = request.Profile with
         {
             ProfileId = profileId,
             ProviderId = providerId,
             DisplayName = RequireText(request.Profile.DisplayName, "Mapping profile display name"),
             UpdatedAtUtc = DateTimeOffset.UtcNow,
-            CertificationState = request.Profile.CertificationState,
+            CertificationState = certificationState,
             AccountMappings = NormalizeAccountMappings(request.Profile.AccountMappings),
             DimensionMappings = (request.Profile.DimensionMappings ?? [])
                 .Select(mapping => mapping with { ProviderId = providerId })
@@ -121,7 +139,7 @@ public sealed class AccountingSystemIntegrationService
         }
 
         _mappingProfiles[MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId)] =
-            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, NormalizeEvidenceReferences(request.EvidenceLinks));
+            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, evidenceLinks);
 
         return Task.FromResult(normalizedProfile);
     }
@@ -140,7 +158,9 @@ public sealed class AccountingSystemIntegrationService
         var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
-        var validationIssues = BuildExportValidationIssues(providerId, mappingProfile, reconciliation, request.RequireBalancedReconciliation);
+        var requestEvidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
+        var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation);
+        var validationIssues = BuildExportValidationIssues(providerId, fundProfileId, mappingProfile, reconciliation, periodStart, periodEnd, request.RequireBalancedReconciliation, requestEvidenceLinks, generatedLines);
         var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var certificationState = hasCritical
@@ -156,7 +176,7 @@ public sealed class AccountingSystemIntegrationService
                 : "Export package passed automated mapping and reconciliation safeguards and is ready for human certification review.",
             evidenceLinks);
 
-        return new ExternalGlExportPackageDto(
+        var package = new ExternalGlExportPackageDto(
             $"external-gl-export-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{periodEnd:yyyyMMdd}-{Guid.NewGuid():N}",
             providerId,
             fundProfileId,
@@ -170,7 +190,101 @@ public sealed class AccountingSystemIntegrationService
             request.JournalEntryIds,
             evidenceLinks,
             certification,
-            validationIssues);
+            validationIssues,
+            generatedLines);
+        _exportPackages[package.ExportPackageId] = package;
+        return package;
+    }
+
+    public Task<ExternalGlExportPackageDto?> CertifyExportPackageAsync(
+        CertifyAccountingSystemExportPackageRequestDto request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "certify external GL export packages");
+        var exportPackageId = RequireText(request.ExportPackageId, "ExportPackageId");
+        var actor = RequireText(request.Actor, "Actor");
+        var notes = RequireText(request.Notes, "Notes");
+        var evidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
+        if (evidenceLinks.Count == 0)
+        {
+            throw new ArgumentException("At least one external GL export certification evidence link is required.");
+        }
+
+        if (!HasExportCertificationEvidence(evidenceLinks))
+        {
+            throw new ArgumentException("External GL export certification requires retained approval, certification, sign-off, or review evidence.");
+        }
+
+        if (!_exportPackages.TryGetValue(exportPackageId, out var package))
+        {
+            return Task.FromResult<ExternalGlExportPackageDto?>(null);
+        }
+
+        if (!HasExportCertificationEvidenceWithProvenance(package, evidenceLinks))
+        {
+            throw new ArgumentException("External GL export certification evidence must reference the retained export package id or exact export period.");
+        }
+
+        if (package.Certification is null)
+        {
+            throw new InvalidOperationException($"External GL export package '{exportPackageId}' has no certification record.");
+        }
+
+        if (package.PostingEnabled || string.IsNullOrWhiteSpace(package.PostingDisabledReason))
+        {
+            throw new InvalidOperationException(
+                $"External GL export package '{exportPackageId}' cannot be certified while live external GL posting is enabled or missing a retained posting-disabled reason.");
+        }
+
+        if (package.Certification.State == AccountingCertificationStateDto.Certified)
+        {
+            throw new InvalidOperationException($"External GL export package '{exportPackageId}' is already certified.");
+        }
+
+        if (package.Certification.State != AccountingCertificationStateDto.ReadyForReview)
+        {
+            throw new InvalidOperationException(
+                $"External GL export package '{exportPackageId}' must be ready for review before certification.");
+        }
+
+        if (package.ValidationIssues.Any(static issue =>
+                issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
+        {
+            throw new InvalidOperationException(
+                $"External GL export package '{exportPackageId}' has critical validation issues and cannot be certified.");
+        }
+
+        var mergedEvidenceLinks = NormalizeEvidenceReferences(package.EvidenceLinks.Concat(evidenceLinks));
+        var certification = package.Certification with
+        {
+            State = AccountingCertificationStateDto.Certified,
+            Actor = actor,
+            RecordedAtUtc = DateTimeOffset.UtcNow,
+            Summary = notes,
+            EvidenceLinks = NormalizeEvidenceReferences(package.Certification.EvidenceLinks.Concat(evidenceLinks))
+        };
+        var certified = package with
+        {
+            PostingEnabled = false,
+            PostingDisabledReason = "Certified guarded export artifact only; live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries.",
+            EvidenceLinks = mergedEvidenceLinks,
+            Certification = certification
+        };
+        _exportPackages[certified.ExportPackageId] = certified;
+        return Task.FromResult<ExternalGlExportPackageDto?>(certified);
+    }
+
+    public Task<ExternalGlExportPackageManifestDto?> GetExportPackageManifestAsync(
+        string exportPackageId,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var normalizedExportPackageId = RequireText(exportPackageId, nameof(exportPackageId));
+        return Task.FromResult(_exportPackages.TryGetValue(normalizedExportPackageId, out var package)
+            ? BuildExportPackageManifest(package)
+            : null);
     }
 
     public async Task<AccountingSystemImportDetailDto> ImportAsync(
@@ -341,11 +455,35 @@ public sealed class AccountingSystemIntegrationService
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
         string providerId,
+        string fundProfileId,
         ScopedExternalGlMappingProfile? mappingProfile,
         AccountingSystemReconciliationSummaryDto? reconciliation,
-        bool requireBalancedReconciliation)
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        bool requireBalancedReconciliation,
+        IReadOnlyList<string> requestEvidenceLinks,
+        IReadOnlyList<ExternalGlExportLineDto> generatedLines)
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        if (!HasExportPackageControlEvidence(requestEvidenceLinks))
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "MissingExternalGlExportControlEvidence",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL export packages require retained export-control evidence before review.",
+                providerId,
+                "Attach retained export package, approval, certification, sign-off, or review evidence before creating a review-ready export artifact."));
+        }
+        else if (!HasExportPackageControlEvidenceWithProvenance(providerId, fundProfileId, periodStart, periodEnd, requestEvidenceLinks))
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "UnscopedExternalGlExportControlEvidence",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL export-control evidence must identify export-control intent and the export fund, provider/fund scope, or exact export period on the same evidence artifact before review.",
+                providerId,
+                "Attach retained export-control approval evidence that references the fund, provider/fund mapping scope, or exact export period on the same artifact before creating a review-ready export artifact."));
+        }
+
         if (mappingProfile is null)
         {
             issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -364,6 +502,68 @@ public sealed class AccountingSystemIntegrationService
                 mappingProfile.Profile.ProfileId,
                 "Submit the mapping profile for approval and retain certification evidence before export certification."));
         }
+        else
+        {
+            if (mappingProfile.Profile.AccountMappings.Count == 0)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "MissingExternalGlAccountMappings",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"External GL mapping profile '{mappingProfile.Profile.ProfileId}' has no account mappings.",
+                    mappingProfile.Profile.ProfileId,
+                    "Map Meridian GL account paths to external GL account identifiers before export certification."));
+            }
+            else if (reconciliation is not null)
+            {
+                foreach (var row in reconciliation.Rows
+                    .Where(static row => !string.IsNullOrWhiteSpace(row.AccountCode))
+                    .Where(row => !mappingProfile.Profile.AccountMappings.ContainsKey(row.AccountCode))
+                    .OrderBy(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase))
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "MissingExternalGlAccountMapping",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"External GL mapping profile '{mappingProfile.Profile.ProfileId}' does not map reconciled account '{row.AccountCode}'.",
+                        row.AccountCode,
+                        "Map every reconciled Meridian/external GL account in the export period before export certification."));
+                }
+            }
+
+            var dimensionMappings = mappingProfile.Profile.DimensionMappings ?? [];
+            if (dimensionMappings.Count == 0)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "MissingExternalGlDimensionMappings",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"External GL mapping profile '{mappingProfile.Profile.ProfileId}' has no dimension mappings.",
+                    mappingProfile.Profile.ProfileId,
+                    "Map Meridian fund/entity/dimensional scopes to external GL dimensions before export certification."));
+            }
+            else
+            {
+                foreach (var mapping in dimensionMappings.Where(static mapping => mapping.CertificationState != AccountingCertificationStateDto.Certified))
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "UncertifiedExternalGlDimensionMapping",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"External GL dimension mapping '{mapping.ProfileId}' is not certified.",
+                        mapping.ProfileId,
+                        "Certify every external GL dimension mapping before export certification."));
+                }
+
+                foreach (var mapping in dimensionMappings.Where(static mapping =>
+                    !HasRequiredDimensionScope(mapping.MeridianDimensions) ||
+                    !HasRequiredDimensionScope(mapping.ExternalDimensions)))
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "IncompleteExternalGlDimensionMapping",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"External GL dimension mapping '{mapping.ProfileId}' is missing fund or entity scope.",
+                        mapping.ProfileId,
+                        "Map both fund and entity dimensions on the Meridian and external GL sides before export certification."));
+                }
+            }
+        }
 
         if (reconciliation is null)
         {
@@ -374,14 +574,38 @@ public sealed class AccountingSystemIntegrationService
                 providerId,
                 "Import chart, journal, and trial-balance evidence and reconcile it against Meridian ledger truth before export certification."));
         }
-        else if (requireBalancedReconciliation && reconciliation.BreakCount > 0)
+        else
         {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "UnresolvedExternalGlBreaks",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                $"{reconciliation.BreakCount} external GL reconciliation break(s) remain unresolved.",
-                reconciliation.ReconciliationId,
-                "Resolve or approve GL tie-out breaks with retained evidence before export certification."));
+            if (reconciliation.PeriodStart != periodStart || reconciliation.PeriodEnd != periodEnd)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ExternalGlReconciliationPeriodMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"External GL reconciliation '{reconciliation.ReconciliationId}' covers {reconciliation.PeriodStart:yyyy-MM-dd} through {reconciliation.PeriodEnd:yyyy-MM-dd}, not export period {periodStart:yyyy-MM-dd} through {periodEnd:yyyy-MM-dd}.",
+                    reconciliation.ReconciliationId,
+                    "Import and reconcile external GL evidence for the exact export period before certification."));
+            }
+
+            if (requireBalancedReconciliation && reconciliation.BreakCount > 0)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "UnresolvedExternalGlBreaks",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"{reconciliation.BreakCount} external GL reconciliation break(s) remain unresolved.",
+                    reconciliation.ReconciliationId,
+                    "Resolve or approve GL tie-out breaks with retained evidence before export certification."));
+            }
+
+            if (mappingProfile?.Profile.CertificationState == AccountingCertificationStateDto.Certified &&
+                generatedLines.Count == 0)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "MissingGeneratedExternalGlExportLines",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"External GL export package for provider '{providerId}' has no generated Meridian-owned export lines.",
+                    reconciliation.ReconciliationId,
+                    "Load Meridian ledger journal evidence for the export period and map those accounts before export certification."));
+            }
         }
 
         issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -392,6 +616,64 @@ public sealed class AccountingSystemIntegrationService
             "Review, approve, and reconcile the export artifact outside Meridian until a later live-posting adapter is explicitly approved."));
 
         return issues;
+    }
+
+    private static bool HasRequiredDimensionScope(LedgerDimensionSetDto? dimensions)
+        => !string.IsNullOrWhiteSpace(dimensions?.FundId) &&
+           !string.IsNullOrWhiteSpace(dimensions.EntityId);
+
+    private static IReadOnlyList<ExternalGlExportLineDto> BuildGeneratedExportLines(
+        ScopedExternalGlMappingProfile? mappingProfile,
+        AccountingSystemReconciliationSummaryDto? reconciliation)
+    {
+        if (mappingProfile is null ||
+            mappingProfile.Profile.CertificationState != AccountingCertificationStateDto.Certified ||
+            reconciliation is null)
+        {
+            return [];
+        }
+
+        var dimensionMapping = ResolveCertifiedCompleteDimensionMapping(mappingProfile.Profile);
+        if (dimensionMapping is null)
+        {
+            return [];
+        }
+
+        return reconciliation.Rows
+            .Where(static row => row.MeridianDebit != 0m || row.MeridianCredit != 0m)
+            .Where(row => mappingProfile.Profile.AccountMappings.ContainsKey(row.AccountCode))
+            .OrderBy(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase)
+            .Select(row => new ExternalGlExportLineDto(
+                $"external-gl-export-line-{SanitizeId(reconciliation.ReconciliationId)}-{SanitizeId(row.AccountCode)}",
+                row.RowId,
+                row.Status,
+                row.AccountCode,
+                mappingProfile.Profile.AccountMappings[row.AccountCode],
+                row.AccountName,
+                row.Currency,
+                row.MeridianDebit,
+                row.MeridianCredit,
+                row.MeridianDebit - row.MeridianCredit,
+                dimensionMapping?.MeridianDimensions,
+                dimensionMapping?.ExternalDimensions,
+                row.EvidenceReferences))
+            .ToArray();
+    }
+
+    private static DimensionMappingProfileDto? ResolveCertifiedCompleteDimensionMapping(
+        ExternalGlMappingProfileDto profile)
+    {
+        var dimensionMappings = profile.DimensionMappings ?? [];
+        if (dimensionMappings.Count == 0 ||
+            dimensionMappings.Any(static mapping =>
+                mapping.CertificationState != AccountingCertificationStateDto.Certified ||
+                !HasRequiredDimensionScope(mapping.MeridianDimensions) ||
+                !HasRequiredDimensionScope(mapping.ExternalDimensions)))
+        {
+            return null;
+        }
+
+        return dimensionMappings[0];
     }
 
     private static IReadOnlyList<string> BuildExportEvidenceLinks(
@@ -415,6 +697,73 @@ public sealed class AccountingSystemIntegrationService
         }
 
         return NormalizeEvidenceReferences(evidence);
+    }
+
+    private static ExternalGlExportPackageManifestDto BuildExportPackageManifest(
+        ExternalGlExportPackageDto package)
+    {
+        var certificationState = package.Certification?.State ?? AccountingCertificationStateDto.Draft;
+        var evidenceLinks = NormalizeEvidenceReferences(
+            package.EvidenceLinks.Concat(package.Certification?.EvidenceLinks ?? []));
+        var payload = JsonSerializer.Serialize(
+            new
+            {
+                package.ExportPackageId,
+                package.ProviderId,
+                package.FundProfileId,
+                package.LedgerBookId,
+                package.PeriodStart,
+                package.PeriodEnd,
+                certificationState,
+                package.PostingEnabled,
+                package.PostingDisabledReason,
+                generatedLineCount = package.GeneratedLines.Count,
+                generatedLines = package.GeneratedLines,
+                evidenceLinks,
+                validationIssues = package.ValidationIssues
+            },
+            JsonOptions);
+        var contentHash = ComputeExportPackageHash(package, certificationState, evidenceLinks);
+        return new ExternalGlExportPackageManifestDto(
+            package.ExportPackageId,
+            package.ProviderId,
+            package.FundProfileId,
+            package.LedgerBookId,
+            package.PeriodStart,
+            package.PeriodEnd,
+            certificationState,
+            package.Certification?.RecordedAtUtc ?? package.CreatedAtUtc,
+            contentHash,
+            "application/json",
+            $"{SanitizeId(package.ExportPackageId)}.external-gl-export.json",
+            ExternalPostingAllowed: false,
+            package.PostingDisabledReason,
+            payload,
+            package.GeneratedLines,
+            evidenceLinks,
+            package.ValidationIssues);
+    }
+
+    private static string ComputeExportPackageHash(
+        ExternalGlExportPackageDto package,
+        AccountingCertificationStateDto certificationState,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        var payload = string.Join(
+            "|",
+            package.ExportPackageId,
+            package.ProviderId,
+            package.FundProfileId,
+            package.PeriodStart.ToString("yyyy-MM-dd"),
+            package.PeriodEnd.ToString("yyyy-MM-dd"),
+            certificationState,
+            package.PostingEnabled,
+            package.PostingDisabledReason,
+            string.Join(",", package.GeneratedLines
+                .OrderBy(static line => line.ExportLineId, StringComparer.OrdinalIgnoreCase)
+                .Select(line => $"{line.ExportLineId}:{line.ExternalAccountId}:{line.Debit:0.00}:{line.Credit:0.00}:{line.NetAmount:0.00}")),
+            string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
 
     private async Task<Dictionary<string, MeridianAccountTotal>> LoadMeridianTotalsAsync(
@@ -687,6 +1036,124 @@ public sealed class AccountingSystemIntegrationService
                 static group => group.Key,
                 static group => group.First().Value.Trim(),
                 StringComparer.OrdinalIgnoreCase);
+
+    private static AccountingCertificationStateDto ResolveMappingProfileCertificationState(
+        ExternalGlMappingProfileDto profile,
+        string providerId,
+        string fundProfileId,
+        string profileId,
+        IReadOnlyList<string> evidenceLinks)
+        => profile.CertificationState == AccountingCertificationStateDto.Certified &&
+           !HasMappingProfileCertificationEvidenceWithProvenance(evidenceLinks, providerId, fundProfileId, profileId)
+            ? AccountingCertificationStateDto.Draft
+            : profile.CertificationState;
+
+    private static bool HasMappingProfileCertificationEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("mapping", StringComparison.OrdinalIgnoreCase) &&
+            (link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("certification", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("review", StringComparison.OrdinalIgnoreCase)));
+
+    private static bool HasMappingProfileCertificationProvenance(
+        IReadOnlyList<string> evidenceLinks,
+        string providerId,
+        string fundProfileId,
+        string profileId)
+        => evidenceLinks.Any(link =>
+            link.Contains(profileId, StringComparison.OrdinalIgnoreCase) ||
+            (link.Contains(providerId, StringComparison.OrdinalIgnoreCase) &&
+             link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase)));
+
+    private static bool HasMappingProfileCertificationEvidenceWithProvenance(
+        IReadOnlyList<string> evidenceLinks,
+        string providerId,
+        string fundProfileId,
+        string profileId)
+        => evidenceLinks.Any(link =>
+            HasMappingProfileCertificationEvidence([link]) &&
+            HasMappingProfileCertificationProvenance([link], providerId, fundProfileId, profileId));
+
+    private static bool HasExportCertificationEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("certification", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasExportCertificationProvenance(
+        ExternalGlExportPackageDto package,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        var periodStart = $"{package.PeriodStart:yyyy-MM-dd}";
+        var periodEnd = $"{package.PeriodEnd:yyyy-MM-dd}";
+        var compactPeriodStart = $"{package.PeriodStart:yyyyMMdd}";
+        var compactPeriodEnd = $"{package.PeriodEnd:yyyyMMdd}";
+        return evidenceLinks.Any(link =>
+            link.Contains(package.ExportPackageId, StringComparison.OrdinalIgnoreCase) ||
+            (link.Contains(periodStart, StringComparison.OrdinalIgnoreCase) &&
+             link.Contains(periodEnd, StringComparison.OrdinalIgnoreCase)) ||
+            (link.Contains(compactPeriodStart, StringComparison.OrdinalIgnoreCase) &&
+             link.Contains(compactPeriodEnd, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private static bool HasExportCertificationEvidenceWithProvenance(
+        ExternalGlExportPackageDto package,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            HasExportCertificationEvidence([link]) &&
+            HasExportCertificationProvenance(package, [link]));
+
+    private static bool HasExportPackageControlEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("export", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("certification", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasExportPackageControlProvenance(
+        string providerId,
+        string fundProfileId,
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        var formattedStart = $"{periodStart:yyyy-MM-dd}";
+        var formattedEnd = $"{periodEnd:yyyy-MM-dd}";
+        var compactStart = $"{periodStart:yyyyMMdd}";
+        var compactEnd = $"{periodEnd:yyyyMMdd}";
+        return evidenceLinks.Any(link =>
+            link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) ||
+            (link.Contains(providerId, StringComparison.OrdinalIgnoreCase) &&
+             link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase)) ||
+            (link.Contains(formattedStart, StringComparison.OrdinalIgnoreCase) &&
+             link.Contains(formattedEnd, StringComparison.OrdinalIgnoreCase)) ||
+            (link.Contains(compactStart, StringComparison.OrdinalIgnoreCase) &&
+             link.Contains(compactEnd, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private static bool HasExportPackageControlEvidenceWithProvenance(
+        string providerId,
+        string fundProfileId,
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            HasExportPackageControlEvidence([link]) &&
+            HasExportPackageControlProvenance(providerId, fundProfileId, periodStart, periodEnd, [link]));
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this external accounting action.");
+        }
+    }
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)

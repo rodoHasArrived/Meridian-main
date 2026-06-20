@@ -1,15 +1,22 @@
 using Meridian.Core.Config;
+using Meridian.Contracts.Services;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Workflow.EnvironmentDesign;
 using Meridian.Wpf.Copy;
-using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using SettingsWorkspaceShellPage = Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellPage;
+using SettingsWorkspaceShellPresentationService = Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellPresentationService;
+using SettingsWorkspaceShellSnapshotService = Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellSnapshotService;
+using SettingsWorkspaceShellViewModel = Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel;
+using ISettingsWorkspaceShellPresentationService = Meridian.Wpf.Features.Settings.Shell.ISettingsWorkspaceShellPresentationService;
+using ISettingsWorkspaceShellSnapshotService = Meridian.Wpf.Features.Settings.Shell.ISettingsWorkspaceShellSnapshotService;
+using WpfCredentialService = Meridian.Wpf.Services.CredentialService;
 
 namespace Meridian.Wpf.Features.Settings;
 
@@ -67,7 +74,7 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SetupWizardViewModel>();
         services.AddTransient<WorkflowLibraryViewModel>();
-        services.AddSingleton<CredentialService>();
+        services.AddSingleton<WpfCredentialService>();
         services.AddTransient<CredentialManagementViewModel>();
     }
 

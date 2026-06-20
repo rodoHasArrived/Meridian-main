@@ -176,6 +176,10 @@ reconciliation, report-usage, delivery-record, tax-support, and audit-history la
 navigate the v0.18 fund-event spine without deriving lane readiness locally. `SupportPackages`
 carry operational evidence, payment intent, report output, delivery, tax-support, and audit-support
 package posture so clients can reconstruct retained package readiness without mining lane details.
+Manual journal lifecycle DTOs keep posted-entry correction provenance in the shared contract:
+reversal and rebook actions retain typed original/correction links plus generated-draft transition
+rows so browser, WPF, audit export, and report package surfaces do not infer corrections from memo
+text or audit action names.
 The DTO owns scope, saved views, summary, filters, columns, rows, selected-record detail, proof
 actions, record graph, `Used In`, and `Impacts` relationships; clients must render empty or blocked
 states from the contract instead of fabricating totals when source-backed projections are missing.
@@ -781,18 +785,86 @@ is the shared audit context for those drafts and carries effective date, idempot
 event, capital account, investor, payment intent, and settlement references so browser, WPF,
 Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary.
 Accounting configuration contracts also carry the productized rules-studio vocabulary:
-effective-dated posting rules, condition groups, formulas, allocation metadata, priority,
-dimensional scope through `LedgerDimensionSetDto`, generated posting lines, dry-run results,
-test-case/version history, and promotion approvals. Manual journal lifecycle contracts carry
+effective-dated posting rules, flat conditions, grouped `All`/`Any` condition sets, formulas,
+allocation metadata, priority, dimensional scope through `LedgerDimensionSetDto`, generated posting lines, dry-run results,
+persisted and ad-hoc rule/version-pinned test-case requests/results with expected generated posting-line assertions and saved-test evidence provenance, service-owned version history, promotion approvals, and
+the dedicated promotion-approval request for approving a retained rule version with approver notes,
+retained approval/review evidence that identifies the retained rule, rule version, or approval id,
+human-operator action origin, and passing saved current-version regression tests whose evidence identifies the test case, expected rule, or expected version. Activation-readiness blockers for promotion-gated rules
+remain contract-visible. Dry-run generation expands positive static
+or formula-backed allocation weights into generated posting lines, preserves balance through
+residual rounding, and merges allocation target dimensions into the preview payload. Generated
+posting and allocation formula references are fail-closed contract concerns: duplicate formula ids,
+missing formula references, and formula-backed allocation weights that resolve non-positive surface
+as critical validation issues in workspace validation and dry-run previews. Rules sharing source
+event, priority, effective-date window, and overlapping dimensions are reported as
+critical priority conflicts so operators must make dry-run selection deterministic before activation. Manual journal lifecycle contracts carry
 approval, posting, rejection, close-lock, reversal, and rebook actions plus transition audit and
 evidence attachment payloads so posted entries remain immutable and corrections move through
-separate drafts. Close and reporting contracts publish `ClosePeriodPlanDto`,
-`LateAdjustmentRequestDto`, and `AccountingReportPackageBundleDto` so browser and WPF consumers use
-the same dependency, sign-off, materiality, financial statement, investor capital statement,
-realized gain/loss, NAV, certification, validation, and restatement vocabulary.
+separate drafts. Close-lock and correction evidence must identify correction or close-lock intent
+plus the journal entry or accounting period on the same retained artifact, giving browser, WPF, and
+service consumers the same retained-evidence provenance contract.
+Close and reporting contracts publish `ClosePeriodPlanDto`,
+`SignOffCloseTaskRequestDto`, `LateAdjustmentRequestDto`, `ReviewLateAdjustmentRequestDto`, and
+`AccountingReportPackageBundleDto` so browser and WPF consumers use the same dependency,
+role-scoped sign-off requirement, close-calendar milestone, evidence-backed close task sign-off
+whose retained artifact identifies the task, workflow, or period, materiality, retained
+late-adjustment approval/rejection with request-, journal-, workflow-, or period-specific evidence
+on the same retained artifact, financial statement, investor capital
+statement, realized gain/loss, NAV, export-artifact manifest, certification, validation, and restatement vocabulary.
+Posting-rule promotion approval, close sign-off, late-adjustment, report-package certification, and external GL export certification
+request DTOs also carry `OperationsActionOriginDto` so reviewed automation can draft support but
+cannot approve, sign off, certify, or retain governed accounting evidence without a human operator.
+Report export artifacts also expose a controlled retrieval manifest with content hash, evidence links,
+certification state, and `ExternalPostingAllowed = false` so clients can prove what would be exported
+without enabling live external posting.
+External GL export package manifests expose the same controlled-review posture for guarded
+QBO/Xero/NetSuite artifacts: generated mapped lines, validation state, retained evidence, content
+hash, and `ExternalPostingAllowed = false` remain visible without enabling live posting.
 `SubmitManualJournalEntryApprovalRequest` carries action-origin metadata because reviewed
 automation may draft journal content, but cannot submit the durable approval record on behalf of a
-human operator.
+human operator. Manual-journal mutation requests also carry period-lock posture so save, submit,
+evidence attachment, and lifecycle mutations can be rejected once close management locks the
+accounting period; validation requests stay non-posting and return `manual-je.period-locked` as a
+critical issue.
+`LedgerDimensionSetDto` is the canonical dimensional accounting envelope for rules, generated
+postings, manual JE headers/lines, mapping profiles, close checks, and reporting/export filters.
+Manual journal normalization trims and retains header dimensions, merges deterministic external GL
+dimension keys, and propagates fund/entity scope to line dimensions while allowing line-specific
+entity, instrument, tax-lot, cost-center, and external GL overrides.
+`AccountingReportPackageBundleDto` carries close-plan validation into financial statement,
+investor capital, realized gain/loss, NAV, line-level provenance, export-artifact manifest,
+certification, and restatement outputs. Package
+certification remains `Draft` when close checklist dependencies are incomplete, approved sign-offs
+are missing, or material late adjustments are not approved. `CertifyAccountingReportPackageRequestDto`
+is the shared evidence-backed command payload for moving a retained ready-for-review package to
+`Certified`; consumers supply the package id, reviewer notes, actor context, and evidence links that
+carry approval, certification, sign-off, or review evidence and identify the retained package,
+certification id, or package period on the same evidence artifact,
+while Financial Operations owns the validation and state transition. Export artifact rows expose
+artifact kind, format, route, content hash, source statement id, retained evidence, and
+certification state so browser and WPF clients do not infer report output readiness from package
+ids or route strings.
+Guarded external GL export packages require certified account and dimension mapping coverage before
+they can reach `ReadyForReview`: account mappings must be present, every dimension mapping must be
+certified, both Meridian and external GL dimension sides must carry fund/entity scope, and generated
+export lines must come from mapped Meridian-owned ledger totals rather than external-only evidence.
+Certified mapping profiles must retain mapping approval, certification, sign-off, or review evidence
+that identifies the mapping profile or provider/fund scope on the same evidence artifact; split
+support and approval links leave the profile in `Draft`.
+The retained export-control evidence supplied at package creation must identify the export fund,
+provider/fund scope, or exact export period before the package can move beyond Draft.
+`CertifyAccountingSystemExportPackageRequestDto` carries the retained export package id, reviewer
+notes, actor context, and evidence links for the service-owned transition to `Certified`; the
+certification evidence artifact must itself identify the retained export package or exact export
+period, and the action origin must be a human operator. Live
+posting remains disabled even when those checks pass and the export artifact is certified.
+`AttachManualJournalEntryEvidenceRequest` and
+`UiApiRoutes.LedgerManualJournalEntryEvidence` expose a governed manual-journal evidence mutation
+for mutable drafts and submitted/approved entries. The request carries the current journal version,
+one typed evidence attachment, optional evidence links, and origin metadata; the shared service
+validates line-scoped attachments, audits `manual-je.attach-evidence`, and rejects posted,
+reversed, rebooked, or close-locked entries.
 `ManualJournalEntryWorkbenchDto` also carries an optional `PrivateCapitalActivityProjectionDto`
 with server-owned fund-event rows, capital-account activity aggregates, ordered capital-account
 subledger entries with running net activity, ledger-impact rows, report-output readiness candidates,
@@ -822,6 +894,9 @@ route, approval id/route when an approval exists, child-row counts, primary repo
 id/type/route, workflow state, publication manifest path, provenance counts, server-derived
 readiness label/reason, and next-action route so operator tables and report-package
 drill-throughs do not reopen nested arrays for basic record posture. The
+`PrivateCapitalActivityRoutes` helper publishes the route-shaping API used by Financial Operations
+and UI adapters; it is a route contract helper only and does not own readiness or accounting
+semantics.
 projection also includes `PrivateCapitalCapitalAccountSubledgerDto`, which groups a capital
 account's fund-event records, running subledger entries, GL impacts, retained evidence, approval
 queue count, posted/published counts, report outputs, and validation issues into one

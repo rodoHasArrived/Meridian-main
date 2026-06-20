@@ -114,6 +114,8 @@ public static class UiApiRoutes
     public const string AccountingSystemReconciliationLatest = "/api/accounting-system/reconciliation/latest";
     public const string AccountingSystemMappingProfiles = "/api/accounting-system/mapping-profiles";
     public const string AccountingSystemExportPackages = "/api/accounting-system/export-packages";
+    public const string AccountingSystemExportPackageManifest = "/api/accounting-system/export-packages/{exportPackageId}/manifest";
+    public const string AccountingSystemExportPackageCertification = "/api/accounting-system/export-packages/certification";
     public const string AccountingSystemQuickBooksOAuthStart = "/api/accounting-system/quickbooks/oauth/start";
     public const string AccountingSystemQuickBooksOAuthCallback = "/api/accounting-system/quickbooks/oauth/callback";
 
@@ -689,12 +691,17 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationChart = "/api/ledger/accounting-configuration/chart";
     public const string LedgerAccountingConfigurationTemplates = "/api/ledger/accounting-configuration/templates";
     public const string LedgerAccountingConfigurationPostingRules = "/api/ledger/accounting-configuration/posting-rules";
+    public const string LedgerAccountingConfigurationPostingRulePromotionApprovals = "/api/ledger/accounting-configuration/posting-rules/promotion-approvals";
     public const string LedgerAccountingConfigurationPreview = "/api/ledger/accounting-configuration/preview";
     public const string LedgerAccountingConfigurationPostingRuleDryRun = "/api/ledger/accounting-configuration/posting-rules/dry-run";
+    public const string LedgerAccountingConfigurationPostingRuleTests = "/api/ledger/accounting-configuration/posting-rules/tests";
+    public const string LedgerAccountingConfigurationPostingRuleTestCases = "/api/ledger/accounting-configuration/posting-rules/test-cases";
     public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
     public const string LedgerCloseManagementPeriodPlan = "/api/ledger/close-management/period-plan/{workflowId:guid}";
     public const string LedgerCloseManagementLateAdjustments = "/api/ledger/close-management/late-adjustments";
+    public const string LedgerCloseManagementLateAdjustmentReview = "/api/ledger/close-management/late-adjustments/review";
+    public const string LedgerCloseManagementTaskSignOffs = "/api/ledger/close-management/task-signoffs";
     public const string LedgerManualJournalEntryWorkbench = "/api/ledger/journal-entry-workbench";
     public const string LedgerPrivateCapitalActivity = "/api/ledger/private-capital/activity";
     public const string LedgerPrivateCapitalFundEventRecord = "/api/ledger/private-capital/fund-event-record";
@@ -705,11 +712,14 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryDrafts = "/api/ledger/journal-entry-workbench/drafts";
     public const string LedgerManualJournalEntryValidate = "/api/ledger/journal-entry-workbench/validate";
     public const string LedgerManualJournalEntrySubmitApproval = "/api/ledger/journal-entry-workbench/submit-approval";
+    public const string LedgerManualJournalEntryEvidence = "/api/ledger/journal-entry-workbench/evidence";
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";
     public const string LedgerReportsAccountingPackages = "/api/ledger/reports/accounting-packages";
+    public const string LedgerReportsAccountingPackageExport = "/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}";
+    public const string LedgerReportsAccountingPackageCertification = "/api/ledger/reports/accounting-package/certification";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
     public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
     public const string WorkstationSecurityMasterHistory = "/api/workstation/security-master/securities/{securityId:guid}/history";

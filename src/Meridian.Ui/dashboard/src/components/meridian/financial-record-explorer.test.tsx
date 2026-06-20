@@ -36,6 +36,72 @@ describe("FinancialRecordExplorerShell", () => {
     expect(onSaveView).toHaveBeenCalledWith(expect.objectContaining({ searchText: "cash" }));
   });
 
+  it("keeps row selection unchanged when a cell link is clicked", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
+    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: "Cash" }));
+
+    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Cash proof detail")).not.toBeInTheDocument();
+  });
+
+  it("keeps selected proof detail aligned to filtered rows", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
+    expect(screen.getByLabelText("Revenue proof detail")).toBeInTheDocument();
+
+    await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "cash");
+
+    expect(screen.queryByRole("row", { name: /revenue income aapl/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /cash assets/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Cash proof detail")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Revenue proof detail")).not.toBeInTheDocument();
+  });
+
+  it("applies selected saved-view filters and column selections", async () => {
+    const user = userEvent.setup();
+    renderExplorer(undefined, createExplorerDto({
+      savedViews: [
+        {
+          viewId: "system-ledger-default",
+          label: "Controller review",
+          description: "Default controller review.",
+          isSystem: true,
+          isActive: true,
+          filters: [],
+          searchText: "",
+          columnIds: []
+        },
+        {
+          viewId: "operator-income-symbols",
+          label: "Income symbols",
+          description: "Income accounts with symbol evidence.",
+          isSystem: false,
+          isActive: false,
+          filters: [{ filterId: "accountType", label: "Account Type", value: "Income", operator: "equals", tone: "Info" }],
+          searchText: "aapl",
+          columnIds: ["accountName", "symbol"]
+        }
+      ]
+    }));
+
+    await user.click(screen.getByRole("button", { name: "Income symbols" }));
+
+    expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /revenue aapl/i })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Account" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Symbol" })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Type" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("Income");
+    expect(screen.getByRole("textbox", { name: "Search Ledger Explorer" })).toHaveValue("aapl");
+  });
+
   it("shows blocked source state with disabled actions instead of synthetic rows", () => {
     renderExplorer(undefined, {
       ...createExplorerDto(),
@@ -84,7 +150,7 @@ function renderExplorer(
   );
 }
 
-function createExplorerDto(): FinancialRecordExplorerDto {
+function createExplorerDto(overrides: Partial<FinancialRecordExplorerDto> = {}): FinancialRecordExplorerDto {
   const cashDetail = {
     recordId: "ledger:run-1:cash",
     recordType: "Ledger account",
@@ -178,7 +244,7 @@ function createExplorerDto(): FinancialRecordExplorerDto {
         status: "Assets",
         tone: "Success",
         cells: [
-          { columnId: "accountName", displayValue: "Cash", rawValue: "Cash", tone: "Success", linkHref: "" },
+          { columnId: "accountName", displayValue: "Cash", rawValue: "Cash", tone: "Success", linkHref: "#cash-record" },
           { columnId: "accountType", displayValue: "Assets", rawValue: "Assets", tone: "Default", linkHref: "" },
           { columnId: "symbol", displayValue: "-", rawValue: "", tone: "Default", linkHref: "" }
         ],
@@ -219,6 +285,7 @@ function createExplorerDto(): FinancialRecordExplorerDto {
       edges: [
         { sourceNodeId: "ledger:run-1:cash", targetNodeId: "rel:ledger-run", label: "used in", tone: "Info" }
       ]
-    }
+    },
+    ...overrides
   };
 }

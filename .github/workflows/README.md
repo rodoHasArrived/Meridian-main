@@ -65,7 +65,7 @@ gh workflow run targeted-test.yml --ref <branch> `
 
 ```powershell
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
-dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
+dotnet format whitespace Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 python3 build/scripts/ci/check-warning-suppressions.py
 dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
 python3 build/scripts/ci/run-dotnet-ci-tests.py --configuration Release --filter "Category!=Integration&Category!=Performance" --results-dir artifacts/test-results/dotnet

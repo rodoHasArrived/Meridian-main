@@ -72,6 +72,8 @@ def json_at(payload: Any, dotted_path: str) -> Any:
     for part in dotted_path.split("."):
         if isinstance(current, dict):
             current = current[part]
+        elif isinstance(current, list) and part.isdigit():
+            current = current[int(part)]
         else:
             raise KeyError(dotted_path)
     return current

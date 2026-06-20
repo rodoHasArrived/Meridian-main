@@ -1,0 +1,181 @@
+version: 1
+memory_root: .codex/memory
+schema:
+  id: meridian.codex-memory-index
+  version: 1
+  required_fields:
+    - id
+    - tier
+    - scope
+    - file
+    - tags
+    - load_when
+    - confidence
+    - freshness
+    - source_refs
+    - review_after
+    - invalidates_when
+  active_tiers:
+    - session
+    - branch
+    - task
+    - repo
+    - archive
+  disabled_tiers:
+    - user
+    - global
+  allowed_confidence:
+    - low
+    - medium
+    - high
+  allowed_freshness:
+    - fresh
+    - review-soon
+    - stale
+    - unknown
+areas:
+  repo:
+    path: .codex/memory/repo
+    purpose: Stable repository-level facts sourced from canonical Meridian and Codex guidance.
+  tasks:
+    path: .codex/memory/tasks
+    purpose: Task-scoped memory that is not yet durable repository guidance.
+  branches:
+    path: .codex/memory/branches
+    purpose: Branch-specific context, assumptions, and handoff notes.
+  sessions:
+    path: .codex/memory/sessions
+    purpose: Session-local observations and continuation breadcrumbs.
+  archive:
+    path: .codex/memory/archive
+    purpose: Retired memory retained for auditability.
+entries:
+  - id: repo:validation
+    tier: repo
+    scope: repo
+    file: .codex/memory/repo/validation.md
+    tags:
+      - validation
+      - commands
+      - ai-tooling
+      - codex
+    load_when:
+      skills:
+        - meridian-docs
+        - meridian-implementation-assurance
+      paths:
+        - build/scripts/docs/**
+        - docs/**
+        - .codex/**
+        - make/**
+      intents:
+        - validation
+        - documentation
+        - ai-tooling
+      branches: []
+      tags:
+        - validation
+        - ai-tooling
+    confidence: high
+    freshness: fresh
+    source_refs:
+      - AGENTS.md
+      - .codex/AGENTS.md
+      - .codex/skills/_shared/project-context.md
+      - .codex/skills/_shared/codex-execution-contract.md
+      - docs/ai/codex/quickstart.md
+      - docs/ai/tooling/README.md
+    review_after: 2026-09-19
+    invalidates_when:
+      - AI tooling validation commands change.
+      - Codex execution contract validation gates change.
+      - GitHub-hosted targeted-test workflow input contract changes.
+  - id: repo:architecture
+    tier: repo
+    scope: repo
+    file: .codex/memory/repo/architecture.md
+    tags:
+      - architecture
+      - product-scope
+      - surfaces
+      - mdif
+    load_when:
+      skills:
+        - meridian-blueprint
+        - meridian-code-architecture
+        - meridian-implementation-assurance
+      paths:
+        - docs/architecture/**
+        - docs/domain/**
+        - docs/ai/context/**
+        - src/Meridian.Wpf/**
+        - src/Meridian.Ui/dashboard/**
+        - src/Meridian.Ui.Shared/**
+        - src/Meridian.Ui.Services/**
+      intents:
+        - architecture
+        - implementation
+        - desktop-ui
+        - browser-workstation
+      branches: []
+      tags:
+        - architecture
+        - mdif
+    confidence: high
+    freshness: fresh
+    source_refs:
+      - AGENTS.md
+      - .codex/skills/_shared/project-context.md
+      - docs/product/meridian-design-document.md
+      - docs/architecture/meridian-development-intelligence-framework.md
+      - docs/architecture/module-map.md
+    review_after: 2026-09-19
+    invalidates_when:
+      - Product scope or W5X target docs change materially.
+      - Active operator UI surfaces change.
+      - MDIF context-loading rules change.
+  - id: repo:ai-guidance
+    tier: repo
+    scope: repo
+    file: .codex/memory/repo/ai-guidance.md
+    tags:
+      - ai-guidance
+      - codex
+      - workflow
+      - skills
+    load_when:
+      skills:
+        - meridian-docs
+        - meridian-implementation-assurance
+        - meridian-codex-skill-builder
+      paths:
+        - AGENTS.md
+        - docs/ai/**
+        - .codex/**
+        - build/scripts/docs/**
+        - make/ai.mk
+      intents:
+        - ai-guidance
+        - ai-tooling
+        - documentation
+        - skill-routing
+      branches: []
+      tags:
+        - ai-guidance
+        - codex
+        - skills
+    confidence: high
+    freshness: fresh
+    source_refs:
+      - AGENTS.md
+      - .codex/AGENTS.md
+      - .codex/skills/_shared/project-context.md
+      - .codex/skills/_shared/codex-execution-contract.md
+      - docs/ai/assistant-workflow-contract.md
+      - docs/ai/codex/README.md
+      - docs/ai/codex/quickstart.md
+    review_after: 2026-09-19
+    invalidates_when:
+      - Codex skill routing changes.
+      - Shared AI workflow contract changes.
+      - Codex quickstart or execution contract changes.

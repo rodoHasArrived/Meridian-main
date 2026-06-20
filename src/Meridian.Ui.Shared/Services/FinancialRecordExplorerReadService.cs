@@ -2,7 +2,6 @@ using System.Globalization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -22,15 +21,21 @@ public sealed class FinancialRecordExplorerReadService
         ReportLineProvenanceExplorerId
     ];
 
-    private readonly IServiceProvider _services;
     private readonly IFinancialRecordExplorerSavedViewStore _savedViewStore;
+    private readonly StrategyRunReadService? _runReadService;
+    private readonly ReportPackWorkflowService? _reportPackWorkflowService;
+    private readonly ReportPackDeliveryService? _reportPackDeliveryService;
 
     public FinancialRecordExplorerReadService(
-        IServiceProvider services,
-        IFinancialRecordExplorerSavedViewStore savedViewStore)
+        IFinancialRecordExplorerSavedViewStore savedViewStore,
+        StrategyRunReadService? runReadService = null,
+        ReportPackWorkflowService? reportPackWorkflowService = null,
+        ReportPackDeliveryService? reportPackDeliveryService = null)
     {
-        _services = services ?? throw new ArgumentNullException(nameof(services));
         _savedViewStore = savedViewStore ?? throw new ArgumentNullException(nameof(savedViewStore));
+        _runReadService = runReadService;
+        _reportPackWorkflowService = reportPackWorkflowService;
+        _reportPackDeliveryService = reportPackDeliveryService;
     }
 
     public static bool IsKnownExplorerId(string explorerId)
@@ -98,13 +103,15 @@ public sealed class FinancialRecordExplorerReadService
             return null;
         }
 
-        var label = request.Label.Trim();
+        var label = request.Label?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(label))
         {
             throw new InvalidOperationException("Saved view label is required.");
         }
 
-        if (request.Filters.Count == 0 && string.IsNullOrWhiteSpace(request.SearchText))
+        var filters = NormalizeFilters(request.Filters);
+        var searchText = request.SearchText?.Trim() ?? string.Empty;
+        if (filters.Count == 0 && string.IsNullOrWhiteSpace(searchText))
         {
             throw new InvalidOperationException("Saved view requires a search term or at least one filter.");
         }
@@ -112,18 +119,19 @@ public sealed class FinancialRecordExplorerReadService
         var view = new FinancialRecordExplorerSavedViewDto(
             ViewId: $"operator-{Slugify(label)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
             Label: label,
-            Description: request.Description.Trim(),
+            Description: request.Description?.Trim() ?? string.Empty,
             IsSystem: false,
             IsActive: false,
-            Filters: request.Filters,
-            SearchText: request.SearchText.Trim());
+            Filters: filters,
+            SearchText: searchText,
+            ColumnIds: NormalizeColumnIds(request.ColumnIds));
 
         return await _savedViewStore.SaveAsync(tenantId, normalized, view, ct).ConfigureAwait(false);
     }
 
     private async Task<FinancialRecordExplorerDto> BuildLedgerExplorerAsync(string tenantId, CancellationToken ct)
     {
-        var readService = _services.GetService<StrategyRunReadService>();
+        var readService = _runReadService;
         if (readService is null)
         {
             return CreateBlockedExplorer(
@@ -179,7 +187,7 @@ public sealed class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildPortfolioExplorerAsync(string tenantId, CancellationToken ct)
     {
-        var readService = _services.GetService<StrategyRunReadService>();
+        var readService = _runReadService;
         if (readService is null)
         {
             return CreateBlockedExplorer(
@@ -236,7 +244,7 @@ public sealed class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildSecurityInstrumentExplorerAsync(string tenantId, CancellationToken ct)
     {
-        var readService = _services.GetService<StrategyRunReadService>();
+        var readService = _runReadService;
         if (readService is null)
         {
             return CreateBlockedExplorer(
@@ -297,7 +305,7 @@ public sealed class FinancialRecordExplorerReadService
 
     private async Task<FinancialRecordExplorerDto> BuildReportLineProvenanceExplorerAsync(string tenantId, CancellationToken ct)
     {
-        var workflowService = _services.GetService<ReportPackWorkflowService>();
+        var workflowService = _reportPackWorkflowService;
         if (workflowService is null)
         {
             return CreateBlockedExplorer(
@@ -312,7 +320,7 @@ public sealed class FinancialRecordExplorerReadService
             "Report lines",
             "Governed report lines with retained source provenance.");
         var savedViews = await LoadSavedViewsAsync(tenantId, ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
-        var deliveryService = _services.GetService<ReportPackDeliveryService>();
+        var deliveryService = _reportPackDeliveryService;
         return BuildReportLineProvenanceExplorer(
             workflowService.ListRecords(200),
             deliveryService?.ListAttempts(500),
@@ -521,8 +529,38 @@ public sealed class FinancialRecordExplorerReadService
                 IsSystem: true,
                 IsActive: true,
                 Filters: [],
-                SearchText: string.Empty)
+                SearchText: string.Empty,
+                ColumnIds: [])
         ];
+
+    private static IReadOnlyList<FinancialRecordExplorerFilterDto> NormalizeFilters(
+        IReadOnlyList<FinancialRecordExplorerFilterDto?>? filters)
+        => filters?
+            .Where(static filter =>
+                filter is not null &&
+                !string.IsNullOrWhiteSpace(filter.FilterId) &&
+                !string.IsNullOrWhiteSpace(filter.Label))
+            .Select(static filter => filter! with
+            {
+                FilterId = filter.FilterId.Trim(),
+                Label = filter.Label.Trim(),
+                Value = filter.Value?.Trim() ?? string.Empty,
+                Operator = string.IsNullOrWhiteSpace(filter.Operator)
+                    ? "equals"
+                    : filter.Operator.Trim()
+            })
+            .Take(24)
+            .ToArray()
+            ?? [];
+
+    private static IReadOnlyList<string> NormalizeColumnIds(IReadOnlyList<string?>? columnIds)
+        => columnIds?
+            .Where(static columnId => !string.IsNullOrWhiteSpace(columnId))
+            .Select(static columnId => columnId!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(32)
+            .ToArray()
+            ?? [];
 
     private static IReadOnlyList<FinancialRecordExplorerScopeItemDto> BuildScope(
         StrategyRunSummary run,

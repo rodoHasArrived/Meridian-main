@@ -1,8 +1,8 @@
 using Meridian.Contracts.Api;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.Contracts.Ledger;
 
-internal static class PrivateCapitalActivityRouteBuilder
+public static class PrivateCapitalActivityRoutes
 {
     private const string PrivateCapitalFundEventEvidenceSubjectKind = "private-capital-fund-event";
     private const string PaymentIntentEvidenceSubjectKind = "payment-intent";

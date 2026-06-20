@@ -1,8 +1,8 @@
 using Meridian.Contracts.Ledger;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.FinancialOperations.PrivateCapital;
 
-internal static class PrivateCapitalCapitalAccountSubledgerBuilder
+public static class PrivateCapitalCapitalAccountSubledgerBuilder
 {
     public static IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> Build(
         string fundProfileId,
@@ -105,7 +105,7 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             .OrderByDescending(static item => item.EffectiveDate)
             .ThenBy(static item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
-        var activityRoute = PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+        var activityRoute = PrivateCapitalActivityRoutes.BuildCapitalAccountSubledgerRoute(
             fundProfileId,
             ledgerBookId,
             key.CapitalAccountId,

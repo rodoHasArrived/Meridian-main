@@ -1,5 +1,6 @@
 using Meridian.Wpf.Features.Settings;
 using Meridian.Wpf.Features.Settings.Shell;
+using Meridian.Wpf.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Tests.Features.Settings;

@@ -119,7 +119,10 @@ effective-date, idempotency, fund-event, capital-account, investor, payment-inte
 metadata, `LedgerPeriodPostingGuard` requires an effective date inside the target accounting period
 and a non-empty idempotency key before the write can reach Postgres. Partial fund-event context must
 also include fund event id, fund event type, and capital account id so private-capital postings can
-be reconstructed from durable journal evidence.
+be reconstructed from durable journal evidence. Postgres journal storage also keeps partial unique
+indexes for aggregate-scoped command id, source event id, and normalized metadata idempotency key so
+retry attempts fail closed at the durable ledger boundary instead of relying only on caller-side
+checks.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
@@ -172,6 +175,11 @@ quarantined records, staging records, and sync-run summaries under the resolved 
 source payloads without reacquiring provider data. Workstation-hosted flows can request a
 tenant-scoped store partition so provider manifests, connections, dry-run evidence, and activation
 state remain isolated by the authenticated tenant session.
+
+Accounting configuration persistence keeps rich posting-rule payloads and saved Accounting Rules
+Studio regression cases as durable workspace-owned records. PostgreSQL stores saved rule test cases
+in `accounting_configuration_rule_test_cases` so service-owned dry-run regression suites round-trip
+beside chart accounts, journal templates, posting rules, and configuration audit events.
 
 ## Glossary
 

@@ -110,7 +110,7 @@ SYSTEM_CHECKS = (
     ),
     (
         "codex",
-        (".codex/config.toml", ".codex/skills"),
+        (".codex/config.toml", ".codex/skills", ".codex/memory/index.yml"),
         AI_CONTRACT,
         (
             "Codex",
@@ -267,6 +267,20 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                     name=path.name,
                     path=repo_relative(root, path),
                     expected_docs=(AI_CONTRACT,),
+                )
+            )
+
+    for rel_path in (".codex/memory/index.yml",):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="codex",
+                    kind="memory-index",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                    alternate_markers=(".codex/memory/",),
                 )
             )
 

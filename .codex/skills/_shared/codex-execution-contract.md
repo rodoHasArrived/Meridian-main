@@ -10,6 +10,9 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 - Choose the smallest safe task scope that satisfies the request.
 - For implementation tasks, identify whether docs, tests, catalogs, or generated metadata must
   move with the code change before editing.
+- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` and load only entries selected by
+  the current intent, skill, changed paths, branch, or explicit tags. Canonical docs and selected
+  skills remain authoritative when memory disagrees.
 
 ## Workflow Disclosure Gate
 
@@ -115,6 +118,7 @@ For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistan
 - Required: run the direct Python/script checks that back the relevant Make targets. If GNU Make is
   installed, `make ai-verify` and `make ai-arch-check` are acceptable wrappers. Confirm the CI
   `Validate AI contract drift` step remains present.
+- Required for Codex memory changes: `python build/scripts/docs/check-codex-memory.py --summary`.
 - Advisory: `make ai-audit*`, `make ai-report`, `make ai-docs-freshness`,
   `make ai-docs-drift`, `make ai-docs-sync-report`, `make ai-arch-check-summary`,
   `make ai-arch-check-json`.

@@ -1,5 +1,6 @@
 using Meridian.Wpf.Models;
 using System.IO;
+using System.Threading.Tasks;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting;
@@ -8,6 +9,7 @@ using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Reporting;
 using Meridian.Storage;
 using Meridian.Storage.SecurityMaster;
@@ -73,7 +75,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
         services.AddSingleton<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>(sp =>
         {
             var configService = sp.GetRequiredService<WpfServices.ConfigService>();
-            var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+            var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
             var resolvedDataRoot = configService.ResolveDataRoot(config);
             return Microsoft.Extensions.Options.Options.Create(new Meridian.QuantScript.QuantScriptOptions
             {
@@ -166,7 +168,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
         services.AddSingleton<PromotionRecordStoreOptions>(sp =>
         {
             var configService = sp.GetRequiredService<WpfServices.ConfigService>();
-            var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+            var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
             var resolvedDataRoot = configService.ResolveDataRoot(config);
             return new PromotionRecordStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "promotions"));
         });
@@ -195,7 +197,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
         services.AddSingleton<NavAttributionService>();
         services.AddSingleton<ReportGenerationService>();
         services.AddSingleton<FundOperationsWorkspaceReadService>();
-        services.AddSingleton<ISecurityMasterOperatorWorkflowClient, SecurityMasterOperatorWorkflowClient>();
+        services.AddSingleton<WpfServices.ISecurityMasterOperatorWorkflowClient, WpfServices.SecurityMasterOperatorWorkflowClient>();
         services.AddSingleton<WpfServices.StrategyRunWorkspaceService>(sp =>
         {
             var service = new WpfServices.StrategyRunWorkspaceService(

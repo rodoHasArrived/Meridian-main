@@ -45,6 +45,30 @@ class ValidateToolingMetadataTests(unittest.TestCase):
     def test_node_tooling_entrypoints_are_canonical(self) -> None:
         self.assertEqual([], module.validate_canonical_node_entrypoints(ROOT))
 
+    def test_makefile_targets_are_complete_for_help_and_phony_metadata(self) -> None:
+        targets, phonies = module.load_makefile_targets(ROOT)
+        target_names = {target.name for target in targets}
+
+        self.assertIn("docs-lint", target_names)
+        self.assertIn("docs-lint", phonies)
+        self.assertEqual([], module.validate_makefile_targets(ROOT))
+
+    def test_makefile_target_validation_reports_catalog_drift(self) -> None:
+        targets = [
+            module.MakeTarget("known", "Makefile", 1, True),
+            module.MakeTarget("known", "make/build.mk", 2, True),
+            module.MakeTarget("undocumented", "make/build.mk", 3, False),
+            module.MakeTarget("uncategorized-new-target", "make/build.mk", 4, True),
+        ]
+        with mock.patch.object(module, "load_makefile_targets", return_value=(targets, {"known", "stale-phony"})):
+            errors = module.validate_makefile_targets(ROOT)
+
+        self.assertTrue(any("defined multiple times" in error for error in errors))
+        self.assertTrue(any("missing from .PHONY" in error for error in errors))
+        self.assertTrue(any(".PHONY lists missing" in error for error in errors))
+        self.assertTrue(any("missing a help description" in error for error in errors))
+        self.assertTrue(any("not assigned to a make help category" in error for error in errors))
+
     def test_dependabot_directories_are_loaded_with_stdlib_fallback(self) -> None:
         with mock.patch.object(module, "_try_import_yaml", return_value=None):
             directories = [reference.path for reference in module.load_dependabot_references(ROOT)]

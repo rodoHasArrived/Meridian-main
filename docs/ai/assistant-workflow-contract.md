@@ -29,7 +29,7 @@ The current repository evidence supports these AI surfaces:
 | System or surface | Repository assets | Primary role |
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
-| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/`, `tools/codex/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, validation checklists, and Codex PowerShell scanners/generators |
+| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/`, `.codex/memory/`, `tools/codex/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, validation checklists, selective repo-local memory, and Codex PowerShell scanners/generators |
 | Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/`, `.claude/plugins/` | Claude agent definitions, portable skill packages, checked-in plugin packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
@@ -115,6 +115,7 @@ files already inspected by another lane.
 Use this lane-specific order for AI-lane or cross-lane work:
 
 1. If the task touches navigation or agent inventories:
+   - `python build/scripts/docs/check-codex-memory.py --summary` when Codex memory is touched
    - `python build/scripts/docs/check-ai-inventory.py --summary`
    - `python build/scripts/docs/check-codex-skills.py --summary`
    - `python build/scripts/docs/validate-docs-structure.py --top-level ai --summary` (for narrow AI-doc lifecycle/structure checks)
@@ -321,6 +322,7 @@ When editing `src/**`, assistants must:
 | Codex skill catalog | `.codex/skills/README.md`, `docs/ai/skills/README.md` | Codex UI metadata in `agents/openai.yaml` |
 | Codex agent profiles | `.codex/agents/*.toml`, `docs/ai/codex/README.md`, `docs/ai/agents/README.md` | Codex specialist profile routing and task entrypoints |
 | Codex prompts and validation checklists | `.codex/prompts/`, `.codex/checklists/`, `docs/ai/codex/README.md` | Desktop implementation prompts, MVVM/resource/safe-refactor checklists, and Codex workflow guidance |
+| Codex repo-local memory | `.codex/memory/index.yml`, `docs/ai/codex/memory-system.md` | Selective Codex memory entries, routing metadata, promotion workflow, and `check-codex-memory.py` validation |
 | Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |
 | Claude agent and skill catalog | `.claude/agents/`, `.claude/skills/`, `docs/ai/agents/README.md`, `docs/ai/skills/README.md` | Portable skill packages and Claude settings |
 | Claude plugin packages | `.claude/plugins/csharp-dotnet-development/`, `.claude/plugins/frontend-web-dev/` | Plugin manifests, plugin-contributed agents, plugin-contributed skills, `docs/ai/agents/README.md`, and `docs/ai/skills/README.md` |
@@ -355,6 +357,9 @@ Use this checklist when changing any AI-related asset:
       and track lane ownership, inspected files, validation plans, and merge risks.
 - [ ] Use [`working-memory.md`](working-memory.md) for concurrent implementation state so active
       claims, inspected files, assumptions, validation reuse, and codebase drift remain explicit.
+- [ ] Use [`codex/memory-system.md`](codex/memory-system.md) and `.codex/memory/index.yml` only for
+      Codex repo-local memory. Do not read or write user/global memory tiers without explicit future
+      opt-in.
 - [ ] Update [`tooling/README.md`](tooling/README.md) when AI script discovery, validation lanes,
       or safe-usage guidance changes.
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and

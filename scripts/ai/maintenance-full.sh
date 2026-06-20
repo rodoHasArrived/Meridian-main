@@ -56,6 +56,11 @@ run_step() {
     fi
 }
 
+has_make_target() {
+    local target="$1"
+    grep -qE "^[[:space:]]*${target}:" Makefile make/*.mk 2>/dev/null
+}
+
 DOTNET_AVAILABLE=false
 NODE_AVAILABLE=false
 PYTHON_AVAILABLE=false
@@ -101,9 +106,9 @@ run_step "dotnet-test-quantscript" "${BUILDCTL[@]}" test --project tests/Meridia
 record_step "dotnet-test-wpf" "skipped" "WPF tests require the desktop validation lane and are not run by Linux full maintenance."
 
 if [[ "$MAKE_AVAILABLE" == true && -f Makefile ]]; then
-    grep -qE '^[[:space:]]*doctor:' Makefile 2>/dev/null && \
+    has_make_target "doctor" && \
         run_step "doctor" make doctor
-    grep -qE '^[[:space:]]*ai-verify:' Makefile 2>/dev/null && \
+    has_make_target "ai-verify" && \
         run_step "ai-verify" make ai-verify
 fi
 

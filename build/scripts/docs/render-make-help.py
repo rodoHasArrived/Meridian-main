@@ -11,31 +11,57 @@ from pathlib import Path
 TARGET_RE = re.compile(r"^([A-Za-z0-9][A-Za-z0-9_-]+):.*?##\s*(.+)$")
 
 CATEGORIES: list[tuple[str, str]] = [
-    ("Installation", r"install|setup"),
-    ("Docker", r"docker"),
-    ("Development", r"run|build|test|clean|bench|lint|watch|setup-dev|format"),
+    ("General", r"^help$"),
+    ("Installation", r"^(quickstart|install|install-docker|install-native|setup-config|check-deps|install-hooks|setup-dev|verify-setup)$"),
+    ("Docker", r"^(docker|docker-build|docker-up|docker-down|docker-logs|docker-restart|docker-clean|docker-monitoring)$"),
+    (
+        "Development",
+        r"^(bootstrap|verify-fast|verify-full|verify-release|build|build-quick|"
+        r"build-web-workstation|run|run-backfill|run-selftest|lint|format|"
+        r"format-check|watch|watch-build|clean|benchmark|bench-quick|"
+        r"bench-filter|bench-velocity|test|test-unit|test-fsharp|"
+        r"test-integration|test-scenario|test-all|test-coverage)$",
+    ),
     (
         "Documentation",
-        r"docs|verify-adr|verify-contract|verify-tooling-metadata|gen-context|"
-        r"gen-interface|gen-structure|gen-provider|gen-workflow|update-claude|"
-        r"generate-icons|generate-diagrams",
+        r"^(docs|verify-docs|docs-health|docs-stale-mark|docs-stale-update|"
+        r"docs-hashes-refresh|docs-source-readmes-sync|"
+        r"docs-source-readmes-tree-check|gen-context|verify-adrs|"
+        r"verify-contracts|verify-tooling-metadata|gen-interfaces|"
+        r"gen-structure|gen-providers|gen-workflows|gen-workflow-manifest|"
+        r"update-claude-md|generate-icons|generate-diagrams|docs-lint|"
+        r"docs-all|check-workflow-docs-parity|check-status-delivery-claims)$",
     ),
-    ("Publishing", r"publish"),
-    ("Pre-PR & Quality", r"^pre-pr|^pre-pr-full"),
-    ("AI Required Quality Gates", r"^ai-verify|^ai-arch-check$"),
+    (
+        "Desktop",
+        r"^(verify-desktop|desktop-build|desktop-test|desktop-test-dev|"
+        r"desktop-test-position-blotter-route|desktop-test-operator-inbox-route)$",
+    ),
+    ("Publishing", r"^(publish|publish-linux|publish-windows|publish-macos)$"),
+    ("Pre-PR & Quality", r"^(pre-pr|pre-pr-full)$"),
+    ("AI Required Quality Gates", r"^(ai-verify|ai-arch-check)$"),
     (
         "AI Advisory Tooling",
-        r"^ai-audit|^ai-report|^ai-codex-skills-check|^ai-docs-freshness|"
-        r"^ai-docs-drift|^ai-docs-sync-report|^ai-docs-map|"
-        r"^ai-plan-checklists-check|^ai-arch-check-summary|^ai-arch-check-json",
+        r"^(ai-audit|ai-audit-code|ai-audit-docs|ai-audit-tests|"
+        r"ai-audit-ai-docs|ai-report|ai-arch-check-summary|"
+        r"ai-arch-check-json|ai-codex-skills-check|ai-docs-freshness|"
+        r"ai-docs-drift|ai-docs-sync-report|ai-docs-map|"
+        r"ai-docs-map-check|ai-plan-checklists-check)$",
     ),
-    ("AI Maintenance & Reporting", r"^ai-maintenance|^ai-docs-archive"),
-    ("Skills", r"skill-"),
+    ("AI Maintenance & Reporting", r"^(ai-maintenance-light|ai-maintenance-full|ai-docs-archive|ai-docs-archive-execute)$"),
+    (
+        "Skills",
+        r"^(skill-list|skill-resources|skill-scripts|skill-chains|"
+        r"skill-resource|skill-run|skill-chain|skill-run-chain|"
+        r"skill-validate|skill-run-eval|skill-benchmark|skill-discover)$",
+    ),
     (
         "Diagnostics",
-        r"doctor|diagnose|verify-setup|collect-debug|build-profile|build-binlog|"
-        r"build-graph|fingerprint|env-|impact|bisect|metrics|history|"
-        r"validate-data|analyze-errors",
+        r"^(doctor|doctor-ci|doctor-quick|doctor-fix|diagnose|diagnose-build|"
+        r"collect-debug|collect-debug-minimal|build-profile|build-binlog|"
+        r"validate-data|analyze-errors|build-graph|fingerprint|env-capture|"
+        r"env-diff|impact|bisect|metrics|history|health|status|"
+        r"app-metrics|version)$",
     ),
 ]
 
@@ -61,9 +87,14 @@ def main() -> int:
     print("|                      Meridian - Make Commands                         |")
     print("+-----------------------------------------------------------------------+")
 
+    rendered: set[str] = set()
     for heading, pattern in CATEGORIES:
         matcher = re.compile(pattern)
-        entries = [(target, text) for target, text in targets.items() if matcher.search(target)]
+        entries = [
+            (target, text)
+            for target, text in targets.items()
+            if target not in rendered and matcher.search(target)
+        ]
         if not entries:
             continue
 
@@ -72,6 +103,14 @@ def main() -> int:
         print(f"{heading}:")
         for target, text in entries:
             print(f"  {target:<{width}} {text}")
+            rendered.add(target)
+
+    other_entries = [(target, text) for target, text in targets.items() if target not in rendered]
+    if other_entries:
+        print()
+        print("Other:")
+        for target, text in other_entries:
+            print(f"  {target:<18} {text}")
 
     print()
     return 0

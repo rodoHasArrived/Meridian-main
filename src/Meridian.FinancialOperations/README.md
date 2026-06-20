@@ -32,6 +32,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `OperationsContinuity/OperationsWorkflowAuditHashing.cs` - append-only workflow audit hash creation and chain validation.
 - `OperationsContinuity/OperationsApprovalPolicyMatrixService.cs` - server-owned approval-policy matrix, governed rule upsert validation, audit-event construction, and file-backed policy persistence.
 - `OperationsContinuity/OperationsCloseCalendarService.cs` - account-close calendar projection, governed due-date/owner overrides, and audit-event construction backed by Financial Operations policy.
+- `PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs` - Financial Operations-owned private-capital activity projection over manual-journal drafts, posted ledger events, report-pack workflow records, bank evidence, readiness, evidence categories, report-output posture, and payment-intent workflow status.
 - `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness.
 - `AccountingClose/` - deterministic journal posting, trial-balance projection, roll-forward,
   FX translation, source-linked audit rows, and period-close evidence gates.
@@ -40,7 +41,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   evidence, file-backed late-adjustment requests, and materiality policy validation.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
-  certification state, validation issues, retained package history, and restatement workflow metadata.
+  certification state, validation issues, retained package history, evidence-backed package
+  certification, and restatement workflow metadata.
 - `Ledger/AccountingPolicyService.cs` - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
@@ -146,6 +148,11 @@ It also publishes explicit private-capital evidence package summaries for fund-e
 expense/fee/allocation review, partner capital tie-outs, NAV support, and close approval/audit
 evidence so operator surfaces can inspect package completeness without rebuilding lane rules
 locally.
+Private-capital activity projection semantics also live here. `PrivateCapitalActivityProjectionBuilder`
+derives fund-event records, capital-account subledgers, evidence categories, report-output
+readiness, and payment-intent workflow posture from contract DTO inputs while UI Shared only loads
+stores, passes snapshots, and maps HTTP routes. Browser and WPF clients consume those projected DTOs
+instead of recomputing accounting readiness outside Ledger or Financial Operations.
 The management-company lane is read-only proof for retained expense allocation, management-fee,
 intercompany, bank/card, budget or cash-plan, and reimbursement evidence; missing source support
 keeps the lane in review instead of inventing ERP-like balances. The NAV support lane now requires
@@ -161,7 +168,15 @@ portfolio/ledger candidates with the contracts-owned Security Master query surfa
 matches and breaks through the F# ledger reconciliation kernel instead of Application-local
 service/logging ownership.
 
-Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, and exposes planned import-first Xero and NetSuite rows with posting disabled. It retains latest imports by provider/fund/book, reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available, and stores scoped external-GL mapping profiles for account and dimension mappings. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. The tie-out evidence package classifies missing-external, missing-Meridian, and variance breaks into operator required actions for assignment, retained provider support, ledger remediation, and close approval evidence. Guarded export-package creation requires a certified mapping profile and import/reconciliation evidence before it can reach ready-for-review certification state, and unresolved GL breaks remain critical validation issues when balanced reconciliation is required. Export packages remain review artifacts only: live external GL posting is disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation, mapping validation, export-package safeguards, or posting-disable posture.
+Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, and exposes planned import-first Xero and NetSuite rows with posting disabled. It retains latest imports by provider/fund/book, reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available, and stores scoped external-GL mapping profiles for account and dimension mappings. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. The tie-out evidence package classifies missing-external, missing-Meridian, and variance breaks into operator required actions for assignment, retained provider support, ledger remediation, and close approval evidence. Guarded export-package creation requires retained export-control evidence that identifies export-control intent plus the export fund, provider/fund scope, or exact export period on the same evidence artifact, a certified mapping profile with retained mapping approval, certification, sign-off, or review evidence that identifies the mapping profile or provider/fund scope, account mapping coverage, certified fund/entity dimension mappings on both Meridian and external GL sides, import/reconciliation evidence for the exact export period, generated mapped export lines from Meridian-owned ledger totals, and no stale-period reconciliation reuse before it can reach ready-for-review certification state; unresolved GL breaks remain critical validation issues when balanced reconciliation is required. Certified-looking mapping profiles with only generic support evidence or wrong-profile approval evidence are downgraded to Draft and cannot emit generated export lines. Generated export lines are also suppressed when any retained dimension mapping is uncertified or missing fund/entity scope on either the Meridian or external GL side. Retained ready-for-review export packages can be certified with reviewer notes and evidence, duplicate or draft certification is rejected, and certification also fails closed if retained package state has live external GL posting enabled, lacks a posting-disabled reason, was supplied by reviewed automation instead of a human operator, or the supplied certification evidence does not reference the retained export package id or exact export period. Live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries. Controlled export-package manifests retain generated mapped lines, evidence links, validation state, deterministic content hash, and `ExternalPostingAllowed = false` posture for review without creating a live posting path. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation, mapping validation, export-package safeguards, or posting-disable posture.
+
+External GL export certification evidence must carry both certification intent and retained export
+package or exact-period scope on the same evidence artifact; split support and approval links are
+not enough for certification.
+External GL mapping-profile certification evidence follows the same rule: retained mapping
+approval, certification, sign-off, or review evidence must identify the mapping profile or
+provider/fund scope on the same evidence artifact before the profile can feed generated export
+lines.
 
 Accounting close projections live here as deterministic Financial Operations behavior. Journal
 posting, FX translation, trial-balance, roll-forward, source-linked audit, and close evidence gates
@@ -170,16 +185,65 @@ are exposed to UI Services and WPF without making those surfaces own accounting-
 Continuity workflow, converting workflow checklist tasks into dependency-aware close tasks,
 Operations approvals into sign-off rows, close-package publication into period-lock posture, and
 retained late-adjustment requests into materiality-policy validation issues. When `StorageOptions`
-is registered, late-adjustment requests are retained through an atomic JSON snapshot under the
-configured storage root and reproject after restart. The late-adjustment command remains a governed
-close review artifact; it does not mutate posted journal entries and material adjustments require
-controller approval before final close certification.
+is registered, late-adjustment requests and task-level close sign-off decisions are retained
+through an atomic JSON snapshot under the configured storage root and reproject after restart.
+Task sign-off decisions retain authenticated actor, role, notes, and evidence, reject duplicate
+actor-role decisions, roles outside the task's sign-off matrix, or incomplete prerequisite tasks,
+require retained approval/sign-off/control/review evidence that identifies the close task, workflow,
+or exact close period on the same artifact, count only
+approved decisions toward the role-scoped approval cap, and promote the close task only when
+retained approved decisions satisfy the role-scoped task approval count. Each projected close
+task now carries sign-off requirement rows so browser, WPF, report
+certification, and export workflows can inspect required role, required approval count, approved
+count, satisfaction state, and required evidence without rebuilding close matrix rules locally.
+The same close plan carries close-calendar milestone rows derived from checklist due dates,
+dependencies, sign-off counts, evidence, blockers, and period-lock state so accounting/reporting
+surfaces can render calendar posture without reinterpreting workflow checklist rows. The late-adjustment command remains a governed close review artifact; it does not
+mutate posted journal entries and material adjustments require controller approval before final
+close certification. Late-adjustment requests require retained late-adjustment evidence that
+identifies the journal entry, workflow, or exact close period on the same artifact before a row is
+stored, and review decisions are retained with authenticated actor, decision notes, and approval,
+rejection, decision, or review evidence that identifies the retained request, journal entry,
+workflow, or exact close period on the same artifact; generic close support evidence and split
+support/provenance links are rejected for the governed request/review gates. Duplicate retained requests for the same journal entry within a
+close workflow, duplicate decisions, and decisions after close-package period lock fail closed.
 `AccountingReportPackageService` assembles the implementation-grade report package DTO family:
 financial statement package, investor capital statement, realized gain/loss report, NAV package,
-certification, validation issues, and optional restatement workflow metadata. It carries close-plan
-validation into the package certification state, keeps packages ready-for-review when warnings such
-as an unlocked period remain, returns draft state when blocking close-plan evidence is missing, and
-retains package history through an atomic JSON snapshot when `StorageOptions` is registered.
+certification, validation issues, deterministic report-line provenance, deterministic export
+artifact rows, and optional restatement workflow metadata. It carries close-plan validation into the package certification state, keeps
+standalone packages ready-for-review when non-blocking warnings remain, returns draft state when
+blocking close-plan evidence is missing, close checklist dependencies are incomplete, the attached
+close workflow has not reached period-lock, approved
+sign-offs are missing, or material late adjustments are still unapproved, blocks restatement
+certification when retained certified prior-package lineage or retained restatement evidence is
+missing, and retains package history through an atomic JSON snapshot when `StorageOptions` is
+registered.
+The service also owns the retained certification transition: only ready-for-review packages without
+critical validation issues can move to `Certified`, duplicate certification is rejected, and reviewer
+notes plus evidence links are persisted back across the retained package and child report artifacts.
+Certification evidence must be a retained approval, certification, sign-off, or review artifact
+that references the retained package id, certification id, or exact package period, so split generic
+support plus wrong-period approval evidence cannot certify a different report package. Report
+package certification, close task sign-off, and late-adjustment request/review commands also reject
+assistant or automation-origin requests before retaining approvals, sign-offs, decisions, or
+certified report evidence.
+Child export artifacts receive certified timestamps and recomputed content hashes that include the
+certified state and retained certification evidence. When the package is a restatement, final
+certification also promotes the retained restatement workflow metadata to approved and merges the
+certification evidence into the statement and NAV restatement records.
+Certified accounting report packages are immutable at the retained package boundary; rebuilding the
+same fund/period package after certification is rejected so corrections must use governed
+restatement lineage instead of replacing certification evidence.
+Provenance rows identify the statement, report line, amount, source kind,
+fund/investor/capital-account dimensions, and retained evidence used for balance sheet, income
+statement, statement of changes in capital, investor capital, NAV, and restatement lineage rows.
+Export artifact rows identify the retained output kind, format, route, certification-state-bound
+content hash, source statement id, evidence links, and certification state for financial statement PDFs/workbooks,
+investor capital statements, realized gain/loss CSV, NAV packages, report-line provenance
+manifests, and restatement manifests. The generated routes resolve to controlled JSON retrieval
+manifests that preserve evidence, content hashes, certification state, and an explicit
+`ExternalPostingAllowed = false` guard. Actual artifact byte rendering remains downstream report
+renderer work; the accounting service owns the certification manifest state.
 
 Accounting-basis policy and ledger text-journal reporting also live here. Application composition
 registers the policy/projection services and the CLI command invokes the text-journal report service,

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Ledger;
@@ -50,6 +51,13 @@ public enum AccountingRuleConditionOperatorDto
     AmountLessThanOrEqual = 4,
     AmountBetween = 5,
     IsPresent = 6
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<AccountingRuleConditionGroupOperatorDto>))]
+public enum AccountingRuleConditionGroupOperatorDto
+{
+    All = 0,
+    Any = 1
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<AccountingRuleFormulaKindDto>))]
@@ -218,6 +226,17 @@ public sealed record AccountingRuleConditionDto(
     bool IsRequired = true,
     string? Description = null);
 
+public sealed record AccountingRuleConditionGroupDto(
+    string GroupId,
+    AccountingRuleConditionGroupOperatorDto Operator,
+    IReadOnlyList<AccountingRuleConditionDto>? Conditions = null,
+    bool IsRequired = true,
+    string? Description = null)
+{
+    public IReadOnlyList<AccountingRuleConditionDto> Conditions { get; init; } =
+        Conditions ?? [];
+}
+
 public sealed record AccountingRuleFormulaDto(
     string FormulaId,
     AccountingRuleFormulaKindDto Kind,
@@ -279,6 +298,7 @@ public sealed record AccountingRuleDefinitionDto(
     int Priority = 0,
     LedgerDimensionSetDto? Scope = null,
     IReadOnlyList<AccountingRuleConditionDto>? Conditions = null,
+    IReadOnlyList<AccountingRuleConditionGroupDto>? ConditionGroups = null,
     IReadOnlyList<AccountingRuleFormulaDto>? Formulas = null,
     IReadOnlyList<AllocationRuleDto>? Allocations = null,
     IReadOnlyList<GeneratedPostingLineDto>? GeneratedPostings = null,
@@ -289,6 +309,9 @@ public sealed record AccountingRuleDefinitionDto(
 {
     public IReadOnlyList<AccountingRuleConditionDto> Conditions { get; init; } =
         Conditions ?? [];
+
+    public IReadOnlyList<AccountingRuleConditionGroupDto> ConditionGroups { get; init; } =
+        ConditionGroups ?? [];
 
     public IReadOnlyList<AccountingRuleFormulaDto> Formulas { get; init; } =
         Formulas ?? [];
@@ -316,6 +339,7 @@ public sealed record PostingRuleDto(
     int Priority = 0,
     LedgerDimensionSetDto? Scope = null,
     IReadOnlyList<AccountingRuleConditionDto>? Conditions = null,
+    IReadOnlyList<AccountingRuleConditionGroupDto>? ConditionGroups = null,
     IReadOnlyList<AccountingRuleFormulaDto>? Formulas = null,
     IReadOnlyList<AllocationRuleDto>? Allocations = null,
     IReadOnlyList<GeneratedPostingLineDto>? GeneratedPostings = null,
@@ -325,6 +349,9 @@ public sealed record PostingRuleDto(
 {
     public IReadOnlyList<AccountingRuleConditionDto> Conditions { get; init; } =
         Conditions ?? [];
+
+    public IReadOnlyList<AccountingRuleConditionGroupDto> ConditionGroups { get; init; } =
+        ConditionGroups ?? [];
 
     public IReadOnlyList<AccountingRuleFormulaDto> Formulas { get; init; } =
         Formulas ?? [];
@@ -372,7 +399,12 @@ public sealed record AccountingConfigurationWorkspaceDto(
     IReadOnlyList<JournalEntryTemplateDto> JournalTemplates,
     IReadOnlyList<PostingRuleDto> PostingRules,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
-    IReadOnlyList<AccountingActionAuditEventDto> AuditTrail);
+    IReadOnlyList<AccountingActionAuditEventDto> AuditTrail,
+    IReadOnlyList<AccountingRuleTestCaseDto>? RuleTestCases = null)
+{
+    public IReadOnlyList<AccountingRuleTestCaseDto> RuleTestCases { get; init; } =
+        RuleTestCases ?? [];
+}
 
 public sealed record UpsertChartOfAccountsNodeRequest(
     string FundProfileId,
@@ -396,6 +428,35 @@ public sealed record UpsertPostingRuleRequest(
     string FundProfileId,
     PostingRuleDto Rule,
     string Actor,
+    string? CorrelationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+
+public sealed record ApprovePostingRulePromotionRequest(
+    string FundProfileId,
+    string RuleId,
+    string RuleVersion,
+    string Actor,
+    string ApprovalId,
+    string Notes,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? RequestedBy = null,
+    DateTimeOffset? RequestedAtUtc = null,
+    string? CorrelationId = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record UpsertAccountingRuleTestCaseRequest(
+    string FundProfileId,
+    AccountingRuleTestCaseDto TestCase,
+    string Actor,
+    Guid? LedgerBookId = null,
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
@@ -498,7 +559,9 @@ public sealed record ManualJournalEntryDraftDto(
     DateTimeOffset? PostedAtUtc = null,
     string? PostedBy = null,
     DateTimeOffset? ClosedLockedAtUtc = null,
-    string? CloseLockedBy = null)
+    string? CloseLockedBy = null,
+    JournalEntryReversalDto? Reversal = null,
+    JournalEntryRebookDto? Rebook = null)
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];
@@ -549,11 +612,48 @@ public sealed record AccountingRuleTestCaseDto(
     string DisplayName,
     RuleDryRunRequestDto Request,
     string? ExpectedRuleId = null,
+    string? ExpectedRuleVersion = null,
     bool ExpectBalancedPosting = true,
-    IReadOnlyList<string>? ExpectedIssueCodes = null)
+    IReadOnlyList<string>? ExpectedIssueCodes = null,
+    IReadOnlyList<GeneratedPostingLineDto>? ExpectedGeneratedPostingLines = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
 {
     public IReadOnlyList<string> ExpectedIssueCodes { get; init; } =
         ExpectedIssueCodes ?? [];
+
+    public IReadOnlyList<GeneratedPostingLineDto> ExpectedGeneratedPostingLines { get; init; } =
+        ExpectedGeneratedPostingLines ?? [];
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record AccountingRuleTestCaseResultDto(
+    string TestCaseId,
+    string DisplayName,
+    bool Passed,
+    RuleDryRunResultDto DryRunResult,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> AssertionIssues);
+
+public sealed record AccountingRuleTestSuiteResultDto(
+    string FundProfileId,
+    Guid? LedgerBookId,
+    DateTimeOffset ExecutedAtUtc,
+    string Actor,
+    int TotalCount,
+    int PassedCount,
+    int FailedCount,
+    IReadOnlyList<AccountingRuleTestCaseResultDto> Results);
+
+public sealed record ExecuteAccountingRuleTestCasesRequestDto(
+    string FundProfileId,
+    string Actor,
+    IReadOnlyList<AccountingRuleTestCaseDto>? TestCases = null,
+    Guid? LedgerBookId = null,
+    string? CorrelationId = null)
+{
+    public IReadOnlyList<AccountingRuleTestCaseDto> TestCases { get; init; } =
+        TestCases ?? [];
 }
 
 public sealed record JournalEntryLifecycleTransitionDto(
@@ -1239,6 +1339,25 @@ public sealed record ExternalGlExportCertificationDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record ExternalGlExportLineDto(
+    string ExportLineId,
+    string ReconciliationRowId,
+    AccountingSystemReconciliationStatusDto SourceStatus,
+    string MeridianAccountCode,
+    string ExternalAccountId,
+    string AccountName,
+    string Currency,
+    decimal Debit,
+    decimal Credit,
+    decimal NetAmount,
+    LedgerDimensionSetDto? MeridianDimensions = null,
+    LedgerDimensionSetDto? ExternalDimensions = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
 public sealed record ExternalGlExportPackageDto(
     string ExportPackageId,
     string ProviderId,
@@ -1253,8 +1372,41 @@ public sealed record ExternalGlExportPackageDto(
     IReadOnlyList<Guid> JournalEntryIds,
     IReadOnlyList<string> EvidenceLinks,
     ExternalGlExportCertificationDto? Certification = null,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
+    IReadOnlyList<ExternalGlExportLineDto>? GeneratedLines = null)
+{
+    public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
+        ValidationIssues ?? [];
+
+    public IReadOnlyList<ExternalGlExportLineDto> GeneratedLines { get; init; } =
+        GeneratedLines ?? [];
+}
+
+public sealed record ExternalGlExportPackageManifestDto(
+    string ExportPackageId,
+    string ProviderId,
+    string FundProfileId,
+    Guid? LedgerBookId,
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd,
+    AccountingCertificationStateDto CertificationState,
+    DateTimeOffset GeneratedAtUtc,
+    string ContentHash,
+    string ContentType,
+    string FileName,
+    bool ExternalPostingAllowed,
+    string PostingDisabledReason,
+    string Payload,
+    IReadOnlyList<ExternalGlExportLineDto>? GeneratedLines = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
     IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null)
 {
+    public IReadOnlyList<ExternalGlExportLineDto> GeneratedLines { get; init; } =
+        GeneratedLines ?? [];
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
 }
@@ -1270,11 +1422,20 @@ public sealed record CloseSignOffDto(
     string? Actor,
     ManualJournalEntryStatusDto ApprovalState,
     DateTimeOffset? SignedAtUtc = null,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? Notes = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
 }
+
+public sealed record CloseSignOffRequirementDto(
+    string RequirementId,
+    string Role,
+    int RequiredApprovalCount,
+    int ApprovedCount,
+    bool IsSatisfied,
+    string EvidenceRequirement);
 
 public sealed record MaterialityPolicyDto(
     string PolicyId,
@@ -1293,7 +1454,32 @@ public sealed record CloseTaskDto(
     IReadOnlyList<CloseDependencyDto> Dependencies,
     IReadOnlyList<CloseSignOffDto> SignOffs,
     IReadOnlyList<string> EvidenceLinks,
-    string? BlockerReason = null);
+    string? BlockerReason = null,
+    IReadOnlyList<CloseSignOffRequirementDto>? SignOffRequirements = null)
+{
+    public IReadOnlyList<CloseSignOffRequirementDto> SignOffRequirements { get; init; } =
+        SignOffRequirements ?? [];
+}
+
+public sealed record CloseCalendarMilestoneDto(
+    string MilestoneId,
+    string TaskId,
+    string DisplayName,
+    string Owner,
+    DateOnly DueDate,
+    CloseTaskStatusDto Status,
+    bool IsBlocked,
+    bool IsSatisfied,
+    bool IsPeriodLocked,
+    int DependencyCount,
+    int RequiredSignOffCount,
+    int ApprovedSignOffCount,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? BlockerReason = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
 
 public sealed record LateAdjustmentRequestDto(
     string RequestId,
@@ -1305,7 +1491,10 @@ public sealed record LateAdjustmentRequestDto(
     string Reason,
     ManualJournalEntryStatusDto ApprovalState,
     MaterialityPolicyDto MaterialityPolicy,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? DecidedBy = null,
+    DateTimeOffset? DecidedAtUtc = null,
+    string? DecisionNotes = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -1319,7 +1508,37 @@ public sealed record CreateLateAdjustmentRequestDto(
     string Reason,
     string RequestedBy,
     IReadOnlyList<string>? EvidenceLinks = null,
-    string? CorrelationId = null)
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record ReviewLateAdjustmentRequestDto(
+    Guid WorkflowId,
+    string RequestId,
+    ManualJournalEntryStatusDto Decision,
+    string Actor,
+    string Notes,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record SignOffCloseTaskRequestDto(
+    Guid WorkflowId,
+    string TaskId,
+    string Role,
+    ManualJournalEntryStatusDto Decision,
+    string Actor,
+    string Notes,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -1337,10 +1556,14 @@ public sealed record ClosePeriodPlanDto(
     IReadOnlyList<CloseTaskDto> Tasks,
     IReadOnlyList<LateAdjustmentRequestDto> LateAdjustments,
     MaterialityPolicyDto MaterialityPolicy,
-    IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null)
+    IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
+    IReadOnlyList<CloseCalendarMilestoneDto>? CloseCalendar = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
+
+    public IReadOnlyList<CloseCalendarMilestoneDto> CloseCalendar { get; init; } =
+        CloseCalendar ?? [];
 }
 
 public sealed record ReportCertificationDto(
@@ -1368,6 +1591,57 @@ public sealed record RestatementWorkflowDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record ReportLineProvenanceDto(
+    string StatementId,
+    string LineId,
+    string LineLabel,
+    string SourceKind,
+    decimal Amount,
+    string Currency,
+    LedgerDimensionSetDto Dimensions,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record ReportExportArtifactDto(
+    string ArtifactId,
+    string ArtifactKind,
+    string DisplayName,
+    string Format,
+    string Route,
+    AccountingCertificationStateDto CertificationState,
+    DateTimeOffset GeneratedAtUtc,
+    string ContentHash,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? SourceStatementId = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record ReportExportArtifactManifestDto(
+    string PackageId,
+    string ArtifactId,
+    string ArtifactKind,
+    string DisplayName,
+    string Format,
+    string Route,
+    AccountingCertificationStateDto CertificationState,
+    DateTimeOffset GeneratedAtUtc,
+    string ContentHash,
+    string ContentType,
+    string FileName,
+    bool ExternalPostingAllowed,
+    string Payload,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? SourceStatementId = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
 public sealed record FinancialStatementPackageDto(
     string PackageId,
     string FundProfileId,
@@ -1377,7 +1651,12 @@ public sealed record FinancialStatementPackageDto(
     IReadOnlyList<string> StatementIds,
     IReadOnlyList<string> EvidenceLinks,
     ReportCertificationDto? Certification = null,
-    RestatementWorkflowDto? Restatement = null);
+    RestatementWorkflowDto? Restatement = null,
+    IReadOnlyList<ReportLineProvenanceDto>? LineProvenance = null)
+{
+    public IReadOnlyList<ReportLineProvenanceDto> LineProvenance { get; init; } =
+        LineProvenance ?? [];
+}
 
 public sealed record InvestorCapitalStatementDto(
     string StatementId,
@@ -1440,16 +1719,32 @@ public sealed record AccountingReportPackageRequestDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record CertifyAccountingReportPackageRequestDto(
+    string PackageId,
+    string Actor,
+    string Notes,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
 public sealed record AccountingReportPackageBundleDto(
     FinancialStatementPackageDto FinancialStatements,
     IReadOnlyList<InvestorCapitalStatementDto> InvestorCapitalStatements,
     RealizedGainLossReportDto RealizedGainLoss,
     NavPackageDto NavPackage,
     ReportCertificationDto Certification,
-    IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null)
+    IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
+    IReadOnlyList<ReportExportArtifactDto>? ExportArtifacts = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
+
+    public IReadOnlyList<ReportExportArtifactDto> ExportArtifacts { get; init; } =
+        ExportArtifacts ?? [];
 }
 
 public sealed record ManualJournalEntryWorkbenchDto(
@@ -1466,12 +1761,14 @@ public sealed record SaveManualJournalEntryDraftRequest(
     ManualJournalEntryDraftDto Draft,
     string Actor,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null);
+    IReadOnlyList<string>? EvidenceLinks = null,
+    bool PeriodIsLocked = false);
 
 public sealed record ValidateManualJournalEntryDraftRequest(
     ManualJournalEntryDraftDto Draft,
     string Actor,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    bool PeriodIsLocked = false);
 
 public sealed record SubmitManualJournalEntryApprovalRequest(
     Guid JournalEntryId,
@@ -1481,7 +1778,19 @@ public sealed record SubmitManualJournalEntryApprovalRequest(
     string? Notes = null,
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    bool PeriodIsLocked = false);
+
+public sealed record AttachManualJournalEntryEvidenceRequest(
+    Guid JournalEntryId,
+    string FundProfileId,
+    string Actor,
+    int Version,
+    ManualJournalEntryEvidenceAttachmentDto Attachment,
+    string? CorrelationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    bool PeriodIsLocked = false);
 
 public sealed record ActivateAccountingConfigurationRequest(
     string FundProfileId,
@@ -1511,12 +1820,24 @@ public interface IAccountingConfigurationService
         UpsertPostingRuleRequest request,
         CancellationToken ct = default);
 
+    Task<AccountingConfigurationWorkspaceDto> ApprovePostingRulePromotionAsync(
+        ApprovePostingRulePromotionRequest request,
+        CancellationToken ct = default);
+
+    Task<AccountingConfigurationWorkspaceDto> UpsertRuleTestCaseAsync(
+        UpsertAccountingRuleTestCaseRequest request,
+        CancellationToken ct = default);
+
     Task<AccountingJournalTemplatePreviewDto> PreviewTemplateAsync(
         PreviewJournalTemplateRequest request,
         CancellationToken ct = default);
 
     Task<RuleDryRunResultDto> DryRunPostingRuleAsync(
         RuleDryRunRequestDto request,
+        CancellationToken ct = default);
+
+    Task<AccountingRuleTestSuiteResultDto> ExecuteRuleTestCasesAsync(
+        ExecuteAccountingRuleTestCasesRequestDto request,
         CancellationToken ct = default);
 
     Task<AccountingConfigurationWorkspaceDto> ActivateAsync(
@@ -1561,6 +1882,14 @@ public interface IManualJournalEntryWorkbenchService
     Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
         SubmitManualJournalEntryApprovalRequest request,
         CancellationToken ct = default);
+
+    Task<ManualJournalEntryDraftDto> AttachEvidenceAsync(
+        AttachManualJournalEntryEvidenceRequest request,
+        CancellationToken ct = default)
+    {
+        return Task.FromException<ManualJournalEntryDraftDto>(
+            new NotSupportedException("Manual journal evidence attachment is not available for this workbench."));
+    }
 }
 
 public interface ICapitalAccountWorkbenchService

@@ -12,12 +12,15 @@ import type {
   AccountingWorkspaceResponse,
   AccountingConfigurationWorkspace,
   ExternalGlExportPackage,
+  ExternalGlExportPackageManifest,
   ExternalGlMappingProfile,
+  ClosePeriodPlan,
   LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   CapitalAccountWorkbench,
+  GeneratedPostingLine,
   RuleDryRunResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
@@ -184,15 +187,30 @@ vi.mock("@/lib/api", async () => {
     getLatestAccountingSystemReconciliation: vi.fn().mockResolvedValue(null),
     getAccountingSystemMappingProfiles: vi.fn().mockResolvedValue([]),
     createAccountingSystemExportPackage: vi.fn(),
+    getAccountingSystemExportPackageManifest: vi.fn(),
     getAccountingConfiguration: vi.fn(),
     previewAccountingConfigurationTemplate: vi.fn(),
     dryRunAccountingConfigurationPostingRule: vi.fn(),
+    executeAccountingConfigurationPostingRuleTests: vi.fn(),
+    upsertAccountingConfigurationPostingRule: vi.fn(),
+    upsertAccountingConfigurationPostingRuleTestCase: vi.fn(),
+    approveAccountingConfigurationPostingRulePromotion: vi.fn(),
     activateAccountingConfiguration: vi.fn(),
     getManualJournalEntryWorkbench: vi.fn(),
     getCapitalAccountWorkbench: vi.fn(),
     saveManualJournalEntryDraft: vi.fn(),
     validateManualJournalEntryDraft: vi.fn(),
     submitManualJournalEntryApproval: vi.fn(),
+    attachManualJournalEntryEvidence: vi.fn(),
+    applyManualJournalEntryLifecycleAction: vi.fn(),
+    getLedgerCloseManagementPeriodPlan: vi.fn(),
+    createLedgerCloseManagementLateAdjustment: vi.fn(),
+    reviewLedgerCloseManagementLateAdjustment: vi.fn(),
+    signOffLedgerCloseManagementTask: vi.fn(),
+    listLedgerAccountingReportPackages: vi.fn().mockResolvedValue([]),
+    buildLedgerAccountingReportPackage: vi.fn(),
+    certifyLedgerAccountingReportPackage: vi.fn(),
+    getLedgerAccountingReportPackageExport: vi.fn(),
     getCorporateActions: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflow: vi.fn(),
@@ -1423,6 +1441,34 @@ describe("AccountingScreen", () => {
   });
 
   it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
+    const generatedPostings: GeneratedPostingLine[] = [
+      {
+        lineId: "generated-investment",
+        accountPath: "1200.Investments",
+        side: "Debit",
+        amountFormulaId: "formula-source",
+        amount: 250000,
+        currency: "USD",
+        dimensions: {
+          fundId: "fund-alpha",
+          instrumentId: "AAPL"
+        },
+        description: "Debit investment cost."
+      },
+      {
+        lineId: "generated-cash",
+        accountPath: "1000.Cash",
+        side: "Credit",
+        amountFormulaId: "formula-source",
+        amount: 250000,
+        currency: "USD",
+        dimensions: {
+          fundId: "fund-alpha",
+          counterpartyId: "cp-001"
+        },
+        description: "Credit cash settlement."
+      }
+    ];
     const workspace: AccountingConfigurationWorkspace = {
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",
@@ -1514,6 +1560,30 @@ describe("AccountingScreen", () => {
           isRequired: true,
           description: "Only trade events use this rule."
         }],
+        conditionGroups: [{
+          groupId: "group-trade-source",
+          operator: "Any",
+          isRequired: true,
+          description: "Allow broker or operations source evidence.",
+          conditions: [
+            {
+              conditionId: "cond-broker-source",
+              field: "event.source",
+              operator: "Equals",
+              value: "Broker",
+              isRequired: false,
+              description: "Broker feed."
+            },
+            {
+              conditionId: "cond-ops-source",
+              field: "event.source",
+              operator: "Equals",
+              value: "Operations",
+              isRequired: false,
+              description: "Operations upload."
+            }
+          ]
+        }],
         formulas: [{
           formulaId: "formula-source",
           kind: "SourceAmount",
@@ -1532,34 +1602,7 @@ describe("AccountingScreen", () => {
           },
           description: "Allocate to the core strategy sleeve."
         }],
-        generatedPostings: [
-          {
-            lineId: "generated-investment",
-            accountPath: "1200.Investments",
-            side: "Debit",
-            amountFormulaId: "formula-source",
-            amount: 250000,
-            currency: "USD",
-            dimensions: {
-              fundId: "fund-alpha",
-              instrumentId: "AAPL"
-            },
-            description: "Debit investment cost."
-          },
-          {
-            lineId: "generated-cash",
-            accountPath: "1000.Cash",
-            side: "Credit",
-            amountFormulaId: "formula-source",
-            amount: 250000,
-            currency: "USD",
-            dimensions: {
-              fundId: "fund-alpha",
-              counterpartyId: "cp-001"
-            },
-            description: "Credit cash settlement."
-          }
-        ],
+        generatedPostings,
         versions: [{
           version: "v3",
           createdAtUtc: "2026-06-15T10:00:00Z",
@@ -1568,20 +1611,35 @@ describe("AccountingScreen", () => {
           promotionApproval: null,
           evidenceLinks: ["evidence://rule/v3"]
         }],
-        promotionApproval: {
-          approvalId: "approval-rule-trade-buy",
-          requestedBy: "controller",
-          requestedAtUtc: "2026-06-15T10:00:00Z",
-          approvalState: "Approved",
-          approvedBy: "cfo",
-          approvedAtUtc: "2026-06-15T11:00:00Z",
-          notes: "Approved for production dry-run.",
-          evidenceLinks: ["evidence://approval"]
-        },
+        promotionApproval: null,
         requiresPromotionApproval: true
       }],
       validationIssues: [],
-      auditTrail: []
+      auditTrail: [],
+      ruleTestCases: [{
+        testCaseId: "rule-test-trade-buy-saved",
+        displayName: "Saved trade buy regression",
+        request: {
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "book-primary",
+          sourceEventType: "TradeExecuted",
+          eventAmount: 250000,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          actor: "controller",
+          dimensions: {
+            fundId: "fund-alpha",
+            entityId: "entity-master",
+            counterpartyId: "cp-001"
+          },
+          counterpartyId: "cp-001"
+        },
+        expectedRuleId: "rule-trade-buy",
+        expectedRuleVersion: "v3",
+        expectBalancedPosting: true,
+        expectedIssueCodes: [],
+        expectedGeneratedPostingLines: generatedPostings
+      }]
     };
     const dryRunResult: RuleDryRunResult = {
       fundProfileId: "fund-alpha",
@@ -1622,8 +1680,98 @@ describe("AccountingScreen", () => {
       generatedPostingLines: workspace.postingRules[0].generatedPostings,
       validationIssues: []
     };
+    const ruleTestSuite = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      executedAtUtc: "2026-06-30T12:05:00Z",
+      actor: "browser-accounting-operator",
+      totalCount: 1,
+      passedCount: 1,
+      failedCount: 0,
+      results: [
+        {
+          testCaseId: "rule-test-rule-trade-buy",
+          displayName: "Saved trade buy regression",
+          passed: true,
+          dryRunResult,
+          assertionIssues: []
+        }
+      ]
+    };
+    const savedWorkspace: AccountingConfigurationWorkspace = {
+      ...workspace,
+      ruleTestCases: [
+        ...(workspace.ruleTestCases ?? []),
+        {
+          testCaseId: "rule-test-rule-trade-buy",
+          displayName: "Trade buy posting retained dry-run regression",
+          request: {
+            fundProfileId: "fund-alpha",
+            ledgerBookId: "book-primary",
+            sourceEventType: "TradeExecuted",
+            eventAmount: 250000,
+            currency: "USD",
+            effectiveDate: "2026-01-01",
+            actor: "browser-accounting-operator",
+            dimensions: {
+              fundId: "fund-alpha",
+              entityId: "entity-master",
+              strategyId: "strategy-long-only",
+              counterpartyId: "cp-001"
+            },
+            counterpartyId: "cp-001",
+            correlationId: "browser-accounting-rule-test-rule-trade-buy"
+          },
+          expectedRuleId: "rule-trade-buy",
+          expectedRuleVersion: "v3",
+          expectBalancedPosting: true,
+          expectedIssueCodes: [],
+          expectedGeneratedPostingLines: workspace.postingRules[0].generatedPostings,
+          evidenceLinks: [
+            "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+            "browser://accounting/rules-studio/test-case/rule-trade-buy"
+          ]
+        }
+      ]
+    };
+    const approvedWorkspace: AccountingConfigurationWorkspace = {
+      ...workspace,
+      postingRules: [{
+        ...workspace.postingRules[0],
+        promotionApproval: {
+          approvalId: "browser-approval-rule-trade-buy-v3",
+          requestedBy: "controller",
+          requestedAtUtc: "2026-06-15T10:00:00Z",
+          approvalState: "Approved",
+          approvedBy: "browser-accounting-operator",
+          approvedAtUtc: "2026-06-30T12:03:00Z",
+          notes: "Approved Trade buy posting v3 from Accounting Rules Studio.",
+          evidenceLinks: ["browser://accounting/rules-studio/promotion-review/rule-trade-buy/v3"]
+        },
+        versions: [{
+          ...workspace.postingRules[0].versions![0],
+          promotionApproval: {
+            approvalId: "browser-approval-rule-trade-buy-v3",
+            requestedBy: "controller",
+            requestedAtUtc: "2026-06-15T10:00:00Z",
+            approvalState: "Approved",
+            approvedBy: "browser-accounting-operator",
+            approvedAtUtc: "2026-06-30T12:03:00Z",
+            notes: "Approved Trade buy posting v3 from Accounting Rules Studio.",
+            evidenceLinks: ["browser://accounting/rules-studio/promotion-review/rule-trade-buy/v3"]
+          },
+          evidenceLinks: [
+            "evidence://rule/v3",
+            "browser://accounting/rules-studio/promotion-review/rule-trade-buy/v3"
+          ]
+        }]
+      }]
+    };
     vi.mocked(api.getAccountingConfiguration).mockResolvedValueOnce(workspace);
+    vi.mocked(api.approveAccountingConfigurationPostingRulePromotion).mockResolvedValueOnce(approvedWorkspace);
     vi.mocked(api.dryRunAccountingConfigurationPostingRule).mockResolvedValueOnce(dryRunResult);
+    vi.mocked(api.upsertAccountingConfigurationPostingRuleTestCase).mockResolvedValueOnce(savedWorkspace);
+    vi.mocked(api.executeAccountingConfigurationPostingRuleTests).mockResolvedValueOnce(ruleTestSuite);
 
     await renderAccountingScreen(data, "/accounting/configure");
 
@@ -1632,10 +1780,30 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("2026-01-01 -> 2026-12-31")).toBeInTheDocument();
     expect(screen.getByText("Fund: fund-alpha")).toBeInTheDocument();
     expect(screen.getByText(/event\.kind Equals TradeExecuted/)).toBeInTheDocument();
+    expect(screen.getByText(/group-trade-source: Any \(required\)/)).toBeInTheDocument();
+    expect(screen.getByText(/event\.source Equals Broker/)).toBeInTheDocument();
     expect(screen.getByText(/formula-source: SourceAmount/)).toBeInTheDocument();
     expect(screen.getByText(/alloc-strategy: StrategyWeight weight 1 via formula-source/)).toBeInTheDocument();
     expect(screen.getByText(/Debit 1200\.Investments/)).toBeInTheDocument();
-    expect(screen.getByText("Approved by cfo")).toBeInTheDocument();
+    expect(screen.getByText("Promotion approval required")).toBeInTheDocument();
+    const savedCases = screen.getByRole("region", { name: "Saved accounting rule test cases" });
+    expect(within(savedCases).getByText("1 saved")).toBeInTheDocument();
+    expect(within(savedCases).getByText("Saved trade buy regression")).toBeInTheDocument();
+    expect(within(savedCases).getByText("Expect rule-trade-buy version v3, balanced, no expected issue codes, 2 expected generated posting lines.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Approve rule promotion" }));
+    await screen.findByText("Approved promotion for Trade buy posting.");
+    expect(screen.getByText("Approved by browser-accounting-operator")).toBeInTheDocument();
+    expect(api.approveAccountingConfigurationPostingRulePromotion).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ruleId: "rule-trade-buy",
+      ruleVersion: "v3",
+      actor: "browser-accounting-operator",
+      approvalId: "browser-approval-rule-trade-buy-v3",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/rules-studio/promotion-review/rule-trade-buy/v3"
+      ])
+    }));
 
     fireEvent.click(screen.getByRole("button", { name: "Dry-run selected rule" }));
 
@@ -1644,12 +1812,62 @@ describe("AccountingScreen", () => {
     expect(within(preview).getByText("Balanced $250,000 USD")).toBeInTheDocument();
     expect(within(preview).getByText(/Trade buy posting matched at priority 10/)).toBeInTheDocument();
     expect(within(preview).getAllByText(/Credit 1000\.Cash/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Apply event predicate" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Raise priority" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Apply dry-run scope" })).toBeInTheDocument();
     expect(api.dryRunAccountingConfigurationPostingRule).toHaveBeenCalledWith(expect.objectContaining({
       sourceEventType: "TradeExecuted",
       counterpartyId: "cp-001",
       dimensions: expect.objectContaining({
         fundId: "fund-alpha"
       })
+    }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Save dry-run as test case" }));
+    await screen.findByText("Trade buy posting retained dry-run regression");
+    expect(api.upsertAccountingConfigurationPostingRuleTestCase).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      testCase: expect.objectContaining({
+        testCaseId: "rule-test-rule-trade-buy",
+        expectedRuleId: "rule-trade-buy",
+        expectedRuleVersion: "v3",
+        expectBalancedPosting: true,
+        expectedGeneratedPostingLines: expect.arrayContaining([
+          expect.objectContaining({
+            lineId: "generated-investment",
+            accountPath: "1200.Investments",
+            amount: 250000,
+            dimensions: expect.objectContaining({
+              fundId: "fund-alpha",
+              instrumentId: "AAPL"
+            })
+          }),
+          expect.objectContaining({
+            lineId: "generated-cash",
+            accountPath: "1000.Cash",
+            amount: 250000
+          })
+        ]),
+        evidenceLinks: expect.arrayContaining([
+          "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+          "browser://accounting/rules-studio/test-case/rule-trade-buy"
+        ])
+      }),
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/rules-studio/dry-run/rule-trade-buy"
+      ])
+    }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Run rule tests" }));
+    const ruleTests = await screen.findByRole("region", { name: "Accounting rule test cases" });
+    expect(within(ruleTests).getByText("Accounting rule regression tests")).toBeInTheDocument();
+    expect(within(ruleTests).getByText("1/1 passed")).toBeInTheDocument();
+    expect(within(ruleTests).getByText(/Pass: Saved trade buy regression selected rule-trade-buy, balanced/)).toBeInTheDocument();
+    expect(api.executeAccountingConfigurationPostingRuleTests).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      testCases: null
     }));
   });
 
@@ -1666,6 +1884,32 @@ describe("AccountingScreen", () => {
       statusLabel: "Ready for read-only import",
       statusDetail: "Fixture provider ready.",
       evidenceKinds: ["QuickBooksTrialBalance"]
+    };
+    const xeroProvider: AccountingSystemProvider = {
+      providerId: "xero",
+      displayName: "Xero",
+      state: "Planned",
+      requiresCredentials: true,
+      supportsChartOfAccounts: true,
+      supportsJournalEntries: true,
+      supportsTrialBalance: true,
+      supportsPosting: false,
+      statusLabel: "Import mapping planned",
+      statusDetail: "Xero remains import-first until mapping certification is complete.",
+      evidenceKinds: ["XeroChartOfAccounts", "XeroTrialBalance"]
+    };
+    const netSuiteProvider: AccountingSystemProvider = {
+      providerId: "netsuite",
+      displayName: "NetSuite",
+      state: "Planned",
+      requiresCredentials: true,
+      supportsChartOfAccounts: true,
+      supportsJournalEntries: true,
+      supportsTrialBalance: true,
+      supportsPosting: false,
+      statusLabel: "Import mapping planned",
+      statusDetail: "NetSuite remains import-first until mapping certification is complete.",
+      evidenceKinds: ["NetSuiteChartOfAccounts", "NetSuiteTrialBalance"]
     };
     const importDetail: AccountingSystemImportDetail = {
       summary: {
@@ -1817,14 +2061,42 @@ describe("AccountingScreen", () => {
         }
       ]
     };
+    const exportManifest: ExternalGlExportPackageManifest = {
+      exportPackageId: exportPackage.exportPackageId,
+      providerId: exportPackage.providerId,
+      fundProfileId: exportPackage.fundProfileId,
+      ledgerBookId: exportPackage.ledgerBookId,
+      periodStart: exportPackage.periodStart,
+      periodEnd: exportPackage.periodEnd,
+      certificationState: "Draft",
+      generatedAtUtc: "2026-02-01T00:10:00Z",
+      contentHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      contentType: "application/json",
+      fileName: "external-gl-export-quickbooks-fixture-default-fund-20260131.external-gl-export.json",
+      externalPostingAllowed: false,
+      postingDisabledReason: exportPackage.postingDisabledReason,
+      payload: "{\"exportPackageId\":\"external-gl-export-quickbooks-fixture-default-fund-20260131\"}",
+      generatedLines: [],
+      evidenceLinks: exportPackage.evidenceLinks,
+      validationIssues: exportPackage.validationIssues
+    };
 
-    vi.mocked(api.getAccountingSystemProviders).mockResolvedValueOnce([provider]);
+    vi.mocked(api.getAccountingSystemProviders).mockResolvedValueOnce([provider, xeroProvider, netSuiteProvider]);
     vi.mocked(api.getLatestAccountingSystemImport).mockResolvedValueOnce(importDetail);
     vi.mocked(api.getLatestAccountingSystemReconciliation).mockResolvedValueOnce(reconciliation);
     vi.mocked(api.getAccountingSystemMappingProfiles).mockResolvedValueOnce(mappingProfiles);
     vi.mocked(api.createAccountingSystemExportPackage).mockResolvedValueOnce(exportPackage);
+    vi.mocked(api.getAccountingSystemExportPackageManifest).mockResolvedValueOnce(exportManifest);
 
     await renderAccountingScreen(data, "/accounting");
+
+    const providerPosture = await screen.findByLabelText("External GL provider import posture");
+    expect(providerPosture).toHaveTextContent("QuickBooks Fixture");
+    expect(providerPosture).toHaveTextContent("Mapping profile retained");
+    expect(providerPosture).toHaveTextContent("Xero");
+    expect(providerPosture).toHaveTextContent("NetSuite");
+    expect(providerPosture).toHaveTextContent("Mapping profile needed");
+    expect(providerPosture).toHaveTextContent("Live posting disabled");
 
     const profiles = await screen.findByLabelText("External GL mapping profiles");
     expect(profiles).toHaveTextContent("Default fund QBO mapping");
@@ -1840,6 +2112,16 @@ describe("AccountingScreen", () => {
     expect(packages).toHaveTextContent("GL reconciliation tie-out");
     expect(packages).toHaveTextContent("Resolve GL reconciliation breaks before approving close evidence.");
 
+    const safeguards = await screen.findByLabelText("External GL export safeguards");
+    expect(safeguards).toHaveTextContent("Balanced reconciliation required");
+    expect(safeguards).toHaveTextContent("1 reconciliation break(s) must clear before certification.");
+    expect(safeguards).toHaveTextContent("Certified mapping profile");
+    expect(safeguards).toHaveTextContent("Default fund QBO mapping maps 1 account(s) and 1 dimension set(s).");
+    expect(safeguards).toHaveTextContent("Controlled export manifest");
+    expect(safeguards).toHaveTextContent("Not loaded");
+    expect(safeguards).toHaveTextContent("Live external posting gate");
+    expect(safeguards).toHaveTextContent("Disabled");
+
     await userEvent.click(screen.getByRole("button", { name: "Create export package" }));
 
     const retainedPackage = await screen.findByLabelText("External GL export package");
@@ -1847,6 +2129,13 @@ describe("AccountingScreen", () => {
     expect(retainedPackage).toHaveTextContent("Posting disabled");
     expect(retainedPackage).toHaveTextContent("Draft");
     expect(retainedPackage).toHaveTextContent("Validation issues");
+    expect(retainedPackage).toHaveTextContent("Manifest hash");
+    expect(retainedPackage).toHaveTextContent("0123456789ab");
+    expect(retainedPackage).toHaveTextContent("External posting");
+    expect(retainedPackage).toHaveTextContent("Disabled");
+    expect(safeguards).toHaveTextContent("0123456789ab");
+    expect(safeguards).toHaveTextContent("0 generated mapped export line(s) retained for review.");
+    expect(safeguards).toHaveTextContent("1 package validation issue(s) retained; none are critical.");
     expect(api.createAccountingSystemExportPackage).toHaveBeenCalledWith(expect.objectContaining({
       actor: "browser-accounting-operator",
       providerId: "quickbooks-fixture",
@@ -1859,6 +2148,80 @@ describe("AccountingScreen", () => {
         "external-gl-mapping-profile:qbo-default-fund-certified",
         "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
         "quickbooks-fixture:trial-balance"
+      ])
+    }));
+    expect(api.getAccountingSystemExportPackageManifest).toHaveBeenCalledWith(exportPackage.exportPackageId);
+  });
+
+  it("requests close late adjustments through the shared close-management endpoint", async () => {
+    const user = userEvent.setup();
+    const closePlan: ClosePeriodPlan = {
+      closePlanId: "close-plan-workflow-approval-1",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha",
+      periodId: "2026-05",
+      periodStart: "2026-05-01",
+      periodEnd: "2026-05-31",
+      closeDueDate: "2026-06-05",
+      isPeriodLocked: false,
+      tasks: [],
+      lateAdjustments: [],
+      materialityPolicy: {
+        policyId: "materiality-policy-fund-alpha",
+        amountThreshold: 1000,
+        percentThreshold: 1,
+        currency: "USD",
+        reviewRole: "Controller",
+        requiresLateAdjustmentApproval: true
+      },
+      validationIssues: [],
+      closeCalendar: []
+    };
+    const lateAdjustmentPlan: ClosePeriodPlan = {
+      ...closePlan,
+      lateAdjustments: [{
+        requestId: "late-adjustment-manual-je-1",
+        journalEntryId: "manual-je-1",
+        requestedBy: "browser-accounting-controller",
+        requestedAtUtc: "2026-06-02T12:00:00Z",
+        amount: 1250,
+        currency: "USD",
+        reason: "Accrual invoice received after controller review.",
+        approvalState: "Submitted",
+        materialityPolicy: closePlan.materialityPolicy,
+        evidenceLinks: [
+          "browser://accounting/close/late-adjustment/workflow-approval-1/manual-je-1"
+        ]
+      }]
+    };
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
+    vi.mocked(api.getLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
+    vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValueOnce([]);
+    vi.mocked(api.createLedgerCloseManagementLateAdjustment).mockResolvedValueOnce(lateAdjustmentPlan);
+
+    await renderAccountingScreen(data, "/accounting");
+
+    const cockpit = await screen.findByRole("region", { name: "Accounting close and report package certification cockpit" });
+    expect(await within(cockpit).findByText("$1,000 USD or 1% review by Controller")).toBeInTheDocument();
+    fireEvent.change(within(cockpit).getByLabelText("Journal entry"), { target: { value: "manual-je-1" } });
+    fireEvent.change(within(cockpit).getByLabelText("Amount"), { target: { value: "1250" } });
+    fireEvent.change(within(cockpit).getByLabelText("Reason"), { target: { value: "Accrual invoice received after controller review." } });
+    await waitFor(() => expect(within(cockpit).getByRole("button", { name: "Request late adjustment" })).toBeEnabled());
+    await user.click(within(cockpit).getByRole("button", { name: "Request late adjustment" }));
+
+    expect(await screen.findByText("Late adjustment requested for manual-je-1.")).toBeInTheDocument();
+    expect(within(cockpit).getByText("Accrual invoice received after controller review.")).toBeInTheDocument();
+    expect(api.createLedgerCloseManagementLateAdjustment).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-approval-1",
+      journalEntryId: "manual-je-1",
+      amount: 1250,
+      currency: "USD",
+      reason: "Accrual invoice received after controller review.",
+      requestedBy: "browser-accounting-controller",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/late-adjustment/workflow-approval-1/manual-je-1",
+        "browser://accounting/close/materiality-review/workflow-approval-1"
       ])
     }));
   });
@@ -2015,6 +2378,163 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
     expect(api.getManualJournalEntryWorkbench).toHaveBeenCalled();
+  });
+
+  it("applies manual journal lifecycle transitions through the shared endpoint and renders audit evidence", async () => {
+    const user = userEvent.setup();
+    const submittedDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      status: "Submitted",
+      version: 2,
+      submittedAtUtc: "2026-06-30T01:00:00Z",
+      submittedBy: "browser-user",
+      lifecycleTransitions: [{
+        transitionId: "transition-submit",
+        fromStatus: "Draft",
+        toStatus: "Submitted",
+        action: "Submit",
+        actor: "browser-user",
+        recordedAtUtc: "2026-06-30T01:00:00Z",
+        notes: "Submitted for approval.",
+        correlationId: "manual-je-submit",
+        evidenceLinks: manualJournalDraft.evidenceLinks
+      }]
+    };
+    const approvedDraft: ManualJournalEntryDraft = {
+      ...submittedDraft,
+      status: "Approved",
+      version: 3,
+      approvedAtUtc: "2026-06-30T01:05:00Z",
+      approvedBy: "browser-user",
+      lifecycleTransitions: [
+        ...(submittedDraft.lifecycleTransitions ?? []),
+        {
+          transitionId: "transition-approve",
+          fromStatus: "Submitted",
+          toStatus: "Approved",
+          action: "Approve",
+          actor: "browser-user",
+          recordedAtUtc: "2026-06-30T01:05:00Z",
+          notes: "Controller approval for journal entry manual-je-1.",
+          correlationId: "manual-je-approve",
+          evidenceLinks: manualJournalDraft.evidenceLinks
+        }
+      ]
+    };
+    const postedDraft: ManualJournalEntryDraft = {
+      ...approvedDraft,
+      status: "Posted",
+      version: 4,
+      postedAtUtc: "2026-06-30T01:10:00Z",
+      postedBy: "browser-user",
+      lifecycleTransitions: [
+        ...(approvedDraft.lifecycleTransitions ?? []),
+        {
+          transitionId: "transition-post",
+          fromStatus: "Approved",
+          toStatus: "Posted",
+          action: "Post",
+          actor: "browser-user",
+          recordedAtUtc: "2026-06-30T01:10:00Z",
+          notes: "Post approved journal entry manual-je-1.",
+          correlationId: "manual-je-post",
+          evidenceLinks: manualJournalDraft.evidenceLinks
+        }
+      ]
+    };
+    const reversalDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      journalEntryId: "manual-je-1-reversal",
+      status: "Draft",
+      version: 1,
+      memo: "Reversal for manual-je-1",
+      reversalOfJournalEntryId: "manual-je-1",
+      lines: manualJournalDraft.lines.map((line) => ({
+        ...line,
+        lineId: `${line.lineId}-reversal`,
+        side: line.side === "Debit" ? "Credit" : "Debit"
+      }))
+    };
+    const reversedDraft: ManualJournalEntryDraft = {
+      ...postedDraft,
+      status: "Reversed",
+      version: 5,
+      reversal: {
+        originalJournalEntryId: "manual-je-1",
+        reversalJournalEntryId: "manual-je-1-reversal",
+        createdAtUtc: "2026-06-30T01:15:00Z",
+        createdBy: "browser-user",
+        reason: "Create reversal draft for posted journal entry manual-je-1."
+      },
+      lifecycleTransitions: [
+        ...(postedDraft.lifecycleTransitions ?? []),
+        {
+          transitionId: "transition-reverse",
+          fromStatus: "Posted",
+          toStatus: "Reversed",
+          action: "Reverse",
+          actor: "browser-user",
+          recordedAtUtc: "2026-06-30T01:15:00Z",
+          notes: "Create reversal draft for posted journal entry manual-je-1.",
+          correlationId: "manual-je-reverse",
+          evidenceLinks: manualJournalDraft.evidenceLinks
+        }
+      ]
+    };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [submittedDraft]
+    });
+    vi.mocked(api.applyManualJournalEntryLifecycleAction)
+      .mockResolvedValueOnce({
+        journalEntry: approvedDraft,
+        transition: approvedDraft.lifecycleTransitions![1],
+        generatedJournalEntries: []
+      })
+      .mockResolvedValueOnce({
+        journalEntry: postedDraft,
+        transition: postedDraft.lifecycleTransitions![2],
+        generatedJournalEntries: []
+      })
+      .mockResolvedValueOnce({
+        journalEntry: reversedDraft,
+        transition: reversedDraft.lifecycleTransitions![3],
+        generatedJournalEntries: [reversalDraft]
+      });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    expect(await screen.findByText("Approve recorded: Submitted -> Approved")).toBeInTheDocument();
+    expect(screen.getByText("Approve: Submitted -> Approved")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Post" }));
+    expect(await screen.findByText("Post recorded: Approved -> Posted")).toBeInTheDocument();
+    expect(screen.getByText("Post: Approved -> Posted")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Reverse" }));
+    expect(await screen.findByText("Reverse recorded: Posted -> Reversed")).toBeInTheDocument();
+    expect(screen.getByText("Reverse: Posted -> Reversed")).toBeInTheDocument();
+    expect(screen.getAllByText("Reversal for manual-je-1").length).toBeGreaterThan(0);
+    expect(screen.getByText("Reversal of manual-je-1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Audit transitions");
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      action: "Approve",
+      version: 2,
+      evidenceLinks: manualJournalDraft.evidenceLinks,
+      actionOrigin: "HumanOperator"
+    }));
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      action: "Post",
+      version: 3
+    }));
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      action: "Reverse",
+      version: 4,
+      rebookLines: []
+    }));
   });
 
   it("renders the Capital Account Workbench route from the shared endpoint", async () => {
@@ -2211,6 +2731,17 @@ describe("AccountingScreen", () => {
         evidenceAttachments: []
       }]
     });
+    vi.mocked(api.attachManualJournalEntryEvidence).mockImplementationOnce((request) => Promise.resolve({
+      ...manualJournalDraft,
+      version: manualJournalDraft.version + 1,
+      lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? {
+        ...line,
+        securityId: "22222222-2222-2222-2222-222222222222",
+        securityDisplayName: "Apple Inc."
+      } : line),
+      evidenceLinks: request.evidenceLinks,
+      evidenceAttachments: [request.attachment]
+    }));
 
     await renderAccountingScreen(data, "/accounting/journal-entries");
 
@@ -2225,7 +2756,18 @@ describe("AccountingScreen", () => {
     });
     await user.click(screen.getByRole("button", { name: "Attach" }));
 
-    expect(screen.getByText("Trade blotter")).toBeInTheDocument();
+    expect(await screen.findByText("Trade blotter")).toBeInTheDocument();
+    expect(api.attachManualJournalEntryEvidence).toHaveBeenCalledWith(expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      version: 1,
+      evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/trade-blotter"],
+      attachment: expect.objectContaining({
+        displayName: "Trade blotter",
+        uri: "/api/workstation/evidence/subjects/accounting-record/trade-blotter",
+        evidenceKind: "SourceDocument"
+      })
+    }));
     expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
   });
 

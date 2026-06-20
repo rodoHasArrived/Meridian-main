@@ -53,6 +53,8 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 - `CLAUDE.md`
 - `.codex/AGENTS.md`
 - `.codex/skills/_shared/codex-execution-contract.md`
+- `docs/ai/codex/memory-system.md`
+- `.codex/memory/index.yml`
 - `.github/copilot-instructions.md`
 - `.github/agents/implementation-assurance-agent.md`
 - `.github/workflows/README.md`
@@ -138,6 +140,7 @@ validation stack before broad build or test runs:
 
 ```bash
 python build/scripts/docs/check-codex-skills.py --summary
+python build/scripts/docs/check-codex-memory.py --summary
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/validate-skill-packages.py
 python build/scripts/docs/validate-roadmap-registry.py --summary

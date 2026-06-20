@@ -19,6 +19,8 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
   domain modeling, workflow design, or architecture-sensitive implementation.
 - Read `.codex/skills/_shared/codex-execution-contract.md` before changing skills, agents,
   prompts, hooks, config, or automation guidance.
+- Read `docs/ai/codex/memory-system.md` and `.codex/memory/index.yml` before changing Codex
+  memory entries, routing metadata, or memory validation tooling.
 - When changing Codex development behavior or validation workflow, keep the Codex-loaded baseline
   and mirrored assistant surfaces synchronized: root `AGENTS.md`, `CLAUDE.md`,
   `docs/ai/codex/quickstart.md`, `.codex/skills/_shared/*`,
@@ -35,11 +37,12 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
 
 ## Codex Configuration Rules
 
-- `.codex/config.toml` is the repository-local default configuration. Keep it conservative and
-  fail-closed; do not set unattended full-access defaults there.
+- `.codex/config.toml` is the repository-local default configuration. It intentionally favors
+  trusted Meridian development speed with full filesystem access while keeping interactive command
+  approval.
 - Prefer top-level Codex configuration keys that are documented by the current Codex configuration
   reference. Avoid experimental keys unless the file comment labels them as provisional.
-- Keep `sandbox_mode = "workspace-write"` and `approval_policy = "on-request"` as the default
+- Keep `sandbox_mode = "danger-full-access"` and `approval_policy = "on-request"` as the default
   baseline unless the user explicitly asks for a different repository policy.
 - Do not store credentials, tokens, endpoint secrets, user-specific machine paths, or personal model
   preferences in repository-local config.
@@ -142,5 +145,7 @@ Generator scripts are dry-run by default. Use `-Apply` only after reviewing the 
 - Skill, agent, prompt, or AI workflow edits: also run the AI tooling gates from
   `.codex/skills/_shared/codex-execution-contract.md` when available, or report exactly why they
   were not run.
+- Codex memory edits: run `python build/scripts/docs/check-codex-memory.py --summary` and the
+  focused memory-checker tests when `build/scripts/docs/check-codex-memory.py` changes.
 - Command guidance edits: verify the referenced script, Make target, project, or `--help` output
   before describing the command as current.

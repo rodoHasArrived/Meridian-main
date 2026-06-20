@@ -130,11 +130,22 @@ The Accounting external-GL panel renders the shared accounting-system reconcilia
 packages for external import, Meridian ledger support, and GL tie-out posture when the API returns
 them, keeping package readiness and required actions service-owned rather than deriving package
 state from browser table rows.
+The panel also renders provider-by-provider import posture from the shared AccountingSystem provider
+catalog, so QuickBooks, Xero, NetSuite, and fixture providers show read-only import capabilities,
+credential state, retained mapping-profile coverage, and live-posting-disabled posture before an
+operator prepares a guarded export package.
 The same panel now reads external GL mapping profiles from the shared AccountingSystem endpoint,
 shows certified account and dimension coverage beside the reconciliation, and posts guarded export
-package requests with mapping, reconciliation, fund, period, and evidence context. The returned
-package is retained as a review artifact with certification and validation state; live external GL
-posting remains disabled by shared policy and is not inferred in React.
+package requests with mapping, reconciliation, fund, period, and evidence context. It can also post
+the retained export package id, reviewer notes, and evidence to the shared export certification
+endpoint. The returned package is retained as a review artifact with generated mapped export lines,
+certification, validation state, and a controlled manifest hash; certification evidence must
+identify the retained export package id or exact export period before Financial Operations will
+certify it. The browser also renders export
+safeguards for balanced reconciliation, certified mapping coverage, critical package blockers,
+manifest hash/line retention, and disabled live-posting posture while shared policy remains
+authoritative. Live external GL posting remains disabled by shared policy and is not inferred in
+React.
 The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
 so the browser renders the Books Before Broker preview entry point without crashing while endpoint
 request wiring remains a follow-on workflow.
@@ -143,21 +154,93 @@ route catalog, covering setup, journal entries, ledger review, reconciliation, e
 Security Master readiness, approvals, and retained evidence packaging without browser-local close
 state.
 The Accounting Configure workstream at `/accounting/configure` renders the shared Accounting Rules
-Studio from `PostingRuleDto` and `RuleDryRunResultDto`: effective dates, priority, dimensional
-scope, event predicates, formulas, allocations, generated posting metadata, retained versions,
-promotion approvals, and dry-run preview results are browser projections over the shared
-configuration service rather than client-local rule logic.
+Studio from `PostingRuleDto`, `RuleDryRunResultDto`, and rule-test suite DTOs: effective dates,
+priority, dimensional scope, event predicates, grouped `All`/`Any` predicates, formulas, allocations, generated posting metadata,
+retained versions, promotion approvals, dry-run preview results, saved regression cases, and
+regression test-case results are browser projections over the shared configuration service rather
+than client-local rule logic. Operators can duplicate the selected posting rule into a
+promotion-gated draft through the shared posting-rule upsert endpoint; the browser clears carried
+approval state, retains browser evidence links, selects the returned draft rule, and lets service
+validation/audit own the canonical workspace state. Operators can apply the selected dry-run source
+event as a required predicate through the same shared upsert route, replacing stale event-kind
+predicates, clearing stale promotion approval, and requiring fresh promotion before activation.
+Operators can apply the selected dry-run amount as a required amount-threshold predicate through the
+same shared upsert route, which updates the retained rule definition, clears stale promotion
+approval, and requires fresh promotion before activation. Operators can also apply the selected dry-run date as the retained rule effective start,
+with stale promotion approval cleared before the updated effective window can activate. Operators
+can capture dry-run generated posting lines back onto the selected rule through that shared upsert
+path, turning template-derived previews into retained multi-line generated posting definitions that
+require fresh promotion. Operators can also apply a dry-run generated posting amount back onto the
+matching retained rule formula through the same upsert path, clearing stale promotion approval before
+the recalibrated formula can activate. Operators can apply unambiguous generated posting dimensions
+onto retained allocation targets when formula-linked generated postings produce deterministic target
+scope, again clearing stale promotion approval before activation. Operators can apply unambiguous
+fund, entity, instrument, counterparty, cost-center, tax-lot, and external GL dimensions from
+generated posting metadata back onto the retained rule scope through the same upsert path, with stale
+promotion approval cleared before the scoped rule can activate. Operators can raise the selected
+rule priority through the same retained upsert path, clearing stale promotion approval before the
+reprioritized rule can activate or be duplicated into a draft. Operators can also archive the selected posting rule through the same
+upsert route so obsolete rules leave active matching without deleting retained history or bypassing
+audit evidence. Operators can save the selected dry-run preview as a retained regression case through
+the shared test-case endpoint, including browser evidence links, the selected rule version, and expected generated posting-line
+assertions copied from the dry-run preview, and the refreshed workspace becomes
+the source of truth for saved cases. When saved cases exist, the browser lets the shared service
+execute the persisted workspace suite instead of rebuilding temporary cases locally. Promotion
+approval controls use the shared promotion-approval route so stale rule versions, missing approver
+notes, weak evidence, missing saved current-version regression coverage, and failing saved dry-run
+assertions are rejected by the service before the retained version snapshot is updated;
+the Accounting Rules Studio toolbar updates from the returned workspace rather than fabricating
+approval state locally. The selected-rule detail also renders a promotion readiness checklist for
+version history, approval evidence, saved regression coverage, latest suite result, generated
+posting lines, dimensional scope coverage, and the activation gate. Activation controls surface the
+shared readiness blockers for promotion-gated rules, including missing approved promotion evidence,
+missing current-version saved regression coverage, and the latest failing rule-test suite.
 The Accounting Manual Journal Entry workbench also exposes the shared lifecycle-action endpoint for
-approve, reject, post, reverse, rebook, and lock-after-close. Browser commands pass the retained
-draft version and evidence links, render the returned transition audit rows, and show generated
-reversal/rebook drafts as separate entries instead of mutating posted entries.
+evidence attachment, approve, reject, post, reverse, rebook, and lock-after-close. Browser evidence
+attachment posts the retained draft version, typed attachment metadata, actor, correlation id, and
+evidence links to the shared evidence endpoint, then refreshes from the returned draft instead of
+fabricating retained evidence locally. Browser lifecycle commands pass the retained draft version
+and evidence links, render the returned transition audit rows with transition id, correlation id,
+and retained evidence routes, and show generated reversal/rebook drafts as separate entries instead
+of mutating posted entries. The workbench also renders a lifecycle checklist for draft version,
+validation, evidence, submission, approval, posting, reversal, rebook, close-lock, and transition
+audit posture so operators can see which server-owned gate is ready or blocked before acting.
 The Accounting close/report package cockpit reads the shared close-management period plan and
 accounting report-package history endpoints, showing checklist dependencies, sign-offs,
-materiality, period-lock posture, late adjustments, package certification, investor statement
-counts, realized gain/loss, NAV, restatement state, validation issues, and retained evidence
-counts. Its package-build command posts workflow, fund, period, package-seed, and evidence context
-to the shared accounting report package endpoint; close transitions, late-adjustment approval,
-package approval, rendered statement artifacts, and restatement execution remain service-owned.
+materiality, close-calendar milestones, period-lock posture, late adjustments, package
+certification, investor statement counts, realized gain/loss, NAV, statement-line provenance,
+export artifact certification state, restatement state, validation issues, and retained evidence
+counts. It also renders certification safeguards for close checklist sign-off, period-lock posture,
+critical validation blockers, export-artifact certification, restatement workflow state, and retained
+package evidence so operators can see readiness before invoking certification. Its package-build
+command posts workflow, fund, period, package-seed, and evidence context
+to the shared accounting report package endpoint, and its certify command posts the selected
+retained package id, reviewer notes, and evidence links to the shared certification endpoint. Its
+task sign-off command posts the next ready checklist task role, reviewer notes, correlation id, and
+evidence links to the shared close-management endpoint. The late-adjustment request form posts the
+journal entry id, amount, currency, reason, controller actor, correlation id, and retained
+late-adjustment/materiality evidence links to the shared close-management endpoint, then refreshes
+the cockpit from the returned close plan. Late-adjustment approve/reject buttons post the retained
+request id, decision, reviewer notes, correlation id, and evidence links to the shared
+late-adjustment review endpoint; close transitions, dependency validation, materiality review
+validation, certification state mutation, rendered statement artifacts, and restatement execution
+remain service-owned.
+Late-adjustment rows render retained approval or rejection actor, timestamp, evidence counts, and
+materiality-threshold posture from the shared close-management DTO instead of deriving decision state
+or approval blockers in the browser.
+Close task sign-off rows likewise display retained approval counts, actor, notes, and evidence from
+the shared close plan; React does not decide checklist completion locally, and dependency ordering
+is enforced by the shared task sign-off endpoint.
+Close-calendar rows display milestone due dates, owners, dependency counts, sign-off counts,
+evidence counts, blockers, and period-lock state returned by the shared close plan instead of
+rebuilding calendar posture from checklist rows in React.
+Accounting report package history rows also display the shared export artifact certification count
+from the package bundle, while artifact generation, content hashes, and certification state remain
+owned by Financial Operations. Operators can inspect the selected package's retained controlled
+export manifest from the close cockpit; the browser displays artifact id, format, file name,
+generation time, content hash, route, evidence count, certification state, and disabled external
+posting posture while Financial Operations remains responsible for artifact generation and
+certification mutation.
 `FinancialRecordExplorerShell` is the browser presentation for the shared Financial Record Explorer
 DTO. Accounting loads the `ledger` and Accounting-hosted `security-instrument` explorers from
 `/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, Reporting
@@ -641,9 +724,10 @@ schedules, lots, and trading controls to the Accounting-owned Security Master vi
 The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
 over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
 selection, selected-line Security Master search/picker results, line validation badges, typed source
-evidence attachments, treasury-context readiness, save draft, validate, and submit approval commands
+evidence attachments, treasury-context readiness, save draft, validate, attach-evidence API wiring,
+and submit approval commands
 from the shared DTOs while versioning, validation, persistence, private-capital fund-event context,
-evidence gating, and approval handoff remain server-owned. The same workstream renders the shared
+evidence gating, dimensional accounting normalization, period-lock enforcement, and approval handoff remain server-owned. The same workstream renders the shared
 private-capital activity projection as fund-event rows, capital-account aggregates, signed net
 activity, ordered capital-account subledger movements with running net activity, posted fund-event
 counts, ledger-impact readiness, published report-output counts, report-output readiness

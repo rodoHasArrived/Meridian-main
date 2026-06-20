@@ -17,6 +17,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
             "accounting_configuration_chart_nodes",
             "accounting_configuration_journal_templates",
             "accounting_configuration_posting_rules",
+            "accounting_configuration_rule_test_cases",
             "accounting_action_audit_events"
         ]);
     }
@@ -52,7 +53,53 @@ public sealed class AccountingConfigurationPostgresStoreTests
                 new PostingRuleDto("rule-interest", "Interest accrual", "InterestAccrual", "template-interest")
             ],
             ValidationIssues: [],
-            AuditTrail: []);
+            AuditTrail: [],
+            RuleTestCases:
+            [
+                new AccountingRuleTestCaseDto(
+                    "interest-accrual-happy-path",
+                    "Interest accrual happy path",
+                    new RuleDryRunRequestDto(
+                        "fund-alpha",
+                        "InterestAccrual",
+                        100m,
+                        "USD",
+                        new DateOnly(2026, 6, 30),
+                        "controller"),
+                    ExpectedRuleId: "rule-interest",
+                    ExpectedRuleVersion: "v1",
+                    ExpectedGeneratedPostingLines:
+                    [
+                        new GeneratedPostingLineDto(
+                            "debit-cash",
+                            "Assets:Cash",
+                            AccountingTemplateLineSideDto.Debit,
+                            "source-amount",
+                            Amount: 100m,
+                            Dimensions: new LedgerDimensionSetDto(
+                                FundId: "fund-alpha",
+                                EntityId: "entity-master",
+                                InstrumentId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                                {
+                                    ["Department"] = "Fund Ops"
+                                })),
+                        new GeneratedPostingLineDto(
+                            "credit-interest",
+                            "Income:Interest",
+                            AccountingTemplateLineSideDto.Credit,
+                            "source-amount",
+                            Amount: 100m,
+                            Dimensions: new LedgerDimensionSetDto(
+                                FundId: "fund-alpha",
+                                EntityId: "entity-master",
+                                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                                {
+                                    ["Department"] = "Fund Ops"
+                                }))
+                    ],
+                    EvidenceLinks: ["evidence://accounting/rule-tests/interest-accrual"])
+            ]);
 
         await database.AccountingConfigurationStore.SaveAsync(workspace);
 
@@ -62,6 +109,17 @@ public sealed class AccountingConfigurationPostgresStoreTests
         loaded!.ChartOfAccounts.Should().ContainSingle(node => node.Path == "Assets:Cash");
         loaded.JournalTemplates.Should().ContainSingle(template => template.TemplateId == "template-interest");
         loaded.PostingRules.Should().ContainSingle(rule => rule.RuleId == "rule-interest");
+        var loadedTestCase = loaded.RuleTestCases.Should()
+            .ContainSingle(testCase => testCase.TestCaseId == "interest-accrual-happy-path")
+            .Subject;
+        loadedTestCase.ExpectedGeneratedPostingLines.Should().HaveCount(2);
+        var loadedDebitLine = loadedTestCase.ExpectedGeneratedPostingLines.Should()
+            .ContainSingle(line => line.LineId == "debit-cash")
+            .Subject;
+        loadedDebitLine.Dimensions.Should().NotBeNull();
+        loadedDebitLine.Dimensions!.InstrumentId.Should().Be(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
+        loadedDebitLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("Fund Ops");
+        loadedTestCase.EvidenceLinks.Should().Contain("evidence://accounting/rule-tests/interest-accrual");
         loaded.Status.Should().Be(AccountingConfigurationStatusDto.Draft);
     }
 

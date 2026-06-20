@@ -3,13 +3,18 @@ using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Copy;
-using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using DataWorkspaceShellPresentationService = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPresentationService;
+using DataWorkspaceShellPage = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPage;
+using DataWorkspaceShellSnapshotService = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellSnapshotService;
+using DataWorkspaceShellViewModel = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel;
+using IDataWorkspaceShellPresentationService = Meridian.Wpf.Features.Data.Shell.IDataWorkspaceShellPresentationService;
+using IDataWorkspaceShellSnapshotService = Meridian.Wpf.Features.Data.Shell.IDataWorkspaceShellSnapshotService;
 
 namespace Meridian.Wpf.Features.Data;
 

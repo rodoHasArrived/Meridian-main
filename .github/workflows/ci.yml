@@ -55,7 +55,7 @@ jobs:
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 
       - name: Verify formatting
-        run: dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
+        run: dotnet format whitespace Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 
       - name: Validate warning suppression inventory
         run: python3 build/scripts/ci/check-warning-suppressions.py

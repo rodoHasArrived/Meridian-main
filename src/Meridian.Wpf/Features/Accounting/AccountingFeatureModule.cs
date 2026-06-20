@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Meridian.Application.FundStructure;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -85,8 +86,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>()));
-        services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
-            (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton<Meridian.Contracts.Ledger.IManualJournalEntryLifecycleService>(sp =>
+            (Meridian.Contracts.Ledger.IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -121,7 +122,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         {
             try
             {
-                var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+                var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
                 return Path.Combine(configService.ResolveDataRoot(config), "workstation", "accounting");
             }
             catch

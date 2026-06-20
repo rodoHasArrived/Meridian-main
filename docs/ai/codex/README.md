@@ -19,6 +19,8 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox, approval, search, hook feature flag, skill loading, and bounded subagent role defaults |
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, workflow disclosure startup, proof matrix, and dirty-worktree protocol |
 | [`advanced-configuration.md`](advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, sandboxes, hooks, telemetry, notifications, and TUI options |
+| [`agent-workflow-redesign.md`](agent-workflow-redesign.md) | Proposed target-state redesign for Codex coordinator, specialist lanes, evidence artifacts, and agent promotion |
+| [`memory-system.md`](memory-system.md) | Canonical Codex memory contract for repo-local `.codex/memory/` tiers, routing, promotion, and validation |
 | [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
 | [`self-improving-agents.md`](self-improving-agents.md) | Codex agent improvement loop, eval promotion rules, and graph/retrieval guardrails |
 | [`prompt-route-rules.json`](prompt-route-rules.json) | Schema v2 deterministic routing rules for lane, skill, mode, model route, validation floor, telemetry, and escalation triggers |
@@ -27,6 +29,7 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`../work-modes.md`](../work-modes.md) | Mode selection contract for context budget and escalation control |
 | [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) | Shared parallel-lane ownership manifest to prevent overlap and duplicate discovery |
 | [`../working-memory.md`](../working-memory.md) | Task-local ledger for Codex lane claims, inspected files, assumptions, merge order, and validation reuse |
+| [`.codex/memory/index.yml`](../../../.codex/memory/index.yml) | Repo-local Codex memory index with selective loading metadata for sourced memory entries |
 | [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring skill-backed work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
@@ -202,6 +205,7 @@ Run or account for these gates when Codex skill, catalog, prompt, docs automatio
 behavior changes:
 
 ```bash
+python3 build/scripts/docs/check-codex-memory.py --summary
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
 python3 build/scripts/docs/prompt-route-linter.py --summary
@@ -289,6 +293,11 @@ task-stop evidence checks.
 - Keep the startup context receipt and tool/context change notice in the Codex execution contract
   and quickstart so users can see the active lane, loaded context, next evidence, and reason for
   meaningful tool or context expansion.
+- Use `.codex/memory/index.yml` selectively when the current intent, selected skill, changed paths,
+  branch, or explicit tags match a memory entry. Canonical docs and selected skills remain
+  authoritative when memory disagrees.
+- Promote session observations to task, branch, or repo memory only through
+  [`memory-system.md`](memory-system.md); repo-level promotion requires current source references.
 - Keep the skill selection receipt in the Codex execution contract and quickstart: after selecting
   the narrowest applicable skill, responses use the four-field `Skill Selection` block to name the
   skill, mode, reason, and required opening shape before task-specific output.
@@ -335,6 +344,7 @@ task-stop evidence checks.
 Use the Codex skill checker for fast local drift detection:
 
 ```bash
+python3 build/scripts/docs/check-codex-memory.py --summary
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-codex-skills.py --json-output docs/generated/codex-skills-check.json
 python3 build/scripts/docs/validate-roadmap-registry.py --summary

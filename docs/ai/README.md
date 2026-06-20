@@ -52,6 +52,7 @@ Classify AI/doc changes in this rebuild model:
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills), [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
 | Codex repo-local skills and profiles | [`codex/README.md`](codex/README.md) | [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents), [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md), [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
 | Fast Codex task startup | [`codex/quickstart.md`](codex/quickstart.md) | [`codex/advanced-configuration.md`](codex/advanced-configuration.md), [`codex/route-cards.md`](codex/route-cards.md) |
+| Codex memory contract | [`codex/memory-system.md`](codex/memory-system.md) | [`.codex/memory/index.yml`](../../.codex/memory/index.yml), `python build/scripts/docs/check-codex-memory.py --summary` |
 | MDIF context packs | [`context/README.md`](context/README.md) | [`../architecture/meridian-development-intelligence-framework.md`](../architecture/meridian-development-intelligence-framework.md), [`../domain/README.md`](../domain/README.md), and [`exports/README.md`](exports/README.md) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
@@ -115,11 +116,13 @@ Before changing any AI/helping-agent guidance:
 Validate AI catalog consistency with:
 
 ```bash
+python3 build/scripts/docs/check-codex-memory.py --summary
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
-The checker inventories root assistant entrypoints, Codex configuration, Codex agent profiles,
+The memory checker validates `.codex/memory/index.yml`, sourced Markdown entries, review dates,
+routing metadata, and unindexed memory files. The inventory checker inventories root assistant entrypoints, Codex configuration, Codex agent profiles,
 Codex desktop prompts, Codex validation checklists, Codex `AGENTS.md`, Codex quality tools under
 `tools/codex/`, Claude configuration, checked-in Claude plugin packages under `.claude/plugins/`, Agent Skills-compatible
 packages and shared context, Copilot instructions, agents, skills, prompts, repository prompt
@@ -160,11 +163,13 @@ Located mainly in `docs/ai/claude/`.
 | [`skills/README.md`](skills/README.md) | Portable Agent Skills overview for `.agents/skills/` and `.claude/skills/` |
 | [`codex/README.md`](codex/README.md) | Codex repo-local skill workflow, execution gates, and validation tooling |
 | [`codex/quickstart.md`](codex/quickstart.md) | Compact Codex startup checklist, proof matrix, read budget, and dirty-worktree protocol |
+| [`codex/memory-system.md`](codex/memory-system.md) | Codex repo-local memory tiers, routing, promotion, and validation contract |
 | [`working-memory.md`](working-memory.md) | Task-local coordination ledger for concurrent AI implementation work |
 | [`codex/advanced-configuration.md`](codex/advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, project config, hooks, telemetry, notifications, history, and TUI behavior |
 | [`codex/route-cards.md`](codex/route-cards.md) | Subsystem cards for Codex routing after generated navigation identifies ownership |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
 | [`../prompts/README.md`](../prompts/README.md) | Provider-agnostic prompt and automation guidance inventory |
+| [`.codex/memory/index.yml`](../../.codex/memory/index.yml) | Codex repo-local memory catalog and selective loading metadata |
 | `scripts/ai/`, `tools/codex/` | Local AI maintenance scripts and Codex quality tools |
 | [`.claude/plugins/`](../../.claude/plugins) | Checked-in Claude plugin packages with plugin manifests, agents, and skills |
 | [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents) | Codex specialist agent-profile TOML files |
@@ -212,9 +217,11 @@ Model-routing behavior is docs-only controlled by `model-routing-policy.json`; u
 - Agent orchestration: [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md), [`agent-handoff-checklist.md`](agent-handoff-checklist.md), [check-ai-contract-drift command](assistant-workflow-contract.md)
 - Working memory: [`working-memory.md`](working-memory.md) for active claims, inspected files,
   assumptions, codebase drift, merge order, and validation reuse
+- Codex repo-local memory: [`codex/memory-system.md`](codex/memory-system.md) and
+  `.codex/memory/index.yml`; validate with `check-codex-memory`
 - Token/context management: [`work-modes.md`](work-modes.md), [`tooling/README.md`](tooling/README.md), and one-lane handoff packets in handoff manifest
 - Compact evidence transfer: require `required context` vs `optional context` separation plus validation-reuse notes in handoff packets
-- Validation procedures: `check-ai-inventory`, `check-codex-skills`, `check-ai-handoff --strict`, `check-ai-contract-drift`
+- Validation procedures: `check-codex-memory`, `check-ai-inventory`, `check-codex-skills`, `check-ai-handoff --strict`, `check-ai-contract-drift`
 - Ownership rules: [`../documentation-ownership.md`](../documentation-ownership.md) and this lane’s `assistant-workflow-contract.md`
 
 ### Adding a New AI Resource

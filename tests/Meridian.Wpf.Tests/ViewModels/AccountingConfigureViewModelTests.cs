@@ -21,6 +21,57 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public void ManualJournalEntryTypePresets_ExposeAndApplyEveryAccountingEventType()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var harness = CreateHarness(fundContext);
+        var expected = new[]
+        {
+            new PresetExpectation(ManualJournalEntryTypeDto.General, "General adjustment", "Manual accounting adjustment", "Assets:Cash", "Income:Investment Income", "evidence://manual-je/source-document"),
+            new PresetExpectation(ManualJournalEntryTypeDto.AccruedBalance, "Accrued balance", "Accrued balance adjustment", "Expenses:Operating Expenses", "Liabilities:Accrued Expenses", "evidence://manual-je/accrual-support"),
+            new PresetExpectation(ManualJournalEntryTypeDto.AccruedExpense, "Accrued expense", "Accrued expense entry", "Expenses:Operating Expenses", "Liabilities:Accrued Expenses", "evidence://manual-je/accrued-expense-support"),
+            new PresetExpectation(ManualJournalEntryTypeDto.PrepaidExpense, "Prepaid expense", "Prepaid expense entry", "Assets:Prepaid Expenses", "Assets:Cash", "evidence://manual-je/prepaid-expense-support"),
+            new PresetExpectation(ManualJournalEntryTypeDto.Expense, "Expense", "Expense recognition entry", "Expenses:Operating Expenses", "Assets:Cash", "evidence://manual-je/expense-support"),
+            new PresetExpectation(ManualJournalEntryTypeDto.Amortization, "Amortization", "Amortization entry", "Expenses:Amortization Expense", "Assets:Accumulated Amortization", "evidence://manual-je/amortization-schedule"),
+            new PresetExpectation(ManualJournalEntryTypeDto.Deferral, "Deferral", "Deferral entry", "Assets:Cash", "Liabilities:Deferred Revenue", "evidence://manual-je/deferral-schedule"),
+            new PresetExpectation(ManualJournalEntryTypeDto.Reclassification, "Reclassification", "Account reclassification entry", "Expenses:Operating Expenses", "Expenses:Investment Fees", "evidence://manual-je/reclassification-support"),
+            new PresetExpectation(ManualJournalEntryTypeDto.Reversal, "Reversal", "Reversal entry", "Income:Investment Income", "Assets:Cash", "evidence://manual-je/reversal-approval"),
+            new PresetExpectation(ManualJournalEntryTypeDto.CapitalCall, "Capital call", "Capital call entry", "Assets:Cash", "Equity:Capital Contributions", "evidence://manual-je/capital-call-notice"),
+            new PresetExpectation(ManualJournalEntryTypeDto.Distribution, "Distribution", "Distribution entry", "Equity:Distributions", "Assets:Cash", "evidence://manual-je/distribution-notice"),
+            new PresetExpectation(ManualJournalEntryTypeDto.Subscription, "Subscription", "Subscription entry", "Assets:Subscription Receivable", "Equity:Capital Contributions", "evidence://manual-je/subscription-agreement"),
+            new PresetExpectation(ManualJournalEntryTypeDto.Redemption, "Redemption", "Redemption entry", "Equity:Redemptions", "Assets:Cash", "evidence://manual-je/redemption-approval"),
+            new PresetExpectation(ManualJournalEntryTypeDto.LpTransfer, "LP transfer", "LP transfer entry", "Equity:LP Transfer Out", "Equity:LP Transfer In", "evidence://manual-je/lp-transfer-agreement"),
+            new PresetExpectation(ManualJournalEntryTypeDto.ManagementFee, "Management fee", "Management fee entry", "Expenses:Management Fees", "Assets:Cash", "evidence://manual-je/management-fee-calculation")
+        };
+
+        harness.ViewModel.ManualJournalEntryTypeOptions.Should().Equal(expected.Select(static item => item.EntryType));
+        harness.ViewModel.ManualJournalEntryTypeOptions.Should().Equal(Enum.GetValues<ManualJournalEntryTypeDto>());
+        harness.ViewModel.ManualJournalEntryTypeRows.Should().HaveCount(expected.Length);
+
+        foreach (var item in expected)
+        {
+            var row = harness.ViewModel.ManualJournalEntryTypeRows.Should()
+                .ContainSingle(candidate => candidate.Status == item.EntryType.ToString())
+                .Subject;
+            row.Name.Should().Be(item.Label);
+            row.Detail.Should().Be($"{item.DebitAccountPath} -> {item.CreditAccountPath}");
+            row.Evidence.Should().Be(item.EvidenceLink);
+            row.Key.Should().Be(item.EntryType.ToString());
+
+            if (item.EntryType == ManualJournalEntryTypeDto.General)
+            {
+                harness.ViewModel.SelectedEntryType = ManualJournalEntryTypeDto.ManagementFee;
+            }
+
+            harness.ViewModel.SelectedEntryType = item.EntryType;
+            harness.ViewModel.DraftMemo.Should().Be(item.Memo);
+            harness.ViewModel.DraftDebitAccountPath.Should().Be(item.DebitAccountPath);
+            harness.ViewModel.DraftCreditAccountPath.Should().Be(item.CreditAccountPath);
+            harness.ViewModel.DraftEvidenceLink.Should().Be(item.EvidenceLink);
+        }
+    }
+    [Fact]
     public async Task Scenario_FundAccountingConfigure_LoadsDurableConfigurationManualJournalsExternalEvidenceAndPolicies()
     {
         Directory.CreateDirectory(_root);
@@ -469,6 +520,15 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         AccountingConfigureViewModel ViewModel,
         string ConfigurationPath,
         string DraftsPath);
+
+
+    private sealed record PresetExpectation(
+        ManualJournalEntryTypeDto EntryType,
+        string Label,
+        string Memo,
+        string DebitAccountPath,
+        string CreditAccountPath,
+        string EvidenceLink);
 
     private static PrivateCapitalActivityProjectionDto CreatePostedPrivateCapitalProjection(string fundProfileId)
     {

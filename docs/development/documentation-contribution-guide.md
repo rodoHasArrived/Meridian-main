@@ -571,7 +571,7 @@ Update documentation when:
 - [ ] Update diagrams if architecture changed
 - [ ] Update the [CHANGELOG](../status/CHANGELOG.md)
 - [ ] Check master index ([docs/README.md](../README.md)) has correct links
-- [ ] Run link checker: `make docs-check` (if available)
+- [ ] Run documentation command checks: `make docs-lint` and `python build/scripts/docs/validate-docs-structure.py --summary`
 
 ### Deprecating Documentation
 

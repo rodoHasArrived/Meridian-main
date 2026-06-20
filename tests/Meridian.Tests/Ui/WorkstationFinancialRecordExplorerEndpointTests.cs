@@ -182,19 +182,52 @@ public sealed partial class WorkstationEndpointsTests
                 "Material trial-balance view",
                 "Operator-created saved view for ledger review.",
                 "Cash",
-                [new("account-type", "Account Type", "Asset")]),
+                [new("account-type", "Account Type", "Asset")],
+                ["accountName", "balance"]),
             ServerJsonOptions);
 
         saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var saved = await saveResponse.Content.ReadFromJsonAsync<FinancialRecordExplorerSavedViewDto>(ServerJsonOptions);
         saved.Should().NotBeNull();
         saved!.IsSystem.Should().BeFalse();
+        saved.ColumnIds.Should().Equal(["accountName", "balance"]);
 
         using var payload = await ReadJsonAsync(client, "/api/workstation/financial-record-explorers/ledger");
         payload.RootElement.GetProperty("savedViews").EnumerateArray().Should().Contain(view =>
             view.GetProperty("viewId").GetString() == saved.ViewId &&
             view.GetProperty("label").GetString() == "Material trial-balance view" &&
-            !view.GetProperty("isSystem").GetBoolean());
+            !view.GetProperty("isSystem").GetBoolean() &&
+            view.GetProperty("columnIds").EnumerateArray().Select(column => column.GetString()).SequenceEqual(new[] { "accountName", "balance" }));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerSavedViews_ShouldNormalizeNullableFiltersAndColumns()
+    {
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        var client = app.GetTestClient();
+
+        var saveResponse = await client.PostAsJsonAsync(
+            "/api/workstation/financial-record-explorers/ledger/saved-views",
+            new FinancialRecordExplorerSavedViewSaveRequestDto(
+                "  Normalized ledger view  ",
+                "  trims saved view inputs  ",
+                "  Cash  ",
+                [null!, new(" account-type ", " Account Type ", " Asset ", " ")],
+                [null!, " balance ", "BALANCE", " "]),
+            ServerJsonOptions);
+
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<FinancialRecordExplorerSavedViewDto>(ServerJsonOptions);
+        saved.Should().NotBeNull();
+        saved!.Label.Should().Be("Normalized ledger view");
+        saved.Description.Should().Be("trims saved view inputs");
+        saved.SearchText.Should().Be("Cash");
+        saved.Filters.Should().ContainSingle();
+        saved.Filters[0].FilterId.Should().Be("account-type");
+        saved.Filters[0].Label.Should().Be("Account Type");
+        saved.Filters[0].Value.Should().Be("Asset");
+        saved.Filters[0].Operator.Should().Be("equals");
+        saved.ColumnIds.Should().Equal(["balance"]);
     }
 
     [Fact]

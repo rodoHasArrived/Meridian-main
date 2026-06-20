@@ -9,7 +9,7 @@ Use this checklist after the main skill file when a task needs a formal architec
 - Nearest registered source README for touched `src/**` paths.
 - Existing ADRs when the decision touches storage durability, JSON serialization, channels,
   provider contracts, or shared UI/service seams.
-- Project references from the relevant `.csproj` files.
+- Project references from the relevant `.csproj` or `.fsproj` files.
 
 ## Boundary Rules
 

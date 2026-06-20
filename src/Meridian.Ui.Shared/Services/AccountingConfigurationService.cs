@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -5,6 +6,7 @@ using Meridian.Contracts.Banking;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
@@ -305,9 +307,16 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             RequireText(request.Rule.TemplateId, nameof(request.Rule.TemplateId));
         }
 
+        var existingRule = workspace.PostingRules.FirstOrDefault(item =>
+            string.Equals(item.RuleId, request.Rule.RuleId, StringComparison.OrdinalIgnoreCase));
+        var incomingRule = ResetCarriedForwardPromotionApproval(existingRule, request.Rule);
+        var rule = incomingRule with
+        {
+            Versions = BuildPostingRuleVersionHistory(existingRule, incomingRule, request.Actor, request.EvidenceLinks)
+        };
         var rules = workspace.PostingRules
             .Where(item => !string.Equals(item.RuleId, request.Rule.RuleId, StringComparison.OrdinalIgnoreCase))
-            .Append(request.Rule)
+            .Append(rule)
             .OrderBy(item => item.RuleId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
@@ -319,6 +328,155 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         };
 
         return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+    }
+
+    public async Task<AccountingConfigurationWorkspaceDto> ApprovePostingRulePromotionAsync(
+        ApprovePostingRulePromotionRequest request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), ledgerBookId: null, ct).ConfigureAwait(false);
+        var beforeHash = Hash(workspace);
+        var ruleId = RequireText(request.RuleId, nameof(request.RuleId));
+        var ruleVersion = RequireText(request.RuleVersion, nameof(request.RuleVersion));
+        var actor = RequireText(request.Actor, nameof(request.Actor));
+        EnsureRuleStudioHumanOrigin(request.ActionOrigin, "approve posting rule promotions");
+        var approvalId = RequireText(request.ApprovalId, nameof(request.ApprovalId));
+        var notes = RequireText(request.Notes, nameof(request.Notes));
+        var evidenceLinks = NormalizeRuleEvidenceLinks(request.EvidenceLinks);
+        if (!HasPromotionApprovalEvidence(evidenceLinks))
+        {
+            throw new InvalidOperationException("Posting rule promotion approval requires retained approval, certification, sign-off, or review evidence.");
+        }
+
+        if (!HasPromotionApprovalEvidenceWithProvenance(evidenceLinks, ruleId, ruleVersion, approvalId))
+        {
+            throw new InvalidOperationException("Posting rule promotion approval evidence must reference the retained rule, rule version, or approval id.");
+        }
+
+        var existingRule = workspace.PostingRules.FirstOrDefault(item =>
+            string.Equals(item.RuleId, ruleId, StringComparison.OrdinalIgnoreCase));
+        if (existingRule is null)
+        {
+            throw new ArgumentException($"Posting rule '{ruleId}' was not found.", nameof(request.RuleId));
+        }
+
+        var currentVersion = NormalizeOptional(existingRule.RuleVersion) ?? "v1";
+        if (!string.Equals(currentVersion, ruleVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Posting rule '{ruleId}' is currently at version '{currentVersion}' and cannot approve requested version '{ruleVersion}'.");
+        }
+
+        if (IsApprovedPromotion(existingRule))
+        {
+            if (!string.Equals(existingRule.PromotionApproval!.ApprovalId, approvalId, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Posting rule '{ruleId}' version '{currentVersion}' is already approved by promotion '{existingRule.PromotionApproval.ApprovalId}'.");
+            }
+
+            return workspace;
+        }
+
+        var promotionTestCases = GetSavedRegressionTestsForRuleVersion(workspace.RuleTestCases, existingRule);
+        if (promotionTestCases.Count == 0)
+        {
+            throw new InvalidOperationException("Posting rule promotion approval requires at least one saved regression test case for the current rule version.");
+        }
+
+        if (promotionTestCases.Any(testCase => !HasRuleTestCaseEvidence(testCase.EvidenceLinks)))
+        {
+            throw new InvalidOperationException("Posting rule promotion approval requires retained regression evidence on every current-version saved test case.");
+        }
+
+        if (promotionTestCases.Any(testCase => !HasRuleTestCaseEvidenceWithProvenance(testCase, testCase.EvidenceLinks)))
+        {
+            throw new InvalidOperationException("Posting rule promotion approval requires every current-version saved test case evidence to reference the test case, rule, or version.");
+        }
+
+        var promotionSuite = await ExecuteRuleTestCasesAsync(new ExecuteAccountingRuleTestCasesRequestDto(
+            workspace.FundProfileId,
+            actor,
+            promotionTestCases,
+            workspace.LedgerBookId,
+            request.CorrelationId), ct).ConfigureAwait(false);
+        if (promotionSuite.Results.Any(static result => !result.Passed))
+        {
+            throw new InvalidOperationException("Posting rule promotion approval requires all saved regression tests for the current rule version to pass.");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var approval = new RulePromotionApprovalDto(
+            approvalId,
+            NormalizeOptional(request.RequestedBy) ?? existingRule.PromotionApproval?.RequestedBy ?? actor,
+            request.RequestedAtUtc ?? existingRule.PromotionApproval?.RequestedAtUtc ?? now,
+            ManualJournalEntryStatusDto.Approved,
+            ApprovedBy: actor,
+            ApprovedAtUtc: now,
+            Notes: notes,
+            EvidenceLinks: evidenceLinks);
+
+        var updatedRule = existingRule with
+        {
+            RequiresPromotionApproval = true,
+            PromotionApproval = approval,
+            Versions = ApplyPostingRuleVersionPromotionApproval(existingRule, approval, actor, evidenceLinks)
+        };
+        var rules = workspace.PostingRules
+            .Where(item => !string.Equals(item.RuleId, ruleId, StringComparison.OrdinalIgnoreCase))
+            .Append(updatedRule)
+            .OrderBy(item => item.RuleId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        workspace = workspace with
+        {
+            Status = AccountingConfigurationStatusDto.Draft,
+            PostingRules = rules,
+            UpdatedAtUtc = now
+        };
+
+        return await SaveWithAuditAsync(workspace, beforeHash, actor, "posting-rule.promotion-approve", null, request.CorrelationId, evidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+    }
+
+    public async Task<AccountingConfigurationWorkspaceDto> UpsertRuleTestCaseAsync(
+        UpsertAccountingRuleTestCaseRequest request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.TestCase);
+
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var beforeHash = Hash(workspace);
+        RequireText(request.TestCase.TestCaseId, nameof(request.TestCase.TestCaseId));
+        RequireText(request.TestCase.DisplayName, nameof(request.TestCase.DisplayName));
+        RequireText(request.TestCase.Request.SourceEventType, nameof(request.TestCase.Request.SourceEventType));
+
+        var evidenceLinks = NormalizeRuleEvidenceLinks(request.TestCase.EvidenceLinks.Concat(request.EvidenceLinks ?? []).ToArray());
+        var testCases = workspace.RuleTestCases
+            .Where(item => !string.Equals(item.TestCaseId, request.TestCase.TestCaseId, StringComparison.OrdinalIgnoreCase))
+            .Append(request.TestCase with
+            {
+                Request = request.TestCase.Request with
+                {
+                    FundProfileId = workspace.FundProfileId,
+                    LedgerBookId = request.TestCase.Request.LedgerBookId ?? request.LedgerBookId ?? workspace.LedgerBookId
+                },
+                EvidenceLinks = evidenceLinks
+            })
+            .OrderBy(item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(item => item.TestCaseId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        workspace = workspace with
+        {
+            Status = AccountingConfigurationStatusDto.Draft,
+            RuleTestCases = testCases,
+            UpdatedAtUtc = DateTimeOffset.UtcNow
+        };
+
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "rule-test-case.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingJournalTemplatePreviewDto> PreviewTemplateAsync(
@@ -346,7 +504,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 ]);
         }
 
-        var chartByPath = workspace.ChartOfAccounts.ToDictionary(item => item.Path, StringComparer.OrdinalIgnoreCase);
+        var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
         var lines = template.Lines
             .Select(line =>
             {
@@ -381,20 +539,41 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
-        var chartByPath = workspace.ChartOfAccounts.ToDictionary(item => item.Path, StringComparer.OrdinalIgnoreCase);
+        var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
         var templateById = workspace.JournalTemplates
             .Where(static item => !item.IsArchived)
             .ToDictionary(static item => item.TemplateId, StringComparer.OrdinalIgnoreCase);
-        var candidates = workspace.PostingRules
+        var sourceEventRules = workspace.PostingRules
             .Where(rule => !rule.IsArchived)
             .Where(rule => string.Equals(rule.SourceEventType, request.SourceEventType, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var invalidEffectiveWindowRules = sourceEventRules
+            .Where(HasInvalidEffectiveWindow)
+            .OrderByDescending(static rule => rule.Priority)
+            .ThenBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var candidates = sourceEventRules
+            .Where(rule => !HasInvalidEffectiveWindow(rule))
             .Where(rule => IsEffective(rule, request.EffectiveDate))
             .OrderByDescending(static rule => rule.Priority)
             .ThenBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var matches = new List<AccountingRuleDryRunMatchDto>(candidates.Length);
+        var matches = new List<AccountingRuleDryRunMatchDto>(invalidEffectiveWindowRules.Length + candidates.Length);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        var matchedCandidateRules = new List<PostingRuleDto>();
         PostingRuleDto? selectedRule = null;
+
+        foreach (var rule in invalidEffectiveWindowRules)
+        {
+            matches.Add(new AccountingRuleDryRunMatchDto(
+                rule.RuleId,
+                rule.DisplayName,
+                rule.RuleVersion,
+                rule.Priority,
+                IsMatched: false,
+                Explanations: ["Rule effective-date window is invalid."],
+                ValidationIssues: [BuildPostingRuleEffectiveWindowIssue(rule)]));
+        }
 
         foreach (var rule in candidates)
         {
@@ -404,6 +583,15 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             {
                 ruleIssues.Add(Issue("rule.template-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' references missing template '{rule.TemplateId}'.", rule.RuleId, "Select an active template or configure generated posting lines."));
             }
+            ruleIssues.AddRange(ValidateGeneratedPostingLineIdentity(rule));
+            ruleIssues.AddRange(ValidateGeneratedPostingAccountReferences(
+                rule,
+                chartByPath,
+                "rule.generated-account-missing",
+                "rule.generated-account-archived"));
+            ruleIssues.AddRange(ValidateAllocationRuleIdentity(rule));
+            ruleIssues.AddRange(ValidatePostingRuleFormulaReferences(rule));
+            ruleIssues.AddRange(ValidatePostingRuleDryRunAllocationWeights(rule, request.EventAmount));
 
             var scopeMatches = MatchesScope(rule.Scope, request.Dimensions, request.CounterpartyId);
             if (!scopeMatches)
@@ -417,6 +605,10 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             {
                 selectedRule = rule;
             }
+            if (isMatched)
+            {
+                matchedCandidateRules.Add(rule);
+            }
 
             matches.Add(new AccountingRuleDryRunMatchDto(
                 rule.RuleId,
@@ -428,6 +620,23 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 ruleIssues));
         }
 
+        var matchedTopPriorityRules = matchedCandidateRules.Count == 0
+            ? []
+            : matchedCandidateRules
+                .Where(rule => rule.Priority == matchedCandidateRules.Max(static item => item.Priority))
+                .OrderBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        if (matchedTopPriorityRules.Length > 1)
+        {
+            issues.Add(Issue(
+                "posting-rule.priority-conflict",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Dry run matched {matchedTopPriorityRules.Length} posting rules at priority {matchedTopPriorityRules[0].Priority}: {string.Join(", ", matchedTopPriorityRules.Select(static rule => rule.RuleId))}.",
+                selectedRule?.RuleId ?? request.SourceEventType,
+                "Assign a distinct priority, effective-date window, or dimensional scope so dry-run rule selection is deterministic."));
+            selectedRule = null;
+        }
+
         if (candidates.Length == 0)
         {
             issues.Add(Issue("rule.none", AccountingConfigurationValidationSeverityDto.Critical, $"No active posting rule matched source event '{request.SourceEventType}' for {request.EffectiveDate:yyyy-MM-dd}.", request.SourceEventType, "Create an effective-dated posting rule for this source event."));
@@ -436,6 +645,12 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         IReadOnlyList<GeneratedPostingLineDto> generatedPostingLines = selectedRule is null
             ? []
             : BuildGeneratedPostingLines(selectedRule, templateById.GetValueOrDefault(selectedRule.TemplateId), request);
+        if (selectedRule is not null)
+        {
+            issues.AddRange(ValidatePostingRuleFormulaReferences(selectedRule));
+            issues.AddRange(ValidatePostingRuleDryRunAllocationWeights(selectedRule, request.EventAmount));
+        }
+
         var previewLines = generatedPostingLines
             .Select(line =>
             {
@@ -486,6 +701,60 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             generatedPostingLines);
     }
 
+    public async Task<AccountingRuleTestSuiteResultDto> ExecuteRuleTestCasesAsync(
+        ExecuteAccountingRuleTestCasesRequestDto request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+
+        var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var actor = RequireText(request.Actor, nameof(request.Actor));
+        var workspace = request.TestCases.Count == 0
+            ? await LoadWorkspaceAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false)
+            : null;
+        var testCases = request.TestCases.Count == 0
+            ? workspace?.RuleTestCases ?? []
+            : request.TestCases;
+        var results = new List<AccountingRuleTestCaseResultDto>(testCases.Count);
+
+        foreach (var testCase in testCases)
+        {
+            ct.ThrowIfCancellationRequested();
+            ArgumentNullException.ThrowIfNull(testCase);
+
+            var dryRunRequest = testCase.Request with
+            {
+                FundProfileId = fundProfileId,
+                LedgerBookId = testCase.Request.LedgerBookId ?? request.LedgerBookId,
+                Actor = actor,
+                CorrelationId = string.IsNullOrWhiteSpace(testCase.Request.CorrelationId)
+                    ? request.CorrelationId
+                    : testCase.Request.CorrelationId
+            };
+            var dryRun = await DryRunPostingRuleAsync(dryRunRequest, ct).ConfigureAwait(false);
+            var assertionIssues = EvaluateRuleTestCaseAssertions(testCase, dryRun);
+
+            results.Add(new AccountingRuleTestCaseResultDto(
+                RequireText(testCase.TestCaseId, nameof(testCase.TestCaseId)),
+                RequireText(testCase.DisplayName, nameof(testCase.DisplayName)),
+                assertionIssues.Count == 0,
+                dryRun,
+                assertionIssues));
+        }
+
+        var passedCount = results.Count(static item => item.Passed);
+        return new AccountingRuleTestSuiteResultDto(
+            fundProfileId,
+            request.LedgerBookId ?? workspace?.LedgerBookId,
+            DateTimeOffset.UtcNow,
+            actor,
+            results.Count,
+            passedCount,
+            results.Count - passedCount,
+            results);
+    }
+
     public async Task<AccountingConfigurationWorkspaceDto> ActivateAsync(
         ActivateAccountingConfigurationRequest request,
         CancellationToken ct = default)
@@ -494,7 +763,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         ArgumentNullException.ThrowIfNull(request);
         var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
-        var issues = Validate(workspace);
+        var issues = await ValidateActivationReadinessAsync(workspace, request, ct).ConfigureAwait(false);
         if (issues.Any(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
         {
             throw new InvalidOperationException("Accounting configuration cannot be activated while critical validation issues remain.");
@@ -509,7 +778,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "configuration.activate", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "configuration.activate", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct, issues).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(
@@ -528,9 +797,10 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         IReadOnlyList<string>? evidenceLinks,
         string? companyId,
         IReadOnlyList<string>? reportGroupPrincipalIds,
-        CancellationToken ct)
+        CancellationToken ct,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto>? validationOverride = null)
     {
-        var validation = Validate(workspace);
+        var validation = validationOverride ?? Validate(workspace);
         var finalWorkspace = workspace with { ValidationIssues = validation };
         var afterHash = Hash(finalWorkspace);
         await _store.SaveAsync(finalWorkspace, ct).ConfigureAwait(false);
@@ -576,7 +846,8 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             JournalTemplates: [],
             PostingRules: [],
             ValidationIssues: [],
-            AuditTrail: []);
+            AuditTrail: [],
+            RuleTestCases: []);
     }
 
     private async Task<IReadOnlyList<LedgerBookDto>> LoadLedgerBooksAsync(string fundProfileId, Guid? ledgerBookId, CancellationToken ct)
@@ -599,6 +870,142 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         => (!rule.EffectiveFrom.HasValue || rule.EffectiveFrom.Value <= effectiveDate) &&
            (!rule.EffectiveTo.HasValue || rule.EffectiveTo.Value >= effectiveDate);
 
+    private static bool HasInvalidEffectiveWindow(PostingRuleDto rule)
+        => rule.EffectiveFrom.HasValue &&
+           rule.EffectiveTo.HasValue &&
+           rule.EffectiveFrom.Value > rule.EffectiveTo.Value;
+
+    private static AccountingConfigurationValidationIssueDto BuildPostingRuleEffectiveWindowIssue(PostingRuleDto rule)
+        => Issue(
+            "posting-rule.effective-date-range",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            $"Posting rule '{rule.RuleId}' has an effective-from date after effective-to.",
+            rule.RuleId,
+            "Correct the effective-dated rule window.");
+
+    private static PostingRuleDto ResetCarriedForwardPromotionApproval(PostingRuleDto? existingRule, PostingRuleDto incomingRule)
+    {
+        var existingApproval = existingRule?.PromotionApproval;
+        var incomingApproval = incomingRule.PromotionApproval;
+        if (existingRule is null ||
+            !incomingRule.RequiresPromotionApproval ||
+            existingApproval is null ||
+            incomingApproval is null ||
+            !IsApprovedPromotion(existingRule) ||
+            !IsApprovedPromotion(incomingRule) ||
+            !string.Equals(existingApproval.ApprovalId, incomingApproval.ApprovalId, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(HashApprovalProtectedRuleDefinition(existingRule), HashApprovalProtectedRuleDefinition(incomingRule), StringComparison.Ordinal))
+        {
+            return incomingRule;
+        }
+
+        return incomingRule with { PromotionApproval = null };
+    }
+
+    private static string HashApprovalProtectedRuleDefinition(PostingRuleDto rule)
+    {
+        var json = JsonSerializer.Serialize(new PostingRuleApprovalProtectedDefinition(
+            NormalizeOptional(rule.RuleVersion) ?? "v1",
+            NormalizeOptional(rule.SourceEventType) ?? string.Empty,
+            NormalizeOptional(rule.TemplateId) ?? string.Empty,
+            rule.EffectiveFrom,
+            rule.EffectiveTo,
+            rule.Priority,
+            rule.Scope,
+            rule.Conditions,
+            rule.ConditionGroups,
+            rule.Formulas,
+            rule.Allocations,
+            rule.GeneratedPostings));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+    }
+
+    private static IReadOnlyList<AccountingRuleVersionDto> BuildPostingRuleVersionHistory(
+        PostingRuleDto? existingRule,
+        PostingRuleDto incomingRule,
+        string actor,
+        IReadOnlyList<string>? evidenceLinks)
+    {
+        var versions = new List<AccountingRuleVersionDto>();
+        versions.AddRange(existingRule?.Versions ?? []);
+        foreach (var version in incomingRule.Versions)
+        {
+            var index = versions.FindIndex(item => string.Equals(item.Version, version.Version, StringComparison.OrdinalIgnoreCase));
+            if (index >= 0)
+            {
+                versions[index] = version;
+            }
+            else
+            {
+                versions.Add(version);
+            }
+        }
+
+        var currentVersion = string.IsNullOrWhiteSpace(incomingRule.RuleVersion)
+            ? "v1"
+            : incomingRule.RuleVersion.Trim();
+        if (!versions.Any(item => string.Equals(item.Version, currentVersion, StringComparison.OrdinalIgnoreCase)))
+        {
+            var summary = existingRule is null
+                ? $"Created posting rule '{incomingRule.RuleId}' at version '{currentVersion}'."
+                : $"Updated posting rule '{incomingRule.RuleId}' to version '{currentVersion}'.";
+            versions.Add(new AccountingRuleVersionDto(
+                currentVersion,
+                DateTimeOffset.UtcNow,
+                RequireText(actor, nameof(actor)),
+                summary,
+                incomingRule.PromotionApproval,
+                NormalizeRuleEvidenceLinks(evidenceLinks)));
+        }
+
+        return versions
+            .OrderBy(static version => version.CreatedAtUtc)
+            .ThenBy(static version => version.Version, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<AccountingRuleVersionDto> ApplyPostingRuleVersionPromotionApproval(
+        PostingRuleDto rule,
+        RulePromotionApprovalDto approval,
+        string actor,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        var currentVersion = NormalizeOptional(rule.RuleVersion) ?? "v1";
+        var versions = rule.Versions.ToList();
+        var index = versions.FindIndex(item => string.Equals(item.Version, currentVersion, StringComparison.OrdinalIgnoreCase));
+        if (index >= 0)
+        {
+            var version = versions[index];
+            versions[index] = version with
+            {
+                PromotionApproval = approval,
+                EvidenceLinks = NormalizeRuleEvidenceLinks(version.EvidenceLinks.Concat(evidenceLinks).ToArray())
+            };
+        }
+        else
+        {
+            versions.Add(new AccountingRuleVersionDto(
+                currentVersion,
+                DateTimeOffset.UtcNow,
+                RequireText(actor, nameof(actor)),
+                $"Approved posting rule '{rule.RuleId}' at version '{currentVersion}'.",
+                approval,
+                evidenceLinks));
+        }
+
+        return versions
+            .OrderBy(static version => version.CreatedAtUtc)
+            .ThenBy(static version => version.Version, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<string> NormalizeRuleEvidenceLinks(IReadOnlyList<string>? evidenceLinks)
+        => (evidenceLinks ?? [])
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
     private static bool MatchesScope(LedgerDimensionSetDto? ruleScope, LedgerDimensionSetDto? eventScope, string? counterpartyId)
     {
         if (ruleScope is null)
@@ -615,11 +1022,43 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                (!ruleScope.InstrumentId.HasValue || ruleScope.InstrumentId == eventScope?.InstrumentId) &&
                MatchesScopeValue(ruleScope.TaxLotId, eventScope?.TaxLotId) &&
                MatchesScopeValue(ruleScope.CostCenterId, eventScope?.CostCenterId) &&
-               MatchesScopeValue(ruleScope.CounterpartyId, eventScope?.CounterpartyId ?? counterpartyId);
+               MatchesScopeValue(ruleScope.CounterpartyId, eventScope?.CounterpartyId ?? counterpartyId) &&
+               MatchesExternalGlScope(ruleScope.ExternalGlDimensions, eventScope?.ExternalGlDimensions);
     }
 
     private static bool MatchesScopeValue(string? expected, string? actual)
         => string.IsNullOrWhiteSpace(expected) || string.Equals(expected.Trim(), actual?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool MatchesExternalGlScope(
+        IReadOnlyDictionary<string, string> expected,
+        IReadOnlyDictionary<string, string>? actual)
+    {
+        if (expected.Count == 0)
+        {
+            return true;
+        }
+
+        if (actual is null || actual.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var pair in expected)
+        {
+            if (string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value))
+            {
+                continue;
+            }
+
+            if (!actual.TryGetValue(pair.Key, out var actualValue) ||
+                !string.Equals(pair.Value.Trim(), actualValue?.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private static bool EvaluateConditions(
         PostingRuleDto rule,
@@ -628,8 +1067,14 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         List<string> explanations)
     {
         var allMatched = true;
+        issues.AddRange(BuildDuplicateConditionIdIssues(
+            rule.RuleId,
+            GetRuleConditions(rule),
+            "rule.condition-id-duplicate"));
         foreach (var condition in rule.Conditions)
         {
+            ValidateConditionIdentity(rule.RuleId, condition, issues, rule.RuleId, "rule.condition-id-missing");
+            ValidateConditionOperand(rule.RuleId, condition, issues, condition.ConditionId);
             var matched = EvaluateCondition(condition, request);
             if (!matched && condition.IsRequired)
             {
@@ -647,7 +1092,71 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             }
         }
 
+        foreach (var group in rule.ConditionGroups)
+        {
+            if (string.IsNullOrWhiteSpace(group.GroupId))
+            {
+                issues.Add(Issue(
+                    "rule.condition-group-id-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Posting rule '{rule.RuleId}' has a condition group without an id.",
+                    rule.RuleId,
+                    "Assign each condition group a stable id."));
+            }
+
+            if (group.Conditions.Count == 0)
+            {
+                issues.Add(Issue(
+                    "rule.condition-group-empty",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Condition group '{group.GroupId}' on rule '{rule.RuleId}' has no conditions.",
+                    group.GroupId,
+                    "Add at least one condition to the group or remove the group."));
+            }
+
+            foreach (var condition in group.Conditions.Where(static condition => string.IsNullOrWhiteSpace(condition.Field)))
+            {
+                issues.Add(Issue(
+                    "rule.condition-field-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Condition '{condition.ConditionId}' in group '{group.GroupId}' is missing a field.",
+                    condition.ConditionId,
+                    "Select a dry-run field for this grouped rule condition."));
+            }
+
+            foreach (var condition in group.Conditions)
+            {
+                ValidateConditionIdentity(rule.RuleId, condition, issues, group.GroupId, "rule.condition-id-missing");
+                ValidateConditionOperand(rule.RuleId, condition, issues, condition.ConditionId);
+            }
+
+            var matched = EvaluateConditionGroup(group, request);
+            if (!matched && group.IsRequired)
+            {
+                allMatched = false;
+                explanations.Add($"Required condition group '{group.GroupId}' did not match.");
+            }
+            else if (matched)
+            {
+                explanations.Add($"Condition group '{group.GroupId}' matched.");
+            }
+        }
+
         return allMatched;
+    }
+
+    private static bool EvaluateConditionGroup(AccountingRuleConditionGroupDto group, RuleDryRunRequestDto request)
+    {
+        if (group.Conditions.Count == 0)
+        {
+            return false;
+        }
+
+        return group.Operator switch
+        {
+            AccountingRuleConditionGroupOperatorDto.Any => group.Conditions.Any(condition => EvaluateCondition(condition, request)),
+            _ => group.Conditions.All(condition => EvaluateCondition(condition, request))
+        };
     }
 
     private static bool EvaluateCondition(AccountingRuleConditionDto condition, RuleDryRunRequestDto request)
@@ -658,9 +1167,9 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             AccountingRuleConditionOperatorDto.Equals => string.Equals(actual, condition.Value, StringComparison.OrdinalIgnoreCase),
             AccountingRuleConditionOperatorDto.NotEquals => !string.Equals(actual, condition.Value, StringComparison.OrdinalIgnoreCase),
             AccountingRuleConditionOperatorDto.Contains => actual?.Contains(condition.Value ?? string.Empty, StringComparison.OrdinalIgnoreCase) == true,
-            AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual => request.EventAmount >= ParseDecimal(condition.Value),
-            AccountingRuleConditionOperatorDto.AmountLessThanOrEqual => request.EventAmount <= ParseDecimal(condition.Value),
-            AccountingRuleConditionOperatorDto.AmountBetween => request.EventAmount >= ParseDecimal(condition.Value) && request.EventAmount <= ParseDecimal(condition.SecondValue),
+            AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual => TryParseDecimal(condition.Value, out var minimum) && request.EventAmount >= minimum,
+            AccountingRuleConditionOperatorDto.AmountLessThanOrEqual => TryParseDecimal(condition.Value, out var maximum) && request.EventAmount <= maximum,
+            AccountingRuleConditionOperatorDto.AmountBetween => TryParseDecimal(condition.Value, out var lower) && TryParseDecimal(condition.SecondValue, out var upper) && lower <= upper && request.EventAmount >= lower && request.EventAmount <= upper,
             AccountingRuleConditionOperatorDto.IsPresent => !string.IsNullOrWhiteSpace(actual),
             _ => false
         };
@@ -688,29 +1197,153 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         };
     }
 
-    private static decimal ParseDecimal(string? value)
-        => decimal.TryParse(value, out var result) ? result : decimal.Zero;
+    private static bool TryParseDecimal(string? value, out decimal result)
+        => decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out result);
+
+    private static IEnumerable<AccountingRuleConditionDto> GetRuleConditions(PostingRuleDto rule)
+        => rule.Conditions.Concat(rule.ConditionGroups.SelectMany(static group => group.Conditions));
+
+    private static void ValidateConditionIdentity(
+        string ruleId,
+        AccountingRuleConditionDto condition,
+        List<AccountingConfigurationValidationIssueDto> issues,
+        string? targetId,
+        string issueCode)
+    {
+        if (!string.IsNullOrWhiteSpace(condition.ConditionId))
+        {
+            return;
+        }
+
+        issues.Add(Issue(
+            issueCode,
+            AccountingConfigurationValidationSeverityDto.Critical,
+            $"Posting rule '{ruleId}' has a condition without an id.",
+            targetId,
+            "Assign every rule condition a stable id before dry-run preview or activation."));
+    }
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> BuildDuplicateConditionIdIssues(
+        string ruleId,
+        IEnumerable<AccountingRuleConditionDto> conditions,
+        string issueCode)
+    {
+        foreach (var duplicate in conditions
+            .Select(static condition => condition.ConditionId?.Trim())
+            .Where(static conditionId => !string.IsNullOrWhiteSpace(conditionId))
+            .GroupBy(static conditionId => conditionId!, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() > 1))
+        {
+            yield return Issue(
+                issueCode,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Posting rule '{ruleId}' defines duplicate condition id '{duplicate.Key}'.",
+                duplicate.Key,
+                "Keep rule condition ids unique so test evidence, dry-run issues, and promotion review can identify one predicate.");
+        }
+    }
+
+    private static void ValidateConditionOperand(
+        string ruleId,
+        AccountingRuleConditionDto condition,
+        List<AccountingConfigurationValidationIssueDto> issues,
+        string? targetId)
+    {
+        issues.AddRange(BuildInvalidConditionOperandIssues(
+            ruleId,
+            condition,
+            targetId,
+            "rule.condition-value-missing",
+            "rule.condition-amount-invalid",
+            "rule.condition-amount-range-invalid"));
+    }
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> BuildInvalidConditionOperandIssues(
+        string ruleId,
+        AccountingRuleConditionDto condition,
+        string? targetId,
+        string missingValueIssueCode,
+        string invalidAmountIssueCode,
+        string invalidRangeIssueCode)
+    {
+        switch (condition.Operator)
+        {
+            case AccountingRuleConditionOperatorDto.Equals:
+            case AccountingRuleConditionOperatorDto.NotEquals:
+            case AccountingRuleConditionOperatorDto.Contains:
+                if (string.IsNullOrWhiteSpace(condition.Value))
+                {
+                    yield return Issue(
+                        missingValueIssueCode,
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Text condition '{condition.ConditionId}' on rule '{ruleId}' is missing a comparison value.",
+                        targetId,
+                        "Enter the retained predicate value before dry-run preview or activation.");
+                }
+
+                break;
+            case AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual:
+            case AccountingRuleConditionOperatorDto.AmountLessThanOrEqual:
+                if (!TryParseDecimal(condition.Value, out _))
+                {
+                    yield return Issue(
+                        invalidAmountIssueCode,
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Amount condition '{condition.ConditionId}' on rule '{ruleId}' has an invalid numeric value '{condition.Value ?? "missing"}'.",
+                        targetId,
+                        "Enter a valid invariant decimal amount for the condition threshold.");
+                }
+
+                break;
+            case AccountingRuleConditionOperatorDto.AmountBetween:
+                if (!TryParseDecimal(condition.Value, out var lower) || !TryParseDecimal(condition.SecondValue, out var upper))
+                {
+                    yield return Issue(
+                        invalidAmountIssueCode,
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Amount-between condition '{condition.ConditionId}' on rule '{ruleId}' has invalid numeric bounds '{condition.Value ?? "missing"}' and '{condition.SecondValue ?? "missing"}'.",
+                        targetId,
+                        "Enter valid invariant decimal amounts for both condition bounds.");
+                }
+                else if (lower > upper)
+                {
+                    yield return Issue(
+                        invalidRangeIssueCode,
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Amount-between condition '{condition.ConditionId}' on rule '{ruleId}' has lower bound {lower} greater than upper bound {upper}.",
+                        targetId,
+                        "Enter amount-between bounds with the lower amount less than or equal to the upper amount.");
+                }
+
+                break;
+        }
+    }
 
     private static IReadOnlyList<GeneratedPostingLineDto> BuildGeneratedPostingLines(
         PostingRuleDto rule,
         JournalEntryTemplateDto? template,
         RuleDryRunRequestDto request)
     {
+        var eventDimensions = string.IsNullOrWhiteSpace(request.CounterpartyId)
+            ? request.Dimensions
+            : MergeDimensions(request.Dimensions, new LedgerDimensionSetDto(CounterpartyId: request.CounterpartyId));
+        IReadOnlyList<GeneratedPostingLineDto> generatedLines;
         if (rule.GeneratedPostings.Count > 0)
         {
-            return rule.GeneratedPostings
+            generatedLines = rule.GeneratedPostings
                 .Select(line => line with
                 {
                     Amount = ResolveFormulaAmount(line.AmountFormulaId, line.Amount, rule.Formulas, request.EventAmount),
                     Currency = string.IsNullOrWhiteSpace(line.Currency) ? NormalizeCurrency(request.Currency) : line.Currency.Trim().ToUpperInvariant(),
-                    Dimensions = line.Dimensions ?? request.Dimensions
+                    Dimensions = MergeDimensions(rule.Scope, eventDimensions, line.Dimensions)
                 })
                 .ToArray();
         }
-
-        return template is null
-            ? []
-            : template.Lines
+        else
+        {
+            generatedLines = template is null
+                ? []
+                : template.Lines
                 .Select(line => new GeneratedPostingLineDto(
                     line.LineId,
                     line.AccountPath,
@@ -718,9 +1351,12 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                     "template.amount",
                     line.Amount == 0m ? request.EventAmount : line.Amount,
                     string.IsNullOrWhiteSpace(line.Currency) ? NormalizeCurrency(request.Currency) : line.Currency.Trim().ToUpperInvariant(),
-                    request.Dimensions,
+                    MergeDimensions(rule.Scope, eventDimensions),
                     line.Description))
                 .ToArray();
+        }
+
+        return ApplyAllocations(generatedLines, rule.Allocations, rule.Formulas, request.EventAmount, request.Dimensions);
     }
 
     private static decimal ResolveFormulaAmount(
@@ -745,15 +1381,453 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         };
     }
 
+    private static IReadOnlyList<GeneratedPostingLineDto> ApplyAllocations(
+        IReadOnlyList<GeneratedPostingLineDto> generatedLines,
+        IReadOnlyList<AllocationRuleDto> allocations,
+        IReadOnlyList<AccountingRuleFormulaDto> formulas,
+        decimal eventAmount,
+        LedgerDimensionSetDto? requestDimensions)
+    {
+        var positiveAllocations = allocations
+            .Select(allocation => allocation with { Weight = ResolveAllocationWeight(allocation, formulas, eventAmount) })
+            .Where(static allocation => allocation.Weight > 0m)
+            .OrderBy(static allocation => allocation.AllocationRuleId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (generatedLines.Count == 0 || positiveAllocations.Length == 0)
+        {
+            return generatedLines;
+        }
+
+        var totalWeight = positiveAllocations.Sum(static allocation => allocation.Weight);
+        return generatedLines
+            .SelectMany(line => AllocateGeneratedPostingLine(line, positiveAllocations, totalWeight, requestDimensions))
+            .ToArray();
+    }
+
+    private static decimal ResolveAllocationWeight(
+        AllocationRuleDto allocation,
+        IReadOnlyList<AccountingRuleFormulaDto> formulas,
+        decimal eventAmount)
+    {
+        var formulaId = NormalizeOptional(allocation.FormulaId);
+        return formulaId is null
+            ? allocation.Weight
+            : ResolveFormulaAmount(formulaId, allocation.Weight, formulas, eventAmount);
+    }
+
+    private static IReadOnlyList<GeneratedPostingLineDto> AllocateGeneratedPostingLine(
+        GeneratedPostingLineDto sourceLine,
+        IReadOnlyList<AllocationRuleDto> allocations,
+        decimal totalWeight,
+        LedgerDimensionSetDto? requestDimensions)
+    {
+        var allocatedLines = new List<GeneratedPostingLineDto>(allocations.Count);
+        var allocatedAmount = 0m;
+        for (var index = 0; index < allocations.Count; index++)
+        {
+            var allocation = allocations[index];
+            var amount = index == allocations.Count - 1
+                ? sourceLine.Amount - allocatedAmount
+                : Math.Round(sourceLine.Amount * allocation.Weight / totalWeight, 2, MidpointRounding.AwayFromZero);
+            allocatedAmount += amount;
+
+            allocatedLines.Add(sourceLine with
+            {
+                LineId = $"{sourceLine.LineId}:{allocation.AllocationRuleId}",
+                Amount = amount,
+                Dimensions = MergeDimensions(requestDimensions, sourceLine.Dimensions, allocation.TargetDimensions),
+                Description = string.IsNullOrWhiteSpace(allocation.Description)
+                    ? sourceLine.Description
+                    : string.IsNullOrWhiteSpace(sourceLine.Description)
+                        ? allocation.Description
+                        : $"{sourceLine.Description} - {allocation.Description}"
+            });
+        }
+
+        return allocatedLines;
+    }
+
+    private static LedgerDimensionSetDto? MergeDimensions(params LedgerDimensionSetDto?[] dimensions)
+    {
+        LedgerDimensionSetDto? merged = null;
+        foreach (var dimension in dimensions.Where(static item => item is not null))
+        {
+            merged = MergeDimension(merged, dimension!);
+        }
+
+        return merged;
+    }
+
+    private static LedgerDimensionSetDto MergeDimension(LedgerDimensionSetDto? baseDimensions, LedgerDimensionSetDto overlay)
+    {
+        var externalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (baseDimensions is not null)
+        {
+            foreach (var pair in baseDimensions.ExternalGlDimensions)
+            {
+                if (!string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                {
+                    externalGlDimensions[pair.Key.Trim()] = pair.Value.Trim();
+                }
+            }
+        }
+
+        foreach (var pair in overlay.ExternalGlDimensions)
+        {
+            if (!string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            {
+                externalGlDimensions[pair.Key.Trim()] = pair.Value.Trim();
+            }
+        }
+
+        return new LedgerDimensionSetDto(
+            FundId: FirstText(overlay.FundId, baseDimensions?.FundId),
+            EntityId: FirstText(overlay.EntityId, baseDimensions?.EntityId),
+            SleeveId: FirstText(overlay.SleeveId, baseDimensions?.SleeveId),
+            StrategyId: FirstText(overlay.StrategyId, baseDimensions?.StrategyId),
+            InvestorId: FirstText(overlay.InvestorId, baseDimensions?.InvestorId),
+            CapitalAccountId: FirstText(overlay.CapitalAccountId, baseDimensions?.CapitalAccountId),
+            InstrumentId: overlay.InstrumentId ?? baseDimensions?.InstrumentId,
+            TaxLotId: FirstText(overlay.TaxLotId, baseDimensions?.TaxLotId),
+            CostCenterId: FirstText(overlay.CostCenterId, baseDimensions?.CostCenterId),
+            CounterpartyId: FirstText(overlay.CounterpartyId, baseDimensions?.CounterpartyId),
+            ExternalGlDimensions: externalGlDimensions);
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> EvaluateRuleTestCaseAssertions(
+        AccountingRuleTestCaseDto testCase,
+        RuleDryRunResultDto dryRun)
+    {
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        if (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleId) &&
+            !string.Equals(testCase.ExpectedRuleId, dryRun.SelectedRuleId, StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(Issue(
+                "rule-test.expected-rule-mismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Test case '{testCase.TestCaseId}' expected rule '{testCase.ExpectedRuleId}' but selected '{dryRun.SelectedRuleId ?? "none"}'.",
+                testCase.TestCaseId,
+                "Review rule priority, effective date, conditions, and dimensional scope."));
+        }
+
+        if (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleVersion))
+        {
+            var selectedMatch = dryRun.RuleMatches.FirstOrDefault(match =>
+                match.IsMatched &&
+                string.Equals(match.RuleId, dryRun.SelectedRuleId, StringComparison.OrdinalIgnoreCase));
+            if (!string.Equals(testCase.ExpectedRuleVersion.Trim(), selectedMatch?.RuleVersion, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(Issue(
+                    "rule-test.expected-version-mismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Test case '{testCase.TestCaseId}' expected rule version '{testCase.ExpectedRuleVersion}' but selected '{selectedMatch?.RuleVersion ?? "none"}'.",
+                    testCase.TestCaseId,
+                    "Review the saved regression case or update the posting rule version under test."));
+            }
+        }
+
+        if (testCase.ExpectBalancedPosting != dryRun.IsPostingBalanced)
+        {
+            issues.Add(Issue(
+                "rule-test.balance-mismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Test case '{testCase.TestCaseId}' expected balanced posting '{testCase.ExpectBalancedPosting}' but dry run returned '{dryRun.IsPostingBalanced}'.",
+                testCase.TestCaseId,
+                "Review generated posting lines, formulas, allocations, and account validation issues."));
+        }
+
+        issues.AddRange(EvaluateRuleTestCaseGeneratedPostingAssertions(testCase, dryRun));
+
+        var actualIssueCodes = dryRun.ValidationIssues
+            .Select(static issue => issue.Code)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var expectedCode in testCase.ExpectedIssueCodes.Where(static item => !string.IsNullOrWhiteSpace(item)))
+        {
+            if (!actualIssueCodes.Contains(expectedCode))
+            {
+                issues.Add(Issue(
+                    "rule-test.expected-issue-missing",
+                    AccountingConfigurationValidationSeverityDto.Warning,
+                    $"Test case '{testCase.TestCaseId}' expected issue code '{expectedCode}' but the dry run did not return it.",
+                    testCase.TestCaseId,
+                    "Update the expected issue list or restore the rule validation behavior."));
+            }
+        }
+
+        return issues;
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> EvaluateRuleTestCaseGeneratedPostingAssertions(
+        AccountingRuleTestCaseDto testCase,
+        RuleDryRunResultDto dryRun)
+    {
+        if (testCase.ExpectedGeneratedPostingLines.Count == 0)
+        {
+            return [];
+        }
+
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        if (testCase.ExpectedGeneratedPostingLines.Count != dryRun.GeneratedPostingLines.Count)
+        {
+            issues.Add(Issue(
+                "rule-test.generated-line-count-mismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Test case '{testCase.TestCaseId}' expected {testCase.ExpectedGeneratedPostingLines.Count} generated posting lines but dry run returned {dryRun.GeneratedPostingLines.Count}.",
+                testCase.TestCaseId,
+                "Update the expected generated posting lines or restore the rule formula/allocation behavior."));
+        }
+
+        var actualById = dryRun.GeneratedPostingLines
+            .Where(static line => !string.IsNullOrWhiteSpace(line.LineId))
+            .ToDictionary(static line => line.LineId.Trim(), StringComparer.OrdinalIgnoreCase);
+        foreach (var expectedLine in testCase.ExpectedGeneratedPostingLines)
+        {
+            var expectedLineId = NormalizeOptional(expectedLine.LineId);
+            if (expectedLineId is null)
+            {
+                issues.Add(Issue(
+                    "rule-test.expected-generated-line-id-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Test case '{testCase.TestCaseId}' includes an expected generated posting line without a stable line id.",
+                    testCase.TestCaseId,
+                    "Capture expected generated posting lines with the line ids returned by dry-run preview."));
+                continue;
+            }
+
+            if (!actualById.TryGetValue(expectedLineId, out var actualLine))
+            {
+                issues.Add(Issue(
+                    "rule-test.generated-line-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Test case '{testCase.TestCaseId}' expected generated posting line '{expectedLineId}' but the dry run did not return it.",
+                    expectedLineId,
+                    "Update the expected generated posting lines or restore the rule formula/allocation behavior."));
+                continue;
+            }
+
+            if (!GeneratedPostingLineMatches(expectedLine, actualLine))
+            {
+                issues.Add(Issue(
+                    "rule-test.generated-line-mismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Test case '{testCase.TestCaseId}' expected generated posting line '{expectedLineId}' to match account, side, amount, currency, formula id, and dimensions.",
+                    expectedLineId,
+                    "Review generated posting formulas, allocation targets, dimensional scope, and expected regression output."));
+            }
+        }
+
+        return issues;
+    }
+
+    private static bool GeneratedPostingLineMatches(GeneratedPostingLineDto expected, GeneratedPostingLineDto actual)
+        => string.Equals(NormalizeOptional(expected.AccountPath), NormalizeOptional(actual.AccountPath), StringComparison.OrdinalIgnoreCase) &&
+           expected.Side == actual.Side &&
+           expected.Amount == actual.Amount &&
+           string.Equals(NormalizeCurrency(expected.Currency), NormalizeCurrency(actual.Currency), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(NormalizeOptional(expected.AmountFormulaId), NormalizeOptional(actual.AmountFormulaId), StringComparison.OrdinalIgnoreCase) &&
+           DimensionsMatch(expected.Dimensions, actual.Dimensions);
+
+    private static bool DimensionsMatch(LedgerDimensionSetDto? expected, LedgerDimensionSetDto? actual)
+    {
+        if (expected is null)
+        {
+            return actual is null;
+        }
+
+        if (actual is null)
+        {
+            return false;
+        }
+
+        return string.Equals(NormalizeOptional(expected.FundId), NormalizeOptional(actual.FundId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.EntityId), NormalizeOptional(actual.EntityId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.SleeveId), NormalizeOptional(actual.SleeveId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.StrategyId), NormalizeOptional(actual.StrategyId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.InvestorId), NormalizeOptional(actual.InvestorId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.CapitalAccountId), NormalizeOptional(actual.CapitalAccountId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeDimensionValue(expected.InstrumentId), NormalizeDimensionValue(actual.InstrumentId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.TaxLotId), NormalizeOptional(actual.TaxLotId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.CostCenterId), NormalizeOptional(actual.CostCenterId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.CounterpartyId), NormalizeOptional(actual.CounterpartyId), StringComparison.OrdinalIgnoreCase) &&
+               DictionaryMatches(expected.ExternalGlDimensions, actual.ExternalGlDimensions);
+    }
+
+    private static string? NormalizeDimensionValue(Guid? value)
+        => value?.ToString("D", CultureInfo.InvariantCulture);
+
+    private static bool DictionaryMatches(
+        IReadOnlyDictionary<string, string> expected,
+        IReadOnlyDictionary<string, string> actual)
+    {
+        var expectedNormalized = NormalizeDimensionDictionary(expected);
+        var actualNormalized = NormalizeDimensionDictionary(actual);
+        return expectedNormalized.Count == actualNormalized.Count &&
+               expectedNormalized.All(pair =>
+                   actualNormalized.TryGetValue(pair.Key, out var actualValue) &&
+                   string.Equals(pair.Value, actualValue, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static IReadOnlyDictionary<string, string> NormalizeDimensionDictionary(IReadOnlyDictionary<string, string> source)
+        => source
+            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            .ToDictionary(static pair => pair.Key.Trim(), static pair => pair.Value.Trim(), StringComparer.OrdinalIgnoreCase);
+
+    private async Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> ValidateActivationReadinessAsync(
+        AccountingConfigurationWorkspaceDto workspace,
+        ActivateAccountingConfigurationRequest request,
+        CancellationToken ct)
+    {
+        var issues = Validate(workspace).ToList();
+        var activeRules = workspace.PostingRules.Where(static rule => !rule.IsArchived).ToArray();
+        var savedTestCases = workspace.RuleTestCases;
+
+        if (!HasActivationEvidence(request.EvidenceLinks))
+        {
+            issues.Add(Issue(
+                "configuration.activation-evidence-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting configuration activation requires retained approval, certification, sign-off, review, or activation evidence.",
+                workspace.FundProfileId,
+                "Attach retained activation approval evidence before making the accounting configuration active."));
+        }
+
+        foreach (var rule in activeRules.Where(static rule => rule.RequiresPromotionApproval))
+        {
+            if (!HasSavedRegressionTestForRuleVersion(savedTestCases, rule))
+            {
+                issues.Add(Issue(
+                    "posting-rule.test-case-required",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Posting rule '{rule.RuleId}' version '{NormalizeOptional(rule.RuleVersion) ?? "v1"}' requires a saved regression test case before activation.",
+                    rule.RuleId,
+                    "Save at least one rule test case that expects this posting rule and current rule version."));
+            }
+        }
+
+        if (savedTestCases.Count > 0)
+        {
+            var suite = await ExecuteRuleTestCasesAsync(new ExecuteAccountingRuleTestCasesRequestDto(
+                FundProfileId: workspace.FundProfileId,
+                Actor: request.Actor,
+                LedgerBookId: request.LedgerBookId ?? workspace.LedgerBookId,
+                CorrelationId: request.CorrelationId), ct).ConfigureAwait(false);
+            foreach (var failedCase in suite.Results.Where(static item => !item.Passed))
+            {
+                issues.Add(Issue(
+                    "rule-test.activation-failed",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Rule test case '{failedCase.TestCaseId}' failed activation readiness checks.",
+                    failedCase.TestCaseId,
+                    "Run rule tests, review assertion issues, and fix the rule or expected result before activation."));
+            }
+        }
+
+        return issues
+            .OrderByDescending(static issue => issue.Severity)
+            .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static bool IsApprovedPromotion(PostingRuleDto rule)
+    {
+        var approval = rule.PromotionApproval;
+        var ruleVersion = NormalizeOptional(rule.RuleVersion) ?? "v1";
+        return approval is
+        {
+            ApprovalState: ManualJournalEntryStatusDto.Approved,
+            ApprovedAtUtc: not null
+        } &&
+           !string.IsNullOrWhiteSpace(approval.ApprovedBy) &&
+           HasPromotionApprovalEvidenceWithProvenance(approval.EvidenceLinks, rule.RuleId, ruleVersion, approval.ApprovalId);
+    }
+
+    private static bool HasPromotionApprovalEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("certification", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasPromotionApprovalProvenance(
+        IReadOnlyList<string> evidenceLinks,
+        string ruleId,
+        string ruleVersion,
+        string approvalId)
+        => evidenceLinks.Any(link =>
+            link.Contains(ruleId, StringComparison.OrdinalIgnoreCase) ||
+            link.Contains(ruleVersion, StringComparison.OrdinalIgnoreCase) ||
+            link.Contains(approvalId, StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasPromotionApprovalEvidenceWithProvenance(
+        IReadOnlyList<string> evidenceLinks,
+        string ruleId,
+        string ruleVersion,
+        string approvalId)
+        => evidenceLinks.Any(link =>
+            HasPromotionApprovalEvidence([link]) &&
+            (link.Contains(ruleId, StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(ruleVersion, StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(approvalId, StringComparison.OrdinalIgnoreCase)));
+
+    private static void EnsureRuleStudioHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new InvalidOperationException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
+    }
+
+    private static bool HasActivationEvidence(IReadOnlyList<string>? evidenceLinks)
+        => evidenceLinks?.Any(static link =>
+            link.Contains("activation", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("certification", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase)) == true;
+
+    private static AccountingConfigurationValidationIssueDto BuildPostingRulePromotionApprovalRequiredIssue(PostingRuleDto rule)
+        => Issue(
+            "posting-rule.promotion-approval-required",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            $"Posting rule '{rule.RuleId}' requires an approved promotion before activation.",
+            rule.RuleId,
+            "Attach an approved promotion with approval actor, timestamp, and retained approval, certification, sign-off, or review evidence.");
+
     private static string NormalizeCurrency(string? currency)
         => string.IsNullOrWhiteSpace(currency) ? "USD" : currency.Trim().ToUpperInvariant();
+
+    private static IReadOnlyDictionary<string, ChartOfAccountsNodeDto> BuildChartByPath(IReadOnlyList<ChartOfAccountsNodeDto> chart)
+        => chart
+            .GroupBy(static item => item.Path, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.OrderBy(static item => item.IsArchived).First(),
+                StringComparer.OrdinalIgnoreCase);
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> Validate(AccountingConfigurationWorkspaceDto workspace)
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
         if (workspace.ChartOfAccounts.Count == 0)
         {
             issues.Add(Issue("chart.empty", AccountingConfigurationValidationSeverityDto.Critical, "No chart-of-accounts nodes are configured.", null, "Create at least one account node."));
+        }
+
+        foreach (var duplicatePath in workspace.ChartOfAccounts
+                     .Where(static node => !node.IsArchived)
+                     .GroupBy(static node => node.Path, StringComparer.OrdinalIgnoreCase)
+                     .Where(static group => group.Count() > 1)
+                     .Select(static group => group.Key))
+        {
+            issues.Add(Issue(
+                "chart.path-duplicate",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Chart of accounts path '{duplicatePath}' is assigned to multiple active nodes.",
+                duplicatePath,
+                "Keep one active chart node per account path before posting, previewing, or exporting ledger activity."));
         }
 
         if (workspace.JournalTemplates.Count == 0)
@@ -777,9 +1851,14 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var rule in workspace.PostingRules.Where(rule => !rule.IsArchived))
         {
-            if (rule.EffectiveFrom.HasValue && rule.EffectiveTo.HasValue && rule.EffectiveFrom.Value > rule.EffectiveTo.Value)
+            if (HasInvalidEffectiveWindow(rule))
             {
-                issues.Add(Issue("posting-rule.effective-date-range", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' has an effective-from date after effective-to.", rule.RuleId, "Correct the effective-dated rule window."));
+                issues.Add(BuildPostingRuleEffectiveWindowIssue(rule));
+            }
+
+            if (rule.RequiresPromotionApproval && !IsApprovedPromotion(rule))
+            {
+                issues.Add(BuildPostingRulePromotionApprovalRequiredIssue(rule));
             }
 
             if (rule.GeneratedPostings.Count == 0 && !templateIds.Contains(rule.TemplateId))
@@ -787,8 +1866,18 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 issues.Add(Issue("posting-rule.template-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' references missing template '{rule.TemplateId}'.", rule.RuleId, "Point the rule at an active journal template."));
             }
 
+            issues.AddRange(ValidatePostingRuleConditions(rule));
+
             if (rule.GeneratedPostings.Count > 0)
             {
+                issues.AddRange(ValidateGeneratedPostingLineIdentity(rule));
+                issues.AddRange(ValidateGeneratedPostingAccountReferences(
+                    rule,
+                    chartByPath,
+                    "posting-rule.generated-account-missing",
+                    "posting-rule.generated-account-archived"));
+                issues.AddRange(ValidatePostingRuleFormulaReferences(rule));
+
                 var generatedDebits = rule.GeneratedPostings.Where(static line => line.Side == AccountingTemplateLineSideDto.Debit).Sum(static line => line.Amount);
                 var generatedCredits = rule.GeneratedPostings.Where(static line => line.Side == AccountingTemplateLineSideDto.Credit).Sum(static line => line.Amount);
                 if (generatedDebits != generatedCredits && rule.GeneratedPostings.All(static line => line.Amount > 0m))
@@ -796,14 +1885,558 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                     issues.Add(Issue("posting-rule.generated-unbalanced", AccountingConfigurationValidationSeverityDto.Warning, $"Posting rule '{rule.RuleId}' generated-posting static amounts are not balanced.", rule.RuleId, "Confirm formula-driven generated postings balance during dry run."));
                 }
 
-                foreach (var line in rule.GeneratedPostings.Where(static line => string.IsNullOrWhiteSpace(line.AccountPath)))
+            }
+
+            if (rule.Allocations.Count > 0)
+            {
+                issues.AddRange(ValidateAllocationRuleIdentity(rule));
+                var positiveAllocationCount = 0;
+                foreach (var allocation in rule.Allocations)
                 {
-                    issues.Add(Issue("posting-rule.generated-account-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' has a generated line without an account path.", line.LineId, "Choose a chart account for every generated posting line."));
+                    var usesFormulaWeight = !string.IsNullOrWhiteSpace(allocation.FormulaId);
+                    if (!usesFormulaWeight && allocation.Weight <= 0m)
+                    {
+                        issues.Add(Issue("posting-rule.allocation-weight", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' has allocation '{allocation.AllocationRuleId}' with a non-positive weight.", allocation.AllocationRuleId, "Use positive allocation weights so dry-run previews can split generated posting lines."));
+                    }
+                    else
+                    {
+                        positiveAllocationCount++;
+                    }
+                }
+
+                if (positiveAllocationCount == 0)
+                {
+                    issues.Add(Issue("posting-rule.allocations-empty", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' has no positive allocation weights.", rule.RuleId, "Add at least one positive allocation weight or remove the allocation set."));
+                }
+
+                if (rule.GeneratedPostings.Count == 0)
+                {
+                    issues.AddRange(ValidatePostingRuleFormulaReferences(rule));
                 }
             }
         }
 
+        issues.AddRange(ValidatePostingRulePriorityConflicts(workspace.PostingRules));
+
+        var ruleIds = workspace.PostingRules
+            .Where(rule => !rule.IsArchived)
+            .Select(rule => rule.RuleId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var testCaseIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var testCase in workspace.RuleTestCases)
+        {
+            if (string.IsNullOrWhiteSpace(testCase.TestCaseId))
+            {
+                issues.Add(Issue("rule-test-case.id-missing", AccountingConfigurationValidationSeverityDto.Critical, "A rule test case is missing its id.", null, "Assign a stable test-case id before saving the workspace."));
+                continue;
+            }
+
+            if (!testCaseIds.Add(testCase.TestCaseId))
+            {
+                issues.Add(Issue("rule-test-case.duplicate", AccountingConfigurationValidationSeverityDto.Critical, $"Rule test case '{testCase.TestCaseId}' is duplicated.", testCase.TestCaseId, "Keep one saved test case per id."));
+            }
+
+            if (string.IsNullOrWhiteSpace(testCase.DisplayName))
+            {
+                issues.Add(Issue("rule-test-case.name-missing", AccountingConfigurationValidationSeverityDto.Warning, $"Rule test case '{testCase.TestCaseId}' is missing a display name.", testCase.TestCaseId, "Give the regression case an operator-readable name."));
+            }
+
+            if (string.IsNullOrWhiteSpace(testCase.Request.SourceEventType))
+            {
+                issues.Add(Issue("rule-test-case.source-event-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Rule test case '{testCase.TestCaseId}' has no source event type.", testCase.TestCaseId, "Choose the event predicate the test should exercise."));
+            }
+
+            if (testCase.Request.EventAmount < 0m)
+            {
+                issues.Add(Issue("rule-test-case.amount-negative", AccountingConfigurationValidationSeverityDto.Warning, $"Rule test case '{testCase.TestCaseId}' uses a negative event amount.", testCase.TestCaseId, "Confirm the sign convention or use a positive source-event amount."));
+            }
+
+            if (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleId) && !ruleIds.Contains(testCase.ExpectedRuleId))
+            {
+                issues.Add(Issue("rule-test-case.expected-rule-missing", AccountingConfigurationValidationSeverityDto.Warning, $"Rule test case '{testCase.TestCaseId}' expects missing posting rule '{testCase.ExpectedRuleId}'.", testCase.TestCaseId, "Point the expected rule assertion at an active posting rule or archive the test."));
+            }
+
+            if (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleId) && string.IsNullOrWhiteSpace(testCase.ExpectedRuleVersion))
+            {
+                issues.Add(Issue("rule-test-case.expected-version-missing", AccountingConfigurationValidationSeverityDto.Warning, $"Rule test case '{testCase.TestCaseId}' expects posting rule '{testCase.ExpectedRuleId}' without pinning the rule version.", testCase.TestCaseId, "Set the expected rule version so promotion coverage cannot drift silently."));
+            }
+
+            if (!HasRuleTestCaseEvidence(testCase.EvidenceLinks))
+            {
+                issues.Add(Issue("rule-test-case.evidence-required", AccountingConfigurationValidationSeverityDto.Critical, $"Rule test case '{testCase.TestCaseId}' has no retained regression evidence.", testCase.TestCaseId, "Attach retained regression, test, approval, certification, sign-off, or review evidence before using the saved case for activation."));
+            }
+
+            if (!HasRuleTestCaseEvidenceWithProvenance(testCase, testCase.EvidenceLinks))
+            {
+                issues.Add(Issue("rule-test-case.evidence-provenance-required", AccountingConfigurationValidationSeverityDto.Critical, $"Rule test case '{testCase.TestCaseId}' evidence does not identify the test case, expected rule, or expected rule version.", testCase.TestCaseId, "Attach retained evidence that names the test case, expected posting rule, or expected rule version."));
+            }
+        }
+
         return issues.OrderByDescending(issue => issue.Severity).ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static bool HasRuleTestCaseEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("regression", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("rule-test", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("test", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("certification", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasRuleTestCaseEvidenceProvenance(
+        AccountingRuleTestCaseDto testCase,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            link.Contains(testCase.TestCaseId, StringComparison.OrdinalIgnoreCase) ||
+            (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleId) &&
+                link.Contains(testCase.ExpectedRuleId, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleVersion) &&
+                link.Contains(testCase.ExpectedRuleVersion, StringComparison.OrdinalIgnoreCase)));
+
+    private static bool HasRuleTestCaseEvidenceWithProvenance(
+        AccountingRuleTestCaseDto testCase,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            HasRuleTestCaseEvidence([link]) &&
+            (link.Contains(testCase.TestCaseId, StringComparison.OrdinalIgnoreCase) ||
+             (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleId) &&
+                 link.Contains(testCase.ExpectedRuleId, StringComparison.OrdinalIgnoreCase)) ||
+             (!string.IsNullOrWhiteSpace(testCase.ExpectedRuleVersion) &&
+                 link.Contains(testCase.ExpectedRuleVersion, StringComparison.OrdinalIgnoreCase))));
+
+    private static bool HasSavedRegressionTestForRuleVersion(
+        IReadOnlyList<AccountingRuleTestCaseDto> testCases,
+        PostingRuleDto rule)
+        => GetSavedRegressionTestsForRuleVersion(testCases, rule).Count > 0;
+
+    private static IReadOnlyList<AccountingRuleTestCaseDto> GetSavedRegressionTestsForRuleVersion(
+        IReadOnlyList<AccountingRuleTestCaseDto> testCases,
+        PostingRuleDto rule)
+    {
+        var currentVersion = NormalizeOptional(rule.RuleVersion) ?? "v1";
+        return testCases.Where(testCase =>
+            string.Equals(testCase.ExpectedRuleId, rule.RuleId, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(testCase.ExpectedRuleVersion, currentVersion, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+    }
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidatePostingRuleConditions(PostingRuleDto rule)
+    {
+        foreach (var issue in BuildDuplicateConditionIdIssues(
+            rule.RuleId,
+            GetRuleConditions(rule),
+            "posting-rule.condition-id-duplicate"))
+        {
+            yield return issue;
+        }
+
+        foreach (var condition in rule.Conditions.Where(static condition => string.IsNullOrWhiteSpace(condition.ConditionId)))
+        {
+            yield return Issue(
+                "posting-rule.condition-id-missing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Posting rule '{rule.RuleId}' has a condition without an id.",
+                rule.RuleId,
+                "Assign every rule condition a stable id before activation.");
+        }
+
+        foreach (var condition in rule.Conditions.Where(static condition => string.IsNullOrWhiteSpace(condition.Field)))
+        {
+            yield return Issue(
+                "posting-rule.condition-field-missing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Condition '{condition.ConditionId}' on rule '{rule.RuleId}' is missing a field.",
+                condition.ConditionId,
+                "Select a dry-run field for this rule condition.");
+        }
+        foreach (var condition in rule.Conditions)
+        {
+            foreach (var issue in BuildInvalidConditionOperandIssues(
+                rule.RuleId,
+                condition,
+                condition.ConditionId,
+                "posting-rule.condition-value-missing",
+                "posting-rule.condition-amount-invalid",
+                "posting-rule.condition-amount-range-invalid"))
+            {
+                yield return issue;
+            }
+        }
+
+        foreach (var group in rule.ConditionGroups)
+        {
+            if (string.IsNullOrWhiteSpace(group.GroupId))
+            {
+                yield return Issue(
+                    "posting-rule.condition-group-id-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Posting rule '{rule.RuleId}' has a condition group without an id.",
+                    rule.RuleId,
+                    "Assign each condition group a stable id.");
+            }
+
+            if (group.Conditions.Count == 0)
+            {
+                yield return Issue(
+                    "posting-rule.condition-group-empty",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Condition group '{group.GroupId}' on rule '{rule.RuleId}' has no conditions.",
+                    group.GroupId,
+                    "Add at least one condition to the group or remove the group.");
+            }
+
+            foreach (var condition in group.Conditions.Where(static condition => string.IsNullOrWhiteSpace(condition.Field)))
+            {
+                yield return Issue(
+                    "posting-rule.condition-field-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Condition '{condition.ConditionId}' in group '{group.GroupId}' on rule '{rule.RuleId}' is missing a field.",
+                    condition.ConditionId,
+                    "Select a dry-run field for this grouped rule condition.");
+            }
+
+            foreach (var condition in group.Conditions.Where(static condition => string.IsNullOrWhiteSpace(condition.ConditionId)))
+            {
+                yield return Issue(
+                    "posting-rule.condition-id-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Condition group '{group.GroupId}' on rule '{rule.RuleId}' has a condition without an id.",
+                    group.GroupId,
+                    "Assign every grouped rule condition a stable id before activation.");
+            }
+
+            foreach (var condition in group.Conditions)
+            {
+                foreach (var issue in BuildInvalidConditionOperandIssues(
+                    rule.RuleId,
+                    condition,
+                    condition.ConditionId,
+                    "posting-rule.condition-value-missing",
+                    "posting-rule.condition-amount-invalid",
+                    "posting-rule.condition-amount-range-invalid"))
+                {
+                    yield return issue;
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidatePostingRuleFormulaReferences(PostingRuleDto rule)
+    {
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        var formulaIds = rule.Formulas
+            .Where(static formula => !string.IsNullOrWhiteSpace(formula.FormulaId))
+            .Select(static formula => formula.FormulaId.Trim())
+            .ToArray();
+        var formulaIdSet = formulaIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var formula in rule.Formulas.Where(static formula => string.IsNullOrWhiteSpace(formula.FormulaId)))
+        {
+            issues.Add(Issue(
+                "posting-rule.formula-id-missing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Posting rule '{rule.RuleId}' has a formula without a formula id.",
+                rule.RuleId,
+                "Assign every formula a stable id before it can be referenced by generated postings or allocations."));
+        }
+
+        foreach (var duplicate in formulaIds
+            .GroupBy(static formulaId => formulaId, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() > 1))
+        {
+            issues.Add(Issue(
+                "posting-rule.formula-duplicate",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Posting rule '{rule.RuleId}' defines duplicate formula id '{duplicate.Key}'.",
+                rule.RuleId,
+                "Keep formula ids unique so generated posting lines resolve deterministically."));
+        }
+
+        foreach (var line in rule.GeneratedPostings)
+        {
+            var formulaId = NormalizeOptional(line.AmountFormulaId);
+            if (formulaId is null)
+            {
+                if (line.Amount <= 0m)
+                {
+                    issues.Add(Issue(
+                        "posting-rule.generated-formula-missing",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Generated posting line '{line.LineId}' on rule '{rule.RuleId}' has no amount formula and no positive static amount.",
+                        line.LineId,
+                        "Reference a rule formula or provide a positive static amount for the generated line."));
+                }
+
+                continue;
+            }
+
+            if (!formulaIdSet.Contains(formulaId))
+            {
+                issues.Add(Issue(
+                    "posting-rule.generated-formula-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Generated posting line '{line.LineId}' on rule '{rule.RuleId}' references missing formula '{formulaId}'.",
+                    line.LineId,
+                    "Add the formula to the rule or update the generated posting line formula reference."));
+            }
+        }
+
+        foreach (var allocation in rule.Allocations)
+        {
+            var formulaId = NormalizeOptional(allocation.FormulaId);
+            if (formulaId is null)
+            {
+                if (allocation.Basis == AllocationRuleBasisDto.CustomFormula)
+                {
+                    issues.Add(Issue(
+                        "posting-rule.allocation-formula-missing",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Custom formula allocation '{allocation.AllocationRuleId}' on rule '{rule.RuleId}' has no formula reference.",
+                        allocation.AllocationRuleId,
+                        "Reference a rule formula or change the allocation basis to a static weighting method."));
+                }
+
+                continue;
+            }
+
+            var formula = rule.Formulas.FirstOrDefault(item => string.Equals(item.FormulaId, formulaId, StringComparison.OrdinalIgnoreCase));
+            if (formula is null)
+            {
+                issues.Add(Issue(
+                    "posting-rule.allocation-formula-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Allocation '{allocation.AllocationRuleId}' on rule '{rule.RuleId}' references missing formula '{formulaId}'.",
+                    allocation.AllocationRuleId,
+                    "Add the formula to the rule or clear the allocation formula reference."));
+            }
+            else if (FormulaAlwaysResolvesNonPositiveWeight(formula, allocation.Weight))
+            {
+                issues.Add(Issue(
+                    "posting-rule.allocation-formula-nonpositive",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Allocation '{allocation.AllocationRuleId}' on rule '{rule.RuleId}' references formula '{formulaId}' that cannot produce a positive allocation weight.",
+                    allocation.AllocationRuleId,
+                    "Use a fixed or percentage formula value above zero, or provide a positive residual fallback weight."));
+            }
+        }
+
+        return issues;
+    }
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidateGeneratedPostingLineIdentity(PostingRuleDto rule)
+    {
+        foreach (var line in rule.GeneratedPostings.Where(static line => string.IsNullOrWhiteSpace(line.LineId)))
+        {
+            yield return Issue(
+                "posting-rule.generated-line-id-missing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Posting rule '{rule.RuleId}' has a generated posting line without a line id.",
+                rule.RuleId,
+                "Assign every generated posting line a stable id before dry-run preview or activation.");
+        }
+
+        foreach (var duplicate in rule.GeneratedPostings
+            .Select(static line => line.LineId?.Trim())
+            .Where(static lineId => !string.IsNullOrWhiteSpace(lineId))
+            .GroupBy(static lineId => lineId!, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() > 1))
+        {
+            yield return Issue(
+                "posting-rule.generated-line-id-duplicate",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Posting rule '{rule.RuleId}' defines duplicate generated posting line id '{duplicate.Key}'.",
+                duplicate.Key,
+                "Keep generated posting line ids unique so previews, allocation expansion, evidence links, and regression assertions identify one line.");
+        }
+    }
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidateGeneratedPostingAccountReferences(
+        PostingRuleDto rule,
+        IReadOnlyDictionary<string, ChartOfAccountsNodeDto> chartByPath,
+        string missingIssueCode,
+        string archivedIssueCode)
+    {
+        foreach (var line in rule.GeneratedPostings)
+        {
+            if (string.IsNullOrWhiteSpace(line.AccountPath))
+            {
+                yield return Issue(
+                    missingIssueCode,
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Posting rule '{rule.RuleId}' has generated posting line '{line.LineId}' without an account path.",
+                    string.IsNullOrWhiteSpace(line.LineId) ? rule.RuleId : line.LineId,
+                    "Choose a chart account for every generated posting line.");
+            }
+            else if (!chartByPath.TryGetValue(line.AccountPath, out var account))
+            {
+                yield return Issue(
+                    missingIssueCode,
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Generated posting line '{line.LineId}' on rule '{rule.RuleId}' references missing account path '{line.AccountPath}'.",
+                    line.LineId,
+                    "Create the chart account or map the generated posting line to an active account.");
+            }
+            else if (account.IsArchived)
+            {
+                yield return Issue(
+                    archivedIssueCode,
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Generated posting line '{line.LineId}' on rule '{rule.RuleId}' references archived account path '{line.AccountPath}'.",
+                    line.LineId,
+                    "Map generated postings to active chart accounts.");
+            }
+        }
+    }
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidateAllocationRuleIdentity(PostingRuleDto rule)
+    {
+        foreach (var allocation in rule.Allocations.Where(static allocation => string.IsNullOrWhiteSpace(allocation.AllocationRuleId)))
+        {
+            yield return Issue(
+                "posting-rule.allocation-id-missing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Posting rule '{rule.RuleId}' has an allocation row without an allocation id.",
+                rule.RuleId,
+                "Assign every allocation row a stable id before dry-run preview or activation.");
+        }
+
+        foreach (var duplicate in rule.Allocations
+            .Select(static allocation => allocation.AllocationRuleId?.Trim())
+            .Where(static allocationId => !string.IsNullOrWhiteSpace(allocationId))
+            .GroupBy(static allocationId => allocationId!, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() > 1))
+        {
+            yield return Issue(
+                "posting-rule.allocation-id-duplicate",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Posting rule '{rule.RuleId}' defines duplicate allocation id '{duplicate.Key}'.",
+                duplicate.Key,
+                "Keep allocation ids unique so generated posting expansion, dimensional targets, evidence links, and regression assertions identify one allocation.");
+        }
+    }
+
+    private static bool FormulaAlwaysResolvesNonPositiveWeight(AccountingRuleFormulaDto formula, decimal fallbackWeight)
+        => formula.Kind switch
+        {
+            AccountingRuleFormulaKindDto.FixedAmount => formula.Value <= 0m,
+            AccountingRuleFormulaKindDto.PercentageOfSourceAmount => formula.Value <= 0m,
+            AccountingRuleFormulaKindDto.AllocationResidual => fallbackWeight <= 0m,
+            _ => false
+        };
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidatePostingRuleDryRunAllocationWeights(
+        PostingRuleDto rule,
+        decimal eventAmount)
+    {
+        foreach (var allocation in rule.Allocations)
+        {
+            var resolvedWeight = ResolveAllocationWeight(allocation, rule.Formulas, eventAmount);
+            if (resolvedWeight <= 0m)
+            {
+                yield return Issue(
+                    "rule.allocation-weight",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Allocation '{allocation.AllocationRuleId}' on rule '{rule.RuleId}' resolved to non-positive weight {resolvedWeight}.",
+                    allocation.AllocationRuleId,
+                    "Use a positive static weight or a formula that resolves to a positive allocation weight for this dry run.");
+            }
+        }
+    }
+
+    private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidatePostingRulePriorityConflicts(
+        IReadOnlyList<PostingRuleDto> rules)
+    {
+        var activeRules = rules
+            .Where(static rule => !rule.IsArchived)
+            .OrderBy(static rule => rule.SourceEventType, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(static rule => rule.Priority)
+            .ThenBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        for (var leftIndex = 0; leftIndex < activeRules.Length; leftIndex++)
+        {
+            var left = activeRules[leftIndex];
+            for (var rightIndex = leftIndex + 1; rightIndex < activeRules.Length; rightIndex++)
+            {
+                var right = activeRules[rightIndex];
+                if (!string.Equals(left.SourceEventType, right.SourceEventType, StringComparison.OrdinalIgnoreCase) ||
+                    left.Priority != right.Priority)
+                {
+                    continue;
+                }
+
+                if (!EffectiveWindowsOverlap(left, right) || !ScopesOverlap(left.Scope, right.Scope))
+                {
+                    continue;
+                }
+
+                yield return Issue(
+                    "posting-rule.priority-conflict",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Posting rules '{left.RuleId}' and '{right.RuleId}' share source event '{left.SourceEventType}', priority {left.Priority}, overlapping effective dates, and overlapping scope.",
+                    left.RuleId,
+                    "Assign a distinct priority, effective-date window, or dimensional scope so dry-run rule selection is deterministic.");
+            }
+        }
+    }
+
+    private static bool EffectiveWindowsOverlap(PostingRuleDto left, PostingRuleDto right)
+    {
+        var leftFrom = left.EffectiveFrom ?? DateOnly.MinValue;
+        var leftTo = left.EffectiveTo ?? DateOnly.MaxValue;
+        var rightFrom = right.EffectiveFrom ?? DateOnly.MinValue;
+        var rightTo = right.EffectiveTo ?? DateOnly.MaxValue;
+        return leftFrom <= rightTo && rightFrom <= leftTo;
+    }
+
+    private static bool ScopesOverlap(LedgerDimensionSetDto? left, LedgerDimensionSetDto? right)
+    {
+        if (left is null || right is null)
+        {
+            return true;
+        }
+
+        return ScopeValuesOverlap(left.FundId, right.FundId) &&
+               ScopeValuesOverlap(left.EntityId, right.EntityId) &&
+               ScopeValuesOverlap(left.SleeveId, right.SleeveId) &&
+               ScopeValuesOverlap(left.StrategyId, right.StrategyId) &&
+               ScopeValuesOverlap(left.InvestorId, right.InvestorId) &&
+               ScopeValuesOverlap(left.CapitalAccountId, right.CapitalAccountId) &&
+               (!left.InstrumentId.HasValue || !right.InstrumentId.HasValue || left.InstrumentId == right.InstrumentId) &&
+               ScopeValuesOverlap(left.TaxLotId, right.TaxLotId) &&
+               ScopeValuesOverlap(left.CostCenterId, right.CostCenterId) &&
+               ScopeValuesOverlap(left.CounterpartyId, right.CounterpartyId) &&
+               ExternalGlScopesOverlap(left.ExternalGlDimensions, right.ExternalGlDimensions);
+    }
+
+    private static bool ScopeValuesOverlap(string? left, string? right)
+        => string.IsNullOrWhiteSpace(left) ||
+           string.IsNullOrWhiteSpace(right) ||
+           string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool ExternalGlScopesOverlap(
+        IReadOnlyDictionary<string, string> left,
+        IReadOnlyDictionary<string, string> right)
+    {
+        foreach (var pair in left)
+        {
+            if (string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value))
+            {
+                continue;
+            }
+
+            if (right.TryGetValue(pair.Key, out var rightValue) &&
+                !string.IsNullOrWhiteSpace(rightValue) &&
+                !string.Equals(pair.Value.Trim(), rightValue.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static IEnumerable<AccountingConfigurationValidationIssueDto> ValidateTemplate(
@@ -855,6 +2488,20 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
     }
 
+    private sealed record PostingRuleApprovalProtectedDefinition(
+        string RuleVersion,
+        string SourceEventType,
+        string TemplateId,
+        DateOnly? EffectiveFrom,
+        DateOnly? EffectiveTo,
+        int Priority,
+        LedgerDimensionSetDto? Scope,
+        IReadOnlyList<AccountingRuleConditionDto> Conditions,
+        IReadOnlyList<AccountingRuleConditionGroupDto> ConditionGroups,
+        IReadOnlyList<AccountingRuleFormulaDto> Formulas,
+        IReadOnlyList<AllocationRuleDto> Allocations,
+        IReadOnlyList<GeneratedPostingLineDto> GeneratedPostings);
+
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? DefaultFundProfileId : value.Trim();
 
@@ -865,6 +2512,9 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? FirstText(string? preferred, string? fallback)
+        => NormalizeOptional(preferred) ?? NormalizeOptional(fallback);
 
     private static IReadOnlyList<string> NormalizePrincipalIds(IReadOnlyList<string>? values)
         => values?
@@ -1050,38 +2700,7 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
 public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWorkbenchService, IManualJournalEntryLifecycleService
 {
     private const string DefaultFundProfileId = "default-fund";
-    private const decimal BalanceTolerance = 0.000001m;
     private static readonly IReadOnlyDictionary<Guid, string> EmptyJournalEntryCurrencies = new Dictionary<Guid, string>();
-
-    private sealed record PrivateCapitalCapitalAccountSubledgerSource(
-        string SubledgerEntryId,
-        string CapitalAccountId,
-        string? InvestorId,
-        string Currency,
-        string FundEventId,
-        string FundEventType,
-        ManualJournalEntryTypeDto EntryType,
-        ManualJournalEntryStatusDto ApprovalState,
-        Guid JournalEntryId,
-        DateOnly EffectiveDate,
-        decimal GrossAmount,
-        decimal NetCapitalActivity,
-        string Memo,
-        IReadOnlyList<string> EvidenceLinks,
-        IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
-        DateTimeOffset UpdatedAtUtc,
-        bool IsPosted);
-
-    private sealed record PrivateCapitalReportOutputAccountScope(
-        string CapitalAccountId,
-        string? InvestorId,
-        decimal NetCapitalActivity);
-
-    private sealed record PrivateCapitalReportOutputReadinessProjection(
-        string Label,
-        string Reason,
-        string NextAction,
-        string? NextActionRoute);
 
     private readonly IManualJournalEntryDraftStore _draftStore;
     private readonly IAccountingConfigurationService _configurationService;
@@ -1154,13 +2773,16 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var bankTransactions = await ListBankTransactionsAsync(ct).ConfigureAwait(false);
         var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        var privateCapitalActivity = BuildPrivateCapitalActivityProjection(
-            normalizedFundProfileId,
-            ledgerBookId,
-            drafts,
-            audit,
-            bankTransactions,
-            posted);
+        var reportPackWorkflowRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
+        var privateCapitalActivity = PrivateCapitalActivityProjectionBuilder.Build(
+            new PrivateCapitalActivityProjectionInput(
+                normalizedFundProfileId,
+                ledgerBookId,
+                drafts,
+                audit,
+                bankTransactions,
+                posted,
+                reportPackWorkflowRecords));
 
         return new ManualJournalEntryWorkbenchDto(
             normalizedFundProfileId,
@@ -1184,871 +2806,17 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var bankTransactions = await ListBankTransactionsAsync(ct).ConfigureAwait(false);
         var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        return BuildPrivateCapitalActivityProjection(
-            normalizedFundProfileId,
-            ledgerBookId,
-            drafts,
-            audit,
-            bankTransactions,
-            posted);
-    }
-
-    private PrivateCapitalActivityProjectionDto BuildPrivateCapitalActivityProjection(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        IReadOnlyList<ManualJournalEntryDraftDto> drafts,
-        IReadOnlyList<AccountingActionAuditEventDto> audit,
-        IReadOnlyList<BankTransactionDto> bankTransactions,
-        PostedPrivateCapitalActivityProjection? postedProjection)
-    {
-        var projectedAtUtc = DateTimeOffset.UtcNow;
-        var fundEvents = new List<PrivateCapitalFundEventDto>();
-        var ledgerImpacts = new List<PrivateCapitalLedgerImpactDto>();
-        var projectionIssues = new List<AccountingConfigurationValidationIssueDto>();
-
-        foreach (var draft in drafts)
-        {
-            var context = NormalizeTreasuryContext(draft.TreasuryContext, draft.AccountingDate);
-            if (!IsPrivateCapitalActivityCandidate(draft.EntryType, context))
-            {
-                continue;
-            }
-
-            if (context?.EffectiveDate is null ||
-                string.IsNullOrWhiteSpace(context.FundEventId) ||
-                string.IsNullOrWhiteSpace(context.FundEventType) ||
-                string.IsNullOrWhiteSpace(context.CapitalAccountId))
-            {
-                projectionIssues.Add(Issue(
-                    "manual-je.private-capital-context-pending",
-                    AccountingConfigurationValidationSeverityDto.Warning,
-                    "Private-capital activity projection skipped a manual journal entry because fund event or capital account context is incomplete.",
-                    draft.JournalEntryId.ToString("D"),
-                    "Validate and complete treasury ledger context before relying on capital-account activity."));
-                continue;
-            }
-
-            var grossAmount = Math.Max(Math.Abs(draft.TotalDebits), Math.Abs(draft.TotalCredits));
-            if (grossAmount == 0m)
-            {
-                var debitAmount = draft.Lines
-                    .Where(line => line.Side == AccountingTemplateLineSideDto.Debit)
-                    .Sum(line => Math.Abs(line.Amount));
-                var creditAmount = draft.Lines
-                    .Where(line => line.Side == AccountingTemplateLineSideDto.Credit)
-                    .Sum(line => Math.Abs(line.Amount));
-                grossAmount = Math.Max(debitAmount, creditAmount);
-            }
-
-            var evidenceLinks = MergeEvidenceLinks(
-                draft.EvidenceLinks,
-                draft.EvidenceAttachments?.Select(attachment => attachment.Uri).ToArray());
-
-            ledgerImpacts.Add(BuildPrivateCapitalLedgerImpact(draft, context, evidenceLinks));
-
-            fundEvents.Add(new PrivateCapitalFundEventDto(
-                context.FundEventId,
-                context.FundEventType,
-                draft.EntryType,
-                draft.Status,
-                draft.JournalEntryId,
-                context.EffectiveDate.Value,
-                context.CapitalAccountId,
-                NormalizeOptional(context.InvestorId),
-                string.IsNullOrWhiteSpace(draft.Currency) ? "USD" : draft.Currency.Trim().ToUpperInvariant(),
-                grossAmount,
-                CalculateNetCapitalActivity(draft.EntryType, grossAmount),
-                draft.Memo?.Trim() ?? string.Empty,
-                NormalizeOptional(context.PaymentIntentId),
-                NormalizeOptional(context.SettlementReference),
-                evidenceLinks,
-                draft.ValidationIssues,
-                draft.UpdatedAtUtc,
-                ApprovalId: NormalizeOptional(draft.ApprovalId)));
-        }
-
-        var orderedFundEvents = fundEvents
-            .OrderByDescending(item => item.EffectiveDate)
-            .ThenByDescending(item => item.UpdatedAtUtc)
-            .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var postedJournalEntryCurrencies = postedProjection?.JournalEntryCurrencies ?? EmptyJournalEntryCurrencies;
-        var postedLedgerEvents = postedProjection?.Projection.Events ?? [];
-        var postedEvents = postedLedgerEvents
-            .Select(item => MapPostedFundEvent(item, postedJournalEntryCurrencies))
-            .ToArray();
-        var postedEventIds = postedEvents
-            .Select(static item => item.FundEventId)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var activeDraftFundEvents = orderedFundEvents
-            .Where(item => !postedEventIds.Contains(item.FundEventId))
-            .ToArray();
-        var combinedFundEvents = activeDraftFundEvents
-            .Concat(postedEvents)
-            .OrderByDescending(item => item.EffectiveDate)
-            .ThenByDescending(item => item.UpdatedAtUtc)
-            .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var capitalAccountSubledgerEntries = BuildCapitalAccountSubledgerEntries(
-            activeDraftFundEvents
-                .Select(MapFundEventSubledgerSource)
-                .Concat(postedLedgerEvents.SelectMany(item => MapPostedCapitalAccountSubledgerSources(item, postedJournalEntryCurrencies)))
-                .ToArray());
-        var capitalAccounts = BuildCapitalAccounts(capitalAccountSubledgerEntries);
-        var orderedLedgerImpacts = ledgerImpacts
-            .Where(item => !postedEventIds.Contains(item.FundEventId))
-            .Concat(postedLedgerEvents.SelectMany(item => MapPostedLedgerImpacts(item, postedJournalEntryCurrencies)))
-            .OrderByDescending(item => item.EffectiveDate)
-            .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(item => item.JournalEntryId)
-            .ToArray();
-        var projectionCurrency = combinedFundEvents
-            .Select(item => item.Currency)
-            .FirstOrDefault(currency => !string.IsNullOrWhiteSpace(currency)) ?? string.Empty;
         var reportPackWorkflowRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
-        var postingReadyByFundEventId = BuildPostingReadyByFundEventId(orderedLedgerImpacts);
-        var reportOutputs = orderedFundEvents
-            .Where(item => !postedEventIds.Contains(item.FundEventId))
-            .Select(item => BuildPrivateCapitalReportOutput(fundProfileId, ledgerBookId, item, postingReadyByFundEventId))
-            .Concat(BuildPostedReportOutputs(fundProfileId, ledgerBookId, postedLedgerEvents, postedJournalEntryCurrencies, reportPackWorkflowRecords))
-            .OrderByDescending(item => item.EffectiveDate)
-            .ThenBy(item => item.ReportOutputType, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(item => item.ReportOutputId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var publishedReportOutputCount = CountPublishedReportOutputs(
-            fundProfileId,
-            postedLedgerEvents,
-            reportPackWorkflowRecords);
-        var fundEventRecords = PrivateCapitalFundEventLedgerRecordBuilder.Build(
-            fundProfileId,
-            combinedFundEvents,
-            capitalAccountSubledgerEntries,
-            orderedLedgerImpacts,
-            reportOutputs);
-        var capitalAccountSubledgers = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
-            fundProfileId,
-            ledgerBookId,
-            projectedAtUtc,
-            capitalAccounts,
-            fundEventRecords,
-            capitalAccountSubledgerEntries,
-            orderedLedgerImpacts,
-            reportOutputs,
-            projectionIssues);
-        var paymentIntents = BuildPaymentIntentWorkflows(
-            fundProfileId,
-            ledgerBookId,
-            fundEventRecords,
-            drafts,
-            audit,
-            bankTransactions);
-
-        return new PrivateCapitalActivityProjectionDto(
-            fundProfileId,
-            ledgerBookId,
-            projectedAtUtc,
-            combinedFundEvents.Length,
-            capitalAccounts.Count,
-            combinedFundEvents.Count(item => item.JournalStatus is ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved),
-            combinedFundEvents.Count(item => item.JournalStatus == ManualJournalEntryStatusDto.Submitted),
-            postedEvents.Length,
-            publishedReportOutputCount,
-            combinedFundEvents.Sum(item => item.NetCapitalActivity),
-            projectionCurrency,
-            combinedFundEvents,
-            capitalAccounts,
-            capitalAccountSubledgerEntries,
-            orderedLedgerImpacts,
-            reportOutputs,
-            projectionIssues
-                .OrderByDescending(issue => issue.Severity)
-                .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
-            fundEventRecords,
-            capitalAccountSubledgers,
-            paymentIntents);
-    }
-
-    private static IReadOnlyList<PaymentIntentWorkflowDto> BuildPaymentIntentWorkflows(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> fundEventRecords,
-        IReadOnlyList<ManualJournalEntryDraftDto> drafts,
-        IReadOnlyList<AccountingActionAuditEventDto> audit,
-        IReadOnlyList<BankTransactionDto> bankTransactions)
-    {
-        var draftsByJournalEntryId = drafts.ToDictionary(static draft => draft.JournalEntryId);
-        return fundEventRecords
-            .Where(static record => !string.IsNullOrWhiteSpace(record.PaymentIntentId))
-            .GroupBy(static record => record.PaymentIntentId!.Trim(), StringComparer.OrdinalIgnoreCase)
-            .Select(group => BuildPaymentIntentWorkflow(
-                fundProfileId,
+        return PrivateCapitalActivityProjectionBuilder.Build(
+            new PrivateCapitalActivityProjectionInput(
+                normalizedFundProfileId,
                 ledgerBookId,
-                group.Key,
-                group
-                    .OrderByDescending(static record => record.EffectiveDate)
-                    .ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase)
-                    .ToArray(),
-                draftsByJournalEntryId,
+                drafts,
                 audit,
-                bankTransactions))
-            .OrderByDescending(static workflow => workflow.ExpectedCashMovement.EffectiveDate)
-            .ThenBy(static workflow => workflow.PaymentIntentId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+                bankTransactions,
+                posted,
+                reportPackWorkflowRecords));
     }
-
-    private static PaymentIntentWorkflowDto BuildPaymentIntentWorkflow(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        string paymentIntentId,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyDictionary<Guid, ManualJournalEntryDraftDto> draftsByJournalEntryId,
-        IReadOnlyList<AccountingActionAuditEventDto> audit,
-        IReadOnlyList<BankTransactionDto> bankTransactions)
-    {
-        var primary = records[0];
-        draftsByJournalEntryId.TryGetValue(primary.JournalEntryId, out var primaryDraft);
-        var settlementReference = NormalizeOptional(primary.SettlementReference)
-            ?? records.Select(static record => NormalizeOptional(record.SettlementReference))
-                .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
-        var allEvidenceLinks = BuildPaymentIntentEvidenceLinks(records, draftsByJournalEntryId, audit, paymentIntentId, settlementReference);
-        var expectedCashMovement = BuildExpectedCashMovement(
-            fundProfileId,
-            ledgerBookId,
-            paymentIntentId,
-            settlementReference,
-            records,
-            allEvidenceLinks);
-        var approvalChain = BuildPaymentIntentApprovalChain(records, draftsByJournalEntryId);
-        var bankEvidence = BuildPaymentIntentBankEvidence(paymentIntentId, settlementReference, records, bankTransactions, allEvidenceLinks);
-        var reconciliationLinks = BuildPaymentIntentReconciliationLinks(paymentIntentId, settlementReference, records, allEvidenceLinks);
-        var auditHistory = BuildPaymentIntentAuditHistory(
-            paymentIntentId,
-            settlementReference,
-            records,
-            draftsByJournalEntryId,
-            audit,
-            bankEvidence,
-            reconciliationLinks);
-        var status = ResolvePaymentIntentWorkflowStatus(records, approvalChain, bankEvidence, reconciliationLinks);
-        var evidenceRoute = PrivateCapitalActivityRouteBuilder.BuildPaymentIntentEvidenceRoute(paymentIntentId);
-        var workbenchRoute = PrivateCapitalActivityRouteBuilder.BuildPaymentIntentWorkbenchRoute(fundProfileId, ledgerBookId, paymentIntentId);
-        var requester = NormalizeOptional(primaryDraft?.PreparedBy)
-            ?? NormalizeOptional(primaryDraft?.SubmittedBy)
-            ?? "ledger-posting";
-        var requestedAtUtc = primaryDraft?.CreatedAtUtc ?? primary.FundEvent.UpdatedAtUtc;
-
-        return new PaymentIntentWorkflowDto(
-            paymentIntentId,
-            settlementReference,
-            fundProfileId,
-            ledgerBookId,
-            primary.FundEventId,
-            primary.JournalEntryId,
-            requester,
-            requestedAtUtc,
-            status,
-            FormatPaymentIntentWorkflowStatus(status),
-            BuildPaymentIntentReadinessReason(status, records, bankEvidence, reconciliationLinks),
-            "Full payment execution is explicitly deferred in v0.18; this layer only retains intent, control, cash-evidence, reconciliation, and audit history before any bank-side instruction.",
-            expectedCashMovement,
-            evidenceRoute,
-            workbenchRoute,
-            approvalChain,
-            bankEvidence,
-            reconciliationLinks,
-            auditHistory);
-    }
-
-    private static PaymentIntentExpectedCashMovementDto BuildExpectedCashMovement(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        string paymentIntentId,
-        string? settlementReference,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<string> evidenceLinks)
-    {
-        var primary = records[0];
-        var netActivity = records.Sum(static record => record.NetCapitalActivity);
-        var amount = records.Count == 1
-            ? Math.Abs(primary.NetCapitalActivity)
-            : records.Sum(static record => Math.Abs(record.NetCapitalActivity));
-        var direction = ResolvePaymentIntentDirection(records, netActivity);
-        var currency = records
-            .Select(static record => NormalizeCurrency(record.Currency))
-            .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value)) ?? "USD";
-        var purpose = records.Count == 1
-            ? $"{primary.FundEventType} for {primary.CapitalAccountId}"
-            : $"{records.Count} private-capital fund events";
-        var payee = ResolvePaymentIntentPayee(fundProfileId, primary, direction);
-        var accountScope = BuildPaymentIntentAccountScope(fundProfileId, ledgerBookId, primary);
-        var businessPurpose = NormalizeOptional(primary.Memo) ?? purpose;
-        var approvalPolicy = ResolvePaymentIntentApprovalPolicy(records);
-
-        return new PaymentIntentExpectedCashMovementDto(
-            paymentIntentId,
-            direction,
-            amount,
-            currency,
-            records.Select(static record => record.EffectiveDate).DefaultIfEmpty(DateOnly.MinValue).Max(),
-            settlementReference,
-            primary.FundEventId,
-            primary.FundEventType,
-            primary.CapitalAccountId,
-            primary.InvestorId,
-            purpose,
-            payee,
-            accountScope,
-            businessPurpose,
-            approvalPolicy,
-            BuildPaymentIntentSourceEvidenceLinks(records, evidenceLinks));
-    }
-
-    private static string ResolvePaymentIntentPayee(
-        string fundProfileId,
-        PrivateCapitalFundEventLedgerRecordDto primary,
-        PaymentIntentCashDirectionDto direction)
-    {
-        if (direction == PaymentIntentCashDirectionDto.Inflow)
-        {
-            return $"fund:{fundProfileId}";
-        }
-
-        return NormalizeOptional(primary.InvestorId)
-            ?? NormalizeOptional(primary.CapitalAccountId)
-            ?? $"fund:{fundProfileId}";
-    }
-
-    private static string BuildPaymentIntentAccountScope(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        PrivateCapitalFundEventLedgerRecordDto primary)
-    {
-        var parts = new List<string> { $"fund:{fundProfileId}" };
-        if (ledgerBookId.HasValue)
-        {
-            parts.Add($"book:{ledgerBookId.Value:D}");
-        }
-
-        parts.Add(primary.CapitalAccountId);
-        if (!string.IsNullOrWhiteSpace(primary.InvestorId))
-        {
-            parts.Add(primary.InvestorId);
-        }
-
-        return string.Join(" / ", parts);
-    }
-
-    private static string ResolvePaymentIntentApprovalPolicy(IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
-    {
-        if (records.Any(static record => record.ApprovalState is ManualJournalEntryStatusDto.Approved))
-        {
-            return "Controller approval retained before execution-deferred reliance";
-        }
-
-        if (records.Any(static record => record.ApprovalState is ManualJournalEntryStatusDto.Submitted))
-        {
-            return "Controller approval pending before execution-deferred reliance";
-        }
-
-        return "Controller approval required before execution-deferred reliance";
-    }
-
-    private static IReadOnlyList<string> BuildPaymentIntentSourceEvidenceLinks(
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<string> evidenceLinks)
-    {
-        return records
-            .Select(static record => record.ActivityRoute)
-            .Concat(records.Select(static record => record.EvidenceRoute))
-            .Concat(evidenceLinks)
-            .Where(static link => !string.IsNullOrWhiteSpace(link))
-            .Select(static link => link.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static PaymentIntentCashDirectionDto ResolvePaymentIntentDirection(
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        decimal netActivity)
-    {
-        if (records.All(static record => record.FundEvent.EntryType is ManualJournalEntryTypeDto.CapitalCall or ManualJournalEntryTypeDto.Subscription))
-        {
-            return PaymentIntentCashDirectionDto.Inflow;
-        }
-
-        if (records.All(static record => record.FundEvent.EntryType is ManualJournalEntryTypeDto.Distribution or ManualJournalEntryTypeDto.Redemption or ManualJournalEntryTypeDto.ManagementFee))
-        {
-            return PaymentIntentCashDirectionDto.Outflow;
-        }
-
-        return netActivity > 0m
-            ? PaymentIntentCashDirectionDto.Inflow
-            : netActivity < 0m
-                ? PaymentIntentCashDirectionDto.Outflow
-                : PaymentIntentCashDirectionDto.Neutral;
-    }
-
-    private static IReadOnlyList<PaymentIntentApprovalStepDto> BuildPaymentIntentApprovalChain(
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyDictionary<Guid, ManualJournalEntryDraftDto> draftsByJournalEntryId)
-    {
-        var steps = new List<PaymentIntentApprovalStepDto>();
-        var sequence = 1;
-        foreach (var record in records.OrderBy(static record => record.EffectiveDate).ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase))
-        {
-            draftsByJournalEntryId.TryGetValue(record.JournalEntryId, out var draft);
-            var requester = NormalizeOptional(draft?.PreparedBy) ?? "ledger-posting";
-            steps.Add(new PaymentIntentApprovalStepDto(
-                sequence++,
-                "Requester",
-                requester,
-                "Requested",
-                draft?.CreatedAtUtc,
-                record.ActivityRoute));
-
-            if (draft?.SubmittedAtUtc is not null || !string.IsNullOrWhiteSpace(draft?.SubmittedBy) || !string.IsNullOrWhiteSpace(record.ApprovalId))
-            {
-                steps.Add(new PaymentIntentApprovalStepDto(
-                    sequence++,
-                    "Controller approval",
-                    NormalizeOptional(draft?.SubmittedBy) ?? NormalizeOptional(record.ApprovalId) ?? "controller",
-                    record.ApprovalState.ToString(),
-                    draft?.SubmittedAtUtc ?? record.FundEvent.UpdatedAtUtc,
-                    record.ApprovalRoute));
-            }
-            else
-            {
-                steps.Add(new PaymentIntentApprovalStepDto(
-                    sequence++,
-                    "Controller approval",
-                    "controller",
-                    "Pending",
-                    null,
-                    record.ApprovalRoute));
-            }
-        }
-
-        return steps
-            .GroupBy(step => $"{step.Role}:{step.Actor}:{step.Status}:{step.EvidenceRoute}", StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
-            .Select((step, index) => step with { Sequence = index + 1 })
-            .ToArray();
-    }
-
-    private static IReadOnlyList<PaymentIntentBankEvidenceDto> BuildPaymentIntentBankEvidence(
-        string paymentIntentId,
-        string? settlementReference,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<BankTransactionDto> bankTransactions,
-        IReadOnlyList<string> evidenceLinks)
-    {
-        var evidence = new List<PaymentIntentBankEvidenceDto>();
-        var matchedTransactions = bankTransactions
-            .Where(transaction => MatchesPaymentIntentBankTransaction(transaction, paymentIntentId, settlementReference, records))
-            .OrderByDescending(static transaction => transaction.RecordedAt)
-            .ThenBy(static transaction => transaction.BankTransactionId)
-            .ToArray();
-
-        foreach (var transaction in matchedTransactions)
-        {
-            var isReturn = IsReturnBankTransaction(transaction);
-            evidence.Add(new PaymentIntentBankEvidenceDto(
-                $"bank-transaction:{transaction.BankTransactionId:D}",
-                isReturn ? "BankReturn" : "BankConfirmation",
-                isReturn ? "Returned" : "Confirmed",
-                isReturn
-                    ? $"Bank-side transaction {transaction.BankTransactionId:D} indicates a returned, voided, or reversed payment intent."
-                    : $"Bank-side transaction {transaction.BankTransactionId:D} confirms expected cash movement.",
-                transaction.BankTransactionId,
-                transaction.TransactionType,
-                transaction.Amount,
-                NormalizeCurrency(transaction.Currency),
-                transaction.EffectiveDate,
-                transaction.RecordedAt,
-                NormalizeOptional(transaction.ExternalRef),
-                BuildBankTransactionEvidenceRoute(transaction),
-                NormalizeOptional(transaction.RecordedBy)));
-        }
-
-        foreach (var link in SelectPaymentIntentCashEvidenceLinks(evidenceLinks, paymentIntentId, settlementReference))
-        {
-            evidence.Add(new PaymentIntentBankEvidenceDto(
-                $"retained-cash-evidence:{SanitizePaymentIntentPart(link)}",
-                "RetainedCashEvidence",
-                "Retained",
-                $"Retained cash, bank, treasury, or settlement evidence is linked at {link}.",
-                EvidenceRoute: link));
-        }
-
-        if (evidence.Count == 0)
-        {
-            evidence.Add(new PaymentIntentBankEvidenceDto(
-                $"bank-evidence-missing:{SanitizePaymentIntentPart(paymentIntentId)}",
-                "BankConfirmation",
-                "Missing",
-                "No bank confirmation, return, custodian cash, treasury, or settlement evidence is retained for this payment intent."));
-        }
-
-        return evidence
-            .GroupBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .ToArray();
-    }
-
-    private static IReadOnlyList<PaymentIntentReconciliationLinkDto> BuildPaymentIntentReconciliationLinks(
-        string paymentIntentId,
-        string? settlementReference,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<string> evidenceLinks)
-    {
-        var reconciliationLinks = SelectReconciliationEvidenceLinks(evidenceLinks, paymentIntentId, settlementReference).ToArray();
-        if (reconciliationLinks.Length == 0)
-        {
-            return
-            [
-                new PaymentIntentReconciliationLinkDto(
-                    $"reconciliation-pending:{SanitizePaymentIntentPart(paymentIntentId)}",
-                    "Pending",
-                    "No reconciliation case, matching run, or break-review evidence is linked to this payment intent.")
-            ];
-        }
-
-        return reconciliationLinks
-            .Select((link, index) => new PaymentIntentReconciliationLinkDto(
-                $"reconciliation-link:{index + 1}:{SanitizePaymentIntentPart(paymentIntentId)}",
-                "Ready",
-                $"Reconciliation evidence links payment intent {paymentIntentId} to retained cash or ledger review.",
-                EvidenceRoute: link,
-                ReconciliationCaseId: TryExtractEvidenceToken(link, "case"),
-                ReconciliationRunId: TryExtractEvidenceToken(link, "run")))
-            .ToArray();
-    }
-
-    private static IReadOnlyList<PaymentIntentAuditEventDto> BuildPaymentIntentAuditHistory(
-        string paymentIntentId,
-        string? settlementReference,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyDictionary<Guid, ManualJournalEntryDraftDto> draftsByJournalEntryId,
-        IReadOnlyList<AccountingActionAuditEventDto> audit,
-        IReadOnlyList<PaymentIntentBankEvidenceDto> bankEvidence,
-        IReadOnlyList<PaymentIntentReconciliationLinkDto> reconciliationLinks)
-    {
-        var events = new List<PaymentIntentAuditEventDto>();
-        foreach (var record in records.OrderBy(static record => record.FundEvent.UpdatedAtUtc).ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase))
-        {
-            draftsByJournalEntryId.TryGetValue(record.JournalEntryId, out var draft);
-            events.Add(new PaymentIntentAuditEventDto(
-                $"payment-intent-requested:{record.JournalEntryId:D}",
-                draft?.CreatedAtUtc ?? record.FundEvent.UpdatedAtUtc,
-                NormalizeOptional(draft?.PreparedBy) ?? "ledger-posting",
-                "payment-intent.requested",
-                $"Payment intent {paymentIntentId} was captured from treasury context for {record.FundEventType}.",
-                record.EvidenceLinks));
-
-            if (draft?.SubmittedAtUtc is not null || record.ApprovalState is ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved)
-            {
-                events.Add(new PaymentIntentAuditEventDto(
-                    $"payment-intent-approval:{record.JournalEntryId:D}",
-                    draft?.SubmittedAtUtc ?? record.FundEvent.UpdatedAtUtc,
-                    NormalizeOptional(draft?.SubmittedBy) ?? NormalizeOptional(record.ApprovalId) ?? "controller",
-                    "payment-intent.approval-state",
-                    $"Approval chain state is {record.ApprovalState} for payment intent {paymentIntentId}.",
-                    NormalizeOptional(record.ApprovalRoute) is { } approvalRoute
-                        ? [approvalRoute]
-                        : []));
-            }
-        }
-
-        foreach (var auditEvent in audit.Where(auditEvent => MatchesPaymentIntentAuditEvent(auditEvent, paymentIntentId, settlementReference, records)))
-        {
-            events.Add(new PaymentIntentAuditEventDto(
-                auditEvent.AuditEventId.ToString("D"),
-                auditEvent.RecordedAtUtc,
-                auditEvent.Actor,
-                auditEvent.Action,
-                $"Accounting audit event {auditEvent.Action} is linked to payment intent {paymentIntentId}.",
-                auditEvent.EvidenceLinks));
-        }
-
-        events.Add(new PaymentIntentAuditEventDto(
-            $"payment-intent-cash-evidence:{SanitizePaymentIntentPart(paymentIntentId)}",
-            bankEvidence
-                .Where(static evidence => evidence.RecordedAtUtc.HasValue)
-                .Select(static evidence => evidence.RecordedAtUtc!.Value)
-                .DefaultIfEmpty(records.Max(static record => record.FundEvent.UpdatedAtUtc))
-                .Max(),
-            "treasury-control",
-            "payment-intent.cash-evidence-reviewed",
-            $"{bankEvidence.Count} bank confirmation, return, or retained cash evidence item(s) are attached to the payment intent.",
-            bankEvidence
-                .Select(static evidence => evidence.EvidenceRoute)
-                .Where(static route => !string.IsNullOrWhiteSpace(route))
-                .Select(static route => route!)
-                .ToArray()));
-
-        events.Add(new PaymentIntentAuditEventDto(
-            $"payment-intent-reconciliation:{SanitizePaymentIntentPart(paymentIntentId)}",
-            records.Max(static record => record.FundEvent.UpdatedAtUtc),
-            "treasury-control",
-            "payment-intent.reconciliation-reviewed",
-            $"{reconciliationLinks.Count} reconciliation linkage item(s) are attached to the payment intent.",
-            reconciliationLinks
-                .Select(static link => link.EvidenceRoute)
-                .Where(static route => !string.IsNullOrWhiteSpace(route))
-                .Select(static route => route!)
-                .ToArray()));
-
-        events.Add(new PaymentIntentAuditEventDto(
-            $"payment-intent-execution-deferred:{SanitizePaymentIntentPart(paymentIntentId)}",
-            DateTimeOffset.UtcNow,
-            "treasury-control",
-            "payment-intent.execution-deferred",
-            "Full payment execution is deferred; this record is an evidence and control checkpoint only."));
-
-        return events
-            .GroupBy(static item => item.AuditEventId, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .OrderBy(static item => item.RecordedAtUtc)
-            .ThenBy(static item => item.Action, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static PaymentIntentWorkflowStatusDto ResolvePaymentIntentWorkflowStatus(
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<PaymentIntentApprovalStepDto> approvalChain,
-        IReadOnlyList<PaymentIntentBankEvidenceDto> bankEvidence,
-        IReadOnlyList<PaymentIntentReconciliationLinkDto> reconciliationLinks)
-    {
-        if (records.Any(static record => record.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Blocked) ||
-            approvalChain.Any(static step => step.Status is nameof(ManualJournalEntryStatusDto.Rejected) or nameof(ManualJournalEntryStatusDto.NeedsFix)))
-        {
-            return PaymentIntentWorkflowStatusDto.Blocked;
-        }
-
-        if (bankEvidence.Any(static evidence => string.Equals(evidence.Status, "Returned", StringComparison.OrdinalIgnoreCase)))
-        {
-            return PaymentIntentWorkflowStatusDto.BankReturned;
-        }
-
-        if (records.Any(static record => record.PaymentIntentEvidence is null ||
-                                         record.PaymentIntentEvidence.Status == PrivateCapitalPaymentIntentEvidenceStatusDto.MissingIntent))
-        {
-            return PaymentIntentWorkflowStatusDto.EvidenceMissing;
-        }
-
-        if (approvalChain.Any(static step => step.Status is "Pending" or nameof(ManualJournalEntryStatusDto.Draft) or nameof(ManualJournalEntryStatusDto.Submitted)))
-        {
-            return PaymentIntentWorkflowStatusDto.ApprovalPending;
-        }
-
-        if (records.Any(static record => record.PaymentIntentEvidence is not null &&
-                                         record.PaymentIntentEvidence.Status == PrivateCapitalPaymentIntentEvidenceStatusDto.CashEvidenceMissing))
-        {
-            return PaymentIntentWorkflowStatusDto.BankEvidencePending;
-        }
-
-        if (!bankEvidence.Any(static evidence =>
-                string.Equals(evidence.Status, "Confirmed", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(evidence.Status, "Retained", StringComparison.OrdinalIgnoreCase)))
-        {
-            return PaymentIntentWorkflowStatusDto.BankEvidencePending;
-        }
-
-        if (!reconciliationLinks.Any(static link => string.Equals(link.Status, "Ready", StringComparison.OrdinalIgnoreCase)))
-        {
-            return PaymentIntentWorkflowStatusDto.ReconciliationPending;
-        }
-
-        return PaymentIntentWorkflowStatusDto.ExecutionDeferred;
-    }
-
-    private static string FormatPaymentIntentWorkflowStatus(PaymentIntentWorkflowStatusDto status)
-        => status switch
-        {
-            PaymentIntentWorkflowStatusDto.EvidenceMissing => "Intent evidence missing",
-            PaymentIntentWorkflowStatusDto.ApprovalPending => "Approval pending",
-            PaymentIntentWorkflowStatusDto.BankEvidencePending => "Bank evidence pending",
-            PaymentIntentWorkflowStatusDto.BankReturned => "Bank return captured",
-            PaymentIntentWorkflowStatusDto.ReconciliationPending => "Reconciliation pending",
-            PaymentIntentWorkflowStatusDto.ExecutionDeferred => "Ready, execution deferred",
-            PaymentIntentWorkflowStatusDto.Blocked => "Blocked",
-            _ => status.ToString()
-        };
-
-    private static string BuildPaymentIntentReadinessReason(
-        PaymentIntentWorkflowStatusDto status,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<PaymentIntentBankEvidenceDto> bankEvidence,
-        IReadOnlyList<PaymentIntentReconciliationLinkDto> reconciliationLinks)
-        => status switch
-        {
-            PaymentIntentWorkflowStatusDto.EvidenceMissing =>
-                "A payment intent id or required cash evidence field is missing from the treasury context.",
-            PaymentIntentWorkflowStatusDto.ApprovalPending =>
-                "Requester and expected movement are captured, but controller approval is not complete.",
-            PaymentIntentWorkflowStatusDto.BankEvidencePending =>
-                "Approval evidence is captured, but no retained bank confirmation, return, or cash settlement evidence is linked.",
-            PaymentIntentWorkflowStatusDto.BankReturned =>
-                "A bank-side return, void, rejection, or reversal is attached and blocks execution readiness.",
-            PaymentIntentWorkflowStatusDto.ReconciliationPending =>
-                "Cash evidence is attached, but reconciliation linkage is not retained.",
-            PaymentIntentWorkflowStatusDto.ExecutionDeferred =>
-                $"All pre-execution controls are retained across {records.Count} fund event(s), {bankEvidence.Count} bank evidence item(s), and {reconciliationLinks.Count} reconciliation link(s).",
-            PaymentIntentWorkflowStatusDto.Blocked =>
-                "The linked fund-event readiness or approval state is blocked.",
-            _ => "Payment intent workflow requires review."
-        };
-
-    private static IReadOnlyList<string> BuildPaymentIntentEvidenceLinks(
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyDictionary<Guid, ManualJournalEntryDraftDto> draftsByJournalEntryId,
-        IReadOnlyList<AccountingActionAuditEventDto> audit,
-        string paymentIntentId,
-        string? settlementReference)
-    {
-        var links = new List<string>();
-        links.AddRange(records.SelectMany(static record => record.EvidenceLinks));
-        links.AddRange(records.SelectMany(static record => record.PaymentIntentEvidence?.CashEvidenceLinks ?? []));
-        foreach (var record in records)
-        {
-            if (draftsByJournalEntryId.TryGetValue(record.JournalEntryId, out var draft))
-            {
-                links.AddRange(draft.EvidenceLinks);
-                links.AddRange(draft.EvidenceAttachments?.Select(static attachment => attachment.Uri) ?? []);
-            }
-        }
-
-        links.AddRange(audit
-            .Where(auditEvent => MatchesPaymentIntentText(auditEvent.CorrelationId, paymentIntentId, settlementReference) ||
-                auditEvent.EvidenceLinks.Any(link => MatchesPaymentIntentText(link, paymentIntentId, settlementReference)))
-            .SelectMany(static auditEvent => auditEvent.EvidenceLinks));
-
-        return links
-            .Where(static link => !string.IsNullOrWhiteSpace(link))
-            .Select(static link => link.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static bool MatchesPaymentIntentBankTransaction(
-        BankTransactionDto transaction,
-        string paymentIntentId,
-        string? settlementReference,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
-    {
-        if (MatchesPaymentIntentText(transaction.ExternalRef, paymentIntentId, settlementReference))
-        {
-            return true;
-        }
-
-        return records.Any(record => transaction.EntityId == record.JournalEntryId);
-    }
-
-    private static bool IsReturnBankTransaction(BankTransactionDto transaction)
-        => transaction.IsVoided ||
-           transaction.TransactionType.Contains("return", StringComparison.OrdinalIgnoreCase) ||
-           transaction.TransactionType.Contains("reject", StringComparison.OrdinalIgnoreCase) ||
-           transaction.TransactionType.Contains("reversal", StringComparison.OrdinalIgnoreCase) ||
-           transaction.TransactionType.Contains("void", StringComparison.OrdinalIgnoreCase) ||
-           transaction.TransactionType.Contains("fail", StringComparison.OrdinalIgnoreCase);
-
-    private static string BuildBankTransactionEvidenceRoute(BankTransactionDto transaction)
-        => $"/api/banking/transactions?entityId={Uri.EscapeDataString(transaction.EntityId.ToString("D"))}&bankTransactionId={Uri.EscapeDataString(transaction.BankTransactionId.ToString("D"))}";
-
-    private static IEnumerable<string> SelectPaymentIntentCashEvidenceLinks(
-        IReadOnlyList<string> links,
-        string paymentIntentId,
-        string? settlementReference)
-        => links
-            .Where(static link => IsPaymentIntentCashEvidenceLink(link))
-            .Where(link => IsScopedPaymentIntentEvidenceLink(link, paymentIntentId, settlementReference));
-
-    private static bool IsPaymentIntentCashEvidenceLink(string link)
-        => link.Contains("bank", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("cash", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("custodian", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("plaid", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("settlement", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("treasury", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("wire", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("ach", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("swift", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("return", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("revers", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("reject", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("void", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("failed", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("failure", StringComparison.OrdinalIgnoreCase);
-
-    private static IEnumerable<string> SelectReconciliationEvidenceLinks(
-        IReadOnlyList<string> links,
-        string paymentIntentId,
-        string? settlementReference)
-        => links
-            .Where(static link =>
-                link.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) ||
-                link.Contains("reconcile", StringComparison.OrdinalIgnoreCase) ||
-                link.Contains("break", StringComparison.OrdinalIgnoreCase) ||
-                link.Contains("match", StringComparison.OrdinalIgnoreCase))
-            .Where(link => IsScopedPaymentIntentEvidenceLink(link, paymentIntentId, settlementReference));
-
-    private static bool MatchesPaymentIntentAuditEvent(
-        AccountingActionAuditEventDto auditEvent,
-        string paymentIntentId,
-        string? settlementReference,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
-        => MatchesPaymentIntentText(auditEvent.CorrelationId, paymentIntentId, settlementReference) ||
-           auditEvent.EvidenceLinks.Any(link => MatchesPaymentIntentText(link, paymentIntentId, settlementReference)) ||
-           records.Any(record =>
-               MatchesPaymentIntentText(auditEvent.CorrelationId, record.JournalEntryId.ToString("D"), null) ||
-               auditEvent.EvidenceLinks.Any(link => MatchesPaymentIntentText(link, record.FundEventId, record.SettlementReference)));
-
-    private static bool MatchesPaymentIntentText(string? value, string paymentIntentId, string? settlementReference)
-        => !string.IsNullOrWhiteSpace(value) &&
-           (ContainsPaymentIntentIdentifier(value, paymentIntentId) ||
-            (!string.IsNullOrWhiteSpace(settlementReference) &&
-             ContainsPaymentIntentIdentifier(value, settlementReference)));
-
-    private static bool IsScopedPaymentIntentEvidenceLink(string link, string paymentIntentId, string? settlementReference)
-        => !ContainsExplicitPaymentOrSettlementIdentifier(link) ||
-           MatchesPaymentIntentText(link, paymentIntentId, settlementReference);
-
-    private static bool ContainsPaymentIntentIdentifier(string value, string identifier)
-        => value.Contains(identifier, StringComparison.OrdinalIgnoreCase) ||
-           value.Contains(Uri.EscapeDataString(identifier), StringComparison.OrdinalIgnoreCase);
-
-    private static bool ContainsExplicitPaymentOrSettlementIdentifier(string link)
-        => link.Contains("payment:", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("payment%3A", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("settlement:", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("settlement%3A", StringComparison.OrdinalIgnoreCase);
-
-    private static string? TryExtractEvidenceToken(string value, string label)
-    {
-        var marker = $"{label}:";
-        var index = value.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
-        if (index < 0)
-        {
-            return null;
-        }
-
-        var token = value[(index + marker.Length)..]
-            .Split(['/', '?', '&', '#'], StringSplitOptions.RemoveEmptyEntries)
-            .FirstOrDefault();
-        return NormalizeOptional(token);
-    }
-
-    private static string SanitizePaymentIntentPart(string value)
-        => string.IsNullOrWhiteSpace(value)
-            ? "payment-intent"
-            : string.Join("-", value.Trim().Split(
-                Path.GetInvalidFileNameChars().Concat([':', '/', '\\', '?', '&', '=']).Distinct().ToArray(),
-                StringSplitOptions.RemoveEmptyEntries));
 
     private async Task<PostedPrivateCapitalActivityProjection?> BuildPostedPrivateCapitalActivityProjectionAsync(
         string fundProfileId,
@@ -2115,1193 +2883,24 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         return currency;
     }
 
-    private static IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> BuildCapitalAccounts(
-        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> subledgerEntries)
-        => subledgerEntries
-            .GroupBy(item => new { item.CapitalAccountId, item.InvestorId, item.Currency })
-            .Select(group =>
-            {
-                var ordered = group
-                    .OrderByDescending(item => item.EffectiveDate)
-                    .ThenByDescending(item => item.UpdatedAtUtc)
-                    .ToArray();
-                return new PrivateCapitalCapitalAccountActivityDto(
-                    group.Key.CapitalAccountId,
-                    group.Key.InvestorId,
-                    group.Key.Currency,
-                    group.Where(item => item.EntryType == ManualJournalEntryTypeDto.CapitalCall).Sum(item => Math.Abs(item.NetCapitalActivity)),
-                    group.Where(item => item.EntryType == ManualJournalEntryTypeDto.Distribution).Sum(item => Math.Abs(item.NetCapitalActivity)),
-                    group.Where(item => item.EntryType == ManualJournalEntryTypeDto.Subscription).Sum(item => Math.Abs(item.NetCapitalActivity)),
-                    group.Where(item => item.EntryType == ManualJournalEntryTypeDto.Redemption).Sum(item => Math.Abs(item.NetCapitalActivity)),
-                    group.Where(item => item.EntryType == ManualJournalEntryTypeDto.ManagementFee).Sum(item => Math.Abs(item.NetCapitalActivity)),
-                    group.Sum(item => item.NetCapitalActivity),
-                    group.Select(static item => item.FundEventId).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
-                    ordered[0].EffectiveDate,
-                    ordered[0].FundEventType,
-                    group
-                        .Select(item => item.FundEventId)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .Order(StringComparer.OrdinalIgnoreCase)
-                        .ToArray());
-            })
-            .OrderBy(item => item.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(item => item.InvestorId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(item => item.Currency, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-    private static IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> BuildCapitalAccountSubledgerEntries(
-        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerSource> sources)
-    {
-        var entries = new List<PrivateCapitalCapitalAccountSubledgerEntryDto>();
-        foreach (var group in sources
-            .GroupBy(item => new { item.CapitalAccountId, item.InvestorId, item.Currency }))
-        {
-            var runningNetActivity = 0m;
-            foreach (var item in group
-                .OrderBy(item => item.EffectiveDate)
-                .ThenBy(item => item.UpdatedAtUtc)
-                .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(item => item.JournalEntryId))
-            {
-                runningNetActivity += item.NetCapitalActivity;
-                entries.Add(new PrivateCapitalCapitalAccountSubledgerEntryDto(
-                    item.SubledgerEntryId,
-                    item.CapitalAccountId,
-                    item.InvestorId,
-                    item.Currency,
-                    item.FundEventId,
-                    item.FundEventType,
-                    item.EntryType,
-                    item.ApprovalState,
-                    item.JournalEntryId,
-                    item.EffectiveDate,
-                    item.GrossAmount,
-                    item.NetCapitalActivity,
-                    runningNetActivity,
-                    item.Memo,
-                    item.EvidenceLinks,
-                    item.ValidationIssues,
-                    item.UpdatedAtUtc,
-                    item.IsPosted));
-            }
-        }
-
-        return entries
-            .OrderByDescending(item => item.EffectiveDate)
-            .ThenByDescending(item => item.UpdatedAtUtc)
-            .ThenBy(item => item.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static PrivateCapitalCapitalAccountSubledgerSource MapFundEventSubledgerSource(
-        PrivateCapitalFundEventDto fundEvent)
-        => new(
-            $"capital-account-subledger:{fundEvent.CapitalAccountId}:{fundEvent.FundEventId}:{fundEvent.JournalEntryId:D}".ToLowerInvariant(),
-            fundEvent.CapitalAccountId,
-            fundEvent.InvestorId,
-            fundEvent.Currency,
-            fundEvent.FundEventId,
-            fundEvent.FundEventType,
-            fundEvent.EntryType,
-            fundEvent.JournalStatus,
-            fundEvent.JournalEntryId,
-            fundEvent.EffectiveDate,
-            fundEvent.GrossAmount,
-            fundEvent.NetCapitalActivity,
-            fundEvent.Memo,
-            fundEvent.EvidenceLinks,
-            fundEvent.ValidationIssues,
-            fundEvent.UpdatedAtUtc,
-            fundEvent.IsPosted);
-
-    private static IEnumerable<PrivateCapitalCapitalAccountSubledgerSource> MapPostedCapitalAccountSubledgerSources(
-        PrivateCapitalFundEventLedgerEvent fundEvent,
-        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
-    {
-        if (fundEvent.CapitalAccountImpacts.Count == 0)
-        {
-            yield break;
-        }
-
-        var entryType = MapPrivateCapitalEntryType(fundEvent.FundEventType);
-        var approvalState = MapPostedApprovalState(fundEvent.ApprovalState, fundEvent.HasCriticalIssues);
-        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
-        var evidenceLinks = BuildPostedFundEventEvidenceLinks(fundEvent);
-        var issues = MapPostedIssues(fundEvent);
-        var effectiveDate = fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime);
-        var journalEntryId = fundEvent.JournalEntryIds.FirstOrDefault();
-        var memo = fundEvent.LedgerImpacts.FirstOrDefault()?.Description ?? fundEvent.FundEventType;
-
-        var groupedImpacts = fundEvent.CapitalAccountImpacts
-            .GroupBy(static item => new { item.CapitalAccountId, item.InvestorId })
-            .OrderBy(static group => group.Key.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static group => group.Key.InvestorId, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var group in groupedImpacts)
-        {
-            var netCapitalActivity = group.Sum(static item => item.NetCapitalAccountImpact);
-            var grossAmount = group.Sum(static item => Math.Abs(item.NetCapitalAccountImpact));
-            var ledgerEntryIds = group
-                .SelectMany(static item => item.LedgerEntryIds)
-                .Distinct()
-                .Order()
-                .ToArray();
-            var impactKey = ledgerEntryIds.Length == 0
-                ? journalEntryId.ToString("D")
-                : string.Join("-", ledgerEntryIds.Select(static id => id.ToString("D")));
-
-            yield return new PrivateCapitalCapitalAccountSubledgerSource(
-                $"capital-account-subledger:{group.Key.CapitalAccountId}:{fundEvent.FundEventId}:{impactKey}".ToLowerInvariant(),
-                group.Key.CapitalAccountId,
-                NormalizeOptional(group.Key.InvestorId),
-                currency,
-                fundEvent.FundEventId,
-                fundEvent.FundEventType,
-                entryType,
-                approvalState,
-                journalEntryId,
-                effectiveDate,
-                grossAmount,
-                netCapitalActivity,
-                memo,
-                evidenceLinks,
-                issues,
-                fundEvent.LastPostedAt,
-                true);
-        }
-    }
-
-    private static PrivateCapitalFundEventDto MapPostedFundEvent(
-        PrivateCapitalFundEventLedgerEvent fundEvent,
-        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
-    {
-        var entryType = MapPrivateCapitalEntryType(fundEvent.FundEventType);
-        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
-        var evidenceLinks = BuildPostedFundEventEvidenceLinks(fundEvent);
-        var issues = MapPostedIssues(fundEvent);
-        var grossAmount = fundEvent.LedgerImpacts.Count > 0
-            ? fundEvent.LedgerImpacts.Max(static item => Math.Max(Math.Abs(item.TotalDebits), Math.Abs(item.TotalCredits)))
-            : Math.Abs(fundEvent.CapitalAccountImpacts.Sum(static item => item.NetCapitalAccountImpact));
-        var netCapitalActivity = fundEvent.CapitalAccountImpacts.Count > 0
-            ? fundEvent.CapitalAccountImpacts.Sum(static item => item.NetCapitalAccountImpact)
-            : CalculateNetCapitalActivity(entryType, grossAmount);
-
-        return new PrivateCapitalFundEventDto(
-            fundEvent.FundEventId,
-            fundEvent.FundEventType,
-            entryType,
-            MapPostedApprovalState(fundEvent.ApprovalState, fundEvent.HasCriticalIssues),
-            fundEvent.JournalEntryIds.FirstOrDefault(),
-            fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime),
-            NormalizeOptional(fundEvent.CapitalAccountId) ?? "capital-account:unassigned",
-            NormalizeOptional(fundEvent.InvestorId),
-            currency,
-            grossAmount,
-            netCapitalActivity,
-            fundEvent.LedgerImpacts.FirstOrDefault()?.Description ?? fundEvent.FundEventType,
-            NormalizeOptional(fundEvent.PaymentIntentId),
-            NormalizeOptional(fundEvent.SettlementReference),
-            evidenceLinks,
-            issues,
-            fundEvent.LastPostedAt,
-            IsPosted: true,
-            ApprovalId: NormalizeOptional(fundEvent.ApprovalId));
-    }
-
-    private static IReadOnlyList<string> BuildPostedFundEventEvidenceLinks(
-        PrivateCapitalFundEventLedgerEvent fundEvent)
-        => fundEvent.EvidenceLinks
-            .Concat(fundEvent.ReportOutputs.SelectMany(static item => item.EvidenceLinks))
-            .Where(static link => !string.IsNullOrWhiteSpace(link))
-            .Select(static link => link.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-    private static IEnumerable<PrivateCapitalLedgerImpactDto> MapPostedLedgerImpacts(
-        PrivateCapitalFundEventLedgerEvent fundEvent,
-        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
-    {
-        var approvalState = MapPostedApprovalState(fundEvent.ApprovalState, fundEvent.HasCriticalIssues);
-        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
-        var evidenceLinks = fundEvent.EvidenceLinks
-            .Where(static link => !string.IsNullOrWhiteSpace(link))
-            .Select(static link => link.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var issues = MapPostedIssues(fundEvent);
-        var effectiveDate = fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime);
-        var capitalAccountId = NormalizeOptional(fundEvent.CapitalAccountId) ?? "capital-account:unassigned";
-
-        foreach (var impact in fundEvent.LedgerImpacts)
-        {
-            var capitalAccountImpact = ResolveLedgerImpactCapitalAccount(fundEvent, impact);
-            yield return new PrivateCapitalLedgerImpactDto(
-                impact.LedgerImpactId,
-                impact.JournalEntryId,
-                fundEvent.FundEventId,
-                fundEvent.FundEventType,
-                capitalAccountImpact?.CapitalAccountId ?? capitalAccountId,
-                NormalizeOptional(capitalAccountImpact?.InvestorId) ?? NormalizeOptional(fundEvent.InvestorId),
-                approvalState,
-                effectiveDate,
-                currency,
-                impact.TotalDebits,
-                impact.TotalCredits,
-                impact.Imbalance,
-                impact.Lines.Count,
-                impact.IsBalanced,
-                fundEvent.IsPostingReady,
-                evidenceLinks,
-                impact.Lines.Select(line => MapPostedLedgerLine(line, currency)).ToArray(),
-                issues);
-        }
-    }
-
-    private static PrivateCapitalFundEventCapitalAccountImpact? ResolveLedgerImpactCapitalAccount(
-        PrivateCapitalFundEventLedgerEvent fundEvent,
-        PrivateCapitalFundEventLedgerImpact ledgerImpact)
-    {
-        var ledgerEntryIds = ledgerImpact.Lines
-            .Select(static line => line.LedgerEntryId)
-            .ToHashSet();
-        if (ledgerEntryIds.Count == 0)
-        {
-            return null;
-        }
-
-        var matches = fundEvent.CapitalAccountImpacts
-            .Where(impact => impact.LedgerEntryIds.Any(ledgerEntryIds.Contains))
-            .Take(2)
-            .ToArray();
-
-        return matches.Length == 1 ? matches[0] : null;
-    }
-
-    private static PrivateCapitalLedgerLineImpactDto MapPostedLedgerLine(
-        PrivateCapitalFundEventLedgerLine line,
-        string currency)
-    {
-        var side = line.Debit > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit;
-        return new PrivateCapitalLedgerLineImpactDto(
-            line.LedgerEntryId.ToString("D"),
-            line.AccountName,
-            side,
-            Math.Abs(line.Debit > 0m ? line.Debit : line.Credit),
-            currency,
-            NormalizeOptional(line.FinancialAccountId),
-            null,
-            NormalizeOptional(line.Symbol),
-            null);
-    }
-
-    private static string ResolvePostedEventCurrency(
-        PrivateCapitalFundEventLedgerEvent fundEvent,
-        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
-    {
-        var currencies = fundEvent.JournalEntryIds
-            .Select(id => journalEntryCurrencies.TryGetValue(id, out var currency) ? NormalizeCurrency(currency) : null)
-            .Where(static currency => !string.IsNullOrWhiteSpace(currency))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        return currencies.Length == 0 ? "USD" : currencies[0]!;
-    }
-
-    private static IReadOnlyList<PrivateCapitalReportOutputDto> BuildPostedReportOutputs(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        IReadOnlyList<PrivateCapitalFundEventLedgerEvent> postedEvents,
-        IReadOnlyDictionary<Guid, string> journalEntryCurrencies,
-        IReadOnlyList<ReportPackWorkflowRecordDto> reportPackWorkflowRecords)
-    {
-        if (postedEvents.Count == 0)
-        {
-            return [];
-        }
-
-        var records = reportPackWorkflowRecords
-            .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-        if (records.Length == 0)
-        {
-            return postedEvents
-                .Select(fundEvent => BuildMissingPostedReportOutput(fundProfileId, ledgerBookId, fundEvent, journalEntryCurrencies))
-                .ToArray();
-        }
-
-        return postedEvents
-            .SelectMany(fundEvent =>
-            {
-                var matched = records
-                    .Where(record => MatchesPostedFundEventReport(record, fundEvent))
-                    .Select(record => BuildPostedReportOutput(fundProfileId, ledgerBookId, fundEvent, record, journalEntryCurrencies))
-                    .ToArray();
-
-                return matched.Length > 0
-                    ? matched
-                    : [BuildMissingPostedReportOutput(fundProfileId, ledgerBookId, fundEvent, journalEntryCurrencies)];
-            })
-            .ToArray();
-    }
-
-    private static int CountPublishedReportOutputs(
-        string fundProfileId,
-        IReadOnlyList<PrivateCapitalFundEventLedgerEvent> postedEvents,
-        IReadOnlyList<ReportPackWorkflowRecordDto> reportPackWorkflowRecords)
-    {
-        var publishedOutputKeys = postedEvents
-            .SelectMany(static fundEvent => fundEvent.ReportOutputs
-                .Where(static output => output.IsPublished)
-                .Select(output => BuildPublishedReportOutputKey(fundEvent.FundEventId, output.ReportId, output.ReportOutputId)))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var workflowPublishedOutputKeys = reportPackWorkflowRecords
-            .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
-            .Where(IsPublishedReportPack)
-            .SelectMany(record => postedEvents
-                .Where(fundEvent => MatchesPostedFundEventReport(record, fundEvent))
-                .Select(fundEvent => BuildPublishedReportOutputKey(fundEvent.FundEventId, record.ReportId.ToString("D"), null)));
-        publishedOutputKeys.UnionWith(workflowPublishedOutputKeys);
-
-        return publishedOutputKeys.Count;
-    }
-
-    private static string BuildPublishedReportOutputKey(string fundEventId, string? reportPackId, string? reportOutputId)
-    {
-        var normalizedFundEventId = string.IsNullOrWhiteSpace(fundEventId) ? "unknown-fund-event" : fundEventId.Trim();
-        var normalizedReportPackId = NormalizeOptional(reportPackId);
-        if (normalizedReportPackId is not null)
-        {
-            return $"{normalizedFundEventId}:report-pack:{normalizedReportPackId}";
-        }
-
-        var normalizedReportOutputId = NormalizeOptional(reportOutputId);
-        return normalizedReportOutputId is null
-            ? $"{normalizedFundEventId}:report-output:unknown"
-            : $"{normalizedFundEventId}:report-output:{normalizedReportOutputId}";
-    }
-
-    private static IReadOnlyDictionary<string, bool> BuildPostingReadyByFundEventId(
-        IReadOnlyList<PrivateCapitalLedgerImpactDto> ledgerImpacts)
-        => ledgerImpacts
-            .GroupBy(static item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(
-                static group => group.Key,
-                static group => group.Any() && group.All(static item => item.IsPostingReady),
-                StringComparer.OrdinalIgnoreCase);
-
-    private static PrivateCapitalReportOutputDto BuildPostedReportOutput(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        PrivateCapitalFundEventLedgerEvent fundEvent,
-        ReportPackWorkflowRecordDto record,
-        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
-    {
-        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
-        var matchedProvenance = (record.LineProvenance ?? [])
-            .Where(line => MatchesPostedFundEventLine(line, fundEvent))
-            .ToArray();
-        var accountScope = ResolvePostedReportOutputAccountScope(fundEvent, record, matchedProvenance);
-        var reportEvidenceLinks = MergeEvidenceLinks(
-            record.Publication?.EvidenceLinks
-                .Select(link => link.Route ?? link.EvidenceId)
-                .ToArray() ?? [],
-            matchedProvenance
-                .Select(static line => line.EvidenceId)
-                .ToArray());
-        var evidenceLinks = MergeEvidenceLinks(
-            fundEvent.EvidenceLinks,
-            record.Publication?.EvidenceLinks
-                .Select(link => link.Route ?? link.EvidenceId)
-                .ToArray());
-        evidenceLinks = MergeEvidenceLinks(
-            evidenceLinks,
-            matchedProvenance
-                .Select(static line => line.EvidenceId)
-                .ToArray());
-        var validationIssues = new List<AccountingConfigurationValidationIssueDto>();
-        if (!IsPublishedReportPack(record))
-        {
-            validationIssues.Add(Issue(
-                "private-capital.report-output-publication-pending",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Posted private-capital fund event has a report-pack workflow that is not published yet.",
-                fundEvent.FundEventId,
-                "Approve and publish the governed report pack before stakeholder package delivery."));
-        }
-
-        if (reportEvidenceLinks.Count == 0)
-        {
-            validationIssues.Add(Issue(
-                "private-capital.report-output-evidence-missing",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Posted private-capital report output is missing retained report evidence links.",
-                fundEvent.FundEventId,
-                "Attach retained publication evidence before relying on report output."));
-        }
-
-        if (!fundEvent.IsPostingReady)
-        {
-            validationIssues.Add(Issue(
-                "private-capital.report-output-posting-not-ready",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Posted private-capital report output is not ready because the linked fund event is not posting-ready.",
-                fundEvent.FundEventId,
-                "Repair approval, evidence, ledger impact, or capital-account impact before relying on report output."));
-        }
-
-        var isReportReady = fundEvent.IsPostingReady && IsReadyReportPack(record) && reportEvidenceLinks.Count > 0;
-        var approvalRoute = BuildPostedReportOutputApprovalRoute(fundProfileId, fundEvent);
-        var reportOutputId = $"report-output:{fundEvent.FundEventId}:{record.ReportId:D}".ToLowerInvariant();
-        var reportOutputRoute = PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
-            fundProfileId,
-            ledgerBookId,
-            reportOutputId,
-            fundEvent.FundEventId,
-            accountScope.CapitalAccountId,
-            accountScope.InvestorId);
-        var readiness = BuildReportOutputReadiness(
-            isReportReady,
-            IsPublishedReportPack(record) && record.Publication is not null,
-            validationIssues,
-            reportOutputRoute,
-            PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
-            approvalRoute);
-        return new PrivateCapitalReportOutputDto(
-            reportOutputId,
-            "GovernedReportPack",
-            $"{record.TemplateId.Name} v{record.TemplateId.Version}",
-            $"/api/fund-structure/report-packs/{Uri.EscapeDataString(record.ReportId.ToString("D"))}",
-            fundEvent.FundEventId,
-            fundEvent.FundEventType,
-            accountScope.CapitalAccountId,
-            accountScope.InvestorId,
-            MapPostedWorkflowState(record.State),
-            fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime),
-            currency,
-            accountScope.NetCapitalActivity,
-            evidenceLinks.Count,
-            evidenceLinks,
-            isReportReady,
-            validationIssues
-                .OrderByDescending(issue => issue.Severity)
-                .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
-            IsPublished: IsPublishedReportPack(record) && record.Publication is not null,
-            ReportPackId: record.ReportId.ToString("D"),
-            ReportWorkflowState: record.State.ToString(),
-            PublicationManifestId: NormalizeOptional(record.Publication?.ManifestId),
-            RetainedManifestPath: NormalizeOptional(record.Publication?.RetainedManifestPath),
-            PublicationEvidenceHash: NormalizeOptional(record.Publication?.EvidenceHash),
-            PublishedAtUtc: record.Publication?.SignedOffAt,
-            PublishedBy: NormalizeOptional(record.Publication?.SignedOffBy),
-            ReportLineProvenanceCount: matchedProvenance.Length,
-            ReportOutputRoute: reportOutputRoute,
-            FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
-                fundProfileId,
-                ledgerBookId,
-                fundEvent.FundEventId),
-            CapitalAccountSubledgerRoute: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
-                fundProfileId,
-                ledgerBookId,
-                accountScope.CapitalAccountId,
-                accountScope.InvestorId,
-                currency),
-            EvidenceRoute: PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
-            ApprovalRoute: approvalRoute,
-            ReadinessLabel: readiness.Label,
-            ReadinessReason: readiness.Reason,
-            NextAction: readiness.NextAction,
-            NextActionRoute: readiness.NextActionRoute);
-    }
-
-    private static PrivateCapitalReportOutputDto BuildMissingPostedReportOutput(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        PrivateCapitalFundEventLedgerEvent fundEvent,
-        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
-    {
-        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
-        var accountScope = ResolveMissingPostedReportOutputAccountScope(fundEvent);
-        var evidenceLinks = fundEvent.EvidenceLinks
-            .Where(static link => !string.IsNullOrWhiteSpace(link))
-            .Select(static link => link.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var reportOutputId = $"report-output:{fundEvent.FundEventId}:governed-report-pack-pending".ToLowerInvariant();
-        var reportOutputRoute = PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
-            fundProfileId,
-            ledgerBookId,
-            reportOutputId,
-            fundEvent.FundEventId,
-            accountScope.CapitalAccountId,
-            accountScope.InvestorId);
-        var evidenceRoute = PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId);
-        var approvalRoute = BuildPostedReportOutputApprovalRoute(fundProfileId, fundEvent);
-        var validationIssues = new[]
-        {
-            Issue(
-                "private-capital.report-output-missing",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Posted private-capital fund event is not linked to a governed report-pack workflow.",
-                fundEvent.FundEventId,
-                "Generate or attach the governed report pack before stakeholder package delivery.")
-        };
-        var readiness = BuildReportOutputReadiness(
-            isReportReady: false,
-            isPublished: false,
-            validationIssues,
-            reportOutputRoute,
-            evidenceRoute,
-            approvalRoute);
-        return new PrivateCapitalReportOutputDto(
-            reportOutputId,
-            "GovernedReportPack",
-            $"Governed report pack for {fundEvent.FundEventType}",
-            PrivateCapitalActivityRouteBuilder.Build(
-                fundProfileId,
-                fundEvent.FundEventId,
-                accountScope.CapitalAccountId,
-                accountScope.InvestorId),
-            fundEvent.FundEventId,
-            fundEvent.FundEventType,
-            accountScope.CapitalAccountId,
-            accountScope.InvestorId,
-            MapPostedApprovalState(fundEvent.ApprovalState, fundEvent.HasCriticalIssues),
-            fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime),
-            currency,
-            accountScope.NetCapitalActivity,
-            evidenceLinks.Length,
-            evidenceLinks,
-            false,
-            validationIssues,
-            ReportWorkflowState: "Missing",
-            ReportOutputRoute: reportOutputRoute,
-            FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
-                fundProfileId,
-                ledgerBookId,
-                fundEvent.FundEventId),
-            CapitalAccountSubledgerRoute: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
-                fundProfileId,
-                ledgerBookId,
-                accountScope.CapitalAccountId,
-                accountScope.InvestorId,
-                currency),
-            EvidenceRoute: evidenceRoute,
-            ApprovalRoute: approvalRoute,
-            ReadinessLabel: readiness.Label,
-            ReadinessReason: readiness.Reason,
-            NextAction: readiness.NextAction,
-            NextActionRoute: readiness.NextActionRoute);
-    }
-
-    private static string? BuildPostedReportOutputApprovalRoute(
-        string fundProfileId,
-        PrivateCapitalFundEventLedgerEvent fundEvent)
-    {
-        if (fundEvent.JournalEntryIds.Count == 0)
-        {
-            return null;
-        }
-
-        return PrivateCapitalActivityRouteBuilder.BuildApprovalRoute(
-            fundProfileId,
-            fundEvent.JournalEntryIds[0],
-            NormalizeOptional(fundEvent.ApprovalId));
-    }
-
-    private static PrivateCapitalReportOutputReadinessProjection BuildReportOutputReadiness(
-        bool isReportReady,
-        bool isPublished,
-        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
-        string reportOutputRoute,
-        string evidenceRoute,
-        string? approvalRoute)
-    {
-        if (isPublished && isReportReady)
-        {
-            return new(
-                "Published",
-                "The report output is published with retained report evidence and linked posting-ready fund-event impact.",
-                "Open published report",
-                reportOutputRoute);
-        }
-
-        if (isReportReady)
-        {
-            return new(
-                "Ready",
-                "The report output has retained evidence and linked posting-ready fund-event impact.",
-                "Review report output",
-                reportOutputRoute);
-        }
-
-        var issue = validationIssues
-            .OrderByDescending(static item => item.Severity)
-            .ThenBy(static item => item.Code, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
-
-        return issue?.Code switch
-        {
-            "manual-je.private-capital-report-evidence-missing" or
-            "private-capital.report-output-evidence-missing" => new(
-                "Evidence missing",
-                issue.Message,
-                "Attach retained evidence",
-                evidenceRoute),
-            "manual-je.private-capital-report-approval-pending" => new(
-                "Approval pending",
-                issue.Message,
-                "Submit or review approval",
-                approvalRoute ?? reportOutputRoute),
-            "manual-je.private-capital-report-ledger-impact-not-ready" or
-            "private-capital.report-output-posting-not-ready" => new(
-                "Posting review",
-                issue.Message,
-                "Review ledger impact",
-                reportOutputRoute),
-            "private-capital.report-output-publication-pending" => new(
-                "Publication pending",
-                issue.Message,
-                "Approve and publish report pack",
-                reportOutputRoute),
-            "private-capital.report-output-missing" => new(
-                "Report output missing",
-                issue.Message,
-                "Generate governed report pack",
-                reportOutputRoute),
-            _ => new(
-                "Report review",
-                issue?.Message ?? "Report output readiness has not been satisfied.",
-                "Prepare report output",
-                reportOutputRoute)
-        };
-    }
-
-    private static PrivateCapitalReportOutputAccountScope ResolvePostedReportOutputAccountScope(
-        PrivateCapitalFundEventLedgerEvent fundEvent,
-        ReportPackWorkflowRecordDto record,
-        IReadOnlyList<ReportPackLineProvenanceDto> matchedProvenance)
-    {
-        var targetCapitalAccountId = NormalizeOptional(record.FundAccountId);
-        if (targetCapitalAccountId is not null)
-        {
-            var targetMatches = fundEvent.CapitalAccountImpacts
-                .Where(impact => string.Equals(impact.CapitalAccountId, targetCapitalAccountId, StringComparison.OrdinalIgnoreCase))
-                .Take(2)
-                .ToArray();
-            if (targetMatches.Length == 1)
-            {
-                return BuildReportOutputAccountScope(targetMatches[0]);
-            }
-        }
-
-        var provenanceLedgerEntryIds = matchedProvenance
-            .SelectMany(EnumerateLineLedgerEntryIds)
-            .ToHashSet();
-        if (provenanceLedgerEntryIds.Count > 0)
-        {
-            var provenanceMatches = fundEvent.CapitalAccountImpacts
-                .Where(impact => impact.LedgerEntryIds.Any(provenanceLedgerEntryIds.Contains))
-                .Take(2)
-                .ToArray();
-            if (provenanceMatches.Length == 1)
-            {
-                return BuildReportOutputAccountScope(provenanceMatches[0]);
-            }
-        }
-
-        return ResolveMissingPostedReportOutputAccountScope(fundEvent);
-    }
-
-    private static PrivateCapitalReportOutputAccountScope ResolveMissingPostedReportOutputAccountScope(
-        PrivateCapitalFundEventLedgerEvent fundEvent)
-    {
-        if (fundEvent.CapitalAccountImpacts.Count == 1)
-        {
-            return BuildReportOutputAccountScope(fundEvent.CapitalAccountImpacts[0]);
-        }
-
-        var netCapitalActivity = fundEvent.CapitalAccountImpacts.Count > 0
-            ? fundEvent.CapitalAccountImpacts.Sum(static item => item.NetCapitalAccountImpact)
-            : CalculateNetCapitalActivity(
-                MapPrivateCapitalEntryType(fundEvent.FundEventType),
-                fundEvent.LedgerImpacts.Sum(static item => Math.Max(Math.Abs(item.TotalDebits), Math.Abs(item.TotalCredits))));
-        var hasAmbiguousCapitalAccount = fundEvent.CapitalAccountImpacts.Count > 1 ||
-            fundEvent.Issues.Any(static item => string.Equals(item.Code, "private-capital.capital-account-conflict", StringComparison.OrdinalIgnoreCase));
-        return new PrivateCapitalReportOutputAccountScope(
-            hasAmbiguousCapitalAccount
-                ? "capital-account:unassigned"
-                : NormalizeOptional(fundEvent.CapitalAccountId) ?? "capital-account:unassigned",
-            hasAmbiguousCapitalAccount ? null : NormalizeOptional(fundEvent.InvestorId),
-            netCapitalActivity);
-    }
-
-    private static PrivateCapitalReportOutputAccountScope BuildReportOutputAccountScope(
-        PrivateCapitalFundEventCapitalAccountImpact impact)
-        => new(
-            impact.CapitalAccountId,
-            NormalizeOptional(impact.InvestorId),
-            impact.NetCapitalAccountImpact);
-
-    private static IEnumerable<Guid> EnumerateLineLedgerEntryIds(ReportPackLineProvenanceDto line)
-    {
-        if (Guid.TryParse(line.LedgerEntryId, out var ledgerEntryId))
-        {
-            yield return ledgerEntryId;
-        }
-
-        if (Guid.TryParse(line.SourceId, out var sourceId))
-        {
-            yield return sourceId;
-        }
-    }
-
-    private static bool MatchesPostedFundEventReport(
-        ReportPackWorkflowRecordDto record,
-        PrivateCapitalFundEventLedgerEvent fundEvent)
-    {
-        if ((record.LineProvenance ?? []).Any(line => MatchesPostedFundEventLine(line, fundEvent)))
-        {
-            return true;
-        }
-
-        return EnumerateReportPackEvidencePointers(record)
-            .Any(pointer => MatchesPostedFundEventPointer(pointer, fundEvent));
-    }
-
-    private static bool MatchesPostedFundEventLine(
-        ReportPackLineProvenanceDto line,
-        PrivateCapitalFundEventLedgerEvent fundEvent)
-    {
-        if (MatchesPostedFundEventPointer(line.SourceId, fundEvent))
-        {
-            return true;
-        }
-
-        if (MatchesPostedFundEventPointer(line.EvidenceId, fundEvent) ||
-            MatchesPostedFundEventPointer(line.ApprovalId, fundEvent))
-        {
-            return true;
-        }
-
-        if (!string.IsNullOrWhiteSpace(line.LedgerEntryId) &&
-            MatchesAnyGuid(line.LedgerEntryId, fundEvent.LedgerEntryIds))
-        {
-            return true;
-        }
-
-        if (!string.IsNullOrWhiteSpace(line.SourceId) &&
-            (MatchesAnyGuid(line.SourceId, fundEvent.LedgerEntryIds) ||
-             MatchesAnyGuid(line.SourceId, fundEvent.JournalEntryIds)))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    private static IEnumerable<string> EnumerateReportPackEvidencePointers(ReportPackWorkflowRecordDto record)
-    {
-        foreach (var pointer in EnumerateReportPackEvidenceLinks(record.Publication?.EvidenceLinks))
-        {
-            yield return pointer;
-        }
-
-        foreach (var pointer in EnumerateReportPackEvidenceLinks(record.Restatement?.EvidenceLinks))
-        {
-            yield return pointer;
-        }
-
-        foreach (var pointer in EnumerateReportPackEvidenceLinks(record.Rejection?.EvidenceLinks))
-        {
-            yield return pointer;
-        }
-
-        if (!string.IsNullOrWhiteSpace(record.Publication?.ManifestId))
-        {
-            yield return record.Publication.ManifestId;
-        }
-
-        if (!string.IsNullOrWhiteSpace(record.Publication?.RetainedManifestPath))
-        {
-            yield return record.Publication.RetainedManifestPath;
-        }
-    }
-
-    private static IEnumerable<string> EnumerateReportPackEvidenceLinks(
-        IReadOnlyList<ReportPackEvidenceLinkDto>? evidenceLinks)
-    {
-        foreach (var link in evidenceLinks ?? [])
-        {
-            if (!string.IsNullOrWhiteSpace(link.EvidenceId))
-            {
-                yield return link.EvidenceId;
-            }
-
-            if (!string.IsNullOrWhiteSpace(link.Label))
-            {
-                yield return link.Label;
-            }
-
-            if (!string.IsNullOrWhiteSpace(link.Route))
-            {
-                yield return link.Route;
-            }
-
-            if (!string.IsNullOrWhiteSpace(link.Source))
-            {
-                yield return link.Source;
-            }
-        }
-    }
-
-    private static bool MatchesPostedFundEventPointer(
-        string? value,
-        PrivateCapitalFundEventLedgerEvent fundEvent)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return false;
-        }
-
-        var pointer = value.Trim();
-        if (pointer.Contains(fundEvent.FundEventId, StringComparison.OrdinalIgnoreCase) ||
-            pointer.Contains(Uri.EscapeDataString(fundEvent.FundEventId), StringComparison.OrdinalIgnoreCase) ||
-            MatchesAnyGuid(pointer, fundEvent.LedgerEntryIds) ||
-            MatchesAnyGuid(pointer, fundEvent.JournalEntryIds))
-        {
-            return true;
-        }
-
-        try
-        {
-            var unescaped = Uri.UnescapeDataString(pointer);
-            return !string.Equals(unescaped, pointer, StringComparison.Ordinal) &&
-                (unescaped.Contains(fundEvent.FundEventId, StringComparison.OrdinalIgnoreCase) ||
-                 MatchesAnyGuid(unescaped, fundEvent.LedgerEntryIds) ||
-                 MatchesAnyGuid(unescaped, fundEvent.JournalEntryIds));
-        }
-        catch (UriFormatException)
-        {
-            return false;
-        }
-    }
-
-    private static bool MatchesAnyGuid(string value, IReadOnlyList<Guid> ids)
-    {
-        if (ids.Count == 0 || string.IsNullOrWhiteSpace(value))
-        {
-            return false;
-        }
-
-        return ids.Any(id => value.Contains(id.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            value.Contains(id.ToString("N"), StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> MapPostedIssues(
-        PrivateCapitalFundEventLedgerEvent fundEvent)
-        => fundEvent.Issues
-            .Select(issue => Issue(
-                issue.Code,
-                MapPostedIssueSeverity(issue.Severity),
-                issue.Message,
-                fundEvent.FundEventId,
-                "Review posted journal metadata, retained evidence, approval, and report output before relying on capital-account reporting."))
-            .OrderByDescending(issue => issue.Severity)
-            .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-    private static AccountingConfigurationValidationSeverityDto MapPostedIssueSeverity(
-        PrivateCapitalFundEventIssueSeverity severity)
-        => severity switch
-        {
-            PrivateCapitalFundEventIssueSeverity.Critical => AccountingConfigurationValidationSeverityDto.Critical,
-            PrivateCapitalFundEventIssueSeverity.Warning => AccountingConfigurationValidationSeverityDto.Warning,
-            _ => AccountingConfigurationValidationSeverityDto.Info
-        };
-
-    private static ManualJournalEntryStatusDto MapPostedApprovalState(
-        PrivateCapitalFundEventApprovalState state,
-        bool hasCriticalIssues = false)
-        => state switch
-        {
-            PrivateCapitalFundEventApprovalState.Approved or PrivateCapitalFundEventApprovalState.Posted => ManualJournalEntryStatusDto.Approved,
-            PrivateCapitalFundEventApprovalState.Submitted => ManualJournalEntryStatusDto.Submitted,
-            PrivateCapitalFundEventApprovalState.Rejected => ManualJournalEntryStatusDto.Rejected,
-            _ => hasCriticalIssues ? ManualJournalEntryStatusDto.NeedsFix : ManualJournalEntryStatusDto.Draft
-        };
-
-    private static ManualJournalEntryStatusDto MapPostedWorkflowState(ReportPackWorkflowStateDto state)
-        => state switch
-        {
-            ReportPackWorkflowStateDto.Approved or ReportPackWorkflowStateDto.Published or ReportPackWorkflowStateDto.Restated or ReportPackWorkflowStateDto.Archived => ManualJournalEntryStatusDto.Approved,
-            ReportPackWorkflowStateDto.Validated or ReportPackWorkflowStateDto.InReview or ReportPackWorkflowStateDto.PendingApproval => ManualJournalEntryStatusDto.Submitted,
-            ReportPackWorkflowStateDto.Rejected => ManualJournalEntryStatusDto.Rejected,
-            _ => ManualJournalEntryStatusDto.Draft
-        };
-
-    private static bool IsReadyReportPack(ReportPackWorkflowRecordDto record)
-        => record.State is ReportPackWorkflowStateDto.Approved or ReportPackWorkflowStateDto.Published or ReportPackWorkflowStateDto.Restated;
-
-    private static bool IsPublishedReportPack(ReportPackWorkflowRecordDto record)
-        => record.State is ReportPackWorkflowStateDto.Published or ReportPackWorkflowStateDto.Restated;
-
-    private static ManualJournalEntryTypeDto MapPrivateCapitalEntryType(string? fundEventType)
-        => fundEventType?.Trim().ToLowerInvariant() switch
-        {
-            "capitalcall" or "capital call" or "capital-call" => ManualJournalEntryTypeDto.CapitalCall,
-            "distribution" => ManualJournalEntryTypeDto.Distribution,
-            "subscription" => ManualJournalEntryTypeDto.Subscription,
-            "redemption" => ManualJournalEntryTypeDto.Redemption,
-            "lptransfer" or "lp transfer" or "lp-transfer" or "transfer" => ManualJournalEntryTypeDto.LpTransfer,
-            "managementfee" or "management fee" or "management-fee" => ManualJournalEntryTypeDto.ManagementFee,
-            _ => ManualJournalEntryTypeDto.General
-        };
-
-    private static bool IsPrivateCapitalActivityCandidate(
-        ManualJournalEntryTypeDto entryType,
-        TreasuryLedgerContextDto? context)
-        => RequiresPrivateCapitalTreasuryContext(entryType) ||
-            context is not null && (
-                !string.IsNullOrWhiteSpace(context.FundEventId) ||
-                !string.IsNullOrWhiteSpace(context.FundEventType) ||
-                !string.IsNullOrWhiteSpace(context.CapitalAccountId) ||
-                !string.IsNullOrWhiteSpace(context.InvestorId));
-
-    private static decimal CalculateNetCapitalActivity(ManualJournalEntryTypeDto entryType, decimal grossAmount)
-        => entryType switch
-        {
-            ManualJournalEntryTypeDto.CapitalCall => grossAmount,
-            ManualJournalEntryTypeDto.Subscription => grossAmount,
-            ManualJournalEntryTypeDto.Distribution => -grossAmount,
-            ManualJournalEntryTypeDto.Redemption => -grossAmount,
-            ManualJournalEntryTypeDto.ManagementFee => -grossAmount,
-            _ => 0m
-        };
-
-    private static PrivateCapitalLedgerImpactDto BuildPrivateCapitalLedgerImpact(
-        ManualJournalEntryDraftDto draft,
-        TreasuryLedgerContextDto context,
-        IReadOnlyList<string> evidenceLinks)
-    {
-        var currency = string.IsNullOrWhiteSpace(draft.Currency) ? "USD" : draft.Currency.Trim().ToUpperInvariant();
-        var lines = draft.Lines
-            .Select(line => new PrivateCapitalLedgerLineImpactDto(
-                line.LineId,
-                line.AccountPath,
-                line.Side,
-                Math.Abs(line.Amount),
-                string.IsNullOrWhiteSpace(line.Currency) ? currency : line.Currency.Trim().ToUpperInvariant(),
-                NormalizeOptional(line.EntityId),
-                line.SecurityId,
-                NormalizeOptional(line.SecurityDisplayName),
-                NormalizeOptional(line.EvidenceLink)))
-            .ToArray();
-        var totalDebits = draft.TotalDebits != 0m
-            ? draft.TotalDebits
-            : draft.Lines.Where(line => line.Side == AccountingTemplateLineSideDto.Debit).Sum(line => Math.Abs(line.Amount));
-        var totalCredits = draft.TotalCredits != 0m
-            ? draft.TotalCredits
-            : draft.Lines.Where(line => line.Side == AccountingTemplateLineSideDto.Credit).Sum(line => Math.Abs(line.Amount));
-        var imbalance = draft.Imbalance != 0m ? draft.Imbalance : totalDebits - totalCredits;
-        var isBalanced = Math.Abs(imbalance) <= BalanceTolerance;
-        var issues = draft.ValidationIssues.ToList();
-
-        if (!isBalanced)
-        {
-            issues.Add(Issue(
-                "manual-je.private-capital-ledger-impact-unbalanced",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "Private-capital ledger impact is not balanced.",
-                draft.JournalEntryId.ToString("D"),
-                "Balance debit and credit lines before submitting or posting the fund event."));
-        }
-
-        if (evidenceLinks.Count == 0)
-        {
-            issues.Add(Issue(
-                "manual-je.private-capital-ledger-impact-evidence-missing",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Private-capital ledger impact is missing retained evidence links.",
-                draft.JournalEntryId.ToString("D"),
-                "Attach retained source, approval, or settlement evidence before approval or report output."));
-        }
-
-        if (draft.Status is not (ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved))
-        {
-            issues.Add(Issue(
-                "manual-je.private-capital-ledger-impact-approval-pending",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Private-capital ledger impact is not approval-ready because the journal entry has not been submitted or approved.",
-                draft.JournalEntryId.ToString("D"),
-                "Submit or approve the fund-event journal before posting or stakeholder package production."));
-        }
-
-        var isPostingReady =
-            isBalanced &&
-            evidenceLinks.Count > 0 &&
-            draft.Status is ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved &&
-            issues.All(issue => issue.Severity != AccountingConfigurationValidationSeverityDto.Critical);
-
-        return new PrivateCapitalLedgerImpactDto(
-            $"ledger-impact:{context.FundEventId}:{draft.JournalEntryId:D}".ToLowerInvariant(),
-            draft.JournalEntryId,
-            context.FundEventId!,
-            context.FundEventType!,
-            context.CapitalAccountId!,
-            NormalizeOptional(context.InvestorId),
-            draft.Status,
-            context.EffectiveDate!.Value,
-            currency,
-            totalDebits,
-            totalCredits,
-            imbalance,
-            lines.Length,
-            isBalanced,
-            isPostingReady,
-            evidenceLinks,
-            lines,
-            issues
-                .OrderByDescending(issue => issue.Severity)
-                .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
-                .ToArray());
-    }
-
-    private static PrivateCapitalReportOutputDto BuildPrivateCapitalReportOutput(
-        string fundProfileId,
-        Guid? ledgerBookId,
-        PrivateCapitalFundEventDto fundEvent,
-        IReadOnlyDictionary<string, bool> postingReadyByFundEventId)
-    {
-        var reportOutputType = fundEvent.EntryType switch
-        {
-            ManualJournalEntryTypeDto.CapitalCall => "CapitalCallNotice",
-            ManualJournalEntryTypeDto.Distribution => "DistributionNotice",
-            ManualJournalEntryTypeDto.Subscription => "SubscriptionStatement",
-            ManualJournalEntryTypeDto.Redemption => "RedemptionStatement",
-            ManualJournalEntryTypeDto.LpTransfer => "CapitalAccountTransferStatement",
-            ManualJournalEntryTypeDto.ManagementFee => "ManagementFeeSupportPackage",
-            _ => "PrivateCapitalActivityStatement"
-        };
-        var isPostingReady = postingReadyByFundEventId.TryGetValue(fundEvent.FundEventId, out var resolvedPostingReady) && resolvedPostingReady;
-        var isReportReady =
-            isPostingReady &&
-            fundEvent.JournalStatus is ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved &&
-            fundEvent.EvidenceLinks.Count > 0 &&
-            fundEvent.ValidationIssues.All(issue => issue.Severity != AccountingConfigurationValidationSeverityDto.Critical);
-        var issues = fundEvent.ValidationIssues.ToList();
-        if (fundEvent.EvidenceLinks.Count == 0)
-        {
-            issues.Add(Issue(
-                "manual-je.private-capital-report-evidence-missing",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Private-capital report output is missing retained evidence links.",
-                fundEvent.FundEventId,
-                "Attach retained source, approval, or settlement evidence before stakeholder package publication."));
-        }
-
-        if (fundEvent.JournalStatus is not (ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved))
-        {
-            issues.Add(Issue(
-                "manual-je.private-capital-report-approval-pending",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Private-capital report output is not ready because the linked journal entry has not been submitted for approval.",
-                fundEvent.FundEventId,
-                "Submit or approve the fund-event journal before report-package production."));
-        }
-
-        if (!isPostingReady)
-        {
-            issues.Add(Issue(
-                "manual-je.private-capital-report-ledger-impact-not-ready",
-                AccountingConfigurationValidationSeverityDto.Warning,
-                "Private-capital report output is not ready because the linked ledger and capital-account impact is not posting-ready.",
-                fundEvent.FundEventId,
-                "Resolve ledger-impact readiness before producing or publishing the report output."));
-        }
-
-        var reportOutputId = $"report-output:{fundEvent.FundEventId}:{reportOutputType}".ToLowerInvariant();
-        var reportRoute = PrivateCapitalActivityRouteBuilder.Build(
-            fundProfileId,
-            fundEvent.FundEventId,
-            fundEvent.CapitalAccountId,
-            fundEvent.InvestorId);
-        var reportOutputRoute = PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
-            fundProfileId,
-            ledgerBookId,
-            reportOutputId,
-            fundEvent.FundEventId,
-            fundEvent.CapitalAccountId,
-            fundEvent.InvestorId);
-        var evidenceRoute = PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId);
-        var approvalRoute = PrivateCapitalActivityRouteBuilder.BuildApprovalRoute(
-            fundProfileId,
-            fundEvent.JournalEntryId,
-            fundEvent.ApprovalId);
-        var orderedIssues = issues
-            .OrderByDescending(issue => issue.Severity)
-            .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        var readiness = BuildReportOutputReadiness(
-            isReportReady,
-            isPublished: false,
-            orderedIssues,
-            reportOutputRoute,
-            evidenceRoute,
-            approvalRoute);
-        return new PrivateCapitalReportOutputDto(
-            reportOutputId,
-            reportOutputType,
-            $"{reportOutputType} for {fundEvent.FundEventType}",
-            reportRoute,
-            fundEvent.FundEventId,
-            fundEvent.FundEventType,
-            fundEvent.CapitalAccountId,
-            fundEvent.InvestorId,
-            fundEvent.JournalStatus,
-            fundEvent.EffectiveDate,
-            fundEvent.Currency,
-            fundEvent.NetCapitalActivity,
-            fundEvent.EvidenceLinks.Count,
-            fundEvent.EvidenceLinks,
-            isReportReady,
-            orderedIssues,
-            IsPublished: false,
-            ReportWorkflowState: fundEvent.JournalStatus.ToString(),
-            ReportOutputRoute: reportOutputRoute,
-            FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
-                fundProfileId,
-                ledgerBookId,
-                fundEvent.FundEventId),
-            CapitalAccountSubledgerRoute: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
-                fundProfileId,
-                ledgerBookId,
-                fundEvent.CapitalAccountId,
-                fundEvent.InvestorId,
-                fundEvent.Currency),
-            EvidenceRoute: evidenceRoute,
-            ApprovalRoute: approvalRoute,
-            ReadinessLabel: readiness.Label,
-            ReadinessReason: readiness.Reason,
-            NextAction: readiness.NextAction,
-            NextActionRoute: readiness.NextActionRoute);
-    }
-
     public async Task<ManualJournalEntryDraftDto> SaveDraftAsync(
         SaveManualJournalEntryDraftRequest request,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
+        EnsurePeriodUnlocked(request.PeriodIsLocked, "save manual journal entry drafts");
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft, allowIncomplete: true, ct).ConfigureAwait(false);
         var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct).ConfigureAwait(false);
         if (existing is not null && existing.Version != request.Draft.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
+        }
+
+        if (existing is not null && !CanSaveManualJournalDraft(existing.Status))
+        {
+            throw new InvalidOperationException(
+                $"Manual journal entry '{existing.JournalEntryId:D}' is {existing.Status} and cannot be edited through draft save; use the governed lifecycle or correction workflow.");
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -3322,13 +2921,18 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         return saved;
     }
 
+    private static bool CanSaveManualJournalDraft(ManualJournalEntryStatusDto status)
+        => status is ManualJournalEntryStatusDto.Draft
+            or ManualJournalEntryStatusDto.NeedsFix
+            or ManualJournalEntryStatusDto.Rejected;
+
     public Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
         ValidateManualJournalEntryDraftRequest request,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        return NormalizeAndValidateAsync(request.Draft, allowIncomplete: false, ct);
+        return NormalizeAndValidateAsync(request.Draft, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked);
     }
 
     public async Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
@@ -3338,6 +2942,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, "submit manual journal entries for approval");
+        EnsurePeriodUnlocked(request.PeriodIsLocked, "submit manual journal entries for approval");
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
@@ -3346,7 +2951,17 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
         }
 
-        var validated = await NormalizeAndValidateAsync(draft, allowIncomplete: false, ct).ConfigureAwait(false);
+        if (!CanSubmitManualJournalEntry(draft.Status))
+        {
+            throw new InvalidOperationException(
+                $"Manual journal entry '{draft.JournalEntryId:D}' is {draft.Status} and cannot be submitted for approval.");
+        }
+
+        var validated = await NormalizeAndValidateAsync(
+            draft,
+            allowIncomplete: false,
+            ct,
+            periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
         if (validated.ValidationIssues.Any(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
         {
             throw new InvalidOperationException("Manual journal entry cannot be submitted while critical validation issues remain.");
@@ -3368,6 +2983,69 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         return submitted;
     }
 
+    public async Task<ManualJournalEntryDraftDto> AttachEvidenceAsync(
+        AttachManualJournalEntryEvidenceRequest request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Attachment);
+        EnsureHumanOrigin(request.ActionOrigin, "attach evidence to manual journal entries");
+        EnsurePeriodUnlocked(request.PeriodIsLocked, "attach evidence to manual journal entries");
+
+        var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
+        if (draft.Version != request.Version)
+        {
+            throw new InvalidOperationException("Manual journal entry draft version is stale.");
+        }
+
+        if (draft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked or ManualJournalEntryStatusDto.CloseLocked)
+        {
+            throw new InvalidOperationException("Posted, reversed, rebooked, and close-locked journal entries are immutable; attach evidence before posting or create a correction draft.");
+        }
+
+        var normalizedAttachments = NormalizeAttachments([request.Attachment], request.Actor);
+        if (normalizedAttachments.Count == 0)
+        {
+            throw new ArgumentException("Manual journal evidence attachment requires a display name and URI.", nameof(request));
+        }
+
+        var normalizedAttachment = normalizedAttachments[0];
+        if (string.IsNullOrWhiteSpace(normalizedAttachment.DisplayName) || string.IsNullOrWhiteSpace(normalizedAttachment.Uri))
+        {
+            throw new ArgumentException("Manual journal evidence attachment requires a display name and URI.", nameof(request));
+        }
+
+        if (!string.IsNullOrWhiteSpace(normalizedAttachment.LineId) &&
+            !draft.Lines.Any(line => string.Equals(line.LineId, normalizedAttachment.LineId, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException($"Manual journal evidence attachment references missing line '{normalizedAttachment.LineId}'.");
+        }
+
+        var attachments = (draft.EvidenceAttachments ?? [])
+            .Where(item => !string.Equals(item.AttachmentId, normalizedAttachment.AttachmentId, StringComparison.OrdinalIgnoreCase))
+            .Append(normalizedAttachment)
+            .OrderBy(item => item.AddedAtUtc)
+            .ThenBy(item => item.AttachmentId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var evidenceLinks = MergeEvidenceLinks(
+            MergeEvidenceLinks(draft.EvidenceLinks, request.EvidenceLinks),
+            [normalizedAttachment.Uri]);
+        var next = draft with
+        {
+            EvidenceAttachments = attachments,
+            EvidenceLinks = evidenceLinks,
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+            Version = draft.Version + 1
+        };
+
+        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
+        await AppendAuditAsync(next, "manual-je.attach-evidence", request.Actor, request.CorrelationId, evidenceLinks, ct).ConfigureAwait(false);
+        return next;
+    }
+
     public async Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionAsync(
         JournalEntryLifecycleActionRequestDto request,
         CancellationToken ct = default)
@@ -3384,12 +3062,16 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         }
 
         if (request.PeriodIsLocked &&
-            request.Action is JournalEntryLifecycleActionDto.Post or JournalEntryLifecycleActionDto.Reverse or JournalEntryLifecycleActionDto.Rebook)
+            request.Action is not (JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.LockAfterClose))
         {
             throw new InvalidOperationException("Manual journal entry lifecycle action is blocked because the accounting period is locked after close.");
         }
 
-        var validated = await NormalizeAndValidateAsync(draft, allowIncomplete: false, ct).ConfigureAwait(false);
+        var validated = await NormalizeAndValidateAsync(
+            draft,
+            allowIncomplete: false,
+            ct,
+            periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
         return request.Action switch
         {
@@ -3411,11 +3093,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                     request.Notes,
                     request.CorrelationId,
                     request.EvidenceLinks,
-                    request.ActionOrigin), ct).ConfigureAwait(false),
+                    request.ActionOrigin,
+                    request.PeriodIsLocked), ct).ConfigureAwait(false),
                 BuildTransition(validated.Status, ManualJournalEntryStatusDto.Submitted, request, now)),
             JournalEntryLifecycleActionDto.Approve => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Submitted, request.Action),
-                request,
+                RequireLifecycleDecisionNotes(request),
                 ManualJournalEntryStatusDto.Approved,
                 "manual-je.approve",
                 now,
@@ -3423,14 +3106,14 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 item => item with { ApprovedAtUtc = now, ApprovedBy = RequireText(request.Actor, nameof(request.Actor)) }).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.Reject => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Submitted, request.Action),
-                request,
+                RequireLifecycleDecisionNotes(request),
                 ManualJournalEntryStatusDto.Rejected,
                 "manual-je.reject",
                 now,
                 ct).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.Post => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Approved, request.Action),
-                request,
+                RequirePostingLifecycleNotes(request),
                 ManualJournalEntryStatusDto.Posted,
                 "manual-je.post",
                 now,
@@ -3438,7 +3121,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 item => item with { PostedAtUtc = now, PostedBy = RequireText(request.Actor, nameof(request.Actor)) }).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.LockAfterClose => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Posted, request.Action),
-                request,
+                RequireCloseLockLifecycleEvidence(RequirePostingLifecycleNotes(request), validated),
                 ManualJournalEntryStatusDto.CloseLocked,
                 "manual-je.lock-after-close",
                 now,
@@ -3504,6 +3187,26 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         DateTimeOffset recordedAtUtc,
         CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(request.Notes))
+        {
+            throw new InvalidOperationException("Manual journal reversal and rebook actions require a correction reason.");
+        }
+
+        if (request.EvidenceLinks.Count == 0)
+        {
+            throw new InvalidOperationException("Manual journal reversal and rebook actions require retained correction evidence.");
+        }
+
+        if (!HasManualJournalCorrectionEvidence(request.EvidenceLinks))
+        {
+            throw new InvalidOperationException("Manual journal reversal and rebook actions require retained reversal, rebook, correction, approval, or review evidence.");
+        }
+
+        if (!HasManualJournalCorrectionEvidenceWithProvenance(posted, request.EvidenceLinks))
+        {
+            throw new InvalidOperationException("Manual journal reversal and rebook evidence must reference correction intent and the posted journal entry or accounting period on the same evidence artifact.");
+        }
+
         var correctionId = Guid.NewGuid();
         var correctionLines = request.RebookLines.Count > 0 && !reverseSides
             ? request.RebookLines
@@ -3515,6 +3218,29 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                     EvidenceLink = line.EvidenceLink ?? request.EvidenceLinks.FirstOrDefault()
                 })
                 .ToArray();
+        var toStatus = reverseSides
+            ? ManualJournalEntryStatusDto.Reversed
+            : ManualJournalEntryStatusDto.Rebooked;
+        var transition = BuildTransition(posted.Status, toStatus, request, recordedAtUtc);
+        var actor = RequireText(request.Actor, nameof(request.Actor));
+        var reason = request.Notes.Trim();
+        var reversal = reverseSides
+            ? new JournalEntryReversalDto(posted.JournalEntryId, correctionId, reason, recordedAtUtc, actor)
+            : null;
+        var rebook = reverseSides
+            ? null
+            : new JournalEntryRebookDto(posted.JournalEntryId, correctionId, reason, recordedAtUtc, actor);
+        var correctionTransition = BuildTransition(posted.Status, ManualJournalEntryStatusDto.Draft, request, recordedAtUtc);
+        var corrected = posted with
+        {
+            Status = toStatus,
+            UpdatedAtUtc = recordedAtUtc,
+            Version = posted.Version + 1,
+            EvidenceLinks = MergeEvidenceLinks(posted.EvidenceLinks, request.EvidenceLinks),
+            LifecycleTransitions = posted.LifecycleTransitions.Append(transition).ToArray(),
+            Reversal = reversal,
+            Rebook = rebook
+        };
         var correction = posted with
         {
             JournalEntryId = correctionId,
@@ -3528,12 +3254,13 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             PreparedBy = RequireText(request.Actor, nameof(request.Actor)),
             Lines = correctionLines,
             EvidenceLinks = MergeEvidenceLinks(posted.EvidenceLinks, request.EvidenceLinks),
+            EvidenceAttachments = NormalizeAttachments(posted.EvidenceAttachments, request.Actor),
             ValidationIssues = [],
             ApprovalId = null,
             SubmittedAtUtc = null,
             SubmittedBy = null,
             EntryType = reverseSides ? ManualJournalEntryTypeDto.Reversal : posted.EntryType,
-            LifecycleTransitions = [],
+            LifecycleTransitions = [correctionTransition],
             ReversalOfJournalEntryId = reverseSides ? posted.JournalEntryId : null,
             RebookedFromJournalEntryId = reverseSides ? null : posted.JournalEntryId,
             ApprovedAtUtc = null,
@@ -3541,14 +3268,21 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             PostedAtUtc = null,
             PostedBy = null,
             ClosedLockedAtUtc = null,
-            CloseLockedBy = null
+            CloseLockedBy = null,
+            Reversal = reversal,
+            Rebook = rebook
         };
         correction = await NormalizeAndValidateAsync(correction, allowIncomplete: false, ct).ConfigureAwait(false);
-        var transition = BuildTransition(posted.Status, posted.Status, request, recordedAtUtc);
+        if (correction.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
+        {
+            throw new InvalidOperationException("Manual journal reversal and rebook actions cannot transition the posted entry while the generated correction draft has critical validation issues.");
+        }
 
+        await _draftStore.SaveAsync(corrected, ct).ConfigureAwait(false);
         await _draftStore.SaveAsync(correction, ct).ConfigureAwait(false);
+        await AppendAuditAsync(corrected, reverseSides ? "manual-je.reverse" : "manual-je.rebook", request.Actor, request.CorrelationId, corrected.EvidenceLinks, ct).ConfigureAwait(false);
         await AppendAuditAsync(correction, auditAction, request.Actor, request.CorrelationId, correction.EvidenceLinks, ct).ConfigureAwait(false);
-        return new JournalEntryLifecycleActionResultDto(posted, transition, [correction]);
+        return new JournalEntryLifecycleActionResultDto(corrected, transition, [correction]);
     }
 
     private static ManualJournalEntryDraftDto RequireStatus(
@@ -3568,13 +3302,106 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ManualJournalEntryDraftDto draft,
         JournalEntryLifecycleActionDto action)
     {
-        if (draft.Status is not (ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked))
+        if (draft.Status == ManualJournalEntryStatusDto.CloseLocked)
         {
-            throw new InvalidOperationException($"Manual journal entry lifecycle action '{action}' requires a posted or close-locked journal entry.");
+            throw new InvalidOperationException(
+                $"Manual journal entry lifecycle action '{action}' cannot change a close-locked journal entry; use governed late-adjustment or restatement workflows.");
+        }
+
+        if (draft.Status != ManualJournalEntryStatusDto.Posted)
+        {
+            throw new InvalidOperationException($"Manual journal entry lifecycle action '{action}' requires a posted journal entry.");
         }
 
         return draft;
     }
+
+    private static JournalEntryLifecycleActionRequestDto RequireLifecycleDecisionNotes(
+        JournalEntryLifecycleActionRequestDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Notes))
+        {
+            throw new InvalidOperationException("Manual journal approval and rejection actions require reviewer notes.");
+        }
+
+        return request;
+    }
+
+    private static JournalEntryLifecycleActionRequestDto RequirePostingLifecycleNotes(
+        JournalEntryLifecycleActionRequestDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Notes))
+        {
+            throw new InvalidOperationException("Manual journal posting and close-lock actions require operator notes.");
+        }
+
+        return request;
+    }
+
+    private static JournalEntryLifecycleActionRequestDto RequireCloseLockLifecycleEvidence(
+        JournalEntryLifecycleActionRequestDto request,
+        ManualJournalEntryDraftDto journalEntry)
+    {
+        if (request.EvidenceLinks.Count == 0)
+        {
+            throw new InvalidOperationException("Manual journal close-lock actions require retained close evidence.");
+        }
+
+        if (!HasManualJournalCloseLockEvidence(request.EvidenceLinks))
+        {
+            throw new InvalidOperationException("Manual journal close-lock actions require retained close, period-lock, sign-off, certification, approval, or review evidence.");
+        }
+
+        if (!HasManualJournalCloseLockEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
+        {
+            throw new InvalidOperationException("Manual journal close-lock evidence must reference close-lock intent and the journal entry or accounting period on the same evidence artifact.");
+        }
+
+        return request;
+    }
+
+    private static bool HasManualJournalLifecycleEvidenceProvenance(
+        ManualJournalEntryDraftDto journalEntry,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            link.Contains(journalEntry.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+            link.Contains(journalEntry.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+            (!string.IsNullOrWhiteSpace(journalEntry.PeriodId) &&
+                link.Contains(journalEntry.PeriodId, StringComparison.OrdinalIgnoreCase)));
+
+    private static bool HasManualJournalCorrectionEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("reversal", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("reverse", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("rebook", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("correction", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasManualJournalCloseLockEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("close", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("period-lock", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("periodlock", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("certification", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasManualJournalCorrectionEvidenceWithProvenance(
+        ManualJournalEntryDraftDto journalEntry,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            HasManualJournalCorrectionEvidence([link]) &&
+            HasManualJournalLifecycleEvidenceProvenance(journalEntry, [link]));
+
+    private static bool HasManualJournalCloseLockEvidenceWithProvenance(
+        ManualJournalEntryDraftDto journalEntry,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(link =>
+            HasManualJournalCloseLockEvidence([link]) &&
+            HasManualJournalLifecycleEvidenceProvenance(journalEntry, [link]));
 
     private static AccountingTemplateLineSideDto ReverseSide(AccountingTemplateLineSideDto side)
         => side == AccountingTemplateLineSideDto.Debit
@@ -3606,15 +3433,33 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         }
     }
 
+    private static void EnsurePeriodUnlocked(bool periodIsLocked, string action)
+    {
+        if (periodIsLocked)
+        {
+            throw new InvalidOperationException(
+                $"Cannot {action} because the accounting period is locked after close.");
+        }
+    }
+
+    private static IReadOnlyDictionary<string, ChartOfAccountsNodeDto> BuildChartByPath(IReadOnlyList<ChartOfAccountsNodeDto> chart)
+        => chart
+            .GroupBy(static item => item.Path, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.OrderBy(static item => item.IsArchived).First(),
+                StringComparer.OrdinalIgnoreCase);
+
     private async Task<ManualJournalEntryDraftDto> NormalizeAndValidateAsync(
         ManualJournalEntryDraftDto draft,
         bool allowIncomplete,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool periodIsLocked = false)
     {
         ArgumentNullException.ThrowIfNull(draft);
         var fundProfileId = NormalizeFundProfileId(draft.FundProfileId);
         var configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, draft.LedgerBookId, ct).ConfigureAwait(false);
-        var chartByPath = configuration.ChartOfAccounts.ToDictionary(item => item.Path, StringComparer.OrdinalIgnoreCase);
+        var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
         var attachments = NormalizeAttachments(draft.EvidenceAttachments, draft.PreparedBy);
@@ -3623,10 +3468,26 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             ? draft.EntryType
             : ManualJournalEntryTypeDto.General;
         var treasuryContext = NormalizeTreasuryContext(draft.TreasuryContext, draft.AccountingDate);
+        var headerDimensions = NormalizeDimensionSet(
+            draft.Dimensions,
+            fundId: draft.FundNodeId ?? fundProfileId,
+            entityId: draft.EntityId,
+            investorId: treasuryContext?.InvestorId,
+            capitalAccountId: treasuryContext?.CapitalAccountId);
 
         if (!Enum.IsDefined(draft.EntryType))
         {
             issues.Add(Issue("manual-je.entry-type-invalid", AccountingConfigurationValidationSeverityDto.Critical, "Manual journal entry type is not supported.", "entryType", "Select a supported entry type before submitting approval."));
+        }
+
+        if (periodIsLocked)
+        {
+            issues.Add(Issue(
+                "manual-je.period-locked",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Manual journal entry is in a locked accounting period.",
+                draft.PeriodId ?? draft.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                "Create a reversal or rebook workflow in an unlocked adjustment period."));
         }
 
         if (!draft.LedgerBookId.HasValue)
@@ -3644,6 +3505,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             issues.Add(Issue("manual-je.lines-minimum", AccountingConfigurationValidationSeverityDto.Critical, "At least two journal lines are required for approval submission.", "lines", "Add debit and credit lines."));
         }
 
+        ValidateRequiredDimensions(headerDimensions, allowIncomplete, "manual-je.dimensions", issues);
+
         if (!allowIncomplete && evidenceLinks.Count == 0)
         {
             issues.Add(Issue("manual-je.evidence-missing", AccountingConfigurationValidationSeverityDto.Critical, "At least one source document or evidence link is required before approval submission.", "evidence", "Attach source support or link retained evidence before submitting approval."));
@@ -3659,6 +3522,17 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         foreach (var line in draft.Lines)
         {
+            var lineDimensions = NormalizeDimensionSet(
+                line.Dimensions,
+                fundId: headerDimensions?.FundId,
+                entityId: line.EntityId ?? headerDimensions?.EntityId,
+                investorId: headerDimensions?.InvestorId,
+                capitalAccountId: headerDimensions?.CapitalAccountId,
+                instrumentId: line.SecurityId ?? headerDimensions?.InstrumentId,
+                taxLotId: line.TaxLotId ?? headerDimensions?.TaxLotId,
+                costCenterId: headerDimensions?.CostCenterId,
+                counterpartyId: headerDimensions?.CounterpartyId,
+                fallbackExternalDimensions: headerDimensions?.ExternalGlDimensions);
             var normalizedLine = line with
             {
                 LineId = string.IsNullOrWhiteSpace(line.LineId) ? Guid.NewGuid().ToString("N") : line.LineId.Trim(),
@@ -3666,7 +3540,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 AccountPath = line.AccountPath?.Trim() ?? string.Empty,
                 Description = NormalizeOptional(line.Description),
                 EvidenceLink = NormalizeOptional(line.EvidenceLink),
-                Dimensions = line.Dimensions ?? draft.Dimensions
+                EntityId = NormalizeOptional(line.EntityId) ?? lineDimensions?.EntityId,
+                FundAllocationId = NormalizeOptional(line.FundAllocationId),
+                SecurityDisplayName = NormalizeOptional(line.SecurityDisplayName),
+                TaxLotId = NormalizeOptional(line.TaxLotId) ?? lineDimensions?.TaxLotId,
+                Dimensions = lineDimensions
             };
 
             if (normalizedLine.Amount <= 0m)
@@ -3692,6 +3570,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             {
                 issues.Add(Issue("manual-je.security-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Security Master id '{normalizedLine.SecurityId:D}' was not found.", normalizedLine.LineId, "Choose a resolved Security Master instrument or clear the line security."));
             }
+
+            ValidateRequiredDimensions(lineDimensions, allowIncomplete, normalizedLine.LineId, issues);
 
             lines.Add(normalizedLine);
         }
@@ -3721,6 +3601,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             Imbalance = imbalance,
             EntryType = entryType,
             TreasuryContext = treasuryContext,
+            Dimensions = headerDimensions,
             ValidationIssues = issues.OrderByDescending(issue => issue.Severity).ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase).ToArray()
         };
     }
@@ -3832,6 +3713,102 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         };
     }
 
+    private static LedgerDimensionSetDto? NormalizeDimensionSet(
+        LedgerDimensionSetDto? dimensions,
+        string? fundId = null,
+        string? entityId = null,
+        string? sleeveId = null,
+        string? strategyId = null,
+        string? investorId = null,
+        string? capitalAccountId = null,
+        Guid? instrumentId = null,
+        string? taxLotId = null,
+        string? costCenterId = null,
+        string? counterpartyId = null,
+        IReadOnlyDictionary<string, string>? fallbackExternalDimensions = null)
+    {
+        var externalDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in fallbackExternalDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase))
+        {
+            var key = NormalizeOptional(item.Key);
+            var value = NormalizeOptional(item.Value);
+            if (key is not null && value is not null)
+            {
+                externalDimensions[key] = value;
+            }
+        }
+
+        foreach (var item in dimensions?.ExternalGlDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase))
+        {
+            var key = NormalizeOptional(item.Key);
+            var value = NormalizeOptional(item.Value);
+            if (key is not null && value is not null)
+            {
+                externalDimensions[key] = value;
+            }
+        }
+
+        var normalized = new LedgerDimensionSetDto(
+            FundId: NormalizeOptional(dimensions?.FundId) ?? NormalizeOptional(fundId),
+            EntityId: NormalizeOptional(dimensions?.EntityId) ?? NormalizeOptional(entityId),
+            SleeveId: NormalizeOptional(dimensions?.SleeveId) ?? NormalizeOptional(sleeveId),
+            StrategyId: NormalizeOptional(dimensions?.StrategyId) ?? NormalizeOptional(strategyId),
+            InvestorId: NormalizeOptional(dimensions?.InvestorId) ?? NormalizeOptional(investorId),
+            CapitalAccountId: NormalizeOptional(dimensions?.CapitalAccountId) ?? NormalizeOptional(capitalAccountId),
+            InstrumentId: dimensions?.InstrumentId ?? instrumentId,
+            TaxLotId: NormalizeOptional(dimensions?.TaxLotId) ?? NormalizeOptional(taxLotId),
+            CostCenterId: NormalizeOptional(dimensions?.CostCenterId) ?? NormalizeOptional(costCenterId),
+            CounterpartyId: NormalizeOptional(dimensions?.CounterpartyId) ?? NormalizeOptional(counterpartyId),
+            ExternalGlDimensions: externalDimensions
+                .OrderBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(item => item.Key, item => item.Value, StringComparer.OrdinalIgnoreCase));
+
+        return HasAnyDimension(normalized) ? normalized : null;
+    }
+
+    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
+        => !string.IsNullOrWhiteSpace(dimensions.FundId) ||
+           !string.IsNullOrWhiteSpace(dimensions.EntityId) ||
+           !string.IsNullOrWhiteSpace(dimensions.SleeveId) ||
+           !string.IsNullOrWhiteSpace(dimensions.StrategyId) ||
+           !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
+           !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
+           dimensions.InstrumentId.HasValue ||
+           !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
+           !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
+           !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||
+           dimensions.ExternalGlDimensions.Count > 0;
+
+    private static void ValidateRequiredDimensions(
+        LedgerDimensionSetDto? dimensions,
+        bool allowIncomplete,
+        string targetId,
+        List<AccountingConfigurationValidationIssueDto> issues)
+    {
+        var severity = allowIncomplete
+            ? AccountingConfigurationValidationSeverityDto.Warning
+            : AccountingConfigurationValidationSeverityDto.Critical;
+        if (string.IsNullOrWhiteSpace(dimensions?.FundId))
+        {
+            issues.Add(Issue(
+                "manual-je.dimension-fund-missing",
+                severity,
+                "Manual journal entry requires a fund dimension.",
+                targetId,
+                "Attach the fund dimension before approval submission."));
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions?.EntityId))
+        {
+            issues.Add(Issue(
+                "manual-je.dimension-entity-missing",
+                severity,
+                "Manual journal entry requires an entity dimension.",
+                targetId,
+                "Attach the legal entity dimension before approval submission."));
+        }
+    }
+
     private static void ValidateTreasuryContext(
         TreasuryLedgerContextDto? context,
         ManualJournalEntryTypeDto entryType,
@@ -3899,6 +3876,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             or ManualJournalEntryTypeDto.LpTransfer
             or ManualJournalEntryTypeDto.ManagementFee;
 
+    private static bool CanSubmitManualJournalEntry(ManualJournalEntryStatusDto status)
+        => status is ManualJournalEntryStatusDto.Draft
+            or ManualJournalEntryStatusDto.NeedsFix
+            or ManualJournalEntryStatusDto.Rejected;
+
     private static void RequireTreasuryContextText(
         List<AccountingConfigurationValidationIssueDto> issues,
         string? value,
@@ -3933,7 +3915,3 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
-
-internal sealed record PostedPrivateCapitalActivityProjection(
-    PrivateCapitalFundEventLedgerProjection Projection,
-    IReadOnlyDictionary<Guid, string> JournalEntryCurrencies);

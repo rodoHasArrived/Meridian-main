@@ -6,8 +6,11 @@ using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.AccountingClose;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
@@ -247,7 +250,227 @@ public sealed partial class WorkstationEndpointsTests
         plan.MaterialityPolicy.RequiresLateAdjustmentApproval.Should().BeTrue();
         plan.Tasks.Should().NotBeEmpty();
         plan.Tasks.Skip(1).Should().OnlyContain(task => task.Dependencies.Count > 0);
+        plan.CloseCalendar.Should().HaveSameCount(plan.Tasks);
+        plan.CloseCalendar.Select(static milestone => milestone.DueDate).Should().BeInAscendingOrder();
+        var firstMilestone = plan.CloseCalendar.Should().ContainSingle(milestone => milestone.TaskId == plan.Tasks[0].TaskId).Subject;
+        firstMilestone.DisplayName.Should().Be(plan.Tasks[0].DisplayName);
+        firstMilestone.Owner.Should().Be(plan.Tasks[0].Owner);
+        firstMilestone.Status.Should().Be(plan.Tasks[0].Status);
+        firstMilestone.RequiredSignOffCount.Should().Be(plan.Tasks[0].SignOffRequirements.Sum(static requirement => requirement.RequiredApprovalCount));
+        firstMilestone.ApprovedSignOffCount.Should().Be(0);
+        firstMilestone.IsPeriodLocked.Should().BeFalse();
+        var taskToSignOff = plan.Tasks[0];
+        var requiredSignOff = taskToSignOff.SignOffRequirements.Should().ContainSingle().Subject;
+        requiredSignOff.Role.Should().Be(taskToSignOff.Owner);
+        requiredSignOff.RequiredApprovalCount.Should().BeGreaterThan(0);
+        requiredSignOff.ApprovedCount.Should().Be(0);
+        requiredSignOff.IsSatisfied.Should().BeFalse();
+        requiredSignOff.EvidenceRequirement.Should().Contain("Evidence link");
+        var requiredRole = requiredSignOff.Role;
+        var dependentTask = plan.Tasks.Skip(1).FirstOrDefault();
+        if (dependentTask is not null)
+        {
+            var dependentRole = dependentTask.SignOffRequirements.Should().ContainSingle().Subject.Role;
+            using var blockedSignOffResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+                new SignOffCloseTaskRequestDto(
+                    workflowId,
+                    dependentTask.TaskId,
+                    dependentRole,
+                    ManualJournalEntryStatusDto.Approved,
+                    "untrusted-controller",
+                    "Controller should not sign off a task before dependencies are complete.",
+                    EvidenceLinks: [$"evidence:close-task:{dependentTask.TaskId}:dependency-block-signoff"]),
+                ServerJsonOptions);
 
+            blockedSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        }
+
+        using var assistantSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "assistant",
+                "Assistant drafted sign-off should not satisfy close control.",
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:controller-signoff"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft),
+            ServerJsonOptions);
+
+        assistantSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using var weakEvidenceSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "Controller tried to sign off with generic support evidence.",
+                EvidenceLinks: ["evidence:close-task:support-packet"]),
+            ServerJsonOptions);
+
+        weakEvidenceSignOffResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var wrongTaskEvidenceSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "Controller tried to sign off with evidence for another close period.",
+                EvidenceLinks: ["evidence:close-task:other-task:controller-signoff:2026-08"]),
+            ServerJsonOptions);
+
+        wrongTaskEvidenceSignOffResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var splitEvidenceSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "Controller tried to sign off with split evidence.",
+                EvidenceLinks:
+                [
+                    "evidence:close-task:support-signoff",
+                    $"evidence:close-task:{taskToSignOff.TaskId}:support-packet"
+                ]),
+            ServerJsonOptions);
+
+        splitEvidenceSignOffResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var unassignedRoleSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                "Tax reviewer",
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "A non-matrix role should not sign off this close task.",
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:tax-reviewer-signoff"]),
+            ServerJsonOptions);
+
+        unassignedRoleSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        var controllerSignOffEvidence = $"evidence:close-task:{taskToSignOff.TaskId}:controller-signoff";
+        using var signOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                requiredRole,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "Controller retained close checklist sign-off.",
+                EvidenceLinks: [controllerSignOffEvidence]),
+            ServerJsonOptions);
+
+        signOffResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var signedOffPlan = await signOffResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
+        signedOffPlan.Should().NotBeNull();
+        var signedOffTask = signedOffPlan!.Tasks.Should().Contain(task => task.TaskId == taskToSignOff.TaskId).Subject;
+        signedOffTask.Status.Should().Be(CloseTaskStatusDto.SignedOff);
+        var satisfiedRequirement = signedOffTask.SignOffRequirements.Should().ContainSingle().Subject;
+        satisfiedRequirement.Role.Should().Be(requiredRole);
+        satisfiedRequirement.ApprovedCount.Should().Be(1);
+        satisfiedRequirement.IsSatisfied.Should().BeTrue();
+        var signedOffMilestone = signedOffPlan.CloseCalendar.Should().ContainSingle(milestone => milestone.TaskId == taskToSignOff.TaskId).Subject;
+        signedOffMilestone.IsSatisfied.Should().BeTrue();
+        signedOffMilestone.ApprovedSignOffCount.Should().Be(1);
+        signedOffMilestone.RequiredSignOffCount.Should().Be(requiredSignOff.RequiredApprovalCount);
+        signedOffMilestone.EvidenceLinks.Should().Contain(controllerSignOffEvidence);
+        var signOff = signedOffTask.SignOffs.Should().ContainSingle(row => row.Role == requiredRole).Subject;
+        signOff.Actor.Should().Be("ops-user");
+        signOff.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
+        signOff.SignedAtUtc.Should().NotBeNull();
+        signOff.Notes.Should().Be("Controller retained close checklist sign-off.");
+        signOff.EvidenceLinks.Should().Contain(controllerSignOffEvidence);
+
+        using var duplicateSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                requiredRole,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "Duplicate sign-off should fail.",
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:duplicate-signoff"]),
+            ServerJsonOptions);
+
+        duplicateSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using var assistantAdjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Assistant drafted late adjustment should not be retained.",
+                RequestedBy: "assistant",
+                EvidenceLinks: ["evidence:late-adjustment:2026-07:review"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft),
+            ServerJsonOptions);
+
+        assistantAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using var weakAdjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Material close adjustment with generic support only.",
+                RequestedBy: "untrusted-browser-user",
+                EvidenceLinks: ["evidence:close-task:support-packet"]),
+            ServerJsonOptions);
+
+        weakAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var wrongPeriodAdjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Material close adjustment with evidence for the wrong close period.",
+                RequestedBy: "untrusted-browser-user",
+                EvidenceLinks: ["evidence:late-adjustment:2026-08:review"]),
+            ServerJsonOptions);
+
+        wrongPeriodAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var splitAdjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Material close adjustment with split evidence.",
+                RequestedBy: "untrusted-browser-user",
+                EvidenceLinks:
+                [
+                    "evidence:late-adjustment:support-packet",
+                    "evidence:journal-entry:11111111-1111-1111-1111-111111111111:support-packet"
+                ]),
+            ServerJsonOptions);
+
+        splitAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var requestEvidence = "evidence:late-adjustment:2026-07:review";
         using var adjustmentResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementLateAdjustments,
             new CreateLateAdjustmentRequestDto(
@@ -257,7 +480,7 @@ public sealed partial class WorkstationEndpointsTests
                 Currency: "usd",
                 Reason: "Material close adjustment after reconciliation review.",
                 RequestedBy: "untrusted-browser-user",
-                EvidenceLinks: ["evidence:late-adjustment:review"]),
+                EvidenceLinks: [requestEvidence]),
             ServerJsonOptions);
 
         adjustmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -268,11 +491,314 @@ public sealed partial class WorkstationEndpointsTests
         adjustment.Currency.Should().Be("USD");
         adjustment.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Submitted);
         adjustment.MaterialityPolicy.AmountThreshold.Should().Be(10_000m);
-        adjustment.EvidenceLinks.Should().Contain("evidence:late-adjustment:review");
+        adjustment.EvidenceLinks.Should().Contain(requestEvidence);
         adjustedPlan.ValidationIssues.Should().Contain(issue =>
             issue.Code == "LateAdjustmentRequiresApproval" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
             issue.TargetId == adjustment.RequestId);
+
+        using var duplicateAdjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: adjustment.JournalEntryId,
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Duplicate material close adjustment request.",
+                RequestedBy: "untrusted-browser-user",
+                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.JournalEntryId:D}:duplicate-review"]),
+            ServerJsonOptions);
+
+        duplicateAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using var assistantReviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "assistant",
+                "Assistant drafted review should not approve a material late adjustment.",
+                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.RequestId}:controller-approval"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft),
+            ServerJsonOptions);
+
+        assistantReviewResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using var weakReviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-reviewer",
+                "Generic support packet should not approve a material late adjustment.",
+                EvidenceLinks: ["evidence:late-adjustment:support-packet"]),
+            ServerJsonOptions);
+
+        weakReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var wrongPeriodReviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-reviewer",
+                "Controller tried to approve a material late adjustment with wrong-period evidence.",
+                EvidenceLinks: ["evidence:late-adjustment:controller-approval:2026-08"]),
+            ServerJsonOptions);
+
+        wrongPeriodReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var splitReviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-reviewer",
+                "Controller tried to approve a material late adjustment with split evidence.",
+                EvidenceLinks:
+                [
+                    "evidence:late-adjustment:controller-approval:support-packet",
+                    $"evidence:late-adjustment-request:{adjustment.RequestId}:support-packet"
+                ]),
+            ServerJsonOptions);
+
+        splitReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var reviewEvidence = $"evidence:late-adjustment:{adjustment.RequestId}:controller-approval";
+        using var reviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-reviewer",
+                "Controller approved material late adjustment for close package.",
+                EvidenceLinks:
+                [
+                    requestEvidence,
+                    reviewEvidence
+                ]),
+            ServerJsonOptions);
+
+        reviewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var reviewedPlan = await reviewResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
+        reviewedPlan.Should().NotBeNull();
+        var reviewedAdjustment = reviewedPlan!.LateAdjustments.Should().ContainSingle().Subject;
+        reviewedAdjustment.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
+        reviewedAdjustment.DecidedBy.Should().Be("ops-user");
+        reviewedAdjustment.DecidedAtUtc.Should().NotBeNull();
+        reviewedAdjustment.DecisionNotes.Should().Be("Controller approved material late adjustment for close package.");
+        reviewedAdjustment.EvidenceLinks.Should().Contain(reviewEvidence);
+        reviewedPlan.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "LateAdjustmentRequiresApproval" &&
+            issue.TargetId == adjustment.RequestId);
+    }
+
+    [Fact]
+    public async Task LedgerCloseManagementService_BlocksLateAdjustmentAfterPeriodLock()
+    {
+        var workflowId = Guid.NewGuid();
+        var fundAccountId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        var closedWorkflow = new OperationsContinuityWorkflowDto(
+            workflowId,
+            fundAccountId,
+            "2026-12",
+            SecurityMasterSnapshotId: null,
+            BrokerSource: "custodian",
+            CreatedAtUtc: now.AddDays(-2),
+            UpdatedAtUtc: now,
+            Version: 7,
+            OperationsWorkflowStatusDto.Closed,
+            OperationsBrokerIntakeStateDto.Complete,
+            OperationsSecurityMasterStateDto.Complete,
+            OperationsLedgerPostingStateDto.Complete,
+            OperationsReconciliationStateDto.Complete,
+            OperationsApprovalStateDto.Approved,
+            Gates: [],
+            Timeline: [],
+            BreakCases: [],
+            LedgerPreview: null,
+            Approvals: [],
+            ReportPackReadiness: new OperationsReportPackReadinessDto(
+                true,
+                "report-pack-2026-12",
+                BlockingReason: null,
+                EvidenceLinks: []),
+            CloseChecklist: [],
+            EvidenceLinks: [],
+            Blockers: [],
+            NextActions: [],
+            ClosePackage: new OperationsClosePackagePublicationDto(
+                "close-package-2026-12",
+                "report-pack-2026-12",
+                "close-manifest-2026-12",
+                "/workstation/accounting/close/2026-12",
+                "close-evidence-hash",
+                now,
+                "controller",
+                "Final close package signed off.",
+                [new OperationsEvidenceLinkDto("close-package-evidence", "Close package", "/evidence/close", "EvidenceVault", now)],
+                ChecklistControlApprovals: []));
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(closedWorkflow);
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var plan = await service.GetPeriodPlanAsync(workflowId);
+        var act = async () => await service.RequestLateAdjustmentAsync(
+            new CreateLateAdjustmentRequestDto(
+                workflowId,
+                Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                2_500m,
+                "usd",
+                "Attempt late adjustment after period lock.",
+                "ops-user",
+                EvidenceLinks: ["evidence:late-adjustment:locked-period"]),
+            "ops-user");
+
+        plan.Should().NotBeNull();
+        plan!.IsPeriodLocked.Should().BeTrue();
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*close period is locked by close package 'close-package-2026-12'*");
+    }
+
+    [Fact]
+    public async Task LedgerCloseManagementService_TracksMultiApprovalSignOffRequirement()
+    {
+        var workflowId = Guid.NewGuid();
+        var fundAccountId = Guid.NewGuid();
+        var now = DateTimeOffset.UtcNow;
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        var workflow = new OperationsContinuityWorkflowDto(
+            workflowId,
+            fundAccountId,
+            "2026-12",
+            SecurityMasterSnapshotId: null,
+            BrokerSource: "custodian",
+            CreatedAtUtc: now.AddDays(-1),
+            UpdatedAtUtc: now,
+            Version: 3,
+            OperationsWorkflowStatusDto.ApprovalPending,
+            OperationsBrokerIntakeStateDto.Complete,
+            OperationsSecurityMasterStateDto.Complete,
+            OperationsLedgerPostingStateDto.Complete,
+            OperationsReconciliationStateDto.Complete,
+            OperationsApprovalStateDto.ReviewerAssigned,
+            Gates: [],
+            Timeline: [],
+            BreakCases: [],
+            LedgerPreview: null,
+            Approvals: [],
+            ReportPackReadiness: new OperationsReportPackReadinessDto(
+                true,
+                "report-pack-2026-12",
+                BlockingReason: null,
+                EvidenceLinks: []),
+            CloseChecklist:
+            [
+                new OperationsCloseChecklistTaskDto(
+                    "approval-control",
+                    OperationsGateKeyDto.Approval,
+                    "Controller approval",
+                    "Controller",
+                    "Evidence link and gate completion audit",
+                    2,
+                    ExpiresOn: null,
+                    DueDate: new DateOnly(2026, 12, 31),
+                    "Pending",
+                    BlockingReason: null,
+                    EvidencePointer: null,
+                    RemediationRoute: "/workstation/accounting/close",
+                    CanAcknowledge: true,
+                    AcknowledgedAtUtc: null,
+                    AcknowledgedBy: null)
+            ],
+            EvidenceLinks: [],
+            Blockers: [],
+            NextActions: []);
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(workflow);
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var initialPlan = await service.GetPeriodPlanAsync(workflowId);
+
+        var initialRequirement = initialPlan!.Tasks.Should().ContainSingle().Subject.SignOffRequirements.Should().ContainSingle().Subject;
+        initialRequirement.Role.Should().Be("Controller");
+        initialRequirement.RequiredApprovalCount.Should().Be(2);
+        initialRequirement.ApprovedCount.Should().Be(0);
+        initialRequirement.IsSatisfied.Should().BeFalse();
+
+        var rejectedPlan = await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "approval-control",
+                "Controller",
+                ManualJournalEntryStatusDto.Rejected,
+                "reviewer-reject",
+                "Controller rejected the first close sign-off review.",
+                EvidenceLinks: ["evidence:close-task:approval-control:controller-rejection"]),
+            "reviewer-reject");
+
+        var rejectedTask = rejectedPlan!.Tasks.Should().ContainSingle().Subject;
+        var rejectedRequirement = rejectedTask.SignOffRequirements.Should().ContainSingle().Subject;
+        rejectedRequirement.ApprovedCount.Should().Be(0);
+        rejectedRequirement.IsSatisfied.Should().BeFalse();
+        rejectedTask.Status.Should().Be(CloseTaskStatusDto.NotStarted);
+        rejectedTask.SignOffs.Should().ContainSingle(signOff =>
+            signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
+            signOff.Actor == "reviewer-reject");
+
+        var firstPlan = await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "approval-control",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "reviewer-a",
+                "First controller retained close sign-off.",
+                EvidenceLinks: ["evidence:close-task:approval-control:controller-signoff-a"]),
+            "reviewer-a");
+
+        var firstRequirement = firstPlan!.Tasks.Should().ContainSingle().Subject.SignOffRequirements.Should().ContainSingle().Subject;
+        firstRequirement.ApprovedCount.Should().Be(1);
+        firstRequirement.IsSatisfied.Should().BeFalse();
+        firstPlan.Tasks.Single().Status.Should().Be(CloseTaskStatusDto.InProgress);
+
+        var secondPlan = await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "approval-control",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "reviewer-b",
+                "Second controller retained close sign-off.",
+                EvidenceLinks: ["evidence:close-task:approval-control:controller-signoff-b"]),
+            "reviewer-b");
+
+        var signedOffTask = secondPlan!.Tasks.Should().ContainSingle().Subject;
+        var satisfiedRequirement = signedOffTask.SignOffRequirements.Should().ContainSingle().Subject;
+        satisfiedRequirement.ApprovedCount.Should().Be(2);
+        satisfiedRequirement.IsSatisfied.Should().BeTrue();
+        signedOffTask.Status.Should().Be(CloseTaskStatusDto.SignedOff);
+        signedOffTask.SignOffs.Should().HaveCount(3);
+
+        var thirdSignOff = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "approval-control",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "reviewer-c",
+                "Third controller sign-off should exceed the requirement.",
+                EvidenceLinks: ["evidence:close-task:approval-control:controller-signoff-c"]),
+            "reviewer-c");
+        await thirdSignOff.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*already has 2 approved sign-off decision(s) for role 'Controller'*");
     }
 
     [Fact]
@@ -311,7 +837,7 @@ public sealed partial class WorkstationEndpointsTests
                 Nav: 132_500m,
                 RestatementReasonCode: "late-adjustment",
                 PriorPackageId: "accounting-report-package-fund-alpha-2026-06",
-                EvidenceLinks: ["evidence:report-package:2026-07"]),
+                EvidenceLinks: ["evidence:restatement:report-package:2026-07"]),
             ServerJsonOptions);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -326,9 +852,15 @@ public sealed partial class WorkstationEndpointsTests
         package.RealizedGainLoss.RealizedGainLoss.Should().Be(12_500m);
         package.NavPackage.Nav.Should().Be(132_500m);
         package.Certification.Actor.Should().Be("ops-user");
-        package.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
         package.NavPackage.Restatement.Should().NotBeNull();
         package.NavPackage.Restatement!.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "CloseChecklistIncomplete" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "CloseSignOffMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         package.ValidationIssues.Should().Contain(issue => issue.Code == "PeriodNotLocked");
 
         using var historyResponse = await client.GetAsync(
@@ -337,6 +869,324 @@ public sealed partial class WorkstationEndpointsTests
         historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var packages = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
         packages.Should().ContainSingle(row => row.FinancialStatements.PackageId == package.FinancialStatements.PackageId);
+    }
+
+    [Fact]
+    public async Task LedgerAccountingReportPackageEndpoint_BlocksRestatementCertificationWithoutPriorPackageAndEvidence()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-restatement",
+                PeriodId: "2026-09",
+                Actor: "browser-user",
+                BeginningCapital: 250_000m,
+                RealizedGainLoss: -7_500m,
+                Nav: 242_500m,
+                RestatementReasonCode: "nav-correction",
+                EvidenceLinks: ["evidence:report-package:2026-09"]),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var package = await response.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        package.Should().NotBeNull();
+        package!.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.NavPackage.Restatement.Should().NotBeNull();
+        package.NavPackage.Restatement!.PriorPackageId.Should().Be("prior-package:unresolved");
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "RestatementPriorPackageMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "RestatementEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public async Task LedgerAccountingReportPackageEndpoint_RequiresCertificationEvidenceFamilies()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        using var sparseResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-evidence",
+                PeriodId: "2026-10",
+                Actor: "browser-user",
+                BeginningCapital: 150_000m,
+                Contributions: 20_000m,
+                Distributions: 5_000m,
+                RealizedGainLoss: 4_000m,
+                Nav: 169_000m,
+                EvidenceLinks: ["evidence:report-package:2026-10"]),
+            ServerJsonOptions);
+
+        sparseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var sparse = await sparseResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        sparse.Should().NotBeNull();
+        sparse!.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        sparse.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportLedgerEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        sparse.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportReconciliationEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        sparse.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportNavEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+
+        using var completeResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-evidence",
+                PeriodId: "2026-11",
+                Actor: "browser-user",
+                BeginningCapital: 150_000m,
+                Contributions: 20_000m,
+                Distributions: 5_000m,
+                RealizedGainLoss: 4_000m,
+                Nav: 169_000m,
+                EvidenceLinks:
+                [
+                    "evidence:ledger:trial-balance:2026-11",
+                    "evidence:reconciliation:gl-tie-out:2026-11",
+                    "evidence:report-render:financial-statements:2026-11",
+                    "evidence:nav:support-package:2026-11"
+                ]),
+            ServerJsonOptions);
+
+        completeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var complete = await completeResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        complete.Should().NotBeNull();
+        complete!.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        complete.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        complete.FinancialStatements.CertificationState.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        complete.NavPackage.CertificationState.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+    }
+
+    [Fact]
+    public async Task LedgerAccountingReportPackageCertificationEndpoint_CertifiesReadyPackageAndPersistsState()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        using var buildResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-certify",
+                PeriodId: "2026-12",
+                Actor: "browser-user",
+                BeginningCapital: 200_000m,
+                Contributions: 10_000m,
+                Distributions: 1_000m,
+                RealizedGainLoss: 8_000m,
+                Nav: 217_000m,
+                EvidenceLinks:
+                [
+                    "evidence:ledger:trial-balance:2026-12",
+                    "evidence:reconciliation:gl-tie-out:2026-12",
+                    "evidence:report-render:financial-statements:2026-12",
+                    "evidence:nav:support-package:2026-12"
+                ]),
+            ServerJsonOptions);
+        buildResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var ready = await buildResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        ready.Should().NotBeNull();
+        ready!.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+
+        using var assistantCertifyResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackageCertification,
+            new CertifyAccountingReportPackageRequestDto(
+                ready.FinancialStatements.PackageId,
+                "assistant",
+                "Assistant drafted certification should not certify the retained report package.",
+                ["evidence:report-certification:controller-approval:2026-12"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft),
+            ServerJsonOptions);
+
+        assistantCertifyResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using var certifyResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackageCertification,
+            new CertifyAccountingReportPackageRequestDto(
+                ready.FinancialStatements.PackageId,
+                "browser-user",
+                "Controller certified the retained report package.",
+                ["evidence:report-certification:controller-approval:2026-12"]),
+            ServerJsonOptions);
+
+        certifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var certified = await certifyResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        certified.Should().NotBeNull();
+        certified!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.Certification.Actor.Should().Be("ops-user");
+        certified.Certification.Summary.Should().Be("Controller certified the retained report package.");
+        certified.Certification.EvidenceLinks.Should().Contain("evidence:report-certification:controller-approval:2026-12");
+        certified.FinancialStatements.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.InvestorCapitalStatements.Should().OnlyContain(statement =>
+            statement.CertificationState == AccountingCertificationStateDto.Certified);
+        certified.RealizedGainLoss.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.NavPackage.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+
+        using var historyResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-certify&periodId=2026-12");
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
+        history.Should().ContainSingle(row =>
+            row.FinancialStatements.PackageId == ready.FinancialStatements.PackageId &&
+            row.Certification.State == AccountingCertificationStateDto.Certified);
+
+        var exportArtifact = certified.ExportArtifacts.First(row => row.ArtifactKind == "financial-statements");
+        using var exportResponse = await client.GetAsync(exportArtifact.Route);
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var exportManifest = await exportResponse.Content.ReadFromJsonAsync<ReportExportArtifactManifestDto>(ServerJsonOptions);
+        exportManifest.Should().NotBeNull();
+        exportManifest!.PackageId.Should().Be(certified.FinancialStatements.PackageId);
+        exportManifest.ArtifactId.Should().Be(exportArtifact.ArtifactId);
+        exportManifest.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+        exportManifest.ContentHash.Should().Be(exportArtifact.ContentHash);
+        exportManifest.ExternalPostingAllowed.Should().BeFalse();
+        exportManifest.Payload.Should().Contain("evidence:report-certification:controller-approval:2026-12");
+    }
+
+    [Fact]
+    public async Task LedgerAccountingReportPackageCertificationEndpoint_BlocksDraftPackage()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        using var buildResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-draft-certify",
+                PeriodId: "2027-01",
+                Actor: "browser-user",
+                Nav: 10_000m,
+                EvidenceLinks: ["evidence:report-package:2027-01"]),
+            ServerJsonOptions);
+        buildResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var draft = await buildResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        draft.Should().NotBeNull();
+        draft!.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+
+        using var certifyResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackageCertification,
+            new CertifyAccountingReportPackageRequestDto(
+                draft.FinancialStatements.PackageId,
+                "browser-user",
+                "Attempt to certify without complete retained evidence.",
+                ["evidence:report-certification:controller-approval:2027-01"]),
+            ServerJsonOptions);
+
+        certifyResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task LedgerAccountingReportPackageEndpoint_BlocksCertificationWhenMaterialLateAdjustmentIsUnapproved()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-08",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor"));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflowId = start!.Workflow!.WorkflowId;
+
+        using var adjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                Amount: 25_000m,
+                Currency: "usd",
+                Reason: "Material NAV true-up discovered after close review.",
+                RequestedBy: "browser-user",
+                EvidenceLinks: ["evidence:late-adjustment:2026-08:nav-true-up"]),
+            ServerJsonOptions);
+        adjustmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var adjustmentPlan = await adjustmentResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
+        var adjustment = adjustmentPlan!.LateAdjustments.Should().ContainSingle().Subject;
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-beta",
+                PeriodId: "2026-08",
+                Actor: "browser-user",
+                CloseWorkflowId: workflowId,
+                CapitalAccountId: "capital-account-lp-2",
+                InvestorId: "investor-lp-2",
+                BeginningCapital: 200_000m,
+                Contributions: 10_000m,
+                Distributions: 2_000m,
+                RealizedGainLoss: 3_500m,
+                Nav: 211_500m,
+                EvidenceLinks: ["evidence:report-package:2026-08"]),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var package = await response.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        package.Should().NotBeNull();
+        package!.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "LateAdjustmentApprovalPending" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+
+        using var reviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "browser-user",
+                "Controller approval retained before report certification.",
+                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.RequestId}:nav-true-up-approval"]),
+            ServerJsonOptions);
+        reviewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var reviewedPackageResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-beta",
+                PeriodId: "2026-08",
+                Actor: "browser-user",
+                CloseWorkflowId: workflowId,
+                CapitalAccountId: "capital-account-lp-2",
+                InvestorId: "investor-lp-2",
+                BeginningCapital: 200_000m,
+                Contributions: 10_000m,
+                Distributions: 2_000m,
+                RealizedGainLoss: 3_500m,
+                Nav: 211_500m,
+                EvidenceLinks: ["evidence:report-package:2026-08"]),
+            ServerJsonOptions);
+        reviewedPackageResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var reviewedPackage = await reviewedPackageResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        reviewedPackage.Should().NotBeNull();
+        reviewedPackage!.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "LateAdjustmentApprovalPending" &&
+            issue.TargetId == adjustment.RequestId);
     }
 
     [Fact]

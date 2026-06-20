@@ -104,7 +104,8 @@ public sealed partial class WorkstationEndpointsTests
             new ActivateAccountingConfigurationRequest(
                 FundProfileId: "fund-alpha",
                 Actor: "browser-user",
-                CorrelationId: "endpoint-activate"),
+                CorrelationId: "endpoint-activate",
+                EvidenceLinks: ["evidence://accounting/configuration/endpoint-activation-approval"]),
             ServerJsonOptions);
         using var auditResponse = await client.GetAsync($"{UiApiRoutes.LedgerAccountingConfigurationAudit}?fundProfileId=fund-alpha");
 
@@ -623,6 +624,120 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task ManualJournalEntryEvidenceEndpoint_AttachesEvidenceAndRejectsStaleVersions()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var draft = ManualJournalEntryDraft() with { EvidenceAttachments = [], EvidenceLinks = [] };
+
+        using var saveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(draft, "browser-user", CorrelationId: "manual-je-save-for-evidence"),
+            ServerJsonOptions);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+
+        using var attachResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryEvidence,
+            new AttachManualJournalEntryEvidenceRequest(
+                saved!.JournalEntryId,
+                saved.FundProfileId,
+                "controller",
+                saved.Version,
+                new ManualJournalEntryEvidenceAttachmentDto(
+                    "endpoint-controller-support",
+                    "Endpoint controller support",
+                    "SourceDocument",
+                    "/api/workstation/evidence/subjects/accounting-record/endpoint-controller-support",
+                    "EvidenceVault",
+                    DateTimeOffset.UtcNow,
+                    "controller",
+                    LineId: "debit-cash"),
+                CorrelationId: "manual-je-attach-evidence-endpoint",
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/endpoint-close-checklist"]),
+            ServerJsonOptions);
+        var attached = await attachResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+        using var staleResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryEvidence,
+            new AttachManualJournalEntryEvidenceRequest(
+                saved.JournalEntryId,
+                saved.FundProfileId,
+                "controller",
+                saved.Version,
+                new ManualJournalEntryEvidenceAttachmentDto(
+                    "stale-endpoint-controller-support",
+                    "Stale endpoint controller support",
+                    "SourceDocument",
+                    "/api/workstation/evidence/subjects/accounting-record/stale-endpoint-controller-support",
+                    "EvidenceVault",
+                    DateTimeOffset.UtcNow,
+                    "controller")),
+            ServerJsonOptions);
+        using var workbenchResponse = await client.GetAsync($"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId=fund-alpha");
+
+        attachResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        staleResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        workbenchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        attached!.Version.Should().Be(saved.Version + 1);
+        attached.EvidenceAttachments.Should().ContainSingle(item =>
+            item.AttachmentId == "endpoint-controller-support" &&
+            item.LineId == "debit-cash");
+        attached.EvidenceLinks.Should().Contain(new[]
+        {
+            "/api/workstation/evidence/subjects/accounting-record/endpoint-close-checklist",
+            "/api/workstation/evidence/subjects/accounting-record/endpoint-controller-support"
+        });
+        var workbench = await workbenchResponse.Content.ReadFromJsonAsync<ManualJournalEntryWorkbenchDto>(ServerJsonOptions);
+        workbench!.AuditTrail.Should().Contain(item =>
+            item.Action == "manual-je.attach-evidence" &&
+            item.CorrelationId == "manual-je-attach-evidence-endpoint");
+    }
+
+    [Fact]
+    public async Task ManualJournalEntryEndpoints_RejectPeriodLockedMutations()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var draft = ManualJournalEntryDraft();
+
+        using var lockedSaveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(draft, "browser-user", PeriodIsLocked: true),
+            ServerJsonOptions);
+        using var validateResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryValidate,
+            new ValidateManualJournalEntryDraftRequest(draft, "browser-user", PeriodIsLocked: true),
+            ServerJsonOptions);
+        using var saveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(draft, "browser-user"),
+            ServerJsonOptions);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+        using var lockedSubmitResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntrySubmitApproval,
+            new SubmitManualJournalEntryApprovalRequest(
+                saved!.JournalEntryId,
+                saved.FundProfileId,
+                "controller",
+                saved.Version,
+                PeriodIsLocked: true),
+            ServerJsonOptions);
+
+        lockedSaveResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        lockedSubmitResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var validated = await validateResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+        validated!.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == "manual-je.period-locked" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
     public async Task AccountingRulesAndLifecycleEndpoints_DryRunApprovePostAndReverseDraft()
     {
         await using var app = await CreateAppAsync(
@@ -678,6 +793,93 @@ public sealed partial class WorkstationEndpointsTests
                 Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"),
                 CounterpartyId: "counterparty-bank"),
             ServerJsonOptions);
+        using var ruleTestsResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests,
+            new ExecuteAccountingRuleTestCasesRequestDto(
+                FundProfileId: "fund-alpha",
+                Actor: "browser-user",
+                TestCases:
+                [
+                    new AccountingRuleTestCaseDto(
+                        "interest-accrual-happy-path",
+                        "Interest accrual happy path",
+                        new RuleDryRunRequestDto(
+                            "fund-alpha",
+                            "InterestAccrual",
+                            175m,
+                            "USD",
+                            new DateOnly(2026, 6, 30),
+                            "browser-user",
+                            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"),
+                            CounterpartyId: "counterparty-bank"),
+                        ExpectedRuleId: "rule-generated-interest",
+                        ExpectedRuleVersion: "v2"),
+                    new AccountingRuleTestCaseDto(
+                        "interest-accrual-expected-failure",
+                        "Interest accrual expected failure",
+                        new RuleDryRunRequestDto(
+                            "fund-alpha",
+                            "InterestAccrual",
+                            175m,
+                            "USD",
+                            new DateOnly(2026, 6, 30),
+                            "browser-user",
+                            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"),
+                            CounterpartyId: "counterparty-bank"),
+                        ExpectedRuleId: "rule-missing",
+                        ExpectedRuleVersion: "v2")
+                ]),
+            ServerJsonOptions);
+        using var savedRuleTestCaseResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleTestCases,
+            new UpsertAccountingRuleTestCaseRequest(
+                FundProfileId: "fund-alpha",
+                TestCase: new AccountingRuleTestCaseDto(
+                    "interest-accrual-saved-happy-path",
+                    "Saved interest accrual happy path",
+                    new RuleDryRunRequestDto(
+                        "fund-alpha",
+                        "InterestAccrual",
+                        225m,
+                        "USD",
+                        new DateOnly(2026, 6, 30),
+                        "browser-user",
+                        Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"),
+                        CounterpartyId: "counterparty-bank"),
+                ExpectedRuleId: "rule-generated-interest",
+                ExpectedRuleVersion: "v2"),
+            Actor: "browser-user",
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/interest-accrual-saved-happy-path-rule-generated-interest-v2"]),
+            ServerJsonOptions);
+        using var persistedRuleTestsResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests,
+            new ExecuteAccountingRuleTestCasesRequestDto(
+                FundProfileId: "fund-alpha",
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        using var assistantPromotionApprovalResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRulePromotionApprovals,
+            new ApprovePostingRulePromotionRequest(
+                FundProfileId: "fund-alpha",
+                RuleId: "rule-generated-interest",
+                RuleVersion: "v2",
+                Actor: "controller",
+                ApprovalId: "approval-rule-generated-interest-v2",
+                Notes: "Assistant drafted approval should remain unpromoted.",
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft),
+            ServerJsonOptions);
+        using var promotionApprovalResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRulePromotionApprovals,
+            new ApprovePostingRulePromotionRequest(
+                FundProfileId: "fund-alpha",
+                RuleId: "rule-generated-interest",
+                RuleVersion: "v2",
+                Actor: "controller",
+                ApprovalId: "approval-rule-generated-interest-v2",
+                Notes: "Controller approved the generated interest rule after dry-run regression review.",
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2"]),
+            ServerJsonOptions);
         await client.PostAsJsonAsync(
             UiApiRoutes.LedgerAccountingConfigurationChart,
             new UpsertChartOfAccountsNodeRequest("fund-alpha", new ChartOfAccountsNodeDto("capital", "Equity:Capital Contributions", "Capital Contributions", "Equity"), "browser-user"),
@@ -690,7 +892,8 @@ public sealed partial class WorkstationEndpointsTests
                 submitted.FundProfileId,
                 JournalEntryLifecycleActionDto.Approve,
                 "controller",
-                submitted.Version),
+                submitted.Version,
+                Notes: "Controller approved the submitted manual journal."),
             ServerJsonOptions);
         var approved = await approveResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
         using var postResponse = await client.PostAsJsonAsync(
@@ -700,7 +903,8 @@ public sealed partial class WorkstationEndpointsTests
                 approved.JournalEntry.FundProfileId,
                 JournalEntryLifecycleActionDto.Post,
                 "controller",
-                approved.JournalEntry.Version),
+                approved.JournalEntry.Version,
+                Notes: "Posted after controller approval."),
             ServerJsonOptions);
         var posted = await postResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
         using var reverseResponse = await client.PostAsJsonAsync(
@@ -711,18 +915,59 @@ public sealed partial class WorkstationEndpointsTests
                 JournalEntryLifecycleActionDto.Reverse,
                 "controller",
                 posted.JournalEntry.Version,
+                Notes: "Reverse after controller close review.",
                 EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"]),
             ServerJsonOptions);
 
         dryRunResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        ruleTestsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        savedRuleTestCaseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        persistedRuleTestsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        assistantPromotionApprovalResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        promotionApprovalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         postResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         reverseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var dryRun = await dryRunResponse.Content.ReadFromJsonAsync<RuleDryRunResultDto>(ServerJsonOptions);
+        var ruleTests = await ruleTestsResponse.Content.ReadFromJsonAsync<AccountingRuleTestSuiteResultDto>(ServerJsonOptions);
+        var savedWorkspace = await savedRuleTestCaseResponse.Content.ReadFromJsonAsync<AccountingConfigurationWorkspaceDto>(ServerJsonOptions);
+        var persistedRuleTests = await persistedRuleTestsResponse.Content.ReadFromJsonAsync<AccountingRuleTestSuiteResultDto>(ServerJsonOptions);
+        var promotionWorkspace = await promotionApprovalResponse.Content.ReadFromJsonAsync<AccountingConfigurationWorkspaceDto>(ServerJsonOptions);
         var reverse = await reverseResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
         dryRun!.SelectedRuleId.Should().Be("rule-generated-interest");
         dryRun.IsPostingBalanced.Should().BeTrue();
         dryRun.GeneratedPostingLines.Should().HaveCount(2);
+        ruleTests!.TotalCount.Should().Be(2);
+        ruleTests.PassedCount.Should().Be(1);
+        ruleTests.FailedCount.Should().Be(1);
+        ruleTests.Results.Should().ContainSingle(item =>
+            item.TestCaseId == "interest-accrual-happy-path" &&
+            item.Passed &&
+            item.DryRunResult.SelectedRuleId == "rule-generated-interest");
+        ruleTests.Results.Should().ContainSingle(item =>
+            item.TestCaseId == "interest-accrual-expected-failure" &&
+            !item.Passed &&
+            item.AssertionIssues.Any(issue => issue.Code == "rule-test.expected-rule-mismatch"));
+        savedWorkspace!.RuleTestCases.Should().ContainSingle(item =>
+            item.TestCaseId == "interest-accrual-saved-happy-path" &&
+            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/interest-accrual-saved-happy-path-rule-generated-interest-v2"));
+        savedWorkspace.AuditTrail.Should().Contain(item => item.Action == "rule-test-case.upsert");
+        persistedRuleTests!.TotalCount.Should().Be(1);
+        persistedRuleTests.PassedCount.Should().Be(1);
+        persistedRuleTests.Results.Should().ContainSingle(item =>
+            item.TestCaseId == "interest-accrual-saved-happy-path" &&
+            item.DryRunResult.SelectedRuleId == "rule-generated-interest");
+        var promotedRule = promotionWorkspace!.PostingRules.Should().ContainSingle(item => item.RuleId == "rule-generated-interest").Subject;
+        promotedRule.RequiresPromotionApproval.Should().BeTrue();
+        promotedRule.PromotionApproval!.ApprovalId.Should().Be("approval-rule-generated-interest-v2");
+        promotedRule.PromotionApproval.ApprovedBy.Should().Be("ops-user");
+        promotedRule.Versions.Should().Contain(version =>
+            version.Version == "v2" &&
+            version.PromotionApproval != null &&
+            version.PromotionApproval.ApprovalId == "approval-rule-generated-interest-v2");
+        promotionWorkspace.AuditTrail.Should().Contain(item =>
+            item.Action == "posting-rule.promotion-approve" &&
+            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/rule-generated-interest-review-v2"));
         approved.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Approved);
         posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
         reverse!.GeneratedJournalEntries.Should().ContainSingle(item =>

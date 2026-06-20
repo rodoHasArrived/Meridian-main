@@ -135,6 +135,76 @@ public static class AccountingSystemEndpoints
         .WithName("CreateAccountingSystemExportPackage")
         .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapGet(UiApiRoutes.AccountingSystemExportPackageManifest, async (
+            string exportPackageId,
+            HttpContext context,
+            AccountingSystemIntegrationService service) =>
+        {
+            if (!HasAccountingAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            try
+            {
+                var result = await service
+                    .GetExportPackageManifestAsync(exportPackageId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return result is null
+                    ? Results.NotFound(new { error = "External GL export package manifest was not found." })
+                    : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("GetAccountingSystemExportPackageManifest")
+        .Produces<ExternalGlExportPackageManifestDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPost(UiApiRoutes.AccountingSystemExportPackageCertification, async (
+            CertifyAccountingSystemExportPackageRequestDto request,
+            HttpContext context,
+            AccountingSystemIntegrationService service) =>
+        {
+            if (!HasAccountingAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            try
+            {
+                var result = await service.CertifyExportPackageAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return result is null
+                    ? Results.NotFound(new { error = "External GL export package was not found." })
+                    : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("CertifyAccountingSystemExportPackage")
+        .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
     private static bool HasAccountingAccess(HttpContext context)

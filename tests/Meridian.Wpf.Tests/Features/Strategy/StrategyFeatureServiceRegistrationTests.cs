@@ -1,6 +1,8 @@
 using Meridian.Wpf.Tests.Features;
+using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;

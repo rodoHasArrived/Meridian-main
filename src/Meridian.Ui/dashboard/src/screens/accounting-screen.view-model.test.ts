@@ -71,6 +71,7 @@ import type {
   OperationsContinuityWorkflow,
   ReconciliationCalibrationSummary,
   ReconciliationBreakQueueItem,
+  ReportExportArtifactManifest,
   SecurityMasterConflict,
   SecurityMasterEntry,
   SecurityIdentityDrillIn,
@@ -784,14 +785,25 @@ const closePeriodPlan: ClosePeriodPlan = {
         {
           signOffId: "signoff-controller",
           role: "controller",
-          actor: null,
-          approvalState: "Submitted",
-          signedAtUtc: null,
-          evidenceLinks: []
+          actor: "ops-user",
+          approvalState: "Approved",
+          signedAtUtc: "2026-06-02T05:00:00Z",
+          evidenceLinks: ["evidence/nav-signoff"],
+          notes: "Controller retained NAV package sign-off."
         }
       ],
-      evidenceLinks: ["evidence/nav-package"],
-      blockerReason: "Controller sign-off pending."
+      evidenceLinks: ["evidence/nav-package", "evidence/nav-signoff"],
+      blockerReason: "Controller sign-off pending.",
+      signOffRequirements: [
+        {
+          requirementId: "requirement-task-nav-controller",
+          role: "controller",
+          requiredApprovalCount: 1,
+          approvedCount: 1,
+          isSatisfied: true,
+          evidenceRequirement: "Controller NAV sign-off evidence"
+        }
+      ]
     }
   ],
   lateAdjustments: [
@@ -803,7 +815,7 @@ const closePeriodPlan: ClosePeriodPlan = {
       amount: 1250,
       currency: "USD",
       reason: "Late custodian fee accrual.",
-      approvalState: "Submitted",
+      approvalState: "Approved",
       materialityPolicy: {
         policyId: "materiality-alpha",
         amountThreshold: 2500,
@@ -812,7 +824,10 @@ const closePeriodPlan: ClosePeriodPlan = {
         reviewRole: "controller",
         requiresLateAdjustmentApproval: true
       },
-      evidenceLinks: ["evidence/late-adjustment"]
+      evidenceLinks: ["evidence/late-adjustment", "evidence/late-adjustment-approval"],
+      decidedBy: "ops-user",
+      decidedAtUtc: "2026-06-02T04:00:00Z",
+      decisionNotes: "Controller approval retained."
     }
   ],
   validationIssues: [
@@ -821,6 +836,24 @@ const closePeriodPlan: ClosePeriodPlan = {
       severity: "Warning",
       message: "NAV package still needs controller sign-off.",
       targetId: "task-nav"
+    }
+  ],
+  closeCalendar: [
+    {
+      milestoneId: "close-calendar-task-nav",
+      taskId: "task-nav",
+      displayName: "Finalize NAV package",
+      owner: "fund-accounting",
+      dueDate: "2026-06-04",
+      status: "ReadyForSignOff",
+      isBlocked: false,
+      isSatisfied: true,
+      isPeriodLocked: false,
+      dependencyCount: 1,
+      requiredSignOffCount: 1,
+      approvedSignOffCount: 1,
+      evidenceLinks: ["evidence/nav-package", "evidence/nav-signoff"],
+      blockerReason: "Controller sign-off pending."
     }
   ]
 };
@@ -905,7 +938,51 @@ const accountingReportPackage: AccountingReportPackageBundle = {
       message: "Package is not certified yet.",
       targetId: "cert-alpha-202605"
     }
+  ],
+  exportArtifacts: [
+    {
+      artifactId: "report-export-financial-statements",
+      artifactKind: "financial-statements",
+      displayName: "Financial statement package",
+      format: "pdf",
+      route: "/api/ledger/reports/accounting-packages/accounting-report-package-alpha-202605/exports/report-export-financial-statements",
+      certificationState: "ReadyForReview",
+      generatedAtUtc: "2026-06-02T04:30:00Z",
+      contentHash: "hash-financial-statements",
+      evidenceLinks: ["evidence/financial-statements"],
+      sourceStatementId: "accounting-report-package-alpha-202605"
+    },
+    {
+      artifactId: "report-export-nav",
+      artifactKind: "nav-package",
+      displayName: "NAV package",
+      format: "pdf",
+      route: "/api/ledger/reports/accounting-packages/accounting-report-package-alpha-202605/exports/report-export-nav",
+      certificationState: "Certified",
+      generatedAtUtc: "2026-06-02T04:30:00Z",
+      contentHash: "hash-nav",
+      evidenceLinks: ["evidence/nav"],
+      sourceStatementId: "nav-alpha-202605"
+    }
   ]
+};
+
+const accountingReportExportManifest: ReportExportArtifactManifest = {
+  packageId: "accounting-report-package-alpha-202605",
+  artifactId: "report-export-financial-statements",
+  artifactKind: "financial-statements",
+  displayName: "Financial statement package",
+  format: "pdf",
+  route: "/api/ledger/reports/accounting-packages/accounting-report-package-alpha-202605/exports/report-export-financial-statements",
+  certificationState: "ReadyForReview",
+  generatedAtUtc: "2026-06-02T04:30:00Z",
+  contentHash: "hash-financial-statements",
+  contentType: "application/pdf",
+  fileName: "financial-statements-alpha-202605.pdf",
+  externalPostingAllowed: false,
+  payload: "{\"packageId\":\"accounting-report-package-alpha-202605\"}",
+  evidenceLinks: ["evidence/financial-statements"],
+  sourceStatementId: "accounting-report-package-alpha-202605"
 };
 
 const accountingSystemProvider: AccountingSystemProvider = {
@@ -1784,12 +1861,43 @@ describe("accounting-screen view model", () => {
   it("loads shared close plans and builds certified accounting report package requests", async () => {
     const getClosePlan = vi.fn(async () => closePeriodPlan);
     const createLateAdjustment = vi.fn(async () => closePeriodPlan);
+    const reviewLateAdjustment = vi.fn(async () => closePeriodPlan);
+    const signOffCloseTask = vi.fn(async () => closePeriodPlan);
     const buildPackage = vi.fn(async () => accountingReportPackage);
+    const certifyPackage = vi.fn(async () => ({
+      ...accountingReportPackage,
+      financialStatements: {
+        ...accountingReportPackage.financialStatements,
+        certificationState: "Certified" as const
+      },
+      investorCapitalStatements: accountingReportPackage.investorCapitalStatements.map((statement) => ({
+        ...statement,
+        certificationState: "Certified" as const
+      })),
+      realizedGainLoss: {
+        ...accountingReportPackage.realizedGainLoss,
+        certificationState: "Certified" as const
+      },
+      navPackage: {
+        ...accountingReportPackage.navPackage,
+        certificationState: "Certified" as const
+      },
+      certification: {
+        ...accountingReportPackage.certification,
+        state: "Certified" as const,
+        summary: "Controller certified retained report package."
+      }
+    }));
+    const getExportManifest = vi.fn(async () => accountingReportExportManifest);
     const listPackages = vi.fn(async () => [accountingReportPackage]);
     const services: AccountingCloseReportPackageServices = {
       getClosePlan,
       createLateAdjustment,
+      reviewLateAdjustment,
+      signOffCloseTask,
       buildPackage,
+      certifyPackage,
+      getExportManifest,
       listPackages
     };
 
@@ -1806,21 +1914,46 @@ describe("accounting-screen view model", () => {
       statusLabel: "Ready for review package",
       statusTone: "warning",
       fundLabel: "fund-alpha",
-      lockLabel: "Period open"
+      lockLabel: "Period open",
+      certifyButtonLabel: "Certify package",
+      certifyDisabledReason: null
     });
     expect(result.current.materialityLabel).toContain("controller");
+    expect(result.current.metrics.find((metric) => metric.id === "calendar")).toMatchObject({
+      label: "Calendar",
+      value: "1",
+      detail: "1 calendar milestone sequenced.",
+      tone: "success"
+    });
+    expect(result.current.closeCalendar[0]).toMatchObject({
+      displayName: "Finalize NAV package",
+      ownerLabel: "fund-accounting",
+      dueDateLabel: "2026-06-04",
+      statusLabel: "Ready for sign-off",
+      statusTone: "success",
+      dependencyLabel: "1 dependency",
+      signOffLabel: "1/1 sign-offs",
+      evidenceLabel: "2 evidence links",
+      lockedLabel: "Open period",
+      blockerLabel: "Controller sign-off pending."
+    });
     expect(result.current.tasks[0]).toMatchObject({
       displayName: "Finalize NAV package",
       statusLabel: "Ready for sign-off",
       dependencyLabel: expect.stringContaining("task-reconciliation"),
-      signOffLabel: "0/1 sign-offs approved",
-      evidenceLabel: "1 evidence link",
+      signOffLabel: "1/1 required sign-offs approved",
+      signOffDetailLabel: "Approved by ops-user on Jun 2, 05:00 UTC | Controller retained NAV package sign-off.",
+      signOffRequirementLabel: "controller: 1/1",
+      evidenceLabel: "2 evidence links",
       blockerLabel: "Controller sign-off pending."
     });
     expect(result.current.lateAdjustments[0]).toMatchObject({
       journalEntryId: "manual-je-late-1",
       reason: "Late custodian fee accrual.",
-      evidenceLabel: "1 evidence link"
+      decisionLabel: "Approved by ops-user on Jun 2, 04:00 UTC",
+      evidenceLabel: "2 evidence links",
+      materialityLabel: "Within materiality: at or below $2,500 USD; controller review policy",
+      materialityTone: "success"
     });
     expect(result.current.packageRows[0]).toMatchObject({
       packageId: "accounting-report-package-alpha-202605",
@@ -1829,14 +1962,84 @@ describe("accounting-screen view model", () => {
       investorStatementLabel: "1 investor statement",
       realizedGainLossLabel: "+$4,500.00 USD",
       restatementLabel: "late-fee-accrual | Submitted",
+      exportArtifactLabel: "1/2 exports certified",
+      exportArtifactTone: "warning",
       evidenceLabel: "6 evidence links",
       validationLabel: "1 validation issue",
       selected: true
     });
+    expect(result.current.exportManifestButtonLabel).toBe("Inspect Financial statement package");
+    expect(result.current.exportManifestDisabledReason).toBeNull();
     expect(result.current.validationIssues.map((issue) => issue.label)).toEqual([
       "Warning | CLOSE_TASK_PENDING",
       "Warning | PACKAGE_REVIEW_PENDING"
     ]);
+    expect(result.current.certificationSafeguards).toEqual([
+      expect.objectContaining({
+        id: "checklist-signoff",
+        label: "Checklist sign-off",
+        value: "0/1",
+        detail: "1 close task still requires retained sign-off evidence.",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "period-lock",
+        label: "Period lock",
+        value: "Open for adjustments",
+        detail: "Period remains open, so late adjustments can still change the package evidence set.",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "critical-validation",
+        label: "Critical validation blockers",
+        value: "Clear",
+        detail: "No critical close or report package validation issues are surfaced.",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "export-certification",
+        label: "Export certification",
+        value: "1/2",
+        detail: "1 export artifact remains ready for review.",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "restatement-workflow",
+        label: "Restatement workflow",
+        value: "Submitted",
+        detail: "late-fee-accrual restates accounting-report-package-alpha-202604; approval evidence is retained with the package.",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "evidence-package",
+        label: "Evidence package",
+        value: "7 evidence links",
+        detail: "Certification will submit the retained financial statement, investor capital, realized gain/loss, NAV, restatement, and package evidence links.",
+        tone: "success"
+      })
+    ]);
+
+    await act(async () => {
+      await result.current.inspectSelectedPackageExport();
+    });
+
+    expect(getExportManifest).toHaveBeenCalledWith(
+      "accounting-report-package-alpha-202605",
+      "report-export-financial-statements"
+    );
+    expect(result.current.exportManifestStatusText).toBe("Loaded export manifest report-export-financial-statements.");
+    expect(result.current.exportManifestStatusTone).toBe("success");
+    expect(result.current.exportManifest).toMatchObject({
+      packageId: "accounting-report-package-alpha-202605",
+      artifactId: "report-export-financial-statements",
+      displayName: "Financial statement package",
+      formatLabel: "pdf | application/pdf",
+      fileName: "financial-statements-alpha-202605.pdf",
+      certificationLabel: "Ready for review",
+      evidenceLabel: "1 evidence link",
+      postingLabel: "External posting disabled",
+      routeLabel: "/api/ledger/reports/accounting-packages/accounting-report-package-alpha-202605/exports/report-export-financial-statements"
+    });
 
     await act(async () => {
       await result.current.buildReportPackage();
@@ -1860,7 +2063,210 @@ describe("accounting-screen view model", () => {
       evidenceLinks: expect.arrayContaining(["evidence/nav-package", "evidence/late-adjustment"])
     }));
     expect(result.current.buildStatusText).toContain("accounting-report-package-alpha-202605");
+
+    await act(async () => {
+      await result.current.certifyPackage();
+    });
+
+    expect(certifyPackage).toHaveBeenCalledWith(expect.objectContaining({
+      packageId: "accounting-report-package-alpha-202605",
+      actor: "browser-accounting-controller",
+      notes: expect.stringContaining("Certified accounting report package accounting-report-package-alpha-202605"),
+      correlationId: "browser-certify-report-accounting-report-package-alpha-202605",
+      evidenceLinks: expect.arrayContaining([
+        "evidence/certification",
+        "evidence/nav",
+        "evidence:report-certification:accounting-report-package-alpha-202605"
+      ])
+    }));
+    expect(result.current.certifyStatusText).toContain("Certified report package accounting-report-package-alpha-202605");
+    expect(result.current.packageRows[0]).toMatchObject({
+      certificationLabel: "Certified",
+      certificationTone: "success"
+    });
     expect(createLateAdjustment).not.toHaveBeenCalled();
+    expect(reviewLateAdjustment).not.toHaveBeenCalled();
+    expect(signOffCloseTask).not.toHaveBeenCalled();
+  });
+
+  it("reviews pending late adjustments through the shared close-management endpoint", async () => {
+    const pendingLateAdjustmentPlan: ClosePeriodPlan = {
+      ...closePeriodPlan,
+      lateAdjustments: closePeriodPlan.lateAdjustments.map((adjustment) => ({
+        ...adjustment,
+        amount: 4000,
+        approvalState: "Submitted" as const,
+        decidedBy: null,
+        decidedAtUtc: null,
+        decisionNotes: null
+      }))
+    };
+    const reviewedLateAdjustmentPlan: ClosePeriodPlan = {
+      ...pendingLateAdjustmentPlan,
+      lateAdjustments: pendingLateAdjustmentPlan.lateAdjustments.map((adjustment) => ({
+        ...adjustment,
+        approvalState: "Approved" as const,
+        decidedBy: "browser-accounting-controller",
+        decidedAtUtc: "2026-06-03T12:45:00Z",
+        decisionNotes: "Controller approved material late adjustment from browser close cockpit."
+      }))
+    };
+    const getClosePlan = vi.fn(async () => pendingLateAdjustmentPlan);
+    const createLateAdjustment = vi.fn(async () => pendingLateAdjustmentPlan);
+    const reviewLateAdjustment = vi.fn(async () => reviewedLateAdjustmentPlan);
+    const signOffCloseTask = vi.fn(async () => pendingLateAdjustmentPlan);
+    const buildPackage = vi.fn(async () => accountingReportPackage);
+    const certifyPackage = vi.fn(async () => accountingReportPackage);
+    const getExportManifest = vi.fn(async () => accountingReportExportManifest);
+    const listPackages = vi.fn(async () => [accountingReportPackage]);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan,
+      createLateAdjustment,
+      reviewLateAdjustment,
+      signOffCloseTask,
+      buildPackage,
+      certifyPackage,
+      getExportManifest,
+      listPackages
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.lateAdjustments).toHaveLength(1));
+
+    expect(result.current.lateAdjustments[0]).toMatchObject({
+      requestId: "late-adjustment-1",
+      statusLabel: "Submitted",
+      decisionLabel: null,
+      materialityLabel: "Material adjustment: exceeds $2,500 USD; controller review required",
+      materialityTone: "warning",
+      reviewDisabledReason: null
+    });
+
+    await act(async () => {
+      await result.current.reviewLateAdjustment("late-adjustment-1", "Approved");
+    });
+
+    expect(reviewLateAdjustment).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-close-1",
+      requestId: "late-adjustment-1",
+      decision: "Approved",
+      actor: "browser-accounting-controller",
+      notes: "Approved late adjustment late-adjustment-1 from the Accounting close cockpit.",
+      correlationId: "browser-late-adjustment-review-workflow-close-1-late-adjustment-1-approved",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/late-adjustments/review/workflow-close-1/late-adjustment-1/approved",
+        "evidence/late-adjustment"
+      ])
+    }));
+    expect(result.current.reviewLateAdjustmentStatusText).toBe("Late adjustment late-adjustment-1 approved.");
+    expect(result.current.reviewLateAdjustmentStatusTone).toBe("success");
+    expect(result.current.lateAdjustments[0]).toMatchObject({
+      statusLabel: "Approved",
+      decisionLabel: "Approved by browser-accounting-controller on Jun 3, 12:45 UTC",
+      reviewDisabledReason: "Late adjustment is already approved."
+    });
+    expect(createLateAdjustment).not.toHaveBeenCalled();
+    expect(signOffCloseTask).not.toHaveBeenCalled();
+    expect(buildPackage).not.toHaveBeenCalled();
+    expect(certifyPackage).not.toHaveBeenCalled();
+  });
+
+  it("signs off the next ready close checklist task through the shared close endpoint", async () => {
+    const unsignedClosePlan: ClosePeriodPlan = {
+      ...closePeriodPlan,
+      tasks: closePeriodPlan.tasks.map((task) => ({
+        ...task,
+        signOffs: [],
+        signOffRequirements: task.signOffRequirements?.map((requirement) => ({
+          ...requirement,
+          approvedCount: 0,
+          isSatisfied: false
+        })) ?? null
+      }))
+    };
+    const signedClosePlan: ClosePeriodPlan = {
+      ...unsignedClosePlan,
+      tasks: unsignedClosePlan.tasks.map((task) => ({
+        ...task,
+        status: "SignedOff" as const,
+        signOffs: [
+          {
+            signOffId: "signoff-browser-controller",
+            role: "controller",
+            actor: "browser-accounting-controller",
+            approvalState: "Approved" as const,
+            signedAtUtc: "2026-06-03T12:30:00Z",
+            evidenceLinks: ["browser://accounting/close/sign-off/workflow-close-1/task-nav"],
+            notes: "Approved from browser close cockpit."
+          }
+        ],
+        signOffRequirements: task.signOffRequirements?.map((requirement) => ({
+          ...requirement,
+          approvedCount: requirement.requiredApprovalCount,
+          isSatisfied: true
+        })) ?? null
+      }))
+    };
+    const getClosePlan = vi.fn(async () => unsignedClosePlan);
+    const createLateAdjustment = vi.fn(async () => unsignedClosePlan);
+    const reviewLateAdjustment = vi.fn(async () => unsignedClosePlan);
+    const signOffCloseTask = vi.fn(async () => signedClosePlan);
+    const buildPackage = vi.fn(async () => accountingReportPackage);
+    const certifyPackage = vi.fn(async () => accountingReportPackage);
+    const getExportManifest = vi.fn(async () => accountingReportExportManifest);
+    const listPackages = vi.fn(async () => [accountingReportPackage]);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan,
+      createLateAdjustment,
+      reviewLateAdjustment,
+      signOffCloseTask,
+      buildPackage,
+      certifyPackage,
+      getExportManifest,
+      listPackages
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.tasks).toHaveLength(1));
+
+    expect(result.current.signOffButtonLabel).toBe("Sign off Finalize NAV package");
+    expect(result.current.signOffDisabledReason).toBeNull();
+    expect(result.current.tasks[0]).toMatchObject({
+      signOffLabel: "0/1 required sign-offs approved",
+      signOffRequirementLabel: "controller: 0/1"
+    });
+
+    await act(async () => {
+      await result.current.signOffNextTask();
+    });
+
+    expect(signOffCloseTask).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-close-1",
+      taskId: "task-nav",
+      role: "controller",
+      decision: "Approved",
+      actor: "browser-accounting-controller",
+      notes: "Approved Finalize NAV package close checklist task from the Accounting close cockpit.",
+      correlationId: "browser-close-signoff-workflow-close-1-task-nav",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/sign-off/workflow-close-1/task-nav",
+        "evidence/nav-package"
+      ])
+    }));
+    expect(result.current.signOffStatusText).toBe("Signed off Finalize NAV package.");
+    expect(result.current.signOffStatusTone).toBe("success");
+    expect(result.current.tasks[0]).toMatchObject({
+      statusLabel: "Signed off",
+      signOffLabel: "1/1 required sign-offs approved",
+      signOffRequirementLabel: "controller: 1/1"
+    });
+    expect(result.current.signOffDisabledReason).toBe("No close checklist task is ready for sign-off.");
+    expect(createLateAdjustment).not.toHaveBeenCalled();
+    expect(reviewLateAdjustment).not.toHaveBeenCalled();
+    expect(buildPackage).not.toHaveBeenCalled();
+    expect(certifyPackage).not.toHaveBeenCalled();
   });
 
   it("derives the accounting workstream and selected reconciliation run", () => {
@@ -1983,6 +2389,30 @@ describe("accounting-screen view model", () => {
             description: "Controller review threshold."
           }
         ],
+        conditionGroups: [{
+          groupId: "group-trade-source",
+          operator: "Any",
+          isRequired: true,
+          description: "Allow broker or internal execution sources.",
+          conditions: [
+            {
+              conditionId: "cond-broker-source",
+              field: "event.source",
+              operator: "Equals",
+              value: "Broker",
+              isRequired: false,
+              description: "Broker feed."
+            },
+            {
+              conditionId: "cond-ops-source",
+              field: "event.source",
+              operator: "Equals",
+              value: "Operations",
+              isRequired: false,
+              description: "Operations upload."
+            }
+          ]
+        }],
         formulas: [{
           formulaId: "formula-source",
           kind: "SourceAmount",
@@ -2062,6 +2492,30 @@ describe("accounting-screen view model", () => {
         afterHash: "after-hash-654321",
         validationIssues: [],
         evidenceLinks: ["evidence://approval"]
+      }],
+      ruleTestCases: [{
+        testCaseId: "rule-test-trade-buy-saved",
+        displayName: "Saved trade buy regression",
+        request: {
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "book-primary",
+          sourceEventType: "TradeExecuted",
+          eventAmount: 250000,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          actor: "controller",
+          dimensions: {
+            fundId: "fund-alpha",
+            entityId: "entity-master",
+            counterpartyId: "cp-001"
+          },
+          counterpartyId: "cp-001"
+        },
+        expectedRuleId: "rule-trade-buy",
+        expectedRuleVersion: "v3",
+        expectBalancedPosting: true,
+        expectedIssueCodes: [],
+        evidenceLinks: ["evidence://accounting/rule-tests/trade-buy"]
       }]
     };
     const dryRunResult: RuleDryRunResult = {
@@ -2103,6 +2557,34 @@ describe("accounting-screen view model", () => {
       generatedPostingLines: workspace.postingRules[0].generatedPostings,
       validationIssues: []
     };
+    let retainedWorkspace = workspace;
+    const upsertRule = vi.fn(async (request: Parameters<AccountingConfigurationServices["upsertRule"]>[0]) => {
+      const existingRuleIndex = retainedWorkspace.postingRules.findIndex((rule) => rule.ruleId === request.rule.ruleId);
+      const postingRules = existingRuleIndex >= 0
+        ? retainedWorkspace.postingRules.map((rule, index) => index === existingRuleIndex ? request.rule : rule)
+        : [...retainedWorkspace.postingRules, request.rule];
+      retainedWorkspace = {
+        ...retainedWorkspace,
+        postingRules,
+        auditTrail: [
+          ...retainedWorkspace.auditTrail,
+          {
+            auditEventId: `audit-rule-upsert-${retainedWorkspace.auditTrail.length + 1}`,
+            action: "posting-rule.upsert",
+            actor: request.actor,
+            fundProfileId: request.fundProfileId,
+            ledgerBookId: null,
+            correlationId: request.correlationId ?? null,
+            recordedAtUtc: "2026-06-30T12:10:00Z",
+            beforeHash: "before-rule-upsert",
+            afterHash: "after-rule-upsert",
+            validationIssues: [],
+            evidenceLinks: request.evidenceLinks ?? []
+          }
+        ]
+      };
+      return retainedWorkspace;
+    });
     const services: AccountingConfigurationServices = {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       previewTemplate: vi.fn().mockResolvedValue({
@@ -2114,7 +2596,65 @@ describe("accounting-screen view model", () => {
         lines: dryRunResult.generatedLines,
         validationIssues: []
       }),
+      upsertRule,
       dryRunRule: vi.fn().mockResolvedValue(dryRunResult),
+      runRuleTests: vi.fn().mockResolvedValue({
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "book-primary",
+        executedAtUtc: "2026-06-30T12:05:00Z",
+        actor: "browser-accounting-operator",
+        totalCount: 1,
+        passedCount: 1,
+        failedCount: 0,
+        results: [{
+          testCaseId: "rule-test-rule-trade-buy",
+          displayName: "Saved trade buy regression",
+          passed: true,
+          dryRunResult,
+          assertionIssues: []
+        }]
+      }),
+      saveRuleTestCase: vi.fn(async () => {
+        retainedWorkspace = {
+          ...retainedWorkspace,
+          ruleTestCases: [
+            ...(retainedWorkspace.ruleTestCases ?? []),
+            {
+              testCaseId: "rule-test-rule-trade-buy",
+              displayName: "Trade buy posting retained dry-run regression",
+              request: {
+                fundProfileId: "fund-alpha",
+                ledgerBookId: "book-primary",
+                sourceEventType: "TradeExecuted",
+                eventAmount: 250000,
+                currency: "USD",
+                effectiveDate: "2026-01-01",
+                actor: "browser-accounting-operator",
+                dimensions: {
+                  fundId: "fund-alpha",
+                  entityId: "entity-master",
+                  strategyId: "strategy-long-only",
+                  counterpartyId: "cp-001",
+                  externalGlDimensions: {
+                    class: "FundAlpha"
+                  }
+                },
+                counterpartyId: "cp-001"
+              },
+              expectedRuleId: "rule-trade-buy",
+              expectedRuleVersion: "v3",
+              expectBalancedPosting: true,
+              expectedIssueCodes: [],
+              evidenceLinks: [
+                "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+                "browser://accounting/rules-studio/test-case/rule-trade-buy"
+              ]
+            }
+          ]
+        };
+        return retainedWorkspace;
+      }),
+      approveRulePromotion: vi.fn().mockResolvedValue(workspace),
       activate: vi.fn().mockResolvedValue(workspace)
     };
 
@@ -2137,11 +2677,44 @@ describe("accounting-screen view model", () => {
       "External class: FundAlpha"
     ]));
     expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("event.kind Equals TradeExecuted");
+    expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("group-trade-source: Any (required)");
+    expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("event.source Equals Broker");
     expect(result.current.selectedRule?.formulaRows.join("\n")).toContain("formula-source: SourceAmount $250,000 USD");
     expect(result.current.selectedRule?.allocationRows.join("\n")).toContain("alloc-strategy: StrategyWeight weight 1 via formula-source");
     expect(result.current.selectedRule?.generatedPostingRows.join("\n")).toContain("Debit 1200.Investments $250,000 USD via formula-source");
     expect(result.current.selectedRule?.versionRows.join("\n")).toContain("v3 by controller on 2026-06-15");
+    expect(result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "promotion-approval",
+        value: "Approved",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "saved-regression",
+        value: "1 saved",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "latest-suite",
+        value: "Not run",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "activation-gate",
+        value: "Ready",
+        tone: "success"
+      })
+    ]));
     expect(result.current.canDryRun).toBe(true);
+    expect(result.current.ruleTestCases).toEqual([
+      expect.objectContaining({
+        id: "rule-test-trade-buy-saved",
+        title: "Saved trade buy regression",
+        assertionLabel: "Expect rule-trade-buy version v3, balanced, no expected issue codes.",
+        evidenceLabel: "1 evidence link",
+        evidenceTone: "success"
+      })
+    ]);
 
     await act(async () => {
       await result.current.dryRunSelectedRule();
@@ -2170,6 +2743,433 @@ describe("accounting-screen view model", () => {
     expect(result.current.dryRunPreview?.matchRows.join("\n")).toContain("Trade buy posting matched at priority 10");
     expect(result.current.dryRunPreview?.generatedLineRows.join("\n")).toContain("Debit 1200.Investments $250,000 USD");
     expect(result.current.dryRunPreview?.generatedPostingRows.join("\n")).toContain("Credit 1000.Cash $250,000 USD via formula-source");
+
+    await act(async () => {
+      await result.current.applyDryRunEventPredicate();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/event-predicate/rule-trade-buy"],
+      rule: expect.objectContaining({
+        ruleId: "rule-trade-buy",
+        ruleVersion: "v3.event",
+        requiresPromotionApproval: true,
+        promotionApproval: null,
+        conditions: expect.arrayContaining([
+          expect.objectContaining({
+            conditionId: "rule-trade-buy-source-event",
+            field: "event.kind",
+            operator: "Equals",
+            value: "TradeExecuted",
+            isRequired: true
+          })
+        ])
+      })
+    }));
+    expect(result.current.applyEventPredicateStatusText).toBe("Applied event predicate to rule-trade-buy.");
+    await waitFor(() => expect(result.current.selectedRule?.subtitle).toContain("v3.event"));
+
+    await act(async () => {
+      await result.current.applyDryRunEffectiveStart();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/effective-start/rule-trade-buy"],
+      rule: expect.objectContaining({
+        ruleId: "rule-trade-buy",
+        ruleVersion: "v3.event.effective",
+        effectiveFrom: "2026-01-01",
+        effectiveTo: "2026-12-31",
+        requiresPromotionApproval: true,
+        promotionApproval: null
+      })
+    }));
+    expect(result.current.applyEffectiveStartStatusText).toBe("Applied effective start to rule-trade-buy.");
+    await waitFor(() => expect(result.current.selectedRule?.subtitle).toContain("v3.event.effective"));
+
+    await act(async () => {
+      await result.current.captureDryRunGeneratedPostings();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/generated-postings/rule-trade-buy"],
+      rule: expect.objectContaining({
+        ruleId: "rule-trade-buy",
+        ruleVersion: "v3.event.effective.postings",
+        requiresPromotionApproval: true,
+        promotionApproval: null,
+        generatedPostings: expect.arrayContaining([
+          expect.objectContaining({
+            lineId: "generated-cash",
+            accountPath: "1000.Cash",
+            side: "Credit",
+            amountFormulaId: "formula-source",
+            amount: 250000,
+            dimensions: expect.objectContaining({
+              fundId: "fund-alpha",
+              counterpartyId: "cp-001"
+            })
+          })
+        ])
+      })
+    }));
+    expect(result.current.capturePostingsStatusText).toBe("Captured generated postings for rule-trade-buy.");
+    await waitFor(() => expect(result.current.selectedRule?.subtitle).toContain("v3.event.effective.postings"));
+
+    await act(async () => {
+      await result.current.applyDryRunScope();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/scope/rule-trade-buy"],
+      rule: expect.objectContaining({
+        ruleId: "rule-trade-buy",
+        ruleVersion: "v3.event.effective.postings.scope",
+        requiresPromotionApproval: true,
+        promotionApproval: null,
+        scope: expect.objectContaining({
+          fundId: "fund-alpha",
+          entityId: "entity-master",
+          strategyId: "strategy-long-only",
+          instrumentId: "AAPL",
+          counterpartyId: "cp-001",
+          externalGlDimensions: expect.objectContaining({
+            class: "FundAlpha"
+          })
+        })
+      })
+    }));
+    expect(result.current.applyScopeStatusText).toBe("Applied dry-run scope to rule-trade-buy.");
+    await waitFor(() => expect(result.current.selectedRule?.subtitle).toContain("v3.event.effective.postings.scope"));
+
+    await act(async () => {
+      await result.current.saveDryRunAsRuleTest();
+    });
+
+    expect(services.saveRuleTestCase).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      actor: "browser-accounting-operator",
+      testCase: expect.objectContaining({
+        testCaseId: "rule-test-rule-trade-buy",
+        expectedRuleId: "rule-trade-buy",
+        expectedRuleVersion: "v3.event.effective.postings.scope",
+        expectBalancedPosting: true,
+        evidenceLinks: expect.arrayContaining([
+          "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+          "browser://accounting/rules-studio/test-case/rule-trade-buy"
+        ])
+      })
+    }));
+    expect(result.current.ruleTestCases).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "rule-test-rule-trade-buy",
+        title: "Trade buy posting retained dry-run regression",
+        evidenceTone: "success"
+      })
+    ]));
+
+    await act(async () => {
+      await result.current.applyDryRunAmountThreshold();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/threshold/rule-trade-buy"],
+      rule: expect.objectContaining({
+        ruleId: "rule-trade-buy",
+        ruleVersion: "v3.event.effective.postings.scope.threshold",
+        requiresPromotionApproval: true,
+        promotionApproval: null,
+        conditions: expect.arrayContaining([
+          expect.objectContaining({
+            conditionId: "rule-trade-buy-minimum-amount",
+            field: "event.amount",
+            operator: "AmountGreaterThanOrEqual",
+            value: "250000",
+            isRequired: true
+          })
+        ])
+      })
+    }));
+    expect(result.current.applyThresholdStatusText).toBe("Applied amount threshold to rule-trade-buy.");
+    expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("event.amount AmountGreaterThanOrEqual 250000");
+
+    await act(async () => {
+      await result.current.applyDryRunFormulaAmount();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/formula/rule-trade-buy"],
+      rule: expect.objectContaining({
+        ruleId: "rule-trade-buy",
+        ruleVersion: "v3.event.effective.postings.scope.threshold.formula",
+        requiresPromotionApproval: true,
+        promotionApproval: null,
+        formulas: expect.arrayContaining([
+          expect.objectContaining({
+            formulaId: "formula-source",
+            value: 250000,
+            currency: "USD",
+            description: "Formula amount retained from dry-run 2026-01-01."
+          })
+        ])
+      })
+    }));
+    expect(result.current.applyFormulaStatusText).toBe("Applied formula amount to rule-trade-buy.");
+    expect(result.current.selectedRule?.formulaRows.join("\n")).toContain("formula-source: SourceAmount $250,000 USD - Formula amount retained from dry-run 2026-01-01.");
+
+    await act(async () => {
+      await result.current.applyDryRunAllocationTargets();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/allocation/rule-trade-buy"],
+      rule: expect.objectContaining({
+        ruleId: "rule-trade-buy",
+        ruleVersion: "v3.event.effective.postings.scope.threshold.formula.allocation",
+        requiresPromotionApproval: true,
+        promotionApproval: null,
+        allocations: expect.arrayContaining([
+          expect.objectContaining({
+            allocationRuleId: "alloc-strategy",
+            targetDimensions: expect.objectContaining({
+              fundId: "fund-alpha",
+              sleeveId: "sleeve-core",
+              strategyId: "strategy-long-only"
+            })
+          })
+        ])
+      })
+    }));
+    expect(result.current.applyAllocationStatusText).toBe("Applied allocation targets to rule-trade-buy.");
+    expect(result.current.selectedRule?.allocationRows.join("\n")).toContain("Fund: fund-alpha");
+
+    await act(async () => {
+      await result.current.raiseSelectedRulePriority();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/priority/rule-trade-buy"],
+      rule: expect.objectContaining({
+        ruleId: "rule-trade-buy",
+        ruleVersion: "v3.event.effective.postings.scope.threshold.formula.allocation.priority",
+        priority: 11,
+        requiresPromotionApproval: true,
+        promotionApproval: null
+      })
+    }));
+    expect(result.current.raisePriorityStatusText).toBe("Raised priority for rule-trade-buy.");
+    expect(result.current.selectedRule?.priorityLabel).toBe("Priority 11");
+
+    await act(async () => {
+      await result.current.duplicateSelectedRule();
+    });
+
+    expect(services.upsertRule).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["browser://accounting/rules-studio/duplicate/rule-trade-buy"],
+      rule: expect.objectContaining({
+        displayName: "Trade buy posting draft",
+        sourceEventType: "TradeExecuted",
+        templateId: "template-trade-buy",
+        ruleVersion: "v3.event.effective.postings.scope.threshold.formula.allocation.priority.draft",
+        isArchived: false,
+        priority: 12,
+        requiresPromotionApproval: true,
+        promotionApproval: null
+      })
+    }));
+    const duplicateRequest = vi.mocked(services.upsertRule).mock.calls
+      .map((call) => call[0])
+      .find((request) => request.evidenceLinks?.includes("browser://accounting/rules-studio/duplicate/rule-trade-buy"));
+    expect(duplicateRequest).toBeDefined();
+    if (!duplicateRequest) {
+      throw new Error("Duplicate rule request was not captured.");
+    }
+    expect(duplicateRequest.rule.ruleId).toMatch(/^rule-trade-buy-draft-\d+$/);
+    expect(duplicateRequest.rule.scope).toMatchObject({
+      fundId: "fund-alpha",
+      entityId: "entity-master",
+      externalGlDimensions: {
+        class: "FundAlpha"
+      }
+    });
+    expect(duplicateRequest.rule.generatedPostings?.[0].dimensions).toEqual(workspace.postingRules[0].generatedPostings?.[0].dimensions ?? null);
+    expect(result.current.selectedRuleId).toBe(duplicateRequest.rule.ruleId);
+    expect(result.current.duplicateRuleStatusText).toContain(duplicateRequest.rule.ruleId);
+
+    await act(async () => {
+      await result.current.runRuleTests();
+    });
+
+    expect(services.runRuleTests).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      actor: "browser-accounting-operator",
+      testCases: null
+    }));
+    await waitFor(() => expect(result.current.ruleTestSuite).not.toBeNull());
+    expect(result.current.ruleTestSuite).toMatchObject({
+      title: "Accounting rule regression tests",
+      summaryLabel: "1/1 passed",
+      statusTone: "success"
+    });
+    expect(result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "latest-suite",
+        value: "1/1 passed",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "activation-gate",
+        value: "Blocked",
+        detail: "Promotion approval is required before activation.",
+        tone: "warning"
+      })
+    ]));
+    expect(result.current.ruleTestSuite?.resultRows.join("\n")).toContain("Pass: Saved trade buy regression selected rule-trade-buy, balanced");
+
+    await act(async () => {
+      await result.current.archiveSelectedRule();
+    });
+
+    expect(services.upsertRule).toHaveBeenLastCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      evidenceLinks: [`browser://accounting/rules-studio/archive/${duplicateRequest.rule.ruleId}`],
+      rule: expect.objectContaining({
+        ruleId: duplicateRequest.rule.ruleId,
+        isArchived: true,
+        requiresPromotionApproval: true
+      })
+    }));
+    expect(result.current.archiveRuleStatusText).toBe(`Archived posting rule ${duplicateRequest.rule.ruleId}.`);
+    expect(result.current.rules.map((rule) => rule.id)).not.toContain(duplicateRequest.rule.ruleId);
+    expect(result.current.selectedRuleId).toBe("rule-trade-buy");
+  });
+
+  it("blocks activation when promotion-gated rules are not approved or covered by saved tests", async () => {
+    const workspace: AccountingConfigurationWorkspace = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      status: "Draft",
+      configurationVersion: "v4",
+      updatedAtUtc: "2026-06-30T12:00:00Z",
+      ledgerBooks: [],
+      chartOfAccounts: [
+        { nodeId: "cash", path: "1000.Cash", accountName: "Cash", accountType: "Asset", parentPath: null, isArchived: false },
+        { nodeId: "income", path: "4000.Interest", accountName: "Interest", accountType: "Revenue", parentPath: null, isArchived: false }
+      ],
+      journalTemplates: [{
+        templateId: "template-interest",
+        displayName: "Interest accrual",
+        description: "Balanced interest accrual.",
+        isArchived: false,
+        version: "v1",
+        lines: [
+          { lineId: "debit-cash", accountPath: "1000.Cash", side: "Debit", amount: 100, currency: "USD", description: "Cash" },
+          { lineId: "credit-income", accountPath: "4000.Interest", side: "Credit", amount: 100, currency: "USD", description: "Interest" }
+        ]
+      }],
+      postingRules: [{
+        ruleId: "rule-interest",
+        displayName: "Interest accrual",
+        sourceEventType: "InterestAccrual",
+        templateId: "template-interest",
+        ruleVersion: "v2",
+        isArchived: false,
+        priority: 10,
+        requiresPromotionApproval: true
+      }],
+      validationIssues: [],
+      auditTrail: [],
+      ruleTestCases: []
+    };
+    const services: AccountingConfigurationServices = {
+      getConfiguration: vi.fn().mockResolvedValue(workspace),
+      previewTemplate: vi.fn(),
+      upsertRule: vi.fn(),
+      dryRunRule: vi.fn(),
+      runRuleTests: vi.fn(),
+      saveRuleTestCase: vi.fn(),
+      approveRulePromotion: vi.fn(),
+      activate: vi.fn()
+    };
+
+    const { result } = renderHook(() => useAccountingConfigurationViewModel(services));
+    await waitFor(() => expect(result.current.rules).toHaveLength(1));
+    expect(result.current.activateDisabledReason).toBe("Approve promotion for 1 required posting rule before activation.");
+    expect(result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "promotion-approval",
+        value: "Required",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "activation-gate",
+        value: "Blocked",
+        detail: "Promotion approval is required before activation.",
+        tone: "warning"
+      })
+    ]));
+
+    const approvedServices: AccountingConfigurationServices = {
+      ...services,
+      getConfiguration: vi.fn().mockResolvedValue({
+      ...workspace,
+      postingRules: [{
+        ...workspace.postingRules[0],
+        promotionApproval: {
+          approvalId: "approval-rule-interest",
+          requestedBy: "controller",
+          requestedAtUtc: "2026-06-15T10:00:00Z",
+          approvalState: "Approved",
+          approvedBy: "cfo",
+          approvedAtUtc: "2026-06-15T11:00:00Z",
+          evidenceLinks: ["evidence://rule-approval"]
+        }
+      }]
+      })
+    };
+
+    const approved = renderHook(() => useAccountingConfigurationViewModel(approvedServices));
+    await waitFor(() => expect(approved.result.current.rules).toHaveLength(1));
+    expect(approved.result.current.activateDisabledReason).toBe("Save regression test cases for 1 promotion-gated posting rule before activation.");
+    expect(approved.result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "promotion-approval",
+        value: "Approved",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "saved-regression",
+        value: "Missing",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "activation-gate",
+        value: "Blocked",
+        detail: "A saved regression case is required before activation.",
+        tone: "warning"
+      })
+    ]));
   });
 
   it("loads the Capital Account Workbench with investor evidence, allocation rules, lineage, and audit drill-through rows", async () => {
@@ -2413,6 +3413,7 @@ describe("accounting-screen view model", () => {
       saveDraft: vi.fn().mockResolvedValue(savedDraft),
       validateDraft: vi.fn().mockResolvedValue(savedDraft),
       submitApproval: vi.fn().mockResolvedValue({ ...savedDraft, status: "Submitted" }),
+      attachEvidence: vi.fn().mockResolvedValue(savedDraft),
       applyLifecycleAction: vi.fn().mockResolvedValue({
         journalEntry: {
           ...savedDraft,
@@ -2672,10 +3673,63 @@ describe("accounting-screen view model", () => {
       uri: "/api/workstation/evidence/subjects/accounting-record/source-doc",
       lineId: "line-debit"
     }));
-    act(() => result.current.addAttachment());
+    await act(async () => {
+      await result.current.addAttachment();
+    });
+    expect(services.attachEvidence).toHaveBeenCalledWith(expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      actor: "browser-user",
+      version: 1,
+      correlationId: expect.stringMatching(/^manual-je-attach-evidence-/),
+      evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/source-doc"],
+      actionOrigin: "HumanOperator",
+      periodIsLocked: false,
+      attachment: expect.objectContaining({
+        displayName: "Source support",
+        uri: "/api/workstation/evidence/subjects/accounting-record/source-doc",
+        evidenceKind: "SourceDocument",
+        sourceSystem: "ManualUpload",
+        lineId: "line-debit"
+      })
+    }));
     expect(result.current.draft.evidenceAttachments).toHaveLength(1);
     expect(result.current.draft.evidenceLinks).toContain("/api/workstation/evidence/subjects/accounting-record/source-doc");
+    expect(result.current.attachEvidenceStatusText).toBe("Evidence attached: Source support.");
     expect(result.current.getLineBadges("line-debit").map((badge) => badge.label)).toContain("Evidence");
+    expect(result.current.lifecycleChecklist).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "draft",
+        label: "Draft",
+        value: "v1",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "validate",
+        label: "Validate",
+        value: "Clear",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "evidence",
+        label: "Attach evidence",
+        value: "1 evidence link",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "post",
+        label: "Post",
+        value: "Blocked",
+        detail: "Requires Approved status; current status is Draft.",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "audit",
+        label: "Audit transitions",
+        value: "None",
+        tone: "warning"
+      })
+    ]));
 
     await act(async () => {
       await result.current.applyLifecycleAction("Post");
@@ -2694,12 +3748,48 @@ describe("accounting-screen view model", () => {
     expect(result.current.lifecycleStatusText).toBe("Post recorded: Approved -> Posted");
     expect(result.current.lifecycleTransitions[0]).toMatchObject({
       title: "Post: Approved -> Posted",
-      evidenceLabel: "1 evidence link(s)"
+      auditLabel: "Audit transition-post",
+      correlationLabel: "Correlation manual-je-post",
+      evidenceLabel: "1 evidence link(s)",
+      evidenceTone: "success",
+      evidenceRows: ["/api/workstation/evidence/subjects/accounting-record/source-doc"]
     });
     expect(result.current.lifecycleCorrectionRows[0]).toMatchObject({
       id: "manual-je-reversal-1",
       sourceLabel: "Reversal of manual-je-1"
     });
+    expect(result.current.lifecycleChecklist).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "post",
+        value: "Posted",
+        detail: "browser-user posted the immutable entry on Jun 30, 02:00 UTC.",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "reverse",
+        value: "Linked",
+        detail: "A reversal relationship or generated reversal draft is retained; the posted entry was not edited in place.",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "rebook",
+        value: "Ready",
+        detail: "Generate a separate rebook draft using the current posted lines.",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "lock-after-close",
+        value: "Ready",
+        detail: "Lock a posted journal entry after close.",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "audit",
+        value: "1 transition",
+        detail: "Lifecycle transitions retain audit id, correlation id, actor, notes, and evidence routes.",
+        tone: "success"
+      })
+    ]));
   });
 
   it("derives a blocked controller close command center from workflow and provider signals", () => {

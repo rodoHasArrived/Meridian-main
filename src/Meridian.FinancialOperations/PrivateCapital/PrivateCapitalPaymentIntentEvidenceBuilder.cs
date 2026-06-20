@@ -1,8 +1,8 @@
 using Meridian.Contracts.Ledger;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.FinancialOperations.PrivateCapital;
 
-internal static class PrivateCapitalPaymentIntentEvidenceBuilder
+public static class PrivateCapitalPaymentIntentEvidenceBuilder
 {
     private static readonly string[] CashEvidenceKeywords =
     [

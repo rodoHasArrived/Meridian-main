@@ -1,8 +1,8 @@
 using Meridian.Contracts.Ledger;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.FinancialOperations.PrivateCapital;
 
-internal static class PrivateCapitalFundEventLedgerRecordBuilder
+public static class PrivateCapitalFundEventLedgerRecordBuilder
 {
     public static IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> Build(
         string fundProfileId,
@@ -68,13 +68,13 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             .ThenBy(static item => item.Code, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static item => item.TargetId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var activityRoute = PrivateCapitalActivityRouteBuilder.Build(
+        var activityRoute = PrivateCapitalActivityRoutes.Build(
             fundProfileId,
             fundEvent.FundEventId,
             fundEvent.CapitalAccountId,
             fundEvent.InvestorId);
-        var evidenceRoute = PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId);
-        var approvalRoute = PrivateCapitalActivityRouteBuilder.BuildApprovalRoute(
+        var evidenceRoute = PrivateCapitalActivityRoutes.BuildEvidenceRoute(fundEvent.FundEventId);
+        var approvalRoute = PrivateCapitalActivityRoutes.BuildApprovalRoute(
             fundProfileId,
             fundEvent.JournalEntryId,
             fundEvent.ApprovalId);
