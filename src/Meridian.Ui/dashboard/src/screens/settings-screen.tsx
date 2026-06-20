@@ -551,6 +551,9 @@ const settingsTaskViews: SettingsTaskView[] = [
 
 function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   const normalizedHash = hash.replace(/^#/, "");
+  if (normalizedHash === "backend-capability-coverage") {
+    return "diagnostics";
+  }
   return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
 }
 
@@ -923,7 +926,7 @@ export function SettingsScreen({
   const showAssetProfileSection = activeTaskView === "asset-profiles";
   const showProviderSection = activeTaskView === "providers";
   const showBrokerageSection = activeTaskView === "brokerage" || activeTaskView === "providers";
-  const showDiagnosticsSection = activeTaskView === "overview" || activeTaskView === "diagnostics";
+  const showDiagnosticsSection = activeTaskView === "overview" || activeTaskView === "diagnostics" || activeTaskView === "brokerage";
   const showRuntimeSection = activeTaskView === "runtime";
   const showBackendCapabilitySection = activeTaskView === "diagnostics" || activeTaskView === "runtime";
 

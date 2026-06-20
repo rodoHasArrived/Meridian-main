@@ -76,6 +76,21 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
                 "Configure generated postings or a journal template before building a journal draft candidate."));
         }
 
+        if (!request.LedgerBookId.HasValue)
+        {
+            issues.Add(Issue(
+                "posting-candidate.ledger-book-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "A source-event posting candidate must target a ledger book before a governed journal draft can be built.",
+                "ledgerBookId",
+                "Select the ledger book that owns the source event, posting rule configuration, journal draft, and approval workflow."));
+        }
+
+        if (issues.Any(static issue => issue.BlocksCandidate))
+        {
+            return BuildBlockedResult(request, dryRun, selectedRuleVersion, issues);
+        }
+
         var workspace = await _configurationService.GetWorkspaceAsync(request.FundProfileId, request.LedgerBookId, ct)
             .ConfigureAwait(false);
         var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);

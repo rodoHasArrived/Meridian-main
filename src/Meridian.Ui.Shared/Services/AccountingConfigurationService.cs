@@ -3329,6 +3329,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
         if (draft.Version != request.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
@@ -3382,6 +3383,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
         if (draft.Version != request.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
@@ -3442,6 +3444,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
         if (draft.Version != request.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
@@ -3535,7 +3538,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             request.CorrelationId,
             request.EvidenceLinks,
             request.ActionOrigin,
-            request.PeriodIsLocked), ct).ConfigureAwait(false);
+            request.PeriodIsLocked,
+            request.LedgerBookId), ct).ConfigureAwait(false);
         var transition = submitted.LifecycleTransitions.Last(static item =>
             item.Action == JournalEntryLifecycleActionDto.Submit &&
             item.ToStatus == ManualJournalEntryStatusDto.Submitted);
@@ -3931,6 +3935,24 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             throw new InvalidOperationException(
                 $"Cannot {action} because the accounting period is locked after close.");
         }
+    }
+
+    private static void EnsureRequestedLedgerBookMatchesDraft(
+        Guid? requestedLedgerBookId,
+        ManualJournalEntryDraftDto draft)
+    {
+        if (!requestedLedgerBookId.HasValue)
+        {
+            return;
+        }
+
+        if (draft.LedgerBookId == requestedLedgerBookId.Value)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Manual journal entry '{draft.JournalEntryId:D}' belongs to ledger book '{draft.LedgerBookId?.ToString("D") ?? "unscoped"}', not requested ledger book '{requestedLedgerBookId.Value:D}'.");
     }
 
     private static IReadOnlyDictionary<string, ChartOfAccountsNodeDto> BuildChartByPath(IReadOnlyList<ChartOfAccountsNodeDto> chart)

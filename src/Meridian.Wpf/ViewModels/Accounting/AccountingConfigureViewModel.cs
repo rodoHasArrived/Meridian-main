@@ -795,7 +795,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     _selectedDraft.Version,
                     Notes: "Submitted from WPF Accounting Configure.",
                     CorrelationId: "wpf-manual-je-submit",
-                    EvidenceLinks: NormalizeEvidenceLink(DraftEvidenceLink)),
+                    EvidenceLinks: NormalizeEvidenceLink(DraftEvidenceLink),
+                    LedgerBookId: _selectedDraft.LedgerBookId),
                 ct).ConfigureAwait(false);
             _selectedDraft = submitted;
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
@@ -1458,7 +1459,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             EvidenceLinks: BuildManualJournalLifecycleEvidenceLinks(draft, action),
             RebookLines: action == JournalEntryLifecycleActionDto.Rebook
                 ? BuildManualJournalRebookLines(draft)
-                : []);
+                : [],
+            LedgerBookId: draft.LedgerBookId);
     }
 
     private static IReadOnlyList<string> BuildManualJournalLifecycleEvidenceLinks(

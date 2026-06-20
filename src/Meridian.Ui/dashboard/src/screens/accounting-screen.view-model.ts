@@ -5980,7 +5980,8 @@ export function useManualJournalEntryWorkbenchViewModel(
         correlationId: `manual-je-attach-evidence-${attachment.attachmentId}`,
         evidenceLinks: [uri],
         actionOrigin: "HumanOperator",
-        periodIsLocked: draftForAttachment.status === "CloseLocked"
+        periodIsLocked: draftForAttachment.status === "CloseLocked",
+        ledgerBookId: draftForAttachment.ledgerBookId ?? null
       }));
       setAttachmentDraft(createManualJournalAttachmentDraft());
       setAttachEvidenceStatusText(`Evidence attached: ${displayName}.`);
@@ -6049,7 +6050,8 @@ export function useManualJournalEntryWorkbenchViewModel(
         fundProfileId: draftForSubmit.fundProfileId,
         actor: "browser-user",
         version: draftForSubmit.version,
-        correlationId: "manual-je-submit"
+        correlationId: "manual-je-submit",
+        ledgerBookId: draftForSubmit.ledgerBookId ?? null
       }));
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry could not be submitted for approval."));
@@ -6079,7 +6081,8 @@ export function useManualJournalEntryWorkbenchViewModel(
         evidenceLinks: draftForAction.evidenceLinks ?? [],
         actionOrigin: "HumanOperator",
         periodIsLocked: action === "LockAfterClose",
-        rebookLines: action === "Rebook" ? draftForAction.lines : []
+        rebookLines: action === "Rebook" ? draftForAction.lines : [],
+        ledgerBookId: draftForAction.ledgerBookId ?? null
       }));
     } catch (err) {
       const errorDisplay = describeApiError(err, `Manual journal entry lifecycle action ${action} failed.`);

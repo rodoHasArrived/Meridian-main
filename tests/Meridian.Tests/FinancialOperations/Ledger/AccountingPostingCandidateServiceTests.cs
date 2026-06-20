@@ -94,7 +94,8 @@ public sealed class AccountingPostingCandidateServiceTests
     [Fact]
     public async Task BuildCandidateAsync_NoMatchingRule_BlocksCandidateWithoutPostingCommand()
     {
-        var service = await CreateSeededCandidateServiceAsync();
+        var ledgerBookId = Guid.NewGuid();
+        var service = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
 
         var result = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
             "fund-alpha",
@@ -107,6 +108,7 @@ public sealed class AccountingPostingCandidateServiceTests
             Guid.NewGuid(),
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Unmapped dividend event",
+            LedgerBookId: ledgerBookId,
             PolicyId: "gaap-accrual-v1",
             EvidenceLinks: ["provider://custodian/dividends/2026-05"]));
 
@@ -125,8 +127,10 @@ public sealed class AccountingPostingCandidateServiceTests
     [Fact]
     public async Task BuildCandidateAsync_UnsupportedChartAccountType_BlocksCandidate()
     {
+        var ledgerBookId = Guid.NewGuid();
         var service = await CreateSeededCandidateServiceAsync(
-            incomeAccountType: "Memo");
+            incomeAccountType: "Memo",
+            ledgerBookId: ledgerBookId);
 
         var result = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
             "fund-alpha",
@@ -140,6 +144,7 @@ public sealed class AccountingPostingCandidateServiceTests
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Unsupported account type",
             AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
             Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
             CounterpartyId: "custodian-bny",
             PolicyId: "gaap-accrual-v1",
@@ -159,7 +164,8 @@ public sealed class AccountingPostingCandidateServiceTests
     [Fact]
     public async Task BuildCandidateAsync_UnbalancedGeneratedLines_BlocksCandidate()
     {
-        var service = await CreateSeededCandidateServiceAsync(creditAmount: 120m);
+        var ledgerBookId = Guid.NewGuid();
+        var service = await CreateSeededCandidateServiceAsync(creditAmount: 120m, ledgerBookId: ledgerBookId);
 
         var result = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
             "fund-alpha",
@@ -173,6 +179,7 @@ public sealed class AccountingPostingCandidateServiceTests
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Unbalanced generated posting",
             AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
             Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
             CounterpartyId: "custodian-bny",
             PolicyId: "gaap-accrual-v1",
@@ -188,6 +195,41 @@ public sealed class AccountingPostingCandidateServiceTests
         result.Issues.Should().Contain(issue =>
             issue.Code == "rule.generated-unbalanced" &&
             issue.BlocksCandidate);
+    }
+
+    [Fact]
+    public async Task BuildCandidateAsync_MissingLedgerBook_BlocksCandidateBeforeDraftWrite()
+    {
+        var service = await CreateSeededCandidateServiceAsync();
+
+        var result = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
+            "fund-alpha",
+            "CustodianInterestAccrual",
+            125.44m,
+            "USD",
+            new DateOnly(2026, 5, 31),
+            "controller@meridian.local",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Missing ledger book",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+            CounterpartyId: "custodian-bny",
+            PolicyId: "gaap-accrual-v1",
+            TreatmentKind: AccountingTreatmentKindDto.Accrual,
+            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]));
+
+        result.SelectedRuleId.Should().Be("posting.interest-accrual");
+        result.GeneratedPostingLines.Should().HaveCount(2);
+        result.PostingCommand.Should().BeNull();
+        result.JournalEntryId.Should().BeNull();
+        result.CanSubmitForApproval.Should().BeFalse();
+        result.HasBlockingIssues.Should().BeTrue();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.ledger-book-required" &&
+            issue.BlocksCandidate &&
+            issue.TargetId == "ledgerBookId");
     }
 
     [Fact]

@@ -6054,6 +6054,7 @@ export interface JournalEntryLifecycleActionRequest {
   actionOrigin?: OperationsActionOrigin | null;
   periodIsLocked?: boolean;
   rebookLines?: ManualJournalEntryLine[] | null;
+  ledgerBookId?: string | null;
 }
 
 export interface AttachManualJournalEntryEvidenceRequest {
@@ -6066,6 +6067,7 @@ export interface AttachManualJournalEntryEvidenceRequest {
   evidenceLinks?: string[] | null;
   actionOrigin?: OperationsActionOrigin | null;
   periodIsLocked?: boolean;
+  ledgerBookId?: string | null;
 }
 
 export interface JournalEntryLifecycleActionResult {
@@ -6757,6 +6759,7 @@ export interface SubmitManualJournalEntryApprovalRequest {
   evidenceLinks?: string[] | null;
   actionOrigin?: OperationsActionOrigin | null;
   periodIsLocked?: boolean;
+  ledgerBookId?: string | null;
 }
 
 export interface PreviewJournalTemplateRequest {
@@ -6793,6 +6796,7 @@ export interface UpsertPostingRuleRequest {
   actor: string;
   correlationId?: string | null;
   evidenceLinks?: string[] | null;
+  ledgerBookId?: string | null;
 }
 
 export interface ApprovePostingRulePromotionRequest {
@@ -6808,6 +6812,7 @@ export interface ApprovePostingRulePromotionRequest {
   correlationId?: string | null;
   companyId?: string | null;
   reportGroupPrincipalIds?: string[] | null;
+  ledgerBookId?: string | null;
 }
 
 export interface ActivateAccountingConfigurationRequest {

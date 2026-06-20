@@ -20,8 +20,9 @@ the requirement end to end.
 - [x] WPF Accounting Configure loads the active ledger-book workspace before rendering accounting
   configuration and now runs saved Rules Studio test suites plus promotion approvals through the
   shared accounting configuration service.
-- [x] Posting-rule dry-runs can produce governed journal draft candidates with generated
-  multi-line postings, dimensions, evidence links, and approval-gated posting commands.
+- [x] Posting-rule dry-runs can produce ledger-book-scoped governed journal draft candidates with
+  generated multi-line postings, dimensions, evidence links, and approval-gated posting commands;
+  source-event candidates without a ledger book fail closed before draft/write creation.
 - [x] Manual journal drafts carry dimensions, evidence, ledger-book scope, lifecycle transitions,
   reversal/rebook links, and validation issues.
 - [x] External GL remains guarded and import-first: QuickBooks fixture/import evidence,

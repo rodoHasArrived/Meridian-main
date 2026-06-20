@@ -922,7 +922,8 @@ public sealed record JournalEntryLifecycleActionRequestDto(
     IReadOnlyList<string>? EvidenceLinks = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     bool PeriodIsLocked = false,
-    IReadOnlyList<ManualJournalEntryLineDto>? RebookLines = null)
+    IReadOnlyList<ManualJournalEntryLineDto>? RebookLines = null,
+    Guid? LedgerBookId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -2026,7 +2027,8 @@ public sealed record SubmitManualJournalEntryApprovalRequest(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
-    bool PeriodIsLocked = false);
+    bool PeriodIsLocked = false,
+    Guid? LedgerBookId = null);
 
 public sealed record AttachManualJournalEntryEvidenceRequest(
     Guid JournalEntryId,
@@ -2037,7 +2039,8 @@ public sealed record AttachManualJournalEntryEvidenceRequest(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
-    bool PeriodIsLocked = false);
+    bool PeriodIsLocked = false,
+    Guid? LedgerBookId = null);
 
 public sealed record ActivateAccountingConfigurationRequest(
     string FundProfileId,

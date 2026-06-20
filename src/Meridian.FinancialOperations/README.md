@@ -283,7 +283,10 @@ that provenance onto the governed journal metadata with source-event identity. T
 also retains line-entry keyed dimension tags on the governed write metadata so downstream
 ledger-book reports and export mapping can recover line-specific
 fund/entity/cost-center/counterparty/external-GL scope without adding a live posting path. It does
-not append ledger entries or bypass the manual-journal lifecycle.
+not append ledger entries or bypass the manual-journal lifecycle. Source-event posting candidates
+now require explicit ledger-book scope and fail closed before draft/write creation when the request
+is unscoped, so Rules Studio dry-run output cannot become a governed posting candidate through a
+fund-level fallback configuration.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid

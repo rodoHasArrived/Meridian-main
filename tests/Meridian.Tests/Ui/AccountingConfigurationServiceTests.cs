@@ -1258,6 +1258,59 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntry_LifecycleMutationsRejectMismatchedLedgerBookScope()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
+        var savedLedgerBookId = saved.LedgerBookId!.Value;
+        var wrongLedgerBookId = Guid.NewGuid();
+
+        var submit = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version,
+            LedgerBookId: wrongLedgerBookId));
+        await submit.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', not requested ledger book '{wrongLedgerBookId:D}'*");
+
+        var attach = async () => await service.AttachEvidenceAsync(new AttachManualJournalEntryEvidenceRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version,
+            new ManualJournalEntryEvidenceAttachmentDto(
+                "wrong-book-evidence",
+                "Wrong book evidence",
+                "SourceDocument",
+                "/api/workstation/evidence/subjects/accounting-record/wrong-book",
+                "EvidenceVault",
+                DateTimeOffset.UtcNow,
+                "controller"),
+            LedgerBookId: wrongLedgerBookId));
+        await attach.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', not requested ledger book '{wrongLedgerBookId:D}'*");
+
+        var lifecycle = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            JournalEntryLifecycleActionDto.Validate,
+            "controller",
+            saved.Version,
+            LedgerBookId: wrongLedgerBookId));
+        await lifecycle.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', not requested ledger book '{wrongLedgerBookId:D}'*");
+
+        var workbench = await service.GetWorkbenchAsync("fund-alpha", savedLedgerBookId);
+        workbench.Drafts.Should().ContainSingle(item =>
+            item.JournalEntryId == saved.JournalEntryId &&
+            item.Version == saved.Version &&
+            item.Status == ManualJournalEntryStatusDto.Draft);
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntry_DimensionsNormalizeAndPropagateToLines()
     {
         var configuration = CreateService();
