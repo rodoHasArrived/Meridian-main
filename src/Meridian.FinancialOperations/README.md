@@ -182,6 +182,11 @@ lines.
 Accounting close projections live here as deterministic Financial Operations behavior. Journal
 posting, FX translation, trial-balance, roll-forward, source-linked audit, and close evidence gates
 are exposed to UI Services and WPF without making those surfaces own accounting-close state.
+Trial-balance projection preserves `LedgerDimensionSetDto` on journal lines, buckets same-account
+activity separately by dimensional scope, and supports scoped close/report filters for fund, entity,
+sleeve, strategy, investor, capital account, instrument, tax lot, cost center, counterparty, neutral
+organization/portfolio/book/account/customer/vendor/project dimensions, and external-GL dimensions
+without inferring scope from account names.
 `AccountingCloseManagementService` now projects a `ClosePeriodPlanDto` from the Operations
 Continuity workflow, converting workflow checklist tasks into dependency-aware close tasks,
 Operations approvals into sign-off rows, close-package publication into period-lock posture, and

@@ -47,6 +47,9 @@ the requirement end to end.
 - [x] Operations Continuity posting candidates can carry shared `LedgerDimensionSetDto` on each
   journal line, and the Financial Operations posting gate maps those dimensions into immutable
   ledger lines before appending durable close/reconciliation/accrual journals.
+- [x] Financial Operations accounting-close trial-balance projection now preserves line dimensions,
+  buckets same-account activity by dimensional scope, and supports scoped close/report filters over
+  the canonical dimension set plus external-GL dimensions.
 - [x] Ledger period close summaries now count open reconciliation breaks only when the operator
   work item carries explicit ledger-book or ledger-period scope, preventing unrelated accounting
   inbox breaks from leaking across parallel books during close.
@@ -66,8 +69,9 @@ the requirement end to end.
   and WPF.
 - [ ] Complete durable dimensional ledger persistence and query coverage for fund, entity, sleeve,
   strategy, investor, capital account, instrument, tax lot, cost center, counterparty, and external
-  GL dimensions across all journal lines, trial-balance queries, report filters, close checks, and
-  export mappings.
+  GL dimensions across all journal lines, report filters, close checks, and export mappings; close
+  trial-balance projection now has dimension bucketing/filter proof, but not every durable query
+  and report surface is covered.
 - [ ] Finish JE lifecycle hardening across every mutation path: version guards, actor/segregation
   checks, evidence requirements, period locks, immutable posted entries, reversal/rebook correction
   paths, and transition audit coverage.

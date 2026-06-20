@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using FluentAssertions;
+using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.AccountingClose;
 using Xunit;
 
@@ -44,6 +45,83 @@ public sealed class AccountingCloseServicesTests
         projection.IsBalanced(trial).Should().BeFalse();
         next.State.Should().Be(ClosePeriodState.Blocked);
         next.Blockers.Should().Contain("Trial balance is out of balance.");
+    }
+
+    [Fact]
+    public void Scenario_MonthEndTrialBalance_PreservesLineDimensionsAsSeparateCloseRows()
+    {
+        var projection = new TrialBalanceProjectionService();
+        var entityAlpha = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var entityBeta = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-beta",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Operations"
+            });
+        var entries = ImmutableArray.Create(
+            NewEntry(
+                "evt-entity-alpha",
+                "approval-entity-alpha",
+                new JournalLine("Cash", 125m, "USD", true, "evt-entity-alpha", "approval-entity-alpha", Dimensions: entityAlpha),
+                new JournalLine("Revenue", 125m, "USD", false, "evt-entity-alpha", "approval-entity-alpha", Dimensions: entityAlpha)),
+            NewEntry(
+                "evt-entity-beta",
+                "approval-entity-beta",
+                new JournalLine("Cash", 75m, "USD", true, "evt-entity-beta", "approval-entity-beta", Dimensions: entityBeta),
+                new JournalLine("Revenue", 75m, "USD", false, "evt-entity-beta", "approval-entity-beta", Dimensions: entityBeta)));
+
+        var trial = projection.BuildTrialBalance(entries);
+
+        trial.Where(line => line.AccountCode == "Cash").Should().HaveCount(2);
+        var alphaCash = trial.Single(line => line.AccountCode == "Cash" && line.Net == 125m);
+        alphaCash.Dimensions.Should().NotBeNull();
+        alphaCash.Dimensions!.EntityId.Should().Be("entity-alpha");
+        alphaCash.Dimensions.ExternalGlDimensions["Department"].Should().Be("Investments");
+        alphaCash.SourceEventIds.Should().Contain("evt-entity-alpha");
+        var betaCash = trial.Single(line => line.AccountCode == "Cash" && line.Net == 75m);
+        betaCash.Dimensions.Should().NotBeNull();
+        betaCash.Dimensions!.EntityId.Should().Be("entity-beta");
+        betaCash.Dimensions.ExternalGlDimensions["Department"].Should().Be("Operations");
+        betaCash.SourceEventIds.Should().Contain("evt-entity-beta");
+        projection.IsBalanced(trial).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Scenario_MonthEndTrialBalance_FiltersByRequestedDimensionScope()
+    {
+        var projection = new TrialBalanceProjectionService();
+        var entityAlpha = new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-alpha", CostCenterId: "investment-ops");
+        var entityBeta = new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-beta", CostCenterId: "investment-ops");
+        var entries = ImmutableArray.Create(
+            NewEntry(
+                "evt-alpha",
+                "approval-alpha",
+                new JournalLine("Cash", 40m, "USD", true, "evt-alpha", "approval-alpha", Dimensions: entityAlpha),
+                new JournalLine("Revenue", 40m, "USD", false, "evt-alpha", "approval-alpha", Dimensions: entityAlpha)),
+            NewEntry(
+                "evt-beta",
+                "approval-beta",
+                new JournalLine("Cash", 60m, "USD", true, "evt-beta", "approval-beta", Dimensions: entityBeta),
+                new JournalLine("Revenue", 60m, "USD", false, "evt-beta", "approval-beta", Dimensions: entityBeta)));
+
+        var filtered = projection.BuildTrialBalance(entries, new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-alpha"));
+
+        filtered.Should().HaveCount(2);
+        filtered.Select(line => line.Dimensions?.EntityId).Should().OnlyContain(entityId => entityId == "entity-alpha");
+        filtered.Sum(line => line.Debit).Should().Be(40m);
+        filtered.Sum(line => line.Credit).Should().Be(40m);
+        filtered.SelectMany(line => line.SourceEventIds)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Should()
+            .BeEquivalentTo(["evt-alpha"]);
+        projection.IsBalanced(filtered).Should().BeTrue();
     }
 
     [Fact]

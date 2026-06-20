@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -32,7 +33,8 @@ public sealed record JournalLine(
     bool IsDebit,
     string SourceEventId = "",
     string ApprovalId = "",
-    string Memo = "");
+    string Memo = "",
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record JournalEntry(
     Guid JournalEntryId,
@@ -95,7 +97,8 @@ public sealed record TrialBalanceLine(
     decimal Credit,
     decimal Net,
     ImmutableArray<string> SourceEventIds = default,
-    ImmutableArray<string> ApprovalIds = default);
+    ImmutableArray<string> ApprovalIds = default,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record RollForwardLine(
     string AccountCode,
