@@ -123,6 +123,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         await harness.ViewModel.ValidateManualJournalDraftAsync();
         await harness.ViewModel.RefreshExternalGlAsync();
         await harness.ViewModel.CreateFundScopedPolicyAsync();
+        await harness.ViewModel.BuildPostingCandidateAsync();
 
         harness.ViewModel.ConfigurationStatusText.Should().Contain("Draft");
         harness.ViewModel.ChartRows.Select(static row => row.Name)
@@ -229,6 +230,31 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ExternalGlRows.Should().NotBeEmpty();
         harness.ViewModel.PostingPostureText.ToLowerInvariant().Should().Contain("source of all ledger truth");
         harness.ViewModel.PolicyRows.Should().Contain(row => row.Evidence == "alpha-fund");
+        harness.PostingCandidateService.LastRequest.Should().NotBeNull();
+        harness.PostingCandidateService.LastRequest!.FundProfileId.Should().Be("alpha-fund");
+        harness.PostingCandidateService.LastRequest.SourceEventType.Should().Be("ManualJournalEntry.CapitalCall");
+        harness.PostingCandidateService.LastRequest.Dimensions.Should().NotBeNull();
+        harness.PostingCandidateService.LastRequest.Dimensions!.FundId.Should().Be("alpha-fund");
+        harness.PostingCandidateService.LastRequest.Dimensions.EntityId.Should().Be("entity-alpha");
+        harness.PostingCandidateService.LastRequest.EvidenceLinks.Should().Contain("evidence://manual-je/capital-call-notice");
+        harness.PostingCandidateService.LastRequest.EvidenceLinks.Should().Contain("accounting-rule://manual-capital-call-policy-v1/v1");
+        harness.ViewModel.PostingCandidateStatusText.Should().Contain("Posting candidate built");
+        harness.ViewModel.PostingCandidateDetailText.Should().Contain("posting remains governed by JE lifecycle");
+        harness.ViewModel.PostingCandidateRows.Should().Contain(row =>
+            row.Name == "manual-capital-call-policy-v1"
+            && row.Detail.Contains("correlation", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.PostingCandidateRows.Should().Contain(row =>
+            row.Name == "Draft command"
+            && row.Status == AccountingPostingApprovalStateDto.Pending.ToString()
+            && row.Evidence.Contains("JE lifecycle-gated", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.PostingCandidateRows.Should().Contain(row =>
+            row.Name == "Assets:Cash"
+            && row.Status == AccountingTemplateLineSideDto.Debit.ToString()
+            && row.Detail.Contains("alpha-fund", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("entity-alpha", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.PostingCandidateRows.Should().Contain(row =>
+            row.Name == "JOURNAL_DRAFT_APPROVAL_REQUIRED"
+            && row.Status == AccountingConfigurationValidationSeverityDto.Info.ToString());
         harness.ViewModel.StoragePostureText.Should().Contain(nameof(FileAccountingConfigurationStore));
         harness.ViewModel.StoragePostureText.Should().Contain(nameof(FileManualJournalEntryDraftStore));
 
@@ -426,6 +452,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ExternalGlEvidencePackageRows.Should().BeEmpty();
         harness.ViewModel.ExternalGlRows.Should().BeEmpty();
         harness.ViewModel.PolicyRows.Should().BeEmpty();
+        harness.ViewModel.PostingCandidateRows.Should().BeEmpty();
+        harness.ViewModel.PostingCandidateStatusText.Should().Contain("Locked");
         harness.ViewModel.StatusText.ToLowerInvariant().Should().Contain("unlock accounting configure");
     }
 
@@ -451,6 +479,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureRefreshButton");
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
+        xaml.Should().Contain("AccountingPostingCandidateButton");
+        xaml.Should().Contain("AccountingPostingCandidateGrid");
+        xaml.Should().Contain("Posting Candidate Preview");
         xaml.Should().Contain("ManualJournalDoubleEntryWorkbench");
         xaml.Should().Contain("MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY");
         xaml.Should().Contain("ManualJournalDoubleEntryGrid");
@@ -475,6 +506,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("ToolTip=\"{Binding StatusText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding ConfigurationDetailText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding CloseDetailText}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding PostingCandidateDetailText}\"");
         xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().Contain("AccountingConfigureTabs");
     }
@@ -502,6 +534,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var accountingSystemIntegrationService = new AccountingSystemIntegrationService(
             [new QuickBooksFixtureAccountingProvider()]);
         var policyService = new AccountingPolicyService();
+        var postingCandidateService = new TestAccountingPostingCandidateService();
         var viewModel = new AccountingConfigureViewModel(
             fundContext,
             configurationService,
@@ -511,15 +544,17 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             accountingSystemIntegrationService,
             fundOperationsWorkspaceReadService: null,
             policyService,
-            capitalAccountWorkbenchService);
+            capitalAccountWorkbenchService,
+            postingCandidateService);
 
-        return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath);
+        return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath, postingCandidateService);
     }
 
     private sealed record AccountingConfigureHarness(
         AccountingConfigureViewModel ViewModel,
         string ConfigurationPath,
-        string DraftsPath);
+        string DraftsPath,
+        TestAccountingPostingCandidateService PostingCandidateService);
 
 
     private sealed record PresetExpectation(
@@ -922,6 +957,124 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             FundEventRecords: [fundEventLedgerRecord],
             CapitalAccountSubledgers: [capitalAccountSubledger],
             PaymentIntents: [paymentIntent]);
+    }
+
+    private sealed class TestAccountingPostingCandidateService : IAccountingPostingCandidateService
+    {
+        public PostingRuleJournalCandidateRequestDto? LastRequest { get; private set; }
+
+        public Task<PostingRuleJournalCandidateResultDto> BuildCandidateAsync(
+            PostingRuleJournalCandidateRequestDto request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            LastRequest = request;
+
+            var selectedRuleId = request.SourceEventType.Equals("ManualJournalEntry.CapitalCall", StringComparison.OrdinalIgnoreCase)
+                ? "manual-capital-call-policy-v1"
+                : "manual-adjustment-policy-v1";
+            var generatedLines = new[]
+            {
+                new GeneratedPostingLineDto(
+                    "candidate-debit-cash",
+                    "Assets:Cash",
+                    AccountingTemplateLineSideDto.Debit,
+                    "eventAmount",
+                    request.EventAmount,
+                    request.Currency,
+                    request.Dimensions,
+                    "Debit source-event cash."),
+                new GeneratedPostingLineDto(
+                    "candidate-credit-capital",
+                    "Equity:Capital Contributions",
+                    AccountingTemplateLineSideDto.Credit,
+                    "eventAmount",
+                    request.EventAmount,
+                    request.Currency,
+                    request.Dimensions,
+                    "Credit generated capital contribution.")
+            };
+            var dryRun = new RuleDryRunResultDto(
+                request.FundProfileId,
+                request.LedgerBookId,
+                request.SourceEventType,
+                request.EffectiveDate,
+                request.EventAmount,
+                request.Currency,
+                IsPostingBalanced: true,
+                selectedRuleId,
+                RuleMatches:
+                [
+                    new AccountingRuleDryRunMatchDto(
+                        selectedRuleId,
+                        "Capital call policy",
+                        "v1",
+                        Priority: 10,
+                        IsMatched: true,
+                        Explanations: ["Matched WPF candidate source event."],
+                        ValidationIssues: [])
+                ],
+                GeneratedLines: [],
+                ValidationIssues: [],
+                GeneratedPostingLines: generatedLines);
+            var commandId = Guid.Parse("7b57c3d4-962f-46c6-82a2-fda9b5dfd58b");
+            var journalEntryId = Guid.Parse("3bf39814-d587-4c6f-8ed2-38f22ba77d3b");
+            var command = new AccountingPostingCommandDto(
+                commandId,
+                request.AggregateId,
+                request.PeriodId,
+                request.EffectiveDate,
+                request.AccountingTimestamp,
+                $"wpf-candidate:{request.SourceEventType}:{request.SourceEventId}",
+                AccountingPostingIntentDto.AutomatedDraft,
+                request.SourceEventId,
+                request.CorrelationId,
+                SourceEventType: request.SourceEventType,
+                TreasuryContext: request.TreasuryContext,
+                ApprovalState: AccountingPostingApprovalStateDto.Pending,
+                ApprovalId: "approval:wpf-candidate",
+                OperatorRationale: "WPF candidate preview must be submitted through JE lifecycle.",
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "candidate-source-evidence",
+                        request.EvidenceLinks.FirstOrDefault() ?? "evidence://missing",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "WPF",
+                        request.AccountingTimestamp,
+                        request.Actor,
+                        SubjectId: request.SourceEventId?.ToString("D"),
+                        Description: "Retained source evidence from WPF candidate preview.")
+                ]);
+
+            var result = new PostingRuleJournalCandidateResultDto(
+                dryRun,
+                selectedRuleId,
+                "v1",
+                generatedLines,
+                command,
+                journalEntryId,
+                request.EventAmount,
+                request.EventAmount,
+                Imbalance: 0m,
+                IsBalanced: true,
+                HasBlockingIssues: false,
+                CanSubmitForApproval: true,
+                CanPostWithoutAdditionalApproval: false,
+                request.EvidenceLinks,
+                Issues:
+                [
+                    new PostingRuleJournalCandidateIssueDto(
+                        "JOURNAL_DRAFT_APPROVAL_REQUIRED",
+                        AccountingConfigurationValidationSeverityDto.Info,
+                        "Draft requires controller approval before posting.",
+                        BlocksCandidate: false,
+                        TargetId: selectedRuleId,
+                        SuggestedAction: "Submit through the journal entry lifecycle service.")
+                ]);
+
+            return Task.FromResult(result);
+        }
     }
 
     private sealed class StaticManualJournalEntryWorkbenchService(

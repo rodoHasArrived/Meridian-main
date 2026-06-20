@@ -86,7 +86,7 @@
                                    AutomationProperties.AutomationId="AccountingConfigureStoragePostureText" />
                     </StackPanel>
 
-                    <WrapPanel Grid.Column="2" MaxWidth="380" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <WrapPanel Grid.Column="2" MaxWidth="520" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <Button AutomationProperties.AutomationId="AccountingConfigureRefreshButton"
                                 Command="{Binding RefreshCommand}"
                                 Style="{StaticResource PrimaryButtonStyle}"
@@ -127,6 +127,20 @@
                                            FontSize="14"
                                            VerticalAlignment="Center" />
                                 <TextBlock Text="Activate" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button AutomationProperties.AutomationId="AccountingPostingCandidateButton"
+                                Command="{Binding BuildPostingCandidateCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                ToolTip="{Binding PostingCandidateDetailText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconCheckmark}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Candidate" Margin="8,0,0,0" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
                     </WrapPanel>
@@ -212,7 +226,7 @@
                                     </DataGrid>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource SectionCardStyle}">
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
                                     <TextBlock Text="Posting Rules and Audit" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding PostingRuleRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,12" AutomationProperties.AutomationId="AccountingPostingRuleGrid">
@@ -228,6 +242,21 @@
                                             <DataGridTextColumn Header="Actor" Binding="{Binding Status}" Width="110" />
                                             <DataGridTextColumn Header="Time" Binding="{Binding Detail}" Width="160" />
                                             <DataGridTextColumn Header="Correlation" Binding="{Binding Evidence}" Width="*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Posting Candidate Preview" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding PostingCandidateStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding PostingCandidateDetailText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                    <DataGrid ItemsSource="{Binding PostingCandidateRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingPostingCandidateGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Item" Binding="{Binding Name}" Width="170" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Evidence / Action" Binding="{Binding Evidence}" Width="220" />
                                         </DataGrid.Columns>
                                     </DataGrid>
                                 </StackPanel>

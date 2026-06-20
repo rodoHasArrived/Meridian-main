@@ -150,6 +150,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly AccountingSystemIntegrationService? _accountingSystemIntegrationService;
     private readonly FundOperationsWorkspaceReadService? _fundOperationsWorkspaceReadService;
     private readonly IAccountingPolicyService? _accountingPolicyService;
+    private readonly IAccountingPostingCandidateService? _accountingPostingCandidateService;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
@@ -169,6 +170,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _evidencePostureText = "Evidence posture has not loaded.";
     private string _reconciliationPostureText = "Reconciliation posture has not loaded.";
     private string _policyPostureText = "Accounting policy posture has not loaded.";
+    private string _postingCandidateStatusText = "Posting-rule journal candidate has not been built.";
+    private string _postingCandidateDetailText = "Build a governed draft candidate from the selected posting rule without posting to the ledger.";
     private string _selectedReconciliationView = "Open breaks";
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
     private string _draftMemo = "Manual accounting adjustment";
@@ -189,7 +192,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         AccountingSystemIntegrationService? accountingSystemIntegrationService = null,
         FundOperationsWorkspaceReadService? fundOperationsWorkspaceReadService = null,
         IAccountingPolicyService? accountingPolicyService = null,
-        ICapitalAccountWorkbenchService? capitalAccountWorkbenchService = null)
+        ICapitalAccountWorkbenchService? capitalAccountWorkbenchService = null,
+        IAccountingPostingCandidateService? accountingPostingCandidateService = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -200,6 +204,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         _accountingSystemIntegrationService = accountingSystemIntegrationService;
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService;
         _accountingPolicyService = accountingPolicyService;
+        _accountingPostingCandidateService = accountingPostingCandidateService;
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
         SeedBaselineConfigurationCommand = new AsyncRelayCommand(() => SeedBaselineConfigurationAsync());
@@ -209,6 +214,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         SubmitManualJournalDraftCommand = new AsyncRelayCommand(() => SubmitManualJournalDraftAsync());
         RefreshExternalGlCommand = new AsyncRelayCommand(() => RefreshExternalGlAsync());
         CreateFundScopedPolicyCommand = new AsyncRelayCommand(() => CreateFundScopedPolicyAsync());
+        BuildPostingCandidateCommand = new AsyncRelayCommand(() => BuildPostingCandidateAsync());
 
         AccountingBasisOptions = new ObservableCollection<AccountingBasisKindDto>(
             Enum.GetValues<AccountingBasisKindDto>());
@@ -231,6 +237,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public IAsyncRelayCommand SubmitManualJournalDraftCommand { get; }
     public IAsyncRelayCommand RefreshExternalGlCommand { get; }
     public IAsyncRelayCommand CreateFundScopedPolicyCommand { get; }
+    public IAsyncRelayCommand BuildPostingCandidateCommand { get; }
 
     public ObservableCollection<AccountingWorkbenchRow> ValidationRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ChartRows { get; } = [];
@@ -257,6 +264,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> EvidenceRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ReconciliationRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> PolicyRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> PostingCandidateRows { get; } = [];
     public ObservableCollection<string> ReconciliationViewOptions { get; } =
     [
         "Open breaks",
@@ -355,6 +363,18 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _policyPostureText;
         private set => SetProperty(ref _policyPostureText, value);
+    }
+
+    public string PostingCandidateStatusText
+    {
+        get => _postingCandidateStatusText;
+        private set => SetProperty(ref _postingCandidateStatusText, value);
+    }
+
+    public string PostingCandidateDetailText
+    {
+        get => _postingCandidateDetailText;
+        private set => SetProperty(ref _postingCandidateDetailText, value);
     }
 
     public string SelectedReconciliationView
@@ -830,6 +850,82 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         }
     }
 
+    public async Task BuildPostingCandidateAsync(CancellationToken ct = default)
+    {
+        PostingCandidateRows.Clear();
+        if (_accountingPostingCandidateService is null)
+        {
+            PostingCandidateStatusText = "Posting-rule candidate service is not registered for this desktop session.";
+            PostingCandidateDetailText = "The desktop surface cannot build governed draft candidates until the shared service is registered.";
+            return;
+        }
+
+        if (_activeFundProfile is null || _configuration is null)
+        {
+            PostingCandidateStatusText = "Select and load a fund-linked accounting configuration before building a posting candidate.";
+            PostingCandidateDetailText = "Candidate generation requires chart accounts, posting rules, dimensions, and retained evidence.";
+            return;
+        }
+
+        var rule = ResolvePostingCandidateRule(_configuration);
+        if (rule is null)
+        {
+            PostingCandidateStatusText = "No active posting rule is available for the selected manual journal entry type.";
+            PostingCandidateDetailText = "Seed or configure posting rules before building a governed draft candidate.";
+            return;
+        }
+
+        var ledgerBook = ResolveActiveLedgerBook(_configuration);
+        var currency = string.IsNullOrWhiteSpace(DraftCurrency)
+            ? _activeFundProfile.BaseCurrency
+            : DraftCurrency.Trim().ToUpperInvariant();
+        var effectiveDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var correlationId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var evidenceLinks = BuildPostingCandidateEvidenceLinks(rule);
+
+        try
+        {
+            var result = await _accountingPostingCandidateService.BuildCandidateAsync(
+                    new PostingRuleJournalCandidateRequestDto(
+                        _activeFundProfile.FundProfileId,
+                        rule.SourceEventType,
+                        Math.Abs(DraftAmount),
+                        currency,
+                        effectiveDate,
+                        DefaultActor,
+                        AggregateId: Guid.NewGuid(),
+                        PeriodId: Guid.NewGuid(),
+                        AccountingTimestamp: DateTimeOffset.UtcNow,
+                        Description: $"{rule.DisplayName} governed journal draft candidate",
+                        AccountingBasis: ledgerBook?.AccountingBasis ?? SelectedAccountingBasis,
+                        LedgerBookId: _configuration.LedgerBookId ?? ledgerBook?.LedgerBookId,
+                        Dimensions: BuildPostingCandidateDimensions(rule),
+                        CounterpartyId: rule.Scope?.CounterpartyId,
+                        InstrumentSymbol: rule.Scope?.InstrumentId?.ToString("D"),
+                        CorrelationId: correlationId,
+                        SourceEventId: sourceEventId,
+                        PolicyId: ledgerBook?.AccountingPolicyId,
+                        TreatmentKind: MapPostingCandidateTreatment(SelectedEntryType),
+                        PostingKind: LedgerPostingKindDto.Originating,
+                        TreasuryContext: BuildManualJournalTreasuryContext(
+                            _activeFundProfile.FundProfileId,
+                            SelectedEntryType,
+                            effectiveDate,
+                            sourceEventId),
+                        EvidenceLinks: evidenceLinks),
+                    ct)
+                .ConfigureAwait(false);
+
+            ApplyPostingCandidateResult(rule, result, correlationId, sourceEventId);
+        }
+        catch (Exception ex)
+        {
+            PostingCandidateStatusText = $"Posting-rule candidate generation failed: {ex.Message}";
+            PostingCandidateDetailText = "No journal draft candidate was created; ledger posting remains unavailable.";
+        }
+    }
+
     private void ApplyLockedState()
     {
         _configuration = null;
@@ -846,6 +942,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         EvidencePostureText = "Locked";
         ReconciliationPostureText = "Locked";
         PolicyPostureText = "Locked";
+        PostingCandidateStatusText = "Locked until a fund context is selected.";
+        PostingCandidateDetailText = "Posting candidates require a fund-linked configuration and retained evidence.";
         BatchReconciliationActionText = "No reconciliation rows are loaded.";
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
@@ -870,6 +968,115 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ConfigurationDetailText = critical > 0
             ? $"{critical} critical configuration issue(s) block activation."
             : "Chart, templates, posting rules, validation, and audit are shared-contract backed.";
+    }
+
+    private PostingRuleDto? ResolvePostingCandidateRule(AccountingConfigurationWorkspaceDto workspace)
+    {
+        var sourceEventType = $"ManualJournalEntry.{SelectedEntryType}";
+        return workspace.PostingRules
+                   .Where(static rule => !rule.IsArchived)
+                   .Where(rule => string.Equals(rule.SourceEventType, sourceEventType, StringComparison.OrdinalIgnoreCase))
+                   .OrderByDescending(static rule => rule.Priority)
+                   .ThenBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
+                   .FirstOrDefault()
+               ?? workspace.PostingRules
+                   .Where(static rule => !rule.IsArchived)
+                   .OrderByDescending(static rule => rule.Priority)
+                   .ThenBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
+                   .FirstOrDefault();
+    }
+
+    private LedgerBookDto? ResolveActiveLedgerBook(AccountingConfigurationWorkspaceDto workspace)
+        => workspace.LedgerBooks.FirstOrDefault(book => book.LedgerBookId == workspace.LedgerBookId)
+           ?? workspace.LedgerBooks.FirstOrDefault();
+
+    private LedgerDimensionSetDto BuildPostingCandidateDimensions(PostingRuleDto rule)
+        => rule.Scope is { } scope
+            ? scope with
+            {
+                FundId = string.IsNullOrWhiteSpace(scope.FundId) ? _activeFundProfile?.FundProfileId : scope.FundId,
+                EntityId = string.IsNullOrWhiteSpace(scope.EntityId) ? FirstDimensionValue(_activeFundProfile?.EntityIds) : scope.EntityId
+            }
+            : new LedgerDimensionSetDto(
+                FundId: _activeFundProfile?.FundProfileId,
+                EntityId: FirstDimensionValue(_activeFundProfile?.EntityIds),
+                SleeveId: FirstDimensionValue(_activeFundProfile?.SleeveIds),
+                InvestorId: RequiresPrivateCapitalTreasuryContext(SelectedEntryType)
+                    ? $"investor:{_activeFundProfile?.FundProfileId}:default"
+                    : null,
+                CapitalAccountId: RequiresPrivateCapitalTreasuryContext(SelectedEntryType)
+                    ? $"capital-account:{_activeFundProfile?.FundProfileId}:default"
+                    : null,
+                CounterpartyId: rule.Scope?.CounterpartyId);
+
+    private static string? FirstDimensionValue(IReadOnlyList<string>? values)
+        => values?.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
+
+    private IReadOnlyList<string> BuildPostingCandidateEvidenceLinks(PostingRuleDto rule)
+    {
+        var links = new List<string>();
+        links.AddRange(NormalizeEvidenceLink(DraftEvidenceLink));
+        links.Add($"accounting-rule://{rule.RuleId}/{rule.RuleVersion}");
+        links.Add($"desktop://accounting/configure/posting-candidate/{rule.RuleId}");
+        return links
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private void ApplyPostingCandidateResult(
+        PostingRuleDto rule,
+        PostingRuleJournalCandidateResultDto result,
+        Guid correlationId,
+        Guid sourceEventId)
+    {
+        var rows = new List<AccountingWorkbenchRow>
+        {
+            new(
+                result.SelectedRuleId ?? rule.RuleId,
+                result.SelectedRuleVersion ?? rule.RuleVersion,
+                $"{result.DryRunResult.SourceEventType} | priority match | correlation {correlationId:D}",
+                $"{result.DryRunResult.RuleMatches.Count} dry-run match(es); source event {sourceEventId:D}",
+                result.SelectedRuleId ?? rule.RuleId),
+            new(
+                "Draft command",
+                result.PostingCommand?.ApprovalState.ToString() ?? "Blocked",
+                result.JournalEntryId is null
+                    ? "No journal draft candidate was created."
+                    : $"Journal draft {result.JournalEntryId:D}; debits {result.TotalDebits:0.##}; credits {result.TotalCredits:0.##}; imbalance {result.Imbalance:0.##}",
+                $"Submit for approval: {result.CanSubmitForApproval}; auto-post: {result.CanPostWithoutAdditionalApproval}; posting remains JE lifecycle-gated.",
+                result.PostingCommand?.CommandId.ToString("D") ?? string.Empty),
+            new(
+                "Evidence",
+                $"{result.EvidenceLinks.Count} retained link(s)",
+                string.Join("; ", result.EvidenceLinks.Take(4)),
+                result.EvidenceLinks.Count > 4 ? $"{result.EvidenceLinks.Count - 4} additional link(s)" : "All links shown",
+                string.Empty)
+        };
+
+        rows.AddRange(result.GeneratedPostingLines.Select(line =>
+            new AccountingWorkbenchRow(
+                line.AccountPath,
+                line.Side.ToString(),
+                $"{line.Amount:0.##} {line.Currency} | dimensions {FormatLedgerDimensions(line.Dimensions)}",
+                line.Description ?? line.AmountFormulaId,
+                line.LineId)));
+
+        rows.AddRange(result.Issues.Select(issue =>
+            new AccountingWorkbenchRow(
+                issue.Code,
+                issue.BlocksCandidate ? "Blocking" : issue.Severity.ToString(),
+                issue.Message,
+                issue.SuggestedAction ?? string.Empty,
+                issue.TargetId ?? string.Empty)));
+
+        PostingCandidateRows.ReplaceWith(rows);
+        PostingCandidateStatusText = result.HasBlockingIssues
+            ? $"Posting candidate is blocked by {result.Issues.Count(issue => issue.BlocksCandidate)} issue(s); no posting command is executable."
+            : $"Posting candidate built for {result.SelectedRuleId ?? rule.RuleId}; draft is {(result.CanSubmitForApproval ? "approval-ready" : "validation-gated")} and not posted.";
+        PostingCandidateDetailText =
+            $"{result.GeneratedPostingLines.Count} generated line(s), debits {result.TotalDebits:0.##}, credits {result.TotalCredits:0.##}, {result.EvidenceLinks.Count} evidence link(s); posting remains governed by JE lifecycle.";
     }
 
     private async Task LoadManualJournalWorkbenchAsync(CancellationToken ct)
@@ -1259,6 +1466,19 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             or ManualJournalEntryTypeDto.Redemption
             or ManualJournalEntryTypeDto.ManagementFee;
 
+    private static AccountingTreatmentKindDto MapPostingCandidateTreatment(ManualJournalEntryTypeDto entryType)
+        => entryType switch
+        {
+            ManualJournalEntryTypeDto.AccruedBalance or ManualJournalEntryTypeDto.AccruedExpense => AccountingTreatmentKindDto.Accrual,
+            ManualJournalEntryTypeDto.PrepaidExpense => AccountingTreatmentKindDto.PrepaidExpense,
+            ManualJournalEntryTypeDto.Expense or ManualJournalEntryTypeDto.ManagementFee => AccountingTreatmentKindDto.Expense,
+            ManualJournalEntryTypeDto.Amortization => AccountingTreatmentKindDto.Amortization,
+            ManualJournalEntryTypeDto.Deferral => AccountingTreatmentKindDto.Deferral,
+            ManualJournalEntryTypeDto.Reclassification => AccountingTreatmentKindDto.Reclassification,
+            ManualJournalEntryTypeDto.Reversal => AccountingTreatmentKindDto.Reversal,
+            _ => AccountingTreatmentKindDto.General
+        };
+
     private void ApplyManualJournalValidationRows(IReadOnlyList<AccountingConfigurationValidationIssueDto> issues)
     {
         ValidationRows.ReplaceWith(issues.Select(issue =>
@@ -1492,6 +1712,34 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ? eventType ?? "No effective date"
             : $"{eventType ?? "Fund event"} {effectiveDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
 
+    private static string FormatLedgerDimensions(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return "none";
+        }
+
+        var values = new[]
+            {
+                dimensions.FundId,
+                dimensions.EntityId,
+                dimensions.SleeveId,
+                dimensions.StrategyId,
+                dimensions.InvestorId,
+                dimensions.CapitalAccountId,
+                dimensions.InstrumentId?.ToString("D"),
+                dimensions.TaxLotId,
+                dimensions.CostCenterId,
+                dimensions.CounterpartyId
+            }
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!.Trim())
+            .Take(5)
+            .ToArray();
+
+        return values.Length == 0 ? "none" : string.Join(" / ", values);
+    }
+
     private string BuildStoragePosture()
     {
         var configStore = _configurationStore?.GetType().Name ?? "not registered";
@@ -1521,6 +1769,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         EvidenceRows.Clear();
         ReconciliationRows.Clear();
         PolicyRows.Clear();
+        PostingCandidateRows.Clear();
     }
 
     private void ClearCapitalAccountWorkbenchRows()
