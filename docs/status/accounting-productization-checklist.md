@@ -68,7 +68,9 @@ the requirement end to end.
   controls are not certified, certified controls lack retained certified run artifacts, or retained
   run artifacts failed. Retained migration run artifacts now have a shared file-backed store and
   Accounting System list/upsert endpoints, and production readiness automatically merges stored
-  fund/book-scoped artifacts into the assessment.
+  fund/book-scoped artifacts into the assessment. Browser Accounting Configure now reads the
+  retained artifact list endpoint and renders run kind, status, scope, migrated-record count,
+  issue count, and evidence-reference count beside production-readiness blockers.
 
 ## Still To Complete
 

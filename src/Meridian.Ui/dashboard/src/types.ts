@@ -5609,6 +5609,12 @@ export interface AccountingMigrationRunArtifact {
   summary?: string | null;
 }
 
+export interface AccountingMigrationRunArtifactList {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  artifacts: AccountingMigrationRunArtifact[];
+}
+
 export interface AccountingProductionReadinessIssue {
   code: string;
   area: AccountingProductionReadinessArea;

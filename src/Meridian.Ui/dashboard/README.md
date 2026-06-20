@@ -215,7 +215,11 @@ posture for ledger books, Rules Studio, posting rules, JE lifecycle, dimensions,
 close/reporting, migration rollout, and tenant administration. The panel displays returned blockers, suggested
 actions, evidence counts, retained migration run artifact posture, certified external-GL mapping
 coverage, and the disabled live-posting stance without deriving production-readiness policy in
-React.
+React. It also lists retained migration run artifacts from
+`/api/accounting-system/migration-run-artifacts`, including run kind, certification status,
+fund/book scope, migrated-record and issue counts, and evidence reference counts, so operators can
+inspect migration proof retained in the shared Accounting System store rather than re-entering
+request-only evidence.
 After a dry run selects a rule, operators can build a governed journal draft candidate through the
 shared posting-rule candidate endpoint. The browser carries the selected event, amount, dimensions,
 policy, counterparty, source evidence, and browser correlation metadata to the service, then renders

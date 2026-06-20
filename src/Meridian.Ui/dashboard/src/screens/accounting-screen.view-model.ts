@@ -13,6 +13,7 @@ import {
   createLedgerCloseManagementLateAdjustment,
   dryRunAccountingConfigurationPostingRule,
   executeAccountingConfigurationPostingRuleTests,
+  getAccountingMigrationRunArtifacts,
   getLedgerCloseManagementPeriodPlan,
   getLedgerAccountingReportPackageExport,
   reviewLedgerCloseManagementLateAdjustment,
@@ -75,6 +76,8 @@ import type {
   AccountingBasisKind,
   AccountingCertificationState,
   AccountingConfigurationWorkspace,
+  AccountingMigrationRunArtifact,
+  AccountingMigrationRunArtifactList,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
   AccountingReportPackageBundle,
@@ -215,6 +218,7 @@ export interface AccountingReportingServices {
 export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
   assessProductionReadiness: (request: AccountingProductionReadinessRequest) => Promise<AccountingProductionReadiness>;
+  listMigrationRunArtifacts: (query: { fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingMigrationRunArtifactList>;
   createLedgerBook: (request: CreateLedgerBookRequest) => Promise<LedgerBook>;
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
   upsertRule: (request: UpsertPostingRuleRequest) => Promise<AccountingConfigurationWorkspace>;
@@ -351,6 +355,18 @@ export interface AccountingProductionReadinessIssueViewModel {
   tone: "default" | "warning" | "danger";
 }
 
+export interface AccountingMigrationRunArtifactViewModel {
+  id: string;
+  title: string;
+  detail: string;
+  statusLabel: string;
+  kindLabel: string;
+  recordCountLabel: string;
+  issueCountLabel: string;
+  evidenceLabel: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
 export interface AccountingProductionReadinessViewModel {
   title: string;
   statusLabel: string;
@@ -360,6 +376,8 @@ export interface AccountingProductionReadinessViewModel {
   issueSummaryLabel: string;
   externalGlLabel: string;
   ledgerBookRolloutLabel: string;
+  migrationArtifactSummaryLabel: string;
+  migrationArtifactRows: AccountingMigrationRunArtifactViewModel[];
   components: AccountingProductionReadinessComponentViewModel[];
   blockerIssues: AccountingProductionReadinessIssueViewModel[];
   loading: boolean;
@@ -2320,6 +2338,7 @@ const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageS
 const defaultAccountingConfigurationServices: AccountingConfigurationServices = {
   getConfiguration: () => getAccountingConfiguration(),
   assessProductionReadiness: (request) => assessAccountingProductionReadiness(request),
+  listMigrationRunArtifacts: (query) => getAccountingMigrationRunArtifacts(query),
   createLedgerBook: (request) => createLedgerBook(request),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
   dryRunRule: (request) => dryRunAccountingConfigurationPostingRule(request),
@@ -3040,6 +3059,7 @@ export function useAccountingConfigurationViewModel(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [productionReadiness, setProductionReadiness] = useState<AccountingProductionReadiness | null>(null);
+  const [migrationRunArtifacts, setMigrationRunArtifacts] = useState<AccountingMigrationRunArtifact[]>([]);
   const [productionReadinessLoading, setProductionReadinessLoading] = useState(false);
   const [productionReadinessError, setProductionReadinessError] = useState<ApiErrorDisplay | null>(null);
   const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
@@ -3108,7 +3128,7 @@ export function useAccountingConfigurationViewModel(
       }
       setWorkspace(next);
       try {
-        const readiness = await services.assessProductionReadiness({
+        const readinessRequest: AccountingProductionReadinessRequest = {
           fundProfileId: next.fundProfileId,
           ledgerBookId: next.ledgerBookId ?? null,
           accountingBasis: next.ledgerBookSetupCandidate?.accountingBasis ?? null,
@@ -3120,10 +3140,21 @@ export function useAccountingConfigurationViewModel(
                 displayName: next.ledgerBookSetupCandidate.displayName
               }]
             : null
-        });
+        };
+        const readiness = await services.assessProductionReadiness(readinessRequest);
         setProductionReadiness(readiness);
+        try {
+          const artifactList = await services.listMigrationRunArtifacts({
+            fundProfileId: next.fundProfileId,
+            ledgerBookId: next.ledgerBookId ?? null
+          });
+          setMigrationRunArtifacts(artifactList.artifacts ?? readiness.migrationRunArtifacts ?? []);
+        } catch {
+          setMigrationRunArtifacts(readiness.migrationRunArtifacts ?? []);
+        }
       } catch (readinessErr) {
         setProductionReadiness(null);
+        setMigrationRunArtifacts([]);
         setProductionReadinessError(describeApiError(readinessErr, "Accounting production readiness is unavailable."));
       } finally {
         setProductionReadinessLoading(false);
@@ -3138,6 +3169,7 @@ export function useAccountingConfigurationViewModel(
     } catch (err) {
       setError(describeApiError(err, "Accounting configuration is unavailable."));
       setProductionReadiness(null);
+      setMigrationRunArtifacts([]);
       setProductionReadinessLoading(false);
     } finally {
       setLoading(false);
@@ -4303,6 +4335,7 @@ export function useAccountingConfigurationViewModel(
     ];
     const productionReadinessView = buildAccountingProductionReadinessViewModel(
       productionReadiness,
+      migrationRunArtifacts,
       productionReadinessLoading,
       productionReadinessError,
       workspace
@@ -4569,6 +4602,7 @@ export function useAccountingConfigurationViewModel(
     previewBusy,
     previewError,
     productionReadiness,
+    migrationRunArtifacts,
     productionReadinessError,
     productionReadinessLoading,
     refresh,
@@ -4602,10 +4636,12 @@ function cloneLedgerDimensionSet(dimensions: PostingRule["scope"]): PostingRule[
 
 function buildAccountingProductionReadinessViewModel(
   readiness: AccountingProductionReadiness | null,
+  retainedMigrationRunArtifacts: AccountingMigrationRunArtifact[],
   loading: boolean,
   error: ApiErrorDisplay | null,
   workspace: AccountingConfigurationWorkspace | null
 ): AccountingProductionReadinessViewModel {
+  const artifactRows = buildAccountingMigrationRunArtifactRows(retainedMigrationRunArtifacts);
   if (!readiness) {
     return {
       title: "Accounting production readiness",
@@ -4620,6 +4656,10 @@ function buildAccountingProductionReadinessViewModel(
       issueSummaryLabel: error?.summary ?? "Load accounting configuration to assess rollout readiness.",
       externalGlLabel: "External GL posture unavailable",
       ledgerBookRolloutLabel: "Ledger-book rollout unavailable",
+      migrationArtifactSummaryLabel: artifactRows.length > 0
+        ? `${artifactRows.length} retained migration run artifact${artifactRows.length === 1 ? "" : "s"} loaded`
+        : "No retained migration run artifacts loaded",
+      migrationArtifactRows: artifactRows,
       components: [],
       blockerIssues: [],
       loading,
@@ -4641,6 +4681,12 @@ function buildAccountingProductionReadinessViewModel(
       evidenceLabel: `${issue.evidenceReferences.length} evidence reference${issue.evidenceReferences.length === 1 ? "" : "s"}`,
       tone: issue.severity === "Critical" ? "danger" : "warning"
     }));
+  const retainedArtifacts = retainedMigrationRunArtifacts.length > 0
+    ? retainedMigrationRunArtifacts
+    : readiness.migrationRunArtifacts ?? [];
+  const migrationArtifactRows = buildAccountingMigrationRunArtifactRows(retainedArtifacts);
+  const certifiedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Certified").length;
+  const failedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Failed").length;
 
   return {
     title: "Accounting production readiness",
@@ -4659,6 +4705,10 @@ function buildAccountingProductionReadinessViewModel(
     ledgerBookRolloutLabel: readiness.ledgerBookRollout
       ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"}`
       : "Ledger-book rollout evidence unavailable",
+    migrationArtifactSummaryLabel: retainedArtifacts.length > 0
+      ? `${certifiedArtifactCount}/${retainedArtifacts.length} retained artifact${retainedArtifacts.length === 1 ? "" : "s"} certified${failedArtifactCount > 0 ? ` | ${failedArtifactCount} failed` : ""}`
+      : "No retained migration run artifacts loaded",
+    migrationArtifactRows,
     components: readiness.components.map<AccountingProductionReadinessComponentViewModel>((component) => ({
       id: component.area,
       label: component.label || formatProductionReadinessArea(component.area),
@@ -4675,6 +4725,65 @@ function buildAccountingProductionReadinessViewModel(
     errorText: error?.summary ?? null,
     errorDetails: error?.details ?? []
   };
+}
+
+function buildAccountingMigrationRunArtifactRows(artifacts: AccountingMigrationRunArtifact[]): AccountingMigrationRunArtifactViewModel[] {
+  return [...artifacts]
+    .sort((left, right) => right.startedAtUtc.localeCompare(left.startedAtUtc) || left.runId.localeCompare(right.runId))
+    .slice(0, 6)
+    .map((artifact) => {
+      const scopeParts = [
+        artifact.fundProfileId ? `Fund ${artifact.fundProfileId}` : "Fund default-fund",
+        artifact.ledgerBookId ? `Book ${artifact.ledgerBookId}` : "Fund-level"
+      ];
+      return {
+        id: artifact.runId,
+        title: artifact.summary?.trim() || artifact.runId,
+        detail: `${scopeParts.join(" | ")} | Started ${formatDateTimeLabel(artifact.startedAtUtc)}${artifact.completedAtUtc ? ` | Completed ${formatDateTimeLabel(artifact.completedAtUtc)}` : ""}`,
+        statusLabel: formatMigrationRunStatus(artifact.status),
+        kindLabel: formatMigrationRunKind(artifact.kind),
+        recordCountLabel: `${artifact.migratedRecordCount} record${artifact.migratedRecordCount === 1 ? "" : "s"}`,
+        issueCountLabel: `${artifact.issueCount} issue${artifact.issueCount === 1 ? "" : "s"}`,
+        evidenceLabel: `${artifact.evidenceReferences.length} evidence reference${artifact.evidenceReferences.length === 1 ? "" : "s"}`,
+        tone: migrationRunStatusTone(artifact.status)
+      };
+    });
+}
+
+function formatMigrationRunKind(kind: AccountingMigrationRunArtifact["kind"]): string {
+  switch (kind) {
+    case "LedgerBookScope":
+      return "Ledger-book scope";
+    case "HistoricalJournalBackfill":
+      return "Historical journal backfill";
+    case "DimensionalBackfill":
+      return "Dimensional backfill";
+    case "AccountingConfigurationPromotion":
+      return "Configuration promotion";
+    case "CloseReportingEvidence":
+      return "Close/reporting evidence";
+    default:
+      return String(kind);
+  }
+}
+
+function formatMigrationRunStatus(status: AccountingMigrationRunArtifact["status"]): string {
+  return status === "Completed" ? "Completed" : status === "Certified" ? "Certified" : status === "Failed" ? "Failed" : status === "Running" ? "Running" : "Planned";
+}
+
+function migrationRunStatusTone(status: AccountingMigrationRunArtifact["status"]): AccountingMigrationRunArtifactViewModel["tone"] {
+  switch (status) {
+    case "Certified":
+    case "Completed":
+      return "success";
+    case "Failed":
+      return "danger";
+    case "Running":
+      return "warning";
+    case "Planned":
+    default:
+      return "default";
+  }
 }
 
 function formatProductionReadinessStatus(status: AccountingProductionReadiness["status"]): string {

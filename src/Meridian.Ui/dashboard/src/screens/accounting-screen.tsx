@@ -6550,7 +6550,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             </div>
           ) : null}
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Readiness</div>
               <div className={cn("mt-2 text-sm font-semibold", view.productionReadiness.blockerIssues.some((issue) => issue.tone === "danger") ? "text-danger" : view.productionReadiness.blockerIssues.length > 0 ? "text-warning" : "text-success")}>{view.productionReadiness.issueSummaryLabel}</div>
@@ -6571,7 +6571,31 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.components.length} component checks</div>
               <p className="mt-1 text-xs text-muted-foreground">Rules, posting, JE lifecycle, dimensions, close, and admin readiness.</p>
             </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Migration evidence</div>
+              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.migrationArtifactSummaryLabel}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Retained migration run artifacts from the shared Accounting System store.</p>
+            </div>
           </div>
+
+          {view.productionReadiness.migrationArtifactRows.length > 0 ? (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Retained accounting migration run artifacts">
+              {view.productionReadiness.migrationArtifactRows.map((artifact) => (
+                <div key={artifact.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(artifact.tone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-foreground">{artifact.kindLabel}</div>
+                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{artifact.id}</div>
+                    </div>
+                    <Badge variant={accountingToolingBadgeVariant(artifact.tone)}>{artifact.statusLabel}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{artifact.title}</p>
+                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{artifact.recordCountLabel} | {artifact.issueCountLabel} | {artifact.evidenceLabel}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{artifact.detail}</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           {view.productionReadiness.components.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Accounting production readiness components">

@@ -331,7 +331,8 @@ export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
   mappingProfiles: UI_API_ROUTES.AccountingSystemMappingProfiles,
   exportPackages: UI_API_ROUTES.AccountingSystemExportPackages,
   exportPackageManifest: UI_API_ROUTES.AccountingSystemExportPackageManifest,
-  exportPackageCertification: UI_API_ROUTES.AccountingSystemExportPackageCertification
+  exportPackageCertification: UI_API_ROUTES.AccountingSystemExportPackageCertification,
+  migrationRunArtifacts: UI_API_ROUTES.AccountingSystemMigrationRunArtifacts
 } as const;
 
 export const PLAID_API_ENDPOINTS = {

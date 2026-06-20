@@ -2773,6 +2773,7 @@ describe("accounting-screen view model", () => {
     const services: AccountingConfigurationServices = {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       assessProductionReadiness: vi.fn().mockResolvedValue(productionReadiness),
+      listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: productionReadiness.migrationRunArtifacts ?? [] }),
       createLedgerBook: vi.fn(),
       previewTemplate: vi.fn().mockResolvedValue({
         templateId: "template-trade-buy",
@@ -3353,6 +3354,7 @@ describe("accounting-screen view model", () => {
     const services: AccountingConfigurationServices = {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
+      listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: [] }),
       createLedgerBook: vi.fn(),
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),
@@ -3537,6 +3539,7 @@ describe("accounting-screen view model", () => {
     const services: AccountingConfigurationServices = {
       getConfiguration,
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
+      listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-missing", artifacts: [] }),
       createLedgerBook,
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),

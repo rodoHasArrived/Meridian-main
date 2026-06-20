@@ -3,6 +3,7 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
+  AccountingMigrationRunArtifactList,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
   AccountingSystemExportPackageRequest,
@@ -1979,6 +1980,24 @@ export function assessAccountingProductionReadiness(
   options: ApiRequestOptions = {}
 ) {
   return postJson<AccountingProductionReadiness>(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness, request, options);
+}
+
+export function getAccountingMigrationRunArtifacts(
+  query: { fundProfileId?: string | null; ledgerBookId?: string | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts;
+  return getJson<AccountingMigrationRunArtifactList>(route, options);
 }
 
 export function previewAccountingSystemImport(

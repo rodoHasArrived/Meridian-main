@@ -6082,6 +6082,11 @@ const fixtures = {
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest]: fixtureAccountingSystemReconciliation,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles]: fixtureAccountingSystemMappingProfiles,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages]: fixtureAccountingSystemExportPackage,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts]: {
+    fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
+    ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId,
+    artifacts: fixtureAccountingProductionReadiness.migrationRunArtifacts ?? []
+  },
   "/api/workstation/runs/run-42/ledger/trial-balance": fixtureLedgerTrialBalance,
   "/api/workstation/governance": fixtureAccountingWorkspace,
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,

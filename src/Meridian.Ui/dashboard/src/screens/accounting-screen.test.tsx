@@ -188,6 +188,7 @@ vi.mock("@/lib/api", async () => {
     getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
     getLatestAccountingSystemReconciliation: vi.fn().mockResolvedValue(null),
     getAccountingSystemMappingProfiles: vi.fn().mockResolvedValue([]),
+    getAccountingMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "default-fund", ledgerBookId: null, artifacts: [] }),
     createAccountingSystemExportPackage: vi.fn(),
     getAccountingSystemExportPackageManifest: vi.fn(),
     certifyAccountingSystemExportPackage: vi.fn(),
@@ -1936,6 +1937,26 @@ describe("AccountingScreen", () => {
     };
     vi.mocked(api.getAccountingConfiguration).mockResolvedValueOnce(workspace);
     vi.mocked(api.assessAccountingProductionReadiness).mockResolvedValueOnce(productionReadiness);
+    vi.mocked(api.getAccountingMigrationRunArtifacts).mockResolvedValueOnce({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      artifacts: [
+        {
+          runId: "migration-run-dimensional-backfill-book-primary",
+          kind: "DimensionalBackfill",
+          status: "Certified",
+          startedAtUtc: "2026-01-15T00:00:00Z",
+          completedAtUtc: "2026-01-15T00:12:00Z",
+          actor: "controller",
+          migratedRecordCount: 128,
+          issueCount: 0,
+          evidenceReferences: ["evidence://migration/dimensions/book-primary"],
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "book-primary",
+          summary: "Dimensional backfill retained for primary book."
+        }
+      ]
+    });
     vi.mocked(api.approveAccountingConfigurationPostingRulePromotion).mockResolvedValueOnce(approvedWorkspace);
     vi.mocked(api.dryRunAccountingConfigurationPostingRule).mockResolvedValueOnce(dryRunResult);
     vi.mocked(api.buildAccountingPostingRuleJournalCandidate).mockResolvedValueOnce(journalCandidateResult);
@@ -1948,11 +1969,19 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Accounting production readiness")).toBeInTheDocument();
     expect(screen.getByText("78/100")).toBeInTheDocument();
     expect(screen.getByText("Tenant administration")).toBeInTheDocument();
+    expect(screen.getByText("1/1 retained artifact certified")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Retained accounting migration run artifacts" })).toBeInTheDocument();
+    expect(screen.getByText("Dimensional backfill")).toBeInTheDocument();
+    expect(screen.getByText("Dimensional backfill retained for primary book.")).toBeInTheDocument();
     expect(api.assessAccountingProductionReadiness).toHaveBeenCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",
       requiredLedgerBookScopes: null
     }));
+    expect(api.getAccountingMigrationRunArtifacts).toHaveBeenCalledWith({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary"
+    });
     expect(screen.getAllByText("Trade buy posting").length).toBeGreaterThan(0);
     expect(screen.getByText("2026-01-01 -> 2026-12-31")).toBeInTheDocument();
     expect(screen.getByText("Fund: fund-alpha")).toBeInTheDocument();
