@@ -2463,10 +2463,10 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
                     evidence.EvidenceKind,
                     evidence.EvidenceRoute,
                     evidence.RecordedAtUtc ?? generatedAt) with
-                {
-                    Capture = BuildBankEvidenceCapture(evidence),
-                    ExtractedFields = BuildBankEvidenceExtractedFields(evidence, expectedCashMovement)
-                })
+            {
+                Capture = BuildBankEvidenceCapture(evidence),
+                ExtractedFields = BuildBankEvidenceExtractedFields(evidence, expectedCashMovement)
+            })
             .ToArray();
 
     private static EvidenceArtifactCaptureDto BuildBankEvidenceCapture(PaymentIntentBankEvidenceDto evidence)

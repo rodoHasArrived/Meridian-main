@@ -167,6 +167,30 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ProductionReadinessComponentRows.Should().Contain(row =>
             row.Name == "External GL"
             && row.Detail.Contains("certified", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessWorkflowRows.Should().HaveCount(9);
+        harness.ViewModel.ProductionReadinessWorkflowRows.Should().Contain(row =>
+            row.Name == "Ledger-book scope"
+            && row.Status == "Complete"
+            && row.Detail.Contains("7e0be005-49e1-46eb-9d4f-89d75e2328bd", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessWorkflowRows.Should().Contain(row =>
+            row.Name == "Posting rules"
+            && row.Status == "Missing"
+            && row.Detail.Contains("Retain posting-rules", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessWorkflowRows.Should().Contain(row =>
+            row.Name == "Close/reporting"
+            && row.Key == "ledger-book-workflows:close-reporting");
+        harness.ViewModel.ProductionReadinessDimensionalControlRows.Should().HaveCount(9);
+        harness.ViewModel.ProductionReadinessDimensionalControlRows.Should().Contain(row =>
+            row.Name == "Ledger-book scope"
+            && row.Status == "Complete"
+            && row.Detail.Contains("7e0be005-49e1-46eb-9d4f-89d75e2328bd", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessDimensionalControlRows.Should().Contain(row =>
+            row.Name == "Journal filters"
+            && row.Status == "Missing"
+            && row.Detail.Contains("journal-query", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessDimensionalControlRows.Should().Contain(row =>
+            row.Name == "Report package provenance"
+            && row.Key == "dimensional-reporting:report-package");
         harness.ViewModel.ProductionReadinessIssueRows.Should().Contain(row =>
             row.Name == "external-gl.certified-mapping-missing"
             && row.Status == AccountingConfigurationValidationSeverityDto.Critical.ToString());
@@ -959,6 +983,10 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingProductionReadinessStatusText");
         xaml.Should().Contain("AccountingProductionReadinessComponentGrid");
         xaml.Should().Contain("AccountingProductionReadinessIssueGrid");
+        xaml.Should().Contain("AccountingProductionReadinessWorkflowGrid");
+        xaml.Should().Contain("ProductionReadinessWorkflowRows");
+        xaml.Should().Contain("AccountingProductionReadinessDimensionalControlGrid");
+        xaml.Should().Contain("ProductionReadinessDimensionalControlRows");
         xaml.Should().Contain("AccountingProductionReadinessMigrationArtifactGrid");
         xaml.Should().Contain("AccountingPostingCandidateButton");
         xaml.Should().Contain("AccountingConfigurationSetupReadinessGrid");
@@ -1222,7 +1250,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         public Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
             string? fundProfileId = null,
             Guid? ledgerBookId = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
             var selectedWorkspace = _refreshedWorkspace is not null &&
@@ -1264,7 +1294,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         public Task<AccountingConfigurationWorkspaceDto> ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default)
             => Task.FromException<AccountingConfigurationWorkspaceDto>(new NotSupportedException("Static accounting configuration service is read-only."));
 
-        public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default)
+        public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(
+            string? fundProfileId = null,
+            Guid? ledgerBookId = null,
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(_workspace.AuditTrail);

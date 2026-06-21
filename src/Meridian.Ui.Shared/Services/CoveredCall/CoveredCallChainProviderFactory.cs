@@ -138,7 +138,8 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
             var perDate = new List<OptionCandidateInfo>();
             foreach (var (expiry, candidates) in liveCandidatesByExpiry)
             {
-                if (expiry < d) continue;
+                if (expiry < d)
+                    continue;
                 var dte = expiry.DayNumber - d.DayNumber;
                 foreach (var c in candidates)
                 {

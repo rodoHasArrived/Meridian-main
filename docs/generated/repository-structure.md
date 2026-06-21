@@ -1963,6 +1963,7 @@ Meridian-main
 │   │   │   └── wave4-evidence-template.md
 │   │   ├── slo-reports
 │   │   │   └── README.md
+│   │   ├── accounting-productization-checklist.md
 │   │   ├── ai-handoff-checklist-report.json
 │   │   ├── ai-handoff-checklist-report.md
 │   │   ├── ai-handoff-packet.json
@@ -3224,6 +3225,8 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.DataIntegration
 │   │   ├── AccountingSystem
+│   │   │   ├── Fixtures
+│   │   │   │   └── FixtureAccountingProviders.cs
 │   │   │   └── QuickBooks
 │   │   │       ├── QuickBooksFixtureAccountingProvider.cs
 │   │   │       ├── QuickBooksOnlineAccountingProvider.cs
@@ -4227,7 +4230,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_011__accounting_rule_payload.sql
 │   │   │   │   ├── V_ledger_012__accounting_rule_test_cases.sql
 │   │   │   │   ├── V_ledger_013__journal_idempotency_guards.sql
-│   │   │   │   └── V_ledger_014__journal_leg_dimensions.sql
+│   │   │   │   ├── V_ledger_014__journal_leg_dimensions.sql
+│   │   │   │   └── V_ledger_015__accounting_configuration_ledger_book_scope.sql
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── LedgerBookServiceException.cs
@@ -4937,6 +4941,10 @@ Meridian-main
 │   │   │   │   ├── ICoveredCallBacktestService.cs
 │   │   │   │   └── ICoveredCallChainProviderFactory.cs
 │   │   │   ├── AccountingConfigurationService.cs
+│   │   │   ├── AccountingMigrationRunArtifactStore.cs
+│   │   │   ├── AccountingProductionCertificationProfileStore.cs
+│   │   │   ├── AccountingProductionReadinessService.cs
+│   │   │   ├── AccountingTenantAdministrationProfileStore.cs
 │   │   │   ├── AlpacaBrokerageConnectionService.cs
 │   │   │   ├── AuditTrailExplorerService.cs
 │   │   │   ├── BackfillCoordinator.cs

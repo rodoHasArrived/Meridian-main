@@ -126,7 +126,7 @@ public sealed class ProviderDegradationCalibrationTests
                 CandidateRecall: criticalRecall,
                 BaselinePrecision: 0.70,
                 BaselineRecall: 0.70),
-            PromotionCriteria: new PromotionCriteriaSummary(criticalPrecision-0.70, criticalRecall-0.70, criticalPrecision>=0.70 && criticalRecall>=0.70, criticalPrecision-0.05, criticalRecall-0.05, 1.0, Array.Empty<string>()),
+            PromotionCriteria: new PromotionCriteriaSummary(criticalPrecision - 0.70, criticalRecall - 0.70, criticalPrecision >= 0.70 && criticalRecall >= 0.70, criticalPrecision - 0.05, criticalRecall - 0.05, 1.0, Array.Empty<string>()),
             KernelLineage: new KernelLineageMetadata("baseline", "candidate-v2", "dataset-2026-04", createdAt ?? DateTimeOffset.UtcNow, "ops"),
             RunBy: "ops",
             CalibrationPass: criticalPrecision >= 0.70 && criticalRecall >= 0.70);

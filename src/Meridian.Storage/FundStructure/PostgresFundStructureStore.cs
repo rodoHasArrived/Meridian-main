@@ -63,7 +63,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("organization")} WHERE organization_id = @id";
         cmd.Parameters.AddWithValue("id", organizationId);
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await r.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await r.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadOrganization(r);
     }
 
@@ -74,7 +75,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("organization")} ORDER BY name";
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var result = new List<OrganizationSummaryDto>();
-        while (await r.ReadAsync(ct).ConfigureAwait(false)) result.Add(ReadOrganization(r));
+        while (await r.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadOrganization(r));
         return result;
     }
 
@@ -128,7 +130,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("business")} WHERE business_id = @id";
         cmd.Parameters.AddWithValue("id", businessId);
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await r.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await r.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadBusiness(r);
     }
 
@@ -139,7 +142,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("business")} ORDER BY name";
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var result = new List<BusinessSummaryDto>();
-        while (await r.ReadAsync(ct).ConfigureAwait(false)) result.Add(ReadBusiness(r));
+        while (await r.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadBusiness(r));
         return result;
     }
 
@@ -194,7 +198,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("client")} WHERE client_id = @id";
         cmd.Parameters.AddWithValue("id", clientId);
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await r.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await r.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadClient(r);
     }
 
@@ -205,7 +210,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("client")} ORDER BY name";
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var result = new List<ClientSummaryDto>();
-        while (await r.ReadAsync(ct).ConfigureAwait(false)) result.Add(ReadClient(r));
+        while (await r.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadClient(r));
         return result;
     }
 
@@ -263,7 +269,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("fund")} WHERE fund_id = @id";
         cmd.Parameters.AddWithValue("id", fundId);
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await r.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await r.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadFund(r);
     }
 
@@ -274,7 +281,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("fund")} ORDER BY name";
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var result = new List<FundSummaryDto>();
-        while (await r.ReadAsync(ct).ConfigureAwait(false)) result.Add(ReadFund(r));
+        while (await r.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadFund(r));
         return result;
     }
 
@@ -330,7 +338,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("sleeve")} WHERE sleeve_id = @id";
         cmd.Parameters.AddWithValue("id", sleeveId);
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await r.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await r.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadSleeve(r);
     }
 
@@ -341,7 +350,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("sleeve")} ORDER BY name";
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var result = new List<SleeveSummaryDto>();
-        while (await r.ReadAsync(ct).ConfigureAwait(false)) result.Add(ReadSleeve(r));
+        while (await r.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadSleeve(r));
         return result;
     }
 
@@ -395,7 +405,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("vehicle")} WHERE vehicle_id = @id";
         cmd.Parameters.AddWithValue("id", vehicleId);
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await r.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await r.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadVehicle(r);
     }
 
@@ -406,7 +417,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("vehicle")} ORDER BY name";
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var result = new List<VehicleSummaryDto>();
-        while (await r.ReadAsync(ct).ConfigureAwait(false)) result.Add(ReadVehicle(r));
+        while (await r.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadVehicle(r));
         return result;
     }
 
@@ -468,7 +480,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("legal_entity")} WHERE entity_id = @id";
         cmd.Parameters.AddWithValue("id", entityId);
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await r.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await r.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadLegalEntity(r);
     }
 
@@ -479,7 +492,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("legal_entity")} ORDER BY name";
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var result = new List<LegalEntitySummaryDto>();
-        while (await r.ReadAsync(ct).ConfigureAwait(false)) result.Add(ReadLegalEntity(r));
+        while (await r.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadLegalEntity(r));
         return result;
     }
 
@@ -544,7 +558,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("investment_portfolio")} WHERE investment_portfolio_id = @id";
         cmd.Parameters.AddWithValue("id", portfolioId);
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await r.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await r.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadInvestmentPortfolio(r);
     }
 
@@ -555,7 +570,8 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.CommandText = $"SELECT * FROM {Q("investment_portfolio")} ORDER BY name";
         await using var r = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
         var result = new List<InvestmentPortfolioSummaryDto>();
-        while (await r.ReadAsync(ct).ConfigureAwait(false)) result.Add(ReadInvestmentPortfolio(r));
+        while (await r.ReadAsync(ct).ConfigureAwait(false))
+            result.Add(ReadInvestmentPortfolio(r));
         return result;
     }
 

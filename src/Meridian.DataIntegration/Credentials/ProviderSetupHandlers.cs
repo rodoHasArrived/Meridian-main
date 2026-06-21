@@ -183,8 +183,10 @@ public sealed class AlpacaProviderSetupHandler : ProviderSetupHandlerBase
         var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         var apiKey = NullIfBlank(context.ApiKey);
         var apiSecret = NullIfBlank(context.ApiSecret);
-        if (apiKey is not null) values["KeyId"] = apiKey;
-        if (apiSecret is not null) values["SecretKey"] = apiSecret;
+        if (apiKey is not null)
+            values["KeyId"] = apiKey;
+        if (apiSecret is not null)
+            values["SecretKey"] = apiSecret;
         return values;
     }
 

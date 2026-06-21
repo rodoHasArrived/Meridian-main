@@ -288,8 +288,10 @@ public sealed class HistoricalDataQueryService
                     continue;
                 }
 
-                if (fromBoundary is { } fromTs && ts < fromTs) continue;
-                if (toBoundary is { } toTs && ts >= toTs) continue;
+                if (fromBoundary is { } fromTs && ts < fromTs)
+                    continue;
+                if (toBoundary is { } toTs && ts >= toTs)
+                    continue;
 
                 var bucketStartTicks = ts.UtcTicks - (ts.UtcTicks % bucketTicks);
                 var bucketStart = new DateTimeOffset(bucketStartTicks, TimeSpan.Zero);
@@ -382,10 +384,12 @@ public sealed class HistoricalDataQueryService
             switch (typeEl.ValueKind)
             {
                 case JsonValueKind.Number:
-                    if (typeEl.TryGetInt32(out var typeNum) && typeNum == 3) return true;
+                    if (typeEl.TryGetInt32(out var typeNum) && typeNum == 3)
+                        return true;
                     break;
                 case JsonValueKind.String:
-                    if (string.Equals(typeEl.GetString(), "Trade", StringComparison.OrdinalIgnoreCase)) return true;
+                    if (string.Equals(typeEl.GetString(), "Trade", StringComparison.OrdinalIgnoreCase))
+                        return true;
                     break;
             }
         }
@@ -478,8 +482,10 @@ public sealed class HistoricalDataQueryService
             }
             else
             {
-                if (price > _high) _high = price;
-                if (price < _low) _low = price;
+                if (price > _high)
+                    _high = price;
+                if (price < _low)
+                    _low = price;
             }
 
             _close = price;

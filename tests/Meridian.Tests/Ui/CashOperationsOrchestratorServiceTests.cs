@@ -25,7 +25,7 @@ public sealed class CashOperationsOrchestratorServiceTests
     public void EvaluateApproval_HighValueAndRiskBucket_RequiresDualControl()
     {
         var sut = new CashOperationsOrchestratorService();
-        var policy = new Meridian.Contracts.Workstation.ApprovalPolicy(0, 1_000_000m, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "USD" }, null, new HashSet<string>(StringComparer.OrdinalIgnoreCase){"high"}, false);
+        var policy = new Meridian.Contracts.Workstation.ApprovalPolicy(0, 1_000_000m, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "USD" }, null, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "high" }, false);
 
         var decision = sut.EvaluateApproval(2_000_000m, "USD", Guid.NewGuid(), "high", policy);
         decision.Queue.Should().Be("risk-approval");

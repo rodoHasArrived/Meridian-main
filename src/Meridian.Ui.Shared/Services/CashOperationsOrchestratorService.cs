@@ -38,8 +38,10 @@ public sealed class CashOperationsOrchestratorService
         ArgumentNullException.ThrowIfNull(outliers);
 
         var warnings = new List<string>();
-        if (completeness.Any(c => !c.IsComplete)) warnings.Add("Completeness gaps detected.");
-        if (outliers.Any(o => o.IsOutlier)) warnings.Add("Outlier deltas exceed policy threshold.");
+        if (completeness.Any(c => !c.IsComplete))
+            warnings.Add("Completeness gaps detected.");
+        if (outliers.Any(o => o.IsOutlier))
+            warnings.Add("Outlier deltas exceed policy threshold.");
 
         return new WorkstationSyncValidationResult(warnings.Count == 0, completeness, outliers, warnings);
     }
@@ -131,7 +133,8 @@ public sealed class CashOperationsOrchestratorService
                 running += net;
                 var warn = running < liquidityWarningThreshold;
                 var detail = warn ? $"Projected balance {running} {currency} is below threshold {liquidityWarningThreshold}." : "";
-                if (warn) warnings.Add($"{accountId} {currency} {day:yyyy-MM-dd}: {detail}");
+                if (warn)
+                    warnings.Add($"{accountId} {currency} {day:yyyy-MM-dd}: {detail}");
 
                 timeline.Add(new CashFlowProjectionPoint(accountId, currency, day, inflow, outflow, net, running, warn, detail));
             }

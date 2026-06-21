@@ -1871,7 +1871,7 @@ public sealed class LedgerIntegrationTests
         var manifest = artifacts.Single(artifact => artifact.Name == "scheduled-export-manifest.csv");
         manifest.Content.Should().Contain("ledger-scheduled-export-manifest-v1");
         manifest.Content.Should().Contain("formats,Csv|RegulatoryXml");
-        manifest.Content.Should().Contain("dimension-scope,EntityId=entity-alpha;ExternalGl.Department=Investments;FundId=fund-alpha");
+        manifest.Content.Should().Contain("dimension-scope,EntityId=entity-alpha;ExternalGl_Department=Investments;FundId=fund-alpha");
         manifest.Content.Should().Contain("recipients,controller@example.com|regulator@example.com");
         manifest.Content.Should().Contain("report-pack-signature,");
         manifest.Content.Should().Contain("financial-statements.json,application/json,");

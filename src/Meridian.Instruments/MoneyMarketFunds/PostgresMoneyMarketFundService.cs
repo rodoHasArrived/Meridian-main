@@ -75,7 +75,8 @@ public sealed class PostgresMoneyMarketFundService : IMoneyMarketFundService, IM
     public async Task<MmfLiquidityDto?> GetLiquidityAsync(Guid securityId, CancellationToken ct = default)
     {
         var row = await _store.GetFundAsync(securityId, ct);
-        if (row is null) return null;
+        if (row is null)
+            return null;
 
         var overrides = await _store.GetAllLiquidityOverridesAsync(ct);
         return new MmfLiquidityDto(
@@ -88,7 +89,8 @@ public sealed class PostgresMoneyMarketFundService : IMoneyMarketFundService, IM
     public async Task<MmfSweepProfileDto?> GetSweepProfileAsync(Guid securityId, CancellationToken ct = default)
     {
         var row = await _store.GetFundAsync(securityId, ct);
-        if (row is null) return null;
+        if (row is null)
+            return null;
 
         return new MmfSweepProfileDto(
             row.Value.SecurityId,
@@ -109,7 +111,8 @@ public sealed class PostgresMoneyMarketFundService : IMoneyMarketFundService, IM
             .Select(static f => f.SecurityId)
             .ToList();
 
-        if (members.Count == 0) return null;
+        if (members.Count == 0)
+            return null;
 
         return new MmfFundFamilyDto(family, members, members.Count, DateTimeOffset.UtcNow);
     }
@@ -120,7 +123,8 @@ public sealed class PostgresMoneyMarketFundService : IMoneyMarketFundService, IM
     public async Task RebuildProjectionsAsync(Guid securityId, CancellationToken ct = default)
     {
         var row = await _store.GetFundAsync(securityId, ct);
-        if (row is null) return;
+        if (row is null)
+            return;
 
         await _store.UpsertRebuildCheckpointAsync(new MmfRebuildCheckpointDto(
             securityId,
@@ -172,7 +176,8 @@ public sealed class PostgresMoneyMarketFundService : IMoneyMarketFundService, IM
          bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, long Version) f,
         IReadOnlyDictionary<Guid, MmfLiquidityState> overrides)
     {
-        if (!f.IsActive) return MmfLiquidityState.Inactive;
+        if (!f.IsActive)
+            return MmfLiquidityState.Inactive;
 
         if (overrides.TryGetValue(f.SecurityId, out var overrideState))
             return overrideState;

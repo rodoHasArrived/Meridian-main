@@ -218,6 +218,24 @@
                                             <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="220" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Ledger-Book Workflow Controls" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessWorkflowRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessWorkflowGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Workflow" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Control Evidence" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Retained Evidence" Binding="{Binding Evidence}" Width="300" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Dimensional Reporting Controls" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessDimensionalControlRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessDimensionalControlGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Dimension Lane" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Control Evidence" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Retained Evidence" Binding="{Binding Evidence}" Width="300" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Migration Rollout Plan" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding ProductionReadinessMigrationPlanRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessMigrationPlanGrid">
                                         <DataGrid.Columns>

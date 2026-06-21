@@ -3841,15 +3841,24 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
     private Dictionary<Guid, FundStructureNodeKindDto> CaptureNodeKindsLocked()
     {
         var nodeKinds = new Dictionary<Guid, FundStructureNodeKindDto>();
-        foreach (var nodeId in _organizations.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Organization;
-        foreach (var nodeId in _businesses.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Business;
-        foreach (var nodeId in _clients.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Client;
-        foreach (var nodeId in _funds.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Fund;
-        foreach (var nodeId in _sleeves.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Sleeve;
-        foreach (var nodeId in _vehicles.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Vehicle;
-        foreach (var nodeId in _entities.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Entity;
-        foreach (var nodeId in _investmentPortfolios.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.InvestmentPortfolio;
-        foreach (var nodeId in _linkedAccountIds) nodeKinds[nodeId] = FundStructureNodeKindDto.Account;
+        foreach (var nodeId in _organizations.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Organization;
+        foreach (var nodeId in _businesses.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Business;
+        foreach (var nodeId in _clients.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Client;
+        foreach (var nodeId in _funds.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Fund;
+        foreach (var nodeId in _sleeves.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Sleeve;
+        foreach (var nodeId in _vehicles.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Vehicle;
+        foreach (var nodeId in _entities.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Entity;
+        foreach (var nodeId in _investmentPortfolios.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.InvestmentPortfolio;
+        foreach (var nodeId in _linkedAccountIds)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Account;
         foreach (var link in _ownershipLinks.Values)
         {
             nodeKinds.TryAdd(link.ParentNodeId, FundStructureNodeKindDto.Account);

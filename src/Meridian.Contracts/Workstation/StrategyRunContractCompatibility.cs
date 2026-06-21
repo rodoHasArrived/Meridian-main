@@ -6,7 +6,9 @@ public static class StrategyRunContractCompatibility
     {
         ArgumentNullException.ThrowIfNull(summary);
         var identity = summary.Identity ?? throw new InvalidOperationException("Run projection missing canonical identity.");
-        if (string.IsNullOrWhiteSpace(identity.CanonicalRunKey)) throw new InvalidOperationException("CanonicalRunKey is required.");
-        if (identity.Mode != summary.Mode) throw new InvalidOperationException("Identity mode must match summary mode.");
+        if (string.IsNullOrWhiteSpace(identity.CanonicalRunKey))
+            throw new InvalidOperationException("CanonicalRunKey is required.");
+        if (identity.Mode != summary.Mode)
+            throw new InvalidOperationException("Identity mode must match summary mode.");
     }
 }

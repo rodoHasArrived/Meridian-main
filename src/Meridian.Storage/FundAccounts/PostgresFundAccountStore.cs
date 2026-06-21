@@ -108,7 +108,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             """;
         cmd.Parameters.AddWithValue("account_id", accountId);
         await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         return ReadAccountSummary(reader);
     }
 
@@ -455,9 +456,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             if (rawJson is not null)
             {
                 using var doc = JsonDocument.Parse(rawJson);
-                if (doc.RootElement.TryGetProperty("securityName", out var snProp)) securityName = snProp.GetString();
-                if (doc.RootElement.TryGetProperty("assetClass", out var acProp)) assetClass = acProp.GetString();
-                if (doc.RootElement.TryGetProperty("isShort", out var isProp)) isShort = isProp.GetBoolean();
+                if (doc.RootElement.TryGetProperty("securityName", out var snProp))
+                    securityName = snProp.GetString();
+                if (doc.RootElement.TryGetProperty("assetClass", out var acProp))
+                    assetClass = acProp.GetString();
+                if (doc.RootElement.TryGetProperty("isShort", out var isProp))
+                    isShort = isProp.GetBoolean();
             }
             results.Add(new CustodianPositionLineDto(
                 LineId: reader.GetGuid(reader.GetOrdinal("position_line_id")),

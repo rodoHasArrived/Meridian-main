@@ -9,10 +9,14 @@ public sealed class FundStructurePolicyService : IFundStructurePolicyService
     public void EnsureSingleOperatingParent(CreateInvestmentPortfolioRequest request)
     {
         var assignedParents = 0;
-        if (request.ClientId.HasValue) assignedParents++;
-        if (request.FundId.HasValue) assignedParents++;
-        if (request.SleeveId.HasValue) assignedParents++;
-        if (request.VehicleId.HasValue) assignedParents++;
+        if (request.ClientId.HasValue)
+            assignedParents++;
+        if (request.FundId.HasValue)
+            assignedParents++;
+        if (request.SleeveId.HasValue)
+            assignedParents++;
+        if (request.VehicleId.HasValue)
+            assignedParents++;
 
         if (assignedParents > 1)
         {

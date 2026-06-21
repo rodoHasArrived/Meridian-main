@@ -63,7 +63,8 @@ public sealed class MoneyMarketMigrationRunner
                 alreadyApplied = await cmd.ExecuteScalarAsync(ct) is not null;
             }
 
-            if (alreadyApplied) continue;
+            if (alreadyApplied)
+                continue;
 
             var sql = (await File.ReadAllTextAsync(sqlFile, ct))
                 .Replace("__SCHEMA__", _options.Schema, StringComparison.Ordinal);

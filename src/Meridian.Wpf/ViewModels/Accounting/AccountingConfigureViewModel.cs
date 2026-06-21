@@ -359,6 +359,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLifecycleRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessComponentRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessIssueRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessWorkflowRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessDimensionalControlRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationPlanRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationArtifactRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> TenantAdministrationControlRows { get; } = [];
@@ -2240,6 +2242,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessIssueRows.Clear();
+            ProductionReadinessWorkflowRows.Clear();
+            ProductionReadinessDimensionalControlRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             return;
@@ -2255,6 +2259,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessDimensionalReportingText = "Dimensional reporting readiness cannot be assessed.";
             ProductionReadinessTenantAdminText = "Tenant administration readiness cannot be assessed.";
             ProductionReadinessComponentRows.Clear();
+            ProductionReadinessWorkflowRows.Clear();
+            ProductionReadinessDimensionalControlRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
@@ -2284,6 +2290,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessDimensionalReportingText = "Dimensional reporting readiness could not be assessed.";
             ProductionReadinessTenantAdminText = "Tenant administration readiness could not be assessed.";
             ProductionReadinessComponentRows.Clear();
+            ProductionReadinessWorkflowRows.Clear();
+            ProductionReadinessDimensionalControlRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
@@ -2398,6 +2406,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 issue.EvidenceReferences.Count > 0
                     ? string.Join("; ", issue.EvidenceReferences)
                     : issue.Area.ToString())));
+        ProductionReadinessWorkflowRows.ReplaceWith(BuildLedgerBookWorkflowRows(readiness.LedgerBookWorkflows));
+        ProductionReadinessDimensionalControlRows.ReplaceWith(BuildDimensionalReportingRows(readiness.DimensionalReporting));
         ProductionReadinessMigrationPlanRows.ReplaceWith(readiness.MigrationRolloutPlan.Select(item =>
             new AccountingWorkbenchRow(
                 item.Label,
@@ -2420,6 +2430,178 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     : FormatLedgerDimensionSet(artifact.Dimensions),
                 artifact.RunId)));
     }
+
+    private static IEnumerable<AccountingWorkbenchRow> BuildLedgerBookWorkflowRows(
+        AccountingLedgerBookWorkflowReadinessDto? readiness)
+    {
+        if (readiness is null)
+        {
+            yield return new AccountingWorkbenchRow(
+                "Ledger-book workflow controls",
+                "Unavailable",
+                "Shared ledger-book workflow readiness was not returned.",
+                "Register production-readiness assessment before certifying workflow lanes.",
+                "ledger-book-workflows:unavailable");
+            yield break;
+        }
+
+        yield return BuildReadinessControlRow(
+            "Ledger-book scope",
+            readiness.HasLedgerBookScope,
+            readiness.LedgerBookId.HasValue ? $"Ledger book {readiness.LedgerBookId.Value:D}" : "Missing ledger-book scope.",
+            "Select or create the governed ledger book before certifying workflow controls.",
+            "ledger-book-workflows:scope",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Ledger-book scoped evidence",
+            readiness.HasLedgerBookScopedEvidence,
+            "Retained evidence names the selected ledger book.",
+            "Attach ledger-book-scoped workflow certification evidence.",
+            "ledger-book-workflows:evidence",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Posting rules",
+            readiness.PostingRulesLedgerBookNativeCertified && readiness.HasPostingRulesLedgerBookNativeEvidence,
+            "Posting rules and Rules Studio execution are certified for the selected book.",
+            "Retain posting-rules, Rules Studio, or posting-candidate evidence for the selected book.",
+            "ledger-book-workflows:posting-rules",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Journal lifecycle",
+            readiness.JournalLifecycleLedgerBookNativeCertified && readiness.HasJournalLifecycleLedgerBookNativeEvidence,
+            "Manual journal lifecycle is certified for the selected book.",
+            "Retain journal-lifecycle or manual-journal evidence for the selected book.",
+            "ledger-book-workflows:journal-lifecycle",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Close/reporting",
+            readiness.CloseReportingLedgerBookNativeCertified && readiness.HasCloseReportingLedgerBookNativeEvidence,
+            "Close management and report packages are certified for the selected book.",
+            "Retain close-management, report-package, or restatement evidence for the selected book.",
+            "ledger-book-workflows:close-reporting",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "External GL",
+            readiness.ExternalGlLedgerBookNativeCertified && readiness.HasExternalGlLedgerBookNativeEvidence,
+            "External GL import/export review is certified for the selected book.",
+            "Retain external-GL import/export evidence for the selected book.",
+            "ledger-book-workflows:external-gl",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Reconciliation",
+            readiness.ReconciliationLedgerBookNativeCertified && readiness.HasReconciliationLedgerBookNativeEvidence,
+            "Reconciliation workflows are certified for the selected book.",
+            "Retain reconciliation or break-queue evidence for the selected book.",
+            "ledger-book-workflows:reconciliation",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Direct lending projections",
+            readiness.DirectLendingLedgerBookNativeCertified && readiness.HasDirectLendingLedgerBookNativeEvidence,
+            "Direct-lending projections are certified for the selected book.",
+            "Retain direct-lending projection evidence for the selected book.",
+            "ledger-book-workflows:direct-lending",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Strategy ledger reads",
+            readiness.StrategyLedgerReadLedgerBookNativeCertified && readiness.HasStrategyLedgerReadLedgerBookNativeEvidence,
+            "Strategy ledger reads are certified for the selected book.",
+            "Retain strategy-run or run-ledger evidence for the selected book.",
+            "ledger-book-workflows:strategy-ledger",
+            readiness.EvidenceReferences);
+    }
+
+    private static IEnumerable<AccountingWorkbenchRow> BuildDimensionalReportingRows(
+        AccountingDimensionalReportingReadinessDto? readiness)
+    {
+        if (readiness is null)
+        {
+            yield return new AccountingWorkbenchRow(
+                "Dimensional reporting controls",
+                "Unavailable",
+                "Shared dimensional reporting readiness was not returned.",
+                "Register production-readiness assessment before certifying dimensional reporting lanes.",
+                "dimensional-reporting:unavailable");
+            yield break;
+        }
+
+        yield return BuildReadinessControlRow(
+            "Ledger-book scope",
+            readiness.HasLedgerBookScope,
+            readiness.LedgerBookId.HasValue ? $"Ledger book {readiness.LedgerBookId.Value:D}" : "Missing ledger-book scope.",
+            "Select or create the governed ledger book before certifying dimensional reporting.",
+            "dimensional-reporting:scope",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Ledger-book scoped evidence",
+            readiness.HasLedgerBookScopedEvidence,
+            "Retained evidence names the selected ledger book.",
+            "Attach ledger-book-scoped dimensional certification evidence.",
+            "dimensional-reporting:evidence",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Period reports",
+            readiness.PeriodReportDimensionQueriesCertified && readiness.HasPeriodReportDimensionQueryEvidence,
+            "Period reports retain dimensional query evidence.",
+            "Retain trial-balance, financial-statement, NAV, or investor-package dimensional evidence.",
+            "dimensional-reporting:period-reports",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Cross-period reports",
+            readiness.CrossPeriodReportDimensionQueriesCertified && readiness.HasCrossPeriodReportDimensionQueryEvidence,
+            "Cross-period reports retain dimensional query evidence.",
+            "Retain comparative, roll-forward, or cross-period dimensional evidence.",
+            "dimensional-reporting:cross-period",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Journal filters",
+            readiness.JournalQueryDimensionFiltersCertified && readiness.HasJournalQueryDimensionFilterEvidence,
+            "Journal query filters retain dimensional scope.",
+            "Retain journal-query, journal-filter, or ledger-journal dimensional evidence.",
+            "dimensional-reporting:journal-filters",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "External export mappings",
+            readiness.ExternalExportDimensionMappingCertified && readiness.HasExternalExportDimensionMappingEvidence,
+            "External exports retain certified dimension mappings.",
+            "Retain external-export or external-GL mapping dimensional evidence.",
+            "dimensional-reporting:external-export",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Ledger-line persistence",
+            readiness.LedgerLineDimensionsPersistedCertified && readiness.HasLedgerLineDimensionPersistenceEvidence,
+            "Posted ledger lines retain canonical dimensions.",
+            "Retain ledger-line or journal-line dimension persistence evidence.",
+            "dimensional-reporting:ledger-lines",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Trial-balance filters",
+            readiness.TrialBalanceDimensionFiltersCertified && readiness.HasTrialBalanceDimensionFilterEvidence,
+            "Trial-balance filters retain dimensional scope.",
+            "Retain trial-balance dimension-filter or ledger-report-filter evidence.",
+            "dimensional-reporting:trial-balance",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Report package provenance",
+            readiness.ReportPackageDimensionProvenanceCertified && readiness.HasReportPackageDimensionProvenanceEvidence,
+            "Report package provenance retains canonical dimensions.",
+            "Retain report-line provenance, package-dimension, or NAV package evidence.",
+            "dimensional-reporting:report-package",
+            readiness.EvidenceReferences);
+    }
+
+    private static AccountingWorkbenchRow BuildReadinessControlRow(
+        string name,
+        bool complete,
+        string readyDetail,
+        string missingAction,
+        string key,
+        IReadOnlyList<string> evidenceReferences)
+        => new(
+            name,
+            complete ? "Complete" : "Missing",
+            complete ? readyDetail : missingAction,
+            evidenceReferences.Count > 0 ? string.Join("; ", evidenceReferences.Take(4)) : "No retained evidence.",
+            key);
 
     private static string FormatReadinessScope(string? value)
         => string.IsNullOrWhiteSpace(value) ? "missing" : value.Trim();
@@ -3411,6 +3593,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ManualJournalLifecycleRows.Clear();
         ProductionReadinessComponentRows.Clear();
         ProductionReadinessIssueRows.Clear();
+        ProductionReadinessWorkflowRows.Clear();
+        ProductionReadinessDimensionalControlRows.Clear();
         ProductionReadinessMigrationArtifactRows.Clear();
         ProductionReadinessMigrationPlanRows.Clear();
         TenantAdministrationControlRows.Clear();

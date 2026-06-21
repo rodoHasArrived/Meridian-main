@@ -766,7 +766,7 @@ public static class FundAccountEndpoints
                 BlockerReason: unresolvedBreaks == 0 ? "None" : "One or more unresolved reconciliation breaks remain.",
                 EvidenceLinks: latestRun is null
                     ? Array.Empty<string>()
-                    : [ $"/api/fund-accounts/reconciliation-runs/{latestRun.ReconciliationRunId}/results" ]);
+                    : [$"/api/fund-accounts/reconciliation-runs/{latestRun.ReconciliationRunId}/results"]);
 
             return Results.Json(payload, jsonOptions);
         })

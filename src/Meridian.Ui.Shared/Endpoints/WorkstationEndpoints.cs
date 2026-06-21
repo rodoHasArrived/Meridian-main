@@ -4649,7 +4649,7 @@ public static partial class WorkstationEndpoints
                 : routingConnection.ProductionReady ? "Pass" : "Review",
             Detail: routingConnection is null
                 ? "No routing connection is configured for this provider yet."
-                : $"Bindings {bindings.Count}; fallback routes {bindings.Sum(static binding => binding.FailoverConnectionIds.Length)}; production ready {routingConnection.ProductionReady}." ));
+                : $"Bindings {bindings.Count}; fallback routes {bindings.Sum(static binding => binding.FailoverConnectionIds.Length)}; production ready {routingConnection.ProductionReady}."));
 
         diagnostics.Add(new WorkstationDataProviderDiagnostic(
             Id: "trust-state",

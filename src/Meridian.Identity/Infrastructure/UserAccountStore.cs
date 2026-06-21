@@ -113,7 +113,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
 
             try
             {
-                    var auditEvent = JsonSerializer.Deserialize<UserAccountAuditEventDto>(line, AuditJsonOptions);
+                var auditEvent = JsonSerializer.Deserialize<UserAccountAuditEventDto>(line, AuditJsonOptions);
                 if (auditEvent is not null)
                 {
                     events.Add(auditEvent);
