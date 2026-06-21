@@ -443,7 +443,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.TenantAdministrationProfileStatusText.Should()
             .Contain("Tenant administration setup profile saved");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
-            .Contain("7/7 tenant admin control");
+            .Contain("8/9 tenant admin control");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
             .Contain("3 retained evidence link");
         harness.ViewModel.TenantAdministrationControlRows.Should().OnlyContain(row => row.Status == "Configured");
