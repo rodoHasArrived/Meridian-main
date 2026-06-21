@@ -239,9 +239,10 @@ sign-offs are missing, or material late adjustments are still unapproved, blocks
 certification when retained certified prior-package lineage or retained restatement evidence is
 missing, and retains package history through an atomic JSON snapshot when `StorageOptions` is
 registered.
-The service also owns the retained certification transition: only ready-for-review packages without
-critical validation issues can move to `Certified`, duplicate certification is rejected, and reviewer
-notes plus evidence links are persisted back across the retained package and child report artifacts.
+  The service also owns the retained certification transition: only ready-for-review packages without
+  critical validation issues and with a retained close workflow can move to `Certified`, duplicate
+  certification is rejected, and reviewer notes plus evidence links are persisted back across the
+  retained package and child report artifacts.
 Close-backed packages retain the source workflow id and re-query the current close plan at
 certification time, so a package assembled while ready-for-review cannot be certified after a new
 period-lock blocker, incomplete checklist item, missing sign-off, or material late adjustment appears.

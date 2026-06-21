@@ -218,12 +218,15 @@ public sealed class AccountingReportPackageServiceTests
     [Fact]
     public async Task CertifyPackageAsync_RequiresRetainedCertificationApprovalEvidence()
     {
-        var service = new AccountingReportPackageService();
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
         var ready = await service.BuildPackageAsync(new AccountingReportPackageRequestDto(
             FundProfileId: "fund-alpha",
             PeriodId: "2027-03",
             Actor: "controller",
             LedgerBookId: DefaultLedgerBookId,
+            CloseWorkflowId: workflowId,
             BeginningCapital: 200_000m,
             Contributions: 25_000m,
             Distributions: 5_000m,
@@ -231,10 +234,10 @@ public sealed class AccountingReportPackageServiceTests
             Nav: 227_500m,
             EvidenceLinks:
             [
-                "evidence:ledger:trial-balance:2027-03",
-                "evidence:reconciliation:gl-tie-out:2027-03",
-                "evidence:report-render:financial-statements:2027-03",
-                "evidence:nav:support-package:2027-03"
+                $"evidence:ledger:trial-balance:2027-03:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-03:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-03:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-03:book:{DefaultLedgerBookId:D}"
             ]));
 
         var unrelatedEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
@@ -255,7 +258,7 @@ public sealed class AccountingReportPackageServiceTests
             row.Dimensions.BookId == DefaultLedgerBookId.ToString("D") &&
             row.Route.Contains(ready.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) &&
             row.ContentHash.Length == 64 &&
-            row.EvidenceLinks.Contains("evidence:ledger:trial-balance:2027-03"));
+            row.EvidenceLinks.Contains($"evidence:ledger:trial-balance:2027-03:book:{DefaultLedgerBookId:D}"));
         ready.ExportArtifacts.Should().Contain(row =>
             row.ArtifactKind == "report-line-provenance" &&
             row.Format == "json" &&
@@ -268,13 +271,13 @@ public sealed class AccountingReportPackageServiceTests
             row.LineLabel == "Net assets" &&
             row.Amount == 227_500m &&
             row.Dimensions.FundId == "fund-alpha" &&
-            row.EvidenceLinks.Contains("evidence:ledger:trial-balance:2027-03") &&
-            row.EvidenceLinks.Contains("evidence:nav:support-package:2027-03"));
+            row.EvidenceLinks.Contains($"evidence:ledger:trial-balance:2027-03:book:{DefaultLedgerBookId:D}") &&
+            row.EvidenceLinks.Contains($"evidence:nav:support-package:2027-03:book:{DefaultLedgerBookId:D}"));
         ready.FinancialStatements.LineProvenance.Should().Contain(row =>
             row.StatementId == "income-statement" &&
             row.SourceKind == "LedgerAndReconciliation" &&
             row.Amount == 7_500m &&
-            row.EvidenceLinks.Contains("evidence:reconciliation:gl-tie-out:2027-03"));
+            row.EvidenceLinks.Contains($"evidence:reconciliation:gl-tie-out:2027-03:book:{DefaultLedgerBookId:D}"));
         await unrelatedEvidence.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*requires retained approval, certification, sign-off, or review evidence*");
 
@@ -354,21 +357,42 @@ public sealed class AccountingReportPackageServiceTests
     }
 
     [Fact]
-    public async Task BuildPackageAsync_RestatementRequiresRetainedCertifiedPriorPackage()
+    public async Task CertifyPackageAsync_BlocksStandalonePackageWithoutCloseWorkflow()
     {
         var service = new AccountingReportPackageService();
+        var ready = await service.BuildPackageAsync(CompletePackageRequest("fund-alpha", "2027-03"));
+
+        ready.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+
+        var certify = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted to certify a standalone report package.",
+            [CertificationEvidence(ready)]));
+
+        await certify.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*current close-plan blockers*CloseWorkflowRequired*");
+    }
+
+    [Fact]
+    public async Task BuildPackageAsync_RestatementRequiresRetainedCertifiedPriorPackage()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
 
         var missingPrior = await service.BuildPackageAsync(CompletePackageRequest(
             "fund-alpha",
             "2027-04",
+            CloseWorkflowId: workflowId,
             RestatementReasonCode: "nav-correction",
             PriorPackageId: "accounting-report-package-fund-alpha-2027-03",
             EvidenceLinks:
             [
-                "evidence:ledger:trial-balance:2027-04",
-                "evidence:reconciliation:gl-tie-out:2027-04",
-                "evidence:report-render:financial-statements:2027-04",
-                "evidence:nav:support-package:2027-04",
+                $"evidence:ledger:trial-balance:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{DefaultLedgerBookId:D}",
                 "evidence:restatement:nav-correction:2027-04",
                 "evidence:prior-package:lineage:2027-03"
             ]));
@@ -378,18 +402,19 @@ public sealed class AccountingReportPackageServiceTests
             issue.Code == "RestatementPriorPackageNotRetained" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 
-        var draftPrior = await service.BuildPackageAsync(CompletePackageRequest("fund-alpha", "2027-03"));
+        var draftPrior = await service.BuildPackageAsync(CompletePackageRequest("fund-alpha", "2027-03", CloseWorkflowId: workflowId));
         var draftRestatement = await service.BuildPackageAsync(CompletePackageRequest(
             "fund-alpha",
             "2027-04",
+            CloseWorkflowId: workflowId,
             RestatementReasonCode: "nav-correction",
             PriorPackageId: draftPrior.FinancialStatements.PackageId,
             EvidenceLinks:
             [
-                "evidence:ledger:trial-balance:2027-04",
-                "evidence:reconciliation:gl-tie-out:2027-04",
-                "evidence:report-render:financial-statements:2027-04",
-                "evidence:nav:support-package:2027-04",
+                $"evidence:ledger:trial-balance:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{DefaultLedgerBookId:D}",
                 "evidence:restatement:nav-correction:2027-04",
                 "evidence:prior-package:lineage:2027-03"
             ]));
@@ -407,14 +432,15 @@ public sealed class AccountingReportPackageServiceTests
         var readyRestatement = await service.BuildPackageAsync(CompletePackageRequest(
             "fund-alpha",
             "2027-04",
+            CloseWorkflowId: workflowId,
             RestatementReasonCode: "nav-correction",
             PriorPackageId: certifiedPrior!.FinancialStatements.PackageId,
             EvidenceLinks:
             [
-                "evidence:ledger:trial-balance:2027-04",
-                "evidence:reconciliation:gl-tie-out:2027-04",
-                "evidence:report-render:financial-statements:2027-04",
-                "evidence:nav:support-package:2027-04",
+                $"evidence:ledger:trial-balance:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{DefaultLedgerBookId:D}",
                 "evidence:restatement:nav-correction:2027-04",
                 "evidence:prior-package:lineage:2027-03"
             ]));
@@ -457,8 +483,10 @@ public sealed class AccountingReportPackageServiceTests
     [Fact]
     public async Task BuildPackageAsync_DoesNotReplaceCertifiedPackageEvidence()
     {
-        var service = new AccountingReportPackageService();
-        var ready = await service.BuildPackageAsync(CompletePackageRequest("fund-alpha", "2027-05"));
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var ready = await service.BuildPackageAsync(CompletePackageRequest("fund-alpha", "2027-05", CloseWorkflowId: workflowId));
         var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
             "controller",
@@ -468,12 +496,13 @@ public sealed class AccountingReportPackageServiceTests
         var replace = () => service.BuildPackageAsync(CompletePackageRequest(
             "fund-alpha",
             "2027-05",
+            CloseWorkflowId: workflowId,
             EvidenceLinks:
             [
-                "evidence:ledger:trial-balance:2027-05-rebuild",
-                "evidence:reconciliation:gl-tie-out:2027-05-rebuild",
-                "evidence:report-render:financial-statements:2027-05-rebuild",
-                "evidence:nav:support-package:2027-05-rebuild"
+                $"evidence:ledger:trial-balance:2027-05-rebuild:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-05-rebuild:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-05-rebuild:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-05-rebuild:book:{DefaultLedgerBookId:D}"
             ]));
 
         await replace.Should().ThrowAsync<InvalidOperationException>()

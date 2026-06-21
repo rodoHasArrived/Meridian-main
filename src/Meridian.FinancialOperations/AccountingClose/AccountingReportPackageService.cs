@@ -466,7 +466,15 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
     {
         if (!package.CloseWorkflowId.HasValue)
         {
-            return [];
+            return
+            [
+                new AccountingConfigurationValidationIssueDto(
+                    "CloseWorkflowRequired",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Accounting report package '{package.FinancialStatements.PackageId}' is not linked to a retained close workflow.",
+                    package.FinancialStatements.PackageId,
+                    "Build the report package from a close workflow with ledger-book scope, period lock, sign-offs, reconciliation, and report evidence before certification.")
+            ];
         }
 
         if (_closeManagementService is null)
