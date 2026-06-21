@@ -1633,7 +1633,9 @@ public sealed record ExternalGlExportPackageDto(
     IReadOnlyList<ExternalGlExportLineDto>? GeneratedLines = null,
     string? MappingProfileId = null,
     string? ReconciliationId = null,
-    bool RequireBalancedReconciliation = false)
+    bool RequireBalancedReconciliation = false,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
@@ -1662,7 +1664,9 @@ public sealed record ExternalGlExportPackageManifestDto(
     IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
     string? MappingProfileId = null,
     string? ReconciliationId = null,
-    bool RequireBalancedReconciliation = false)
+    bool RequireBalancedReconciliation = false,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<ExternalGlExportLineDto> GeneratedLines { get; init; } =
         GeneratedLines ?? [];

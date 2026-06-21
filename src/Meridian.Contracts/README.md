@@ -986,7 +986,10 @@ provider/fund scope, or exact export period before the package can move beyond D
 `CertifyAccountingSystemExportPackageRequestDto` carries the retained export package id, reviewer
 notes, actor context, and evidence links for the service-owned transition to `Certified`; the
 certification evidence artifact must itself identify the retained export package, certification id,
-and exact export period, and the action origin must be a human operator. Live
+and exact export period, and the action origin must be a human operator. Export package request,
+certification, package, and manifest DTOs also carry optional tenant and company scope so guarded
+external-GL artifacts can be retained, certified, and retrieved without blending companies that
+share provider, fund, period, or ledger-book naming conventions. Live
 posting remains disabled even when those checks pass and the export artifact is certified. The
 certification transition also fails closed if the retained package's current mapping profile or
 latest reconciliation now has critical validation blockers.

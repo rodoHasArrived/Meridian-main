@@ -155,6 +155,8 @@ public sealed class AccountingSystemIntegrationService
         var actor = RequireText(request.Actor, "Actor");
         var providerId = NormalizeProviderId(request.ProviderId);
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var tenantId = NormalizeOptional(request.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId);
         var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId);
         var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
@@ -188,7 +190,7 @@ public sealed class AccountingSystemIntegrationService
             evidenceLinks);
 
         var package = new ExternalGlExportPackageDto(
-            $"external-gl-export-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{periodEnd:yyyyMMdd}-{Guid.NewGuid():N}",
+            BuildExportPackageId(providerId, fundProfileId, periodEnd, tenantId, companyId),
             providerId,
             fundProfileId,
             request.LedgerBookId,
@@ -205,7 +207,9 @@ public sealed class AccountingSystemIntegrationService
             generatedLines,
             mappingProfile?.Profile.ProfileId,
             reconciliation?.ReconciliationId,
-            request.RequireBalancedReconciliation);
+            request.RequireBalancedReconciliation,
+            tenantId,
+            companyId);
         _exportPackages[package.ExportPackageId] = package;
         return package;
     }
@@ -220,6 +224,8 @@ public sealed class AccountingSystemIntegrationService
         var exportPackageId = RequireText(request.ExportPackageId, "ExportPackageId");
         var actor = RequireText(request.Actor, "Actor");
         var notes = RequireText(request.Notes, "Notes");
+        var tenantId = NormalizeOptional(request.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId);
         var evidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
         if (evidenceLinks.Count == 0)
         {
@@ -231,7 +237,7 @@ public sealed class AccountingSystemIntegrationService
             throw new ArgumentException("External GL export certification requires retained approval, certification, sign-off, or review evidence.");
         }
 
-        if (!_exportPackages.TryGetValue(exportPackageId, out var package))
+        if (!TryGetExportPackage(exportPackageId, tenantId, companyId, out var package))
         {
             return null;
         }
@@ -304,11 +310,13 @@ public sealed class AccountingSystemIntegrationService
 
     public Task<ExternalGlExportPackageManifestDto?> GetExportPackageManifestAsync(
         string exportPackageId,
+        string? tenantId = null,
+        string? companyId = null,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedExportPackageId = RequireText(exportPackageId, nameof(exportPackageId));
-        return Task.FromResult(_exportPackages.TryGetValue(normalizedExportPackageId, out var package)
+        return Task.FromResult(TryGetExportPackage(normalizedExportPackageId, tenantId, companyId, out var package)
             ? BuildExportPackageManifest(package)
             : null);
     }
@@ -825,6 +833,8 @@ public sealed class AccountingSystemIntegrationService
                 package.ProviderId,
                 package.FundProfileId,
                 package.LedgerBookId,
+                package.TenantId,
+                package.CompanyId,
                 package.PeriodStart,
                 package.PeriodEnd,
                 package.MappingProfileId,
@@ -860,7 +870,9 @@ public sealed class AccountingSystemIntegrationService
             package.ValidationIssues,
             package.MappingProfileId,
             package.ReconciliationId,
-            package.RequireBalancedReconciliation);
+            package.RequireBalancedReconciliation,
+            package.TenantId,
+            package.CompanyId);
     }
 
     private static string ComputeExportPackageHash(
@@ -874,6 +886,8 @@ public sealed class AccountingSystemIntegrationService
             package.ProviderId,
             package.FundProfileId,
             package.LedgerBookId?.ToString("D") ?? string.Empty,
+            package.TenantId ?? string.Empty,
+            package.CompanyId ?? string.Empty,
             package.PeriodStart.ToString("yyyy-MM-dd"),
             package.PeriodEnd.ToString("yyyy-MM-dd"),
             package.MappingProfileId ?? string.Empty,
@@ -1361,11 +1375,73 @@ public sealed class AccountingSystemIntegrationService
     private static string NormalizeFundProfileId(string? fundProfileId)
         => string.IsNullOrWhiteSpace(fundProfileId) ? DefaultFundProfileId : fundProfileId.Trim();
 
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     private static string ImportKey(string providerId, string fundProfileId, Guid? ledgerBookId)
         => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}";
 
     private static string MappingProfileKey(string providerId, string fundProfileId, Guid? ledgerBookId, string profileId)
         => $"{ImportKey(providerId, fundProfileId, ledgerBookId)}|{profileId.Trim().ToLowerInvariant()}";
+
+    private static string BuildExportPackageId(
+        string providerId,
+        string fundProfileId,
+        DateOnly periodEnd,
+        string? tenantId,
+        string? companyId)
+    {
+        var tenantScope = BuildTenantPackageScope(tenantId, companyId);
+        var baseId = $"external-gl-export-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{periodEnd:yyyyMMdd}";
+        return string.IsNullOrWhiteSpace(tenantScope)
+            ? $"{baseId}-{Guid.NewGuid():N}"
+            : $"{baseId}-{tenantScope}-{Guid.NewGuid():N}";
+    }
+
+    private bool TryGetExportPackage(
+        string exportPackageId,
+        string? tenantId,
+        string? companyId,
+        out ExternalGlExportPackageDto package)
+    {
+        var normalizedExportPackageId = RequireText(exportPackageId, nameof(exportPackageId));
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        if (!_exportPackages.TryGetValue(normalizedExportPackageId, out var match) ||
+            !MatchesTenantScope(match, normalizedTenantId, normalizedCompanyId))
+        {
+            package = default!;
+            return false;
+        }
+
+        package = match;
+        return true;
+    }
+
+    private static bool MatchesTenantScope(
+        ExternalGlExportPackageDto package,
+        string? tenantId,
+        string? companyId)
+    {
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        return (normalizedTenantId is null ||
+                string.Equals(NormalizeOptional(package.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+               && (normalizedCompanyId is null ||
+                   string.Equals(NormalizeOptional(package.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string BuildTenantPackageScope(string? tenantId, string? companyId)
+    {
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        if (normalizedTenantId is null && normalizedCompanyId is null)
+        {
+            return string.Empty;
+        }
+
+        return $"tenant-{SanitizeId(normalizedTenantId ?? "default")}-company-{SanitizeId(normalizedCompanyId ?? "default")}";
+    }
 
     private static DateOnly CurrentMonthStart()
     {

@@ -323,7 +323,13 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.CreateExportPackageAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var trustedRequest = request with
+            {
+                TenantId = tenantContext.TenantId ?? request.TenantId,
+                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+            };
+            var result = await service.CreateExportPackageAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("CreateAccountingSystemExportPackage")
@@ -342,8 +348,13 @@ public static class AccountingSystemEndpoints
 
             try
             {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var result = await service
-                    .GetExportPackageManifestAsync(exportPackageId, context.RequestAborted)
+                    .GetExportPackageManifestAsync(
+                        exportPackageId,
+                        tenantContext.TenantId,
+                        tenantContext.CompanyId,
+                        context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
                     ? Results.NotFound(new { error = "External GL export package manifest was not found." })
@@ -375,7 +386,13 @@ public static class AccountingSystemEndpoints
 
             try
             {
-                var result = await service.CertifyExportPackageAsync(request, context.RequestAborted).ConfigureAwait(false);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var trustedRequest = request with
+                {
+                    TenantId = tenantContext.TenantId ?? request.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                };
+                var result = await service.CertifyExportPackageAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return result is null
                     ? Results.NotFound(new { error = "External GL export package was not found." })
                     : Results.Json(result, jsonOptions);

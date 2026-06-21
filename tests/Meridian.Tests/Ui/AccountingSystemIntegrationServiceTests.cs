@@ -1161,6 +1161,68 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ExportPackages_IsolateManifestAndCertificationByTenantAndCompany()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        var alphaManifest = await service.GetExportPackageManifestAsync(
+            package.ExportPackageId,
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha");
+        var betaManifest = await service.GetExportPackageManifestAsync(
+            package.ExportPackageId,
+            tenantId: "tenant-beta",
+            companyId: "company-alpha");
+        var betaCertification = await service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Wrong tenant cannot certify the guarded export package.",
+            [ExportCertificationEvidence(package)],
+            TenantId: "tenant-beta",
+            CompanyId: "company-alpha"));
+        var certified = await service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Tenant controller certified the guarded export package.",
+            [ExportCertificationEvidence(package)],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        package.TenantId.Should().Be("tenant-alpha");
+        package.CompanyId.Should().Be("company-alpha");
+        package.ExportPackageId.Should().Contain("tenant-tenant-alpha-company-company-alpha");
+        alphaManifest.Should().NotBeNull();
+        alphaManifest!.TenantId.Should().Be("tenant-alpha");
+        alphaManifest.CompanyId.Should().Be("company-alpha");
+        betaManifest.Should().BeNull();
+        betaCertification.Should().BeNull();
+        certified.Should().NotBeNull();
+        certified!.Certification!.State.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.TenantId.Should().Be("tenant-alpha");
+        certified.CompanyId.Should().Be("company-alpha");
+    }
+
+    [Fact]
     public async Task CreateExportPackageAsync_RequiresExplicitLedgerBookScopeBeforeReview()
     {
         var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
@@ -2182,7 +2244,9 @@ public sealed class AccountingSystemIntegrationServiceTests
                 PeriodEnd: new DateOnly(2026, 1, 31),
                 MappingProfileId: "qbo-default-fund-certified",
                 RequireBalancedReconciliation: false,
-                EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)])));
+                EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)],
+                TenantId: "spoofed-tenant",
+                CompanyId: "spoofed-company")));
 
         providersResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         reconciliationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -2204,6 +2268,9 @@ public sealed class AccountingSystemIntegrationServiceTests
         mappingProfile.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
         mappingProfiles.Should().ContainSingle(row => row.ProfileId == "qbo-default-fund-certified");
         exportPackage.PostingEnabled.Should().BeFalse();
+        exportPackage.TenantId.Should().Be("company-alpha");
+        exportPackage.CompanyId.Should().Be("company-alpha");
+        exportPackage.ExportPackageId.Should().Contain("tenant-company-alpha-company-company-alpha");
         exportPackage.Certification.Should().NotBeNull();
         exportPackage.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
         exportPackage.GeneratedLines.Should().Contain(line =>
@@ -2216,13 +2283,17 @@ public sealed class AccountingSystemIntegrationServiceTests
                 exportPackage.ExportPackageId,
                 "endpoint-controller",
                 "Endpoint controller certified the guarded export package.",
-                [ExportCertificationEvidence(exportPackage)])));
+                [ExportCertificationEvidence(exportPackage)],
+                TenantId: "spoofed-tenant",
+                CompanyId: "spoofed-company")));
 
         certificationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var certifiedExportPackage = await ReadAsync<ExternalGlExportPackageDto>(certificationResponse);
         certifiedExportPackage.PostingEnabled.Should().BeFalse();
         certifiedExportPackage.Certification.Should().NotBeNull();
         certifiedExportPackage.Certification!.State.Should().Be(AccountingCertificationStateDto.Certified);
+        certifiedExportPackage.TenantId.Should().Be("company-alpha");
+        certifiedExportPackage.CompanyId.Should().Be("company-alpha");
         certifiedExportPackage.Certification.Actor.Should().Be("endpoint-controller");
         certifiedExportPackage.Certification.EvidenceLinks.Should().Contain(ExportCertificationEvidence(exportPackage));
 
@@ -2232,6 +2303,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         manifestResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var manifest = await ReadAsync<ExternalGlExportPackageManifestDto>(manifestResponse);
         manifest.ExportPackageId.Should().Be(certifiedExportPackage.ExportPackageId);
+        manifest.TenantId.Should().Be("company-alpha");
+        manifest.CompanyId.Should().Be("company-alpha");
         manifest.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
         manifest.ExternalPostingAllowed.Should().BeFalse();
         manifest.ContentHash.Should().HaveLength(64);

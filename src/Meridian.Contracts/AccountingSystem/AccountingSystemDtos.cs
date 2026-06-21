@@ -623,7 +623,9 @@ public sealed record AccountingSystemExportPackageRequestDto(
     IReadOnlyList<Guid>? JournalEntryIds = null,
     bool RequireBalancedReconciliation = true,
     IReadOnlyList<string>? EvidenceLinks = null,
-    string? CorrelationId = null)
+    string? CorrelationId = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<Guid> JournalEntryIds { get; init; } =
         JournalEntryIds ?? [];
@@ -638,7 +640,9 @@ public sealed record CertifyAccountingSystemExportPackageRequestDto(
     string Notes,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CorrelationId = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

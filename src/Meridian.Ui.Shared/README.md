@@ -236,6 +236,10 @@ import external GL data, post journals, certify exports, or close periods.
 Dimensional accounting readiness also fails closed until period report filters, cross-period
 report filters, journal dimension filters, and external-export dimension mappings are certified
 with retained evidence naming the selected ledger book.
+External GL guarded-export package endpoints stamp export creation, certification, and manifest
+lookup with the authenticated workstation tenant/company scope, so browser and WPF callers cannot
+retrieve or certify another company's retained export artifact by submitting tenant or company
+identifiers in the request body.
 The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
 session when the request omits it, and the service now blocks tenant administration readiness until
 tenant scope, company scope, admin roles, scoped accounting access, reporting groups, aggregate
