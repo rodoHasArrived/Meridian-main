@@ -296,8 +296,9 @@ ledger-book administration, posting-rule authoring, approval queues, dimension m
 the evidence is an explicit setup-certified tenant-admin packet.
 `/api/accounting-system/tenant-administration-profile` retains those tenant/company setup controls in
 the shared Accounting System store. Reads require accounting access, writes require
-`AdminMaintenance`, and production readiness loads the retained profile so setup certification is no
-longer represented only by request-time flags.
+`AdminMaintenance`, reads and writes resolve tenant/company scope from the authenticated workstation
+session before consulting client-supplied identifiers, and production readiness loads the retained
+profile so setup certification is no longer represented only by request-time flags.
 `/api/accounting-system/production-certification-profile` retains tenant/company/fund/book workflow
 and dimensional reporting certification controls in the same shared store. Reads require accounting
 access, writes require `AdminMaintenance`, endpoint saves resolve tenant/company scope from the

@@ -66,8 +66,8 @@ public static class AccountingSystemEndpoints
             }
 
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-            var resolvedTenantId = string.IsNullOrWhiteSpace(tenantId) ? tenantContext.TenantId : tenantId;
-            var resolvedCompanyId = string.IsNullOrWhiteSpace(companyId) ? tenantContext.CompanyId : companyId;
+            var resolvedTenantId = tenantContext.TenantId ?? tenantId;
+            var resolvedCompanyId = tenantContext.CompanyId ?? companyId;
             var result = await store.GetAsync(resolvedTenantId, resolvedCompanyId, context.RequestAborted).ConfigureAwait(false);
             return result is null
                 ? Results.NotFound(new { error = "Accounting tenant administration profile was not found." })
@@ -91,8 +91,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedProfile = request.Profile with
             {
-                TenantId = string.IsNullOrWhiteSpace(request.Profile.TenantId) ? tenantContext.TenantId ?? string.Empty : request.Profile.TenantId,
-                CompanyId = string.IsNullOrWhiteSpace(request.Profile.CompanyId) ? tenantContext.CompanyId ?? string.Empty : request.Profile.CompanyId
+                TenantId = tenantContext.TenantId ?? request.Profile.TenantId,
+                CompanyId = tenantContext.CompanyId ?? request.Profile.CompanyId
             };
             var trustedRequest = request with { Profile = trustedProfile };
             try

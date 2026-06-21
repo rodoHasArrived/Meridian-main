@@ -3192,6 +3192,61 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemTenantAdministrationProfileEndpoint_UsesTrustedTenantContext()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemTenantAdministrationProfile,
+            JsonContent(new AccountingTenantAdministrationProfileUpsertRequestDto(
+                new AccountingTenantAdministrationProfileDto(
+                    "tenant-spoof",
+                    "company-spoof",
+                    TenantScopeConfigured: true,
+                    AdminRoleProfileConfigured: true,
+                    ScopedAccessPoliciesConfigured: true,
+                    ReportingGroupsConfigured: true,
+                    AccountingAdminSurfaceConfigured: true,
+                    BrowserAccountingAdminSurfaceConfigured: true,
+                    WpfAccountingAdminSurfaceConfigured: true,
+                    ChartAdministrationStudioConfigured: true,
+                    RuleTestPromotionStudioConfigured: true,
+                    CloseSetupStudioConfigured: true,
+                    ProviderMappingStudioConfigured: true,
+                    TenantCompanyReportGroupSetupStudioConfigured: true,
+                    AuditReviewToolingConfigured: true,
+                    BulkImportExportSafeguardsConfigured: true,
+                    PerformanceValidationConfigured: true,
+                    DisasterRecoveryRunbookConfigured: true,
+                    LedgerBookAdministrationStudioConfigured: true,
+                    PostingRuleAuthoringStudioConfigured: true,
+                    ApprovalQueueStudioConfigured: true,
+                    DimensionMappingStudioConfigured: true,
+                    ImplementationSandboxConfigured: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences: ["evidence://tenant-admin/tenant-spoof/setup-certified"]),
+                "controller",
+                CorrelationId: "tenant-admin-spoof",
+                EvidenceLinks: ["approval:tenant-admin:tenant-spoof"])));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var upserted = await ReadAsync<AccountingTenantAdministrationProfileDto>(upsertResponse);
+        upserted.TenantId.Should().Be("company-alpha");
+        upserted.CompanyId.Should().Be("company-alpha");
+
+        var getResponse = await client.GetAsync(
+            $"{UiApiRoutes.AccountingSystemTenantAdministrationProfile}?tenantId=tenant-spoof&companyId=company-spoof");
+
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var retained = await ReadAsync<AccountingTenantAdministrationProfileDto>(getResponse);
+        retained.TenantId.Should().Be("company-alpha");
+        retained.CompanyId.Should().Be("company-alpha");
+        retained.EvidenceReferences.Should().Contain("correlation:tenant-admin-spoof");
+    }
+
+    [Fact]
     public async Task AccountingSystemProductionCertificationProfileEndpoint_PersistsAndFeedsReadiness()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
