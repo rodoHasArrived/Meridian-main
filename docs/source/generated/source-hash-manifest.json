@@ -198,8 +198,8 @@
       "id": "SRC-LEDGER",
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
-      "readme_hash": "dd9c580705defece001ac35b87cb822f665e6943ecf500411534c770ca430a66",
-      "source_hash": "8b277d03dc5acb7c256bb6cd0415975db7dffdda4b0ece5cd77e1b0edfa02051"
+      "readme_hash": "cc90c9b5a8a21837a9ce1259ac049a5be4b8d700c7526e9a360d54f35a09f308",
+      "source_hash": "b9244bf5950bacdfbe14a7ced75e627d281cb9fca9aec0acfe9d49195361c705"
     },
     {
       "id": "SRC-MCP",

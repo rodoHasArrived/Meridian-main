@@ -70,7 +70,9 @@ line-provenance, and manifest artifacts for locked-period financial reporting ha
 persistence, approval, publication, restatement, archive, or export workflows. Report packs retain
 lifecycle events, restatement approvals, changed-line keys, and evidence links so published values
 can be traced back to ledger entries, source runs/sessions, reconciliation or approval evidence,
-and supplied realized-gain tax-lot projections.
+and supplied realized-gain tax-lot projections. `LedgerReportPackRequest` can carry a
+`LedgerLineDimensionSet` so generated statements, manifests, and line-provenance artifacts remain
+fund/entity/sleeve/external-GL scoped instead of emitting all same-account ledger entries.
 `LedgerReportSchedulePlanner` projects monthly, quarterly, or annual report schedules into
 period-bounded export occurrences and report-pack requests for regulatory, investor, or internal
 stakeholder delivery workflows.

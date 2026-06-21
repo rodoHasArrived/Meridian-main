@@ -19,7 +19,8 @@ public sealed record LedgerReportPackRequest
         string? sourceRunId = null,
         string? sourceSessionId = null,
         IReadOnlyList<string>? reconciliationEvidenceLinks = null,
-        IReadOnlyList<string>? approvalEvidenceLinks = null)
+        IReadOnlyList<string>? approvalEvidenceLinks = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         if (string.IsNullOrWhiteSpace(reportId))
             throw new ArgumentException("Report identifier must not be null or whitespace.", nameof(reportId));
@@ -58,6 +59,7 @@ public sealed record LedgerReportPackRequest
         SourceSessionId = string.IsNullOrWhiteSpace(sourceSessionId) ? null : sourceSessionId.Trim();
         ReconciliationEvidenceLinks = NormalizeEvidenceLinks(reconciliationEvidenceLinks);
         ApprovalEvidenceLinks = NormalizeEvidenceLinks(approvalEvidenceLinks);
+        LineDimensions = lineDimensions;
     }
 
     public string ReportId { get; }
@@ -87,6 +89,8 @@ public sealed record LedgerReportPackRequest
     public IReadOnlyList<string> ReconciliationEvidenceLinks { get; }
 
     public IReadOnlyList<string> ApprovalEvidenceLinks { get; }
+
+    public LedgerLineDimensionSet? LineDimensions { get; }
 
     private static IReadOnlyList<string> NormalizeEvidenceLinks(IReadOnlyList<string>? links)
         => links?

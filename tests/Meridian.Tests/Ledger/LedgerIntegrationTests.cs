@@ -1558,6 +1558,107 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void LedgerReportPackBuilder_Build_ShouldFilterStatementsAndProvenanceByLineDimensions()
+    {
+        var chart = new ChartOfAccounts();
+        var cash = chart.Register("Assets:Cash", LedgerAccountType.Asset);
+        var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
+        var revenue = chart.Register("Revenue:Fees", LedgerAccountType.Revenue);
+        var ledger = new Meridian.Ledger.Ledger();
+        var periodStart = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
+        var periodEnd = DateTimeOffset.Parse("2026-05-31T23:59:59Z");
+        var alphaDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var betaDimensions = alphaDimensions with
+        {
+            EntityId = "entity-beta",
+            ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Administration"
+            }
+        };
+
+        ledger.PostLines(
+            periodStart.AddDays(1),
+            "alpha capital",
+            new[]
+            {
+                (cash, 500m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (capital, 0m, 500m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            periodStart.AddDays(2),
+            "alpha fee",
+            new[]
+            {
+                (cash, 40m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 40m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            periodStart.AddDays(3),
+            "beta fee",
+            new[]
+            {
+                (cash, 25m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 25m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+        var betaLedgerEntryIds = ledger.Journal
+            .Single(entry => entry.Description == "beta fee")
+            .Lines
+            .Select(static line => line.EntryId)
+            .ToArray();
+
+        var request = new LedgerReportPackRequest(
+            "lrp-entity-alpha-2026-05",
+            "fund-alpha",
+            "2026-05",
+            periodStart,
+            periodEnd,
+            periodEnd,
+            "usd",
+            "controller",
+            DateTimeOffset.Parse("2026-06-01T13:00:00Z"),
+            sourceRunId: "run-alpha-close",
+            reconciliationEvidenceLinks: ["reconciliation:alpha"],
+            approvalEvidenceLinks: ["approval:alpha"],
+            lineDimensions: new LedgerLineDimensionSet(
+                FundId: "fund-alpha",
+                EntityId: "ENTITY-ALPHA",
+                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["department"] = "investments"
+                }));
+
+        var pack = LedgerReportPackBuilder.Build(ledger, request, chart);
+
+        pack.Statements.TotalAssets.Should().Be(540m);
+        pack.Statements.TotalEquity.Should().Be(500m);
+        pack.Statements.TotalRevenue.Should().Be(40m);
+        pack.Statements.NetIncome.Should().Be(40m);
+        pack.Request.LineDimensions.Should().NotBeNull();
+        pack.LineProvenance.Should().Contain(row =>
+            row.ArtifactName == "trial-balance.csv" &&
+            row.RowKey == "Assets:Cash" &&
+            row.LedgerEntryIds.Count == 2 &&
+            !row.LedgerEntryIds.Intersect(betaLedgerEntryIds).Any());
+
+        var manifest = pack.Artifacts.Single(artifact => artifact.Name == "manifest.csv");
+        manifest.Content.Should().Contain("dimension-scope,entityId=ENTITY-ALPHA;externalGl.department=investments;fundId=fund-alpha");
+        var statementsArtifact = pack.Artifacts.Single(artifact => artifact.Name == "financial-statements.json");
+        statementsArtifact.Content.Should().Contain("\"dimensionScope\": {");
+        statementsArtifact.Content.Should().Contain("\"entityId\": \"ENTITY-ALPHA\"");
+        statementsArtifact.Content.Should().Contain("\"externalGl.department\": \"investments\"");
+        var provenanceArtifact = pack.Artifacts.Single(artifact => artifact.Name == "line-provenance.csv");
+        foreach (var betaLedgerEntryId in betaLedgerEntryIds)
+            provenanceArtifact.Content.Should().NotContain(betaLedgerEntryId.ToString("D"));
+    }
+
+    [Fact]
     public void LedgerReportPackLifecycle_TracksApprovalPublicationRestatementAndArchive()
     {
         var chart = new ChartOfAccounts();
