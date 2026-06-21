@@ -11,12 +11,13 @@ public static class LedgerFinancialStatementBuilder
     public static LedgerFinancialStatements Build(
         IReadOnlyLedger ledger,
         ChartOfAccounts? chart = null,
-        string? financialAccountId = null)
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         ArgumentNullException.ThrowIfNull(ledger);
 
         return Build(
-            ledger.TrialBalance(financialAccountId),
+            ledger.TrialBalance(financialAccountId, lineDimensions),
             asOf: null,
             chart,
             financialAccountId);
@@ -29,12 +30,13 @@ public static class LedgerFinancialStatementBuilder
         IReadOnlyLedger ledger,
         DateTimeOffset asOf,
         ChartOfAccounts? chart = null,
-        string? financialAccountId = null)
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         ArgumentNullException.ThrowIfNull(ledger);
 
         return Build(
-            ledger.TrialBalanceAsOf(asOf, financialAccountId),
+            ledger.TrialBalanceAsOf(asOf, financialAccountId, lineDimensions),
             asOf,
             chart,
             financialAccountId);
@@ -124,4 +126,3 @@ public static class LedgerFinancialStatementBuilder
         => string.IsNullOrWhiteSpace(financialAccountId)
            || string.Equals(account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase);
 }
-

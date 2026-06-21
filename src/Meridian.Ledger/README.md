@@ -88,6 +88,10 @@ investor, capital-account, instrument, tax-lot, cost-center, counterparty, organ
 book, customer/vendor/project, and external-GL scope can live on the immutable ledger line itself
 instead of only in journal-level metadata. Storage and reporting surfaces should prefer the
 line-level dimension set when present and use metadata-derived dimensions only as legacy fallback.
+`LedgerQuery`, `TrialBalance`, `TrialBalanceAsOf`, and `LedgerFinancialStatementBuilder` accept
+optional `LedgerLineDimensionSet` filters so core journal, trial-balance, and statement reads can be
+scoped by fund/entity/strategy/instrument/counterparty and external-GL dimensions without building a
+UI- or storage-specific reporting fork.
 `PrivateCapitalFundEventLedgerProjector` reconstructs a posted Fund Event Ledger view from those
 journal entries and optional ledger report packs. It groups private-capital journal entries by fund
 event, exposes balanced ledger impact rows, capital-account subledger impact, retained evidence,

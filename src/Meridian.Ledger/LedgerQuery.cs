@@ -28,4 +28,5 @@ public sealed record LedgerQuery(
     string? CapitalAccountId = null,
     string? InvestorId = null,
     string? PaymentIntentId = null,
-    string? SettlementReference = null);
+    string? SettlementReference = null,
+    LedgerLineDimensionSet? LineDimensions = null);

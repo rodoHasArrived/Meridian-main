@@ -1172,6 +1172,150 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void LedgerQuery_CanFilterJournalEntriesByLineDimensions()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var alphaDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            StrategyId: "strategy-income",
+            CostCenterId: "cost-center-ops",
+            CounterpartyId: "counterparty-custodian",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var betaDimensions = alphaDimensions with
+        {
+            EntityId = "entity-beta",
+            CostCenterId = "cost-center-admin",
+            ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Administration"
+            }
+        };
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T09:00:00Z"),
+            "alpha fee accrual",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 100m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T10:00:00Z"),
+            "beta fee accrual",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 50m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+
+        var filtered = ledger.GetJournalEntries(new LedgerQuery(
+            LineDimensions: new LedgerLineDimensionSet(
+                FundId: "fund-alpha",
+                EntityId: "ENTITY-ALPHA",
+                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["department"] = "investments"
+                })));
+
+        filtered.Should().ContainSingle();
+        filtered[0].Description.Should().Be("alpha fee accrual");
+    }
+
+    [Fact]
+    public void Ledger_TrialBalance_ShouldFilterByLineDimensions()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var alphaDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            InstrumentId: Guid.Parse("4D2AE42D-38DC-4B62-A8FD-7306C8627764"),
+            CounterpartyId: "counterparty-custodian");
+        var betaDimensions = alphaDimensions with { EntityId = "entity-beta" };
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T09:00:00Z"),
+            "alpha fee accrual",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 100m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T10:00:00Z"),
+            "beta fee accrual",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 50m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+
+        var trialBalance = ledger.TrialBalance(lineDimensions: new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            InstrumentId: alphaDimensions.InstrumentId));
+
+        trialBalance[cash].Should().Be(100m);
+        trialBalance[revenue].Should().Be(100m);
+    }
+
+    [Fact]
+    public void LedgerFinancialStatementBuilder_BuildAsOf_ShouldFilterByLineDimensions()
+    {
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var capital = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var ledger = new Meridian.Ledger.Ledger();
+        var t1 = DateTimeOffset.Parse("2026-05-28T09:00:00Z");
+        var t2 = t1.AddHours(1);
+        var alphaDimensions = new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-alpha");
+        var betaDimensions = new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-beta");
+
+        ledger.PostLines(
+            t1,
+            "alpha capital contribution",
+            new[]
+            {
+                (cash, 500m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (capital, 0m, 500m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            t1.AddMinutes(30),
+            "alpha fee accrual",
+            new[]
+            {
+                (cash, 40m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 40m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            t2,
+            "beta fee accrual",
+            new[]
+            {
+                (cash, 25m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 25m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+
+        var statements = LedgerFinancialStatementBuilder.BuildAsOf(
+            ledger,
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-alpha"));
+
+        statements.TotalAssets.Should().Be(540m);
+        statements.TotalEquity.Should().Be(500m);
+        statements.TotalRevenue.Should().Be(40m);
+        statements.NetIncome.Should().Be(40m);
+        statements.AccountingEquationVariance.Should().Be(0m);
+    }
+
+    [Fact]
     public void LedgerReportPackBuilder_BuildsSignedArtifactsForLockedPeriodStatements()
     {
         var chart = new ChartOfAccounts();

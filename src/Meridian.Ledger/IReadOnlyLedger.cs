@@ -54,10 +54,15 @@ public interface IReadOnlyLedger
     /// <summary>
     /// Returns a trial balance mapping every account that has been posted to its net balance.
     /// </summary>
-    IReadOnlyDictionary<LedgerAccount, decimal> TrialBalance(string? financialAccountId = null);
+    IReadOnlyDictionary<LedgerAccount, decimal> TrialBalance(
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null);
 
     /// <summary>Returns the trial balance as of <paramref name="timestamp"/>.</summary>
-    IReadOnlyDictionary<LedgerAccount, decimal> TrialBalanceAsOf(DateTimeOffset timestamp, string? financialAccountId = null);
+    IReadOnlyDictionary<LedgerAccount, decimal> TrialBalanceAsOf(
+        DateTimeOffset timestamp,
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null);
 
     /// <summary>Returns running-balance checkpoints for an account across the selected range.</summary>
     IReadOnlyList<LedgerBalancePoint> GetRunningBalance(LedgerAccount account, DateTimeOffset? from = null, DateTimeOffset? to = null);
