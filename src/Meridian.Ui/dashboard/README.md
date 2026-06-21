@@ -223,7 +223,7 @@ close/reporting, migration rollout, and tenant administration. The panel display
 actions, evidence counts, retained migration run artifact posture, explicit ledger-book-native
 workflow control counts and retained ledger-book-scoped workflow evidence for posting rules,
 JE lifecycle, close/reporting, external GL, reconciliation, direct-lending projections, and
-strategy ledger reads, dimensional report/query/export control counts
+strategy ledger reads, dimensional ledger/query/report/export control counts
 with retained ledger-book-scoped evidence, certified external-GL mapping coverage, and the disabled live-posting stance without deriving
 production-readiness policy in React. Tenant administration uses the shared
 `AccountingTenantAdministrationReadinessDto` to render
@@ -238,7 +238,8 @@ enterprise configuration studio coverage, and setup evidence before refreshing
 production-readiness posture from the shared Accounting System service. The Configure surface also
 loads, edits, and saves the retained production-certification profile for ledger-book-native
 workflow controls, including reconciliation, direct-lending, and strategy-ledger-read
-certification, plus dimensional reporting/export controls, preserving tenant/company/fund/book
+certification, plus dimensional ledger-line, trial-balance, reporting, provenance, and export
+controls, preserving tenant/company/fund/book
 scope plus retained evidence through the shared Accounting System store rather than request-only
 flags. It also lists retained migration run artifacts from
 `/api/accounting-system/migration-run-artifacts`, including run kind, certification status,

@@ -207,7 +207,10 @@ public sealed record AccountingProductionCertificationProfileDto(
     string? CompanyId = null,
     bool ReconciliationLedgerBookNativeCertified = false,
     bool DirectLendingLedgerBookNativeCertified = false,
-    bool StrategyLedgerReadLedgerBookNativeCertified = false)
+    bool StrategyLedgerReadLedgerBookNativeCertified = false,
+    bool LedgerLineDimensionsPersistedCertified = false,
+    bool TrialBalanceDimensionFiltersCertified = false,
+    bool ReportPackageDimensionProvenanceCertified = false)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -260,6 +263,9 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool CrossPeriodReportDimensionQueriesCertified = false,
     bool JournalQueryDimensionFiltersCertified = false,
     bool ExternalExportDimensionMappingCertified = false,
+    bool LedgerLineDimensionsPersistedCertified = false,
+    bool TrialBalanceDimensionFiltersCertified = false,
+    bool ReportPackageDimensionProvenanceCertified = false,
     IReadOnlyList<string>? DimensionalReportingEvidenceLinks = null,
     bool LedgerBookMigrationCertified = false,
     bool HistoricalJournalBackfillCertified = false,
@@ -374,6 +380,9 @@ public sealed record AccountingDimensionalReportingReadinessDto(
     bool CrossPeriodReportDimensionQueriesCertified,
     bool JournalQueryDimensionFiltersCertified,
     bool ExternalExportDimensionMappingCertified,
+    bool LedgerLineDimensionsPersistedCertified = false,
+    bool TrialBalanceDimensionFiltersCertified = false,
+    bool ReportPackageDimensionProvenanceCertified = false,
     IReadOnlyList<string>? EvidenceReferences = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
@@ -387,10 +396,13 @@ public sealed record AccountingDimensionalReportingReadinessDto(
             PeriodReportDimensionQueriesCertified && HasPeriodReportDimensionQueryEvidence,
             CrossPeriodReportDimensionQueriesCertified && HasCrossPeriodReportDimensionQueryEvidence,
             JournalQueryDimensionFiltersCertified && HasJournalQueryDimensionFilterEvidence,
-            ExternalExportDimensionMappingCertified && HasExternalExportDimensionMappingEvidence
+            ExternalExportDimensionMappingCertified && HasExternalExportDimensionMappingEvidence,
+            LedgerLineDimensionsPersistedCertified && HasLedgerLineDimensionPersistenceEvidence,
+            TrialBalanceDimensionFiltersCertified && HasTrialBalanceDimensionFilterEvidence,
+            ReportPackageDimensionProvenanceCertified && HasReportPackageDimensionProvenanceEvidence
         }.Count(static control => control);
 
-    public int RequiredControlCount => 6;
+    public int RequiredControlCount => 9;
 
     public bool HasLedgerBookScope => LedgerBookId.HasValue;
 
@@ -411,6 +423,15 @@ public sealed record AccountingDimensionalReportingReadinessDto(
 
     public bool HasExternalExportDimensionMappingEvidence =>
         HasDimensionEvidence("external-export", "export-dimension", "external-gl-mapping", "gl-export");
+
+    public bool HasLedgerLineDimensionPersistenceEvidence =>
+        HasDimensionEvidence("ledger-line", "line-dimension", "posted-ledger-line", "journal-line-dimension");
+
+    public bool HasTrialBalanceDimensionFilterEvidence =>
+        HasDimensionEvidence("trial-balance-filter", "trial-balance-dimension", "ledger-report-filter");
+
+    public bool HasReportPackageDimensionProvenanceEvidence =>
+        HasDimensionEvidence("report-package-provenance", "report-line-provenance", "package-dimension", "nav-package");
 
     private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
     {

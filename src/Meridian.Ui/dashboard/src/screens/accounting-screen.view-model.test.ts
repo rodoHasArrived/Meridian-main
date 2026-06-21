@@ -2763,9 +2763,12 @@ describe("accounting-screen view model", () => {
         crossPeriodReportDimensionQueriesCertified: false,
         journalQueryDimensionFiltersCertified: true,
         externalExportDimensionMappingCertified: false,
+        ledgerLineDimensionsPersistedCertified: false,
+        trialBalanceDimensionFiltersCertified: false,
+        reportPackageDimensionProvenanceCertified: false,
         evidenceReferences: ["evidence://ledger-book/book-primary/dimensions/reporting"],
         completedControlCount: 4,
-        requiredControlCount: 6,
+        requiredControlCount: 9,
         hasLedgerBookScope: true,
         hasRetainedEvidence: true,
         hasLedgerBookScopedEvidence: true
@@ -2874,6 +2877,9 @@ describe("accounting-screen view model", () => {
       crossPeriodReportDimensionQueriesCertified: false,
       journalQueryDimensionFiltersCertified: true,
       externalExportDimensionMappingCertified: false,
+      ledgerLineDimensionsPersistedCertified: false,
+      trialBalanceDimensionFiltersCertified: false,
+      reportPackageDimensionProvenanceCertified: false,
       updatedAtUtc: "2026-06-30T11:50:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
@@ -3054,7 +3060,7 @@ describe("accounting-screen view model", () => {
       issueSummaryLabel: "1 warning requires review",
       externalGlLabel: "3 providers | 1 certified mapping | live posting disabled",
       ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers | 4/9 workflow controls",
-      dimensionalReportingLabel: "4/6 report/query/export dimension controls | ledger book book-primary",
+      dimensionalReportingLabel: "4/9 ledger/query/report/export dimension controls | ledger book book-primary",
       dimensionalReportingEvidenceLabel: "1 retained dimensional evidence reference",
       tenantAdministrationLabel: "5/18 admin controls | tenant tenant-alpha | company company-alpha",
       tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
@@ -3099,6 +3105,9 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "reconciliation-book", checked: false }),
       expect.objectContaining({ id: "direct-lending-book", checked: false }),
       expect.objectContaining({ id: "strategy-ledger-reads-book", checked: false }),
+      expect.objectContaining({ id: "ledger-line-dimensions", checked: false }),
+      expect.objectContaining({ id: "trial-balance-dimensions", checked: false }),
+      expect.objectContaining({ id: "report-package-dimensions", checked: false }),
       expect.objectContaining({ id: "cross-period-dimensions", checked: false })
     ]));
     expect(result.current.productionCertificationProfile.canSave).toBe(true);

@@ -1919,9 +1919,12 @@ describe("AccountingScreen", () => {
         crossPeriodReportDimensionQueriesCertified: false,
         journalQueryDimensionFiltersCertified: true,
         externalExportDimensionMappingCertified: false,
+        ledgerLineDimensionsPersistedCertified: false,
+        trialBalanceDimensionFiltersCertified: false,
+        reportPackageDimensionProvenanceCertified: false,
         evidenceReferences: ["evidence://ledger-book/book-primary/dimensions/reporting"],
         completedControlCount: 4,
-        requiredControlCount: 6,
+        requiredControlCount: 9,
         hasLedgerBookScope: true,
         hasRetainedEvidence: true,
         hasLedgerBookScopedEvidence: true
@@ -2010,6 +2013,9 @@ describe("AccountingScreen", () => {
       crossPeriodReportDimensionQueriesCertified: false,
       journalQueryDimensionFiltersCertified: true,
       externalExportDimensionMappingCertified: false,
+      ledgerLineDimensionsPersistedCertified: false,
+      trialBalanceDimensionFiltersCertified: false,
+      reportPackageDimensionProvenanceCertified: false,
       updatedAtUtc: "2026-06-30T11:50:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
@@ -2087,7 +2093,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("78/100")).toBeInTheDocument();
     expect(screen.getByText("Tenant administration")).toBeInTheDocument();
     expect(screen.getByText("Dimensions")).toBeInTheDocument();
-    expect(screen.getByText("4/6 report/query/export dimension controls | ledger book book-primary")).toBeInTheDocument();
+    expect(screen.getByText("4/9 ledger/query/report/export dimension controls | ledger book book-primary")).toBeInTheDocument();
     expect(screen.getByText("1 retained dimensional evidence reference")).toBeInTheDocument();
     expect(screen.getByText("5/18 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
     expect(screen.getByText("1 retained setup evidence reference")).toBeInTheDocument();

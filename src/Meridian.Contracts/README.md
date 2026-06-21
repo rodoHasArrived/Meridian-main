@@ -213,12 +213,13 @@ evidence instead of relying on account or run names.
 external GL, reconciliation, direct-lending, and strategy-ledger-read controls as complete only when the certification flag is paired with retained
 ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
 certification packet. Generic evidence links do not certify every workflow lane by implication.
-`AccountingDimensionalReportingReadinessDto` separately certifies period reports, cross-period
-reports, journal dimension filters, and external-export dimension mappings with retained
+`AccountingDimensionalReportingReadinessDto` separately certifies posted ledger-line dimension
+persistence, trial-balance dimension filters, period reports, cross-period reports, journal
+dimension filters, report-package provenance, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
-Each dimensional control requires evidence for that specific report/query/export lane, unless the
-evidence is an explicit full dimensional or production certification packet, so one generic
-ledger-book evidence link cannot certify all dimensional reporting controls by implication.
+Each dimensional control requires evidence for that specific ledger/query/report/export lane,
+unless the evidence is an explicit full dimensional or production certification packet, so one
+generic ledger-book evidence link cannot certify all dimensional reporting controls by implication.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
 admin-studio, chart administration, rule-test and promotion, close setup, provider/external-GL
@@ -233,7 +234,7 @@ counts the control as complete.
 allowing shared endpoints, browser, and WPF to review or certify tenant administration posture
 without passing transient request-only booleans.
 `AccountingProductionCertificationProfileDto` is the retained tenant/company/fund/book certification
-profile for ledger-book-native workflow controls and dimensional report/query/export controls, so
+profile for ledger-book-native workflow controls and dimensional ledger/query/report/export controls, so
 production readiness can load approved evidence from the shared Accounting System store only for the
 active tenant, company, fund, and ledger-book scope instead of trusting request-time certification
 flags alone.

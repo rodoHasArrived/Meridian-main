@@ -5614,6 +5614,9 @@ export interface AccountingProductionReadinessRequest {
   crossPeriodReportDimensionQueriesCertified?: boolean;
   journalQueryDimensionFiltersCertified?: boolean;
   externalExportDimensionMappingCertified?: boolean;
+  ledgerLineDimensionsPersistedCertified?: boolean;
+  trialBalanceDimensionFiltersCertified?: boolean;
+  reportPackageDimensionProvenanceCertified?: boolean;
   dimensionalReportingEvidenceLinks?: string[] | null;
   ledgerBookMigrationCertified?: boolean;
   historicalJournalBackfillCertified?: boolean;
@@ -5725,6 +5728,9 @@ export interface AccountingDimensionalReportingReadiness {
   crossPeriodReportDimensionQueriesCertified: boolean;
   journalQueryDimensionFiltersCertified: boolean;
   externalExportDimensionMappingCertified: boolean;
+  ledgerLineDimensionsPersistedCertified?: boolean;
+  trialBalanceDimensionFiltersCertified?: boolean;
+  reportPackageDimensionProvenanceCertified?: boolean;
   evidenceReferences: string[];
   completedControlCount: number;
   requiredControlCount: number;
@@ -5781,6 +5787,9 @@ export interface AccountingProductionCertificationProfile {
   crossPeriodReportDimensionQueriesCertified: boolean;
   journalQueryDimensionFiltersCertified: boolean;
   externalExportDimensionMappingCertified: boolean;
+  ledgerLineDimensionsPersistedCertified?: boolean;
+  trialBalanceDimensionFiltersCertified?: boolean;
+  reportPackageDimensionProvenanceCertified?: boolean;
   updatedAtUtc: string;
   updatedBy: string;
   evidenceReferences: string[];

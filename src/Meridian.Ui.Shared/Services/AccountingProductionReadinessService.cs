@@ -168,6 +168,9 @@ public sealed class AccountingProductionReadinessService
             CrossPeriodReportDimensionQueriesCertified = request.CrossPeriodReportDimensionQueriesCertified || profile.CrossPeriodReportDimensionQueriesCertified,
             JournalQueryDimensionFiltersCertified = request.JournalQueryDimensionFiltersCertified || profile.JournalQueryDimensionFiltersCertified,
             ExternalExportDimensionMappingCertified = request.ExternalExportDimensionMappingCertified || profile.ExternalExportDimensionMappingCertified,
+            LedgerLineDimensionsPersistedCertified = request.LedgerLineDimensionsPersistedCertified || profile.LedgerLineDimensionsPersistedCertified,
+            TrialBalanceDimensionFiltersCertified = request.TrialBalanceDimensionFiltersCertified || profile.TrialBalanceDimensionFiltersCertified,
+            ReportPackageDimensionProvenanceCertified = request.ReportPackageDimensionProvenanceCertified || profile.ReportPackageDimensionProvenanceCertified,
             DimensionalReportingEvidenceLinks = dimensionalEvidence
         };
     }
@@ -570,7 +573,7 @@ public sealed class AccountingProductionReadinessService
             "Dimensional accounting",
             ResolveIssueStatus(dimensionalIssues),
             ScoreFromIssues(dimensionalIssues, hasPositiveEvidence: dimensionalReportingReadiness.HasRetainedEvidence),
-            $"Rules/generated postings plus {dimensionalReportingReadiness.CompletedControlCount}/{dimensionalReportingReadiness.RequiredControlCount} report/query/export dimension control(s) were inspected for canonical LedgerDimensionSet coverage.",
+            $"Rules/generated postings plus {dimensionalReportingReadiness.CompletedControlCount}/{dimensionalReportingReadiness.RequiredControlCount} ledger/query/report/export dimension control(s) were inspected for canonical LedgerDimensionSet coverage.",
             dimensionalIssues,
             UiApiRoutes.LedgerAccountingConfiguration,
             dimensionalReportingReadiness.EvidenceReferences));
@@ -622,6 +625,9 @@ public sealed class AccountingProductionReadinessService
             request.CrossPeriodReportDimensionQueriesCertified,
             request.JournalQueryDimensionFiltersCertified,
             request.ExternalExportDimensionMappingCertified,
+            request.LedgerLineDimensionsPersistedCertified,
+            request.TrialBalanceDimensionFiltersCertified,
+            request.ReportPackageDimensionProvenanceCertified,
             NormalizeEvidenceReferences(request.DimensionalReportingEvidenceLinks));
 
     private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildDimensionalReportingIssues(
@@ -635,7 +641,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.DimensionalAccounting,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Dimensional reporting certification is not scoped to a Meridian ledger book.",
-                "Select the target ledger book before certifying period reports, cross-period reports, journal filters, and export dimension mappings."));
+                "Select the target ledger book before certifying ledger-line persistence, trial-balance filters, period reports, cross-period reports, journal filters, report packages, and export dimension mappings."));
         }
 
         if (!readiness.HasRetainedEvidence)
@@ -645,7 +651,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.DimensionalAccounting,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Dimensional reporting certification has no retained evidence links.",
-                "Attach retained evidence identifying the selected ledger book and the certified report/query/export dimension checks before production rollout."));
+                "Attach retained evidence identifying the selected ledger book and the certified ledger-line, report/query, provenance, and export dimension checks before production rollout."));
         }
         else if (readiness.HasLedgerBookScope && !readiness.HasLedgerBookScopedEvidence)
         {
@@ -735,6 +741,66 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "External export dimension mapping certification lacks retained export-mapping evidence for the selected ledger book.",
                 "Attach retained evidence naming the selected ledger book and external export, external-GL mapping, or GL export dimension checks.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.LedgerLineDimensionsPersistedCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.ledger-line-persistence-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posted ledger-line dimension persistence has not been certified.",
+                "Prove posted journal lines retain canonical LedgerDimensionSet scope before production reporting or export certification."));
+        }
+        else if (!readiness.HasLedgerLineDimensionPersistenceEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.ledger-line-persistence-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Ledger-line dimension persistence certification lacks retained ledger-line evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and ledger-line, line-dimension, posted-ledger-line, or journal-line-dimension checks.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.TrialBalanceDimensionFiltersCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.trial-balance-filters-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Trial-balance dimension filters have not been certified.",
+                "Prove period and aggregate trial-balance routes filter by canonical fund, entity, book, instrument, cost-center, counterparty, and external-GL dimensions."));
+        }
+        else if (!readiness.HasTrialBalanceDimensionFilterEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.trial-balance-filters-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Trial-balance dimension filter certification lacks retained trial-balance evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and trial-balance-filter, trial-balance-dimension, or ledger-report-filter checks.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.ReportPackageDimensionProvenanceCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.report-package-provenance-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Report-package dimensional provenance has not been certified.",
+                "Prove report packages, NAV packages, and report-line provenance retain canonical dimensions from posted ledger lines through certification and export."));
+        }
+        else if (!readiness.HasReportPackageDimensionProvenanceEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.report-package-provenance-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Report-package dimensional provenance certification lacks retained report-package evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and report-package-provenance, report-line-provenance, package-dimension, or NAV-package checks.",
                 readiness.EvidenceReferences));
         }
 

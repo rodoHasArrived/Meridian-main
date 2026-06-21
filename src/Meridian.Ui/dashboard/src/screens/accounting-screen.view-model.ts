@@ -492,6 +492,9 @@ interface AccountingProductionCertificationProfileDraft {
   crossPeriodReportDimensionQueriesCertified: boolean;
   journalQueryDimensionFiltersCertified: boolean;
   externalExportDimensionMappingCertified: boolean;
+  ledgerLineDimensionsPersistedCertified: boolean;
+  trialBalanceDimensionFiltersCertified: boolean;
+  reportPackageDimensionProvenanceCertified: boolean;
   evidenceText: string;
 }
 
@@ -3415,6 +3418,12 @@ export function useAccountingConfigurationViewModel(
           return { ...current, journalQueryDimensionFiltersCertified: checked };
         case "external-export-dimensions":
           return { ...current, externalExportDimensionMappingCertified: checked };
+        case "ledger-line-dimensions":
+          return { ...current, ledgerLineDimensionsPersistedCertified: checked };
+        case "trial-balance-dimensions":
+          return { ...current, trialBalanceDimensionFiltersCertified: checked };
+        case "report-package-dimensions":
+          return { ...current, reportPackageDimensionProvenanceCertified: checked };
         default:
           return current;
       }
@@ -3449,6 +3458,9 @@ export function useAccountingConfigurationViewModel(
       crossPeriodReportDimensionQueriesCertified: productionCertificationDraft.crossPeriodReportDimensionQueriesCertified,
       journalQueryDimensionFiltersCertified: productionCertificationDraft.journalQueryDimensionFiltersCertified,
       externalExportDimensionMappingCertified: productionCertificationDraft.externalExportDimensionMappingCertified,
+      ledgerLineDimensionsPersistedCertified: productionCertificationDraft.ledgerLineDimensionsPersistedCertified,
+      trialBalanceDimensionFiltersCertified: productionCertificationDraft.trialBalanceDimensionFiltersCertified,
+      reportPackageDimensionProvenanceCertified: productionCertificationDraft.reportPackageDimensionProvenanceCertified,
       updatedAtUtc: new Date().toISOString(),
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
@@ -5166,7 +5178,7 @@ function buildAccountingProductionReadinessViewModel(
   const tenantAdministration = readiness.tenantAdministration ?? null;
   const dimensionalReporting = readiness.dimensionalReporting ?? null;
   const dimensionalReportingLabel = dimensionalReporting
-    ? `${dimensionalReporting.completedControlCount}/${dimensionalReporting.requiredControlCount} report/query/export dimension controls | ledger book ${dimensionalReporting.ledgerBookId?.trim() || "missing"}`
+    ? `${dimensionalReporting.completedControlCount}/${dimensionalReporting.requiredControlCount} ledger/query/report/export dimension controls | ledger book ${dimensionalReporting.ledgerBookId?.trim() || "missing"}`
     : "Dimensional reporting evidence unavailable";
   const dimensionalReportingEvidenceLabel = dimensionalReporting
     ? `${dimensionalReporting.evidenceReferences.length} retained dimensional evidence reference${dimensionalReporting.evidenceReferences.length === 1 ? "" : "s"}`
@@ -5338,6 +5350,24 @@ function buildAccountingProductionCertificationProfileControls(
       label: "Export dimensions",
       description: "External GL export mappings retain certified dimensions.",
       checked: draft?.externalExportDimensionMappingCertified ?? false
+    },
+    {
+      id: "ledger-line-dimensions",
+      label: "Line dimensions",
+      description: "Posted ledger lines persist canonical LedgerDimensionSet scope.",
+      checked: draft?.ledgerLineDimensionsPersistedCertified ?? false
+    },
+    {
+      id: "trial-balance-dimensions",
+      label: "Trial balance filters",
+      description: "Trial-balance routes filter by retained canonical dimensions.",
+      checked: draft?.trialBalanceDimensionFiltersCertified ?? false
+    },
+    {
+      id: "report-package-dimensions",
+      label: "Package provenance",
+      description: "Report and NAV packages retain dimensional line provenance.",
+      checked: draft?.reportPackageDimensionProvenanceCertified ?? false
     }
   ];
 }
@@ -5357,6 +5387,9 @@ function buildAccountingProductionCertificationProfileDraft(
     crossPeriodReportDimensionQueriesCertified: profile.crossPeriodReportDimensionQueriesCertified,
     journalQueryDimensionFiltersCertified: profile.journalQueryDimensionFiltersCertified,
     externalExportDimensionMappingCertified: profile.externalExportDimensionMappingCertified,
+    ledgerLineDimensionsPersistedCertified: profile.ledgerLineDimensionsPersistedCertified ?? false,
+    trialBalanceDimensionFiltersCertified: profile.trialBalanceDimensionFiltersCertified ?? false,
+    reportPackageDimensionProvenanceCertified: profile.reportPackageDimensionProvenanceCertified ?? false,
     evidenceText: profile.evidenceReferences.join("\n")
   };
 }
@@ -5387,6 +5420,9 @@ function buildAccountingProductionCertificationProfileFromReadiness(
     crossPeriodReportDimensionQueriesCertified: dimensionalReporting?.crossPeriodReportDimensionQueriesCertified ?? false,
     journalQueryDimensionFiltersCertified: dimensionalReporting?.journalQueryDimensionFiltersCertified ?? false,
     externalExportDimensionMappingCertified: dimensionalReporting?.externalExportDimensionMappingCertified ?? false,
+    ledgerLineDimensionsPersistedCertified: dimensionalReporting?.ledgerLineDimensionsPersistedCertified ?? false,
+    trialBalanceDimensionFiltersCertified: dimensionalReporting?.trialBalanceDimensionFiltersCertified ?? false,
+    reportPackageDimensionProvenanceCertified: dimensionalReporting?.reportPackageDimensionProvenanceCertified ?? false,
     updatedAtUtc: "",
     updatedBy: "not retained",
     evidenceReferences,

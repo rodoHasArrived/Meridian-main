@@ -283,6 +283,18 @@
                                                   IsChecked="{Binding ExternalExportDimensionMappingCertified, Mode=TwoWay}"
                                                   Margin="0,0,0,6"
                                                   AutomationProperties.AutomationId="AccountingProductionCertificationExportDimensionsCheckBox" />
+                                        <CheckBox Content="Line dimensions"
+                                                  IsChecked="{Binding LedgerLineDimensionsPersistedCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationLedgerLineDimensionsCheckBox" />
+                                        <CheckBox Content="Trial balance filters"
+                                                  IsChecked="{Binding TrialBalanceDimensionFiltersCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationTrialBalanceDimensionsCheckBox" />
+                                        <CheckBox Content="Package provenance"
+                                                  IsChecked="{Binding ReportPackageDimensionProvenanceCertified, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationReportPackageDimensionsCheckBox" />
                                     </UniformGrid>
                                     <TextBox Text="{Binding ProductionCertificationEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              MinHeight="32"

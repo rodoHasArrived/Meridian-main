@@ -241,8 +241,9 @@ generated rules are present until retained evidence proves the selected ledger b
 through posting candidates, lifecycle, close/reporting, import, reconciliation, mapping,
 guarded-export, direct-lending projection, and strategy-run ledger-read workflows.
 Close/Reporting readiness also consumes dimensional reporting readiness directly, so report
-packages remain blocked until period reports, cross-period reports, journal dimension filters, and
-external-export dimension mappings have retained ledger-book-scoped evidence.
+packages remain blocked until posted ledger-line dimensions, trial-balance filters, period reports,
+cross-period reports, journal dimension filters, report-package provenance, and external-export
+dimension mappings have retained ledger-book-scoped evidence.
 Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
@@ -261,9 +262,11 @@ production slice remains import/reconciliation/guarded-export only. Failed retai
 are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
 import external GL data, post journals, certify exports, or close periods.
 Dimensional accounting readiness also fails closed until period report filters, cross-period
-report filters, journal dimension filters, and external-export dimension mappings are certified
+report filters, journal dimension filters, posted ledger-line dimensions, trial-balance filters,
+report-package provenance, and external-export dimension mappings are certified
 with retained evidence naming the selected ledger book. Those dimensional controls are also
-evidence-qualified per lane: period reports, cross-period reports, journal filters, and external
+evidence-qualified per lane: ledger-line persistence, trial-balance filters, period reports,
+cross-period reports, journal filters, report-package provenance, and external
 export mappings each require matching retained evidence, or an explicit full dimensional or
 production certification packet, before readiness counts the control as complete.
 Tenant administration readiness also treats operational hardening as first-class setup scope:

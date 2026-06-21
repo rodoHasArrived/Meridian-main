@@ -206,6 +206,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private bool _crossPeriodReportDimensionQueriesCertified;
     private bool _journalQueryDimensionFiltersCertified;
     private bool _externalExportDimensionMappingCertified;
+    private bool _ledgerLineDimensionsPersistedCertified;
+    private bool _trialBalanceDimensionFiltersCertified;
+    private bool _reportPackageDimensionProvenanceCertified;
     private string _tenantAdministrationProfileStatusText = "Tenant administration setup profile has not loaded.";
     private string _tenantAdministrationProfileScopeText = "Tenant and company scope have not loaded.";
     private string _tenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
@@ -637,6 +640,24 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _externalExportDimensionMappingCertified;
         set => SetProperty(ref _externalExportDimensionMappingCertified, value);
+    }
+
+    public bool LedgerLineDimensionsPersistedCertified
+    {
+        get => _ledgerLineDimensionsPersistedCertified;
+        set => SetProperty(ref _ledgerLineDimensionsPersistedCertified, value);
+    }
+
+    public bool TrialBalanceDimensionFiltersCertified
+    {
+        get => _trialBalanceDimensionFiltersCertified;
+        set => SetProperty(ref _trialBalanceDimensionFiltersCertified, value);
+    }
+
+    public bool ReportPackageDimensionProvenanceCertified
+    {
+        get => _reportPackageDimensionProvenanceCertified;
+        set => SetProperty(ref _reportPackageDimensionProvenanceCertified, value);
     }
 
     public bool CanSaveProductionCertificationProfile =>
@@ -1213,7 +1234,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 ResolveTenantAdministrationCompanyId(),
                 ReconciliationLedgerBookNativeCertified,
                 DirectLendingLedgerBookNativeCertified,
-                StrategyLedgerReadLedgerBookNativeCertified);
+                StrategyLedgerReadLedgerBookNativeCertified,
+                LedgerLineDimensionsPersistedCertified,
+                TrialBalanceDimensionFiltersCertified,
+                ReportPackageDimensionProvenanceCertified);
 
             var saved = await _productionCertificationProfileStore.UpsertAsync(
                 new AccountingProductionCertificationProfileUpsertRequestDto(
@@ -1750,6 +1774,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         CrossPeriodReportDimensionQueriesCertified = false;
         JournalQueryDimensionFiltersCertified = false;
         ExternalExportDimensionMappingCertified = false;
+        LedgerLineDimensionsPersistedCertified = false;
+        TrialBalanceDimensionFiltersCertified = false;
+        ReportPackageDimensionProvenanceCertified = false;
         TenantAdministrationProfileStatusText = "Locked until a fund context is selected.";
         TenantAdministrationProfileScopeText = "Tenant and company scope require a fund context.";
         TenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
@@ -1975,6 +2002,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         CrossPeriodReportDimensionQueriesCertified = profile.CrossPeriodReportDimensionQueriesCertified;
         JournalQueryDimensionFiltersCertified = profile.JournalQueryDimensionFiltersCertified;
         ExternalExportDimensionMappingCertified = profile.ExternalExportDimensionMappingCertified;
+        LedgerLineDimensionsPersistedCertified = profile.LedgerLineDimensionsPersistedCertified;
+        TrialBalanceDimensionFiltersCertified = profile.TrialBalanceDimensionFiltersCertified;
+        ReportPackageDimensionProvenanceCertified = profile.ReportPackageDimensionProvenanceCertified;
         ProductionCertificationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
         ProductionCertificationProfileScopeText = profile.LedgerBookId.HasValue
             ? $"Tenant {FormatReadinessScope(profile.TenantId)}; company {FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; ledger book {profile.LedgerBookId:D}."
@@ -2233,6 +2263,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             CrossPeriodReportDimensionQueriesCertified: CrossPeriodReportDimensionQueriesCertified,
             JournalQueryDimensionFiltersCertified: JournalQueryDimensionFiltersCertified,
             ExternalExportDimensionMappingCertified: ExternalExportDimensionMappingCertified,
+            LedgerLineDimensionsPersistedCertified: LedgerLineDimensionsPersistedCertified,
+            TrialBalanceDimensionFiltersCertified: TrialBalanceDimensionFiltersCertified,
+            ReportPackageDimensionProvenanceCertified: ReportPackageDimensionProvenanceCertified,
             DimensionalReportingEvidenceLinks: NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText),
             RequiredLedgerBookScopes: requiredScopes);
     }
@@ -2250,7 +2283,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             $"{readiness.ExternalGlProviderCount} provider(s), {readiness.CertifiedExternalGlMappingProfileCount} certified mapping profile(s); live posting {(readiness.ExternalGlLivePostingEnabled ? "available" : "disabled")}.";
         ProductionReadinessDimensionalReportingText = readiness.DimensionalReporting is null
             ? "Dimensional reporting readiness is unavailable."
-            : $"{readiness.DimensionalReporting.CompletedControlCount}/{readiness.DimensionalReporting.RequiredControlCount} report/query/export dimension control(s); ledger book {FormatReadinessScope(readiness.DimensionalReporting.LedgerBookId?.ToString("D"))}; {readiness.DimensionalReporting.EvidenceReferences.Count} retained evidence link(s).";
+            : $"{readiness.DimensionalReporting.CompletedControlCount}/{readiness.DimensionalReporting.RequiredControlCount} ledger/query/report/export dimension control(s); ledger book {FormatReadinessScope(readiness.DimensionalReporting.LedgerBookId?.ToString("D"))}; {readiness.DimensionalReporting.EvidenceReferences.Count} retained evidence link(s).";
         ProductionReadinessTenantAdminText = readiness.TenantAdministration is null
             ? "Tenant administration readiness is unavailable."
             : $"{readiness.TenantAdministration.CompletedControlCount}/{readiness.TenantAdministration.RequiredControlCount} tenant admin control(s); tenant {FormatReadinessScope(readiness.TenantAdministration.TenantId)}; company {FormatReadinessScope(readiness.TenantAdministration.CompanyId)}; {readiness.TenantAdministration.EvidenceReferences.Count} retained evidence link(s).";
