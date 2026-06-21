@@ -103,6 +103,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 closePlan,
                 ledgerBookId,
                 $"report package for period '{periodId}'"));
+            validationIssues.AddRange(BuildCloseBackedReportEvidenceScopeIssues(
+                closePlan,
+                periodId,
+                ledgerBookId,
+                evidenceLinks));
             if (!closePlan.IsPeriodLocked)
             {
                 validationIssues.Add(new AccountingConfigurationValidationIssueDto(
@@ -496,6 +501,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             closePlan,
             package.FinancialStatements.LedgerBookId,
             $"retained report package '{package.FinancialStatements.PackageId}'"));
+        issues.AddRange(BuildCloseBackedReportEvidenceScopeIssues(
+            closePlan,
+            package.FinancialStatements.PeriodId,
+            package.FinancialStatements.LedgerBookId,
+            package.FinancialStatements.EvidenceLinks));
         issues.AddRange(closePlan.ValidationIssues);
         issues.AddRange(BuildCloseCertificationIssues(closePlan));
         if (!closePlan.IsPeriodLocked)
@@ -548,6 +558,45 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 closePlan.ClosePlanId,
                 "Use the same ledger book for close workflow, report package assembly, certification, and export.")
         ];
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildCloseBackedReportEvidenceScopeIssues(
+        ClosePeriodPlanDto closePlan,
+        string periodId,
+        Guid? packageLedgerBookId,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        if (!packageLedgerBookId.HasValue)
+        {
+            return [];
+        }
+
+        var scopedRequirements = new (string Code, string Label, string[] Tokens)[]
+        {
+            ("ReportLedgerEvidenceScopeMissing", "ledger/trial-balance", ["ledger", "trial-balance"]),
+            ("ReportReconciliationEvidenceScopeMissing", "reconciliation tie-out", ["reconciliation", "tie-out"]),
+            ("ReportRenderEvidenceScopeMissing", "rendered report artifact", ["report-render", "rendered-report", "report-package"]),
+            ("ReportNavEvidenceScopeMissing", "NAV support", ["nav", "shadow-nav"])
+        };
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        foreach (var requirement in scopedRequirements)
+        {
+            var matchingEvidence = EvidenceMatching(evidenceLinks, requirement.Tokens);
+            if (matchingEvidence.Count == 0 ||
+                matchingEvidence.Any(link => EvidenceReferencesLedgerBook(link, packageLedgerBookId.Value)))
+            {
+                continue;
+            }
+
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                requirement.Code,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Close-backed report package for period '{periodId}' has retained {requirement.Label} evidence, but no link names ledger book '{packageLedgerBookId.Value:D}'.",
+                closePlan.ClosePlanId,
+                "Attach ledger-book-scoped close, ledger, reconciliation, rendered report, and NAV evidence before report certification."));
+        }
+
+        return issues;
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildRestatementCertificationIssues(
@@ -680,6 +729,10 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             link.Contains(package.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) &&
             link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
             link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase));
+
+    private static bool EvidenceReferencesLedgerBook(string evidenceLink, Guid ledgerBookId)
+        => evidenceLink.Contains(ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+           evidenceLink.Contains(ledgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {

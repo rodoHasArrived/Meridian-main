@@ -876,7 +876,9 @@ on the same retained artifact, financial statement, investor capital
 statement, realized gain/loss, NAV, export-artifact manifest, certification, validation, and restatement vocabulary.
 Operations Continuity workflow start and workflow projection DTOs can carry an optional
 `LedgerBookId`, and close-plan DTOs preserve that book scope so close/reporting clients can remain
-ledger-book-native after workflow handoff.
+ledger-book-native after workflow handoff. Close-backed report package contracts treat ledger-book
+scope as evidence scope as well: retained ledger, reconciliation, rendered-report, and NAV support
+links are expected to name the selected book before the package is ready for certification.
 Posting-rule promotion approval, close sign-off, late-adjustment, report-package certification, and external GL export certification
 request DTOs also carry `OperationsActionOriginDto` so reviewed automation can draft support but
 cannot approve, sign off, certify, or retain governed accounting evidence without a human operator.

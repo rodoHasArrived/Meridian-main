@@ -196,7 +196,9 @@ close plan so report-package, close, and ledger-book review surfaces do not lose
 handoff from Operations Continuity. Close-backed accounting report packages inherit the close plan
 book when the request omits one, block explicit ledger-book mismatches during package assembly, and
 revalidate the current close-plan book before certification so certified exports cannot drift across
-books. When `StorageOptions`
+books. Close-backed report packages with ledger-book scope also require retained ledger,
+reconciliation, rendered-report, and NAV support evidence links that name the same ledger book before
+the package can reach ready-for-review certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
 Task sign-off decisions retain authenticated actor, role, notes, and evidence, reject duplicate

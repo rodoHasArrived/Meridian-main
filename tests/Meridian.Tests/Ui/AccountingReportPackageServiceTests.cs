@@ -149,6 +149,41 @@ public sealed class AccountingReportPackageServiceTests
     }
 
     [Fact]
+    public async Task BuildPackageAsync_BlocksCloseBackedCertificationWithoutLedgerBookScopedEvidence()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+
+        var package = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-02",
+            CloseWorkflowId: workflowId,
+            EvidenceLinks:
+            [
+                "evidence:ledger:trial-balance:2027-02",
+                "evidence:reconciliation:gl-tie-out:2027-02",
+                "evidence:report-render:financial-statements:2027-02",
+                "evidence:nav:support-package:2027-02"
+            ]));
+
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportLedgerEvidenceScopeMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == $"close-plan-{workflowId:D}");
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportReconciliationEvidenceScopeMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportRenderEvidenceScopeMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportNavEvidenceScopeMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
     public async Task CertifyPackageAsync_RevalidatesCurrentClosePlanLedgerBookBeforeCertification()
     {
         var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
@@ -447,7 +482,8 @@ public sealed class AccountingReportPackageServiceTests
         retained.Should().ContainSingle();
         retained[0].Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
         retained[0].Certification.EvidenceLinks.Should().Contain(CertificationEvidence(ready));
-        retained[0].FinancialStatements.EvidenceLinks.Should().Contain("evidence:ledger:trial-balance:2027-05");
+        retained[0].FinancialStatements.EvidenceLinks.Should().Contain(link =>
+            link.Contains("evidence:ledger:trial-balance:2027-05", StringComparison.OrdinalIgnoreCase));
         retained[0].FinancialStatements.EvidenceLinks.Should().NotContain("evidence:ledger:trial-balance:2027-05-rebuild");
         certified!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
     }
@@ -483,11 +519,14 @@ public sealed class AccountingReportPackageServiceTests
         Guid? CloseWorkflowId = null,
         Guid? LedgerBookId = null,
         IReadOnlyList<string>? EvidenceLinks = null)
-        => new(
+    {
+        var effectiveLedgerBookId = LedgerBookId ?? DefaultLedgerBookId;
+        var ledgerBookEvidenceScope = effectiveLedgerBookId.ToString("D");
+        return new(
             FundProfileId: fundProfileId,
             PeriodId: periodId,
             Actor: "controller",
-            LedgerBookId: LedgerBookId ?? DefaultLedgerBookId,
+            LedgerBookId: effectiveLedgerBookId,
             CloseWorkflowId: CloseWorkflowId,
             BeginningCapital: 200_000m,
             Contributions: 25_000m,
@@ -498,11 +537,12 @@ public sealed class AccountingReportPackageServiceTests
             PriorPackageId: PriorPackageId,
             EvidenceLinks: EvidenceLinks ??
             [
-                $"evidence:ledger:trial-balance:{periodId}",
-                $"evidence:reconciliation:gl-tie-out:{periodId}",
-                $"evidence:report-render:financial-statements:{periodId}",
-                $"evidence:nav:support-package:{periodId}"
+                $"evidence:ledger:trial-balance:{periodId}:book:{ledgerBookEvidenceScope}",
+                $"evidence:reconciliation:gl-tie-out:{periodId}:book:{ledgerBookEvidenceScope}",
+                $"evidence:report-render:financial-statements:{periodId}:book:{ledgerBookEvidenceScope}",
+                $"evidence:nav:support-package:{periodId}:book:{ledgerBookEvidenceScope}"
             ]);
+    }
 
     private static string CertificationEvidence(
         AccountingReportPackageBundleDto package,

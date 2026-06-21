@@ -371,8 +371,8 @@ live external posting disabled. The
 and forwards the shared certification request to the same service so endpoint adapters resolve the
 authenticated actor, reject assistant or automation-origin certification, return 404 for missing
 packages, require one retained approval artifact that references the package id, certification id,
-and exact period, and fail closed on draft, duplicate, stale close-plan, or critically blocked
-retained packages.
+and exact period, and fail closed on draft, duplicate, stale close-plan, missing ledger-book-scoped
+close/report evidence, or critically blocked retained packages.
 ledger-owned capital-account impacts, so a posted fund event that touches multiple capital accounts
 keeps those account/investor identities visible in shared Accounting, browser, and WPF projections
 instead of collapsing every row to the event-level fallback account. When a posted fund event
