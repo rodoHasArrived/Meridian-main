@@ -2196,6 +2196,86 @@ describe("accounting-screen view model", () => {
     expect(signOffCloseTask).not.toHaveBeenCalled();
   });
 
+  it("renders service-owned close readiness rows when report packages provide them", async () => {
+    const serviceOwnedPackage: AccountingReportPackageBundle = {
+      ...accountingReportPackage,
+      closeReadinessItems: [
+        {
+          itemId: "period-lock",
+          category: "PeriodLock",
+          label: "Period lock",
+          state: "Blocked",
+          summary: "The accounting period remains open for late adjustments.",
+          requiredAction: "Lock the period after close approvals before final report certification.",
+          blockingIssueCount: 1,
+          evidenceLinks: ["evidence/period-lock"],
+          blockingIssues: [
+            {
+              code: "PeriodNotLocked",
+              severity: "Critical",
+              message: "The close period is not locked.",
+              targetId: "close-plan-alpha-202605"
+            }
+          ],
+          ledgerBookId: "book-alpha",
+          dimensions: {
+            fundId: "fund-alpha",
+            bookId: "book-alpha",
+            externalGlDimensions: {}
+          }
+        },
+        {
+          itemId: "report-evidence-package",
+          category: "ReportEvidence",
+          label: "Report evidence package",
+          state: "ReadyForReview",
+          summary: "4 retained evidence links support the package.",
+          requiredAction: "Attach ledger, reconciliation, rendered report, NAV, certification, and package evidence before certification.",
+          blockingIssueCount: 0,
+          evidenceLinks: ["evidence/ledger", "evidence/reconciliation", "evidence/report", "evidence/nav"],
+          blockingIssues: [],
+          ledgerBookId: "book-alpha",
+          dimensions: {
+            fundId: "fund-alpha",
+            bookId: "book-alpha",
+            externalGlDimensions: {}
+          }
+        }
+      ]
+    };
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => closePeriodPlan),
+      createLateAdjustment: vi.fn(async () => closePeriodPlan),
+      reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
+      signOffCloseTask: vi.fn(async () => closePeriodPlan),
+      buildPackage: vi.fn(async () => serviceOwnedPackage),
+      certifyPackage: vi.fn(async () => serviceOwnedPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [serviceOwnedPackage])
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.packageRows).toHaveLength(1));
+
+    expect(result.current.certificationSafeguards).toEqual([
+      expect.objectContaining({
+        id: "period-lock",
+        label: "Period lock",
+        value: "Blocked",
+        detail: expect.stringContaining("1 blocking issue attached."),
+        tone: "danger"
+      }),
+      expect.objectContaining({
+        id: "report-evidence-package",
+        label: "Report evidence package",
+        value: "Ready for review",
+        detail: expect.stringContaining("4 evidence links retained."),
+        tone: "success"
+      })
+    ]);
+  });
+
   it("reviews pending late adjustments through the shared close-management endpoint", async () => {
     const pendingLateAdjustmentPlan: ClosePeriodPlan = {
       ...closePeriodPlan,

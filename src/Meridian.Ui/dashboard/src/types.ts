@@ -2981,6 +2981,22 @@ export interface CertifyAccountingReportPackageRequest {
   correlationId?: string | null;
 }
 
+export type AccountingReadinessState = "NotStarted" | "NeedsAttention" | "Blocked" | "ReadyForReview" | "Certified";
+
+export interface AccountingCloseReadinessItem {
+  itemId: string;
+  category: string;
+  label: string;
+  state: AccountingReadinessState;
+  summary: string;
+  requiredAction: string;
+  blockingIssueCount: number;
+  evidenceLinks: string[];
+  blockingIssues: AccountingConfigurationValidationIssue[];
+  ledgerBookId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+}
+
 export interface AccountingReportPackageBundle {
   financialStatements: FinancialStatementPackage;
   investorCapitalStatements: InvestorCapitalStatement[];
@@ -2990,6 +3006,7 @@ export interface AccountingReportPackageBundle {
   validationIssues: AccountingConfigurationValidationIssue[];
   exportArtifacts?: ReportExportArtifact[] | null;
   closeWorkflowId?: string | null;
+  closeReadinessItems?: AccountingCloseReadinessItem[] | null;
 }
 
 export interface AccountingSystemProvider {

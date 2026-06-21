@@ -271,9 +271,10 @@ accounting report-package history endpoints, showing checklist dependencies, sig
 materiality, close-calendar milestones, period-lock posture, late adjustments, package
 certification, investor statement counts, realized gain/loss, NAV, statement-line provenance,
 export artifact certification state, restatement state, validation issues, and retained evidence
-counts. It also renders certification safeguards for close checklist sign-off, period-lock posture,
-critical validation blockers, export-artifact certification, restatement workflow state, and retained
-package evidence so operators can see readiness before invoking certification. Its package-build
+counts. It renders service-owned close/report readiness rows from the package bundle when present,
+covering close checklist sign-off, period-lock posture, late-adjustment review, report evidence,
+export-artifact certification, restatement workflow state, blocker counts, and retained package
+evidence; older payloads still fall back to the browser's display-only safeguard aggregation. Its package-build
 command posts workflow, fund, period, package-seed, and evidence context
 to the shared accounting report package endpoint, and its certify command posts the selected
 retained package id, reviewer notes, and evidence links to the shared certification endpoint. Its

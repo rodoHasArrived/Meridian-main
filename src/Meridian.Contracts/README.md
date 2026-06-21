@@ -978,7 +978,10 @@ capital, realized gain/loss, NAV, and provenance artifacts carry the retained le
 `LedgerDimensionSetDto` scope so report consumers can remain book- and dimension-native without
 reconstructing package context from parent rows or retained-history routes. The retained bundle
 also preserves tenant and company scope so browser/WPF history routes do not blend packages across
-companies that share a fund, period, or ledger-book naming convention. Package
+companies that share a fund, period, or ledger-book naming convention. The bundle also carries
+service-owned close readiness rows for checklist/sign-off posture, period lock, late-adjustment
+review, report evidence, export certification, and restatement workflow state so browser, WPF, and
+API consumers do not rebuild certification safeguards locally. Package
 certification remains `Draft` when close checklist dependencies are incomplete, approved sign-offs
 are missing, or material late adjustments are not approved, and close-backed certification can
 refresh the current close plan before moving a retained package to `Certified`.

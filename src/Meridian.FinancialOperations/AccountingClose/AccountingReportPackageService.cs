@@ -224,6 +224,13 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             certification.RecordedAtUtc,
             evidenceLinks,
             restatement);
+        var closeReadinessItems = BuildCloseReadinessItems(
+            closePlan,
+            financialStatements,
+            certification,
+            validationIssues,
+            exportArtifacts,
+            restatement);
 
         var bundle = new AccountingReportPackageBundleDto(
             financialStatements,
@@ -235,7 +242,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             exportArtifacts,
             request.CloseWorkflowId,
             tenantId,
-            companyId);
+            companyId,
+            closeReadinessItems);
         await SavePackageAsync(bundle, ct).ConfigureAwait(false);
         return bundle;
     }
@@ -389,7 +397,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                         artifact,
                         certifiedAtUtc,
                         evidenceLinks))
-                    .ToArray()
+                    .ToArray(),
+                CloseReadinessItems = CertifyCloseReadinessItems(package.CloseReadinessItems, evidenceLinks)
             };
 
             rows[index] = certified;
@@ -711,6 +720,234 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         return issues;
     }
+
+    private static IReadOnlyList<AccountingCloseReadinessItemDto> BuildCloseReadinessItems(
+        ClosePeriodPlanDto? closePlan,
+        FinancialStatementPackageDto financialStatements,
+        ReportCertificationDto certification,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
+        IReadOnlyList<ReportExportArtifactDto> exportArtifacts,
+        RestatementWorkflowDto? restatement)
+    {
+        var criticalIssues = validationIssues
+            .Where(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .ToArray();
+        var restatementEvidenceLinks = restatement?.EvidenceLinks ?? [];
+        var evidenceLinks = NormalizeEvidenceLinks([
+            .. financialStatements.EvidenceLinks,
+            .. certification.EvidenceLinks,
+            .. exportArtifacts.SelectMany(static artifact => artifact.EvidenceLinks),
+            .. restatementEvidenceLinks
+        ]);
+        var rows = new List<AccountingCloseReadinessItemDto>();
+
+        if (closePlan is null)
+        {
+            rows.Add(BuildCloseReadinessItem(
+                "close-workflow-linkage",
+                "CloseWorkflow",
+                "Close workflow linkage",
+                AccountingReadinessStateDto.NeedsAttention,
+                "The package is retained without a close workflow snapshot.",
+                "Build the report package from a close workflow before final certification.",
+                financialStatements,
+                evidenceLinks,
+                IssuesFor(criticalIssues, "ClosePlanMissing", "CloseWorkflowRequired")));
+        }
+        else
+        {
+            var openTasks = closePlan.Tasks
+                .Where(static task => task.Status != CloseTaskStatusDto.SignedOff)
+                .ToArray();
+            var signOffGaps = closePlan.Tasks
+                .Where(static task => task.SignOffs.All(static signOff => signOff.ApprovalState != ManualJournalEntryStatusDto.Approved))
+                .ToArray();
+            var checklistIssues = IssuesFor(criticalIssues, "CloseChecklistIncomplete", "CloseSignOffMissing");
+            rows.Add(BuildCloseReadinessItem(
+                "close-checklist-signoffs",
+                "CloseChecklist",
+                "Close checklist and sign-off matrix",
+                ResolveReadinessState(checklistIssues, openTasks.Length + signOffGaps.Length, certification.State),
+                openTasks.Length == 0 && signOffGaps.Length == 0
+                    ? "Every close checklist task has retained approved sign-off evidence."
+                    : $"{openTasks.Length:N0} task(s) remain open and {signOffGaps.Length:N0} task(s) lack approved sign-off evidence.",
+                "Complete dependencies and retain required role-scoped sign-off evidence before report certification.",
+                financialStatements,
+                closePlan.Tasks.SelectMany(static task => task.EvidenceLinks).Concat(evidenceLinks),
+                checklistIssues));
+
+            var periodLockIssues = IssuesFor(criticalIssues, "PeriodNotLocked");
+            rows.Add(BuildCloseReadinessItem(
+                "period-lock",
+                "PeriodLock",
+                "Period lock",
+                closePlan.IsPeriodLocked
+                    ? ResolveReadinessState(periodLockIssues, 0, certification.State)
+                    : AccountingReadinessStateDto.Blocked,
+                closePlan.IsPeriodLocked
+                    ? "The accounting period is locked after close."
+                    : "The accounting period remains open for late adjustments.",
+                "Lock the period after close approvals before final report certification.",
+                financialStatements,
+                closePlan.Tasks.SelectMany(static task => task.EvidenceLinks).Concat(evidenceLinks),
+                periodLockIssues));
+
+            var pendingLateAdjustments = closePlan.LateAdjustments
+                .Where(adjustment =>
+                    RequiresMaterialLateAdjustmentApproval(adjustment, closePlan.MaterialityPolicy) &&
+                    IsLateAdjustmentDecisionPending(adjustment))
+                .ToArray();
+            var lateAdjustmentIssues = IssuesFor(criticalIssues, "LateAdjustmentApprovalPending");
+            rows.Add(BuildCloseReadinessItem(
+                "late-adjustment-review",
+                "LateAdjustments",
+                "Late adjustment review",
+                ResolveReadinessState(lateAdjustmentIssues, pendingLateAdjustments.Length, certification.State),
+                pendingLateAdjustments.Length == 0
+                    ? "No material late adjustments are pending approval."
+                    : $"{pendingLateAdjustments.Length:N0} material late adjustment(s) still require approval or rejection.",
+                "Approve or reject material late adjustments with retained evidence before certification.",
+                financialStatements,
+                closePlan.LateAdjustments.SelectMany(static adjustment => adjustment.EvidenceLinks).Concat(evidenceLinks),
+                lateAdjustmentIssues));
+        }
+
+        rows.Add(BuildCloseReadinessItem(
+            "report-evidence-package",
+            "ReportEvidence",
+            "Report evidence package",
+            ResolveReadinessState(
+                IssuesFor(
+                    criticalIssues,
+                    "ReportLedgerEvidenceMissing",
+                    "ReportReconciliationEvidenceMissing",
+                    "ReportRenderEvidenceMissing",
+                    "ReportNavEvidenceMissing",
+                    "ReportLedgerEvidenceScopeMissing",
+                    "ReportReconciliationEvidenceScopeMissing",
+                    "ReportRenderEvidenceScopeMissing",
+                    "ReportNavEvidenceScopeMissing"),
+                evidenceLinks.Count == 0 ? 1 : 0,
+                certification.State),
+            evidenceLinks.Count > 0
+                ? $"{evidenceLinks.Count:N0} retained evidence link(s) support the package."
+                : "No retained report evidence links are attached.",
+            "Attach ledger, reconciliation, rendered report, NAV, certification, and package evidence before certification.",
+            financialStatements,
+            evidenceLinks,
+            IssuesFor(
+                criticalIssues,
+                "ReportLedgerEvidenceMissing",
+                "ReportReconciliationEvidenceMissing",
+                "ReportRenderEvidenceMissing",
+                "ReportNavEvidenceMissing",
+                "ReportLedgerEvidenceScopeMissing",
+                "ReportReconciliationEvidenceScopeMissing",
+                "ReportRenderEvidenceScopeMissing",
+                "ReportNavEvidenceScopeMissing")));
+
+        var uncertifiedExports = exportArtifacts
+            .Count(static artifact => artifact.CertificationState != AccountingCertificationStateDto.Certified);
+        rows.Add(BuildCloseReadinessItem(
+            "report-export-certification",
+            "ReportExports",
+            "Report export certification",
+            ResolveReadinessState([], uncertifiedExports, certification.State),
+            exportArtifacts.Count > 0
+                ? $"{exportArtifacts.Count - uncertifiedExports:N0}/{exportArtifacts.Count:N0} retained export artifact(s) are certified."
+                : "No retained report export artifacts are attached.",
+            "Certify the report package so every retained export artifact carries certified state and content hash.",
+            financialStatements,
+            exportArtifacts.SelectMany(static artifact => artifact.EvidenceLinks).Concat(evidenceLinks),
+            []));
+
+        if (restatement is not null)
+        {
+            rows.Add(BuildCloseReadinessItem(
+                "restatement-workflow",
+                "Restatement",
+                "Restatement workflow",
+                restatement.ApprovalState == ManualJournalEntryStatusDto.Approved
+                    ? AccountingReadinessStateDto.Certified
+                    : AccountingReadinessStateDto.NeedsAttention,
+                $"Restatement '{restatement.RestatementId}' references prior package '{restatement.PriorPackageId}' with approval state '{restatement.ApprovalState}'.",
+                "Retain prior-package lineage and approve the restatement during report certification.",
+                financialStatements,
+                restatement.EvidenceLinks.Concat(evidenceLinks),
+                IssuesFor(
+                    criticalIssues,
+                    "RestatementPriorPackageMissing",
+                    "RestatementPriorPackageNotRetained",
+                    "RestatementPriorPackageNotCertified",
+                    "RestatementEvidenceMissing")));
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<AccountingCloseReadinessItemDto> CertifyCloseReadinessItems(
+        IReadOnlyList<AccountingCloseReadinessItemDto> items,
+        IReadOnlyList<string> evidenceLinks)
+        => items
+            .Select(item => item.BlockingIssueCount > 0 || item.State == AccountingReadinessStateDto.Blocked
+                ? item
+                : item with
+                {
+                    State = AccountingReadinessStateDto.Certified,
+                    Summary = $"{item.Label} is certified with retained package approval evidence.",
+                    EvidenceLinks = MergeEvidenceLinks(item.EvidenceLinks, evidenceLinks)
+                })
+            .ToArray();
+
+    private static AccountingCloseReadinessItemDto BuildCloseReadinessItem(
+        string itemId,
+        string category,
+        string label,
+        AccountingReadinessStateDto state,
+        string summary,
+        string requiredAction,
+        FinancialStatementPackageDto financialStatements,
+        IEnumerable<string?> evidenceLinks,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> blockingIssues)
+        => new(
+            itemId,
+            category,
+            label,
+            state,
+            summary,
+            requiredAction,
+            blockingIssues.Count,
+            NormalizeEvidenceLinks(evidenceLinks),
+            blockingIssues,
+            financialStatements.LedgerBookId,
+            financialStatements.Dimensions);
+
+    private static AccountingReadinessStateDto ResolveReadinessState(
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> blockingIssues,
+        int openItemCount,
+        AccountingCertificationStateDto certificationState)
+    {
+        if (blockingIssues.Count > 0)
+        {
+            return AccountingReadinessStateDto.Blocked;
+        }
+
+        if (certificationState == AccountingCertificationStateDto.Certified)
+        {
+            return AccountingReadinessStateDto.Certified;
+        }
+
+        return openItemCount > 0
+            ? AccountingReadinessStateDto.NeedsAttention
+            : AccountingReadinessStateDto.ReadyForReview;
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> IssuesFor(
+        IEnumerable<AccountingConfigurationValidationIssueDto> issues,
+        params string[] codes)
+        => issues
+            .Where(issue => codes.Any(code => string.Equals(issue.Code, code, StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
 
     private static string BuildPackageId(
         string fundProfileId,

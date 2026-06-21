@@ -11304,6 +11304,21 @@ function buildAccountingReportCertificationSafeguards(
   bundle: AccountingReportPackageBundle | null,
   criticalIssueCount: number
 ): AccountingReportCertificationSafeguardViewModel[] {
+  const serviceOwnedReadiness = bundle?.closeReadinessItems ?? [];
+  if (serviceOwnedReadiness.length > 0) {
+    return serviceOwnedReadiness.map((item) => ({
+      id: item.itemId,
+      label: item.label,
+      value: formatAccountingReadinessState(item.state),
+      detail: item.blockingIssueCount > 0
+        ? `${item.summary} ${item.requiredAction} ${formatCount(item.blockingIssueCount, "blocking issue")} attached.`
+        : item.evidenceLinks.length > 0
+          ? `${item.summary} ${formatCount(item.evidenceLinks.length, "evidence link")} retained.`
+          : `${item.summary} ${item.requiredAction}`,
+      tone: accountingReadinessStateTone(item.state)
+    }));
+  }
+
   const tasks = closePlan?.tasks ?? [];
   const signedOffTaskCount = tasks.filter((task) => task.status === "SignedOff").length;
   const openTaskCount = tasks.filter((task) => task.status !== "SignedOff").length;
@@ -11396,6 +11411,33 @@ function buildAccountingReportCertificationSafeguards(
       tone: bundle ? evidenceCount > 0 ? "success" : "warning" : "default"
     }
   ];
+}
+
+function formatAccountingReadinessState(state: string): string {
+  const labels: Record<string, string> = {
+    NotStarted: "Not started",
+    NeedsAttention: "Needs attention",
+    Blocked: "Blocked",
+    ReadyForReview: "Ready for review",
+    Certified: "Certified"
+  };
+  return labels[state] ?? state;
+}
+
+function accountingReadinessStateTone(state: string): AccountingToolingTone {
+  if (state === "Certified" || state === "ReadyForReview") {
+    return "success";
+  }
+
+  if (state === "Blocked") {
+    return "danger";
+  }
+
+  if (state === "NeedsAttention") {
+    return "warning";
+  }
+
+  return "default";
 }
 
 function buildAccountingReportExportManifestViewModel(

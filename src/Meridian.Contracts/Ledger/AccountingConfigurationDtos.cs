@@ -103,6 +103,16 @@ public enum AccountingCertificationStateDto
     Superseded = 4
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<AccountingReadinessStateDto>))]
+public enum AccountingReadinessStateDto
+{
+    NotStarted = 0,
+    NeedsAttention = 1,
+    Blocked = 2,
+    ReadyForReview = 3,
+    Certified = 4
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<CloseTaskStatusDto>))]
 public enum CloseTaskStatusDto
 {
@@ -2035,6 +2045,29 @@ public sealed record CertifyAccountingReportPackageRequestDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record AccountingCloseReadinessItemDto(
+    string ItemId,
+    string Category,
+    string Label,
+    AccountingReadinessStateDto State,
+    string Summary,
+    string RequiredAction,
+    int BlockingIssueCount,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto>? BlockingIssues = null,
+    Guid? LedgerBookId = null,
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+
+    public IReadOnlyList<AccountingConfigurationValidationIssueDto> BlockingIssues { get; init; } =
+        BlockingIssues ?? [];
+
+    public LedgerDimensionSetDto Dimensions { get; init; } =
+        Dimensions ?? new LedgerDimensionSetDto(BookId: LedgerBookId?.ToString("D"));
+}
+
 public sealed record AccountingReportPackageBundleDto(
     FinancialStatementPackageDto FinancialStatements,
     IReadOnlyList<InvestorCapitalStatementDto> InvestorCapitalStatements,
@@ -2045,13 +2078,17 @@ public sealed record AccountingReportPackageBundleDto(
     IReadOnlyList<ReportExportArtifactDto>? ExportArtifacts = null,
     Guid? CloseWorkflowId = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    IReadOnlyList<AccountingCloseReadinessItemDto>? CloseReadinessItems = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
 
     public IReadOnlyList<ReportExportArtifactDto> ExportArtifacts { get; init; } =
         ExportArtifacts ?? [];
+
+    public IReadOnlyList<AccountingCloseReadinessItemDto> CloseReadinessItems { get; init; } =
+        CloseReadinessItems ?? [];
 }
 
 public sealed record ManualJournalEntryWorkbenchDto(

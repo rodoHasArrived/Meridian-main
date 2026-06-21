@@ -51,6 +51,16 @@ public sealed class AccountingReportPackageServiceTests
             issue.Code == "PeriodNotLocked" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.TargetId == $"close-plan-{workflowId:D}");
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "period-lock" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "PeriodNotLocked") &&
+            item.LedgerBookId == DefaultLedgerBookId &&
+            item.Dimensions.BookId == DefaultLedgerBookId.ToString("D"));
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "close-checklist-signoffs" &&
+            item.State == AccountingReadinessStateDto.ReadyForReview &&
+            item.EvidenceLinks.Contains("evidence:close-package:period-lock"));
 
         var certify = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             package.FinancialStatements.PackageId,
@@ -331,6 +341,10 @@ public sealed class AccountingReportPackageServiceTests
         certified.ExportArtifacts.Should().OnlyContain(row => row.CertificationState == AccountingCertificationStateDto.Certified);
         certified.ExportArtifacts.Should().OnlyContain(row =>
             row.EvidenceLinks.Contains(CertificationEvidence(ready)));
+        certified.CloseReadinessItems.Should().NotBeEmpty();
+        certified.CloseReadinessItems.Should().OnlyContain(item =>
+            item.State == AccountingReadinessStateDto.Certified &&
+            item.EvidenceLinks.Contains(CertificationEvidence(ready)));
         certified.ExportArtifacts.Select(static row => row.ContentHash).Should().OnlyContain(hash => hash.Length == 64);
 
         var artifact = certified.ExportArtifacts.First(row => row.ArtifactKind == "financial-statements");

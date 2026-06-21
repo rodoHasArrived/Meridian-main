@@ -236,7 +236,8 @@ close workflow, duplicate decisions, and decisions after close-package period lo
 `AccountingReportPackageService` assembles the implementation-grade report package DTO family:
 financial statement package, investor capital statement, realized gain/loss report, NAV package,
 certification, validation issues, deterministic report-line provenance, deterministic export
-artifact rows, and optional restatement workflow metadata. It accepts explicit canonical
+artifact rows, service-owned close/report readiness rows, and optional restatement workflow metadata.
+It accepts explicit canonical
 `LedgerDimensionSetDto` scope on package requests, validates conflicting fund, ledger-book,
 investor, and capital-account dimensions, preserves optional tenant/company scope, and stamps the
 retained ledger book and dimension scope onto child financial statement, investor capital, realized
@@ -282,6 +283,10 @@ restatement lineage instead of replacing certification evidence.
 Provenance rows identify the statement, report line, amount, source kind,
 fund/investor/capital-account dimensions, and retained evidence used for balance sheet, income
 statement, statement of changes in capital, investor capital, NAV, and restatement lineage rows.
+Close/report readiness rows classify checklist sign-off, period lock, late-adjustment review,
+report evidence, export certification, and restatement workflow posture with blocker counts,
+retained evidence, ledger-book scope, and canonical dimensions so operator surfaces consume the same
+certification checklist that Financial Operations uses to gate package certification.
 Export artifact rows identify the retained output kind, format, route, ledger book, dimensions,
 certification-state-bound content hash, source statement id, evidence links, and certification state for financial statement PDFs/workbooks,
 investor capital statements, realized gain/loss CSV, NAV packages, report-line provenance
