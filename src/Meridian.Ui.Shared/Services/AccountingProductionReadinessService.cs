@@ -1934,6 +1934,8 @@ public sealed class AccountingProductionReadinessService
                 scopedEvidenceReferences));
         }
 
+        AddCertifiedMigrationRunQualityIssues(kind, issues, scopedArtifacts, scopedEvidenceReferences);
+
         if (kind == AccountingMigrationRunKindDto.DimensionalBackfill)
         {
             AddDimensionalBackfillScopeIssues(request, issues, scopedArtifacts, scopedEvidenceReferences);
@@ -1948,6 +1950,43 @@ public sealed class AccountingProductionReadinessService
                 $"{MigrationKindLabel(kind)} is marked certified but has no retained certified migration run artifact.",
                 "Attach the retained certified migration run artifact before production rollout certification.",
                 evidenceReferences));
+        }
+    }
+
+    private static void AddCertifiedMigrationRunQualityIssues(
+        AccountingMigrationRunKindDto kind,
+        ICollection<AccountingProductionReadinessIssueDto> issues,
+        IReadOnlyList<AccountingMigrationRunArtifactDto> scopedArtifacts,
+        IReadOnlyList<string> scopedEvidenceReferences)
+    {
+        var certifiedArtifacts = scopedArtifacts
+            .Where(static artifact => artifact.Status == AccountingMigrationRunStatusDto.Certified)
+            .ToArray();
+        if (certifiedArtifacts.Length == 0)
+        {
+            return;
+        }
+
+        if (certifiedArtifacts.Any(static artifact => artifact.CompletedAtUtc is null))
+        {
+            issues.Add(Issue(
+                $"migration.{MigrationKindCode(kind)}-certified-run-incomplete",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"{MigrationKindLabel(kind)} has certified migration run artifacts without a retained completion timestamp.",
+                "Re-run or re-certify the migration with retained completion evidence before production rollout.",
+                scopedEvidenceReferences));
+        }
+
+        if (certifiedArtifacts.Any(static artifact => artifact.IssueCount > 0))
+        {
+            issues.Add(Issue(
+                $"migration.{MigrationKindCode(kind)}-certified-run-has-issues",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"{MigrationKindLabel(kind)} has certified migration run artifacts with unresolved retained issues.",
+                "Resolve retained migration issues and certify a clean rerun before production rollout.",
+                scopedEvidenceReferences));
         }
     }
 

@@ -1167,6 +1167,49 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_RejectsCertifiedMigrationRunArtifactsWithRetainedIssues()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                HistoricalJournalBackfillCertified: true,
+                MigrationRunArtifacts:
+                [
+                    new AccountingMigrationRunArtifactDto(
+                        "migration-run-historical-journal-backfill-default-fund",
+                        AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                        AccountingMigrationRunStatusDto.Certified,
+                        DateTimeOffset.Parse("2026-02-02T00:00:00Z"),
+                        CompletedAtUtc: DateTimeOffset.Parse("2026-02-02T00:05:00Z"),
+                        MigratedRecordCount: 24,
+                        IssueCount: 2,
+                        EvidenceReferences: ["evidence://migration/historical-journal-backfill/default-fund/certified-with-issues"],
+                        FundProfileId: "default-fund",
+                        LedgerBookId: ledgerBookId,
+                        Summary: "Historical journal backfill was marked certified with unresolved issue rows.")
+                ]));
+
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.historical-journal-backfill-certified-run-has-issues" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains("evidence://migration/historical-journal-backfill/default-fund/certified-with-issues"));
+        readiness.MigrationRolloutPlan.Should().Contain(row =>
+            row.Kind == AccountingMigrationRunKindDto.HistoricalJournalBackfill &&
+            row.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            row.BlockingIssueCodes.Contains("migration.historical-journal-backfill-certified-run-has-issues"));
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_DoesNotUseUnscopedMigrationArtifactsForBookScopedReadiness()
     {
         var services = new ServiceCollection();

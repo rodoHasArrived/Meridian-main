@@ -273,6 +273,10 @@ it also blocks when an available external-GL provider advertises live posting su
 production slice remains import/reconciliation/guarded-export only. Failed retained migration runs
 are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
 import external GL data, post journals, certify exports, or close periods.
+Certified migration run artifacts also stay blocked when they lack retained completion evidence or
+carry a nonzero issue count, so incomplete or unresolved ledger-book, historical journal,
+dimensional, configuration-promotion, or close/reporting evidence migrations cannot serve as
+production rollout proof.
 Dimensional accounting readiness also fails closed until period report filters, cross-period
 report filters, journal dimension filters, posted ledger-line dimensions, trial-balance filters,
 report-package provenance, and external-export dimension mappings are certified

@@ -249,6 +249,11 @@ profile for ledger-book-native workflow controls and dimensional ledger/query/re
 production readiness can load approved evidence from the shared Accounting System store only for the
 active tenant, company, fund, and ledger-book scope instead of trusting request-time certification
 flags alone.
+Certified migration run artifacts must also be operationally clean: a retained certified run needs a
+completion timestamp and zero retained issue count before the migration rollout plan can mark that
+lane ready. This keeps ledger-book, historical journal, dimensional, configuration-promotion, and
+close/reporting evidence migrations from becoming production proof while unresolved run issues
+remain attached to the artifact.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can
