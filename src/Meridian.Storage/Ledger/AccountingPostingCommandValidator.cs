@@ -36,6 +36,11 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Ledger write ledger book id conflicts with the accounting posting command ledger book id.");
         }
 
+        if (!write.LedgerBookId.HasValue && !command.LedgerBookId.HasValue)
+        {
+            throw new LedgerValidationException("Accounting posting command ledger book id is required.");
+        }
+
         if (write.CommandId.HasValue && write.CommandId.Value != command.CommandId)
         {
             throw new LedgerValidationException("Ledger write command id conflicts with the accounting posting command id.");
