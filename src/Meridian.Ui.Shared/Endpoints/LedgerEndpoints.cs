@@ -271,8 +271,15 @@ public static class LedgerEndpoints
                 return Results.BadRequest(new { error = $"Ledger period '{periodId}' is not scoped to a ledger book." });
             }
 
-            var entries = await journalStore.GetByPeriodAsync(periodId, context.RequestAborted).ConfigureAwait(false);
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
+            var entries = await journalStore
+                .QueryAsync(
+                    new LedgerJournalEntryQuery(
+                        LedgerBookId: bookId,
+                        PeriodId: periodId,
+                        LineDimensions: ToLineDimensionSet(dimensionFilter)),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             var result = BuildJournalEntryDtos(entries, _ => bookId, dimensionFilter);
             return Results.Json(result, jsonOptions);
         })
@@ -299,7 +306,15 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var entries = await journalStore.GetByAggregateAsync(aggregateId, context.RequestAborted).ConfigureAwait(false);
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
+            var entries = await journalStore
+                .QueryAsync(
+                    new LedgerJournalEntryQuery(
+                        LedgerBookId: ledgerBookId,
+                        AggregateId: aggregateId,
+                        LineDimensions: ToLineDimensionSet(dimensionFilter)),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             var periodBookIds = new Dictionary<Guid, Guid?>();
             foreach (var periodId in entries.Select(static entry => entry.PeriodId).Distinct())
             {
@@ -312,12 +327,8 @@ public static class LedgerEndpoints
                 periodBookIds[periodId] = period.LedgerBookId;
             }
 
-            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
-            var scopedEntries = ledgerBookId.HasValue
-                ? entries.Where(entry => periodBookIds.GetValueOrDefault(entry.PeriodId) == ledgerBookId.Value).ToArray()
-                : entries;
             var result = BuildJournalEntryDtos(
-                scopedEntries,
+                entries,
                 entry => periodBookIds.GetValueOrDefault(entry.PeriodId),
                 dimensionFilter);
             return Results.Json(result, jsonOptions);
@@ -2133,6 +2144,37 @@ public static class LedgerEndpoints
             VendorId: NormalizeOptional(GetQueryValue(query, "vendorId")),
             ProjectId: NormalizeOptional(GetQueryValue(query, "projectId")),
             ExternalGlDimensions: externalGlDimensions);
+    }
+
+    private static LedgerLineDimensionSet? ToLineDimensionSet(LedgerDimensionReportFilter filter)
+    {
+        if (!filter.HasCriteria)
+        {
+            return null;
+        }
+
+        var instrumentId = Guid.TryParse(filter.InstrumentId, out var parsedInstrumentId)
+            ? parsedInstrumentId
+            : (Guid?)null;
+        return new LedgerLineDimensionSet(
+            FundId: filter.FundId,
+            EntityId: filter.EntityId,
+            SleeveId: filter.SleeveId,
+            StrategyId: filter.StrategyId,
+            InvestorId: filter.InvestorId,
+            CapitalAccountId: filter.CapitalAccountId,
+            InstrumentId: instrumentId,
+            TaxLotId: filter.TaxLotId,
+            CostCenterId: filter.CostCenterId,
+            CounterpartyId: filter.CounterpartyId,
+            ExternalGlDimensions: filter.ExternalGlDimensions,
+            OrganizationId: filter.OrganizationId,
+            PortfolioId: filter.PortfolioId,
+            BookId: filter.BookId,
+            AccountId: filter.AccountId,
+            CustomerId: filter.CustomerId,
+            VendorId: filter.VendorId,
+            ProjectId: filter.ProjectId);
     }
 
     private static string? GetQueryValue(IQueryCollection query, string key)

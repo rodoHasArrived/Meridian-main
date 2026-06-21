@@ -685,7 +685,7 @@ public sealed class LedgerBookServiceTests
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
-        var store = app.Services.GetRequiredService<ILedgerJournalStore>();
+        var store = (InMemoryLedgerJournalStore)app.Services.GetRequiredService<ILedgerJournalStore>();
 
         var book = await PostJsonAsync<LedgerBookDto>(
             client,
@@ -939,6 +939,21 @@ public sealed class LedgerBookServiceTests
             periodSummary.NetIncome == 100m);
         filteredPnlReport.TotalRevenue.Should().Be(100m);
         filteredPnlReport.NetIncome.Should().Be(100m);
+        store.QueryHistory.Should().HaveCount(4);
+        store.QueryHistory.Should().Contain(query =>
+            query.LedgerBookId == book.LedgerBookId &&
+            query.PeriodId == period.PeriodId &&
+            query.LineDimensions != null &&
+            query.LineDimensions.EntityId == "entity-master" &&
+            query.LineDimensions.CostCenterId == "cost-center-investment-ops" &&
+            query.LineDimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
+        store.QueryHistory.Should().Contain(query =>
+            query.LedgerBookId == book.LedgerBookId &&
+            query.AggregateId == aggregateId &&
+            query.LineDimensions != null &&
+            query.LineDimensions.EntityId == "entity-master" &&
+            query.LineDimensions.CostCenterId == "cost-center-investment-ops" &&
+            query.LineDimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
     }
 
     [Fact]
@@ -1432,6 +1447,8 @@ public sealed class LedgerBookServiceTests
         private readonly Dictionary<Guid, List<LedgerJournalEntryRecord>> _entriesByPeriod = [];
         private long _sequence;
 
+        public List<LedgerJournalEntryQuery> QueryHistory { get; } = [];
+
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
@@ -1483,6 +1500,71 @@ public sealed class LedgerBookServiceTests
                 _entriesByPeriod.TryGetValue(periodId, out var entries)
                     ? entries.ToArray()
                     : []);
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+            LedgerJournalEntryQuery query,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            QueryHistory.Add(query);
+            if (!query.LedgerBookId.HasValue &&
+                !query.PeriodId.HasValue &&
+                !query.AggregateId.HasValue &&
+                query.LineDimensions is null &&
+                string.IsNullOrWhiteSpace(query.AccountName) &&
+                !query.OccurredFrom.HasValue &&
+                !query.OccurredTo.HasValue)
+            {
+                throw new ArgumentException("At least one journal query filter is required.", nameof(query));
+            }
+
+            IEnumerable<LedgerJournalEntryRecord> records = _entriesByPeriod.Values.SelectMany(static entries => entries);
+            if (query.LedgerBookId.HasValue)
+            {
+                records = records.Where(entry =>
+                    _periods.TryGetValue(entry.PeriodId, out var period) &&
+                    period.LedgerBookId == query.LedgerBookId.Value);
+            }
+
+            if (query.PeriodId.HasValue)
+            {
+                records = records.Where(entry => entry.PeriodId == query.PeriodId.Value);
+            }
+
+            if (query.AggregateId.HasValue)
+            {
+                records = records.Where(entry => entry.AggregateId == query.AggregateId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.AccountName))
+            {
+                var accountName = query.AccountName.Trim();
+                records = records.Where(entry => entry.Entry.Lines.Any(line =>
+                    string.Equals(line.Account.Name, accountName, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            if (query.OccurredFrom.HasValue)
+            {
+                records = records.Where(entry => entry.Entry.Timestamp >= query.OccurredFrom.Value);
+            }
+
+            if (query.OccurredTo.HasValue)
+            {
+                records = records.Where(entry => entry.Entry.Timestamp <= query.OccurredTo.Value);
+            }
+
+            if (query.LineDimensions is not null)
+            {
+                records = records.Where(entry => entry.Entry.Lines.Any(line =>
+                    MatchesLineDimensions(query.LineDimensions, line.Dimensions)));
+            }
+
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                records
+                    .OrderBy(static entry => entry.Entry.Timestamp)
+                    .ThenBy(static entry => entry.GlobalSequence)
+                    .ToArray());
         }
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
@@ -1603,6 +1685,55 @@ public sealed class LedgerBookServiceTests
             ct.ThrowIfCancellationRequested();
             _books[book.LedgerBookId] = book;
             return Task.FromResult(book);
+        }
+
+        private static bool MatchesLineDimensions(
+            LedgerLineDimensionSet expected,
+            LedgerLineDimensionSet? actual)
+        {
+            if (actual is null)
+            {
+                return false;
+            }
+
+            return Matches(expected.FundId, actual.FundId)
+                   && Matches(expected.EntityId, actual.EntityId)
+                   && Matches(expected.SleeveId, actual.SleeveId)
+                   && Matches(expected.StrategyId, actual.StrategyId)
+                   && Matches(expected.InvestorId, actual.InvestorId)
+                   && Matches(expected.CapitalAccountId, actual.CapitalAccountId)
+                   && (!expected.InstrumentId.HasValue || expected.InstrumentId == actual.InstrumentId)
+                   && Matches(expected.TaxLotId, actual.TaxLotId)
+                   && Matches(expected.CostCenterId, actual.CostCenterId)
+                   && Matches(expected.CounterpartyId, actual.CounterpartyId)
+                   && Matches(expected.OrganizationId, actual.OrganizationId)
+                   && Matches(expected.PortfolioId, actual.PortfolioId)
+                   && Matches(expected.BookId, actual.BookId)
+                   && Matches(expected.AccountId, actual.AccountId)
+                   && Matches(expected.CustomerId, actual.CustomerId)
+                   && Matches(expected.VendorId, actual.VendorId)
+                   && Matches(expected.ProjectId, actual.ProjectId)
+                   && MatchesExternalGlDimensions(expected.ExternalGlDimensions, actual.ExternalGlDimensions);
+        }
+
+        private static bool Matches(string? expected, string? actual)
+            => string.IsNullOrWhiteSpace(expected) ||
+               string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase);
+
+        private static bool MatchesExternalGlDimensions(
+            IReadOnlyDictionary<string, string> expected,
+            IReadOnlyDictionary<string, string> actual)
+        {
+            foreach (var pair in expected)
+            {
+                if (!actual.TryGetValue(pair.Key, out var actualValue) ||
+                    !string.Equals(pair.Value, actualValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

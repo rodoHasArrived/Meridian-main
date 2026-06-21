@@ -1337,6 +1337,9 @@ so browser and WPF reporting surfaces can request fund/entity/cost-center/extern
 ledger slices without recomputing dimensional accounting totals locally. They also fail closed when
 a retained closed-period summary is scoped to a different ledger book than the period metadata,
 preventing stale summary drift from leaking another book's totals into a selected-book report.
+Period and aggregate journal-entry routes use the shared ledger journal query seam for ledger-book
+and line-dimension predicates before projecting DTOs, so browser and WPF drilldowns do not need to
+load broad journals and reinterpret dimension scope locally.
 Manual journal entry workbench routes under `/api/ledger/journal-entry-workbench*` persist draft
 and submitted approval records under the resolved workstation data root. The shared service
 validates GL account, balance, currency, Security Master, typed evidence attachments, private-capital
