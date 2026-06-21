@@ -347,6 +347,10 @@ public sealed class AccountingSystemIntegrationServiceTests
         blocked.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             component.Summary.Contains("1/6 report/query/export dimension control", StringComparison.OrdinalIgnoreCase));
+        blocked.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
+            component.Issues.Any(issue => issue.Code == "close-reporting.dimension-controls-incomplete" &&
+                                          issue.EvidenceReferences.Contains($"evidence://ledger-book/{otherLedgerBookId:D}/dimensions/report-query-certification")));
 
         var partialEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
@@ -370,6 +374,10 @@ public sealed class AccountingSystemIntegrationServiceTests
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.external-export-mapping-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
+        partialEvidence.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
+            component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/dimensions/period-reports/trial-balance") &&
+            component.Issues.Any(issue => issue.Code == "close-reporting.dimension-controls-incomplete"));
 
         var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
@@ -397,6 +405,10 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             component.Summary.Contains("6/6 report/query/export dimension control", StringComparison.OrdinalIgnoreCase) &&
             component.EvidenceReferences.Contains(certifiedEvidence));
+        certified.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
+            component.EvidenceReferences.Contains(certifiedEvidence) &&
+            component.Issues.All(issue => issue.Code != "close-reporting.dimension-controls-incomplete"));
     }
 
     [Fact]

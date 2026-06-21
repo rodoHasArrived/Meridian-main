@@ -237,6 +237,9 @@ the same workflow certification state, so those lanes remain blocked even when t
 generated rules are present until retained evidence proves the selected ledger book is native
 through posting candidates, lifecycle, close/reporting, import, reconciliation, mapping, and
 guarded-export workflows.
+Close/Reporting readiness also consumes dimensional reporting readiness directly, so report
+packages remain blocked until period reports, cross-period reports, journal dimension filters, and
+external-export dimension mappings have retained ledger-book-scoped evidence.
 Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,

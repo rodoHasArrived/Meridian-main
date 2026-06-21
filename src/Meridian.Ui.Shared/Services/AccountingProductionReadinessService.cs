@@ -39,7 +39,7 @@ public sealed class AccountingProductionReadinessService
         var ledgerBookResult = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         var rulesStudioResult = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, ledgerBookResult.WorkflowReadiness, components, ct).ConfigureAwait(false);
         BuildJournalLifecycleComponent(components, ledgerBookResult.WorkflowReadiness);
-        BuildCloseReportingComponent(components, ledgerBookResult.WorkflowReadiness);
+        BuildCloseReportingComponent(components, ledgerBookResult.WorkflowReadiness, rulesStudioResult.DimensionalReportingReadiness);
         var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, ledgerBookResult.WorkflowReadiness, components, ct).ConfigureAwait(false);
         BuildMigrationRolloutComponent(effectiveRequest, components);
         var tenantAdministration = BuildTenantAdministrationComponent(effectiveRequest, components);
@@ -736,7 +736,8 @@ public sealed class AccountingProductionReadinessService
 
     private void BuildCloseReportingComponent(
         ICollection<AccountingProductionReadinessComponentDto> components,
-        AccountingLedgerBookWorkflowReadinessDto workflowReadiness)
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness,
+        AccountingDimensionalReportingReadinessDto dimensionalReportingReadiness)
     {
         var hasClose = _services.GetService<IAccountingCloseManagementService>() is not null;
         var hasReports = _services.GetService<IAccountingReportPackageService>() is not null;
@@ -752,18 +753,22 @@ public sealed class AccountingProductionReadinessService
         }
 
         AddCloseReportingWorkflowIssues(workflowReadiness, issues);
+        AddCloseReportingDimensionalIssues(dimensionalReportingReadiness, issues);
 
         components.Add(Component(
             AccountingProductionReadinessAreaDto.CloseReporting,
             "Close and reporting",
             ResolveIssueStatus(issues),
-            ScoreFromIssues(issues, hasPositiveEvidence: hasClose && hasReports && workflowReadiness.HasCloseReportingLedgerBookNativeEvidence),
-            hasClose && hasReports && workflowReadiness.CloseReportingLedgerBookNativeCertified && workflowReadiness.HasCloseReportingLedgerBookNativeEvidence
-                ? "Close management and accounting report package services are registered and certified with retained ledger-book-native workflow evidence."
-                : "Close/reporting services, ledger-book-native certification, or retained workflow evidence are incomplete.",
+            ScoreFromIssues(issues, hasPositiveEvidence: hasClose && hasReports && workflowReadiness.HasCloseReportingLedgerBookNativeEvidence && dimensionalReportingReadiness.CompletedControlCount == dimensionalReportingReadiness.RequiredControlCount),
+            hasClose && hasReports &&
+            workflowReadiness.CloseReportingLedgerBookNativeCertified &&
+            workflowReadiness.HasCloseReportingLedgerBookNativeEvidence &&
+            dimensionalReportingReadiness.CompletedControlCount == dimensionalReportingReadiness.RequiredControlCount
+                ? "Close management and accounting report package services are registered and certified with retained ledger-book-native workflow and dimensional reporting evidence."
+                : "Close/reporting services, ledger-book-native certification, retained workflow evidence, or dimensional reporting evidence are incomplete.",
             issues,
             UiApiRoutes.LedgerReportsAccountingPackage,
-            workflowReadiness.EvidenceReferences));
+            workflowReadiness.EvidenceReferences.Concat(dimensionalReportingReadiness.EvidenceReferences).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()));
     }
 
     private static void AddCloseReportingWorkflowIssues(
@@ -798,6 +803,33 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Close/reporting certification lacks retained workflow evidence for the selected ledger book.",
                 "Attach retained evidence naming the selected ledger book and close-management, report-package, or restatement workflow.",
+                readiness.EvidenceReferences));
+        }
+    }
+
+    private static void AddCloseReportingDimensionalIssues(
+        AccountingDimensionalReportingReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "close-reporting.dimension-ledger-book-scope-missing",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting dimensional readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying period reports, cross-period reports, journal filters, and export dimension mappings."));
+            return;
+        }
+
+        if (readiness.CompletedControlCount < readiness.RequiredControlCount)
+        {
+            issues.Add(Issue(
+                "close-reporting.dimension-controls-incomplete",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting dimensional report, query, or export controls are incomplete for the selected ledger book.",
+                "Certify period reports, cross-period reports, journal dimension filters, and external-export dimension mappings with retained ledger-book-scoped evidence before production close/reporting rollout.",
                 readiness.EvidenceReferences));
         }
     }
