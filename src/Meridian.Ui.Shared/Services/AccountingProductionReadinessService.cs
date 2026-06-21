@@ -38,8 +38,8 @@ public sealed class AccountingProductionReadinessService
         var components = new List<AccountingProductionReadinessComponentDto>();
         var ledgerBookResult = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         var rulesStudioResult = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
-        BuildJournalLifecycleComponent(components);
-        BuildCloseReportingComponent(components);
+        BuildJournalLifecycleComponent(components, ledgerBookResult.WorkflowReadiness);
+        BuildCloseReportingComponent(components, ledgerBookResult.WorkflowReadiness);
         var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         BuildMigrationRolloutComponent(effectiveRequest, components);
         var tenantAdministration = BuildTenantAdministrationComponent(effectiveRequest, components);
@@ -609,7 +609,9 @@ public sealed class AccountingProductionReadinessService
         return issues;
     }
 
-    private void BuildJournalLifecycleComponent(ICollection<AccountingProductionReadinessComponentDto> components)
+    private void BuildJournalLifecycleComponent(
+        ICollection<AccountingProductionReadinessComponentDto> components,
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness)
     {
         var hasWorkbench = _services.GetService<IManualJournalEntryWorkbenchService>() is not null;
         var hasLifecycle = _services.GetService<IManualJournalEntryLifecycleService>() is not null;
@@ -619,19 +621,60 @@ public sealed class AccountingProductionReadinessService
             issues.Add(Issue("journal-lifecycle.service-missing", AccountingProductionReadinessAreaDto.JournalLifecycle, AccountingConfigurationValidationSeverityDto.Critical, "Manual journal workbench or lifecycle service is not registered.", "Register the governed manual journal lifecycle service before production rollout."));
         }
 
+        AddJournalLifecycleWorkflowIssues(workflowReadiness, issues);
+
         components.Add(Component(
             AccountingProductionReadinessAreaDto.JournalLifecycle,
             "Journal lifecycle",
             ResolveIssueStatus(issues),
-            hasWorkbench && hasLifecycle ? 100 : 0,
-            hasWorkbench && hasLifecycle
-                ? "Governed manual journal workbench and lifecycle transition service are registered."
-                : "Journal lifecycle services are not fully registered.",
+            ScoreFromIssues(issues, hasPositiveEvidence: hasWorkbench && hasLifecycle && workflowReadiness.HasJournalLifecycleLedgerBookNativeEvidence),
+            hasWorkbench && hasLifecycle && workflowReadiness.JournalLifecycleLedgerBookNativeCertified && workflowReadiness.HasJournalLifecycleLedgerBookNativeEvidence
+                ? "Governed manual journal services are registered and certified with retained ledger-book-native workflow evidence."
+                : "Journal lifecycle services, ledger-book-native certification, or retained workflow evidence are incomplete.",
             issues,
-            UiApiRoutes.LedgerManualJournalEntryWorkbench));
+            UiApiRoutes.LedgerManualJournalEntryWorkbench,
+            workflowReadiness.EvidenceReferences));
     }
 
-    private void BuildCloseReportingComponent(ICollection<AccountingProductionReadinessComponentDto> components)
+    private static void AddJournalLifecycleWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "journal-lifecycle.ledger-book-scope-missing",
+                AccountingProductionReadinessAreaDto.JournalLifecycle,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal lifecycle production readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying journal draft, approval, posting, correction, and close-lock transitions."));
+            return;
+        }
+
+        if (!readiness.JournalLifecycleLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "journal-lifecycle.ledger-book-native-not-certified",
+                AccountingProductionReadinessAreaDto.JournalLifecycle,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal lifecycle has not been certified as ledger-book-native.",
+                "Prove draft, validation, submission, approval, posting, correction, close-lock, and audit transitions remain inside the selected ledger book."));
+        }
+        else if (!readiness.HasJournalLifecycleLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "journal-lifecycle.ledger-book-native-evidence-missing",
+                AccountingProductionReadinessAreaDto.JournalLifecycle,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal lifecycle certification lacks retained workflow evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and journal-entry lifecycle workflow.",
+                readiness.EvidenceReferences));
+        }
+    }
+
+    private void BuildCloseReportingComponent(
+        ICollection<AccountingProductionReadinessComponentDto> components,
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness)
     {
         var hasClose = _services.GetService<IAccountingCloseManagementService>() is not null;
         var hasReports = _services.GetService<IAccountingReportPackageService>() is not null;
@@ -646,16 +689,55 @@ public sealed class AccountingProductionReadinessService
             issues.Add(Issue("reporting.service-missing", AccountingProductionReadinessAreaDto.CloseReporting, AccountingConfigurationValidationSeverityDto.Critical, "Accounting report package service is not registered.", "Register accounting report package certification before production reporting rollout."));
         }
 
+        AddCloseReportingWorkflowIssues(workflowReadiness, issues);
+
         components.Add(Component(
             AccountingProductionReadinessAreaDto.CloseReporting,
             "Close and reporting",
             ResolveIssueStatus(issues),
-            hasClose && hasReports ? 100 : 0,
-            hasClose && hasReports
-                ? "Close management and accounting report package services are registered."
-                : "Close/reporting production services are incomplete.",
+            ScoreFromIssues(issues, hasPositiveEvidence: hasClose && hasReports && workflowReadiness.HasCloseReportingLedgerBookNativeEvidence),
+            hasClose && hasReports && workflowReadiness.CloseReportingLedgerBookNativeCertified && workflowReadiness.HasCloseReportingLedgerBookNativeEvidence
+                ? "Close management and accounting report package services are registered and certified with retained ledger-book-native workflow evidence."
+                : "Close/reporting services, ledger-book-native certification, or retained workflow evidence are incomplete.",
             issues,
-            UiApiRoutes.LedgerReportsAccountingPackage));
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            workflowReadiness.EvidenceReferences));
+    }
+
+    private static void AddCloseReportingWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "close-reporting.ledger-book-scope-missing",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting production readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying close plans, period locks, reporting packages, certifications, and restatements."));
+            return;
+        }
+
+        if (!readiness.CloseReportingLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "close-reporting.ledger-book-native-not-certified",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close and reporting workflows have not been certified as ledger-book-native.",
+                "Prove close checklists, period locks, report packages, certification, and restatement workflows consume only the selected ledger book and its dimensions."));
+        }
+        else if (!readiness.HasCloseReportingLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "close-reporting.ledger-book-native-evidence-missing",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting certification lacks retained workflow evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and close-management, report-package, or restatement workflow.",
+                readiness.EvidenceReferences));
+        }
     }
 
     private async Task<ExternalGlCounts> BuildExternalGlComponentAsync(

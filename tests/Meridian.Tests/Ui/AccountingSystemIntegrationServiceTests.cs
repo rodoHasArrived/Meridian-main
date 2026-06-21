@@ -163,6 +163,14 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
             component.Summary.Contains("1/6 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase));
+        blocked.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.JournalLifecycle &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Issues.Any(issue => issue.Code == "journal-lifecycle.ledger-book-native-not-certified"));
+        blocked.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Issues.Any(issue => issue.Code == "close-reporting.ledger-book-native-not-certified"));
 
         var otherLedgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         var mismatchedEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
@@ -203,6 +211,16 @@ public sealed class AccountingSystemIntegrationServiceTests
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "ledger-books.external-gl-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+        partialEvidence.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.JournalLifecycle &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification") &&
+            component.Issues.Any(issue => issue.Code == "journal-lifecycle.ledger-book-native-evidence-missing"));
+        partialEvidence.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification") &&
+            component.Issues.Any(issue => issue.Code == "close-reporting.ledger-book-native-evidence-missing"));
 
         var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/workflow-certification/full";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
@@ -228,6 +246,16 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             component.Summary.Contains("6/6 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase) &&
             component.EvidenceReferences.Contains(certifiedEvidence));
+        certified.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.JournalLifecycle &&
+            component.EvidenceReferences.Contains(certifiedEvidence) &&
+            component.Issues.All(issue => issue.Code != "journal-lifecycle.ledger-book-native-not-certified" &&
+                                          issue.Code != "journal-lifecycle.ledger-book-native-evidence-missing"));
+        certified.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
+            component.EvidenceReferences.Contains(certifiedEvidence) &&
+            component.Issues.All(issue => issue.Code != "close-reporting.ledger-book-native-not-certified" &&
+                                          issue.Code != "close-reporting.ledger-book-native-evidence-missing"));
     }
 
     [Fact]
