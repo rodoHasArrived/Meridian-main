@@ -92,6 +92,77 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+        LedgerJournalEntryQuery query,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        var lineDimensionsJson = BuildLineDimensionContainmentJson(query.LineDimensions);
+        if (!query.LedgerBookId.HasValue
+            && !query.PeriodId.HasValue
+            && !query.AggregateId.HasValue
+            && string.IsNullOrWhiteSpace(query.AccountName)
+            && !query.OccurredFrom.HasValue
+            && !query.OccurredTo.HasValue
+            && lineDimensionsJson is null)
+        {
+            throw new ArgumentException("At least one journal query filter is required.", nameof(query));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = CreateJournalEntryReadCommand(connection);
+        command.CommandText +=
+            $"""
+            join {Qualified("accounting_periods")} p on p.period_id = je.period_id
+            where 1 = 1
+            """;
+
+        if (query.LedgerBookId.HasValue)
+        {
+            command.CommandText += " and p.ledger_book_id = @ledger_book_id";
+            command.Parameters.AddWithValue("ledger_book_id", query.LedgerBookId.Value);
+        }
+
+        if (query.PeriodId.HasValue)
+        {
+            command.CommandText += " and je.period_id = @period_id";
+            command.Parameters.AddWithValue("period_id", query.PeriodId.Value);
+        }
+
+        if (query.AggregateId.HasValue)
+        {
+            command.CommandText += " and je.aggregate_id = @aggregate_id";
+            command.Parameters.AddWithValue("aggregate_id", query.AggregateId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.AccountName))
+        {
+            command.CommandText += " and jl.account_name = @account_name";
+            command.Parameters.AddWithValue("account_name", query.AccountName.Trim());
+        }
+
+        if (query.OccurredFrom.HasValue)
+        {
+            command.CommandText += " and je.occurred_at >= @occurred_from";
+            command.Parameters.AddWithValue("occurred_from", query.OccurredFrom.Value.UtcDateTime);
+        }
+
+        if (query.OccurredTo.HasValue)
+        {
+            command.CommandText += " and je.occurred_at <= @occurred_to";
+            command.Parameters.AddWithValue("occurred_to", query.OccurredTo.Value.UtcDateTime);
+        }
+
+        if (lineDimensionsJson is not null)
+        {
+            command.CommandText += " and jl.dimensions @> cast(@line_dimensions as jsonb)";
+            command.Parameters.AddWithValue("line_dimensions", lineDimensionsJson);
+        }
+
+        command.CommandText += " order by je.occurred_at, je.global_sequence, jl.line_no;";
+        return await ReadJournalEntriesAsync(command, ct).ConfigureAwait(false);
+    }
+
     public async Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
@@ -1395,6 +1466,78 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
     private static LedgerLineDimensionSet DeserializeLineDimensions(string json)
         => JsonSerializer.Deserialize<LedgerLineDimensionSet>(json, JsonOptions)
            ?? throw new LedgerValidationException("Stored ledger line dimensions are invalid.");
+
+    internal static string? BuildLineDimensionContainmentJson(LedgerLineDimensionSet? dimensions)
+    {
+        if (dimensions is null || !HasAnyLineDimension(dimensions))
+        {
+            return null;
+        }
+
+        var values = new Dictionary<string, object>(StringComparer.Ordinal)
+        {
+            ["externalGlDimensions"] = dimensions.ExternalGlDimensions
+                .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(static pair => pair.Key.Trim(), static pair => pair.Value.Trim(), StringComparer.OrdinalIgnoreCase)
+        };
+        AddDimension(values, "fundId", dimensions.FundId);
+        AddDimension(values, "entityId", dimensions.EntityId);
+        AddDimension(values, "sleeveId", dimensions.SleeveId);
+        AddDimension(values, "strategyId", dimensions.StrategyId);
+        AddDimension(values, "investorId", dimensions.InvestorId);
+        AddDimension(values, "capitalAccountId", dimensions.CapitalAccountId);
+        if (dimensions.InstrumentId.HasValue)
+        {
+            values["instrumentId"] = dimensions.InstrumentId.Value;
+        }
+
+        AddDimension(values, "taxLotId", dimensions.TaxLotId);
+        AddDimension(values, "costCenterId", dimensions.CostCenterId);
+        AddDimension(values, "counterpartyId", dimensions.CounterpartyId);
+        AddDimension(values, "organizationId", dimensions.OrganizationId);
+        AddDimension(values, "portfolioId", dimensions.PortfolioId);
+        AddDimension(values, "bookId", dimensions.BookId);
+        AddDimension(values, "accountId", dimensions.AccountId);
+        AddDimension(values, "customerId", dimensions.CustomerId);
+        AddDimension(values, "vendorId", dimensions.VendorId);
+        AddDimension(values, "projectId", dimensions.ProjectId);
+
+        if (values["externalGlDimensions"] is IReadOnlyDictionary<string, string> { Count: 0 })
+        {
+            values.Remove("externalGlDimensions");
+        }
+
+        return JsonSerializer.Serialize(values, JsonOptions);
+    }
+
+    private static void AddDimension(IDictionary<string, object> values, string name, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            values[name] = value.Trim();
+        }
+    }
+
+    private static bool HasAnyLineDimension(LedgerLineDimensionSet dimensions)
+        => !string.IsNullOrWhiteSpace(dimensions.FundId) ||
+           !string.IsNullOrWhiteSpace(dimensions.EntityId) ||
+           !string.IsNullOrWhiteSpace(dimensions.SleeveId) ||
+           !string.IsNullOrWhiteSpace(dimensions.StrategyId) ||
+           !string.IsNullOrWhiteSpace(dimensions.InvestorId) ||
+           !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
+           dimensions.InstrumentId.HasValue ||
+           !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
+           !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
+           !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||
+           !string.IsNullOrWhiteSpace(dimensions.OrganizationId) ||
+           !string.IsNullOrWhiteSpace(dimensions.PortfolioId) ||
+           !string.IsNullOrWhiteSpace(dimensions.BookId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AccountId) ||
+           !string.IsNullOrWhiteSpace(dimensions.CustomerId) ||
+           !string.IsNullOrWhiteSpace(dimensions.VendorId) ||
+           !string.IsNullOrWhiteSpace(dimensions.ProjectId) ||
+           dimensions.ExternalGlDimensions.Any(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value));
 
     private static LedgerAdjustmentApprovalMetadataDto DeserializeAdjustmentApproval(string json)
         => JsonSerializer.Deserialize<LedgerAdjustmentApprovalMetadataDto>(json, JsonOptions)

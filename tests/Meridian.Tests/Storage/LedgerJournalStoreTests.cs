@@ -3,6 +3,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 namespace Meridian.Tests.Storage;
 
@@ -61,6 +62,48 @@ public sealed class LedgerJournalStoreTests
 
         await act.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*not balanced*");
+    }
+
+    [Fact]
+    public async Task QueryAsync_EmptyFilter_RejectsBeforeOpeningConnection()
+    {
+        var store = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions());
+
+        var act = () => store.QueryAsync(new LedgerJournalEntryQuery());
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*At least one journal query filter is required*");
+    }
+
+    [Fact]
+    public void LineDimensionContainmentJson_UsesSparseCanonicalDimensionPayload()
+    {
+        var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(new LedgerLineDimensionSet(
+            FundId: " fund-alpha ",
+            EntityId: "entity-master",
+            InstrumentId: instrumentId,
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting",
+                [" "] = "ignored",
+                ["Region"] = " US "
+            }));
+
+        json.Should().NotBeNull();
+        using var document = JsonDocument.Parse(json!);
+        var root = document.RootElement;
+        root.GetProperty("fundId").GetString().Should().Be("fund-alpha");
+        root.GetProperty("entityId").GetString().Should().Be("entity-master");
+        root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
+        root.GetProperty("counterpartyId").GetString().Should().Be("administrator");
+        root.TryGetProperty("investorId", out _).Should().BeFalse();
+        root.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("FundAccounting");
+        root.GetProperty("externalGlDimensions").GetProperty("Region").GetString().Should().Be("US");
+        root.GetProperty("externalGlDimensions").TryGetProperty(" ", out _).Should().BeFalse();
     }
 
     [Fact]

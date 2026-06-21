@@ -149,6 +149,11 @@ New ledger writes persist the first-class `LedgerEntry.Dimensions` value into
 remains a compatibility fallback for older retained rows, but new dimensional accounting evidence
 should use the line property so reports, external-GL mapping, close checks, and future query
 filters do not have to infer line scope from journal-level tags.
+`PostgresLedgerJournalStore.QueryAsync` provides the first durable journal-read seam for those
+line dimensions: callers can combine ledger-book, period, aggregate, account, date, and line-level
+dimension filters, and the store applies them against `journal_legs.dimensions` instead of
+guessing scope from account names or browser/WPF state. Empty queries fail before opening a
+connection so production journal reads stay explicitly scoped.
 
 ### Direct lending and operational projections
 

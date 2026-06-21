@@ -9,6 +9,12 @@ public interface ILedgerJournalStore
 {
     Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);
 
+    Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+        LedgerJournalEntryQuery query,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerJournalEntryRecord>>(
+            new NotSupportedException("This ledger journal store does not support scoped journal queries."));
+
     Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default);
 
     Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default);
@@ -90,6 +96,15 @@ public sealed record LedgerJournalEntryWrite(
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
     AccountingPostingCommandDto? PostingCommand = null,
     Guid? LedgerBookId = null);
+
+public sealed record LedgerJournalEntryQuery(
+    Guid? LedgerBookId = null,
+    Guid? PeriodId = null,
+    Guid? AggregateId = null,
+    LedgerLineDimensionSet? LineDimensions = null,
+    string? AccountName = null,
+    DateTimeOffset? OccurredFrom = null,
+    DateTimeOffset? OccurredTo = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,
