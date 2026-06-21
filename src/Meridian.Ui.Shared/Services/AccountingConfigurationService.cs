@@ -3721,7 +3721,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         if (!HasManualJournalCorrectionEvidenceWithProvenance(posted, request.EvidenceLinks))
         {
-            throw new InvalidOperationException("Manual journal reversal and rebook evidence must reference correction intent and the posted journal entry or accounting period on the same evidence artifact.");
+            throw new InvalidOperationException("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
         }
 
         EnsureLifecycleActorIndependentFromPreparer(posted, request);
@@ -3952,7 +3952,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         if (!HasManualJournalApprovalEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
         {
-            throw new InvalidOperationException("Manual journal approval and rejection evidence must reference reviewer intent and the journal entry or accounting period on the same evidence artifact.");
+            throw new InvalidOperationException("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
         }
 
         return request;
@@ -3974,7 +3974,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         if (!HasManualJournalPostingEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
         {
-            throw new InvalidOperationException("Manual journal posting evidence must reference posting intent and the journal entry or accounting period on the same evidence artifact.");
+            throw new InvalidOperationException("Manual journal posting evidence must reference posting intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
         }
 
         return request;
@@ -3996,7 +3996,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         if (!HasManualJournalCloseLockEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
         {
-            throw new InvalidOperationException("Manual journal close-lock evidence must reference close-lock intent and the journal entry or accounting period on the same evidence artifact.");
+            throw new InvalidOperationException("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
         }
 
         return request;
@@ -4006,10 +4006,29 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ManualJournalEntryDraftDto journalEntry,
         IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(link =>
-            link.Contains(journalEntry.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(journalEntry.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-            (!string.IsNullOrWhiteSpace(journalEntry.PeriodId) &&
-                link.Contains(journalEntry.PeriodId, StringComparison.OrdinalIgnoreCase)));
+            HasManualJournalEntryOrPeriodProvenance(journalEntry, link) &&
+            HasManualJournalLedgerBookProvenance(journalEntry, link));
+
+    private static bool HasManualJournalEntryOrPeriodProvenance(
+        ManualJournalEntryDraftDto journalEntry,
+        string evidenceLink)
+        => evidenceLink.Contains(journalEntry.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+           evidenceLink.Contains(journalEntry.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+           (!string.IsNullOrWhiteSpace(journalEntry.PeriodId) &&
+               evidenceLink.Contains(journalEntry.PeriodId, StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasManualJournalLedgerBookProvenance(
+        ManualJournalEntryDraftDto journalEntry,
+        string evidenceLink)
+    {
+        if (journalEntry.LedgerBookId is not { } ledgerBookId)
+        {
+            return true;
+        }
+
+        return evidenceLink.Contains(ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains(ledgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+    }
 
     private static bool HasManualJournalCorrectionEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>
