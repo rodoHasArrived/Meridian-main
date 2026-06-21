@@ -85,15 +85,21 @@ public sealed class AccountingSystemIntegrationService
         string? providerId = null,
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedProviderId = string.IsNullOrWhiteSpace(providerId) ? null : NormalizeProviderId(providerId);
         var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var rows = _mappingProfiles.Values
             .Where(record => normalizedProviderId is null || string.Equals(record.ProviderId, normalizedProviderId, StringComparison.OrdinalIgnoreCase))
             .Where(record => normalizedFundProfileId is null || string.Equals(record.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(record => ledgerBookId is null || record.LedgerBookId == ledgerBookId)
+            .Where(record => normalizedTenantId is null || string.Equals(record.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(record => normalizedCompanyId is null || string.Equals(record.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .Select(static record => record.Profile)
             .OrderBy(static profile => profile.ProviderId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static profile => profile.DisplayName, StringComparer.OrdinalIgnoreCase)
@@ -114,6 +120,8 @@ public sealed class AccountingSystemIntegrationService
         var actor = RequireText(request.Actor, "Actor");
         var providerId = NormalizeProviderId(request.ProviderId ?? request.Profile.ProviderId);
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var tenantId = NormalizeOptional(request.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId);
         var evidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
         var certificationState = ResolveMappingProfileCertificationState(
             request.Profile,
@@ -139,8 +147,8 @@ public sealed class AccountingSystemIntegrationService
             normalizedProfile = normalizedProfile with { CertificationState = AccountingCertificationStateDto.Draft };
         }
 
-        _mappingProfiles[MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId)] =
-            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, evidenceLinks);
+        _mappingProfiles[MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId, tenantId, companyId)] =
+            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, evidenceLinks, tenantId, companyId);
 
         return Task.FromResult(normalizedProfile);
     }
@@ -157,7 +165,7 @@ public sealed class AccountingSystemIntegrationService
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var tenantId = NormalizeOptional(request.TenantId);
         var companyId = NormalizeOptional(request.CompanyId);
-        var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId);
+        var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId, tenantId, companyId);
         var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
@@ -449,18 +457,26 @@ public sealed class AccountingSystemIntegrationService
         string providerId,
         string fundProfileId,
         Guid? ledgerBookId,
-        string? mappingProfileId)
+        string? mappingProfileId,
+        string? tenantId = null,
+        string? companyId = null)
     {
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var scopedCandidates = _mappingProfiles.Values
             .Where(record => string.Equals(record.ProviderId, providerId, StringComparison.OrdinalIgnoreCase))
             .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
-            .Where(record => record.LedgerBookId == ledgerBookId);
+            .Where(record => record.LedgerBookId == ledgerBookId)
+            .Where(record => normalizedTenantId is null || string.Equals(record.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(record => normalizedCompanyId is null || string.Equals(record.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase));
         var candidates = scopedCandidates.Any() || ledgerBookId is null
             ? scopedCandidates
             : _mappingProfiles.Values
                 .Where(record => string.Equals(record.ProviderId, providerId, StringComparison.OrdinalIgnoreCase))
                 .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
-                .Where(static record => record.LedgerBookId is null);
+                .Where(static record => record.LedgerBookId is null)
+                .Where(record => normalizedTenantId is null || string.Equals(record.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+                .Where(record => normalizedCompanyId is null || string.Equals(record.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase));
 
         if (!string.IsNullOrWhiteSpace(mappingProfileId))
         {
@@ -502,7 +518,9 @@ public sealed class AccountingSystemIntegrationService
             package.ProviderId,
             package.FundProfileId,
             package.LedgerBookId,
-            package.MappingProfileId);
+            package.MappingProfileId,
+            package.TenantId,
+            package.CompanyId);
         var reconciliation = await TryReconcileLatestAsync(
             package.ProviderId,
             package.FundProfileId,
@@ -1381,8 +1399,14 @@ public sealed class AccountingSystemIntegrationService
     private static string ImportKey(string providerId, string fundProfileId, Guid? ledgerBookId)
         => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}";
 
-    private static string MappingProfileKey(string providerId, string fundProfileId, Guid? ledgerBookId, string profileId)
-        => $"{ImportKey(providerId, fundProfileId, ledgerBookId)}|{profileId.Trim().ToLowerInvariant()}";
+    private static string MappingProfileKey(
+        string providerId,
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string profileId,
+        string? tenantId,
+        string? companyId)
+        => $"{ImportKey(providerId, fundProfileId, ledgerBookId)}|{BuildTenantPackageScope(tenantId, companyId)}|{profileId.Trim().ToLowerInvariant()}";
 
     private static string BuildExportPackageId(
         string providerId,
@@ -1482,7 +1506,9 @@ public sealed class AccountingSystemIntegrationService
         Guid? LedgerBookId,
         ExternalGlMappingProfileDto Profile,
         string Actor,
-        IReadOnlyList<string> EvidenceLinks);
+        IReadOnlyList<string> EvidenceLinks,
+        string? TenantId = null,
+        string? CompanyId = null);
 
     private sealed class MeridianAccountTotal
     {

@@ -315,7 +315,9 @@ store is available. The reconciliation response carries provider-side refs, Meri
 and package posture for external import, Meridian ledger support, and the GL tie-out. The same
 endpoint group now lists and upserts scoped external-GL mapping profiles and creates guarded export
 packages that require certified mapping and reconciliation evidence before reaching ready-for-review
-state. Export package creation also requires retained export-control evidence that identifies the
+state. Mapping-profile list/upsert endpoints resolve tenant/company scope from the workstation
+session, and guarded export package creation only reuses mapping profiles retained for that same
+tenant/company, fund, provider, and ledger book. Export package creation also requires retained export-control evidence that identifies the
 export fund, provider/fund scope, or exact export period. Export packages carry generated mapped
 lines from Meridian-owned ledger totals so
 reviewers inspect the exact artifact that would be exported while external-only evidence remains

@@ -1005,7 +1005,15 @@ public sealed class AccountingProductionReadinessService
         }
 
         var providers = await service.ListProvidersAsync(ct).ConfigureAwait(false);
-        var mappings = await service.ListMappingProfilesAsync(request.ProviderId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+        var mappings = await service
+            .ListMappingProfilesAsync(
+                request.ProviderId,
+                fundProfileId,
+                request.LedgerBookId,
+                ct,
+                request.TenantId,
+                request.CompanyId)
+            .ConfigureAwait(false);
         var certifiedMappings = mappings.Count(static profile => profile.CertificationState == AccountingCertificationStateDto.Certified);
         var livePostingEnabled = providers.Any(static provider =>
             provider.State == AccountingSystemProviderStateDto.Available && provider.SupportsPosting);

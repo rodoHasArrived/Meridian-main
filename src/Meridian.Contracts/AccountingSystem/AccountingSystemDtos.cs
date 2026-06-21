@@ -846,7 +846,9 @@ public sealed record AccountingSystemMappingProfileUpsertRequestDto(
     string? FundProfileId = null,
     Guid? LedgerBookId = null,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

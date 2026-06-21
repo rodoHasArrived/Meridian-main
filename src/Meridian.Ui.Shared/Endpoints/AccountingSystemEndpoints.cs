@@ -305,7 +305,16 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.ListMappingProfilesAsync(providerId, fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var result = await service
+                .ListMappingProfilesAsync(
+                    providerId,
+                    fundProfileId,
+                    ledgerBookId,
+                    context.RequestAborted,
+                    tenantContext.TenantId,
+                    tenantContext.CompanyId)
+                .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListAccountingSystemMappingProfiles")
@@ -321,7 +330,13 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.UpsertMappingProfileAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var trustedRequest = request with
+            {
+                TenantId = tenantContext.TenantId ?? request.TenantId,
+                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+            };
+            var result = await service.UpsertMappingProfileAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("UpsertAccountingSystemMappingProfile")

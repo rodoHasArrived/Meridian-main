@@ -1713,6 +1713,44 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.TargetId == profile.ProfileId);
     }
 
+    [Fact]
+    public async Task CreateExportPackageAsync_RequiresTenantScopedMappingProfileBeforeReview()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)],
+            TenantId: "tenant-beta",
+            CompanyId: "company-beta"));
+
+        package.PostingEnabled.Should().BeFalse();
+        package.MappingProfileId.Should().BeNull();
+        package.GeneratedLines.Should().BeEmpty();
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "MissingExternalGlMappingProfile" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
 
     [Theory]
     [InlineData("xero-fixture", "xero-default-fund-certified", "090", "xero-bank-001", 179_050)]
@@ -2658,7 +2696,9 @@ public sealed class AccountingSystemIntegrationServiceTests
                 "endpoint-operator",
                 FundProfileId: "default-fund",
                 LedgerBookId: ExternalGlLedgerBookId,
-                EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"])));
+                EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"],
+                TenantId: "spoofed-tenant",
+                CompanyId: "spoofed-company")));
         var mappingProfilesResponse = await app.GetTestClient().GetAsync("/api/accounting-system/mapping-profiles?providerId=quickbooks-fixture&fundProfileId=default-fund");
         var exportPackageResponse = await app.GetTestClient().PostAsync(
             "/api/accounting-system/export-packages",
