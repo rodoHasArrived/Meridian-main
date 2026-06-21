@@ -336,6 +336,46 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_DoesNotUseUnscopedMigrationArtifactsForBookScopedReadiness()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingMigrationRunArtifactStore, InMemoryAccountingMigrationRunArtifactStore>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<IAccountingMigrationRunArtifactStore>();
+        var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+
+        await store.UpsertAsync(new AccountingMigrationRunArtifactUpsertRequestDto(
+            new AccountingMigrationRunArtifactDto(
+                "migration-run-ledger-book-scope-unscoped",
+                AccountingMigrationRunKindDto.LedgerBookScope,
+                AccountingMigrationRunStatusDto.Certified,
+                DateTimeOffset.Parse("2026-02-02T00:00:00Z"),
+                CompletedAtUtc: DateTimeOffset.Parse("2026-02-02T00:05:00Z"),
+                MigratedRecordCount: 42,
+                EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/unscoped-certified"],
+                FundProfileId: "default-fund",
+                Summary: "Fund-level ledger-book migration was certified before book-specific rollout."),
+            "controller",
+            CorrelationId: "migration-ledger-book-scope-unscoped"));
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                LedgerBookMigrationCertified: true));
+
+        readiness.MigrationRunArtifacts.Should().BeEmpty();
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.ledger-book-scope-certified-run-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_RejectsMigrationArtifactsOutsideRequestedLedgerBookScope()
     {
         var services = new ServiceCollection();
@@ -1956,6 +1996,25 @@ public sealed class AccountingSystemIntegrationServiceTests
         upserted.Dimensions.Should().NotBeNull();
         upserted.Dimensions!.BookId.Should().Be(ledgerBookId.ToString("D"));
         upserted.EvidenceReferences.Should().Contain("approval:dimensional-backfill:default-fund");
+
+        var unscopedResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRunArtifacts,
+            JsonContent(new AccountingMigrationRunArtifactUpsertRequestDto(
+                new AccountingMigrationRunArtifactDto(
+                    "migration-run-dimensional-backfill-unscoped",
+                    AccountingMigrationRunKindDto.DimensionalBackfill,
+                    AccountingMigrationRunStatusDto.Certified,
+                    DateTimeOffset.Parse("2026-03-01T01:00:00Z"),
+                    CompletedAtUtc: DateTimeOffset.Parse("2026-03-01T01:15:00Z"),
+                    MigratedRecordCount: 800,
+                    IssueCount: 0,
+                    EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/unscoped"],
+                    FundProfileId: "default-fund",
+                    Summary: "Legacy fund-level dimensional backfill retained without a book scope."),
+                "controller",
+                CorrelationId: "dimensional-backfill-unscoped")));
+
+        unscopedResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var listResponse = await client.GetAsync(
             $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId=default-fund&ledgerBookId={ledgerBookId:D}");

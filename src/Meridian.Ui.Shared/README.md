@@ -221,8 +221,9 @@ migration, retained migration run artifacts, and tenant-admin rollout guidance i
 fail-closed payload for browser, WPF, and admin setup surfaces. Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund and ledger-book dimension scope before production readiness treats them as
-valid dimensional accounting evidence, artifacts outside the requested fund or ledger-book rollout
-scope cannot satisfy certification controls, External GL readiness is blocked until the assessment
+valid dimensional accounting evidence, and book-scoped readiness only loads retained migration
+artifacts for the exact requested ledger book. Fund-level or other-book migration artifacts cannot
+satisfy certification controls for a selected ledger-book rollout. External GL readiness is blocked until the assessment
 names the target Meridian ledger book for import/reconciliation/mapping/export certification, and
 failed retained migration runs are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
 import external GL data, post journals, certify exports, or close periods.

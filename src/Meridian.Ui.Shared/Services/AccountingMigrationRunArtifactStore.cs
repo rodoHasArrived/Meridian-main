@@ -51,7 +51,7 @@ public sealed class InMemoryAccountingMigrationRunArtifactStore : IAccountingMig
 
     private static bool MatchesScope(AccountingMigrationRunArtifactDto artifact, string fundProfileId, Guid? ledgerBookId)
         => string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
-           (!ledgerBookId.HasValue || artifact.LedgerBookId is null || artifact.LedgerBookId == ledgerBookId);
+           (!ledgerBookId.HasValue || artifact.LedgerBookId == ledgerBookId);
 
     private static AccountingMigrationRunArtifactDto NormalizeArtifact(AccountingMigrationRunArtifactUpsertRequestDto request)
         => FileAccountingMigrationRunArtifactStore.NormalizeArtifact(request);
@@ -198,7 +198,7 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
 
     private static bool MatchesScope(AccountingMigrationRunArtifactDto artifact, string fundProfileId, Guid? ledgerBookId)
         => string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
-           (!ledgerBookId.HasValue || artifact.LedgerBookId is null || artifact.LedgerBookId == ledgerBookId);
+           (!ledgerBookId.HasValue || artifact.LedgerBookId == ledgerBookId);
 
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? "default-fund" : value.Trim();
