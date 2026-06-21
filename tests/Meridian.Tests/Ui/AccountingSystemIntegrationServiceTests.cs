@@ -171,6 +171,10 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
             component.Issues.Any(issue => issue.Code == "close-reporting.ledger-book-native-not-certified"));
+        blocked.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            component.Status == AccountingProductionReadinessStatusDto.Unavailable &&
+            component.Issues.Any(issue => issue.Code == "external-gl.ledger-book-native-not-certified"));
 
         var otherLedgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         var mismatchedEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
@@ -221,6 +225,11 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
             component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification") &&
             component.Issues.Any(issue => issue.Code == "close-reporting.ledger-book-native-evidence-missing"));
+        partialEvidence.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            component.Status == AccountingProductionReadinessStatusDto.Unavailable &&
+            component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification") &&
+            component.Issues.Any(issue => issue.Code == "external-gl.ledger-book-native-evidence-missing"));
 
         var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/workflow-certification/full";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
@@ -256,6 +265,11 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.EvidenceReferences.Contains(certifiedEvidence) &&
             component.Issues.All(issue => issue.Code != "close-reporting.ledger-book-native-not-certified" &&
                                           issue.Code != "close-reporting.ledger-book-native-evidence-missing"));
+        certified.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            component.EvidenceReferences.Contains(certifiedEvidence) &&
+            component.Issues.All(issue => issue.Code != "external-gl.ledger-book-native-not-certified" &&
+                                          issue.Code != "external-gl.ledger-book-native-evidence-missing"));
     }
 
     [Fact]
@@ -475,6 +489,10 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Code == "external-gl.ledger-book-scope-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "external-gl.ledger-book-workflow-scope-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
@@ -501,6 +519,10 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.EvidenceReferences.Contains("external-gl-provider:posting-provider"));
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "external-gl.ledger-book-native-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         readiness.Issues.Should().NotContain(issue => issue.Code == "external-gl.live-posting-disabled");
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.ExternalGl &&

@@ -111,10 +111,10 @@ the requirement end to end.
   scope, admin roles, scoped access, reporting groups, aggregate operator surface, browser admin
   studio, and WPF admin studio each require retained evidence for that lane, or an explicit
   setup-certified tenant-admin packet, before readiness counts the control as complete.
-- [x] Journal Lifecycle and Close/Reporting production-readiness components now consume
-  ledger-book-native workflow certification and retained lane evidence directly, so those
+- [x] Journal Lifecycle, Close/Reporting, and External GL production-readiness components now
+  consume ledger-book-native workflow certification and retained lane evidence directly, so those
   components remain blocked even when services are registered until the selected ledger book has
-  lifecycle, close, and reporting proof.
+  lifecycle, close/reporting, import, reconciliation, mapping, and guarded-export proof.
 - [x] Tenant administration readiness now includes explicit enterprise configuration studio
   controls for chart administration, rule-test/promotion setup, close setup, provider/external-GL
   mapping setup, and tenant/company/report-group setup. The shared profile, browser editor, WPF

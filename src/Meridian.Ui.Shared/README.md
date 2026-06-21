@@ -232,9 +232,10 @@ Ledger-book-native workflow controls are evidence-qualified per lane: posting ru
 lifecycle, close/reporting, and external GL only count as complete when the selected ledger book has
 retained evidence for that workflow or an explicit full workflow certification packet. A generic
 ledger-book evidence link no longer certifies every workflow control by implication. The Journal
-Lifecycle and Close/Reporting readiness components consume the same workflow certification state,
-so those lanes remain blocked even when their services are registered until retained evidence proves
-the selected ledger book is native through lifecycle, close, and reporting workflows.
+Lifecycle, Close/Reporting, and External GL readiness components consume the same workflow
+certification state, so those lanes remain blocked even when their services are registered until
+retained evidence proves the selected ledger book is native through lifecycle, close/reporting,
+import, reconciliation, mapping, and guarded-export workflows.
 Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
@@ -243,8 +244,9 @@ treats them as valid dimensional accounting evidence, and book-scoped readiness 
 tenant/company-scoped migration artifacts for the exact requested ledger book. Fund-level,
 other-book, or other-company migration artifacts cannot satisfy certification controls for a
 selected ledger-book rollout. External GL readiness is blocked until the assessment
-names the target Meridian ledger book for import/reconciliation/mapping/export certification, and it
-also blocks when an available external-GL provider advertises live posting support so the first
+names the target Meridian ledger book for import/reconciliation/mapping/export certification, has
+retained external-GL workflow evidence for that selected book, and has certified mapping profiles;
+it also blocks when an available external-GL provider advertises live posting support so the first
 production slice remains import/reconciliation/guarded-export only. Failed retained migration runs
 are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
 import external GL data, post journals, certify exports, or close periods.

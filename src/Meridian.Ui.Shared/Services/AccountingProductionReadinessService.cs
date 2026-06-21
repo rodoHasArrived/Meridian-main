@@ -40,7 +40,7 @@ public sealed class AccountingProductionReadinessService
         var rulesStudioResult = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         BuildJournalLifecycleComponent(components, ledgerBookResult.WorkflowReadiness);
         BuildCloseReportingComponent(components, ledgerBookResult.WorkflowReadiness);
-        var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
+        var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, ledgerBookResult.WorkflowReadiness, components, ct).ConfigureAwait(false);
         BuildMigrationRolloutComponent(effectiveRequest, components);
         var tenantAdministration = BuildTenantAdministrationComponent(effectiveRequest, components);
 
@@ -748,20 +748,28 @@ public sealed class AccountingProductionReadinessService
     private async Task<ExternalGlCounts> BuildExternalGlComponentAsync(
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness,
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
         var service = _services.GetService<AccountingSystemIntegrationService>();
         if (service is null)
         {
+            var serviceIssues = new List<AccountingProductionReadinessIssueDto>
+            {
+                Issue("external-gl.service-missing", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Critical, "Accounting-system integration service is not registered.", "Register guarded external-GL import/mapping services before production rollout.")
+            };
+            AddExternalGlWorkflowIssues(workflowReadiness, serviceIssues);
+
             components.Add(Component(
                 AccountingProductionReadinessAreaDto.ExternalGl,
                 "External GL",
                 AccountingProductionReadinessStatusDto.Unavailable,
                 0,
                 "No accounting-system integration service is registered.",
-                [Issue("external-gl.service-missing", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Critical, "Accounting-system integration service is not registered.", "Register guarded external-GL import/mapping services before production rollout.")],
-                UiApiRoutes.AccountingSystemProviders));
+                serviceIssues,
+                UiApiRoutes.AccountingSystemProviders,
+                workflowReadiness.EvidenceReferences));
             return new ExternalGlCounts(0, 0, false);
         }
 
@@ -805,16 +813,55 @@ public sealed class AccountingProductionReadinessService
             issues.Add(Issue("external-gl.live-posting-disabled", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Info, "Live external GL posting remains disabled by product policy.", "Use import, reconciliation, and guarded export artifacts until a separately approved live-posting adapter exists."));
         }
 
+        AddExternalGlWorkflowIssues(workflowReadiness, issues);
+
         components.Add(Component(
             AccountingProductionReadinessAreaDto.ExternalGl,
             "External GL",
             ResolveIssueStatus(issues),
-            request.LedgerBookId.HasValue && certifiedMappings > 0 ? 85 : 45,
-            $"{providers.Count} provider row(s), {mappings.Count} mapping profile(s), {certifiedMappings} certified profile(s); ledger book {(request.LedgerBookId.HasValue ? request.LedgerBookId.Value.ToString("D") : "missing")}; live posting {(livePostingEnabled ? "enabled" : "disabled")}.",
+            ScoreFromIssues(issues, hasPositiveEvidence: certifiedMappings > 0 || workflowReadiness.HasExternalGlLedgerBookNativeEvidence),
+            $"{providers.Count} provider row(s), {mappings.Count} mapping profile(s), {certifiedMappings} certified profile(s); ledger book {(request.LedgerBookId.HasValue ? request.LedgerBookId.Value.ToString("D") : "missing")}; external-GL workflow {(workflowReadiness.ExternalGlLedgerBookNativeCertified ? "certified" : "not certified")}; live posting {(livePostingEnabled ? "enabled" : "disabled")}.",
             issues,
-            UiApiRoutes.AccountingSystemMappingProfiles));
+            UiApiRoutes.AccountingSystemMappingProfiles,
+            workflowReadiness.EvidenceReferences));
 
         return new ExternalGlCounts(providers.Count, certifiedMappings, livePostingEnabled);
+    }
+
+    private static void AddExternalGlWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "external-gl.ledger-book-workflow-scope-missing",
+                AccountingProductionReadinessAreaDto.ExternalGl,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL workflow readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying import, reconciliation, mapping, and guarded export workflows."));
+            return;
+        }
+
+        if (!readiness.ExternalGlLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "external-gl.ledger-book-native-not-certified",
+                AccountingProductionReadinessAreaDto.ExternalGl,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL workflows have not been certified as ledger-book-native.",
+                "Prove provider imports, reconciliation snapshots, mapping profiles, and guarded export packages are bound to the selected Meridian ledger book."));
+        }
+        else if (!readiness.HasExternalGlLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "external-gl.ledger-book-native-evidence-missing",
+                AccountingProductionReadinessAreaDto.ExternalGl,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL certification lacks retained external-GL workflow evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and external-GL import, reconciliation, mapping, or guarded-export workflow.",
+                readiness.EvidenceReferences));
+        }
     }
 
     private static AccountingTenantAdministrationReadinessDto BuildTenantAdministrationComponent(
