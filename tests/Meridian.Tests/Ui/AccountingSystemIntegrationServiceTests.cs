@@ -251,10 +251,14 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         blocked.DimensionalReporting.Should().NotBeNull();
         blocked.DimensionalReporting!.LedgerBookId.Should().Be(ledgerBookId);
-        blocked.DimensionalReporting.CompletedControlCount.Should().Be(2);
+        blocked.DimensionalReporting.CompletedControlCount.Should().Be(1);
         blocked.DimensionalReporting.RequiredControlCount.Should().Be(6);
         blocked.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.reporting-evidence-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         blocked.Issues.Should().Contain(issue =>
@@ -263,9 +267,32 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         blocked.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
-            component.Summary.Contains("2/6 report/query/export dimension control", StringComparison.OrdinalIgnoreCase));
+            component.Summary.Contains("1/6 report/query/export dimension control", StringComparison.OrdinalIgnoreCase));
 
-        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification";
+        var partialEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodReportDimensionQueriesCertified: true,
+                CrossPeriodReportDimensionQueriesCertified: true,
+                JournalQueryDimensionFiltersCertified: true,
+                ExternalExportDimensionMappingCertified: true,
+                DimensionalReportingEvidenceLinks: [$"evidence://ledger-book/{ledgerBookId:D}/dimensions/period-reports/trial-balance"]));
+
+        partialEvidence.DimensionalReporting.Should().NotBeNull();
+        partialEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(3);
+        partialEvidence.Issues.Should().NotContain(issue => issue.Code == "dimensions.period-reports-evidence-missing");
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.cross-period-reports-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.journal-query-filters-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.external-export-mapping-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
+
+        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
@@ -282,6 +309,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         certified.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             (issue.Code.StartsWith("dimensions.reporting-", StringComparison.OrdinalIgnoreCase) ||
+             issue.Code.EndsWith("-evidence-missing", StringComparison.OrdinalIgnoreCase) ||
              issue.Code == "dimensions.period-reports-not-certified" ||
              issue.Code == "dimensions.cross-period-reports-not-certified" ||
              issue.Code == "dimensions.journal-query-filters-not-certified" ||

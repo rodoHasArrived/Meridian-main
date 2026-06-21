@@ -103,6 +103,10 @@ the requirement end to end.
   posting rules, journal lifecycle, close/reporting, and external GL require retained evidence for
   that lane, or an explicit full workflow certification packet, before readiness counts the control
   as complete.
+- [x] Dimensional reporting/export production certification is now evidence-qualified by lane:
+  period reports, cross-period reports, journal filters, and external export mappings require
+  retained evidence for that lane, or an explicit full dimensional/production certification packet,
+  before readiness counts the control as complete.
 
 ## Still To Complete
 

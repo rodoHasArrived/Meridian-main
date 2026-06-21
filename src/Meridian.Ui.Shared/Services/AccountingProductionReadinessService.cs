@@ -535,6 +535,16 @@ public sealed class AccountingProductionReadinessService
                 "Period report dimension queries have not been certified.",
                 "Prove period trial balance, financial statements, NAV, and investor package filters retain canonical dimensions for the selected ledger book."));
         }
+        else if (!readiness.HasPeriodReportDimensionQueryEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.period-reports-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Period report dimension certification lacks retained period-report evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and period report, trial-balance, financial-statement, NAV, or investor-package dimension checks.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.CrossPeriodReportDimensionQueriesCertified)
         {
@@ -544,6 +554,16 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Cross-period report dimension queries have not been certified.",
                 "Prove comparative and roll-forward report filters retain canonical dimensions across accounting periods for the selected ledger book."));
+        }
+        else if (!readiness.HasCrossPeriodReportDimensionQueryEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.cross-period-reports-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Cross-period report dimension certification lacks retained cross-period evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and cross-period, comparative, or roll-forward report dimension checks.",
+                readiness.EvidenceReferences));
         }
 
         if (!readiness.JournalQueryDimensionFiltersCertified)
@@ -555,6 +575,16 @@ public sealed class AccountingProductionReadinessService
                 "Journal query dimension filters have not been certified.",
                 "Prove ledger journal drill-through, audit, and evidence queries filter by canonical dimensions instead of account-name or route heuristics."));
         }
+        else if (!readiness.HasJournalQueryDimensionFilterEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.journal-query-filters-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal query dimension certification lacks retained journal-filter evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and journal query, journal filter, or ledger journal dimension checks.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.ExternalExportDimensionMappingCertified)
         {
@@ -564,6 +594,16 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "External export dimension mapping has not been certified.",
                 "Prove guarded export packages preserve fund, entity, ledger-book, and external-GL dimension mappings before production export review."));
+        }
+        else if (!readiness.HasExternalExportDimensionMappingEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.external-export-mapping-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External export dimension mapping certification lacks retained export-mapping evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and external export, external-GL mapping, or GL export dimension checks.",
+                readiness.EvidenceReferences));
         }
 
         return issues;

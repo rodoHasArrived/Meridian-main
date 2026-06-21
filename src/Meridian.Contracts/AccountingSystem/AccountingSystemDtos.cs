@@ -345,10 +345,10 @@ public sealed record AccountingDimensionalReportingReadinessDto(
         {
             HasLedgerBookScope,
             HasLedgerBookScopedEvidence,
-            PeriodReportDimensionQueriesCertified,
-            CrossPeriodReportDimensionQueriesCertified,
-            JournalQueryDimensionFiltersCertified,
-            ExternalExportDimensionMappingCertified
+            PeriodReportDimensionQueriesCertified && HasPeriodReportDimensionQueryEvidence,
+            CrossPeriodReportDimensionQueriesCertified && HasCrossPeriodReportDimensionQueryEvidence,
+            JournalQueryDimensionFiltersCertified && HasJournalQueryDimensionFilterEvidence,
+            ExternalExportDimensionMappingCertified && HasExternalExportDimensionMappingEvidence
         }.Count(static control => control);
 
     public int RequiredControlCount => 6;
@@ -361,6 +361,18 @@ public sealed record AccountingDimensionalReportingReadinessDto(
         LedgerBookId.HasValue &&
         EvidenceReferences.Any(reference => IsLedgerBookEvidence(reference, LedgerBookId.Value));
 
+    public bool HasPeriodReportDimensionQueryEvidence =>
+        HasDimensionEvidence("period-report", "period-reports", "trial-balance", "financial-statement", "nav", "investor-package");
+
+    public bool HasCrossPeriodReportDimensionQueryEvidence =>
+        HasDimensionEvidence("cross-period", "comparative", "roll-forward");
+
+    public bool HasJournalQueryDimensionFilterEvidence =>
+        HasDimensionEvidence("journal-query", "journal-filter", "journal-dimension", "ledger-journal");
+
+    public bool HasExternalExportDimensionMappingEvidence =>
+        HasDimensionEvidence("external-export", "export-dimension", "external-gl-mapping", "gl-export");
+
     private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
     {
         if (string.IsNullOrWhiteSpace(reference))
@@ -372,6 +384,15 @@ public sealed record AccountingDimensionalReportingReadinessDto(
         return reference.Contains(ledgerBookIdText, StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase);
     }
+
+    private bool HasDimensionEvidence(params string[] aliases)
+        => LedgerBookId.HasValue &&
+           EvidenceReferences.Any(reference =>
+               IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
+               (reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
+                reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase) ||
+                reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
+                aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
 }
 
 public sealed record AccountingTenantAdministrationReadinessDto(

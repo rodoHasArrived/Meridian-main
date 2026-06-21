@@ -247,7 +247,10 @@ are surfaced as critical rollout issues. The route does not create ledger books,
 import external GL data, post journals, certify exports, or close periods.
 Dimensional accounting readiness also fails closed until period report filters, cross-period
 report filters, journal dimension filters, and external-export dimension mappings are certified
-with retained evidence naming the selected ledger book.
+with retained evidence naming the selected ledger book. Those dimensional controls are also
+evidence-qualified per lane: period reports, cross-period reports, journal filters, and external
+export mappings each require matching retained evidence, or an explicit full dimensional or
+production certification packet, before readiness counts the control as complete.
 External GL guarded-export package endpoints stamp export creation, certification, and manifest
 lookup with the authenticated workstation tenant/company scope, so browser and WPF callers cannot
 retrieve or certify another company's retained export artifact by submitting tenant or company

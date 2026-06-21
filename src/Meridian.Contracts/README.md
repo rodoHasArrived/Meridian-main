@@ -215,6 +215,9 @@ certification packet. Generic evidence links do not certify every workflow lane 
 `AccountingDimensionalReportingReadinessDto` separately certifies period reports, cross-period
 reports, journal dimension filters, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
+Each dimensional control requires evidence for that specific report/query/export lane, unless the
+evidence is an explicit full dimensional or production certification packet, so one generic
+ledger-book evidence link cannot certify all dimensional reporting controls by implication.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
 admin-studio, and retained-evidence readiness so production accounting setup is blocked by shared
