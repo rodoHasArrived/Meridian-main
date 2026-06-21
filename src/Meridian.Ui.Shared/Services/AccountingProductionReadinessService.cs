@@ -1160,6 +1160,20 @@ public sealed class AccountingProductionReadinessService
                 evidenceReferences));
         }
 
+        if (readiness.HasRetainedEvidence &&
+            readiness.HasTenantScope &&
+            readiness.HasCompanyScope &&
+            !readiness.HasTenantCompanyScopedEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.evidence-scope-mismatch",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant administration evidence does not identify the requested tenant and company.",
+                "Retain tenant administration evidence that names the selected tenant and company before certifying enterprise accounting setup controls.",
+                evidenceReferences));
+        }
+
         if (!readiness.TenantScopeConfigured)
         {
             issues.Add(Issue(

@@ -530,6 +530,11 @@ public sealed record AccountingTenantAdministrationReadinessDto(
 
     public bool HasRetainedEvidence => EvidenceReferences.Count > 0;
 
+    public bool HasTenantCompanyScopedEvidence =>
+        HasTenantScope &&
+        HasCompanyScope &&
+        EvidenceReferences.Any(IsTenantCompanyScopedEvidence);
+
     public bool HasTenantScopeEvidence =>
         HasTenantAdministrationEvidence("tenant-scope", "tenant-storage", "tenant-ledger", "tenant-provider");
 
@@ -595,10 +600,24 @@ public sealed record AccountingTenantAdministrationReadinessDto(
 
     private bool HasTenantAdministrationEvidence(params string[] aliases)
         => EvidenceReferences.Any(reference =>
+            IsTenantCompanyScopedEvidence(reference) &&
             reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) &&
             (reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase) ||
              reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
              aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+
+    private bool IsTenantCompanyScopedEvidence(string? reference)
+    {
+        if (string.IsNullOrWhiteSpace(reference) ||
+            string.IsNullOrWhiteSpace(TenantId) ||
+            string.IsNullOrWhiteSpace(CompanyId))
+        {
+            return false;
+        }
+
+        return reference.Contains(TenantId, StringComparison.OrdinalIgnoreCase) &&
+               reference.Contains(CompanyId, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 public sealed record AccountingProductionReadinessIssueDto(

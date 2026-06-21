@@ -231,8 +231,9 @@ production accounting setup is blocked by shared contract state rather than work
 assumptions.
 Each configured tenant administration or enterprise configuration studio control requires retained
 evidence for that setup lane, or an explicit `tenant-admin/full` or `tenant-administration/full`
-certification packet, before readiness counts the control as complete. Generic setup evidence is
-retained for audit context but does not certify every tenant-admin control by implication.
+certification packet, before readiness counts the control as complete. That evidence must identify
+the selected tenant and company, so a generic or wrong-company setup packet is retained for audit
+context but cannot certify every tenant-admin control by implication.
 `AccountingTenantAdministrationProfileDto` is the retained setup profile shape for the same controls,
 allowing shared endpoints, browser, and WPF to review or certify tenant administration posture
 without passing transient request-only booleans.

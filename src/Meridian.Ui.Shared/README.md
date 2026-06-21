@@ -123,6 +123,10 @@ dry-run, execution, and audit requests so browser and WPF clients cannot spoof a
 configuration workspace through request body fields. Posting-rule journal candidate requests use
 the same resolved tenant/company scope before invoking Financial Operations so generated
 source-event drafts dry-run against, and resolve chart paths from, the authenticated workspace.
+Accounting production-readiness assessment also treats tenant administration evidence as
+tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
+dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
+the shared control plane counts those enterprise setup controls as complete.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained

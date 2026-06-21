@@ -524,14 +524,16 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ImplementationSandboxConfigured: true,
                 TenantAdministrationEvidenceLinks:
                 [
-                    "evidence://tenant-admin/tenant-alpha/setup-certified",
-                    "evidence://tenant-admin/tenant-alpha/admin-role/accounting-controller",
-                    "approval:tenant-admin:tenant-alpha"
+                    "evidence://tenant-admin/tenant-alpha/company-alpha/setup-certified",
+                    "evidence://tenant-admin/tenant-alpha/company-alpha/admin-role/accounting-controller",
+                    "approval:tenant-admin:tenant-alpha:company-alpha"
                 ]));
 
         partialEvidence.TenantAdministration.Should().NotBeNull();
         partialEvidence.TenantAdministration!.CompletedControlCount.Should().Be(3);
+        partialEvidence.TenantAdministration.HasTenantCompanyScopedEvidence.Should().BeTrue();
         partialEvidence.Issues.Should().NotContain(issue => issue.Code == "tenant-admin.role-profile-evidence-missing");
+        partialEvidence.Issues.Should().NotContain(issue => issue.Code == "tenant-admin.evidence-scope-mismatch");
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "tenant-admin.tenant-scope-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
@@ -618,8 +620,8 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ImplementationSandboxConfigured: true,
                 TenantAdministrationEvidenceLinks:
                 [
-                    "evidence://tenant-admin/tenant-alpha/tenant-admin/full",
-                    "approval:tenant-admin:tenant-alpha"
+                    "evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full",
+                    "approval:tenant-admin:tenant-alpha:company-alpha"
                 ]));
 
         readyControls.TenantAdministration.Should().NotBeNull();
@@ -627,12 +629,69 @@ public sealed class AccountingSystemIntegrationServiceTests
         readyControls.TenantAdministration.CompanyId.Should().Be("company-alpha");
         readyControls.TenantAdministration.CompletedControlCount.Should().Be(23);
         readyControls.TenantAdministration.HasRetainedEvidence.Should().BeTrue();
+        readyControls.TenantAdministration.HasTenantCompanyScopedEvidence.Should().BeTrue();
         readyControls.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
         readyControls.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             component.Status == AccountingProductionReadinessStatusDto.Ready &&
-            component.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/tenant-admin/full"));
+            component.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"));
+    }
+
+    [Fact]
+    public async Task ProductionReadinessService_RequiresTenantAdministrationEvidenceForRequestedTenantAndCompany()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                TenantScopeConfigured: true,
+                AdminRoleProfileConfigured: true,
+                ScopedAccessPoliciesConfigured: true,
+                ReportingGroupsConfigured: true,
+                AccountingAdminSurfaceConfigured: true,
+                BrowserAccountingAdminSurfaceConfigured: true,
+                WpfAccountingAdminSurfaceConfigured: true,
+                ChartAdministrationStudioConfigured: true,
+                RuleTestPromotionStudioConfigured: true,
+                CloseSetupStudioConfigured: true,
+                ProviderMappingStudioConfigured: true,
+                TenantCompanyReportGroupSetupStudioConfigured: true,
+                AuditReviewToolingConfigured: true,
+                BulkImportExportSafeguardsConfigured: true,
+                PerformanceValidationConfigured: true,
+                DisasterRecoveryRunbookConfigured: true,
+                LedgerBookAdministrationStudioConfigured: true,
+                PostingRuleAuthoringStudioConfigured: true,
+                ApprovalQueueStudioConfigured: true,
+                DimensionMappingStudioConfigured: true,
+                ImplementationSandboxConfigured: true,
+                TenantAdministrationEvidenceLinks:
+                [
+                    "evidence://tenant-admin/tenant-alpha/tenant-admin/full",
+                    "evidence://tenant-admin/tenant-alpha/company-beta/tenant-admin/full",
+                    "approval:tenant-admin:tenant-alpha"
+                ]));
+
+        readiness.TenantAdministration.Should().NotBeNull();
+        readiness.TenantAdministration!.HasTenantCompanyScopedEvidence.Should().BeFalse();
+        readiness.TenantAdministration.CompletedControlCount.Should().Be(2);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.evidence-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-beta/tenant-admin/full"));
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.role-profile-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
     }
 
     [Fact]
@@ -734,10 +793,10 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ImplementationSandboxConfigured: true,
                 UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                 UpdatedBy: "controller",
-                EvidenceReferences: ["evidence://tenant-admin/tenant-alpha/tenant-admin/full"]),
+                EvidenceReferences: ["evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"]),
             "controller",
             CorrelationId: "tenant-admin-tenant-alpha",
-            EvidenceLinks: ["approval:tenant-admin:tenant-alpha"]));
+            EvidenceLinks: ["approval:tenant-admin:tenant-alpha:company-alpha"]));
 
         var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
@@ -747,8 +806,9 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         readiness.TenantAdministration.Should().NotBeNull();
         readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
-        readiness.TenantAdministration.EvidenceReferences.Should().Contain("evidence://tenant-admin/tenant-alpha/tenant-admin/full");
-        readiness.TenantAdministration.EvidenceReferences.Should().Contain("approval:tenant-admin:tenant-alpha");
+        readiness.TenantAdministration.HasTenantCompanyScopedEvidence.Should().BeTrue();
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full");
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain("approval:tenant-admin:tenant-alpha:company-alpha");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("correlation:tenant-admin-tenant-alpha");
         readiness.Issues.Should().NotContain(issue => issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
         readiness.Components.Should().Contain(component =>
