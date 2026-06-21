@@ -364,16 +364,7 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
         HasWorkflowEvidence("strategy-ledger", "strategy-run", "run-ledger", "strategy-ledger-read");
 
     private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
-    {
-        if (string.IsNullOrWhiteSpace(reference))
-        {
-            return false;
-        }
-
-        var ledgerBookIdText = ledgerBookId.ToString("D");
-        return reference.Contains(ledgerBookIdText, StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase);
-    }
+        => AccountingProductionReadinessEvidenceScope.ReferencesLedgerBook(reference, ledgerBookId);
 
     private bool HasWorkflowEvidence(params string[] aliases)
         => LedgerBookId.HasValue &&
@@ -444,16 +435,7 @@ public sealed record AccountingDimensionalReportingReadinessDto(
         HasDimensionEvidence("report-package-provenance", "report-line-provenance", "package-dimension", "nav-package");
 
     private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
-    {
-        if (string.IsNullOrWhiteSpace(reference))
-        {
-            return false;
-        }
-
-        var ledgerBookIdText = ledgerBookId.ToString("D");
-        return reference.Contains(ledgerBookIdText, StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase);
-    }
+        => AccountingProductionReadinessEvidenceScope.ReferencesLedgerBook(reference, ledgerBookId);
 
     private bool HasDimensionEvidence(params string[] aliases)
         => LedgerBookId.HasValue &&
@@ -705,6 +687,26 @@ public sealed record AccountingProductionReadinessDto(
     public int CriticalIssueCount => Issues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 
     public int WarningIssueCount => Issues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
+}
+
+internal static class AccountingProductionReadinessEvidenceScope
+{
+    public static bool ReferencesLedgerBook(string? reference, Guid ledgerBookId)
+    {
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return false;
+        }
+
+        var ledgerBookIdText = ledgerBookId.ToString("D");
+        var compactLedgerBookIdText = ledgerBookId.ToString("N");
+        return reference.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book/{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book:{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book/{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"book:{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 public sealed record AccountingSystemOAuthStartRequestDto(

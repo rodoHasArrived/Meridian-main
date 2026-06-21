@@ -213,14 +213,17 @@ evidence instead of relying on account or run names.
 `AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle, close/reporting,
 external GL, reconciliation, direct-lending, and strategy-ledger-read controls as complete only when the certification flag is paired with retained
 ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
-certification packet. Generic evidence links do not certify every workflow lane by implication.
+certification packet. Ledger-book evidence must use an explicit `ledger-book:<id>`,
+`ledger-book/<id>`, or `book:<id>` marker; incidental bare GUID references and generic evidence
+links do not certify every workflow lane by implication.
 `AccountingDimensionalReportingReadinessDto` separately certifies posted ledger-line dimension
 persistence, trial-balance dimension filters, period reports, cross-period reports, journal
 dimension filters, report-package provenance, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
 Each dimensional control requires evidence for that specific ledger/query/report/export lane,
 unless the evidence is an explicit full dimensional or production certification packet, so one
-generic ledger-book evidence link cannot certify all dimensional reporting controls by implication.
+generic ledger-book evidence link or incidental bare GUID reference cannot certify all dimensional
+reporting controls by implication.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
 admin-studio, chart administration, rule-test and promotion, close setup, provider/external-GL

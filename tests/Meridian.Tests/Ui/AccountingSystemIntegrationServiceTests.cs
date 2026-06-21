@@ -243,6 +243,31 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.EvidenceReferences.Contains($"evidence://ledger-book/{otherLedgerBookId:D}/workflow-certification/full"));
 
+        var incidentalGuidEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PostingRulesLedgerBookNativeCertified: true,
+                JournalLifecycleLedgerBookNativeCertified: true,
+                CloseReportingLedgerBookNativeCertified: true,
+                ExternalGlLedgerBookNativeCertified: true,
+                ReconciliationLedgerBookNativeCertified: true,
+                DirectLendingLedgerBookNativeCertified: true,
+                StrategyLedgerReadLedgerBookNativeCertified: true,
+                LedgerBookWorkflowEvidenceLinks: [$"evidence://workflow-certification/full?selected={ledgerBookId:D}"]));
+
+        incidentalGuidEvidence.LedgerBookWorkflows.Should().NotBeNull();
+        incidentalGuidEvidence.LedgerBookWorkflows!.HasLedgerBookScopedEvidence.Should().BeFalse();
+        incidentalGuidEvidence.LedgerBookWorkflows.CompletedControlCount.Should().Be(1);
+        incidentalGuidEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-evidence-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains($"evidence://workflow-certification/full?selected={ledgerBookId:D}"));
+        incidentalGuidEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.posting-rules-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+
         var partialEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
@@ -401,6 +426,31 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
             component.Issues.Any(issue => issue.Code == "close-reporting.dimension-controls-incomplete" &&
                                           issue.EvidenceReferences.Contains($"evidence://ledger-book/{otherLedgerBookId:D}/dimensions/report-query-certification")));
+
+        var incidentalGuidEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodReportDimensionQueriesCertified: true,
+                CrossPeriodReportDimensionQueriesCertified: true,
+                JournalQueryDimensionFiltersCertified: true,
+                ExternalExportDimensionMappingCertified: true,
+                LedgerLineDimensionsPersistedCertified: true,
+                TrialBalanceDimensionFiltersCertified: true,
+                ReportPackageDimensionProvenanceCertified: true,
+                DimensionalReportingEvidenceLinks: [$"evidence://dimensions/report-query-certification/full?selected={ledgerBookId:D}"]));
+
+        incidentalGuidEvidence.DimensionalReporting.Should().NotBeNull();
+        incidentalGuidEvidence.DimensionalReporting!.HasLedgerBookScopedEvidence.Should().BeFalse();
+        incidentalGuidEvidence.DimensionalReporting.CompletedControlCount.Should().Be(1);
+        incidentalGuidEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.reporting-evidence-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains($"evidence://dimensions/report-query-certification/full?selected={ledgerBookId:D}"));
+        incidentalGuidEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.period-reports-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
 
         var partialEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
