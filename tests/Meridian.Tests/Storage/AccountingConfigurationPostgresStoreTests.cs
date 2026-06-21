@@ -21,6 +21,20 @@ public sealed class AccountingConfigurationPostgresStoreTests
         sql.Should().Contain("on __SCHEMA__.accounting_configuration_posting_rules(fund_profile_id, configuration_scope_id, template_id)");
     }
 
+    [Fact]
+    public void AccountingConfigurationTenantCompanyScopeMigration_DefinesReRunnableScopedWorkspaceKeys()
+    {
+        var sql = ReadMigration("V_ledger_016__accounting_configuration_tenant_company_scope.sql");
+
+        sql.Should().Contain("add column if not exists tenant_id text not null default 'all'");
+        sql.Should().Contain("add column if not exists company_id text not null default 'all'");
+        sql.Should().Contain("drop constraint if exists accounting_configuration_chart_nodes_workspace_fkey");
+        sql.Should().Contain("primary key (tenant_id, company_id, fund_profile_id, configuration_scope_id)");
+        sql.Should().Contain("references __SCHEMA__.accounting_configuration_workspaces(tenant_id, company_id, fund_profile_id, configuration_scope_id)");
+        sql.Should().Contain("on __SCHEMA__.accounting_configuration_chart_nodes(tenant_id, company_id, fund_profile_id, configuration_scope_id, lower(path))");
+        sql.Should().Contain("on __SCHEMA__.accounting_configuration_posting_rules(tenant_id, company_id, fund_profile_id, configuration_scope_id, template_id)");
+    }
+
     [LedgerDatabaseFact]
     public async Task Migration_CreatesAccountingConfigurationTables()
     {
@@ -181,6 +195,51 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
+    public async Task SaveAndGetAsync_IsolatesConfigurationByTenantAndCompany()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+
+        await database.AccountingConfigurationStore.SaveAsync(BuildScopedWorkspace(
+            ledgerBookId: null,
+            "cash-alpha",
+            "Assets:Cash",
+            "template-alpha",
+            "rule-alpha",
+            "InterestAccrual",
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+        await database.AccountingConfigurationStore.SaveAsync(BuildScopedWorkspace(
+            ledgerBookId: null,
+            "cash-beta",
+            "Assets:Cash",
+            "template-beta",
+            "rule-beta",
+            "InterestAccrual",
+            TenantId: "tenant-beta",
+            CompanyId: "company-beta"));
+
+        var alpha = await database.AccountingConfigurationStore.GetAsync("fund-alpha", tenantId: "tenant-alpha", companyId: "company-alpha");
+        var beta = await database.AccountingConfigurationStore.GetAsync("fund-alpha", tenantId: "tenant-beta", companyId: "company-beta");
+        var unscoped = await database.AccountingConfigurationStore.GetAsync("fund-alpha");
+
+        alpha.Should().NotBeNull();
+        alpha!.TenantId.Should().Be("tenant-alpha");
+        alpha.CompanyId.Should().Be("company-alpha");
+        alpha.ChartOfAccounts.Should().ContainSingle(node => node.NodeId == "cash-alpha");
+        alpha.PostingRules.Should().ContainSingle(rule => rule.RuleId == "rule-alpha");
+        alpha.PostingRules.Should().NotContain(rule => rule.RuleId == "rule-beta");
+
+        beta.Should().NotBeNull();
+        beta!.TenantId.Should().Be("tenant-beta");
+        beta.CompanyId.Should().Be("company-beta");
+        beta.ChartOfAccounts.Should().ContainSingle(node => node.NodeId == "cash-beta");
+        beta.PostingRules.Should().ContainSingle(rule => rule.RuleId == "rule-beta");
+        beta.PostingRules.Should().NotContain(rule => rule.RuleId == "rule-alpha");
+
+        unscoped.Should().BeNull("tenant-scoped accounting configuration must not leak into the unscoped workspace");
+    }
+
+    [LedgerDatabaseFact]
     public async Task AuditStore_AppendsAndFiltersAccountingActionEvents()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -212,12 +271,14 @@ public sealed class AccountingConfigurationPostgresStoreTests
     }
 
     private static AccountingConfigurationWorkspaceDto BuildScopedWorkspace(
-        Guid ledgerBookId,
+        Guid? ledgerBookId,
         string nodeId,
         string accountPath,
         string templateId,
         string ruleId,
-        string sourceEventType)
+        string sourceEventType,
+        string? TenantId = null,
+        string? CompanyId = null)
         => new(
             FundProfileId: "fund-alpha",
             LedgerBookId: ledgerBookId,
@@ -246,7 +307,9 @@ public sealed class AccountingConfigurationPostgresStoreTests
             ],
             ValidationIssues: [],
             AuditTrail: [],
-            RuleTestCases: []);
+            RuleTestCases: [],
+            TenantId: TenantId,
+            CompanyId: CompanyId);
 
     private static string ReadMigration(string fileName)
     {

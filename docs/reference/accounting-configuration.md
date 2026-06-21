@@ -20,7 +20,7 @@ The shared ledger contract family is defined in `Meridian.Contracts.Ledger`:
 
 | Contract | Purpose |
 | --- | --- |
-| `AccountingConfigurationWorkspaceDto` | Complete operator configuration workspace for one fund profile and optional ledger book. |
+| `AccountingConfigurationWorkspaceDto` | Complete operator configuration workspace for one tenant/company, fund profile, and optional ledger book. |
 | `ChartOfAccountsNodeDto` | Hierarchical account path, account type, optional symbol, and optional financial-account linkage. |
 | `JournalEntryTemplateDto` | Named journal template with debit and credit line definitions. |
 | `PostingRuleDto` | Source event kind, effective-dated scope, flat conditions, grouped `All`/`Any` conditions, formulas, allocations, generated posting lines, and optional legacy journal-template mapping. |
@@ -107,15 +107,24 @@ When ledger Postgres storage is configured, `V_ledger_010__accounting_configurat
 
 | Table | Purpose |
 | --- | --- |
-| `accounting_configuration_workspaces` | Active workspace header, status, version, optional ledger book, and validation snapshot. |
-| `accounting_configuration_chart_nodes` | Fund-scoped hierarchical chart-of-accounts nodes. |
-| `accounting_configuration_journal_templates` | Fund-scoped journal template headers and JSONB template lines. |
-| `accounting_configuration_posting_rules` | Fund-scoped source-event to template mappings. |
+| `accounting_configuration_workspaces` | Active workspace header, tenant/company/fund/book scope, status, version, optional ledger book, and validation snapshot. |
+| `accounting_configuration_chart_nodes` | Tenant/company/fund/book-scoped hierarchical chart-of-accounts nodes. |
+| `accounting_configuration_journal_templates` | Tenant/company/fund/book-scoped journal template headers and JSONB template lines. |
+| `accounting_configuration_posting_rules` | Tenant/company/fund/book-scoped source-event to template mappings. |
 | `accounting_action_audit_events` | Append-only action audit events across configuration mutations and future accounting actions. |
 
 `V_ledger_011__accounting_rule_payload.sql` adds `rule_payload` JSONB to `accounting_configuration_posting_rules` so effective-dated rules, conditions, formulas, allocation metadata, scopes, generated postings, versions, and promotion approvals survive durable PostgreSQL round trips while legacy columns remain queryable.
 
-`PostgresAccountingConfigurationStore` implements `IAccountingConfigurationStore` and `IAccountingActionAuditStore`. The implementation uses the existing ledger schema options and keeps audit events append-only.
+`V_ledger_015__accounting_configuration_ledger_book_scope.sql` widens the original fund-level key to
+`fund_profile_id` plus `configuration_scope_id`. `V_ledger_016__accounting_configuration_tenant_company_scope.sql`
+then widens workspace and child keys again to `tenant_id`, `company_id`, `fund_profile_id`, and
+`configuration_scope_id` so one tenant/company cannot read or overwrite another tenant/company's
+Rules Studio configuration for the same fund and ledger book.
+
+`PostgresAccountingConfigurationStore` implements `IAccountingConfigurationStore` and
+`IAccountingActionAuditStore`. The implementation uses the existing ledger schema options, keeps
+workspace reads/writes scoped by tenant, company, fund, and ledger book, and keeps audit events
+append-only.
 
 When Financial Operations is composed with `StorageOptions`, close late-adjustment review requests are retained at `accounting/close-management-late-adjustments.json` and accounting report package history is retained at `accounting/accounting-report-packages.json` under the configured storage root. These snapshots are written through `AtomicFileWriter` and are reprojected by the shared close-management and report-package endpoints after process restart.
 
