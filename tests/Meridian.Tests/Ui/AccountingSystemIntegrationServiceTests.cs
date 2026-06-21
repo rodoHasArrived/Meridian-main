@@ -311,6 +311,49 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_RejectsMigrationArtifactsOutsideRequestedLedgerBookScope()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var requestedLedgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+        var otherLedgerBookId = Guid.Parse("99999999-2222-3333-4444-555555555555");
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: requestedLedgerBookId,
+                LedgerBookMigrationCertified: true,
+                MigrationRunArtifacts:
+                [
+                    new AccountingMigrationRunArtifactDto(
+                        "migration-run-ledger-book-scope-other-book",
+                        AccountingMigrationRunKindDto.LedgerBookScope,
+                        AccountingMigrationRunStatusDto.Certified,
+                        DateTimeOffset.Parse("2026-02-02T00:00:00Z"),
+                        CompletedAtUtc: DateTimeOffset.Parse("2026-02-02T00:05:00Z"),
+                        MigratedRecordCount: 42,
+                        EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/other-book/certified"],
+                        FundProfileId: "default-fund",
+                        LedgerBookId: otherLedgerBookId,
+                        Summary: "Ledger-book migration scope certified for another book.")
+                ]));
+
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.ledger-book-scope-artifact-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund/other-book/certified"));
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.ledger-book-scope-certified-run-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
+    }
+
+    [Fact]
     public async Task ReconcileLatestAsync_WithoutMeridianLedger_ReturnsMissingMeridianBreaksAndDisabledPosting()
     {
         var service = CreateService();

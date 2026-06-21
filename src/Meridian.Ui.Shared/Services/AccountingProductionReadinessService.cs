@@ -595,6 +595,9 @@ public sealed class AccountingProductionReadinessService
         var artifacts = request.MigrationRunArtifacts
             .Where(artifact => artifact.Kind == kind)
             .ToArray();
+        var scopedArtifacts = artifacts
+            .Where(artifact => IsMigrationArtifactInScope(request, artifact))
+            .ToArray();
         var evidenceReferences = artifacts
             .SelectMany(static artifact => artifact.EvidenceReferences)
             .Concat(request.MigrationEvidenceLinks)
@@ -602,6 +605,24 @@ public sealed class AccountingProductionReadinessService
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var scopedEvidenceReferences = scopedArtifacts
+            .SelectMany(static artifact => artifact.EvidenceReferences)
+            .Concat(request.MigrationEvidenceLinks)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (artifacts.Any(artifact => !IsMigrationArtifactInScope(request, artifact)))
+        {
+            issues.Add(Issue(
+                $"migration.{MigrationKindCode(kind)}-artifact-scope-mismatch",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"{MigrationKindLabel(kind)} has retained migration run artifacts outside the requested fund or ledger-book rollout scope.",
+                "Attach a retained migration run artifact scoped to the requested fund and ledger book before production rollout certification.",
+                evidenceReferences));
+        }
 
         if (!certified)
         {
@@ -614,7 +635,7 @@ public sealed class AccountingProductionReadinessService
                 evidenceReferences));
         }
 
-        if (artifacts.Any(static artifact => artifact.Status == AccountingMigrationRunStatusDto.Failed))
+        if (scopedArtifacts.Any(static artifact => artifact.Status == AccountingMigrationRunStatusDto.Failed))
         {
             issues.Add(Issue(
                 $"migration.{MigrationKindCode(kind)}-run-failed",
@@ -622,10 +643,10 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 $"{MigrationKindLabel(kind)} has a retained failed migration run artifact.",
                 "Resolve the failed migration run and retain a certified rerun before production rollout.",
-                evidenceReferences));
+                scopedEvidenceReferences));
         }
 
-        if (certified && artifacts.All(static artifact => artifact.Status != AccountingMigrationRunStatusDto.Certified))
+        if (certified && scopedArtifacts.All(static artifact => artifact.Status != AccountingMigrationRunStatusDto.Certified))
         {
             issues.Add(Issue(
                 $"migration.{MigrationKindCode(kind)}-certified-run-missing",
@@ -635,6 +656,21 @@ public sealed class AccountingProductionReadinessService
                 "Attach the retained certified migration run artifact before production rollout certification.",
                 evidenceReferences));
         }
+    }
+
+    private static bool IsMigrationArtifactInScope(
+        AccountingProductionReadinessRequestDto request,
+        AccountingMigrationRunArtifactDto artifact)
+    {
+        var requestedFundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var artifactFundProfileId = NormalizeFundProfileId(artifact.FundProfileId);
+        if (!string.Equals(artifactFundProfileId, requestedFundProfileId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return request.LedgerBookId is null ||
+            artifact.LedgerBookId == request.LedgerBookId;
     }
 
     private static string MigrationKindCode(AccountingMigrationRunKindDto kind)
