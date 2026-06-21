@@ -63,6 +63,7 @@ shared readiness DTO, persists tenant-admin setup controls and retained evidence
 accounting tenant administration profile store with WPF accounting admin-studio coverage, renders
 the shared ledger-book-native workflow control count and retained ledger-book-scoped
 workflow evidence for posting rules, JE lifecycle, close/reporting, and external GL, renders
+dimensional report/query/export control counts with retained ledger-book-scoped evidence, renders
 retained migration-run evidence with ledger-book scope
 and canonical dimensions from the shared production-readiness payload, surfaces
 shared ledger-book setup candidate guidance and can create the ledger book through the shared ledger-book service when book-scoped
@@ -357,9 +358,12 @@ type names where needed. Fund Ledger now reduces its duplicate hero to a compact
 uses a shared dense account table plus selected-account inspector for the Accounts tab, with account
 portfolio drill-through blocked until a row is selected. Its local fund-ledger read service now
 populates the shared `LedgerDimensionSetDto` on fund trial-balance, journal, and reconciliation
-snapshot rows so desktop Accounting review matches the shared reporting/export contract. Fund Accounts now opens on a compact action
-strip and combined dense account table plus selected-account inspector, with provider binding and
-route-preview evidence kept as supporting workbench panels below the primary account queue.
+snapshot rows, and the Fund Ledger dense trial-balance and journal tables plus selected-row
+inspectors surface fund, entity, sleeve, account-scope, portfolio, external-GL, and canonical
+dimension facts so desktop Accounting review matches the shared reporting/export contract. Fund
+Accounts now opens on a compact action strip and combined dense account table plus
+selected-account inspector, with provider binding and route-preview evidence kept as supporting
+workbench panels below the primary account queue.
 Fund Ledger report-pack handoff preview copy also names the Accounting workspace so downstream
 board, investor, compliance, and fund-ops packets do not surface the legacy Governance root label.
 `WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID

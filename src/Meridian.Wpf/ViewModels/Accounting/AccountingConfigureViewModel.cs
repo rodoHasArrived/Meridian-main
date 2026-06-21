@@ -188,6 +188,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _productionReadinessScoreText = "No score";
     private string _productionReadinessLedgerBookText = "Ledger-book rollout readiness has not loaded.";
     private string _productionReadinessExternalGlText = "External GL readiness has not loaded.";
+    private string _productionReadinessDimensionalReportingText = "Dimensional reporting readiness has not loaded.";
     private string _productionReadinessTenantAdminText = "Tenant administration readiness has not loaded.";
     private string _tenantAdministrationProfileStatusText = "Tenant administration setup profile has not loaded.";
     private string _tenantAdministrationProfileScopeText = "Tenant and company scope have not loaded.";
@@ -504,6 +505,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _productionReadinessExternalGlText;
         private set => SetProperty(ref _productionReadinessExternalGlText, value);
+    }
+
+    public string ProductionReadinessDimensionalReportingText
+    {
+        get => _productionReadinessDimensionalReportingText;
+        private set => SetProperty(ref _productionReadinessDimensionalReportingText, value);
     }
 
     public string ProductionReadinessTenantAdminText
@@ -1499,6 +1506,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProductionReadinessScoreText = "No score";
         ProductionReadinessLedgerBookText = "Locked until a fund context is selected.";
         ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
+        ProductionReadinessDimensionalReportingText = "Locked until a fund context is selected.";
         ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
         TenantAdministrationProfileStatusText = "Locked until a fund context is selected.";
         TenantAdministrationProfileScopeText = "Tenant and company scope require a fund context.";
@@ -1768,6 +1776,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessScoreText = "No score";
             ProductionReadinessLedgerBookText = "Locked until a fund context is selected.";
             ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
+            ProductionReadinessDimensionalReportingText = "Locked until a fund context is selected.";
             ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessIssueRows.Clear();
@@ -1782,6 +1791,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessScoreText = "No score";
             ProductionReadinessLedgerBookText = "Ledger-book readiness cannot be assessed.";
             ProductionReadinessExternalGlText = "External GL readiness cannot be assessed.";
+            ProductionReadinessDimensionalReportingText = "Dimensional reporting readiness cannot be assessed.";
             ProductionReadinessTenantAdminText = "Tenant administration readiness cannot be assessed.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
@@ -1809,6 +1819,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessScoreText = "No score";
             ProductionReadinessLedgerBookText = "Ledger-book readiness could not be assessed.";
             ProductionReadinessExternalGlText = "External GL readiness could not be assessed.";
+            ProductionReadinessDimensionalReportingText = "Dimensional reporting readiness could not be assessed.";
             ProductionReadinessTenantAdminText = "Tenant administration readiness could not be assessed.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
@@ -1866,6 +1877,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s); {readiness.LedgerBookWorkflows?.CompletedControlCount ?? 0}/{readiness.LedgerBookWorkflows?.RequiredControlCount ?? 6} workflow control(s).";
         ProductionReadinessExternalGlText =
             $"{readiness.ExternalGlProviderCount} provider(s), {readiness.CertifiedExternalGlMappingProfileCount} certified mapping profile(s); live posting {(readiness.ExternalGlLivePostingEnabled ? "available" : "disabled")}.";
+        ProductionReadinessDimensionalReportingText = readiness.DimensionalReporting is null
+            ? "Dimensional reporting readiness is unavailable."
+            : $"{readiness.DimensionalReporting.CompletedControlCount}/{readiness.DimensionalReporting.RequiredControlCount} report/query/export dimension control(s); ledger book {FormatReadinessScope(readiness.DimensionalReporting.LedgerBookId?.ToString("D"))}; {readiness.DimensionalReporting.EvidenceReferences.Count} retained evidence link(s).";
         ProductionReadinessTenantAdminText = readiness.TenantAdministration is null
             ? "Tenant administration readiness is unavailable."
             : $"{readiness.TenantAdministration.CompletedControlCount}/{readiness.TenantAdministration.RequiredControlCount} tenant admin control(s); tenant {FormatReadinessScope(readiness.TenantAdministration.TenantId)}; company {FormatReadinessScope(readiness.TenantAdministration.CompanyId)}; {readiness.TenantAdministration.EvidenceReferences.Count} retained evidence link(s).";

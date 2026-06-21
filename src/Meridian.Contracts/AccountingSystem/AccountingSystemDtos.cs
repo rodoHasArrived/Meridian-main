@@ -196,6 +196,11 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool CloseReportingLedgerBookNativeCertified = false,
     bool ExternalGlLedgerBookNativeCertified = false,
     IReadOnlyList<string>? LedgerBookWorkflowEvidenceLinks = null,
+    bool PeriodReportDimensionQueriesCertified = false,
+    bool CrossPeriodReportDimensionQueriesCertified = false,
+    bool JournalQueryDimensionFiltersCertified = false,
+    bool ExternalExportDimensionMappingCertified = false,
+    IReadOnlyList<string>? DimensionalReportingEvidenceLinks = null,
     bool LedgerBookMigrationCertified = false,
     bool HistoricalJournalBackfillCertified = false,
     bool DimensionalBackfillCertified = false,
@@ -212,6 +217,9 @@ public sealed record AccountingProductionReadinessRequestDto(
 
     public IReadOnlyList<string> LedgerBookWorkflowEvidenceLinks { get; init; } =
         LedgerBookWorkflowEvidenceLinks ?? [];
+
+    public IReadOnlyList<string> DimensionalReportingEvidenceLinks { get; init; } =
+        DimensionalReportingEvidenceLinks ?? [];
 
     public IReadOnlyList<string> MigrationEvidenceLinks { get; init; } =
         MigrationEvidenceLinks ?? [];
@@ -240,6 +248,51 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
             JournalLifecycleLedgerBookNativeCertified,
             CloseReportingLedgerBookNativeCertified,
             ExternalGlLedgerBookNativeCertified
+        }.Count(static control => control);
+
+    public int RequiredControlCount => 6;
+
+    public bool HasLedgerBookScope => LedgerBookId.HasValue;
+
+    public bool HasRetainedEvidence => EvidenceReferences.Count > 0;
+
+    public bool HasLedgerBookScopedEvidence =>
+        LedgerBookId.HasValue &&
+        EvidenceReferences.Any(reference => IsLedgerBookEvidence(reference, LedgerBookId.Value));
+
+    private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
+    {
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return false;
+        }
+
+        var ledgerBookIdText = ledgerBookId.ToString("D");
+        return reference.Contains(ledgerBookIdText, StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+public sealed record AccountingDimensionalReportingReadinessDto(
+    Guid? LedgerBookId,
+    bool PeriodReportDimensionQueriesCertified,
+    bool CrossPeriodReportDimensionQueriesCertified,
+    bool JournalQueryDimensionFiltersCertified,
+    bool ExternalExportDimensionMappingCertified,
+    IReadOnlyList<string>? EvidenceReferences = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public int CompletedControlCount =>
+        new[]
+        {
+            HasLedgerBookScope,
+            HasLedgerBookScopedEvidence,
+            PeriodReportDimensionQueriesCertified,
+            CrossPeriodReportDimensionQueriesCertified,
+            JournalQueryDimensionFiltersCertified,
+            ExternalExportDimensionMappingCertified
         }.Count(static control => control);
 
     public int RequiredControlCount => 6;
@@ -343,6 +396,7 @@ public sealed record AccountingProductionReadinessDto(
     LedgerBookRolloutAssessmentDto? LedgerBookRollout = null,
     AccountingRulesStudioSummaryDto? RulesStudioSummary = null,
     AccountingLedgerBookWorkflowReadinessDto? LedgerBookWorkflows = null,
+    AccountingDimensionalReportingReadinessDto? DimensionalReporting = null,
     int ExternalGlProviderCount = 0,
     int CertifiedExternalGlMappingProfileCount = 0,
     bool ExternalGlLivePostingEnabled = false,

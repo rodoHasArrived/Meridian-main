@@ -33,7 +33,7 @@ public sealed class AccountingProductionReadinessService
             tenantAdministrationProfile);
         var components = new List<AccountingProductionReadinessComponentDto>();
         var ledgerBookResult = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
-        var rulesSummary = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
+        var rulesStudioResult = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         BuildJournalLifecycleComponent(components);
         BuildCloseReportingComponent(components);
         var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
@@ -58,8 +58,9 @@ public sealed class AccountingProductionReadinessService
             components,
             issues,
             ledgerBookResult.Rollout,
-            rulesSummary,
+            rulesStudioResult.Summary,
             ledgerBookResult.WorkflowReadiness,
+            rulesStudioResult.DimensionalReportingReadiness,
             externalGlCounts.ProviderCount,
             externalGlCounts.CertifiedMappingProfileCount,
             externalGlCounts.LivePostingEnabled,
@@ -287,12 +288,13 @@ public sealed class AccountingProductionReadinessService
         return issues;
     }
 
-    private async Task<AccountingRulesStudioSummaryDto?> BuildRulesStudioComponentAsync(
+    private async Task<RulesStudioComponentResult> BuildRulesStudioComponentAsync(
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
+        var dimensionalReportingReadiness = BuildDimensionalReportingReadiness(request);
         var service = _services.GetService<IAccountingConfigurationService>();
         if (service is null)
         {
@@ -310,8 +312,9 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessStatusDto.Unavailable,
                 0,
                 "Dimensional coverage cannot be assessed without accounting configuration.",
-                [Issue("dimensions.configuration-missing", AccountingProductionReadinessAreaDto.DimensionalAccounting, AccountingConfigurationValidationSeverityDto.Critical, "Accounting configuration is unavailable.", "Register accounting configuration and rules before certifying dimensional accounting coverage.")]));
-            return null;
+                [Issue("dimensions.configuration-missing", AccountingProductionReadinessAreaDto.DimensionalAccounting, AccountingConfigurationValidationSeverityDto.Critical, "Accounting configuration is unavailable.", "Register accounting configuration and rules before certifying dimensional accounting coverage.")],
+                evidenceReferences: dimensionalReportingReadiness.EvidenceReferences));
+            return new RulesStudioComponentResult(null, dimensionalReportingReadiness);
         }
 
         var workspace = await service.GetWorkspaceAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
@@ -348,6 +351,7 @@ public sealed class AccountingProductionReadinessService
         }
 
         var dimensionalIssues = BuildDimensionalIssues(workspace);
+        dimensionalIssues.AddRange(BuildDimensionalReportingIssues(dimensionalReportingReadiness));
         components.Add(Component(
             AccountingProductionReadinessAreaDto.RulesStudio,
             "Rules Studio",
@@ -370,12 +374,100 @@ public sealed class AccountingProductionReadinessService
             AccountingProductionReadinessAreaDto.DimensionalAccounting,
             "Dimensional accounting",
             ResolveIssueStatus(dimensionalIssues),
-            ScoreFromIssues(dimensionalIssues, hasPositiveEvidence: dimensionalIssues.Count == 0),
-            "Rules and generated postings were inspected for canonical LedgerDimensionSet coverage.",
+            ScoreFromIssues(dimensionalIssues, hasPositiveEvidence: dimensionalReportingReadiness.HasRetainedEvidence),
+            $"Rules/generated postings plus {dimensionalReportingReadiness.CompletedControlCount}/{dimensionalReportingReadiness.RequiredControlCount} report/query/export dimension control(s) were inspected for canonical LedgerDimensionSet coverage.",
             dimensionalIssues,
-            UiApiRoutes.LedgerAccountingConfiguration));
+            UiApiRoutes.LedgerAccountingConfiguration,
+            dimensionalReportingReadiness.EvidenceReferences));
 
-        return summary;
+        return new RulesStudioComponentResult(summary, dimensionalReportingReadiness);
+    }
+
+    private static AccountingDimensionalReportingReadinessDto BuildDimensionalReportingReadiness(
+        AccountingProductionReadinessRequestDto request)
+        => new(
+            request.LedgerBookId,
+            request.PeriodReportDimensionQueriesCertified,
+            request.CrossPeriodReportDimensionQueriesCertified,
+            request.JournalQueryDimensionFiltersCertified,
+            request.ExternalExportDimensionMappingCertified,
+            NormalizeEvidenceReferences(request.DimensionalReportingEvidenceLinks));
+
+    private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildDimensionalReportingIssues(
+        AccountingDimensionalReportingReadinessDto readiness)
+    {
+        var issues = new List<AccountingProductionReadinessIssueDto>();
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "dimensions.reporting-ledger-book-scope-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimensional reporting certification is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying period reports, cross-period reports, journal filters, and export dimension mappings."));
+        }
+
+        if (!readiness.HasRetainedEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.reporting-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimensional reporting certification has no retained evidence links.",
+                "Attach retained evidence identifying the selected ledger book and the certified report/query/export dimension checks before production rollout."));
+        }
+        else if (readiness.HasLedgerBookScope && !readiness.HasLedgerBookScopedEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.reporting-evidence-scope-mismatch",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimensional reporting certification evidence does not identify the selected ledger book.",
+                "Retain dimensional reporting evidence that names the selected ledgerBookId before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.PeriodReportDimensionQueriesCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.period-reports-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Period report dimension queries have not been certified.",
+                "Prove period trial balance, financial statements, NAV, and investor package filters retain canonical dimensions for the selected ledger book."));
+        }
+
+        if (!readiness.CrossPeriodReportDimensionQueriesCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.cross-period-reports-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Cross-period report dimension queries have not been certified.",
+                "Prove comparative and roll-forward report filters retain canonical dimensions across accounting periods for the selected ledger book."));
+        }
+
+        if (!readiness.JournalQueryDimensionFiltersCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.journal-query-filters-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal query dimension filters have not been certified.",
+                "Prove ledger journal drill-through, audit, and evidence queries filter by canonical dimensions instead of account-name or route heuristics."));
+        }
+
+        if (!readiness.ExternalExportDimensionMappingCertified)
+        {
+            issues.Add(Issue(
+                "dimensions.external-export-mapping-not-certified",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External export dimension mapping has not been certified.",
+                "Prove guarded export packages preserve fund, entity, ledger-book, and external-GL dimension mappings before production export review."));
+        }
+
+        return issues;
     }
 
     private void BuildJournalLifecycleComponent(ICollection<AccountingProductionReadinessComponentDto> components)
@@ -1101,4 +1193,8 @@ public sealed class AccountingProductionReadinessService
     private sealed record LedgerBookComponentResult(
         LedgerBookRolloutAssessmentDto? Rollout,
         AccountingLedgerBookWorkflowReadinessDto WorkflowReadiness);
+
+    private sealed record RulesStudioComponentResult(
+        AccountingRulesStudioSummaryDto? Summary,
+        AccountingDimensionalReportingReadinessDto DimensionalReportingReadiness);
 }

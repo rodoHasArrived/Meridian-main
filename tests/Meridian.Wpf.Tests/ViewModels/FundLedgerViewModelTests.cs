@@ -847,6 +847,71 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    public void FundLedgerInspectors_ProjectCanonicalLedgerDimensions()
+    {
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-credit",
+            StrategyId: "strategy-income",
+            InvestorId: "investor-lp-1",
+            CapitalAccountId: "capital-lp-1",
+            InstrumentId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            TaxLotId: "taxlot-2026-01",
+            CostCenterId: "cost-center-ops",
+            CounterpartyId: "counterparty-bank",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "InvestmentOps",
+                ["Class"] = "PrivateCredit"
+            },
+            PortfolioId: "portfolio-credit",
+            BookId: "book-gaap",
+            AccountId: "acct-operating");
+        var trialBalanceLine = new FundTrialBalanceLine(
+            AccountName: "Receivable",
+            AccountType: "Asset",
+            Symbol: null,
+            FinancialAccountId: "acct-operating",
+            Balance: 1_250m,
+            EntryCount: 3,
+            Dimensions: dimensions);
+
+        var trialInspector = FundLedgerViewModel.BuildTrialBalanceInspector(trialBalanceLine);
+
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Fund" && fact.Value == "fund-alpha");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Entity" && fact.Value == "entity-master");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Sleeve" && fact.Value == "sleeve-credit");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Account scope" && fact.Value == "acct-operating");
+        trialInspector.Facts.Should().Contain(fact =>
+            fact.Label == "External GL" &&
+            fact.Value.Contains("Class: PrivateCredit", StringComparison.Ordinal) &&
+            fact.Value.Contains("Department: InvestmentOps", StringComparison.Ordinal));
+        trialInspector.Facts.Should().Contain(fact =>
+            fact.Label == "Scope" &&
+            fact.Value.Contains("fund-alpha", StringComparison.Ordinal) &&
+            fact.Value.Contains("portfolio-credit", StringComparison.Ordinal) &&
+            fact.Value.Contains("acct-operating", StringComparison.Ordinal));
+
+        var journalLine = new FundJournalLine(
+            JournalEntryId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            Timestamp: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            Description: "Capital call",
+            TotalDebits: 500m,
+            TotalCredits: 500m,
+            LineCount: 2,
+            FinancialAccountIds: ["acct-operating"],
+            Dimensions: dimensions);
+
+        var journalInspector = FundLedgerViewModel.BuildJournalInspector(journalLine);
+
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Fund" && fact.Value == "fund-alpha");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Entity" && fact.Value == "entity-master");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Account scope" && fact.Value == "acct-operating");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "External GL" && fact.Value.Contains("PrivateCredit", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void FundLedgerViewModelSource_ShouldOpenCanonicalAccountingShell()
     {
         var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.cs"));
@@ -1589,6 +1654,22 @@ public sealed class FundLedgerViewModelTests
                 viewModel.CashFlowBuckets.Should().NotBeEmpty();
                 viewModel.CashProjectionStatusText.Should().Contain("cash-flow event");
 
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Fund" && column.BindingPath == "Dimensions.FundId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Entity" && column.BindingPath == "Dimensions.EntityId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Sleeve" && column.BindingPath == "Dimensions.SleeveId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Account Scope" && column.BindingPath == "Dimensions.AccountId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Fund" && column.BindingPath == "Dimensions.FundId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Entity" && column.BindingPath == "Dimensions.EntityId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Sleeve" && column.BindingPath == "Dimensions.SleeveId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Account Scope" && column.BindingPath == "Dimensions.AccountId");
                 var entityView = viewModel.LedgerDimensions.Single(view => view.Key == "entity-linked");
                 entityView.LinkedAccountCount.Should().Be(1);
                 entityView.TrialBalanceLineCount.Should().Be(3);

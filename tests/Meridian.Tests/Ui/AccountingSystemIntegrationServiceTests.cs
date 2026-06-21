@@ -203,6 +203,68 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_RequiresDimensionalReportQueryCertification()
+    {
+        var services = new ServiceCollection();
+        var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
+        services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var otherLedgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var blocked = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodReportDimensionQueriesCertified: true,
+                DimensionalReportingEvidenceLinks: [$"evidence://ledger-book/{otherLedgerBookId:D}/dimensions/report-query-certification"]));
+
+        blocked.DimensionalReporting.Should().NotBeNull();
+        blocked.DimensionalReporting!.LedgerBookId.Should().Be(ledgerBookId);
+        blocked.DimensionalReporting.CompletedControlCount.Should().Be(2);
+        blocked.DimensionalReporting.RequiredControlCount.Should().Be(6);
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.reporting-evidence-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.cross-period-reports-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            component.Summary.Contains("2/6 report/query/export dimension control", StringComparison.OrdinalIgnoreCase));
+
+        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification";
+        var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodReportDimensionQueriesCertified: true,
+                CrossPeriodReportDimensionQueriesCertified: true,
+                JournalQueryDimensionFiltersCertified: true,
+                ExternalExportDimensionMappingCertified: true,
+                DimensionalReportingEvidenceLinks: [certifiedEvidence]));
+
+        certified.DimensionalReporting.Should().NotBeNull();
+        certified.DimensionalReporting!.CompletedControlCount.Should().Be(6);
+        certified.DimensionalReporting.EvidenceReferences.Should().Contain(certifiedEvidence);
+        certified.Issues.Should().NotContain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            (issue.Code.StartsWith("dimensions.reporting-", StringComparison.OrdinalIgnoreCase) ||
+             issue.Code == "dimensions.period-reports-not-certified" ||
+             issue.Code == "dimensions.cross-period-reports-not-certified" ||
+             issue.Code == "dimensions.journal-query-filters-not-certified" ||
+             issue.Code == "dimensions.external-export-mapping-not-certified"));
+        certified.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            component.Summary.Contains("6/6 report/query/export dimension control", StringComparison.OrdinalIgnoreCase) &&
+            component.EvidenceReferences.Contains(certifiedEvidence));
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_RequiresTenantAdministrationControlsAndEvidence()
     {
         var services = new ServiceCollection();
@@ -959,7 +1021,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
 
         upserted.ProviderId.Should().Be("quickbooks-fixture");
         upserted.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
@@ -1002,7 +1064,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
 
         package.LedgerBookId.Should().BeNull();
         package.PostingEnabled.Should().BeFalse();
@@ -1034,7 +1096,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
 
         package.PostingEnabled.Should().BeFalse();
         package.GeneratedLines.Should().BeEmpty();
@@ -1076,7 +1138,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: [$"approval:export-package:{providerId}:default-fund:2026-01-01:2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId, providerId)]));
 
         upserted.ProviderId.Should().Be(providerId);
         upserted.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
@@ -1157,7 +1219,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
 
         upserted.CertificationState.Should().Be(AccountingCertificationStateDto.Draft);
         package.PostingEnabled.Should().BeFalse();
@@ -1348,6 +1410,55 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task CreateExportPackageAsync_RequiresLedgerBookScopedExportControlEvidenceBeforeReview()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+        var otherLedgerBookId = Guid.Parse("bbbbbbbb-1111-2222-3333-444444444444");
+
+        var missingBookPackage = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: ["approval:export-package:qbo-default-fund:2026-01-01:2026-01-31"]));
+        var wrongBookPackage = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [$"approval:export-package:qbo-default-fund:ledger-book:{otherLedgerBookId:D}:2026-01-01:2026-01-31"]));
+
+        missingBookPackage.PostingEnabled.Should().BeFalse();
+        missingBookPackage.GeneratedLines.Should().HaveCount(3);
+        missingBookPackage.Certification.Should().NotBeNull();
+        missingBookPackage.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        missingBookPackage.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "UnscopedExternalGlExportControlEvidence" &&
+            issue.Message.Contains("ledger book", StringComparison.OrdinalIgnoreCase));
+        wrongBookPackage.Certification.Should().NotBeNull();
+        wrongBookPackage.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        wrongBookPackage.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "UnscopedExternalGlExportControlEvidence" &&
+            issue.Message.Contains("ledger book", StringComparison.OrdinalIgnoreCase));
+    }
+
+
+    [Fact]
     public async Task CreateExportPackageAsync_RequiresGeneratedMeridianOwnedExportLines()
     {
         var service = CreateService();
@@ -1368,7 +1479,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
 
         package.PostingEnabled.Should().BeFalse();
         package.GeneratedLines.Should().BeEmpty();
@@ -1399,7 +1510,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
 
         package.MappingProfileId.Should().Be(profile.ProfileId);
         package.ReconciliationId.Should().NotBeNullOrWhiteSpace();
@@ -1421,7 +1532,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             ["approval:external-gl-export-certification:2026-02-01:2026-02-28"]));
 
         await stalePeriodCertification.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained export package id, certification id, and exact export period in the same artifact*");
+            .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
 
         var splitCertificationEvidence = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
             package.ExportPackageId,
@@ -1433,7 +1544,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             ]));
 
         await splitCertificationEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained export package id, certification id, and exact export period in the same artifact*");
+            .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
 
         var missingCertificationIdEvidence = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
             package.ExportPackageId,
@@ -1442,7 +1553,27 @@ public sealed class AccountingSystemIntegrationServiceTests
             [$"approval:external-gl-export-certification:{package.ExportPackageId}:2026-01-01:2026-01-31"]));
 
         await missingCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained export package id, certification id, and exact export period in the same artifact*");
+            .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
+
+        var missingLedgerBookCertification = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Package, certification, and period evidence without ledger-book scope should not certify the guarded export package.",
+            [$"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification!.CertificationId}:2026-01-01:2026-01-31"]));
+
+        await missingLedgerBookCertification.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
+
+        var otherLedgerBookId = Guid.Parse("bbbbbbbb-1111-2222-3333-444444444444");
+        var wrongLedgerBookCertification = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Wrong-book evidence should not certify the guarded export package.",
+            [$"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification!.CertificationId}:ledger-book:{otherLedgerBookId:D}:2026-01-01:2026-01-31"]));
+
+        await wrongLedgerBookCertification.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
+
 
         var certificationEvidence = ExportCertificationEvidence(package);
         var assistantCertification = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
@@ -1520,7 +1651,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
         package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
 
         await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
@@ -1559,7 +1690,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
         package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
         package.ReconciliationId.Should().NotBeNullOrWhiteSpace();
 
@@ -1593,7 +1724,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
         RetainExportPackage(service, package with
         {
             PostingEnabled = true,
@@ -1935,7 +2066,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 PeriodEnd: new DateOnly(2026, 1, 31),
                 MappingProfileId: "qbo-default-fund-certified",
                 RequireBalancedReconciliation: false,
-                EvidenceLinks: ["approval:external-gl-export-package:endpoint-default-fund-2026-01-01-2026-01-31"])));
+                EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)])));
 
         providersResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         reconciliationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -2021,7 +2152,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 PeriodEnd: new DateOnly(2026, 1, 31),
                 MappingProfileId: "qbo-default-fund-certified",
                 RequireBalancedReconciliation: false,
-                EvidenceLinks: ["approval:external-gl-export-package:endpoint-default-fund-2026-01-01-2026-01-31"])));
+                EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)])));
 
         mappingProfileResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         exportPackageResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -2585,8 +2716,15 @@ public sealed class AccountingSystemIntegrationServiceTests
     private static string ExportCertificationEvidence(ExternalGlExportPackageDto package)
     {
         package.Certification.Should().NotBeNull();
-        return $"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification!.CertificationId}:{package.PeriodStart:yyyy-MM-dd}:{package.PeriodEnd:yyyy-MM-dd}";
+        var ledgerBookScope = package.LedgerBookId is Guid ledgerBookId
+            ? $":ledger-book:{ledgerBookId:D}"
+            : string.Empty;
+        return $"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification!.CertificationId}{ledgerBookScope}:{package.PeriodStart:yyyy-MM-dd}:{package.PeriodEnd:yyyy-MM-dd}";
     }
+
+    private static string ExportControlEvidence(Guid ledgerBookId, string providerId = "quickbooks-fixture", string fundProfileId = "default-fund")
+        => $"approval:export-package:{providerId}:{fundProfileId}:ledger-book:{ledgerBookId:D}:2026-01-01:2026-01-31";
+
 
     private static ExternalGlMappingProfileDto CertifiedQuickBooksMappingProfile()
         => new(

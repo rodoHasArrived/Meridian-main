@@ -207,6 +207,9 @@ booleans as executable migration proof. Migration run artifacts can carry the ca
 `LedgerDimensionSetDto`; dimensional backfill certification is expected to retain fund, ledger-book,
 entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty,
 and external-GL dimensions with the migration evidence instead of relying on account or run names.
+`AccountingDimensionalReportingReadinessDto` separately certifies period reports, cross-period
+reports, journal dimension filters, and external-export dimension mappings with retained
+ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
 admin-studio, and retained-evidence readiness so production accounting setup is blocked by shared

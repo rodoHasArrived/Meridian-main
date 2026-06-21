@@ -2754,6 +2754,19 @@ describe("accounting-screen view model", () => {
         hasRetainedEvidence: true,
         hasLedgerBookScopedEvidence: true
       },
+      dimensionalReporting: {
+        ledgerBookId: "book-primary",
+        periodReportDimensionQueriesCertified: true,
+        crossPeriodReportDimensionQueriesCertified: false,
+        journalQueryDimensionFiltersCertified: true,
+        externalExportDimensionMappingCertified: false,
+        evidenceReferences: ["evidence://ledger-book/book-primary/dimensions/reporting"],
+        completedControlCount: 4,
+        requiredControlCount: 6,
+        hasLedgerBookScope: true,
+        hasRetainedEvidence: true,
+        hasLedgerBookScopedEvidence: true
+      },
       tenantAdministration: {
         tenantId: "tenant-alpha",
         companyId: "company-alpha",
@@ -2999,6 +3012,8 @@ describe("accounting-screen view model", () => {
       issueSummaryLabel: "1 warning requires review",
       externalGlLabel: "3 providers | 1 certified mapping | live posting disabled",
       ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers | 4/6 workflow controls",
+      dimensionalReportingLabel: "4/6 report/query/export dimension controls | ledger book book-primary",
+      dimensionalReportingEvidenceLabel: "1 retained dimensional evidence reference",
       tenantAdministrationLabel: "5/9 admin controls | tenant tenant-alpha | company company-alpha",
       tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
     });

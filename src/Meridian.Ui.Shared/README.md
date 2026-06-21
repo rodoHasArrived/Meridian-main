@@ -233,6 +233,9 @@ also blocks when an available external-GL provider advertises live posting suppo
 production slice remains import/reconciliation/guarded-export only. Failed retained migration runs
 are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
 import external GL data, post journals, certify exports, or close periods.
+Dimensional accounting readiness also fails closed until period report filters, cross-period
+report filters, journal dimension filters, and external-export dimension mappings are certified
+with retained evidence naming the selected ledger book.
 The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
 session when the request omits it, and the service now blocks tenant administration readiness until
 tenant scope, company scope, admin roles, scoped accounting access, reporting groups, aggregate

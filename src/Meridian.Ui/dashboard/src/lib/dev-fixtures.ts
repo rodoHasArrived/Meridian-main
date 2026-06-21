@@ -3624,6 +3624,19 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
     hasRetainedEvidence: false,
     hasLedgerBookScopedEvidence: false
   },
+  dimensionalReporting: {
+    ledgerBookId: null,
+    periodReportDimensionQueriesCertified: true,
+    crossPeriodReportDimensionQueriesCertified: false,
+    journalQueryDimensionFiltersCertified: true,
+    externalExportDimensionMappingCertified: false,
+    evidenceReferences: ["fixture:dimensions:default-fund"],
+    completedControlCount: 3,
+    requiredControlCount: 6,
+    hasLedgerBookScope: false,
+    hasRetainedEvidence: true,
+    hasLedgerBookScopedEvidence: false
+  },
   tenantAdministration: {
     tenantId: "fixture-tenant",
     companyId: "fixture-company",

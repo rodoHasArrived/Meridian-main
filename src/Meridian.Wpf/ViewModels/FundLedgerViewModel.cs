@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
@@ -133,6 +134,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 new("Type", nameof(FundTrialBalanceLine.AccountType), 110),
                 new("Symbol", nameof(FundTrialBalanceLine.Symbol), 100),
                 new("Security", "Security.DisplayName", 180),
+                new("Fund", "Dimensions.FundId", 120),
+                new("Entity", "Dimensions.EntityId", 120),
+                new("Sleeve", "Dimensions.SleeveId", 120),
+                new("Account Scope", "Dimensions.AccountId", 145),
                 new("Financial Account", nameof(FundTrialBalanceLine.FinancialAccountId), 165),
                 new("Balance", nameof(FundTrialBalanceLine.Balance), 120, "{0:C2}"),
                 new("Entries", nameof(FundTrialBalanceLine.EntryCount), 80, "{0:N0}")
@@ -146,6 +151,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             [
                 new("Timestamp", nameof(FundJournalLine.Timestamp), 155, "{0:g}"),
                 new("Description", nameof(FundJournalLine.Description), 330),
+                new("Fund", "Dimensions.FundId", 120),
+                new("Entity", "Dimensions.EntityId", 120),
+                new("Sleeve", "Dimensions.SleeveId", 120),
+                new("Account Scope", "Dimensions.AccountId", 145),
                 new("Debits", nameof(FundJournalLine.TotalDebits), 120, "{0:C2}"),
                 new("Credits", nameof(FundJournalLine.TotalCredits), 120, "{0:C2}"),
                 new("Lines", nameof(FundJournalLine.LineCount), 75, "{0:N0}"),
@@ -1593,6 +1602,18 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             ? security!.DisplayName
             : hasSymbol ? "Security mapping needed" : "Not security-linked";
         var coverageTone = hasSecurity ? WorkspaceTone.Success : hasSymbol ? WorkspaceTone.Warning : WorkspaceTone.Neutral;
+        var facts = new List<KeyValueFactModel>
+        {
+            new("Account type", line.AccountType),
+            new("Balance", line.Balance.ToString("C2")),
+            new("Entries", line.EntryCount.ToString("N0")),
+            new("Symbol", FormatLedgerValue(line.Symbol)),
+            new("Financial account", FormatLedgerValue(line.FinancialAccountId)),
+            new("Security", security?.DisplayName ?? "No retained Security Master record"),
+            new("Asset class", security?.AssetClass ?? "-", security?.SubType ?? string.Empty),
+            new("Identifier", security?.PrimaryIdentifier ?? "-", security?.MatchedIdentifierKind ?? string.Empty)
+        };
+        facts.AddRange(BuildLedgerDimensionFacts(line.Dimensions));
 
         return new InspectorPanelModel
         {
@@ -1604,17 +1625,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     ? "This ledger account carries a symbol, but no Security Master reference is attached yet."
                     : "This ledger account is not linked to an instrument symbol.",
             Badge = new WorkstationBadgeModel("Coverage", securityValue, "\uE8D4", coverageTone),
-            Facts =
-            [
-                new("Account type", line.AccountType),
-                new("Balance", line.Balance.ToString("C2")),
-                new("Entries", line.EntryCount.ToString("N0")),
-                new("Symbol", FormatLedgerValue(line.Symbol)),
-                new("Financial account", FormatLedgerValue(line.FinancialAccountId)),
-                new("Security", security?.DisplayName ?? "No retained Security Master record"),
-                new("Asset class", security?.AssetClass ?? "-", security?.SubType ?? string.Empty),
-                new("Identifier", security?.PrimaryIdentifier ?? "-", security?.MatchedIdentifierKind ?? string.Empty)
-            ]
+            Facts = facts
         };
     }
 
@@ -1634,6 +1645,16 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var linkedAccounts = entry.FinancialAccountIds is { Count: > 0 }
             ? string.Join(", ", entry.FinancialAccountIds.Where(static accountId => !string.IsNullOrWhiteSpace(accountId)).Distinct(StringComparer.OrdinalIgnoreCase))
             : "No account links retained";
+        var facts = new List<KeyValueFactModel>
+        {
+            new("Timestamp", entry.Timestamp.LocalDateTime.ToString("g")),
+            new("Debits", entry.TotalDebits.ToString("C2")),
+            new("Credits", entry.TotalCredits.ToString("C2")),
+            new("Lines", entry.LineCount.ToString("N0")),
+            new("Linked accounts", linkedAccounts),
+            new("Journal entry", entry.JournalEntryId.ToString("D"))
+        };
+        facts.AddRange(BuildLedgerDimensionFacts(entry.Dimensions));
 
         return new InspectorPanelModel
         {
@@ -1645,20 +1666,87 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 isBalanced ? "Balanced" : "Out of balance",
                 "\uE9D5",
                 isBalanced ? WorkspaceTone.Success : WorkspaceTone.Warning),
-            Facts =
-            [
-                new("Timestamp", entry.Timestamp.LocalDateTime.ToString("g")),
-                new("Debits", entry.TotalDebits.ToString("C2")),
-                new("Credits", entry.TotalCredits.ToString("C2")),
-                new("Lines", entry.LineCount.ToString("N0")),
-                new("Linked accounts", linkedAccounts),
-                new("Journal entry", entry.JournalEntryId.ToString("D"))
-            ]
+            Facts = facts
         };
     }
 
     private static string FormatLedgerValue(string? value)
         => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
+
+    private static IReadOnlyList<KeyValueFactModel> BuildLedgerDimensionFacts(LedgerDimensionSetDto? dimensions)
+        =>
+        [
+            new("Fund", DisplayDimension(dimensions?.FundId)),
+            new("Entity", DisplayDimension(dimensions?.EntityId)),
+            new("Sleeve", DisplayDimension(dimensions?.SleeveId)),
+            new("Strategy", DisplayDimension(dimensions?.StrategyId)),
+            new("Investor", DisplayDimension(dimensions?.InvestorId)),
+            new("Capital account", DisplayDimension(dimensions?.CapitalAccountId)),
+            new("Instrument", dimensions?.InstrumentId?.ToString("D") ?? "-"),
+            new("Tax lot", DisplayDimension(dimensions?.TaxLotId)),
+            new("Cost center", DisplayDimension(dimensions?.CostCenterId)),
+            new("Counterparty", DisplayDimension(dimensions?.CounterpartyId)),
+            new("Portfolio", DisplayDimension(dimensions?.PortfolioId)),
+            new("Book", DisplayDimension(dimensions?.BookId)),
+            new("Account scope", DisplayDimension(dimensions?.AccountId)),
+            new("External GL", BuildExternalGlDimensionText(dimensions)),
+            new("Scope", BuildDimensionScopeText(dimensions))
+        ];
+
+    private static string BuildDimensionScopeText(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return "No retained ledger dimensions";
+        }
+
+        var scopes = new[]
+            {
+                dimensions.FundId,
+                dimensions.EntityId,
+                dimensions.SleeveId,
+                dimensions.StrategyId,
+                dimensions.InvestorId,
+                dimensions.CapitalAccountId,
+                dimensions.InstrumentId?.ToString("D"),
+                dimensions.TaxLotId,
+                dimensions.CostCenterId,
+                dimensions.CounterpartyId,
+                dimensions.OrganizationId,
+                dimensions.PortfolioId,
+                dimensions.BookId,
+                dimensions.AccountId,
+                dimensions.CustomerId,
+                dimensions.VendorId,
+                dimensions.ProjectId
+            }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .ToArray();
+
+        return scopes.Length == 0
+            ? "Fund ledger scope"
+            : string.Join(" / ", scopes);
+    }
+
+    private static string BuildExternalGlDimensionText(LedgerDimensionSetDto? dimensions)
+    {
+        var externalDimensions = dimensions?.ExternalGlDimensions;
+        if (externalDimensions is null || externalDimensions.Count == 0)
+        {
+            return "-";
+        }
+
+        return string.Join(
+            ", ",
+            externalDimensions
+                .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => $"{pair.Key.Trim()}: {pair.Value.Trim()}"));
+    }
+
+    private static string DisplayDimension(string? value)
+        => FormatLedgerValue(value);
+
     private static string BuildOverviewStatus(FundWorkspaceSummary summary)
     {
         var status = $"{summary.FundDisplayName} is loaded with {summary.TotalAccounts} account(s), {summary.JournalEntryCount} journal entries, and {summary.ReconciliationRuns} reconciliation run(s).";

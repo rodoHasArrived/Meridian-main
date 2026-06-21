@@ -390,6 +390,8 @@ export interface AccountingProductionReadinessViewModel {
   issueSummaryLabel: string;
   externalGlLabel: string;
   ledgerBookRolloutLabel: string;
+  dimensionalReportingLabel: string;
+  dimensionalReportingEvidenceLabel: string;
   tenantAdministrationLabel: string;
   tenantAdministrationEvidenceLabel: string;
   tenantAdministrationControls: AccountingTenantAdministrationControlViewModel[];
@@ -4901,6 +4903,8 @@ function buildAccountingProductionReadinessViewModel(
       issueSummaryLabel: error?.summary ?? "Load accounting configuration to assess rollout readiness.",
       externalGlLabel: "External GL posture unavailable",
       ledgerBookRolloutLabel: "Ledger-book rollout unavailable",
+      dimensionalReportingLabel: "Dimensional reporting unavailable",
+      dimensionalReportingEvidenceLabel: "No dimensional reporting evidence loaded",
       tenantAdministrationLabel: "Tenant administration unavailable",
       tenantAdministrationEvidenceLabel: "No tenant setup evidence loaded",
       tenantAdministrationControls: [],
@@ -4936,6 +4940,13 @@ function buildAccountingProductionReadinessViewModel(
   const certifiedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Certified").length;
   const failedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Failed").length;
   const tenantAdministration = readiness.tenantAdministration ?? null;
+  const dimensionalReporting = readiness.dimensionalReporting ?? null;
+  const dimensionalReportingLabel = dimensionalReporting
+    ? `${dimensionalReporting.completedControlCount}/${dimensionalReporting.requiredControlCount} report/query/export dimension controls | ledger book ${dimensionalReporting.ledgerBookId?.trim() || "missing"}`
+    : "Dimensional reporting evidence unavailable";
+  const dimensionalReportingEvidenceLabel = dimensionalReporting
+    ? `${dimensionalReporting.evidenceReferences.length} retained dimensional evidence reference${dimensionalReporting.evidenceReferences.length === 1 ? "" : "s"}`
+    : "No dimensional reporting evidence loaded";
   const tenantAdministrationControls = buildAccountingTenantAdministrationControls(tenantAdministration);
   const tenantAdministrationLabel = tenantAdministration
     ? `${tenantAdministration.completedControlCount}/${tenantAdministration.requiredControlCount} admin controls | tenant ${tenantAdministration.tenantId?.trim() || "missing"} | company ${tenantAdministration.companyId?.trim() || "missing"}`
@@ -4961,6 +4972,8 @@ function buildAccountingProductionReadinessViewModel(
     ledgerBookRolloutLabel: readiness.ledgerBookRollout
       ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"} | ${readiness.ledgerBookWorkflows?.completedControlCount ?? 0}/${readiness.ledgerBookWorkflows?.requiredControlCount ?? 6} workflow controls`
       : "Ledger-book rollout evidence unavailable",
+    dimensionalReportingLabel,
+    dimensionalReportingEvidenceLabel,
     tenantAdministrationLabel,
     tenantAdministrationEvidenceLabel,
     tenantAdministrationControls,

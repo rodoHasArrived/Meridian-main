@@ -238,7 +238,7 @@ public sealed class AccountingSystemIntegrationService
 
         if (!HasExportCertificationEvidenceWithProvenance(package, evidenceLinks))
         {
-            throw new ArgumentException("External GL export certification evidence must reference the retained export package id, certification id, and exact export period in the same artifact.");
+            throw new ArgumentException("External GL export certification evidence must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact.");
         }
 
         if (package.Certification is null)
@@ -551,14 +551,14 @@ public sealed class AccountingSystemIntegrationService
                 providerId,
                 "Attach retained export package, approval, certification, sign-off, or review evidence before creating a review-ready export artifact."));
         }
-        else if (!HasExportPackageControlEvidenceWithProvenance(providerId, fundProfileId, periodStart, periodEnd, requestEvidenceLinks))
+        else if (!HasExportPackageControlEvidenceWithProvenance(providerId, fundProfileId, exportLedgerBookId, periodStart, periodEnd, requestEvidenceLinks))
         {
             issues.Add(new AccountingConfigurationValidationIssueDto(
                 "UnscopedExternalGlExportControlEvidence",
                 AccountingConfigurationValidationSeverityDto.Critical,
-                "External GL export-control evidence must identify export-control intent and the export fund, provider/fund scope, or exact export period on the same evidence artifact before review.",
+                "External GL export-control evidence must identify export-control intent, the export ledger book, and the export fund, provider/fund scope, or exact export period on the same evidence artifact before review.",
                 providerId,
-                "Attach retained export-control approval evidence that references the fund, provider/fund mapping scope, or exact export period on the same artifact before creating a review-ready export artifact."));
+                "Attach retained export-control approval evidence that references the ledger book plus fund, provider/fund mapping scope, or exact export period on the same artifact before creating a review-ready export artifact."));
         }
 
         if (mappingProfile is null)
@@ -1277,11 +1277,13 @@ public sealed class AccountingSystemIntegrationService
             HasExportCertificationEvidence([link]) &&
             link.Contains(package.ExportPackageId, StringComparison.OrdinalIgnoreCase) &&
             link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
+            HasLedgerBookEvidence(link, package.LedgerBookId) &&
             ((link.Contains(periodStart, StringComparison.OrdinalIgnoreCase) &&
               link.Contains(periodEnd, StringComparison.OrdinalIgnoreCase)) ||
              (link.Contains(compactPeriodStart, StringComparison.OrdinalIgnoreCase) &&
               link.Contains(compactPeriodEnd, StringComparison.OrdinalIgnoreCase))));
     }
+
 
     private static bool HasExportPackageControlEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>
@@ -1295,6 +1297,7 @@ public sealed class AccountingSystemIntegrationService
     private static bool HasExportPackageControlProvenance(
         string providerId,
         string fundProfileId,
+        Guid? ledgerBookId,
         DateOnly periodStart,
         DateOnly periodEnd,
         IReadOnlyList<string> evidenceLinks)
@@ -1304,24 +1307,38 @@ public sealed class AccountingSystemIntegrationService
         var compactStart = $"{periodStart:yyyyMMdd}";
         var compactEnd = $"{periodEnd:yyyyMMdd}";
         return evidenceLinks.Any(link =>
-            link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) ||
-            (link.Contains(providerId, StringComparison.OrdinalIgnoreCase) &&
-             link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase)) ||
-            (link.Contains(formattedStart, StringComparison.OrdinalIgnoreCase) &&
-             link.Contains(formattedEnd, StringComparison.OrdinalIgnoreCase)) ||
-            (link.Contains(compactStart, StringComparison.OrdinalIgnoreCase) &&
-             link.Contains(compactEnd, StringComparison.OrdinalIgnoreCase)));
+            HasLedgerBookEvidence(link, ledgerBookId) &&
+            (link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) ||
+             (link.Contains(providerId, StringComparison.OrdinalIgnoreCase) &&
+              link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase)) ||
+             (link.Contains(formattedStart, StringComparison.OrdinalIgnoreCase) &&
+              link.Contains(formattedEnd, StringComparison.OrdinalIgnoreCase)) ||
+             (link.Contains(compactStart, StringComparison.OrdinalIgnoreCase) &&
+              link.Contains(compactEnd, StringComparison.OrdinalIgnoreCase))));
     }
 
     private static bool HasExportPackageControlEvidenceWithProvenance(
         string providerId,
         string fundProfileId,
+        Guid? ledgerBookId,
         DateOnly periodStart,
         DateOnly periodEnd,
         IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(link =>
             HasExportPackageControlEvidence([link]) &&
-            HasExportPackageControlProvenance(providerId, fundProfileId, periodStart, periodEnd, [link]));
+            HasExportPackageControlProvenance(providerId, fundProfileId, ledgerBookId, periodStart, periodEnd, [link]));
+
+    private static bool HasLedgerBookEvidence(string link, Guid? ledgerBookId)
+    {
+        if (ledgerBookId is not Guid scopedLedgerBookId)
+        {
+            return true;
+        }
+
+        return link.Contains(scopedLedgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+            link.Contains(scopedLedgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+    }
+
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {

@@ -5598,6 +5598,11 @@ export interface AccountingProductionReadinessRequest {
   closeReportingLedgerBookNativeCertified?: boolean;
   externalGlLedgerBookNativeCertified?: boolean;
   ledgerBookWorkflowEvidenceLinks?: string[] | null;
+  periodReportDimensionQueriesCertified?: boolean;
+  crossPeriodReportDimensionQueriesCertified?: boolean;
+  journalQueryDimensionFiltersCertified?: boolean;
+  externalExportDimensionMappingCertified?: boolean;
+  dimensionalReportingEvidenceLinks?: string[] | null;
   ledgerBookMigrationCertified?: boolean;
   historicalJournalBackfillCertified?: boolean;
   dimensionalBackfillCertified?: boolean;
@@ -5690,6 +5695,20 @@ export interface AccountingLedgerBookWorkflowReadiness {
   hasLedgerBookScopedEvidence: boolean;
 }
 
+export interface AccountingDimensionalReportingReadiness {
+  ledgerBookId?: string | null;
+  periodReportDimensionQueriesCertified: boolean;
+  crossPeriodReportDimensionQueriesCertified: boolean;
+  journalQueryDimensionFiltersCertified: boolean;
+  externalExportDimensionMappingCertified: boolean;
+  evidenceReferences: string[];
+  completedControlCount: number;
+  requiredControlCount: number;
+  hasLedgerBookScope: boolean;
+  hasRetainedEvidence: boolean;
+  hasLedgerBookScopedEvidence: boolean;
+}
+
 export interface AccountingTenantAdministrationProfile {
   tenantId: string;
   companyId: string;
@@ -5724,6 +5743,7 @@ export interface AccountingProductionReadiness {
   ledgerBookRollout?: LedgerBookRolloutAssessment | null;
   rulesStudioSummary?: AccountingRulesStudioSummary | null;
   ledgerBookWorkflows?: AccountingLedgerBookWorkflowReadiness | null;
+  dimensionalReporting?: AccountingDimensionalReportingReadiness | null;
   externalGlProviderCount: number;
   certifiedExternalGlMappingProfileCount: number;
   externalGlLivePostingEnabled: boolean;

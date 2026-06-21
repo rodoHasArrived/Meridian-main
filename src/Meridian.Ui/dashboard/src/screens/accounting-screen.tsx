@@ -6624,6 +6624,11 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               <p className="mt-1 text-xs text-muted-foreground">Import, mapping, reconciliation, and guarded export posture.</p>
             </div>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Dimensions</div>
+              <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.dimensionalReportingLabel}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{view.productionReadiness.dimensionalReportingEvidenceLabel}</p>
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Control plane</div>
               <div className="mt-2 text-sm font-semibold text-foreground">{view.productionReadiness.components.length} component checks</div>
               <p className="mt-1 text-xs text-muted-foreground">Rules, posting, JE lifecycle, dimensions, close, and admin readiness.</p>
