@@ -217,6 +217,15 @@
                                             <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="220" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Migration Run Evidence" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessMigrationArtifactRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessMigrationArtifactGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Run" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Scope / Dimensions" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="260" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Tenant Administration Setup" Style="{StaticResource CardHeaderStyle}" />
                                     <TextBlock Text="{Binding TenantAdministrationProfileScopeText}"
                                                Style="{StaticResource CardDescriptionStyle}"

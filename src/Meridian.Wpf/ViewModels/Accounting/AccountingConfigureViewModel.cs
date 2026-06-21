@@ -326,6 +326,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLifecycleRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessComponentRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessIssueRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationArtifactRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> TenantAdministrationControlRows { get; } = [];
     public ObservableCollection<string> ReconciliationViewOptions { get; } =
     [
@@ -1769,6 +1770,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessIssueRows.Clear();
+            ProductionReadinessMigrationArtifactRows.Clear();
             return;
         }
 
@@ -1781,6 +1783,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessExternalGlText = "External GL readiness cannot be assessed.";
             ProductionReadinessTenantAdminText = "Tenant administration readiness cannot be assessed.";
             ProductionReadinessComponentRows.Clear();
+            ProductionReadinessMigrationArtifactRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
             [
                 new AccountingWorkbenchRow(
@@ -1807,6 +1810,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessExternalGlText = "External GL readiness could not be assessed.";
             ProductionReadinessTenantAdminText = "Tenant administration readiness could not be assessed.";
             ProductionReadinessComponentRows.Clear();
+            ProductionReadinessMigrationArtifactRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
             [
                 new AccountingWorkbenchRow(
@@ -1885,10 +1889,81 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 issue.EvidenceReferences.Count > 0
                     ? string.Join("; ", issue.EvidenceReferences)
                     : issue.Area.ToString())));
+        ProductionReadinessMigrationArtifactRows.ReplaceWith(readiness.MigrationRunArtifacts
+            .OrderByDescending(static artifact => artifact.StartedAtUtc)
+            .ThenBy(static artifact => artifact.RunId, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .Select(artifact => new AccountingWorkbenchRow(
+                FormatMigrationArtifactKind(artifact.Kind),
+                artifact.Status.ToString(),
+                $"{FormatMigrationArtifactScope(artifact)}; {artifact.MigratedRecordCount:N0} record(s), {artifact.IssueCount:N0} issue(s); started {artifact.StartedAtUtc.ToLocalTime():g}{(artifact.CompletedAtUtc.HasValue ? $", completed {artifact.CompletedAtUtc.Value.ToLocalTime():g}" : string.Empty)}.",
+                artifact.EvidenceReferences.Count > 0
+                    ? string.Join("; ", artifact.EvidenceReferences)
+                    : FormatLedgerDimensionSet(artifact.Dimensions),
+                artifact.RunId)));
     }
 
     private static string FormatReadinessScope(string? value)
         => string.IsNullOrWhiteSpace(value) ? "missing" : value.Trim();
+
+    private static string FormatMigrationArtifactKind(AccountingMigrationRunKindDto kind)
+        => kind switch
+        {
+            AccountingMigrationRunKindDto.LedgerBookScope => "Ledger-book scope",
+            AccountingMigrationRunKindDto.HistoricalJournalBackfill => "Historical journal backfill",
+            AccountingMigrationRunKindDto.DimensionalBackfill => "Dimensional backfill",
+            AccountingMigrationRunKindDto.AccountingConfigurationPromotion => "Configuration promotion",
+            AccountingMigrationRunKindDto.CloseReportingEvidence => "Close/reporting evidence",
+            _ => kind.ToString()
+        };
+
+    private static string FormatMigrationArtifactScope(AccountingMigrationRunArtifactDto artifact)
+    {
+        var scope = new[]
+        {
+            string.IsNullOrWhiteSpace(artifact.FundProfileId) ? null : $"fund {artifact.FundProfileId}",
+            artifact.LedgerBookId.HasValue ? $"book {artifact.LedgerBookId.Value:D}" : "fund-level",
+            FormatLedgerDimensionSet(artifact.Dimensions)
+        }.Where(static item => !string.IsNullOrWhiteSpace(item));
+        return string.Join("; ", scope);
+    }
+
+    private static string FormatLedgerDimensionSet(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return string.Empty;
+        }
+
+        var values = new List<string>
+        {
+            FormatDimension("fund", dimensions.FundId),
+            FormatDimension("entity", dimensions.EntityId),
+            FormatDimension("sleeve", dimensions.SleeveId),
+            FormatDimension("strategy", dimensions.StrategyId),
+            FormatDimension("investor", dimensions.InvestorId),
+            FormatDimension("capital", dimensions.CapitalAccountId),
+            dimensions.InstrumentId.HasValue ? $"instrument {dimensions.InstrumentId.Value:D}" : string.Empty,
+            FormatDimension("tax lot", dimensions.TaxLotId),
+            FormatDimension("cost center", dimensions.CostCenterId),
+            FormatDimension("counterparty", dimensions.CounterpartyId),
+            FormatDimension("organization", dimensions.OrganizationId),
+            FormatDimension("portfolio", dimensions.PortfolioId),
+            FormatDimension("book", dimensions.BookId),
+            FormatDimension("account", dimensions.AccountId),
+            FormatDimension("customer", dimensions.CustomerId),
+            FormatDimension("vendor", dimensions.VendorId),
+            FormatDimension("project", dimensions.ProjectId)
+        };
+
+        values.AddRange(dimensions.ExternalGlDimensions
+            .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static pair => string.IsNullOrWhiteSpace(pair.Value) ? string.Empty : $"external {pair.Key}={pair.Value}"));
+        return string.Join(", ", values.Where(static item => !string.IsNullOrWhiteSpace(item)));
+    }
+
+    private static string FormatDimension(string label, string? value)
+        => string.IsNullOrWhiteSpace(value) ? string.Empty : $"{label} {value.Trim()}";
 
     private PostingRuleDto? ResolvePostingCandidateRule(AccountingConfigurationWorkspaceDto workspace)
     {
@@ -2818,6 +2893,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ManualJournalLifecycleRows.Clear();
         ProductionReadinessComponentRows.Clear();
         ProductionReadinessIssueRows.Clear();
+        ProductionReadinessMigrationArtifactRows.Clear();
         TenantAdministrationControlRows.Clear();
         ClearCapitalAccountWorkbenchRows();
         EvidenceRows.Clear();
