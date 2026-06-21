@@ -1994,7 +1994,9 @@ public sealed record AccountingReportPackageRequestDto(
     string? PriorPackageId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CorrelationId = null,
-    LedgerDimensionSetDto? Dimensions = null)
+    LedgerDimensionSetDto? Dimensions = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -2006,7 +2008,9 @@ public sealed record CertifyAccountingReportPackageRequestDto(
     string Notes,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CorrelationId = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -2020,7 +2024,9 @@ public sealed record AccountingReportPackageBundleDto(
     ReportCertificationDto Certification,
     IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
     IReadOnlyList<ReportExportArtifactDto>? ExportArtifacts = null,
-    Guid? CloseWorkflowId = null)
+    Guid? CloseWorkflowId = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];

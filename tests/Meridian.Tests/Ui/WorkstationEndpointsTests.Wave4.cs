@@ -1325,6 +1325,53 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task LedgerAccountingReportPackageEndpoint_UsesAuthenticatedTenantScope()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: "tenant-alpha");
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-tenant",
+                PeriodId: "2026-12",
+                Actor: "browser-user",
+                LedgerBookId: ledgerBookId,
+                BeginningCapital: 100_000m,
+                Contributions: 25_000m,
+                Distributions: 5_000m,
+                RealizedGainLoss: 10_000m,
+                Nav: 130_000m,
+                EvidenceLinks:
+                [
+                    $"evidence:ledger:trial-balance:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:reconciliation:gl-tie-out:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:report-render:financial-statements:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:nav:support-package:2026-12:book:{ledgerBookId:D}"
+                ],
+                TenantId: "spoofed-tenant",
+                CompanyId: "spoofed-company"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var package = await response.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        package.Should().NotBeNull();
+        package!.TenantId.Should().Be("tenant-alpha");
+        package.CompanyId.Should().Be("tenant-alpha");
+        package.FinancialStatements.PackageId.Should().Contain("tenant-tenant-alpha-company-tenant-alpha");
+
+        using var historyResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-tenant&periodId=2026-12&ledgerBookId={ledgerBookId:D}");
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
+        history.Should().ContainSingle(row => row.FinancialStatements.PackageId == package.FinancialStatements.PackageId);
+    }
+
+    [Fact]
     public async Task LedgerAccountingReportPackageCertificationEndpoint_RequiresAdminMaintenance()
     {
         await using var app = await CreateAppAsync(

@@ -233,17 +233,20 @@ financial statement package, investor capital statement, realized gain/loss repo
 certification, validation issues, deterministic report-line provenance, deterministic export
 artifact rows, and optional restatement workflow metadata. It accepts explicit canonical
 `LedgerDimensionSetDto` scope on package requests, validates conflicting fund, ledger-book,
-investor, and capital-account dimensions, and stamps the retained ledger book and dimension scope
-onto child financial statement, investor capital, realized gain/loss, NAV, export, and provenance
-artifacts so report consumers do not have to infer dimensional scope from package identifiers or
-parent rows. It carries close-plan validation into the package certification state, keeps
+investor, and capital-account dimensions, preserves optional tenant/company scope, and stamps the
+retained ledger book and dimension scope onto child financial statement, investor capital, realized
+gain/loss, NAV, export, and provenance artifacts so report consumers do not have to infer
+dimensional or tenant scope from package identifiers or parent rows. It carries close-plan
+validation into the package certification state, keeps
 standalone packages ready-for-review when non-blocking warnings remain, returns draft state when
 ledger-book scope is missing, and uses ledger-book-scoped retained package identifiers so primary,
 GAAP, tax, or other book packages for the same fund period do not overwrite one another. Explicit
 dimension-scoped packages add a deterministic scope suffix so entity, strategy, capital-account, or
-external-GL packages for the same book and period can coexist. Package history can also be filtered
-by ledger book and dimensions so close, reporting, and export review surfaces inspect the intended
-book/scope rather than a fund-period aggregate.
+external-GL packages for the same book and period can coexist. Tenant/company-scoped packages add a
+deterministic enterprise scope suffix so same fund/period/book packages cannot collide across
+companies. Package history can also be filtered by ledger book, dimensions, tenant, and company so
+close, reporting, and export review surfaces inspect the intended enterprise book/scope rather than
+a fund-period aggregate.
 blocking close-plan evidence is missing, close checklist dependencies are incomplete, the attached
 close workflow has not reached period-lock, approved
 sign-offs are missing, or material late adjustments are still unapproved, blocks restatement

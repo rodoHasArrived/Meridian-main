@@ -20,6 +20,8 @@ public interface IAccountingReportPackageService
         string? periodId = null,
         Guid? ledgerBookId = null,
         LedgerDimensionSetDto? dimensions = null,
+        string? tenantId = null,
+        string? companyId = null,
         CancellationToken ct = default);
 
     Task<AccountingReportPackageBundleDto?> CertifyPackageAsync(
@@ -29,6 +31,8 @@ public interface IAccountingReportPackageService
     Task<ReportExportArtifactManifestDto?> GetExportArtifactManifestAsync(
         string packageId,
         string artifactId,
+        string? tenantId = null,
+        string? companyId = null,
         CancellationToken ct = default);
 }
 
@@ -68,6 +72,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var actor = RequireText(request.Actor, "Actor");
         var fundProfileId = RequireText(request.FundProfileId, "FundProfileId");
         var periodId = RequireText(request.PeriodId, "PeriodId");
+        var tenantId = NormalizeOptional(request.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId);
         var currency = string.IsNullOrWhiteSpace(request.Currency) ? "USD" : request.Currency.Trim().ToUpperInvariant();
         var evidenceLinks = NormalizeEvidenceLinks(request.EvidenceLinks);
         var validationIssues = new List<AccountingConfigurationValidationIssueDto>();
@@ -137,8 +143,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var state = hasCritical ? AccountingCertificationStateDto.Draft : AccountingCertificationStateDto.ReadyForReview;
-        var packageId = BuildPackageId(fundProfileId, periodId, ledgerBookId, request.Dimensions is null ? null : packageDimensions);
-        ThrowIfCertifiedPackageWouldBeReplaced(packageId, ReadPackages());
+        var packageId = BuildPackageId(fundProfileId, periodId, ledgerBookId, request.Dimensions is null ? null : packageDimensions, tenantId, companyId);
+        ThrowIfCertifiedPackageWouldBeReplaced(packageId, tenantId, companyId, ReadPackages());
         var certification = new ReportCertificationDto(
             $"report-certification-{Sanitize(packageId)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
             state,
@@ -227,7 +233,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             certification,
             validationIssues,
             exportArtifacts,
-            request.CloseWorkflowId);
+            request.CloseWorkflowId,
+            tenantId,
+            companyId);
         await SavePackageAsync(bundle, ct).ConfigureAwait(false);
         return bundle;
     }
@@ -237,13 +245,18 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         string? periodId = null,
         Guid? ledgerBookId = null,
         LedgerDimensionSetDto? dimensions = null,
+        string? tenantId = null,
+        string? companyId = null,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim();
         var normalizedPeriodId = string.IsNullOrWhiteSpace(periodId) ? null : periodId.Trim();
         var normalizedDimensions = NormalizeDimensionSet(dimensions);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var rows = ReadPackages()
+            .Where(package => MatchesTenantScope(package, normalizedTenantId, normalizedCompanyId))
             .Where(package => normalizedFundProfileId is null || string.Equals(package.FinancialStatements.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(package => normalizedPeriodId is null || string.Equals(package.FinancialStatements.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase))
             .Where(package => !ledgerBookId.HasValue || package.FinancialStatements.LedgerBookId == ledgerBookId.Value)
@@ -263,6 +276,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var packageId = RequireText(request.PackageId, "PackageId");
         var actor = RequireText(request.Actor, "Actor");
         var notes = RequireText(request.Notes, "Notes");
+        var tenantId = NormalizeOptional(request.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId);
         var evidenceLinks = NormalizeEvidenceLinks(request.EvidenceLinks);
         if (evidenceLinks.Count == 0)
         {
@@ -279,8 +294,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         {
             var rows = ReadPackages().ToArray();
             var index = Array.FindIndex(rows, package =>
-                string.Equals(package.FinancialStatements.PackageId, packageId, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(package.Certification.CertificationId, packageId, StringComparison.OrdinalIgnoreCase));
+                MatchesTenantScope(package, tenantId, companyId) &&
+                (string.Equals(package.FinancialStatements.PackageId, packageId, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(package.Certification.CertificationId, packageId, StringComparison.OrdinalIgnoreCase)));
             if (index < 0)
             {
                 return null;
@@ -408,12 +424,17 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
     public Task<ReportExportArtifactManifestDto?> GetExportArtifactManifestAsync(
         string packageId,
         string artifactId,
+        string? tenantId = null,
+        string? companyId = null,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedPackageId = RequireText(packageId, nameof(packageId));
         var normalizedArtifactId = RequireText(artifactId, nameof(artifactId));
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var package = ReadPackages().FirstOrDefault(row =>
+            MatchesTenantScope(row, normalizedTenantId, normalizedCompanyId) &&
             string.Equals(row.FinancialStatements.PackageId, normalizedPackageId, StringComparison.OrdinalIgnoreCase));
         var artifact = package?.ExportArtifacts.FirstOrDefault(row =>
             string.Equals(row.ArtifactId, normalizedArtifactId, StringComparison.OrdinalIgnoreCase));
@@ -637,9 +658,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         else
         {
             var priorPackageId = request.PriorPackageId.Trim();
+            var requestTenantId = NormalizeOptional(request.TenantId);
+            var requestCompanyId = NormalizeOptional(request.CompanyId);
             var priorPackage = retainedPackages.FirstOrDefault(package =>
-                string.Equals(package.FinancialStatements.PackageId, priorPackageId, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(package.Certification.CertificationId, priorPackageId, StringComparison.OrdinalIgnoreCase));
+                MatchesTenantScope(package, requestTenantId, requestCompanyId) &&
+                (string.Equals(package.FinancialStatements.PackageId, priorPackageId, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(package.Certification.CertificationId, priorPackageId, StringComparison.OrdinalIgnoreCase)));
             if (priorPackage is null)
             {
                 issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -692,11 +716,19 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         string fundProfileId,
         string periodId,
         Guid? ledgerBookId,
-        LedgerDimensionSetDto? explicitDimensions)
+        LedgerDimensionSetDto? explicitDimensions,
+        string? tenantId,
+        string? companyId)
     {
         var baseId = ledgerBookId.HasValue
             ? $"accounting-report-package-{Sanitize(fundProfileId)}-{Sanitize(periodId)}-book-{ledgerBookId.Value:N}"
             : $"accounting-report-package-{Sanitize(fundProfileId)}-{Sanitize(periodId)}";
+        var tenantScope = BuildTenantPackageScope(tenantId, companyId);
+        if (!string.IsNullOrWhiteSpace(tenantScope))
+        {
+            baseId = $"{baseId}-{tenantScope}";
+        }
+
         if (explicitDimensions is null || !HasExplicitDimensionScope(explicitDimensions, fundProfileId, ledgerBookId))
         {
             return baseId;
@@ -770,9 +802,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         try
         {
             var rows = ReadPackages();
-            ThrowIfCertifiedPackageWouldBeReplaced(bundle.FinancialStatements.PackageId, rows);
+            ThrowIfCertifiedPackageWouldBeReplaced(bundle.FinancialStatements.PackageId, bundle.TenantId, bundle.CompanyId, rows);
             var updatedRows = rows
-                .Where(package => !string.Equals(package.FinancialStatements.PackageId, bundle.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase))
+                .Where(package => !MatchesPackageIdentity(package, bundle.FinancialStatements.PackageId, bundle.TenantId, bundle.CompanyId))
                 .Append(bundle)
                 .ToArray();
             await SavePackagesAsync(updatedRows, ct).ConfigureAwait(false);
@@ -785,10 +817,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
     private static void ThrowIfCertifiedPackageWouldBeReplaced(
         string packageId,
+        string? tenantId,
+        string? companyId,
         IReadOnlyList<AccountingReportPackageBundleDto> retainedPackages)
     {
         var certifiedPackage = retainedPackages.FirstOrDefault(package =>
-            string.Equals(package.FinancialStatements.PackageId, packageId, StringComparison.OrdinalIgnoreCase) &&
+            MatchesPackageIdentity(package, packageId, tenantId, companyId) &&
             package.Certification.State == AccountingCertificationStateDto.Certified);
         if (certifiedPackage is not null)
         {
@@ -1094,6 +1128,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             new
             {
                 packageId = package.FinancialStatements.PackageId,
+                tenantId = package.TenantId,
+                companyId = package.CompanyId,
                 fundProfileId = package.FinancialStatements.FundProfileId,
                 ledgerBookId = artifact.LedgerBookId,
                 dimensions = artifact.Dimensions,
@@ -1489,6 +1525,39 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(static pair => $"{NormalizeOptional(pair.Key)}={NormalizeOptional(pair.Value)}")));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
+    }
+
+    private static bool MatchesTenantScope(
+        AccountingReportPackageBundleDto package,
+        string? tenantId,
+        string? companyId)
+    {
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        return (normalizedTenantId is null ||
+                string.Equals(NormalizeOptional(package.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+               && (normalizedCompanyId is null ||
+                   string.Equals(NormalizeOptional(package.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool MatchesPackageIdentity(
+        AccountingReportPackageBundleDto package,
+        string packageId,
+        string? tenantId,
+        string? companyId)
+        => MatchesTenantScope(package, NormalizeOptional(tenantId), NormalizeOptional(companyId)) &&
+           string.Equals(package.FinancialStatements.PackageId, packageId, StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildTenantPackageScope(string? tenantId, string? companyId)
+    {
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        if (normalizedTenantId is null && normalizedCompanyId is null)
+        {
+            return string.Empty;
+        }
+
+        return $"tenant-{Sanitize(normalizedTenantId ?? "default")}-company-{Sanitize(normalizedCompanyId ?? "default")}";
     }
 
     private static string? NormalizeOptional(string? value)

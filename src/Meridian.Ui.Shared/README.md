@@ -382,12 +382,17 @@ service, returning the shared financial statement package, investor capital stat
 gain/loss report, NAV package, line-level provenance rows, certification, validation issues, and restatement workflow metadata
 without requiring browser or WPF clients to reconstruct accounting report state locally. Requests
 may carry a canonical `LedgerDimensionSetDto`, and the route preserves that scope through child
-statements, provenance, export artifacts, and certification manifests. The
+statements, provenance, export artifacts, and certification manifests. Endpoint adapters stamp the
+authenticated tenant/company scope onto package assembly and certification requests before calling
+Financial Operations, so client-supplied tenant ids cannot move retained accounting packages across
+companies. The
   companion `/api/ledger/reports/accounting-packages` route lists retained package history by optional
-  fund profile, period, `ledgerBookId`, and dimension query filters from the same shared service;
+  fund profile, period, `ledgerBookId`, authenticated tenant/company scope, and dimension query
+  filters from the same shared service;
   retained package identifiers include ledger-book scope when available and deterministic explicit
-  dimension scope when requested so book-native and entity/capital-account/external-GL package
-  variants do not overwrite each other for the same fund period. The
+  dimension and tenant/company scope when requested so book-native and
+  entity/capital-account/external-GL package variants do not overwrite each other for the same fund
+  period. The
 `/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}` route returns the
 retained controlled export-artifact manifest with evidence, content hash, certification state, and
 live external posting disabled. The

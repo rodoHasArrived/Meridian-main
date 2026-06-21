@@ -948,12 +948,16 @@ introducing a new posting command or bypassing manual journal lifecycle controls
 `AccountingReportPackageRequestDto` accepts an optional `LedgerDimensionSetDto` so report package
 assembly can be scoped by fund, entity, sleeve, strategy, investor, capital account, instrument,
 tax lot, cost center, counterparty, book, project, and external GL dimensions before certification.
+It also carries optional tenant and company identifiers so retained package history, certification,
+and export retrieval can be isolated by authenticated enterprise scope.
 `AccountingReportPackageBundleDto` carries close-plan validation and optional retained close workflow
 lineage into financial statement, investor capital, realized gain/loss, NAV, line-level provenance,
 export-artifact manifest, certification, and restatement outputs. Financial statement, investor
 capital, realized gain/loss, NAV, and provenance artifacts carry the retained ledger-book and
 `LedgerDimensionSetDto` scope so report consumers can remain book- and dimension-native without
-reconstructing package context from parent rows or retained-history routes. Package
+reconstructing package context from parent rows or retained-history routes. The retained bundle
+also preserves tenant and company scope so browser/WPF history routes do not blend packages across
+companies that share a fund, period, or ledger-book naming convention. Package
 certification remains `Draft` when close checklist dependencies are incomplete, approved sign-offs
 are missing, or material late adjustments are not approved, and close-backed certification can
 refresh the current close plan before moving a retained package to `Certified`.

@@ -1068,8 +1068,14 @@ public static class LedgerEndpoints
             try
             {
                 var actor = ResolveMutationActor(context, request.Actor);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var result = await service
-                    .BuildPackageAsync(request with { Actor = actor }, context.RequestAborted)
+                    .BuildPackageAsync(request with
+                    {
+                        Actor = actor,
+                        TenantId = tenantContext.TenantId ?? request.TenantId,
+                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1105,8 +1111,14 @@ public static class LedgerEndpoints
             try
             {
                 var actor = ResolveMutationActor(context, request.Actor);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var result = await service
-                    .CertifyPackageAsync(request with { Actor = actor }, context.RequestAborted)
+                    .CertifyPackageAsync(request with
+                    {
+                        Actor = actor,
+                        TenantId = tenantContext.TenantId ?? request.TenantId,
+                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
                     ? Results.NotFound(new { error = "Accounting report package was not found." })
@@ -1151,12 +1163,15 @@ public static class LedgerEndpoints
             }
 
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var result = await service
                 .ListPackagesAsync(
                     fundProfileId,
                     periodId,
                     ledgerBookId,
                     ToLedgerDimensionSetDto(dimensionFilter),
+                    tenantContext.TenantId,
+                    tenantContext.CompanyId,
                     context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -1184,8 +1199,14 @@ public static class LedgerEndpoints
 
             try
             {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var result = await service
-                    .GetExportArtifactManifestAsync(packageId, artifactId, context.RequestAborted)
+                    .GetExportArtifactManifestAsync(
+                        packageId,
+                        artifactId,
+                        tenantContext.TenantId,
+                        tenantContext.CompanyId,
+                        context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
                     ? Results.NotFound(new { error = "Accounting report package export artifact was not found." })

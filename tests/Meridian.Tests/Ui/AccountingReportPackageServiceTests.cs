@@ -629,6 +629,50 @@ public sealed class AccountingReportPackageServiceTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
     }
 
+    [Fact]
+    public async Task ListPackagesAsync_IsolatesRetainedHistoryByTenantAndCompany()
+    {
+        var service = new AccountingReportPackageService();
+
+        var alpha = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-09",
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+        var beta = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-09",
+            TenantId: "tenant-beta",
+            CompanyId: "company-beta"));
+
+        alpha.FinancialStatements.PackageId.Should().NotBe(beta.FinancialStatements.PackageId);
+        alpha.TenantId.Should().Be("tenant-alpha");
+        alpha.CompanyId.Should().Be("company-alpha");
+
+        var alphaOnly = await service.ListPackagesAsync(
+            "fund-alpha",
+            "2027-09",
+            DefaultLedgerBookId,
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha");
+        var betaOnly = await service.ListPackagesAsync(
+            "fund-alpha",
+            "2027-09",
+            DefaultLedgerBookId,
+            tenantId: "tenant-beta",
+            companyId: "company-beta");
+        var mismatchedCompany = await service.ListPackagesAsync(
+            "fund-alpha",
+            "2027-09",
+            DefaultLedgerBookId,
+            tenantId: "tenant-alpha",
+            companyId: "company-beta");
+
+        alphaOnly.Should().ContainSingle(row => row.FinancialStatements.PackageId == alpha.FinancialStatements.PackageId);
+        betaOnly.Should().ContainSingle(row => row.FinancialStatements.PackageId == beta.FinancialStatements.PackageId);
+        mismatchedCompany.Should().BeEmpty();
+    }
+
     private static AccountingReportPackageRequestDto CompletePackageRequest(
         string fundProfileId,
         string periodId,
@@ -639,6 +683,8 @@ public sealed class AccountingReportPackageServiceTests
         string? CapitalAccountId = null,
         string? InvestorId = null,
         LedgerDimensionSetDto? Dimensions = null,
+        string? TenantId = null,
+        string? CompanyId = null,
         IReadOnlyList<string>? EvidenceLinks = null)
     {
         var effectiveLedgerBookId = LedgerBookId ?? DefaultLedgerBookId;
@@ -665,7 +711,9 @@ public sealed class AccountingReportPackageServiceTests
                 $"evidence:report-render:financial-statements:{periodId}:book:{ledgerBookEvidenceScope}",
                 $"evidence:nav:support-package:{periodId}:book:{ledgerBookEvidenceScope}"
             ],
-            Dimensions: Dimensions);
+            Dimensions: Dimensions,
+            TenantId: TenantId,
+            CompanyId: CompanyId);
     }
 
     private static string CertificationEvidence(
