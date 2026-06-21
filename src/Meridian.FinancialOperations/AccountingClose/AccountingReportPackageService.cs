@@ -142,13 +142,13 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             evidenceLinks);
         var restatement = BuildRestatement(request, actor, evidenceLinks);
         var endingCapital = request.BeginningCapital + request.Contributions - request.Distributions + request.RealizedGainLoss;
+        var packageDimensions = BuildReportPackageDimensions(request, fundProfileId, ledgerBookId);
         var lineProvenance = BuildReportLineProvenance(
             request,
-            fundProfileId,
             periodId,
             currency,
             endingCapital,
-            ledgerBookId,
+            packageDimensions,
             restatement,
             evidenceLinks);
 
@@ -166,9 +166,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var investorStatement = new InvestorCapitalStatementDto(
             $"investor-capital-statement-{Sanitize(fundProfileId)}-{Sanitize(periodId)}-{Sanitize(request.CapitalAccountId ?? "aggregate")}",
             fundProfileId,
+            ledgerBookId,
             string.IsNullOrWhiteSpace(request.CapitalAccountId) ? "capital-account:aggregate" : request.CapitalAccountId.Trim(),
             string.IsNullOrWhiteSpace(request.InvestorId) ? null : request.InvestorId.Trim(),
             periodId,
+            packageDimensions,
             request.BeginningCapital,
             request.Contributions,
             request.Distributions,
@@ -182,11 +184,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             fundProfileId,
             ledgerBookId,
             periodId,
-            new LedgerDimensionSetDto(
-                FundId: fundProfileId,
-                InvestorId: request.InvestorId,
-                CapitalAccountId: request.CapitalAccountId,
-                BookId: ledgerBookId?.ToString("D")),
+            packageDimensions,
             request.RealizedGainLoss,
             currency,
             state,
@@ -196,6 +194,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             fundProfileId,
             ledgerBookId,
             periodId,
+            packageDimensions,
             request.Nav,
             currency,
             state,
@@ -1016,21 +1015,25 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             artifact.SourceStatementId);
     }
 
-    private static IReadOnlyList<ReportLineProvenanceDto> BuildReportLineProvenance(
+    private static LedgerDimensionSetDto BuildReportPackageDimensions(
         AccountingReportPackageRequestDto request,
         string fundProfileId,
-        string periodId,
-        string currency,
-        decimal endingCapital,
-        Guid? ledgerBookId,
-        RestatementWorkflowDto? restatement,
-        IReadOnlyList<string> evidenceLinks)
-    {
-        var dimensions = new LedgerDimensionSetDto(
+        Guid? ledgerBookId)
+        => new(
             FundId: fundProfileId,
             InvestorId: string.IsNullOrWhiteSpace(request.InvestorId) ? null : request.InvestorId.Trim(),
             CapitalAccountId: string.IsNullOrWhiteSpace(request.CapitalAccountId) ? null : request.CapitalAccountId.Trim(),
             BookId: ledgerBookId?.ToString("D"));
+
+    private static IReadOnlyList<ReportLineProvenanceDto> BuildReportLineProvenance(
+        AccountingReportPackageRequestDto request,
+        string periodId,
+        string currency,
+        decimal endingCapital,
+        LedgerDimensionSetDto dimensions,
+        RestatementWorkflowDto? restatement,
+        IReadOnlyList<string> evidenceLinks)
+    {
         var ledgerEvidence = EvidenceMatching(evidenceLinks, "ledger", "trial-balance");
         var reconciliationEvidence = EvidenceMatching(evidenceLinks, "reconciliation", "tie-out");
         var renderedReportEvidence = EvidenceMatching(evidenceLinks, "report-render", "rendered-report", "report-package");

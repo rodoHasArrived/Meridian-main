@@ -123,8 +123,15 @@ public sealed class AccountingReportPackageServiceTests
 
         inherited.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
         inherited.FinancialStatements.LedgerBookId.Should().Be(closeLedgerBookId);
+        inherited.InvestorCapitalStatements.Should().ContainSingle();
+        inherited.InvestorCapitalStatements[0].LedgerBookId.Should().Be(closeLedgerBookId);
+        inherited.InvestorCapitalStatements[0].Dimensions.FundId.Should().Be("fund-alpha");
+        inherited.InvestorCapitalStatements[0].Dimensions.BookId.Should().Be(closeLedgerBookId.ToString("D"));
         inherited.RealizedGainLoss.LedgerBookId.Should().Be(closeLedgerBookId);
+        inherited.RealizedGainLoss.Dimensions.BookId.Should().Be(closeLedgerBookId.ToString("D"));
         inherited.NavPackage.LedgerBookId.Should().Be(closeLedgerBookId);
+        inherited.NavPackage.Dimensions.FundId.Should().Be("fund-alpha");
+        inherited.NavPackage.Dimensions.BookId.Should().Be(closeLedgerBookId.ToString("D"));
         inherited.FinancialStatements.LineProvenance.Should().OnlyContain(row =>
             row.Dimensions.BookId == closeLedgerBookId.ToString("D"));
 
