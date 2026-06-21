@@ -2128,6 +2128,8 @@ public static partial class WorkstationEndpoints
             string? sleeveId,
             string? strategyId,
             string? portfolioId,
+            string? ledgerBookId,
+            string? bookId,
             string? accountId,
             string? investorId,
             string? capitalAccountId,
@@ -2163,6 +2165,7 @@ public static partial class WorkstationEndpoints
                     sleeveId,
                     strategyId,
                     portfolioId,
+                    NormalizeOptionalDimensionValue(ledgerBookId) ?? NormalizeOptionalDimensionValue(bookId),
                     accountId,
                     investorId,
                     capitalAccountId,
@@ -2187,6 +2190,8 @@ public static partial class WorkstationEndpoints
             string? sleeveId,
             string? strategyId,
             string? portfolioId,
+            string? ledgerBookId,
+            string? bookId,
             string? accountId,
             string? investorId,
             string? capitalAccountId,
@@ -2227,6 +2232,7 @@ public static partial class WorkstationEndpoints
                 sleeveId,
                 strategyId,
                 portfolioId,
+                NormalizeOptionalDimensionValue(ledgerBookId) ?? NormalizeOptionalDimensionValue(bookId),
                 accountId,
                 investorId,
                 capitalAccountId,
@@ -4050,6 +4056,7 @@ public static partial class WorkstationEndpoints
         string? sleeveId,
         string? strategyId,
         string? portfolioId,
+        string? bookId,
         string? accountId,
         string? investorId,
         string? capitalAccountId,
@@ -4063,6 +4070,7 @@ public static partial class WorkstationEndpoints
            && MatchesDimensionValue(sleeveId, dimensions?.SleeveId)
            && MatchesDimensionValue(strategyId, dimensions?.StrategyId)
            && MatchesDimensionValue(portfolioId, dimensions?.PortfolioId)
+           && MatchesDimensionValue(bookId, dimensions?.BookId)
            && MatchesDimensionValue(accountId, dimensions?.AccountId)
            && MatchesDimensionValue(investorId, dimensions?.InvestorId)
            && MatchesDimensionValue(capitalAccountId, dimensions?.CapitalAccountId)

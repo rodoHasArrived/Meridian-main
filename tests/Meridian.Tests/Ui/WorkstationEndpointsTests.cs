@@ -7852,6 +7852,7 @@ public sealed partial class WorkstationEndpointsTests
             {
                 ["accountScopeId"] = "acct-ops",
                 ["entityScopeId"] = "entity-book",
+                ["ledgerBookId"] = "book-gaap",
                 ["sleeveScopeId"] = "sleeve-alpha",
                 ["externalGl.Department"] = "InvestmentOps"
             }
@@ -7859,7 +7860,7 @@ public sealed partial class WorkstationEndpointsTests
 
         var client = app.GetTestClient();
         var response = await client.GetAsync(
-            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?fundId=fund-core&entityId=entity-book&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGl.Department=InvestmentOps");
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?fundId=fund-core&entityId=entity-book&ledgerBookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGl.Department=InvestmentOps");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -7869,6 +7870,7 @@ public sealed partial class WorkstationEndpointsTests
             var dimensions = line.GetProperty("dimensions");
             dimensions.GetProperty("fundId").GetString().Should().Be("fund-core");
             dimensions.GetProperty("entityId").GetString().Should().Be("entity-book");
+            dimensions.GetProperty("bookId").GetString().Should().Be("book-gaap");
             dimensions.GetProperty("sleeveId").GetString().Should().Be("sleeve-alpha");
             dimensions.GetProperty("strategyId").GetString().Should().Be("recon-strategy");
             dimensions.GetProperty("portfolioId").GetString().Should().Be("recon-portfolio");
@@ -7882,6 +7884,13 @@ public sealed partial class WorkstationEndpointsTests
         mismatch.StatusCode.Should().Be(HttpStatusCode.OK);
         using var mismatchDoc = await JsonDocument.ParseAsync(await mismatch.Content.ReadAsStreamAsync());
         mismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+
+        var bookMismatch = await client.GetAsync(
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?bookId=book-tax");
+
+        bookMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var bookMismatchDoc = await JsonDocument.ParseAsync(await bookMismatch.Content.ReadAsStreamAsync());
+        bookMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
 
         var externalGlMismatch = await client.GetAsync(
             "/api/workstation/runs/drilltb-dim/ledger/trial-balance?externalGl.Department=FundAccounting");
@@ -7918,6 +7927,7 @@ public sealed partial class WorkstationEndpointsTests
             {
                 ["accountScopeId"] = "acct-ops",
                 ["entityScopeId"] = "entity-book",
+                ["bookId"] = "book-gaap",
                 ["sleeveScopeId"] = "sleeve-alpha",
                 ["externalGl.Department"] = "InvestmentOps"
             }
@@ -7925,7 +7935,7 @@ public sealed partial class WorkstationEndpointsTests
 
         var client = app.GetTestClient();
         var response = await client.GetAsync(
-            "/api/workstation/runs/drillj-dim/ledger/journal?fundId=fund-core&entityId=entity-book&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps");
+            "/api/workstation/runs/drillj-dim/ledger/journal?fundId=fund-core&entityId=entity-book&bookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -7935,6 +7945,7 @@ public sealed partial class WorkstationEndpointsTests
             var dimensions = line.GetProperty("dimensions");
             dimensions.GetProperty("fundId").GetString().Should().Be("fund-core");
             dimensions.GetProperty("entityId").GetString().Should().Be("entity-book");
+            dimensions.GetProperty("bookId").GetString().Should().Be("book-gaap");
             dimensions.GetProperty("sleeveId").GetString().Should().Be("sleeve-alpha");
             dimensions.GetProperty("strategyId").GetString().Should().Be("recon-strategy");
             dimensions.GetProperty("portfolioId").GetString().Should().Be("recon-portfolio");
@@ -7948,6 +7959,13 @@ public sealed partial class WorkstationEndpointsTests
         mismatch.StatusCode.Should().Be(HttpStatusCode.OK);
         using var mismatchDoc = await JsonDocument.ParseAsync(await mismatch.Content.ReadAsStreamAsync());
         mismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+
+        var bookMismatch = await client.GetAsync(
+            "/api/workstation/runs/drillj-dim/ledger/journal?ledgerBookId=book-tax");
+
+        bookMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var bookMismatchDoc = await JsonDocument.ParseAsync(await bookMismatch.Content.ReadAsStreamAsync());
+        bookMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
 
         var externalGlMismatch = await client.GetAsync(
             "/api/workstation/runs/drillj-dim/ledger/journal?externalGlDimensionKey=Department&externalGlDimensionValue=FundAccounting");

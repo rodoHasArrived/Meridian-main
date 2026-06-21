@@ -164,6 +164,7 @@ public sealed class LedgerReadService
             SleeveId: scope.SleeveId,
             StrategyId: scope.StrategyId,
             PortfolioId: scope.PortfolioId,
+            BookId: scope.BookId,
             AccountId: accountId,
             ExternalGlDimensions: scope.ExternalGlDimensions);
 
