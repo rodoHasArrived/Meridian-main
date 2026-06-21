@@ -1903,9 +1903,11 @@ describe("AccountingScreen", () => {
         scopedAccessPoliciesConfigured: true,
         reportingGroupsConfigured: false,
         accountingAdminSurfaceConfigured: false,
+        browserAccountingAdminSurfaceConfigured: false,
+        wpfAccountingAdminSurfaceConfigured: false,
         evidenceReferences: ["evidence://tenant-admin/gap"],
         completedControlCount: 5,
-        requiredControlCount: 7,
+        requiredControlCount: 9,
         hasTenantScope: true,
         hasCompanyScope: true,
         hasRetainedEvidence: true
@@ -1962,6 +1964,8 @@ describe("AccountingScreen", () => {
       scopedAccessPoliciesConfigured: true,
       reportingGroupsConfigured: false,
       accountingAdminSurfaceConfigured: false,
+      browserAccountingAdminSurfaceConfigured: false,
+      wpfAccountingAdminSurfaceConfigured: false,
       updatedAtUtc: "2026-06-30T11:55:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://tenant-admin/setup"],
@@ -2014,7 +2018,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Accounting production readiness")).toBeInTheDocument();
     expect(screen.getByText("78/100")).toBeInTheDocument();
     expect(screen.getByText("Tenant administration")).toBeInTheDocument();
-    expect(screen.getByText("5/7 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
+    expect(screen.getByText("5/9 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
     expect(screen.getByText("1 retained setup evidence reference")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
     expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);

@@ -5590,6 +5590,8 @@ export interface AccountingProductionReadinessRequest {
   scopedAccessPoliciesConfigured?: boolean;
   reportingGroupsConfigured?: boolean;
   accountingAdminSurfaceConfigured?: boolean;
+  browserAccountingAdminSurfaceConfigured?: boolean;
+  wpfAccountingAdminSurfaceConfigured?: boolean;
   tenantAdministrationEvidenceLinks?: string[] | null;
   ledgerBookMigrationCertified?: boolean;
   historicalJournalBackfillCertified?: boolean;
@@ -5659,6 +5661,8 @@ export interface AccountingTenantAdministrationReadiness {
   scopedAccessPoliciesConfigured: boolean;
   reportingGroupsConfigured: boolean;
   accountingAdminSurfaceConfigured: boolean;
+  browserAccountingAdminSurfaceConfigured: boolean;
+  wpfAccountingAdminSurfaceConfigured: boolean;
   evidenceReferences: string[];
   completedControlCount: number;
   requiredControlCount: number;
@@ -5675,6 +5679,8 @@ export interface AccountingTenantAdministrationProfile {
   scopedAccessPoliciesConfigured: boolean;
   reportingGroupsConfigured: boolean;
   accountingAdminSurfaceConfigured: boolean;
+  browserAccountingAdminSurfaceConfigured: boolean;
+  wpfAccountingAdminSurfaceConfigured: boolean;
   updatedAtUtc: string;
   updatedBy: string;
   evidenceReferences: string[];

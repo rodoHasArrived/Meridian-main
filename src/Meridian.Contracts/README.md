@@ -202,11 +202,13 @@ close/reporting evidence migration with shared blocker codes and retained
 `AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can render the
 same fail-closed readiness state instead of recomputing production gaps or treating certification
 booleans as executable migration proof. Migration run artifacts can carry the canonical
-`LedgerDimensionSetDto`; dimensional backfill certification is expected to retain fund and
-ledger-book dimensions with the migration evidence instead of relying on account or run names.
+`LedgerDimensionSetDto`; dimensional backfill certification is expected to retain fund, ledger-book,
+entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty,
+and external-GL dimensions with the migration evidence instead of relying on account or run names.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
-reporting-group, operator-surface, and retained-evidence readiness so production accounting setup is
-blocked by shared contract state rather than workstation-local assumptions.
+reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
+admin-studio, and retained-evidence readiness so production accounting setup is blocked by shared
+contract state rather than workstation-local assumptions.
 `AccountingTenantAdministrationProfileDto` is the retained setup profile shape for the same controls,
 allowing shared endpoints, browser, and WPF to review or certify tenant administration posture
 without passing transient request-only booleans.

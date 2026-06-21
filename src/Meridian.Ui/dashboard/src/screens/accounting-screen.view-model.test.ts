@@ -2749,9 +2749,11 @@ describe("accounting-screen view model", () => {
         scopedAccessPoliciesConfigured: true,
         reportingGroupsConfigured: false,
         accountingAdminSurfaceConfigured: false,
+        browserAccountingAdminSurfaceConfigured: false,
+        wpfAccountingAdminSurfaceConfigured: false,
         evidenceReferences: ["evidence://tenant-admin/gap"],
         completedControlCount: 5,
-        requiredControlCount: 7,
+        requiredControlCount: 9,
         hasTenantScope: true,
         hasCompanyScope: true,
         hasRetainedEvidence: true
@@ -2807,6 +2809,8 @@ describe("accounting-screen view model", () => {
       scopedAccessPoliciesConfigured: true,
       reportingGroupsConfigured: true,
       accountingAdminSurfaceConfigured: false,
+      browserAccountingAdminSurfaceConfigured: false,
+      wpfAccountingAdminSurfaceConfigured: false,
       updatedAtUtc: "2026-06-30T11:55:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://tenant-admin/setup"],
@@ -2982,13 +2986,15 @@ describe("accounting-screen view model", () => {
       issueSummaryLabel: "1 warning requires review",
       externalGlLabel: "3 providers | 1 certified mapping | live posting disabled",
       ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers",
-      tenantAdministrationLabel: "5/7 admin controls | tenant tenant-alpha | company company-alpha",
+      tenantAdministrationLabel: "5/9 admin controls | tenant tenant-alpha | company company-alpha",
       tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
     });
     expect(result.current.productionReadiness.tenantAdministrationControls).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "tenant-scope", statusLabel: "Ready", tone: "success" }),
       expect.objectContaining({ id: "reporting-groups", statusLabel: "Missing", tone: "danger" }),
-      expect.objectContaining({ id: "operator-surface", statusLabel: "Missing", tone: "danger" })
+      expect.objectContaining({ id: "operator-surface", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "browser-admin-studio", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "wpf-admin-studio", statusLabel: "Missing", tone: "danger" })
     ]));
     expect(result.current.productionReadiness.components).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -3030,6 +3036,8 @@ describe("accounting-screen view model", () => {
         tenantId: "tenant-alpha",
         companyId: "company-alpha",
         accountingAdminSurfaceConfigured: true,
+        browserAccountingAdminSurfaceConfigured: true,
+        wpfAccountingAdminSurfaceConfigured: false,
         evidenceReferences: [
           "evidence://tenant-admin/setup",
           "evidence://tenant-admin/operator-surface"

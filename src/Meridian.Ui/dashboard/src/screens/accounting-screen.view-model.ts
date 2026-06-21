@@ -433,6 +433,8 @@ interface AccountingTenantAdministrationProfileDraft {
   scopedAccessPoliciesConfigured: boolean;
   reportingGroupsConfigured: boolean;
   accountingAdminSurfaceConfigured: boolean;
+  browserAccountingAdminSurfaceConfigured: boolean;
+  wpfAccountingAdminSurfaceConfigured: boolean;
   evidenceText: string;
 }
 
@@ -3313,7 +3315,7 @@ export function useAccountingConfigurationViewModel(
         case "reporting-groups":
           return { ...current, reportingGroupsConfigured: checked };
         case "operator-surface":
-          return { ...current, accountingAdminSurfaceConfigured: checked };
+          return { ...current, accountingAdminSurfaceConfigured: checked, browserAccountingAdminSurfaceConfigured: checked };
         default:
           return current;
       }
@@ -3342,6 +3344,8 @@ export function useAccountingConfigurationViewModel(
       scopedAccessPoliciesConfigured: tenantAdministrationDraft.scopedAccessPoliciesConfigured,
       reportingGroupsConfigured: tenantAdministrationDraft.reportingGroupsConfigured,
       accountingAdminSurfaceConfigured: tenantAdministrationDraft.accountingAdminSurfaceConfigured,
+      browserAccountingAdminSurfaceConfigured: tenantAdministrationDraft.browserAccountingAdminSurfaceConfigured,
+      wpfAccountingAdminSurfaceConfigured: tenantAdministrationDraft.wpfAccountingAdminSurfaceConfigured,
       updatedAtUtc: new Date().toISOString(),
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
@@ -5074,6 +5078,8 @@ function buildAccountingTenantAdministrationProfileDraft(
     scopedAccessPoliciesConfigured: profile.scopedAccessPoliciesConfigured,
     reportingGroupsConfigured: profile.reportingGroupsConfigured,
     accountingAdminSurfaceConfigured: profile.accountingAdminSurfaceConfigured,
+    browserAccountingAdminSurfaceConfigured: profile.browserAccountingAdminSurfaceConfigured ?? false,
+    wpfAccountingAdminSurfaceConfigured: profile.wpfAccountingAdminSurfaceConfigured ?? false,
     evidenceText: profile.evidenceReferences.join("\n")
   };
 }
@@ -5094,6 +5100,8 @@ function buildAccountingTenantAdministrationProfileFromReadiness(
     scopedAccessPoliciesConfigured: tenantAdministration.scopedAccessPoliciesConfigured,
     reportingGroupsConfigured: tenantAdministration.reportingGroupsConfigured,
     accountingAdminSurfaceConfigured: tenantAdministration.accountingAdminSurfaceConfigured,
+    browserAccountingAdminSurfaceConfigured: tenantAdministration.browserAccountingAdminSurfaceConfigured ?? false,
+    wpfAccountingAdminSurfaceConfigured: tenantAdministration.wpfAccountingAdminSurfaceConfigured ?? false,
     updatedAtUtc: "",
     updatedBy: "not retained",
     evidenceReferences: tenantAdministration.evidenceReferences ?? [],
@@ -5123,6 +5131,8 @@ function buildAccountingTenantAdministrationControls(
     ["scoped-access", "Scoped access", tenantAdministration.scopedAccessPoliciesConfigured],
     ["reporting-groups", "Reporting groups", tenantAdministration.reportingGroupsConfigured],
     ["operator-surface", "Operator surface", tenantAdministration.accountingAdminSurfaceConfigured],
+    ["browser-admin-studio", "Browser admin studio", tenantAdministration.browserAccountingAdminSurfaceConfigured ?? false],
+    ["wpf-admin-studio", "WPF admin studio", tenantAdministration.wpfAccountingAdminSurfaceConfigured ?? false],
     ["retained-evidence", "Setup evidence", tenantAdministration.hasRetainedEvidence]
   ];
 

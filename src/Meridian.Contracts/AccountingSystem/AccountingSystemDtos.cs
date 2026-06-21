@@ -157,7 +157,9 @@ public sealed record AccountingTenantAdministrationProfileDto(
     DateTimeOffset UpdatedAtUtc,
     string UpdatedBy,
     IReadOnlyList<string>? EvidenceReferences = null,
-    string? CorrelationId = null)
+    string? CorrelationId = null,
+    bool BrowserAccountingAdminSurfaceConfigured = false,
+    bool WpfAccountingAdminSurfaceConfigured = false)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -186,6 +188,8 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool ScopedAccessPoliciesConfigured = false,
     bool ReportingGroupsConfigured = false,
     bool AccountingAdminSurfaceConfigured = false,
+    bool BrowserAccountingAdminSurfaceConfigured = false,
+    bool WpfAccountingAdminSurfaceConfigured = false,
     IReadOnlyList<string>? TenantAdministrationEvidenceLinks = null,
     bool LedgerBookMigrationCertified = false,
     bool HistoricalJournalBackfillCertified = false,
@@ -216,6 +220,8 @@ public sealed record AccountingTenantAdministrationReadinessDto(
     bool ScopedAccessPoliciesConfigured,
     bool ReportingGroupsConfigured,
     bool AccountingAdminSurfaceConfigured,
+    bool BrowserAccountingAdminSurfaceConfigured,
+    bool WpfAccountingAdminSurfaceConfigured,
     IReadOnlyList<string>? EvidenceReferences = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
@@ -230,10 +236,12 @@ public sealed record AccountingTenantAdministrationReadinessDto(
             AdminRoleProfileConfigured,
             ScopedAccessPoliciesConfigured,
             ReportingGroupsConfigured,
-            AccountingAdminSurfaceConfigured
+            AccountingAdminSurfaceConfigured,
+            BrowserAccountingAdminSurfaceConfigured,
+            WpfAccountingAdminSurfaceConfigured
         }.Count(static control => control);
 
-    public int RequiredControlCount => 7;
+    public int RequiredControlCount => 9;
 
     public bool HasTenantScope => !string.IsNullOrWhiteSpace(TenantId);
 

@@ -232,8 +232,9 @@ are surfaced as critical rollout issues. The route does not create ledger books,
 import external GL data, post journals, certify exports, or close periods.
 The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
 session when the request omits it, and the service now blocks tenant administration readiness until
-tenant scope, company scope, admin roles, scoped accounting access, reporting groups, operator setup,
-and retained setup evidence are present.
+tenant scope, company scope, admin roles, scoped accounting access, reporting groups, aggregate
+operator setup, browser accounting admin-studio coverage, WPF accounting admin-studio coverage, and
+retained setup evidence are present.
 `/api/accounting-system/tenant-administration-profile` retains those tenant/company setup controls in
 the shared Accounting System store. Reads require accounting access, writes require
 `AdminMaintenance`, and production readiness loads the retained profile so setup certification is no

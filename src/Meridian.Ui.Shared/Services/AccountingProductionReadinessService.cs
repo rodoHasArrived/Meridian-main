@@ -133,6 +133,8 @@ public sealed class AccountingProductionReadinessService
             ScopedAccessPoliciesConfigured = profile.ScopedAccessPoliciesConfigured,
             ReportingGroupsConfigured = profile.ReportingGroupsConfigured,
             AccountingAdminSurfaceConfigured = profile.AccountingAdminSurfaceConfigured,
+            BrowserAccountingAdminSurfaceConfigured = profile.BrowserAccountingAdminSurfaceConfigured,
+            WpfAccountingAdminSurfaceConfigured = profile.WpfAccountingAdminSurfaceConfigured,
             TenantAdministrationEvidenceLinks = evidence
         };
     }
@@ -423,6 +425,8 @@ public sealed class AccountingProductionReadinessService
             request.ScopedAccessPoliciesConfigured,
             request.ReportingGroupsConfigured,
             request.AccountingAdminSurfaceConfigured,
+            request.BrowserAccountingAdminSurfaceConfigured,
+            request.WpfAccountingAdminSurfaceConfigured,
             evidenceReferences);
         var issues = new List<AccountingProductionReadinessIssueDto>();
         if (!readiness.HasTenantScope)
@@ -499,6 +503,28 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Production rollout still needs a full tenant/company/report-group setup operator surface over these shared controls.",
                 "Bind browser and WPF admin setup screens to this shared readiness contract instead of local setup heuristics.",
+                evidenceReferences));
+        }
+
+        if (!readiness.BrowserAccountingAdminSurfaceConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.browser-admin-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Browser accounting administration studio coverage has not been certified.",
+                "Bind the browser accounting configuration, Rules Studio, migration, tenant setup, and production-readiness controls to this shared contract before production rollout.",
+                evidenceReferences));
+        }
+
+        if (!readiness.WpfAccountingAdminSurfaceConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.wpf-admin-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "WPF accounting administration studio coverage has not been certified.",
+                "Bind the WPF accounting configuration, Rules Studio, migration, tenant setup, and production-readiness controls to this shared contract before production rollout.",
                 evidenceReferences));
         }
 

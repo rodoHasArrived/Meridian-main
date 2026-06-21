@@ -978,7 +978,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 DateTimeOffset.UtcNow,
                 DefaultLifecycleActor,
                 evidence,
-                correlationId);
+                correlationId,
+                WpfAccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured);
 
             var saved = await _tenantAdministrationProfileStore.UpsertAsync(
                 new AccountingTenantAdministrationProfileUpsertRequestDto(
@@ -1849,6 +1850,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ScopedAccessPoliciesConfigured: ScopedAccessPoliciesConfigured,
             ReportingGroupsConfigured: ReportingGroupsConfigured,
             AccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
+            WpfAccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
             TenantAdministrationEvidenceLinks: NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
             RequiredLedgerBookScopes: requiredScopes);
     }

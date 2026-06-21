@@ -403,6 +403,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         retained.ScopedAccessPoliciesConfigured.Should().BeTrue();
         retained.ReportingGroupsConfigured.Should().BeTrue();
         retained.AccountingAdminSurfaceConfigured.Should().BeTrue();
+        retained.BrowserAccountingAdminSurfaceConfigured.Should().BeFalse();
+        retained.WpfAccountingAdminSurfaceConfigured.Should().BeTrue();
         retained.UpdatedBy.Should().Be("desktop-controller");
         retained.CorrelationId.Should().StartWith("wpf-accounting-tenant-admin-");
         retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/setup");
