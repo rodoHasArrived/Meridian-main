@@ -224,8 +224,10 @@ retain canonical fund and ledger-book dimension scope before production readines
 valid dimensional accounting evidence, and book-scoped readiness only loads retained migration
 artifacts for the exact requested ledger book. Fund-level or other-book migration artifacts cannot
 satisfy certification controls for a selected ledger-book rollout. External GL readiness is blocked until the assessment
-names the target Meridian ledger book for import/reconciliation/mapping/export certification, and
-failed retained migration runs are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
+names the target Meridian ledger book for import/reconciliation/mapping/export certification, and it
+also blocks when an available external-GL provider advertises live posting support so the first
+production slice remains import/reconciliation/guarded-export only. Failed retained migration runs
+are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
 import external GL data, post journals, certify exports, or close periods.
 The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
 session when the request omits it, and the service now blocks tenant administration readiness until

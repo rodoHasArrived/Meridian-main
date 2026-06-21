@@ -375,14 +375,31 @@ public sealed class AccountingProductionReadinessService
             issues.Add(Issue("external-gl.certified-mapping-missing", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Critical, "No certified external-GL mapping profile exists for this scope.", "Certify account and dimension mappings before guarded export review."));
         }
 
-        issues.Add(Issue("external-gl.live-posting-disabled", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Info, "Live external GL posting remains disabled by product policy.", "Use import, reconciliation, and guarded export artifacts until a separately approved live-posting adapter exists."));
+        if (livePostingEnabled)
+        {
+            var postingProviderEvidence = providers
+                .Where(static provider => provider.State == AccountingSystemProviderStateDto.Available && provider.SupportsPosting)
+                .Select(static provider => $"external-gl-provider:{provider.ProviderId}")
+                .ToArray();
+            issues.Add(Issue(
+                "external-gl.live-posting-enabled",
+                AccountingProductionReadinessAreaDto.ExternalGl,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "An available external GL provider reports live posting support.",
+                "Disable live posting and keep the provider in import, reconciliation, and guarded-export mode until a separately approved posting adapter and release gate exists.",
+                postingProviderEvidence));
+        }
+        else
+        {
+            issues.Add(Issue("external-gl.live-posting-disabled", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Info, "Live external GL posting remains disabled by product policy.", "Use import, reconciliation, and guarded export artifacts until a separately approved live-posting adapter exists."));
+        }
 
         components.Add(Component(
             AccountingProductionReadinessAreaDto.ExternalGl,
             "External GL",
             ResolveIssueStatus(issues),
             request.LedgerBookId.HasValue && certifiedMappings > 0 ? 85 : 45,
-            $"{providers.Count} provider row(s), {mappings.Count} mapping profile(s), {certifiedMappings} certified profile(s); ledger book {(request.LedgerBookId.HasValue ? request.LedgerBookId.Value.ToString("D") : "missing")}; live posting disabled.",
+            $"{providers.Count} provider row(s), {mappings.Count} mapping profile(s), {certifiedMappings} certified profile(s); ledger book {(request.LedgerBookId.HasValue ? request.LedgerBookId.Value.ToString("D") : "missing")}; live posting {(livePostingEnabled ? "enabled" : "disabled")}.",
             issues,
             UiApiRoutes.AccountingSystemMappingProfiles));
 

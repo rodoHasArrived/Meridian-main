@@ -191,6 +191,33 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_BlocksExternalGlReadinessWhenProviderSupportsLivePosting()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingSystemProvider>(_ => new PostingCapableAccountingSystemProvider());
+        services.AddSingleton<AccountingSystemIntegrationService>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId));
+
+        readiness.ExternalGlLivePostingEnabled.Should().BeTrue();
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "external-gl.live-posting-enabled" &&
+            issue.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains("external-gl-provider:posting-provider"));
+        readiness.Issues.Should().NotContain(issue => issue.Code == "external-gl.live-posting-disabled");
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Summary.Contains("live posting enabled", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_LoadsRetainedTenantAdministrationProfileFromStore()
     {
         var services = new ServiceCollection();
@@ -2111,6 +2138,25 @@ public sealed class AccountingSystemIntegrationServiceTests
             new XeroFixtureAccountingProvider(),
             new NetSuiteFixtureAccountingProvider()
         }.Concat(additionalProviders), ledgerJournalStore);
+
+    private sealed class PostingCapableAccountingSystemProvider : IAccountingSystemProvider
+    {
+        public string ProviderId => "posting-provider";
+
+        public string DisplayName => "Posting Provider";
+
+        public AccountingSystemProviderCapabilities Capabilities { get; } = new(
+            SupportsChartOfAccounts: true,
+            SupportsJournalEntries: true,
+            SupportsTrialBalance: true,
+            SupportsPosting: true,
+            EvidenceKinds: ["chart", "journal", "trial-balance", "posting"]);
+
+        public Task<AccountingSystemImportDetailDto> ImportAsync(
+            AccountingSystemImportRequestDto request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException("The test provider exists only to expose live posting capability metadata.");
+    }
 
     private static ILedgerJournalStore CreateMatchedQuickBooksFixtureLedgerStore(Guid? ledgerBookIdOverride = null)
     {
