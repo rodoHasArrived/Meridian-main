@@ -670,6 +670,19 @@ public sealed class AccountingProductionReadinessService
                 readiness.EvidenceReferences));
         }
 
+        if (readiness.HasRetainedEvidence &&
+            readiness.HasLedgerBookScopedEvidence &&
+            !readiness.HasExplicitDimensionScopeEvidence)
+        {
+            issues.Add(Issue(
+                "dimensions.reporting-dimension-scope-evidence-missing",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimensional reporting certification evidence does not identify the explicit dimension scope.",
+                "Retain dimensional reporting evidence with a dimension-scope or ledger-dimension-set marker before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
         if (!readiness.PeriodReportDimensionQueriesCertified)
         {
             issues.Add(Issue(

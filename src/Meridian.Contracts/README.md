@@ -223,7 +223,11 @@ ledger-book-scoped evidence before production readiness treats dimensional repor
 Each dimensional control requires evidence for that specific ledger/query/report/export lane,
 unless the evidence is an explicit full dimensional or production certification packet, so one
 generic ledger-book evidence link or incidental bare GUID reference cannot certify all dimensional
-reporting controls by implication.
+reporting controls by implication. Dimensional readiness also requires the retained evidence to
+identify the explicit dimension scope with a `dimension-scope` or `ledger-dimension-set` marker,
+keeping ledger-book proof separate from proof that fund, entity, sleeve, strategy, investor,
+capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL dimensions were
+covered by the certified query/report/export path.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
 admin-studio, chart administration, rule-test and promotion, close setup, provider/external-GL

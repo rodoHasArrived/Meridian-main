@@ -247,7 +247,11 @@ guarded-export, direct-lending projection, and strategy-run ledger-read workflow
 Close/Reporting readiness also consumes dimensional reporting readiness directly, so report
 packages remain blocked until posted ledger-line dimensions, trial-balance filters, period reports,
 cross-period reports, journal dimension filters, report-package provenance, and external-export
-dimension mappings have retained ledger-book-scoped evidence.
+dimension mappings have retained ledger-book-scoped evidence. The retained dimensional evidence
+must also name the explicit dimension scope through a `dimension-scope` or `ledger-dimension-set`
+marker; generic ledger-book evidence can remain audit context, but it does not certify the
+fund/entity/instrument/counterparty/external-GL dimension set used by the query, report, or export
+path.
 Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,

@@ -394,7 +394,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         blocked.DimensionalReporting.Should().NotBeNull();
         blocked.DimensionalReporting!.LedgerBookId.Should().Be(ledgerBookId);
         blocked.DimensionalReporting.CompletedControlCount.Should().Be(1);
-        blocked.DimensionalReporting.RequiredControlCount.Should().Be(9);
+        blocked.DimensionalReporting.RequiredControlCount.Should().Be(10);
         blocked.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.reporting-evidence-scope-mismatch" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
@@ -421,7 +421,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         blocked.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
-            component.Summary.Contains("1/9 ledger/query/report/export dimension control", StringComparison.OrdinalIgnoreCase));
+            component.Summary.Contains("1/10 ledger/query/report/export dimension control", StringComparison.OrdinalIgnoreCase));
         blocked.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
             component.Issues.Any(issue => issue.Code == "close-reporting.dimension-controls-incomplete" &&
@@ -469,6 +469,9 @@ public sealed class AccountingSystemIntegrationServiceTests
         partialEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(3);
         partialEvidence.Issues.Should().NotContain(issue => issue.Code == "dimensions.period-reports-evidence-missing");
         partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.reporting-dimension-scope-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
+        partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.cross-period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
         partialEvidence.Issues.Should().Contain(issue =>
@@ -491,7 +494,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/dimensions/period-reports/trial-balance") &&
             component.Issues.Any(issue => issue.Code == "close-reporting.dimension-controls-incomplete"));
 
-        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full";
+        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full/dimension-scope/canonical-production";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
@@ -506,7 +509,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 DimensionalReportingEvidenceLinks: [certifiedEvidence]));
 
         certified.DimensionalReporting.Should().NotBeNull();
-        certified.DimensionalReporting!.CompletedControlCount.Should().Be(9);
+        certified.DimensionalReporting!.CompletedControlCount.Should().Be(10);
         certified.DimensionalReporting.EvidenceReferences.Should().Contain(certifiedEvidence);
         certified.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
@@ -521,7 +524,7 @@ public sealed class AccountingSystemIntegrationServiceTests
              issue.Code == "dimensions.report-package-provenance-not-certified"));
         certified.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
-            component.Summary.Contains("9/9 ledger/query/report/export dimension control", StringComparison.OrdinalIgnoreCase) &&
+            component.Summary.Contains("10/10 ledger/query/report/export dimension control", StringComparison.OrdinalIgnoreCase) &&
             component.EvidenceReferences.Contains(certifiedEvidence));
         certified.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
@@ -892,7 +895,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ExternalExportDimensionMappingCertified: true,
                 UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                 UpdatedBy: "controller",
-                EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"],
+                EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production"],
                 TenantId: "tenant-alpha",
                 CompanyId: "company-alpha",
                 ReconciliationLedgerBookNativeCertified: true,
@@ -915,7 +918,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.LedgerBookWorkflows.Should().NotBeNull();
         readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(9);
         readiness.DimensionalReporting.Should().NotBeNull();
-        readiness.DimensionalReporting!.CompletedControlCount.Should().Be(9);
+        readiness.DimensionalReporting!.CompletedControlCount.Should().Be(10);
         readiness.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             (issue.Code.Contains("workflow", StringComparison.OrdinalIgnoreCase) ||
@@ -3505,7 +3508,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ExternalExportDimensionMappingCertified: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "controller",
-                    EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"],
+                    EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production"],
                     ReconciliationLedgerBookNativeCertified: true,
                     DirectLendingLedgerBookNativeCertified: true,
                     StrategyLedgerReadLedgerBookNativeCertified: true,
@@ -3543,7 +3546,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.LedgerBookWorkflows.Should().NotBeNull();
         readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(9);
         readiness.DimensionalReporting.Should().NotBeNull();
-        readiness.DimensionalReporting!.CompletedControlCount.Should().Be(9);
+        readiness.DimensionalReporting!.CompletedControlCount.Should().Be(10);
         readiness.Issues.Should().NotContain(issue =>
             issue.Code == "ledger-books.workflow-evidence-missing" ||
             issue.Code == "dimensions.reporting-evidence-missing");
