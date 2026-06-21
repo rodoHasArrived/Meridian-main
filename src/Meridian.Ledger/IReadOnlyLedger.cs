@@ -49,7 +49,10 @@ public interface IReadOnlyLedger
     LedgerAccountSummary GetAccountSummary(LedgerAccount account);
 
     /// <summary>Returns summaries for all posted accounts, optionally filtered by type and financial account.</summary>
-    IReadOnlyList<LedgerAccountSummary> SummarizeAccounts(LedgerAccountType? accountType = null, string? financialAccountId = null);
+    IReadOnlyList<LedgerAccountSummary> SummarizeAccounts(
+        LedgerAccountType? accountType = null,
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null);
 
     /// <summary>
     /// Returns a trial balance mapping every account that has been posted to its net balance.
@@ -68,5 +71,8 @@ public interface IReadOnlyLedger
     IReadOnlyList<LedgerBalancePoint> GetRunningBalance(LedgerAccount account, DateTimeOffset? from = null, DateTimeOffset? to = null);
 
     /// <summary>Returns a point-in-time ledger snapshot as of <paramref name="timestamp"/>.</summary>
-    LedgerSnapshot SnapshotAsOf(DateTimeOffset timestamp, string? financialAccountId = null);
+    LedgerSnapshot SnapshotAsOf(
+        DateTimeOffset timestamp,
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null);
 }

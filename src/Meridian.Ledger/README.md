@@ -92,6 +92,10 @@ line-level dimension set when present and use metadata-derived dimensions only a
 optional `LedgerLineDimensionSet` filters so core journal, trial-balance, and statement reads can be
 scoped by fund/entity/strategy/instrument/counterparty and external-GL dimensions without building a
 UI- or storage-specific reporting fork.
+`ProjectLedgerBook` and `FundLedgerBook` propagate the same line-dimension scope through
+consolidated trial balances, point-in-time snapshots, reconciliation snapshots, account summaries,
+and consolidated journals so multi-book reporting can stay ledger-book-native without dropping
+fund/entity/sleeve or external-GL dimensional filters.
 `PrivateCapitalFundEventLedgerProjector` reconstructs a posted Fund Event Ledger view from those
 journal entries and optional ledger report packs. It groups private-capital journal entries by fund
 event, exposes balanced ledger impact rows, capital-account subledger impact, retained evidence,

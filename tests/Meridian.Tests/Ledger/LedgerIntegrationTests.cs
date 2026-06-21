@@ -156,6 +156,80 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void ProjectLedgerBook_ConsolidatedReads_ShouldFilterByLineDimensionsAcrossBooks()
+    {
+        var projectLedgers = new ProjectLedgerBook("fund-alpha");
+        var fundBook = projectLedgers.GetOrCreate(new LedgerBookKey("fund-alpha", "Fund", LedgerViewKind.Actual));
+        var sleeveBook = projectLedgers.GetOrCreate(new LedgerBookKey("fund-alpha", "Sleeve:credit", LedgerViewKind.Actual));
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var t1 = DateTimeOffset.Parse("2026-05-28T09:00:00Z");
+        var t2 = t1.AddHours(1);
+        var alphaDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            SleeveId: "sleeve-credit",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var betaDimensions = alphaDimensions with
+        {
+            EntityId = "entity-beta",
+            ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Administration"
+            }
+        };
+
+        fundBook.PostLines(
+            t1,
+            "alpha fund fee",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 100m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        sleeveBook.PostLines(
+            t2,
+            "alpha sleeve fee",
+            new[]
+            {
+                (cash, 25m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 25m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        sleeveBook.PostLines(
+            t2,
+            "beta sleeve fee",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 50m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+
+        var scope = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["department"] = "investments"
+            });
+
+        var trialBalance = projectLedgers.ConsolidatedTrialBalance(lineDimensions: scope);
+        var snapshot = projectLedgers.ConsolidatedSnapshotAsOf(t2, lineDimensions: scope);
+        var summaries = projectLedgers.ConsolidatedAccountSummaries(lineDimensions: scope);
+        var journals = projectLedgers.ConsolidatedJournalEntries(new LedgerQuery(LineDimensions: scope));
+
+        trialBalance[cash].Should().Be(125m);
+        trialBalance[revenue].Should().Be(125m);
+        snapshot.Balances[cash].Should().Be(125m);
+        snapshot.JournalEntryCount.Should().Be(2);
+        snapshot.LedgerEntryCount.Should().Be(4);
+        summaries.Single(summary => summary.Account == cash).Balance.Should().Be(125m);
+        journals.Select(entry => entry.Description).Should().Equal("alpha fund fee", "alpha sleeve fee");
+    }
+
+    [Fact]
     public void ProjectLedgerBook_FilteredSnapshot_FiltersByBookViewAndScenario()
     {
         var projectLedgers = new ProjectLedgerBook("project-alpha");
@@ -967,6 +1041,53 @@ public sealed class LedgerIntegrationTests
 
         consolidated[cash].Should().Be(80m);
         consolidated[revenue].Should().Be(80m);
+    }
+
+    [Fact]
+    public void FundLedgerBook_ReconciliationSnapshot_ShouldFilterByLineDimensionsAcrossSubLedgers()
+    {
+        var fund = new FundLedgerBook("fund-alpha");
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var equity = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity);
+        var asOf = DateTimeOffset.Parse("2026-05-31T23:59:59Z");
+        var entityAlpha = new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-alpha");
+        var entityBeta = new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-beta");
+
+        fund.FundLedger.PostLines(
+            asOf.AddHours(-2),
+            "fund alpha capital",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)entityAlpha),
+                (equity, 0m, 100m, (LedgerLineDimensionSet?)entityAlpha),
+            });
+        fund.EntityLedger("entity-alpha").PostLines(
+            asOf.AddHours(-1),
+            "entity alpha capital",
+            new[]
+            {
+                (cash, 25m, 0m, (LedgerLineDimensionSet?)entityAlpha),
+                (equity, 0m, 25m, (LedgerLineDimensionSet?)entityAlpha),
+            });
+        fund.EntityLedger("entity-beta").PostLines(
+            asOf,
+            "entity beta capital",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)entityBeta),
+                (equity, 0m, 50m, (LedgerLineDimensionSet?)entityBeta),
+            });
+
+        var snapshot = fund.ReconciliationSnapshot(
+            asOf,
+            new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-alpha"));
+
+        snapshot.Consolidated.Balances[cash].Should().Be(125m);
+        snapshot.Consolidated.JournalEntryCount.Should().Be(2);
+        snapshot.Entities["entity-alpha"].Balances[cash].Should().Be(25m);
+        snapshot.Entities["entity-alpha"].JournalEntryCount.Should().Be(1);
+        snapshot.Entities["entity-beta"].JournalEntryCount.Should().Be(0);
+        snapshot.Entities["entity-beta"].Balances.Should().BeEmpty();
     }
 
     [Fact]

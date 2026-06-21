@@ -266,19 +266,26 @@ public sealed class Ledger : IReadOnlyLedger
     /// <summary>
     /// Returns account summaries for every posted account, optionally filtered by account type and account scope.
     /// </summary>
-    public IReadOnlyList<LedgerAccountSummary> SummarizeAccounts(LedgerAccountType? accountType = null, string? financialAccountId = null)
+    public IReadOnlyList<LedgerAccountSummary> SummarizeAccounts(
+        LedgerAccountType? accountType = null,
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
+        if (lineDimensions is not null)
+        {
+            return BuildAccountTotalsFromLines(timestamp: null, accountType, financialAccountId, lineDimensions)
+                .Select(pair => BuildAccountSummary(pair.Key, pair.Value))
+                .OrderBy(summary => summary.Account.AccountType)
+                .ThenBy(summary => summary.Account.Name, StringComparer.Ordinal)
+                .ThenBy(summary => summary.Account.Symbol, StringComparer.Ordinal)
+                .ThenBy(summary => summary.Account.FinancialAccountId, StringComparer.Ordinal)
+                .ToList();
+        }
+
         return _accountTotals
             .Where(pair => accountType is null || pair.Key.AccountType == accountType)
             .Where(pair => MatchesFinancialAccount(pair.Key, financialAccountId))
-            .Select(pair => new LedgerAccountSummary(
-                pair.Key,
-                CalculateNetBalance(pair.Key, pair.Value.Debits, pair.Value.Credits),
-                pair.Value.Debits,
-                pair.Value.Credits,
-                pair.Value.EntryCount,
-                pair.Value.FirstPostedAt,
-                pair.Value.LastPostedAt))
+            .Select(pair => BuildAccountSummary(pair.Key, pair.Value))
             .OrderBy(summary => summary.Account.AccountType)
             .ThenBy(summary => summary.Account.Name, StringComparer.Ordinal)
             .ThenBy(summary => summary.Account.Symbol, StringComparer.Ordinal)
@@ -398,9 +405,12 @@ public sealed class Ledger : IReadOnlyLedger
     /// <summary>
     /// Returns point-in-time balances and posting counts.
     /// </summary>
-    public LedgerSnapshot SnapshotAsOf(DateTimeOffset timestamp, string? financialAccountId = null)
+    public LedgerSnapshot SnapshotAsOf(
+        DateTimeOffset timestamp,
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
-        var balances = TrialBalanceAsOf(timestamp, financialAccountId);
+        var balances = TrialBalanceAsOf(timestamp, financialAccountId, lineDimensions);
         var journalCount = 0;
         var ledgerEntryCount = 0;
 
@@ -409,7 +419,10 @@ public sealed class Ledger : IReadOnlyLedger
             if (journalEntry.Timestamp > timestamp)
                 continue;
 
-            var scopedLines = journalEntry.Lines.Where(line => MatchesFinancialAccount(line.Account, financialAccountId)).ToList();
+            var scopedLines = journalEntry.Lines
+                .Where(line => MatchesFinancialAccount(line.Account, financialAccountId))
+                .Where(line => MatchesLineDimensions(line.Dimensions, lineDimensions))
+                .ToList();
             if (scopedLines.Count == 0)
                 continue;
 
@@ -478,6 +491,48 @@ public sealed class Ledger : IReadOnlyLedger
             .ToList();
 
         Post(new JournalEntry(journalId, timestamp, description, entries, metadata));
+    }
+
+    private static LedgerAccountSummary BuildAccountSummary(LedgerAccount account, AccountTotals totals)
+        => new(
+            account,
+            CalculateNetBalance(account, totals.Debits, totals.Credits),
+            totals.Debits,
+            totals.Credits,
+            totals.EntryCount,
+            totals.FirstPostedAt,
+            totals.LastPostedAt);
+
+    private IReadOnlyDictionary<LedgerAccount, AccountTotals> BuildAccountTotalsFromLines(
+        DateTimeOffset? timestamp,
+        LedgerAccountType? accountType,
+        string? financialAccountId,
+        LedgerLineDimensionSet? lineDimensions)
+    {
+        var result = new Dictionary<LedgerAccount, AccountTotals>();
+
+        foreach (var journalEntry in _journal)
+        {
+            if (timestamp is not null && journalEntry.Timestamp > timestamp.Value)
+                continue;
+
+            foreach (var line in journalEntry.Lines)
+            {
+                if (accountType is not null && line.Account.AccountType != accountType.Value)
+                    continue;
+
+                if (!MatchesFinancialAccount(line.Account, financialAccountId))
+                    continue;
+
+                if (!MatchesLineDimensions(line.Dimensions, lineDimensions))
+                    continue;
+
+                result.TryGetValue(line.Account, out var current);
+                result[line.Account] = current.Add(line.Debit, line.Credit, journalEntry.Timestamp);
+            }
+        }
+
+        return result;
     }
 
     private void ValidateJournalEntry(JournalEntry entry)
