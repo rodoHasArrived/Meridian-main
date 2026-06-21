@@ -337,6 +337,43 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 
+        var partialEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                TenantScopeConfigured: true,
+                AdminRoleProfileConfigured: true,
+                ScopedAccessPoliciesConfigured: true,
+                ReportingGroupsConfigured: true,
+                AccountingAdminSurfaceConfigured: true,
+                BrowserAccountingAdminSurfaceConfigured: true,
+                WpfAccountingAdminSurfaceConfigured: true,
+                TenantAdministrationEvidenceLinks:
+                [
+                    "evidence://tenant-admin/tenant-alpha/admin-role/accounting-controller",
+                    "approval:tenant-admin:tenant-alpha"
+                ]));
+
+        partialEvidence.TenantAdministration.Should().NotBeNull();
+        partialEvidence.TenantAdministration!.CompletedControlCount.Should().Be(3);
+        partialEvidence.Issues.Should().NotContain(issue => issue.Code == "tenant-admin.role-profile-evidence-missing");
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.tenant-scope-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.scoped-access-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.reporting-groups-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.browser-admin-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.wpf-admin-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+
         var readyControls = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",

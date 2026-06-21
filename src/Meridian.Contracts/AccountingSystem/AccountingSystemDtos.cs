@@ -415,13 +415,13 @@ public sealed record AccountingTenantAdministrationReadinessDto(
         {
             HasTenantScope,
             HasCompanyScope,
-            TenantScopeConfigured,
-            AdminRoleProfileConfigured,
-            ScopedAccessPoliciesConfigured,
-            ReportingGroupsConfigured,
-            AccountingAdminSurfaceConfigured,
-            BrowserAccountingAdminSurfaceConfigured,
-            WpfAccountingAdminSurfaceConfigured
+            TenantScopeConfigured && HasTenantScopeEvidence,
+            AdminRoleProfileConfigured && HasAdminRoleProfileEvidence,
+            ScopedAccessPoliciesConfigured && HasScopedAccessPolicyEvidence,
+            ReportingGroupsConfigured && HasReportingGroupEvidence,
+            AccountingAdminSurfaceConfigured && HasAccountingAdminSurfaceEvidence,
+            BrowserAccountingAdminSurfaceConfigured && HasBrowserAccountingAdminSurfaceEvidence,
+            WpfAccountingAdminSurfaceConfigured && HasWpfAccountingAdminSurfaceEvidence
         }.Count(static control => control);
 
     public int RequiredControlCount => 9;
@@ -431,6 +431,35 @@ public sealed record AccountingTenantAdministrationReadinessDto(
     public bool HasCompanyScope => !string.IsNullOrWhiteSpace(CompanyId);
 
     public bool HasRetainedEvidence => EvidenceReferences.Count > 0;
+
+    public bool HasTenantScopeEvidence =>
+        HasTenantAdministrationEvidence("tenant-scope", "tenant-storage", "tenant-ledger", "tenant-provider");
+
+    public bool HasAdminRoleProfileEvidence =>
+        HasTenantAdministrationEvidence("admin-role", "role-profile", "accounting-admin-role");
+
+    public bool HasScopedAccessPolicyEvidence =>
+        HasTenantAdministrationEvidence("scoped-access", "access-policy", "entitlement");
+
+    public bool HasReportingGroupEvidence =>
+        HasTenantAdministrationEvidence("reporting-group", "report-group", "delivery-group");
+
+    public bool HasAccountingAdminSurfaceEvidence =>
+        HasTenantAdministrationEvidence("accounting-admin-surface", "operator-surface", "admin-studio", "setup-surface");
+
+    public bool HasBrowserAccountingAdminSurfaceEvidence =>
+        HasTenantAdministrationEvidence("browser-admin-studio", "browser-accounting-admin", "browser-setup");
+
+    public bool HasWpfAccountingAdminSurfaceEvidence =>
+        HasTenantAdministrationEvidence("wpf-admin-studio", "desktop-accounting-admin", "wpf-setup");
+
+    private bool HasTenantAdministrationEvidence(params string[] aliases)
+        => EvidenceReferences.Any(reference =>
+            reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) &&
+            (reference.Contains("setup-certified", StringComparison.OrdinalIgnoreCase) ||
+             reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase) ||
+             reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
+             aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
 }
 
 public sealed record AccountingProductionReadinessIssueDto(

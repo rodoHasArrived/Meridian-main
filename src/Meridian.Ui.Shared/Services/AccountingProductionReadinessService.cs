@@ -783,6 +783,16 @@ public sealed class AccountingProductionReadinessService
                 "Certify tenant-scoped ledger, provider, evidence, and workstation storage setup before production rollout.",
                 evidenceReferences));
         }
+        else if (!readiness.HasTenantScopeEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-scope-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant-scoped accounting configuration certification lacks retained tenant-scope evidence.",
+                "Attach tenant administration evidence for tenant scope, tenant storage, tenant ledger, or provider setup before production rollout.",
+                evidenceReferences));
+        }
 
         if (!readiness.AdminRoleProfileConfigured)
         {
@@ -792,6 +802,16 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Accounting administrator role profile setup has not been certified.",
                 "Configure and retain approval evidence for accounting administrator role profiles before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasAdminRoleProfileEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.role-profile-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting administrator role profile certification lacks retained role-profile evidence.",
+                "Attach tenant administration evidence for admin role or accounting role-profile setup before production rollout.",
                 evidenceReferences));
         }
 
@@ -805,6 +825,16 @@ public sealed class AccountingProductionReadinessService
                 "Configure fund, entity, account, and report-package scoped access before production rollout.",
                 evidenceReferences));
         }
+        else if (!readiness.HasScopedAccessPolicyEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.scoped-access-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Scoped access policy certification lacks retained access-policy evidence.",
+                "Attach tenant administration evidence for scoped access policies, accounting entitlements, or report-package access before production rollout.",
+                evidenceReferences));
+        }
 
         if (!readiness.ReportingGroupsConfigured)
         {
@@ -814,6 +844,16 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Reporting delivery groups have not been certified for accounting outputs.",
                 "Retain reporting group and entitlement setup evidence before investor, board, tax, or compliance delivery.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasReportingGroupEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.reporting-groups-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Reporting delivery group certification lacks retained reporting-group evidence.",
+                "Attach tenant administration evidence for reporting groups, delivery groups, or report-group entitlements before production reporting delivery.",
                 evidenceReferences));
         }
 
@@ -827,6 +867,16 @@ public sealed class AccountingProductionReadinessService
                 "Bind browser and WPF admin setup screens to this shared readiness contract instead of local setup heuristics.",
                 evidenceReferences));
         }
+        else if (!readiness.HasAccountingAdminSurfaceEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.operator-surface-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Accounting administration operator-surface certification lacks retained setup-surface evidence.",
+                "Attach tenant administration evidence for the aggregate accounting admin, operator, or setup surface before production rollout.",
+                evidenceReferences));
+        }
 
         if (!readiness.BrowserAccountingAdminSurfaceConfigured)
         {
@@ -838,6 +888,16 @@ public sealed class AccountingProductionReadinessService
                 "Bind the browser accounting configuration, Rules Studio, migration, tenant setup, and production-readiness controls to this shared contract before production rollout.",
                 evidenceReferences));
         }
+        else if (!readiness.HasBrowserAccountingAdminSurfaceEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.browser-admin-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Browser accounting administration studio certification lacks retained browser setup evidence.",
+                "Attach tenant administration evidence for browser accounting admin-studio or browser setup coverage before production rollout.",
+                evidenceReferences));
+        }
 
         if (!readiness.WpfAccountingAdminSurfaceConfigured)
         {
@@ -847,6 +907,16 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "WPF accounting administration studio coverage has not been certified.",
                 "Bind the WPF accounting configuration, Rules Studio, migration, tenant setup, and production-readiness controls to this shared contract before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasWpfAccountingAdminSurfaceEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.wpf-admin-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "WPF accounting administration studio certification lacks retained WPF setup evidence.",
+                "Attach tenant administration evidence for WPF accounting admin-studio or desktop setup coverage before production rollout.",
                 evidenceReferences));
         }
 

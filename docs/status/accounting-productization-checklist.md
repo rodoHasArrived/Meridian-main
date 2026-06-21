@@ -107,6 +107,10 @@ the requirement end to end.
   period reports, cross-period reports, journal filters, and external export mappings require
   retained evidence for that lane, or an explicit full dimensional/production certification packet,
   before readiness counts the control as complete.
+- [x] Tenant administration production readiness is now evidence-qualified by setup lane: tenant
+  scope, admin roles, scoped access, reporting groups, aggregate operator surface, browser admin
+  studio, and WPF admin studio each require retained evidence for that lane, or an explicit
+  setup-certified tenant-admin packet, before readiness counts the control as complete.
 
 ## Still To Complete
 
