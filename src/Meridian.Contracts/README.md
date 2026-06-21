@@ -204,9 +204,10 @@ promotion, and close/reporting evidence migration with shared blocker codes and 
 `AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can render the
 same fail-closed readiness state instead of recomputing production gaps or treating certification
 booleans as executable migration proof. Migration run artifacts can carry the canonical
-`LedgerDimensionSetDto`; dimensional backfill certification is expected to retain fund, ledger-book,
-entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty,
-and external-GL dimensions with the migration evidence instead of relying on account or run names.
+`LedgerDimensionSetDto` plus tenant and company scope; dimensional backfill certification is
+expected to retain fund, ledger-book, entity, sleeve, strategy, investor, capital-account,
+instrument, tax-lot, cost-center, counterparty, and external-GL dimensions with the migration
+evidence instead of relying on account or run names.
 `AccountingDimensionalReportingReadinessDto` separately certifies period reports, cross-period
 reports, journal dimension filters, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.

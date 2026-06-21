@@ -226,8 +226,9 @@ certified migration run artifacts remain blocked, certified dimensional backfill
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
 tax-lot, cost-center, counterparty, and external-GL dimension coverage before production readiness
 treats them as valid dimensional accounting evidence, and book-scoped readiness only loads retained
-migration artifacts for the exact requested ledger book. Fund-level or other-book migration artifacts cannot
-satisfy certification controls for a selected ledger-book rollout. External GL readiness is blocked until the assessment
+tenant/company-scoped migration artifacts for the exact requested ledger book. Fund-level,
+other-book, or other-company migration artifacts cannot satisfy certification controls for a
+selected ledger-book rollout. External GL readiness is blocked until the assessment
 names the target Meridian ledger book for import/reconciliation/mapping/export certification, and it
 also blocks when an available external-GL provider advertises live posting support so the first
 production slice remains import/reconciliation/guarded-export only. Failed retained migration runs
@@ -324,9 +325,10 @@ persists retained accounting migration run evidence at
 `workstation/accounting/migration-run-artifacts.json`, and `FileAccountingProductionCertificationProfileStore`
 persists tenant/company/fund/book certification profiles at
 `workstation/accounting/production-certification-profiles.json`. Shared Accounting System endpoints let
-operators list/upsert scoped migration artifacts before the production-readiness endpoint merges
-them into ledger-book, historical journal backfill, dimensional backfill, configuration promotion,
-and close/reporting migration checks. Manual journal drafts carry a shared
+operators list/upsert authenticated tenant/company-scoped migration artifacts before the
+production-readiness endpoint merges only matching retained evidence into ledger-book, historical
+journal backfill, dimensional backfill, configuration promotion, and close/reporting migration
+checks. Manual journal drafts carry a shared
 `ManualJournalEntryTypeDto` so accrual, prepaid expense, expense, amortization, deferral,
 reclassification, reversal, capital-call, distribution, subscription, redemption, LP-transfer,
 management-fee, and general adjustment workflows persist as typed accounting records instead of

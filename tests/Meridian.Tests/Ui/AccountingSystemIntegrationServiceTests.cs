@@ -2483,6 +2483,83 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_LoadsMigrationArtifactsByTenantCompanyScope()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingMigrationRunArtifactStore, InMemoryAccountingMigrationRunArtifactStore>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<IAccountingMigrationRunArtifactStore>();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        await store.UpsertAsync(new AccountingMigrationRunArtifactUpsertRequestDto(
+            new AccountingMigrationRunArtifactDto(
+                "migration-run-dimensional-backfill-shared-run",
+                AccountingMigrationRunKindDto.DimensionalBackfill,
+                AccountingMigrationRunStatusDto.Certified,
+                DateTimeOffset.Parse("2026-03-01T00:00:00Z"),
+                CompletedAtUtc: DateTimeOffset.Parse("2026-03-01T00:15:00Z"),
+                MigratedRecordCount: 1250,
+                IssueCount: 0,
+                EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/company-alpha"],
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                Summary: "Alpha company dimensional backfill.",
+                Dimensions: FullProductionDimensions(ledgerBookId),
+                TenantId: "company-alpha",
+                CompanyId: "company-alpha"),
+            "controller",
+            CorrelationId: "dimensional-backfill-company-alpha",
+            EvidenceLinks: ["approval:dimensional-backfill:company-alpha"]));
+
+        await store.UpsertAsync(new AccountingMigrationRunArtifactUpsertRequestDto(
+            new AccountingMigrationRunArtifactDto(
+                "migration-run-dimensional-backfill-shared-run",
+                AccountingMigrationRunKindDto.DimensionalBackfill,
+                AccountingMigrationRunStatusDto.Certified,
+                DateTimeOffset.Parse("2026-03-01T00:05:00Z"),
+                CompletedAtUtc: DateTimeOffset.Parse("2026-03-01T00:20:00Z"),
+                MigratedRecordCount: 900,
+                IssueCount: 0,
+                EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/company-beta"],
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                Summary: "Beta company dimensional backfill.",
+                Dimensions: FullProductionDimensions(ledgerBookId),
+                TenantId: "company-beta",
+                CompanyId: "company-beta"),
+            "controller",
+            CorrelationId: "dimensional-backfill-company-beta",
+            EvidenceLinks: ["approval:dimensional-backfill:company-beta"]));
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "company-alpha",
+                CompanyId: "company-alpha",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                DimensionalBackfillCertified: true));
+
+        readiness.MigrationRunArtifacts.Should().ContainSingle(artifact =>
+            artifact.RunId == "migration-run-dimensional-backfill-shared-run" &&
+            artifact.TenantId == "company-alpha" &&
+            artifact.CompanyId == "company-alpha");
+        readiness.MigrationRunArtifacts.Should().NotContain(artifact => artifact.CompanyId == "company-beta");
+        readiness.Issues.Should().NotContain(issue => issue.Code == "migration.dimensional-backfill-certified-run-missing");
+
+        var mismatched = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "company-alpha",
+                CompanyId: "company-gamma",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                DimensionalBackfillCertified: true));
+
+        mismatched.MigrationRunArtifacts.Should().BeEmpty();
+        mismatched.Issues.Should().Contain(issue => issue.Code == "migration.dimensional-backfill-certified-run-missing");
+    }
+
+    [Fact]
     public async Task AccountingSystemMigrationRunArtifactEndpoints_PersistAndFeedReadiness()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
@@ -2504,7 +2581,9 @@ public sealed class AccountingSystemIntegrationServiceTests
                     FundProfileId: "default-fund",
                     LedgerBookId: ledgerBookId,
                     Summary: "Dimensional backfill certified for retained journal/report paths.",
-                    Dimensions: FullProductionDimensions(ledgerBookId)),
+                    Dimensions: FullProductionDimensions(ledgerBookId),
+                    TenantId: "spoofed-tenant",
+                    CompanyId: "spoofed-company"),
                 "controller",
                 CorrelationId: "dimensional-backfill-default-fund",
                 EvidenceLinks: ["approval:dimensional-backfill:default-fund"])));
@@ -2513,6 +2592,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         var upserted = await ReadAsync<AccountingMigrationRunArtifactDto>(upsertResponse);
         upserted.Actor.Should().Be("controller");
         upserted.FundProfileId.Should().Be("default-fund");
+        upserted.TenantId.Should().Be("company-alpha");
+        upserted.CompanyId.Should().Be("company-alpha");
         upserted.Dimensions.Should().NotBeNull();
         upserted.Dimensions!.BookId.Should().Be(ledgerBookId.ToString("D"));
         upserted.EvidenceReferences.Should().Contain("approval:dimensional-backfill:default-fund");
@@ -2540,7 +2621,12 @@ public sealed class AccountingSystemIntegrationServiceTests
             $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId=default-fund&ledgerBookId={ledgerBookId:D}");
         listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var listed = await ReadAsync<AccountingMigrationRunArtifactListDto>(listResponse);
-        listed.Artifacts.Should().ContainSingle(artifact => artifact.RunId == upserted.RunId);
+        listed.TenantId.Should().Be("company-alpha");
+        listed.CompanyId.Should().Be("company-alpha");
+        listed.Artifacts.Should().ContainSingle(artifact =>
+            artifact.RunId == upserted.RunId &&
+            artifact.TenantId == "company-alpha" &&
+            artifact.CompanyId == "company-alpha");
 
         var readinessResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionReadiness,
@@ -2551,7 +2637,10 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
-        readiness.MigrationRunArtifacts.Should().ContainSingle(artifact => artifact.RunId == upserted.RunId);
+        readiness.MigrationRunArtifacts.Should().ContainSingle(artifact =>
+            artifact.RunId == upserted.RunId &&
+            artifact.TenantId == "company-alpha" &&
+            artifact.CompanyId == "company-alpha");
         readiness.Issues.Should().NotContain(issue => issue.Code == "migration.dimensional-backfill-certified-run-missing");
         readiness.Issues.Should().NotContain(issue => issue.Code == "migration.dimensional-backfill-dimensions-scope-mismatch");
         readiness.Issues.Should().NotContain(issue => issue.Code == "migration.dimensional-backfill-canonical-coverage-missing");

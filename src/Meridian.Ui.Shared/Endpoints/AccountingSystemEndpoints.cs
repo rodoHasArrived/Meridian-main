@@ -44,8 +44,8 @@ public static class AccountingSystemEndpoints
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var trustedRequest = request with
             {
-                TenantId = string.IsNullOrWhiteSpace(request.TenantId) ? tenantContext.TenantId : request.TenantId,
-                CompanyId = string.IsNullOrWhiteSpace(request.CompanyId) ? tenantContext.CompanyId : request.CompanyId
+                TenantId = tenantContext.TenantId ?? request.TenantId,
+                CompanyId = tenantContext.CompanyId ?? request.CompanyId
             };
             var result = await service.AssessAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -187,8 +187,16 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var artifacts = await store.ListAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            var result = new AccountingMigrationRunArtifactListDto(fundProfileId, ledgerBookId, artifacts);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var artifacts = await store
+                .ListAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
+                .ConfigureAwait(false);
+            var result = new AccountingMigrationRunArtifactListDto(
+                fundProfileId,
+                ledgerBookId,
+                artifacts,
+                tenantContext.TenantId,
+                tenantContext.CompanyId);
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListAccountingMigrationRunArtifacts")
@@ -207,7 +215,14 @@ public static class AccountingSystemEndpoints
 
             try
             {
-                var result = await store.UpsertAsync(request, context.RequestAborted).ConfigureAwait(false);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var trustedArtifact = request.Artifact with
+                {
+                    TenantId = tenantContext.TenantId ?? request.Artifact.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.Artifact.CompanyId
+                };
+                var trustedRequest = request with { Artifact = trustedArtifact };
+                var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)

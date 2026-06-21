@@ -81,7 +81,9 @@ public sealed class AccountingProductionReadinessService
         var store = _services.GetService<IAccountingMigrationRunArtifactStore>();
         if (store is not null)
         {
-            foreach (var artifact in await store.ListAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false))
+            foreach (var artifact in await store
+                         .ListAsync(fundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId)
+                         .ConfigureAwait(false))
             {
                 artifacts[MigrationArtifactKey(artifact)] = artifact;
             }
@@ -91,7 +93,9 @@ public sealed class AccountingProductionReadinessService
         {
             artifacts[MigrationArtifactKey(artifact)] = artifact with
             {
-                FundProfileId = NormalizeFundProfileId(artifact.FundProfileId ?? fundProfileId)
+                FundProfileId = NormalizeFundProfileId(artifact.FundProfileId ?? fundProfileId),
+                TenantId = TrimOrNull(artifact.TenantId) ?? TrimOrNull(request.TenantId),
+                CompanyId = TrimOrNull(artifact.CompanyId) ?? TrimOrNull(request.CompanyId)
             };
         }
 
@@ -1232,7 +1236,7 @@ public sealed class AccountingProductionReadinessService
                 .ToArray();
 
     private static string MigrationArtifactKey(AccountingMigrationRunArtifactDto artifact)
-        => $"{NormalizeFundProfileId(artifact.FundProfileId)}|{artifact.LedgerBookId?.ToString("D") ?? "all"}|{artifact.RunId}";
+        => $"{TrimOrNull(artifact.TenantId) ?? "all"}|{TrimOrNull(artifact.CompanyId) ?? "all"}|{NormalizeFundProfileId(artifact.FundProfileId)}|{artifact.LedgerBookId?.ToString("D") ?? "all"}|{artifact.RunId}";
 
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? DefaultFundProfileId : value.Trim();

@@ -121,7 +121,9 @@ public sealed record AccountingMigrationRunArtifactDto(
     string? FundProfileId = null,
     Guid? LedgerBookId = null,
     string? Summary = null,
-    LedgerDimensionSetDto? Dimensions = null)
+    LedgerDimensionSetDto? Dimensions = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -130,7 +132,9 @@ public sealed record AccountingMigrationRunArtifactDto(
 public sealed record AccountingMigrationRunArtifactListDto(
     string? FundProfileId = null,
     Guid? LedgerBookId = null,
-    IReadOnlyList<AccountingMigrationRunArtifactDto>? Artifacts = null)
+    IReadOnlyList<AccountingMigrationRunArtifactDto>? Artifacts = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<AccountingMigrationRunArtifactDto> Artifacts { get; init; } =
         Artifacts ?? [];
