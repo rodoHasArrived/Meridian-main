@@ -524,6 +524,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ImplementationSandboxConfigured: true,
                 TenantAdministrationEvidenceLinks:
                 [
+                    "evidence://tenant-admin/tenant-alpha/setup-certified",
                     "evidence://tenant-admin/tenant-alpha/admin-role/accounting-controller",
                     "approval:tenant-admin:tenant-alpha"
                 ]));
@@ -617,7 +618,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ImplementationSandboxConfigured: true,
                 TenantAdministrationEvidenceLinks:
                 [
-                    "evidence://tenant-admin/tenant-alpha/setup-certified",
+                    "evidence://tenant-admin/tenant-alpha/tenant-admin/full",
                     "approval:tenant-admin:tenant-alpha"
                 ]));
 
@@ -631,7 +632,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readyControls.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             component.Status == AccountingProductionReadinessStatusDto.Ready &&
-            component.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/setup-certified"));
+            component.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/tenant-admin/full"));
     }
 
     [Fact]
@@ -733,7 +734,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ImplementationSandboxConfigured: true,
                 UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                 UpdatedBy: "controller",
-                EvidenceReferences: ["evidence://tenant-admin/tenant-alpha/setup-certified"]),
+                EvidenceReferences: ["evidence://tenant-admin/tenant-alpha/tenant-admin/full"]),
             "controller",
             CorrelationId: "tenant-admin-tenant-alpha",
             EvidenceLinks: ["approval:tenant-admin:tenant-alpha"]));
@@ -746,7 +747,7 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         readiness.TenantAdministration.Should().NotBeNull();
         readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
-        readiness.TenantAdministration.EvidenceReferences.Should().Contain("evidence://tenant-admin/tenant-alpha/setup-certified");
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain("evidence://tenant-admin/tenant-alpha/tenant-admin/full");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("approval:tenant-admin:tenant-alpha");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("correlation:tenant-admin-tenant-alpha");
         readiness.Issues.Should().NotContain(issue => issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
@@ -3246,7 +3247,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ImplementationSandboxConfigured: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "controller",
-                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/setup-certified"]),
+                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/tenant-admin/full"]),
                 "controller",
                 CorrelationId: "tenant-admin-company-alpha",
                 EvidenceLinks: ["approval:tenant-admin:company-alpha"])));

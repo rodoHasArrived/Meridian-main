@@ -596,8 +596,7 @@ public sealed record AccountingTenantAdministrationReadinessDto(
     private bool HasTenantAdministrationEvidence(params string[] aliases)
         => EvidenceReferences.Any(reference =>
             reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) &&
-            (reference.Contains("setup-certified", StringComparison.OrdinalIgnoreCase) ||
-             reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase) ||
+            (reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase) ||
              reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
              aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
 }
