@@ -220,9 +220,10 @@ backfill, dimensional backfill, accounting configuration promotion, close/report
 migration, retained migration run artifacts, and tenant-admin rollout guidance into one shared
 fail-closed payload for browser, WPF, and admin setup surfaces. Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
-retain canonical fund and ledger-book dimension scope before production readiness treats them as
-valid dimensional accounting evidence, and book-scoped readiness only loads retained migration
-artifacts for the exact requested ledger book. Fund-level or other-book migration artifacts cannot
+retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
+tax-lot, cost-center, counterparty, and external-GL dimension coverage before production readiness
+treats them as valid dimensional accounting evidence, and book-scoped readiness only loads retained
+migration artifacts for the exact requested ledger book. Fund-level or other-book migration artifacts cannot
 satisfy certification controls for a selected ledger-book rollout. External GL readiness is blocked until the assessment
 names the target Meridian ledger book for import/reconciliation/mapping/export certification, and it
 also blocks when an available external-GL provider advertises live posting support so the first

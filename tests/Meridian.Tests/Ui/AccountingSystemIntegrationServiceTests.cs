@@ -495,6 +495,57 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_RejectsDimensionalBackfillArtifactWithoutCanonicalCoverage()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var requestedLedgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: requestedLedgerBookId,
+                DimensionalBackfillCertified: true,
+                MigrationRunArtifacts:
+                [
+                    new AccountingMigrationRunArtifactDto(
+                        "migration-run-dimensional-backfill-default-fund",
+                        AccountingMigrationRunKindDto.DimensionalBackfill,
+                        AccountingMigrationRunStatusDto.Certified,
+                        DateTimeOffset.Parse("2026-02-02T00:00:00Z"),
+                        CompletedAtUtc: DateTimeOffset.Parse("2026-02-02T00:05:00Z"),
+                        MigratedRecordCount: 42,
+                        EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/certified"],
+                        FundProfileId: "default-fund",
+                        LedgerBookId: requestedLedgerBookId,
+                        Summary: "Dimensional backfill certified with sparse retained dimensions.",
+                        Dimensions: new LedgerDimensionSetDto(
+                            FundId: "default-fund",
+                            BookId: requestedLedgerBookId.ToString("D"),
+                            EntityId: "entity-alpha",
+                            CostCenterId: "ops",
+                            CounterpartyId: "administrator",
+                            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                ["department"] = "fund-accounting"
+                            }))
+                ]));
+
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.dimensional-backfill-canonical-coverage-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Message.Contains("sleeve", StringComparison.OrdinalIgnoreCase) &&
+            issue.Message.Contains("capital account", StringComparison.OrdinalIgnoreCase) &&
+            issue.Message.Contains("tax lot", StringComparison.OrdinalIgnoreCase) &&
+            issue.EvidenceReferences.Contains("evidence://migration/dimensional-backfill/default-fund/certified"));
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
+    }
+
+    [Fact]
     public async Task ReconcileLatestAsync_WithoutMeridianLedger_ReturnsMissingMeridianBreaksAndDisabledPosting()
     {
         var service = CreateService();
@@ -2002,16 +2053,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     FundProfileId: "default-fund",
                     LedgerBookId: ledgerBookId,
                     Summary: "Dimensional backfill certified for retained journal/report paths.",
-                    Dimensions: new LedgerDimensionSetDto(
-                        FundId: "default-fund",
-                        BookId: ledgerBookId.ToString("D"),
-                        EntityId: "entity-alpha",
-                        CostCenterId: "ops",
-                        CounterpartyId: "administrator",
-                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                        {
-                            ["department"] = "fund-accounting"
-                        })),
+                    Dimensions: FullProductionDimensions(ledgerBookId)),
                 "controller",
                 CorrelationId: "dimensional-backfill-default-fund",
                 EvidenceLinks: ["approval:dimensional-backfill:default-fund"])));
@@ -2061,6 +2103,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.MigrationRunArtifacts.Should().ContainSingle(artifact => artifact.RunId == upserted.RunId);
         readiness.Issues.Should().NotContain(issue => issue.Code == "migration.dimensional-backfill-certified-run-missing");
         readiness.Issues.Should().NotContain(issue => issue.Code == "migration.dimensional-backfill-dimensions-scope-mismatch");
+        readiness.Issues.Should().NotContain(issue => issue.Code == "migration.dimensional-backfill-canonical-coverage-missing");
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
             component.EvidenceReferences.Contains("approval:dimensional-backfill:default-fund"));
@@ -2138,6 +2181,25 @@ public sealed class AccountingSystemIntegrationServiceTests
             new XeroFixtureAccountingProvider(),
             new NetSuiteFixtureAccountingProvider()
         }.Concat(additionalProviders), ledgerJournalStore);
+
+    private static LedgerDimensionSetDto FullProductionDimensions(Guid ledgerBookId)
+        => new(
+            FundId: "default-fund",
+            EntityId: "entity-alpha",
+            SleeveId: "sleeve-opportunistic-credit",
+            StrategyId: "strategy-income",
+            InvestorId: "investor-lp-alpha",
+            CapitalAccountId: "capital-account-lp-alpha",
+            InstrumentId: Guid.Parse("22222222-3333-4444-5555-666666666666"),
+            TaxLotId: "tax-lot-2026-001",
+            CostCenterId: "ops",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["department"] = "fund-accounting",
+                ["class"] = "default-fund"
+            },
+            BookId: ledgerBookId.ToString("D"));
 
     private sealed class PostingCapableAccountingSystemProvider : IAccountingSystemProvider
     {

@@ -706,7 +706,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.MigrationRollout,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Dimensional backfill has certified migration run artifacts without retained ledger dimensions.",
-                "Attach canonical fund and ledger-book dimensions to the certified dimensional backfill artifact before production reporting certification.",
+                "Attach canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL dimensions to the certified dimensional backfill artifact before production reporting certification.",
                 scopedEvidenceReferences));
             return;
         }
@@ -721,6 +721,23 @@ public sealed class AccountingProductionReadinessService
                 !string.Equals(artifact.Dimensions.BookId, artifact.LedgerBookId.Value.ToString("D"), StringComparison.OrdinalIgnoreCase)));
         if (!hasMismatchedDimensions)
         {
+            var missingCanonicalDimensions = certifiedArtifacts
+                .SelectMany(static artifact => MissingCanonicalProductionDimensions(artifact.Dimensions!))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static dimension => dimension, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if (missingCanonicalDimensions.Length == 0)
+            {
+                return;
+            }
+
+            issues.Add(Issue(
+                "migration.dimensional-backfill-canonical-coverage-missing",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Dimensional backfill certified artifacts are missing canonical production dimension coverage: {string.Join(", ", missingCanonicalDimensions)}.",
+                "Re-run or re-certify the dimensional backfill with retained fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL dimension coverage before production reporting certification.",
+                scopedEvidenceReferences));
             return;
         }
 
@@ -731,6 +748,71 @@ public sealed class AccountingProductionReadinessService
             "Dimensional backfill has retained dimensions outside the requested fund or ledger-book rollout scope.",
             "Re-run or re-certify the dimensional backfill with canonical dimensions matching the requested fund and ledger book.",
             scopedEvidenceReferences));
+    }
+
+    private static IEnumerable<string> MissingCanonicalProductionDimensions(LedgerDimensionSetDto dimensions)
+    {
+        if (string.IsNullOrWhiteSpace(dimensions.FundId))
+        {
+            yield return "fund";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.BookId))
+        {
+            yield return "ledger book";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.EntityId))
+        {
+            yield return "entity";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.SleeveId))
+        {
+            yield return "sleeve";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.StrategyId))
+        {
+            yield return "strategy";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.InvestorId))
+        {
+            yield return "investor";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CapitalAccountId))
+        {
+            yield return "capital account";
+        }
+
+        if (!dimensions.InstrumentId.HasValue)
+        {
+            yield return "instrument";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.TaxLotId))
+        {
+            yield return "tax lot";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CostCenterId))
+        {
+            yield return "cost center";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CounterpartyId))
+        {
+            yield return "counterparty";
+        }
+
+        if (dimensions.ExternalGlDimensions.Count == 0 ||
+            dimensions.ExternalGlDimensions.Any(static pair =>
+                string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value)))
+        {
+            yield return "external GL";
+        }
     }
 
     private static bool IsMigrationArtifactInScope(
