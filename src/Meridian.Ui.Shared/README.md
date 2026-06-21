@@ -228,6 +228,10 @@ evidence, migration-rollout certification for ledger-book
 scoping, historical journal backfill, dimensional backfill, accounting configuration promotion,
 close/reporting evidence migration, retained migration run artifacts, and tenant-admin rollout
 guidance into one shared fail-closed payload for browser, WPF, and admin setup surfaces.
+Ledger-book-native workflow controls are evidence-qualified per lane: posting rules, journal
+lifecycle, close/reporting, and external GL only count as complete when the selected ledger book has
+retained evidence for that workflow or an explicit full workflow certification packet. A generic
+ledger-book evidence link no longer certifies every workflow control by implication.
 Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,

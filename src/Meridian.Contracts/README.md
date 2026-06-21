@@ -208,6 +208,10 @@ booleans as executable migration proof. Migration run artifacts can carry the ca
 expected to retain fund, ledger-book, entity, sleeve, strategy, investor, capital-account,
 instrument, tax-lot, cost-center, counterparty, and external-GL dimensions with the migration
 evidence instead of relying on account or run names.
+`AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle, close/reporting,
+and external GL controls as complete only when the certification flag is paired with retained
+ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
+certification packet. Generic evidence links do not certify every workflow lane by implication.
 `AccountingDimensionalReportingReadinessDto` separately certifies period reports, cross-period
 reports, journal dimension filters, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.

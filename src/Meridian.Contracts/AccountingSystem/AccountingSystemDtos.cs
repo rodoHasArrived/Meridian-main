@@ -280,10 +280,10 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
         {
             HasLedgerBookScope,
             HasLedgerBookScopedEvidence,
-            PostingRulesLedgerBookNativeCertified,
-            JournalLifecycleLedgerBookNativeCertified,
-            CloseReportingLedgerBookNativeCertified,
-            ExternalGlLedgerBookNativeCertified
+            PostingRulesLedgerBookNativeCertified && HasPostingRulesLedgerBookNativeEvidence,
+            JournalLifecycleLedgerBookNativeCertified && HasJournalLifecycleLedgerBookNativeEvidence,
+            CloseReportingLedgerBookNativeCertified && HasCloseReportingLedgerBookNativeEvidence,
+            ExternalGlLedgerBookNativeCertified && HasExternalGlLedgerBookNativeEvidence
         }.Count(static control => control);
 
     public int RequiredControlCount => 6;
@@ -296,6 +296,18 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
         LedgerBookId.HasValue &&
         EvidenceReferences.Any(reference => IsLedgerBookEvidence(reference, LedgerBookId.Value));
 
+    public bool HasPostingRulesLedgerBookNativeEvidence =>
+        HasWorkflowEvidence("posting-rules", "posting-rule", "rules-studio", "posting-candidate");
+
+    public bool HasJournalLifecycleLedgerBookNativeEvidence =>
+        HasWorkflowEvidence("journal-lifecycle", "journal-entry", "je-lifecycle", "manual-journal");
+
+    public bool HasCloseReportingLedgerBookNativeEvidence =>
+        HasWorkflowEvidence("close-reporting", "close-management", "report-package", "restatement");
+
+    public bool HasExternalGlLedgerBookNativeEvidence =>
+        HasWorkflowEvidence("external-gl", "external-ledger", "gl-export", "gl-import");
+
     private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
     {
         if (string.IsNullOrWhiteSpace(reference))
@@ -307,6 +319,14 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
         return reference.Contains(ledgerBookIdText, StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase);
     }
+
+    private bool HasWorkflowEvidence(params string[] aliases)
+        => LedgerBookId.HasValue &&
+           EvidenceReferences.Any(reference =>
+               IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
+               (reference.Contains("workflow-certification/full", StringComparison.OrdinalIgnoreCase) ||
+                reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
+                aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
 }
 
 public sealed record AccountingDimensionalReportingReadinessDto(

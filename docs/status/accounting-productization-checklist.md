@@ -99,6 +99,10 @@ the requirement end to end.
   tenant/company/fund/ledger-book scope for dry-run, workspace lookup, chart resolution, and
   browser/WPF endpoint entry, preventing a candidate or readiness assessment for one company from
   falling back to another company's retained Rules Studio workspace.
+- [x] Ledger-book-native production certification is now evidence-qualified by workflow lane:
+  posting rules, journal lifecycle, close/reporting, and external GL require retained evidence for
+  that lane, or an explicit full workflow certification packet, before readiness counts the control
+  as complete.
 
 ## Still To Complete
 

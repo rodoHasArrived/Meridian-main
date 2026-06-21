@@ -149,16 +149,20 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         blocked.LedgerBookWorkflows.Should().NotBeNull();
         blocked.LedgerBookWorkflows!.LedgerBookId.Should().Be(ledgerBookId);
-        blocked.LedgerBookWorkflows.CompletedControlCount.Should().Be(2);
+        blocked.LedgerBookWorkflows.CompletedControlCount.Should().Be(1);
         blocked.LedgerBookWorkflows.RequiredControlCount.Should().Be(6);
         blocked.Issues.Should().Contain(issue =>
             issue.Code == "ledger-books.journal-lifecycle-not-certified" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.posting-rules-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         blocked.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
-            component.Summary.Contains("2/6 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase));
+            component.Summary.Contains("1/6 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase));
 
         var otherLedgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         var mismatchedEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
@@ -177,6 +181,29 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.EvidenceReferences.Contains($"evidence://ledger-book/{otherLedgerBookId:D}/workflow-certification/full"));
 
+        var partialEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PostingRulesLedgerBookNativeCertified: true,
+                JournalLifecycleLedgerBookNativeCertified: true,
+                CloseReportingLedgerBookNativeCertified: true,
+                ExternalGlLedgerBookNativeCertified: true,
+                LedgerBookWorkflowEvidenceLinks: [$"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification"]));
+
+        partialEvidence.LedgerBookWorkflows.Should().NotBeNull();
+        partialEvidence.LedgerBookWorkflows!.CompletedControlCount.Should().Be(3);
+        partialEvidence.Issues.Should().NotContain(issue => issue.Code == "ledger-books.posting-rules-evidence-missing");
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.journal-lifecycle-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.close-reporting-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.external-gl-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+
         var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/workflow-certification/full";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
@@ -194,6 +221,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         certified.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             (issue.Code.EndsWith("-not-certified", StringComparison.OrdinalIgnoreCase) ||
+             issue.Code.EndsWith("-evidence-missing", StringComparison.OrdinalIgnoreCase) ||
              issue.Code == "ledger-books.workflow-evidence-missing" ||
              issue.Code == "ledger-books.workflow-evidence-scope-mismatch"));
         certified.Components.Should().Contain(component =>

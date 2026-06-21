@@ -313,6 +313,16 @@ public sealed class AccountingProductionReadinessService
                 "Posting rule execution has not been certified as ledger-book-native.",
                 "Prove source-event predicates, generated posting candidates, evidence, and draft handoff all preserve the selected ledger book before production rollout."));
         }
+        else if (!readiness.HasPostingRulesLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.posting-rules-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting rule execution certification lacks retained posting-rule workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and posting-rule, Rules Studio, or posting-candidate workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.JournalLifecycleLedgerBookNativeCertified)
         {
@@ -322,6 +332,16 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Journal entry lifecycle has not been certified as ledger-book-native.",
                 "Prove draft, validation, submission, approval, posting, correction, close-lock, and audit transitions cannot cross ledger-book scope."));
+        }
+        else if (!readiness.HasJournalLifecycleLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.journal-lifecycle-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal entry lifecycle certification lacks retained lifecycle workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and journal-entry lifecycle workflow before production rollout.",
+                readiness.EvidenceReferences));
         }
 
         if (!readiness.CloseReportingLedgerBookNativeCertified)
@@ -333,6 +353,16 @@ public sealed class AccountingProductionReadinessService
                 "Close and reporting workflows have not been certified as ledger-book-native.",
                 "Prove close checklists, period locks, report packages, certification, and restatement workflows consume only the selected ledger book and its dimensions."));
         }
+        else if (!readiness.HasCloseReportingLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.close-reporting-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close/reporting certification lacks retained close or report workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and close-management, report-package, or restatement workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.ExternalGlLedgerBookNativeCertified)
         {
@@ -342,6 +372,16 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "External GL import, reconciliation, mapping, and guarded export workflows have not been certified as ledger-book-native.",
                 "Prove provider imports, reconciliation snapshots, mapping profiles, and export packages are bound to the selected Meridian ledger book."));
+        }
+        else if (!readiness.HasExternalGlLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.external-gl-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL certification lacks retained external-GL workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and external-GL import, reconciliation, mapping, or guarded-export workflow before production rollout.",
+                readiness.EvidenceReferences));
         }
 
         return issues;
