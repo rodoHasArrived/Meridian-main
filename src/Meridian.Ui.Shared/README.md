@@ -221,8 +221,9 @@ fail-closed payload for browser, WPF, and admin setup surfaces. Certification fl
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund and ledger-book dimension scope before production readiness treats them as
 valid dimensional accounting evidence, artifacts outside the requested fund or ledger-book rollout
-scope cannot satisfy certification controls, and failed retained migration runs are surfaced as
-critical rollout issues. The route does not create ledger books, run migrations,
+scope cannot satisfy certification controls, External GL readiness is blocked until the assessment
+names the target Meridian ledger book for import/reconciliation/mapping/export certification, and
+failed retained migration runs are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
 import external GL data, post journals, certify exports, or close periods.
 The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
 session when the request omits it, and the service now blocks tenant administration readiness until

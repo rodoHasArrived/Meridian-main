@@ -365,6 +365,11 @@ public sealed class AccountingProductionReadinessService
             issues.Add(Issue("external-gl.providers-missing", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Warning, "No external-GL providers are available.", "Register import-first provider fixtures or credentialed read-only adapters."));
         }
 
+        if (!request.LedgerBookId.HasValue)
+        {
+            issues.Add(Issue("external-gl.ledger-book-scope-missing", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Critical, "External GL production readiness is not scoped to a Meridian ledger book.", "Select the target ledger book so import evidence, reconciliation, mapping profiles, and guarded export packages are certified against the same book."));
+        }
+
         if (certifiedMappings == 0)
         {
             issues.Add(Issue("external-gl.certified-mapping-missing", AccountingProductionReadinessAreaDto.ExternalGl, AccountingConfigurationValidationSeverityDto.Critical, "No certified external-GL mapping profile exists for this scope.", "Certify account and dimension mappings before guarded export review."));
@@ -376,8 +381,8 @@ public sealed class AccountingProductionReadinessService
             AccountingProductionReadinessAreaDto.ExternalGl,
             "External GL",
             ResolveIssueStatus(issues),
-            certifiedMappings > 0 ? 85 : 45,
-            $"{providers.Count} provider row(s), {mappings.Count} mapping profile(s), {certifiedMappings} certified profile(s); live posting disabled.",
+            request.LedgerBookId.HasValue && certifiedMappings > 0 ? 85 : 45,
+            $"{providers.Count} provider row(s), {mappings.Count} mapping profile(s), {certifiedMappings} certified profile(s); ledger book {(request.LedgerBookId.HasValue ? request.LedgerBookId.Value.ToString("D") : "missing")}; live posting disabled.",
             issues,
             UiApiRoutes.AccountingSystemMappingProfiles));
 

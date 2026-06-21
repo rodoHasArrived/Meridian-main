@@ -168,6 +168,29 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_BlocksExternalGlReadinessWithoutLedgerBookScope()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>();
+        services.AddSingleton<AccountingSystemIntegrationService>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(FundProfileId: "default-fund"));
+
+        readiness.LedgerBookId.Should().BeNull();
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "external-gl.ledger-book-scope-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Summary.Contains("ledger book missing", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_LoadsRetainedTenantAdministrationProfileFromStore()
     {
         var services = new ServiceCollection();
