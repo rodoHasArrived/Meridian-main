@@ -31,6 +31,8 @@ namespace Meridian.Tests.Ui;
 
 public sealed class AccountingSystemIntegrationServiceTests
 {
+    private static readonly Guid ExternalGlLedgerBookId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+
     [Fact]
     public async Task ImportAsync_WithQuickBooksFixture_ReturnsReadOnlyExternalGlEvidence()
     {
@@ -725,6 +727,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -752,6 +755,37 @@ public sealed class AccountingSystemIntegrationServiceTests
         package.GeneratedLines.Should().OnlyContain(line => line.EvidenceLinks.Any(link => link.StartsWith("ledger-entry:", StringComparison.OrdinalIgnoreCase)));
     }
 
+    [Fact]
+    public async Task CreateExportPackageAsync_RequiresExplicitLedgerBookScopeBeforeReview()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+
+        package.LedgerBookId.Should().BeNull();
+        package.PostingEnabled.Should().BeFalse();
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "MissingExternalGlExportLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
     [Theory]
     [InlineData("xero-fixture", "xero-default-fund-certified", "090", "xero-bank-001", 179_050)]
     [InlineData("netsuite-fixture", "netsuite-default-fund-certified", "1000", "ns-1000", 308_125)]
@@ -775,6 +809,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: providerId,
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -819,6 +854,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -854,6 +890,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -889,6 +926,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -928,6 +966,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -960,6 +999,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -988,6 +1028,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -1019,6 +1060,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -1055,6 +1097,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -1084,6 +1127,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -1203,6 +1247,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -1239,6 +1284,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
@@ -1613,6 +1659,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 "endpoint-operator",
                 ProviderId: "quickbooks-fixture",
                 FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId,
                 PeriodStart: new DateOnly(2026, 1, 1),
                 PeriodEnd: new DateOnly(2026, 1, 31),
                 MappingProfileId: "qbo-default-fund-certified",
@@ -1697,6 +1744,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 "endpoint-operator",
                 ProviderId: "quickbooks-fixture",
                 FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId,
                 PeriodStart: new DateOnly(2026, 1, 1),
                 PeriodEnd: new DateOnly(2026, 1, 31),
                 MappingProfileId: "qbo-default-fund-certified",
@@ -1984,7 +2032,7 @@ public sealed class AccountingSystemIntegrationServiceTests
 
     private static ILedgerJournalStore CreateMatchedQuickBooksFixtureLedgerStore(Guid? ledgerBookIdOverride = null)
     {
-        var ledgerBookId = ledgerBookIdOverride ?? Guid.NewGuid();
+        var ledgerBookId = ledgerBookIdOverride ?? ExternalGlLedgerBookId;
         var periodId = Guid.NewGuid();
         var timestamp = new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero);
         var journalEntryId = Guid.NewGuid();
@@ -2084,7 +2132,7 @@ public sealed class AccountingSystemIntegrationServiceTests
     private static ILedgerJournalStore CreateMatchedFixtureLedgerStore(
         IReadOnlyList<(string AccountCode, LedgerAccountType AccountType, decimal Debit, decimal Credit)> lines)
     {
-        var ledgerBookId = Guid.NewGuid();
+        var ledgerBookId = ExternalGlLedgerBookId;
         var periodId = Guid.NewGuid();
         var timestamp = new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero);
         var journalEntryId = Guid.NewGuid();
@@ -2150,7 +2198,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>();
         builder.Services.AddSingleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>();
         builder.Services.AddSingleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>();
-        builder.Services.AddSingleton<ILedgerJournalStore>(_ => CreateMatchedQuickBooksFixtureLedgerStore());
+        builder.Services.AddSingleton<ILedgerJournalStore>(_ => CreateMatchedQuickBooksFixtureLedgerStore(ExternalGlLedgerBookId));
         builder.Services.AddSingleton<ILedgerBookService>(sp => new PostgresLedgerBookService(sp.GetRequiredService<ILedgerJournalStore>()));
         builder.Services.AddSingleton<AccountingSystemIntegrationService>();
         builder.Services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();

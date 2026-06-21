@@ -956,8 +956,9 @@ Guarded external GL export packages require certified account and dimension mapp
 they can reach `ReadyForReview`: account mappings must be present, every dimension mapping must be
 certified, both Meridian and external GL dimension sides must carry fund/entity scope, and generated
 export lines must come from mapped Meridian-owned ledger totals rather than external-only evidence.
-Reconciliation summaries carry `LedgerBookId`, and guarded export packages must use reconciliation
-evidence from the same book before review or certification can proceed.
+Reconciliation summaries carry `LedgerBookId`, and guarded export package requests must name the
+target Meridian ledger book and use reconciliation evidence from the same book before review or
+certification can proceed.
 Certified mapping profiles must retain mapping approval, certification, sign-off, or review evidence
 that identifies the mapping profile or provider/fund scope on the same evidence artifact; split
 support and approval links leave the profile in `Draft`.

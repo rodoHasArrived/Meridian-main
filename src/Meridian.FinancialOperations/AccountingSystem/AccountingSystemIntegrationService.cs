@@ -443,10 +443,16 @@ public sealed class AccountingSystemIntegrationService
         Guid? ledgerBookId,
         string? mappingProfileId)
     {
-        var candidates = _mappingProfiles.Values
+        var scopedCandidates = _mappingProfiles.Values
             .Where(record => string.Equals(record.ProviderId, providerId, StringComparison.OrdinalIgnoreCase))
             .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(record => record.LedgerBookId == ledgerBookId);
+        var candidates = scopedCandidates.Any() || ledgerBookId is null
+            ? scopedCandidates
+            : _mappingProfiles.Values
+                .Where(record => string.Equals(record.ProviderId, providerId, StringComparison.OrdinalIgnoreCase))
+                .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
+                .Where(static record => record.LedgerBookId is null);
 
         if (!string.IsNullOrWhiteSpace(mappingProfileId))
         {
@@ -524,6 +530,16 @@ public sealed class AccountingSystemIntegrationService
         string? packageReconciliationId = null)
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        if (exportLedgerBookId is null)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "MissingExternalGlExportLedgerBookScope",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL export packages must target an explicit Meridian ledger book before review.",
+                providerId,
+                "Select the Meridian ledger book, import external GL evidence for that same book, and recreate the guarded export package before certification."));
+        }
+
         if (!HasExportPackageControlEvidence(requestEvidenceLinks))
         {
             issues.Add(new AccountingConfigurationValidationIssueDto(
