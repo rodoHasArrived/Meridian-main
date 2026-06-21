@@ -37,7 +37,7 @@ public sealed class AccountingProductionReadinessService
             tenantAdministrationProfile);
         var components = new List<AccountingProductionReadinessComponentDto>();
         var ledgerBookResult = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
-        var rulesStudioResult = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
+        var rulesStudioResult = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, ledgerBookResult.WorkflowReadiness, components, ct).ConfigureAwait(false);
         BuildJournalLifecycleComponent(components, ledgerBookResult.WorkflowReadiness);
         BuildCloseReportingComponent(components, ledgerBookResult.WorkflowReadiness);
         var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, ledgerBookResult.WorkflowReadiness, components, ct).ConfigureAwait(false);
@@ -395,6 +395,7 @@ public sealed class AccountingProductionReadinessService
     private async Task<RulesStudioComponentResult> BuildRulesStudioComponentAsync(
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
+        AccountingLedgerBookWorkflowReadinessDto workflowReadiness,
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
@@ -454,6 +455,11 @@ public sealed class AccountingProductionReadinessService
             rulesIssues.Add(Issue("posting-rules.generated-postings-missing", AccountingProductionReadinessAreaDto.PostingRules, AccountingConfigurationValidationSeverityDto.Warning, "No active posting rule generates multi-line postings.", "Convert template-only mappings into governed generated posting rules for production source events."));
         }
 
+        var postingRuleIssues = rulesIssues
+            .Where(static issue => issue.Area == AccountingProductionReadinessAreaDto.PostingRules)
+            .ToList();
+        AddPostingRulesWorkflowIssues(workflowReadiness, postingRuleIssues);
+
         var dimensionalIssues = BuildDimensionalIssues(workspace);
         dimensionalIssues.AddRange(BuildDimensionalReportingIssues(dimensionalReportingReadiness));
         components.Add(Component(
@@ -469,11 +475,12 @@ public sealed class AccountingProductionReadinessService
         components.Add(Component(
             AccountingProductionReadinessAreaDto.PostingRules,
             "Posting rule execution",
-            activeGeneratedPostingRuleCount == 0 ? AccountingProductionReadinessStatusDto.ReviewRequired : AccountingProductionReadinessStatusDto.Ready,
-            activeGeneratedPostingRuleCount == 0 ? 65 : 100,
-            $"{activeGeneratedPostingRuleCount} active generated-posting rule(s) are configured for governed draft candidates.",
-            rulesIssues.Where(static issue => issue.Area == AccountingProductionReadinessAreaDto.PostingRules).ToArray(),
-            UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates));
+            ResolveIssueStatus(postingRuleIssues),
+            ScoreFromIssues(postingRuleIssues, hasPositiveEvidence: activeGeneratedPostingRuleCount > 0 && workflowReadiness.HasPostingRulesLedgerBookNativeEvidence),
+            $"{activeGeneratedPostingRuleCount} active generated-posting rule(s) are configured for governed draft candidates; posting-rule workflow {(workflowReadiness.PostingRulesLedgerBookNativeCertified ? "certified" : "not certified")}.",
+            postingRuleIssues,
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates,
+            workflowReadiness.EvidenceReferences));
         components.Add(Component(
             AccountingProductionReadinessAreaDto.DimensionalAccounting,
             "Dimensional accounting",
@@ -485,6 +492,42 @@ public sealed class AccountingProductionReadinessService
             dimensionalReportingReadiness.EvidenceReferences));
 
         return new RulesStudioComponentResult(summary, dimensionalReportingReadiness);
+    }
+
+    private static void AddPostingRulesWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "posting-rules.ledger-book-workflow-scope-missing",
+                AccountingProductionReadinessAreaDto.PostingRules,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting-rule execution readiness is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying source-event predicates, generated posting candidates, and governed journal-draft handoff."));
+            return;
+        }
+
+        if (!readiness.PostingRulesLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "posting-rules.ledger-book-native-not-certified",
+                AccountingProductionReadinessAreaDto.PostingRules,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting-rule execution has not been certified as ledger-book-native.",
+                "Prove source-event predicates, generated posting candidates, evidence, and draft handoff all preserve the selected ledger book."));
+        }
+        else if (!readiness.HasPostingRulesLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "posting-rules.ledger-book-native-evidence-missing",
+                AccountingProductionReadinessAreaDto.PostingRules,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting-rule execution certification lacks retained workflow evidence for the selected ledger book.",
+                "Attach retained evidence naming the selected ledger book and posting-rule, Rules Studio, or posting-candidate workflow.",
+                readiness.EvidenceReferences));
+        }
     }
 
     private static AccountingDimensionalReportingReadinessDto BuildDimensionalReportingReadiness(

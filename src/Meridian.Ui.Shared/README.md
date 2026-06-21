@@ -232,10 +232,11 @@ Ledger-book-native workflow controls are evidence-qualified per lane: posting ru
 lifecycle, close/reporting, and external GL only count as complete when the selected ledger book has
 retained evidence for that workflow or an explicit full workflow certification packet. A generic
 ledger-book evidence link no longer certifies every workflow control by implication. The Journal
-Lifecycle, Close/Reporting, and External GL readiness components consume the same workflow
-certification state, so those lanes remain blocked even when their services are registered until
-retained evidence proves the selected ledger book is native through lifecycle, close/reporting,
-import, reconciliation, mapping, and guarded-export workflows.
+Posting Rule Execution, Lifecycle, Close/Reporting, and External GL readiness components consume
+the same workflow certification state, so those lanes remain blocked even when their services or
+generated rules are present until retained evidence proves the selected ledger book is native
+through posting candidates, lifecycle, close/reporting, import, reconciliation, mapping, and
+guarded-export workflows.
 Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
