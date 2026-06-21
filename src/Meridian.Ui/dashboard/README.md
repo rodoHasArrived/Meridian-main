@@ -222,8 +222,9 @@ coverage, and the disabled live-posting stance without deriving production-readi
 React. Tenant administration uses the shared `AccountingTenantAdministrationReadinessDto` to render
 tenant, company, admin-role, scoped-access, reporting-group, operator-surface, and retained-evidence
 controls instead of treating setup readiness as a generic component row, and the dashboard route
-catalog exposes the retained tenant-administration profile endpoint for follow-on admin setup
-actions. It also lists retained migration run artifacts from
+catalog exposes the retained tenant-administration profile endpoint. The Configure surface can load,
+edit, and save that retained profile with setup evidence before refreshing production-readiness
+posture from the shared Accounting System service. It also lists retained migration run artifacts from
 `/api/accounting-system/migration-run-artifacts`, including run kind, certification status,
 fund/book scope, migrated-record and issue counts, and evidence reference counts, so operators can
 inspect migration proof retained in the shared Accounting System store rather than re-entering

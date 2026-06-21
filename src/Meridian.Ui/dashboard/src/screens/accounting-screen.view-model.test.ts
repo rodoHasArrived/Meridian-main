@@ -64,6 +64,7 @@ import type {
   AccountingWorkspaceResponse,
   AccountingConfigurationWorkspace,
   AccountingProductionReadiness,
+  AccountingTenantAdministrationProfile,
   AccountingReportPackageBundle,
   CapitalAccountWorkbench,
   ClosePeriodPlan,
@@ -2798,6 +2799,19 @@ describe("accounting-screen view model", () => {
       ]
     };
     let retainedWorkspace = workspace;
+    let retainedTenantAdministrationProfile: AccountingTenantAdministrationProfile = {
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      tenantScopeConfigured: true,
+      adminRoleProfileConfigured: true,
+      scopedAccessPoliciesConfigured: true,
+      reportingGroupsConfigured: true,
+      accountingAdminSurfaceConfigured: false,
+      updatedAtUtc: "2026-06-30T11:55:00Z",
+      updatedBy: "controller",
+      evidenceReferences: ["evidence://tenant-admin/setup"],
+      correlationId: "tenant-admin-existing"
+    };
     const upsertRule = vi.fn(async (request: Parameters<AccountingConfigurationServices["upsertRule"]>[0]) => {
       const existingRuleIndex = retainedWorkspace.postingRules.findIndex((rule) => rule.ruleId === request.rule.ruleId);
       const postingRules = existingRuleIndex >= 0
@@ -2829,6 +2843,11 @@ describe("accounting-screen view model", () => {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       assessProductionReadiness: vi.fn().mockResolvedValue(productionReadiness),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: productionReadiness.migrationRunArtifacts ?? [] }),
+      getTenantAdministrationProfile: vi.fn(async () => retainedTenantAdministrationProfile),
+      upsertTenantAdministrationProfile: vi.fn(async (request) => {
+        retainedTenantAdministrationProfile = request.profile;
+        return retainedTenantAdministrationProfile;
+      }),
       createLedgerBook: vi.fn(),
       previewTemplate: vi.fn().mockResolvedValue({
         templateId: "template-trade-buy",
@@ -2990,6 +3009,38 @@ describe("accounting-screen view model", () => {
         tone: "warning"
       })
     ]);
+    expect(result.current.tenantAdministrationProfile.scopeLabel).toBe("Tenant tenant-alpha | company company-alpha");
+    expect(result.current.tenantAdministrationProfile.controls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "operator-surface", checked: false })
+    ]));
+    expect(result.current.tenantAdministrationProfile.canSave).toBe(true);
+
+    act(() => {
+      result.current.tenantAdministrationProfile.updateControl("operator-surface", true);
+      result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup\nevidence://tenant-admin/operator-surface");
+    });
+
+    await act(async () => {
+      await result.current.tenantAdministrationProfile.save();
+    });
+
+    expect(services.upsertTenantAdministrationProfile).toHaveBeenCalledWith(expect.objectContaining({
+      actor: "browser-accounting-operator",
+      profile: expect.objectContaining({
+        tenantId: "tenant-alpha",
+        companyId: "company-alpha",
+        accountingAdminSurfaceConfigured: true,
+        evidenceReferences: [
+          "evidence://tenant-admin/setup",
+          "evidence://tenant-admin/operator-surface"
+        ]
+      }),
+      evidenceLinks: [
+        "evidence://tenant-admin/setup",
+        "evidence://tenant-admin/operator-surface"
+      ]
+    }));
+    expect(result.current.tenantAdministrationProfile.statusText).toBe("Tenant administration setup profile saved; production readiness refreshed from retained controls.");
     expect(result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "server-readiness",
@@ -3430,6 +3481,8 @@ describe("accounting-screen view model", () => {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: [] }),
+      getTenantAdministrationProfile: vi.fn(),
+      upsertTenantAdministrationProfile: vi.fn(),
       createLedgerBook: vi.fn(),
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),
@@ -3615,6 +3668,8 @@ describe("accounting-screen view model", () => {
       getConfiguration,
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-missing", artifacts: [] }),
+      getTenantAdministrationProfile: vi.fn(),
+      upsertTenantAdministrationProfile: vi.fn(),
       createLedgerBook,
       previewTemplate: vi.fn(),
       upsertRule: vi.fn(),

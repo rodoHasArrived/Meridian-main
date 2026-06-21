@@ -15,6 +15,7 @@ import {
   executeAccountingConfigurationPostingRuleTests,
   getAccountingMigrationRunArtifacts,
   getLedgerCloseManagementPeriodPlan,
+  getAccountingTenantAdministrationProfile,
   getLedgerAccountingReportPackageExport,
   reviewLedgerCloseManagementLateAdjustment,
   signOffLedgerCloseManagementTask,
@@ -44,6 +45,7 @@ import {
   reviewReconciliationBreak,
   searchSecurities,
   submitManualJournalEntryApproval,
+  upsertAccountingTenantAdministrationProfile,
   upsertAccountingConfigurationPostingRule,
   upsertAccountingConfigurationPostingRuleTestCase,
   validateManualJournalEntryDraft,
@@ -80,6 +82,8 @@ import type {
   AccountingMigrationRunArtifactList,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
+  AccountingTenantAdministrationProfile,
+  AccountingTenantAdministrationProfileUpsertRequest,
   AccountingReportPackageBundle,
   AccountingReportPackageRequest,
   CertifyAccountingReportPackageRequest,
@@ -220,6 +224,8 @@ export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
   assessProductionReadiness: (request: AccountingProductionReadinessRequest) => Promise<AccountingProductionReadiness>;
   listMigrationRunArtifacts: (query: { fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingMigrationRunArtifactList>;
+  getTenantAdministrationProfile: (query: { tenantId?: string | null; companyId?: string | null }) => Promise<AccountingTenantAdministrationProfile>;
+  upsertTenantAdministrationProfile: (request: AccountingTenantAdministrationProfileUpsertRequest) => Promise<AccountingTenantAdministrationProfile>;
   createLedgerBook: (request: CreateLedgerBookRequest) => Promise<LedgerBook>;
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
   upsertRule: (request: UpsertPostingRuleRequest) => Promise<AccountingConfigurationWorkspace>;
@@ -396,6 +402,40 @@ export interface AccountingProductionReadinessViewModel {
   errorDetails: string[];
 }
 
+export interface AccountingTenantAdministrationProfileControlEditViewModel {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean;
+}
+
+export interface AccountingTenantAdministrationProfileEditorViewModel {
+  title: string;
+  scopeLabel: string;
+  updatedLabel: string;
+  evidenceValue: string;
+  controls: AccountingTenantAdministrationProfileControlEditViewModel[];
+  saveButtonLabel: string;
+  saveDisabledReason: string | null;
+  saveBusy: boolean;
+  canSave: boolean;
+  statusText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
+  updateControl: (controlId: string, checked: boolean) => void;
+  updateEvidence: (value: string) => void;
+  save: () => Promise<void>;
+}
+
+interface AccountingTenantAdministrationProfileDraft {
+  tenantScopeConfigured: boolean;
+  adminRoleProfileConfigured: boolean;
+  scopedAccessPoliciesConfigured: boolean;
+  reportingGroupsConfigured: boolean;
+  accountingAdminSurfaceConfigured: boolean;
+  evidenceText: string;
+}
+
 export interface AccountingConfigurationPreviewViewModel {
   title: string;
   balanceLabel: string;
@@ -436,6 +476,7 @@ export interface AccountingConfigurationViewModel {
   ledgerBookSummaryLabel: string;
   ledgerBookEmptyText: string | null;
   productionReadiness: AccountingProductionReadinessViewModel;
+  tenantAdministrationProfile: AccountingTenantAdministrationProfileEditorViewModel;
   templates: AccountingConfigurationTemplateViewModel[];
   rules: AccountingRulesStudioRuleViewModel[];
   selectedRule: AccountingRulesStudioRuleViewModel | null;
@@ -2387,6 +2428,8 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   getConfiguration: () => getAccountingConfiguration(),
   assessProductionReadiness: (request) => assessAccountingProductionReadiness(request),
   listMigrationRunArtifacts: (query) => getAccountingMigrationRunArtifacts(query),
+  getTenantAdministrationProfile: (query) => getAccountingTenantAdministrationProfile(query),
+  upsertTenantAdministrationProfile: (request) => upsertAccountingTenantAdministrationProfile(request),
   createLedgerBook: (request) => createLedgerBook(request),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
   dryRunRule: (request) => dryRunAccountingConfigurationPostingRule(request),
@@ -3110,6 +3153,12 @@ export function useAccountingConfigurationViewModel(
   const [migrationRunArtifacts, setMigrationRunArtifacts] = useState<AccountingMigrationRunArtifact[]>([]);
   const [productionReadinessLoading, setProductionReadinessLoading] = useState(false);
   const [productionReadinessError, setProductionReadinessError] = useState<ApiErrorDisplay | null>(null);
+  const [tenantAdministrationProfile, setTenantAdministrationProfile] = useState<AccountingTenantAdministrationProfile | null>(null);
+  const [tenantAdministrationDraft, setTenantAdministrationDraft] = useState<AccountingTenantAdministrationProfileDraft | null>(null);
+  const [tenantAdministrationProfileError, setTenantAdministrationProfileError] = useState<ApiErrorDisplay | null>(null);
+  const [tenantAdministrationProfileSaveBusy, setTenantAdministrationProfileSaveBusy] = useState(false);
+  const [tenantAdministrationProfileSaveError, setTenantAdministrationProfileSaveError] = useState<ApiErrorDisplay | null>(null);
+  const [tenantAdministrationProfileSaveMessage, setTenantAdministrationProfileSaveMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
@@ -3169,6 +3218,8 @@ export function useAccountingConfigurationViewModel(
     setError(null);
     setProductionReadinessLoading(true);
     setProductionReadinessError(null);
+    setTenantAdministrationProfileError(null);
+    setTenantAdministrationProfileSaveError(null);
     try {
       const next = await services.getConfiguration();
       if (!next) {
@@ -3190,7 +3241,23 @@ export function useAccountingConfigurationViewModel(
             : null
         };
         const readiness = await services.assessProductionReadiness(readinessRequest);
+        if (!readiness) {
+          throw new Error("Accounting production readiness response was empty.");
+        }
         setProductionReadiness(readiness);
+        try {
+          const profile = await services.getTenantAdministrationProfile({
+            tenantId: readiness.tenantAdministration?.tenantId ?? null,
+            companyId: readiness.tenantAdministration?.companyId ?? null
+          });
+          setTenantAdministrationProfile(profile);
+          setTenantAdministrationDraft(buildAccountingTenantAdministrationProfileDraft(profile));
+        } catch (profileErr) {
+          const fallbackProfile = buildAccountingTenantAdministrationProfileFromReadiness(readiness);
+          setTenantAdministrationProfile(fallbackProfile);
+          setTenantAdministrationDraft(fallbackProfile ? buildAccountingTenantAdministrationProfileDraft(fallbackProfile) : null);
+          setTenantAdministrationProfileError(describeApiError(profileErr, "Retained tenant administration profile has not been saved yet."));
+        }
         try {
           const artifactList = await services.listMigrationRunArtifacts({
             fundProfileId: next.fundProfileId,
@@ -3218,6 +3285,8 @@ export function useAccountingConfigurationViewModel(
       setError(describeApiError(err, "Accounting configuration is unavailable."));
       setProductionReadiness(null);
       setMigrationRunArtifacts([]);
+      setTenantAdministrationProfile(null);
+      setTenantAdministrationDraft(null);
       setProductionReadinessLoading(false);
     } finally {
       setLoading(false);
@@ -3227,6 +3296,79 @@ export function useAccountingConfigurationViewModel(
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const updateTenantAdministrationControl = useCallback((controlId: string, checked: boolean) => {
+    setTenantAdministrationDraft((current) => {
+      if (!current) {
+        return current;
+      }
+
+      switch (controlId) {
+        case "tenant-config":
+          return { ...current, tenantScopeConfigured: checked };
+        case "admin-roles":
+          return { ...current, adminRoleProfileConfigured: checked };
+        case "scoped-access":
+          return { ...current, scopedAccessPoliciesConfigured: checked };
+        case "reporting-groups":
+          return { ...current, reportingGroupsConfigured: checked };
+        case "operator-surface":
+          return { ...current, accountingAdminSurfaceConfigured: checked };
+        default:
+          return current;
+      }
+    });
+    setTenantAdministrationProfileSaveMessage(null);
+    setTenantAdministrationProfileSaveError(null);
+  }, []);
+
+  const updateTenantAdministrationEvidence = useCallback((value: string) => {
+    setTenantAdministrationDraft((current) => current ? { ...current, evidenceText: value } : current);
+    setTenantAdministrationProfileSaveMessage(null);
+    setTenantAdministrationProfileSaveError(null);
+  }, []);
+
+  const saveTenantAdministrationProfile = useCallback(async () => {
+    if (!tenantAdministrationProfile || !tenantAdministrationDraft || tenantAdministrationProfileSaveBusy) {
+      return;
+    }
+
+    const correlationId = `browser-accounting-tenant-admin-${Date.now()}`;
+    const evidenceReferences = splitAccountingTenantAdministrationEvidence(tenantAdministrationDraft.evidenceText);
+    const nextProfile: AccountingTenantAdministrationProfile = {
+      ...tenantAdministrationProfile,
+      tenantScopeConfigured: tenantAdministrationDraft.tenantScopeConfigured,
+      adminRoleProfileConfigured: tenantAdministrationDraft.adminRoleProfileConfigured,
+      scopedAccessPoliciesConfigured: tenantAdministrationDraft.scopedAccessPoliciesConfigured,
+      reportingGroupsConfigured: tenantAdministrationDraft.reportingGroupsConfigured,
+      accountingAdminSurfaceConfigured: tenantAdministrationDraft.accountingAdminSurfaceConfigured,
+      updatedAtUtc: new Date().toISOString(),
+      updatedBy: "browser-accounting-operator",
+      evidenceReferences,
+      correlationId
+    };
+
+    setTenantAdministrationProfileSaveBusy(true);
+    setTenantAdministrationProfileSaveError(null);
+    setTenantAdministrationProfileSaveMessage(null);
+    try {
+      const saved = await services.upsertTenantAdministrationProfile({
+        profile: nextProfile,
+        actor: "browser-accounting-operator",
+        correlationId,
+        evidenceLinks: evidenceReferences
+      });
+      setTenantAdministrationProfile(saved);
+      setTenantAdministrationDraft(buildAccountingTenantAdministrationProfileDraft(saved));
+      setTenantAdministrationProfileError(null);
+      setTenantAdministrationProfileSaveMessage("Tenant administration setup profile saved; production readiness refreshed from retained controls.");
+      await refresh();
+    } catch (err) {
+      setTenantAdministrationProfileSaveError(describeApiError(err, "Tenant administration setup profile save failed."));
+    } finally {
+      setTenantAdministrationProfileSaveBusy(false);
+    }
+  }, [refresh, services, tenantAdministrationDraft, tenantAdministrationProfile, tenantAdministrationProfileSaveBusy]);
 
   const previewFirstTemplate = useCallback(async () => {
     const template = workspace?.journalTemplates.find((item) => !item.isArchived) ?? null;
@@ -4415,6 +4557,17 @@ export function useAccountingConfigurationViewModel(
       productionReadinessError,
       workspace
     );
+    const tenantAdministrationProfileView = buildAccountingTenantAdministrationProfileEditorViewModel(
+      tenantAdministrationProfile,
+      tenantAdministrationDraft,
+      tenantAdministrationProfileError,
+      tenantAdministrationProfileSaveError,
+      tenantAdministrationProfileSaveMessage,
+      tenantAdministrationProfileSaveBusy,
+      updateTenantAdministrationControl,
+      updateTenantAdministrationEvidence,
+      saveTenantAdministrationProfile
+    );
     const templates = (workspace?.journalTemplates ?? []).map<AccountingConfigurationTemplateViewModel>((template) => {
       const debitTotal = template.lines.filter((line) => line.side === "Debit").reduce((sum, line) => sum + line.amount, 0);
       const creditTotal = template.lines.filter((line) => line.side === "Credit").reduce((sum, line) => sum + line.amount, 0);
@@ -4490,6 +4643,7 @@ export function useAccountingConfigurationViewModel(
       ledgerBookSummaryLabel,
       ledgerBookEmptyText,
       productionReadiness: productionReadinessView,
+      tenantAdministrationProfile: tenantAdministrationProfileView,
       templates,
       rules,
       selectedRule: rules.find((rule) => rule.id === resolvedSelectedRuleId) ?? null,
@@ -4692,9 +4846,18 @@ export function useAccountingConfigurationViewModel(
     saveDryRunAsRuleTest,
     saveRuleTestBusy,
     saveRuleTestError,
+    saveTenantAdministrationProfile,
     selectedRuleId,
     scopedRuleId,
+    tenantAdministrationDraft,
+    tenantAdministrationProfile,
+    tenantAdministrationProfileError,
+    tenantAdministrationProfileSaveBusy,
+    tenantAdministrationProfileSaveError,
+    tenantAdministrationProfileSaveMessage,
     thresholdRuleId,
+    updateTenantAdministrationControl,
+    updateTenantAdministrationEvidence,
     workspace
   ]);
 }
@@ -4817,6 +4980,132 @@ function buildAccountingProductionReadinessViewModel(
     errorText: error?.summary ?? null,
     errorDetails: error?.details ?? []
   };
+}
+
+function buildAccountingTenantAdministrationProfileEditorViewModel(
+  profile: AccountingTenantAdministrationProfile | null,
+  draft: AccountingTenantAdministrationProfileDraft | null,
+  loadError: ApiErrorDisplay | null,
+  saveError: ApiErrorDisplay | null,
+  saveMessage: string | null,
+  saveBusy: boolean,
+  updateControl: (controlId: string, checked: boolean) => void,
+  updateEvidence: (value: string) => void,
+  save: () => Promise<void>
+): AccountingTenantAdministrationProfileEditorViewModel {
+  const hasScope = Boolean(profile?.tenantId?.trim()) && Boolean(profile?.companyId?.trim());
+  const controls = buildAccountingTenantAdministrationProfileControls(draft);
+  const evidenceValue = draft?.evidenceText ?? "";
+  const missingEvidence = splitAccountingTenantAdministrationEvidence(evidenceValue).length === 0;
+  const saveDisabledReason = !profile || !draft
+    ? "Load accounting tenant scope before saving setup controls."
+    : !hasScope
+      ? "Tenant and company scope are required before saving setup controls."
+      : missingEvidence
+        ? "Retained setup evidence is required before saving tenant administration controls."
+        : null;
+
+  return {
+    title: "Tenant administration setup",
+    scopeLabel: profile
+      ? `Tenant ${profile.tenantId || "missing"} | company ${profile.companyId || "missing"}`
+      : "Tenant and company scope have not loaded.",
+    updatedLabel: profile
+      ? `Last retained by ${profile.updatedBy || "unknown"} at ${profile.updatedAtUtc || "not retained"}`
+      : "No retained profile loaded.",
+    evidenceValue,
+    controls,
+    saveButtonLabel: saveBusy ? "Saving setup controls" : "Save setup controls",
+    saveDisabledReason,
+    saveBusy,
+    canSave: saveDisabledReason === null && !saveBusy,
+    statusText: saveError?.summary ?? saveMessage ?? loadError?.summary ?? null,
+    errorText: saveError?.summary ?? null,
+    errorDetails: saveError?.details ?? [],
+    updateControl,
+    updateEvidence,
+    save
+  };
+}
+
+function buildAccountingTenantAdministrationProfileControls(
+  draft: AccountingTenantAdministrationProfileDraft | null
+): AccountingTenantAdministrationProfileControlEditViewModel[] {
+  return [
+    {
+      id: "tenant-config",
+      label: "Tenant config",
+      description: "Tenant scope, accounting configuration, and company setup are retained.",
+      checked: draft?.tenantScopeConfigured ?? false
+    },
+    {
+      id: "admin-roles",
+      label: "Admin roles",
+      description: "Accounting admin role profiles are configured for governed setup.",
+      checked: draft?.adminRoleProfileConfigured ?? false
+    },
+    {
+      id: "scoped-access",
+      label: "Scoped access",
+      description: "Accounting permissions are scoped to tenant, company, fund, or book boundaries.",
+      checked: draft?.scopedAccessPoliciesConfigured ?? false
+    },
+    {
+      id: "reporting-groups",
+      label: "Reporting groups",
+      description: "Reporting group principals are configured for close, report, and export review.",
+      checked: draft?.reportingGroupsConfigured ?? false
+    },
+    {
+      id: "operator-surface",
+      label: "Operator surface",
+      description: "Accounting setup controls are exposed through the governed operator surface.",
+      checked: draft?.accountingAdminSurfaceConfigured ?? false
+    }
+  ];
+}
+
+function buildAccountingTenantAdministrationProfileDraft(
+  profile: AccountingTenantAdministrationProfile
+): AccountingTenantAdministrationProfileDraft {
+  return {
+    tenantScopeConfigured: profile.tenantScopeConfigured,
+    adminRoleProfileConfigured: profile.adminRoleProfileConfigured,
+    scopedAccessPoliciesConfigured: profile.scopedAccessPoliciesConfigured,
+    reportingGroupsConfigured: profile.reportingGroupsConfigured,
+    accountingAdminSurfaceConfigured: profile.accountingAdminSurfaceConfigured,
+    evidenceText: profile.evidenceReferences.join("\n")
+  };
+}
+
+function buildAccountingTenantAdministrationProfileFromReadiness(
+  readiness: AccountingProductionReadiness
+): AccountingTenantAdministrationProfile | null {
+  const tenantAdministration = readiness.tenantAdministration;
+  if (!tenantAdministration) {
+    return null;
+  }
+
+  return {
+    tenantId: tenantAdministration.tenantId ?? "",
+    companyId: tenantAdministration.companyId ?? "",
+    tenantScopeConfigured: tenantAdministration.tenantScopeConfigured,
+    adminRoleProfileConfigured: tenantAdministration.adminRoleProfileConfigured,
+    scopedAccessPoliciesConfigured: tenantAdministration.scopedAccessPoliciesConfigured,
+    reportingGroupsConfigured: tenantAdministration.reportingGroupsConfigured,
+    accountingAdminSurfaceConfigured: tenantAdministration.accountingAdminSurfaceConfigured,
+    updatedAtUtc: "",
+    updatedBy: "not retained",
+    evidenceReferences: tenantAdministration.evidenceReferences ?? [],
+    correlationId: null
+  };
+}
+
+function splitAccountingTenantAdministrationEvidence(value: string): string[] {
+  return value
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
 }
 
 function buildAccountingTenantAdministrationControls(

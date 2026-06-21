@@ -193,6 +193,8 @@ vi.mock("@/lib/api", async () => {
     getAccountingSystemExportPackageManifest: vi.fn(),
     certifyAccountingSystemExportPackage: vi.fn(),
     assessAccountingProductionReadiness: vi.fn(),
+    getAccountingTenantAdministrationProfile: vi.fn(),
+    upsertAccountingTenantAdministrationProfile: vi.fn(),
     getAccountingConfiguration: vi.fn(),
     previewAccountingConfigurationTemplate: vi.fn(),
     dryRunAccountingConfigurationPostingRule: vi.fn(),
@@ -1952,6 +1954,19 @@ describe("AccountingScreen", () => {
     };
     vi.mocked(api.getAccountingConfiguration).mockResolvedValueOnce(workspace);
     vi.mocked(api.assessAccountingProductionReadiness).mockResolvedValueOnce(productionReadiness);
+    vi.mocked(api.getAccountingTenantAdministrationProfile).mockResolvedValueOnce({
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      tenantScopeConfigured: true,
+      adminRoleProfileConfigured: true,
+      scopedAccessPoliciesConfigured: true,
+      reportingGroupsConfigured: false,
+      accountingAdminSurfaceConfigured: false,
+      updatedAtUtc: "2026-06-30T11:55:00Z",
+      updatedBy: "controller",
+      evidenceReferences: ["evidence://tenant-admin/setup"],
+      correlationId: "tenant-admin-existing"
+    });
     vi.mocked(api.getAccountingMigrationRunArtifacts).mockResolvedValueOnce({
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",
@@ -1992,8 +2007,11 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("5/7 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
     expect(screen.getByText("1 retained setup evidence reference")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
-    expect(screen.getByText("Reporting groups")).toBeInTheDocument();
-    expect(screen.getByText("Operator surface")).toBeInTheDocument();
+    expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Operator surface").length).toBeGreaterThan(0);
+    expect(screen.getByRole("region", { name: "Accounting tenant administration setup editor" })).toBeInTheDocument();
+    expect(screen.getByText("Tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("evidence://tenant-admin/setup")).toBeInTheDocument();
     expect(screen.getByText("1/1 retained artifact certified")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Retained accounting migration run artifacts" })).toBeInTheDocument();
     expect(screen.getByText("Dimensional backfill")).toBeInTheDocument();
