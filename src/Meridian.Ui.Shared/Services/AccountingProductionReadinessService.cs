@@ -411,6 +411,20 @@ public sealed class AccountingProductionReadinessService
                 "No accounting configuration service is registered.",
                 [Issue("rules-studio.service-missing", AccountingProductionReadinessAreaDto.RulesStudio, AccountingConfigurationValidationSeverityDto.Critical, "Accounting configuration service is not registered.", "Register IAccountingConfigurationService before accounting configuration rollout.")],
                 UiApiRoutes.LedgerAccountingConfiguration));
+            var unavailablePostingRuleIssues = new List<AccountingProductionReadinessIssueDto>
+            {
+                Issue("posting-rules.configuration-missing", AccountingProductionReadinessAreaDto.PostingRules, AccountingConfigurationValidationSeverityDto.Critical, "Posting-rule execution cannot be assessed without accounting configuration.", "Register accounting configuration, Rules Studio, and posting-rule candidate services before production rollout.")
+            };
+            AddPostingRulesWorkflowIssues(workflowReadiness, unavailablePostingRuleIssues);
+            components.Add(Component(
+                AccountingProductionReadinessAreaDto.PostingRules,
+                "Posting rule execution",
+                AccountingProductionReadinessStatusDto.Unavailable,
+                0,
+                "Posting-rule execution cannot be assessed without accounting configuration.",
+                unavailablePostingRuleIssues,
+                UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates,
+                workflowReadiness.EvidenceReferences));
             components.Add(Component(
                 AccountingProductionReadinessAreaDto.DimensionalAccounting,
                 "Dimensional accounting",

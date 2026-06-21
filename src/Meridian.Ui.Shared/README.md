@@ -231,8 +231,8 @@ guidance into one shared fail-closed payload for browser, WPF, and admin setup s
 Ledger-book-native workflow controls are evidence-qualified per lane: posting rules, journal
 lifecycle, close/reporting, and external GL only count as complete when the selected ledger book has
 retained evidence for that workflow or an explicit full workflow certification packet. A generic
-ledger-book evidence link no longer certifies every workflow control by implication. The Journal
-Posting Rule Execution, Lifecycle, Close/Reporting, and External GL readiness components consume
+ledger-book evidence link no longer certifies every workflow control by implication. Posting Rule
+Execution, Journal Lifecycle, Close/Reporting, and External GL readiness components consume
 the same workflow certification state, so those lanes remain blocked even when their services or
 generated rules are present until retained evidence proves the selected ledger book is native
 through posting candidates, lifecycle, close/reporting, import, reconciliation, mapping, and

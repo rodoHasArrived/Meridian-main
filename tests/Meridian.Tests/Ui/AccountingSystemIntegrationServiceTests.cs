@@ -118,6 +118,10 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.RulesStudio &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
         readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.PostingRules &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Issues.Any(issue => issue.Code == "posting-rules.ledger-book-native-not-certified"));
+        readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
             component.Summary.Contains("tenant administration control", StringComparison.OrdinalIgnoreCase));
@@ -530,6 +534,11 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.ExternalGl &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
             component.Summary.Contains("ledger book missing", StringComparison.OrdinalIgnoreCase));
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.PostingRules &&
+            component.Status == AccountingProductionReadinessStatusDto.Unavailable &&
+            component.Issues.Any(issue => issue.Code == "posting-rules.configuration-missing") &&
+            component.Issues.Any(issue => issue.Code == "posting-rules.ledger-book-workflow-scope-missing"));
     }
 
     [Fact]
