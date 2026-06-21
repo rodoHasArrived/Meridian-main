@@ -789,8 +789,14 @@ public static class LedgerEndpoints
 
             try
             {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var result = await service
-                    .BuildCandidateAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted)
+                    .BuildCandidateAsync(request with
+                    {
+                        Actor = ResolveMutationActor(context, request.Actor),
+                        TenantId = tenantContext.TenantId ?? request.TenantId,
+                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }

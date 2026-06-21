@@ -42,7 +42,9 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
                     request.Dimensions,
                     request.CounterpartyId,
                     request.InstrumentSymbol,
-                    request.CorrelationId?.ToString("D")),
+                    request.CorrelationId?.ToString("D"),
+                    request.TenantId,
+                    request.CompanyId),
                 ct)
             .ConfigureAwait(false);
 
@@ -91,7 +93,7 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
             return BuildBlockedResult(request, dryRun, selectedRuleVersion, issues);
         }
 
-        var workspace = await _configurationService.GetWorkspaceAsync(request.FundProfileId, request.LedgerBookId, ct)
+        var workspace = await _configurationService.GetWorkspaceAsync(request.FundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId)
             .ConfigureAwait(false);
         var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
         var duplicatePaths = workspace.ChartOfAccounts

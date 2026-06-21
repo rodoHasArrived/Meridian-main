@@ -305,19 +305,21 @@ write, so close, reconciliation, report, and external-GL consumers do not have t
 from account names or journal-level metadata.
 `AccountingPostingCandidateService` bridges Rules Studio posting-rule dry runs into that governed
 journal draft path. It evaluates a source event through the shared accounting-configuration
-service, resolves generated account paths through the active chart without guessing account type,
-preserves generated dimensions and evidence on the returned candidate payload, carries generated
-line dimensions into the draft request, and then calls the draft service to produce only an
-approval-gated posting command candidate. The draft request keeps the selected Rules Studio posting
-rule id/version and dry-run correlation separate from the accounting-policy rule id, then stamps
-that provenance onto the governed journal metadata with source-event identity. The draft service
-also retains line-entry keyed dimension tags on the governed write metadata so downstream
-ledger-book reports and export mapping can recover line-specific
+service, passes tenant/company/fund/ledger-book scope into dry-run and workspace lookup, resolves
+generated account paths through the active chart without guessing account type, preserves generated
+dimensions and evidence on the returned candidate payload, carries generated line dimensions into
+the draft request, and then calls the draft service to produce only an approval-gated posting
+command candidate. The draft request keeps the selected Rules Studio posting rule id/version and
+dry-run correlation separate from the accounting-policy rule id, then stamps that provenance onto
+the governed journal metadata with source-event identity. The draft service also retains
+line-entry keyed dimension tags on the governed write metadata so downstream ledger-book reports
+and export mapping can recover line-specific
 fund/entity/cost-center/counterparty/external-GL scope without adding a live posting path. It does
 not append ledger entries or bypass the manual-journal lifecycle. Source-event posting candidates
 now require explicit ledger-book scope and fail closed before draft/write creation when the request
-is unscoped, so Rules Studio dry-run output cannot become a governed posting candidate through a
-fund-level fallback configuration.
+is unscoped, and tenant-scoped candidates cannot fall back to another company's workspace, so Rules
+Studio dry-run output cannot become a governed posting candidate through a fund-level fallback
+configuration.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid
@@ -378,7 +380,9 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 `IAccountingPostingCandidateService` consumes `PostingRuleJournalCandidateRequestDto` and returns
 `PostingRuleJournalCandidateResultDto` from the shared ledger contract surface so browser and WPF
 can later call the same source-event-to-draft candidate path without owning posting-rule execution
-or ledger-posting semantics.
+or ledger-posting semantics. Requests carry tenant/company/fund/ledger-book scope through dry-run,
+chart resolution, and candidate metadata so the execution bridge follows the same isolated
+configuration workspace as the Rules Studio store.
 
 ### Migration and archive notes
 

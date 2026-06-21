@@ -242,9 +242,10 @@ inspect migration proof retained in the shared Accounting System store rather th
 request-only evidence.
 After a dry run selects a rule, operators can build a governed journal draft candidate through the
 shared posting-rule candidate endpoint. The browser carries the selected event, amount, dimensions,
-policy, counterparty, source evidence, and browser correlation metadata to the service, then renders
-the returned generated lines, retained evidence count, candidate issues, and pending approval-gated
-posting command without appending ledger entries or bypassing journal-entry lifecycle controls.
+policy, counterparty, source evidence, tenant/company context, and browser correlation metadata to
+the service, then renders the returned generated lines, retained evidence count, candidate issues,
+and pending approval-gated posting command without appending ledger entries or bypassing
+journal-entry lifecycle controls.
 The Accounting Manual Journal Entry workbench also exposes the shared lifecycle-action endpoint for
 evidence attachment, approve, reject, post, reverse, rebook, and lock-after-close. Browser evidence
 attachment posts the retained draft version, typed attachment metadata, actor, correlation id, and

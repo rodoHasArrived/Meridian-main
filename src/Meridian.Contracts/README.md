@@ -860,9 +860,11 @@ same shared dry-run request, including explicit external GL field aliases such a
 event can be evaluated by the shared Rules Studio engine and returned as a governed journal draft
 candidate with selected rule/version metadata, generated posting lines, retained evidence links,
 blocking/non-blocking issues, and an approval-gated `AccountingPostingCommandDto` when validation
-passes. `UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates` exposes that shape as the
-shared browser/WPF preview route. The candidate contract is non-posting by design; browser and WPF
-clients must treat it as review input for the JE lifecycle, not as a ledger append.
+passes. Candidate requests also carry tenant/company scope alongside fund and ledger-book scope so
+the dry-run and chart resolution path uses the same isolated Rules Studio workspace as accounting
+configuration. `UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates` exposes that shape
+as the shared browser/WPF preview route. The candidate contract is non-posting by design; browser
+and WPF clients must treat it as review input for the JE lifecycle, not as a ledger append.
 posting and allocation formula references are fail-closed contract concerns: duplicate formula ids,
 missing formula references, and formula-backed allocation weights that resolve non-positive surface
 as critical validation issues in workspace validation and dry-run previews. Rules sharing source

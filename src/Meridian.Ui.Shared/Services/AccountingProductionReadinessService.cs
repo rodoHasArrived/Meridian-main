@@ -376,7 +376,7 @@ public sealed class AccountingProductionReadinessService
             return new RulesStudioComponentResult(null, dimensionalReportingReadiness);
         }
 
-        var workspace = await service.GetWorkspaceAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await service.GetWorkspaceAsync(fundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var summary = workspace.RulesStudio?.Summary;
         var rulesIssues = new List<AccountingProductionReadinessIssueDto>();
         rulesIssues.AddRange(workspace.ValidationIssues.Select(issue => Issue(

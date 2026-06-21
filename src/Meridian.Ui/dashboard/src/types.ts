@@ -6152,6 +6152,8 @@ export interface PostingRuleJournalCandidateRequest {
   postingKind?: LedgerPostingKind;
   treasuryContext?: TreasuryLedgerContext | null;
   evidenceLinks?: string[] | null;
+  tenantId?: string | null;
+  companyId?: string | null;
 }
 
 export interface PostingRuleJournalCandidateIssue {

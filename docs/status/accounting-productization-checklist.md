@@ -1,6 +1,6 @@
 # Meridian Accounting Productization Checklist
 
-Last updated: 2026-06-20
+Last updated: 2026-06-21
 
 This checklist tracks progress toward production-grade, configurable, multi-ledger accounting. It is
 not a release certification; items stay open until current source, tests, and operator surfaces prove
@@ -95,6 +95,10 @@ the requirement end to end.
   fund/book-scoped artifacts into the assessment. Browser Accounting Configure now reads the
   retained artifact list endpoint and renders run kind, status, scope, migrated-record count,
   issue count, and evidence-reference count beside production-readiness blockers.
+- [x] Source-event posting candidates and production-readiness Rules Studio checks now use
+  tenant/company/fund/ledger-book scope for dry-run, workspace lookup, chart resolution, and
+  browser/WPF endpoint entry, preventing a candidate or readiness assessment for one company from
+  falling back to another company's retained Rules Studio workspace.
 
 ## Still To Complete
 

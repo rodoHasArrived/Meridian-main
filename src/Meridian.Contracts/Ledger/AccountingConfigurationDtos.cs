@@ -833,7 +833,9 @@ public sealed record PostingRuleJournalCandidateRequestDto(
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
     TreasuryLedgerContextDto? TreasuryContext = null,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

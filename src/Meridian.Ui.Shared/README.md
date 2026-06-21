@@ -120,7 +120,9 @@ locally.
 tenant, company, fund profile, and ledger book. The shared accounting endpoints stamp the resolved
 tenant/company context on chart, template, posting-rule, rule-test, promotion, activation, read,
 dry-run, execution, and audit requests so browser and WPF clients cannot spoof a different
-configuration workspace through request body fields.
+configuration workspace through request body fields. Posting-rule journal candidate requests use
+the same resolved tenant/company scope before invoking Financial Operations so generated
+source-event drafts dry-run against, and resolve chart paths from, the authenticated workspace.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained
@@ -247,10 +249,11 @@ lookup with the authenticated workstation tenant/company scope, so browser and W
 retrieve or certify another company's retained export artifact by submitting tenant or company
 identifiers in the request body.
 The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
-session when the request omits it, and the service now blocks tenant administration readiness until
-tenant scope, company scope, admin roles, scoped accounting access, reporting groups, aggregate
-operator setup, browser accounting admin-studio coverage, WPF accounting admin-studio coverage, and
-retained setup evidence are present.
+session when the request omits it, evaluates Rules Studio readiness against the scoped
+tenant/company/fund/book workspace, and blocks tenant administration readiness until tenant scope,
+company scope, admin roles, scoped accounting access, reporting groups, aggregate operator setup,
+browser accounting admin-studio coverage, WPF accounting admin-studio coverage, and retained setup
+evidence are present.
 `/api/accounting-system/tenant-administration-profile` retains those tenant/company setup controls in
 the shared Accounting System store. Reads require accounting access, writes require
 `AdminMaintenance`, and production readiness loads the retained profile so setup certification is no

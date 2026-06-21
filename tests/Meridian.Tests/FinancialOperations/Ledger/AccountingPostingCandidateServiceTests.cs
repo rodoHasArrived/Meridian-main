@@ -289,6 +289,110 @@ public sealed class AccountingPostingCandidateServiceTests
             line.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
     }
 
+    [Fact]
+    public async Task BuildCandidateAsync_IsolatesRulesStudioWorkspaceByTenantAndCompany()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var configurationService = new AccountingConfigurationService(
+            new InMemoryAccountingConfigurationStore(),
+            new InMemoryAccountingActionAuditStore());
+        await SeedCandidateConfigurationAsync(
+            configurationService,
+            ledgerBookId,
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha",
+            ruleId: "posting.alpha-interest",
+            creditAccountPath: "income/interest-alpha",
+            creditNodeId: "interest-alpha",
+            costCenterId: "alpha-review");
+        await SeedCandidateConfigurationAsync(
+            configurationService,
+            ledgerBookId,
+            tenantId: "tenant-beta",
+            companyId: "company-beta",
+            ruleId: "posting.beta-interest",
+            creditAccountPath: "income/interest-beta",
+            creditNodeId: "interest-beta",
+            costCenterId: "beta-review");
+        var draftService = new CapturingJournalDraftService();
+        var service = new AccountingPostingCandidateService(configurationService, draftService);
+
+        var alpha = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
+            "fund-alpha",
+            "CustodianInterestAccrual",
+            125.44m,
+            "USD",
+            new DateOnly(2026, 5, 31),
+            "controller@meridian.local",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Tenant-scoped generated posting",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+            CounterpartyId: "custodian-bny",
+            PolicyId: "gaap-accrual-v1",
+            TreatmentKind: AccountingTreatmentKindDto.Accrual,
+            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+        var beta = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
+            "fund-alpha",
+            "CustodianInterestAccrual",
+            125.44m,
+            "USD",
+            new DateOnly(2026, 5, 31),
+            "controller@meridian.local",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Tenant-scoped generated posting",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+            CounterpartyId: "custodian-bny",
+            PolicyId: "gaap-accrual-v1",
+            TreatmentKind: AccountingTreatmentKindDto.Accrual,
+            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"],
+            TenantId: "tenant-beta",
+            CompanyId: "company-beta"));
+        var unscoped = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
+            "fund-alpha",
+            "CustodianInterestAccrual",
+            125.44m,
+            "USD",
+            new DateOnly(2026, 5, 31),
+            "controller@meridian.local",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Unscoped generated posting",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+            CounterpartyId: "custodian-bny",
+            PolicyId: "gaap-accrual-v1",
+            TreatmentKind: AccountingTreatmentKindDto.Accrual,
+            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]));
+
+        alpha.SelectedRuleId.Should().Be("posting.alpha-interest");
+        alpha.GeneratedPostingLines.Should().Contain(line =>
+            line.AccountPath == "income/interest-alpha" &&
+            line.Dimensions!.CostCenterId == "alpha-review");
+        alpha.GeneratedPostingLines.Should().NotContain(line => line.AccountPath == "income/interest-beta");
+        beta.SelectedRuleId.Should().Be("posting.beta-interest");
+        beta.GeneratedPostingLines.Should().Contain(line =>
+            line.AccountPath == "income/interest-beta" &&
+            line.Dimensions!.CostCenterId == "beta-review");
+        beta.GeneratedPostingLines.Should().NotContain(line => line.AccountPath == "income/interest-alpha");
+        unscoped.SelectedRuleId.Should().BeNull();
+        unscoped.PostingCommand.Should().BeNull();
+        unscoped.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.rule-required" &&
+            issue.BlocksCandidate);
+    }
+
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
         string incomeAccountType = "Revenue",
         decimal? creditAmount = null,
@@ -333,6 +437,27 @@ public sealed class AccountingPostingCandidateServiceTests
             new InMemoryAccountingConfigurationStore(),
             new InMemoryAccountingActionAuditStore());
 
+        await SeedCandidateConfigurationAsync(
+            configurationService,
+            ledgerBookId,
+            incomeAccountType,
+            creditAmount);
+
+        return configurationService;
+    }
+
+    private static async Task SeedCandidateConfigurationAsync(
+        AccountingConfigurationService configurationService,
+        Guid? ledgerBookId,
+        string incomeAccountType = "Revenue",
+        decimal? creditAmount = null,
+        string? tenantId = null,
+        string? companyId = null,
+        string ruleId = "posting.interest-accrual",
+        string creditAccountPath = "income/interest",
+        string creditNodeId = "interest-income",
+        string costCenterId = "income-review")
+    {
         await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             "fund-alpha",
             new ChartOfAccountsNodeDto(
@@ -341,20 +466,24 @@ public sealed class AccountingPostingCandidateServiceTests
                 "Accrued Interest Receivable",
                 "Asset"),
             "controller@meridian.local",
-            LedgerBookId: ledgerBookId));
+            CompanyId: companyId,
+            LedgerBookId: ledgerBookId,
+            TenantId: tenantId));
         await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             "fund-alpha",
             new ChartOfAccountsNodeDto(
-                "interest-income",
-                "income/interest",
+                creditNodeId,
+                creditAccountPath,
                 "Interest Income",
                 incomeAccountType),
             "controller@meridian.local",
-            LedgerBookId: ledgerBookId));
+            CompanyId: companyId,
+            LedgerBookId: ledgerBookId,
+            TenantId: tenantId));
         await configurationService.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
             "fund-alpha",
             new PostingRuleDto(
-                "posting.interest-accrual",
+                ruleId,
                 "Custodian interest accrual",
                 "CustodianInterestAccrual",
                 TemplateId: "generated",
@@ -392,19 +521,19 @@ public sealed class AccountingPostingCandidateServiceTests
                         "USD",
                         Description: "Debit accrued interest receivable"),
                     new GeneratedPostingLineDto(
-                        "interest-income",
-                        "income/interest",
+                        creditNodeId,
+                        creditAccountPath,
                         AccountingTemplateLineSideDto.Credit,
                         creditAmount is null ? "source-amount" : "fixed-credit",
                         creditAmount ?? 0m,
                         "USD",
-                        new LedgerDimensionSetDto(CostCenterId: "income-review"),
+                        new LedgerDimensionSetDto(CostCenterId: costCenterId),
                         "Credit interest income")
                 ]),
             "controller@meridian.local",
-            LedgerBookId: ledgerBookId));
-
-        return configurationService;
+            CompanyId: companyId,
+            LedgerBookId: ledgerBookId,
+            TenantId: tenantId));
     }
 
     private sealed class CapturingJournalDraftService : IAccountingJournalDraftService

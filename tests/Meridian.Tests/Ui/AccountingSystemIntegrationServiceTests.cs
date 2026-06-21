@@ -467,6 +467,56 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_LoadsRulesStudioByTenantCompanyScope()
+    {
+        var configurationService = new AccountingConfigurationService(
+            new InMemoryAccountingConfigurationStore(),
+            new InMemoryAccountingActionAuditStore());
+        var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+        await configurationService.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            "default-fund",
+            new PostingRuleDto(
+                "rule-alpha-interest",
+                "Alpha interest",
+                "InterestAccrual",
+                TemplateId: "generated",
+                RuleVersion: "v1",
+                GeneratedPostings:
+                [
+                    new GeneratedPostingLineDto("debit", "Assets:Cash", AccountingTemplateLineSideDto.Debit, "source", 0m),
+                    new GeneratedPostingLineDto("credit", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source", 0m)
+                ]),
+            "controller",
+            CompanyId: "company-alpha",
+            LedgerBookId: ledgerBookId,
+            TenantId: "tenant-alpha"));
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingConfigurationService>(configurationService);
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var alpha = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId));
+        var beta = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "tenant-beta",
+                CompanyId: "company-beta",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId));
+
+        alpha.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.RulesStudio &&
+            component.Issues.All(issue => issue.Code != "rules-studio.no-rules"));
+        beta.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.RulesStudio &&
+            component.Issues.Any(issue => issue.Code == "rules-studio.no-rules"));
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_DoesNotUseRetainedProductionCertificationProfileOutsideTenantCompanyScope()
     {
         var services = new ServiceCollection();
