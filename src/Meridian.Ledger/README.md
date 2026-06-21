@@ -74,12 +74,12 @@ and supplied realized-gain tax-lot projections. `LedgerReportPackRequest` can ca
 `LedgerLineDimensionSet` so generated statements, manifests, and line-provenance artifacts remain
 fund/entity/sleeve/external-GL scoped instead of emitting all same-account ledger entries.
 `LedgerReportSchedulePlanner` projects monthly, quarterly, or annual report schedules into
-period-bounded export occurrences and report-pack requests for regulatory, investor, or internal
-stakeholder delivery workflows.
+period-bounded export occurrences and dimension-scoped report-pack requests for regulatory,
+investor, or internal stakeholder delivery workflows.
 `LedgerScheduledReportExportPackageBuilder` turns a signed report pack plus one scheduled
 occurrence into a delivery manifest and regulator-facing XML summary artifact when requested by the
-schedule, preserving recipients, due date, requested formats, report-pack signature, and statement
-totals without claiming full XBRL/iXBRL coverage.
+schedule, preserving recipients, due date, requested formats, report-pack signature, dimension
+scope, and statement totals without claiming full XBRL/iXBRL coverage.
 `JournalEntryMetadata`, `JournalEvidenceReference`, and `LedgerQuery` now carry treasury-ledger audit context for private-capital
 and payment-linked postings: effective date, idempotency key, fund event, capital account, investor,
 payment intent, settlement references, and typed retained evidence references. Keep those fields additive and metadata-owned so ledger

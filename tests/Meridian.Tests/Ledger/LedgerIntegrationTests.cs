@@ -1779,6 +1779,13 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void LedgerReportScheduledExport_CreatesReportPackRequest()
     {
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
         var schedule = new LedgerReportSchedule(
             "reg-pack",
             "fund-alpha",
@@ -1790,7 +1797,8 @@ public sealed class LedgerIntegrationTests
             [LedgerReportExportFormat.Csv],
             ["regulator@example.com"],
             "controller",
-            DateTimeOffset.Parse("2026-04-15T12:00:00Z"));
+            DateTimeOffset.Parse("2026-04-15T12:00:00Z"),
+            lineDimensions: dimensions);
         var scheduledExport = LedgerReportSchedulePlanner.Project(schedule, occurrenceCount: 1).Single();
         var lockPeriod = new LockedAccountingPeriod(
             new LedgerBookKey("fund-alpha", "official", LedgerViewKind.Actual),
@@ -1812,6 +1820,7 @@ public sealed class LedgerIntegrationTests
         request.BaseCurrency.Should().Be("USD");
         request.AsOf.Should().Be(lockPeriod.EndsAtInclusive);
         request.LockedPeriod.Should().BeSameAs(lockPeriod);
+        request.LineDimensions.Should().BeSameAs(dimensions);
     }
 
     [Fact]
@@ -1821,10 +1830,20 @@ public sealed class LedgerIntegrationTests
         var cash = chart.Register("Assets:Cash", LedgerAccountType.Asset);
         var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
         var ledger = new Meridian.Ledger.Ledger();
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
         ledger.PostLines(
             new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),
             "capital contribution",
-            [(cash, 1_000m, 0m), (capital, 0m, 1_000m)]);
+            [
+                (cash, 1_000m, 0m, (LedgerLineDimensionSet?)dimensions),
+                (capital, 0m, 1_000m, (LedgerLineDimensionSet?)dimensions),
+            ]);
         var schedule = new LedgerReportSchedule(
             "reg-pack",
             "fund-alpha",
@@ -1836,7 +1855,8 @@ public sealed class LedgerIntegrationTests
             [LedgerReportExportFormat.Csv, LedgerReportExportFormat.RegulatoryXml],
             ["regulator@example.com", "controller@example.com"],
             "controller",
-            DateTimeOffset.Parse("2026-04-15T12:00:00Z"));
+            DateTimeOffset.Parse("2026-04-15T12:00:00Z"),
+            lineDimensions: dimensions);
         var scheduledExport = LedgerReportSchedulePlanner.Project(schedule, occurrenceCount: 1).Single();
         var request = scheduledExport.ToReportPackRequest(
             "controller",
@@ -1851,12 +1871,16 @@ public sealed class LedgerIntegrationTests
         var manifest = artifacts.Single(artifact => artifact.Name == "scheduled-export-manifest.csv");
         manifest.Content.Should().Contain("ledger-scheduled-export-manifest-v1");
         manifest.Content.Should().Contain("formats,Csv|RegulatoryXml");
+        manifest.Content.Should().Contain("dimension-scope,EntityId=entity-alpha;ExternalGl.Department=Investments;FundId=fund-alpha");
         manifest.Content.Should().Contain("recipients,controller@example.com|regulator@example.com");
         manifest.Content.Should().Contain("report-pack-signature,");
         manifest.Content.Should().Contain("financial-statements.json,application/json,");
         var regulatoryXml = artifacts.Single(artifact => artifact.Name == "regulatory-summary.xml");
         regulatoryXml.Content.Should().Contain("schema=\"ledger-regulatory-summary-v1\"");
         regulatoryXml.Content.Should().Contain("<FundId>fund-alpha</FundId>");
+        regulatoryXml.Content.Should().Contain("<DimensionScope>");
+        regulatoryXml.Content.Should().Contain("<EntityId>entity-alpha</EntityId>");
+        regulatoryXml.Content.Should().Contain("<ExternalGl_Department>Investments</ExternalGl_Department>");
         regulatoryXml.Content.Should().Contain("<TotalAssets>1000</TotalAssets>");
         regulatoryXml.Content.Should().Contain("<AccountingEquationVariance>0</AccountingEquationVariance>");
         regulatoryXml.Content.Should().Contain("<Recipient>regulator@example.com</Recipient>");
