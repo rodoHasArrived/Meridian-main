@@ -59,7 +59,8 @@ approval queues, runs saved rule-test suites, and approves promotion-gated posti
 through the shared accounting configuration service, renders the shared accounting production-readiness
 assessment across ledger books, Rules Studio, posting execution, dimensions, external GL,
 close/reporting, and tenant-admin blockers, renders tenant-admin control/evidence progress from the
-shared readiness DTO, surfaces shared ledger-book setup candidate guidance and
+shared readiness DTO, persists tenant-admin setup controls and retained evidence through the shared
+accounting tenant administration profile store, surfaces shared ledger-book setup candidate guidance and
 can create the ledger book through the shared ledger-book service when book-scoped
 configuration targets a missing registered book, renders a shared-workspace ledger-book
 administration grid with selected/available books, fund-structure scope, basis, currency, policy,

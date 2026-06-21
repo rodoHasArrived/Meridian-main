@@ -1,5 +1,6 @@
 using System.Globalization;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -153,6 +154,10 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ProductionReadinessDetailText.Should().Contain("component");
         harness.ViewModel.ProductionReadinessLedgerBookText.Should().Contain("book");
         harness.ViewModel.ProductionReadinessExternalGlText.Should().Contain("live posting disabled");
+        harness.ViewModel.TenantAdministrationProfileStatusText.Should().Contain("No retained tenant administration setup profile");
+        harness.ViewModel.TenantAdministrationProfileScopeText.Should().Be("Tenant alpha-fund; company Alpha Fund LP.");
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Tenant config" && row.Status == "Missing");
         harness.ViewModel.ProductionReadinessComponentRows.Should().Contain(row =>
             row.Name == "Ledger books"
             && row.Detail.Contains("ledger book", StringComparison.OrdinalIgnoreCase));
@@ -330,6 +335,66 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && draft.TreasuryContext.CapitalAccountId == "capital-account:alpha-fund:default"
             && draft.TotalDebits == 250m
             && draft.TotalCredits == 250m);
+    }
+
+    [Fact]
+    public async Task TenantAdministrationProfile_SaveRetainsSharedControlsAndRefreshesProductionReadiness()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(fundContext);
+
+        await harness.ViewModel.LoadAsync();
+        harness.ViewModel.TenantAdministrationProfileScopeText.Should()
+            .Be("Tenant alpha-fund; company Alpha Fund LP.");
+        harness.ViewModel.CanSaveTenantAdministrationProfile.Should().BeTrue();
+
+        harness.ViewModel.TenantScopeConfigured = true;
+        harness.ViewModel.AdminRoleProfileConfigured = true;
+        harness.ViewModel.ScopedAccessPoliciesConfigured = true;
+        harness.ViewModel.ReportingGroupsConfigured = true;
+        harness.ViewModel.AccountingAdminSurfaceConfigured = true;
+        harness.ViewModel.TenantAdministrationEvidenceText =
+            "evidence://tenant-admin/setup\nEVIDENCE://tenant-admin/setup\nevidence://tenant-admin/operator-surface";
+
+        await harness.ViewModel.SaveTenantAdministrationProfileAsync();
+
+        var retained = await harness.TenantAdministrationProfileStore.GetAsync("alpha-fund", "Alpha Fund LP");
+        retained.Should().NotBeNull();
+        retained!.TenantScopeConfigured.Should().BeTrue();
+        retained.AdminRoleProfileConfigured.Should().BeTrue();
+        retained.ScopedAccessPoliciesConfigured.Should().BeTrue();
+        retained.ReportingGroupsConfigured.Should().BeTrue();
+        retained.AccountingAdminSurfaceConfigured.Should().BeTrue();
+        retained.UpdatedBy.Should().Be("desktop-controller");
+        retained.CorrelationId.Should().StartWith("wpf-accounting-tenant-admin-");
+        retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/setup");
+        retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/operator-surface");
+        retained.EvidenceReferences.Should().Contain(item =>
+            item.StartsWith("correlation:wpf-accounting-tenant-admin-", StringComparison.OrdinalIgnoreCase));
+        retained.EvidenceReferences.Count(item =>
+                string.Equals(item, "evidence://tenant-admin/setup", StringComparison.OrdinalIgnoreCase))
+            .Should()
+            .Be(1);
+
+        harness.ViewModel.TenantAdministrationProfileStatusText.Should()
+            .Contain("Tenant administration setup profile saved");
+        harness.ViewModel.ProductionReadinessTenantAdminText.Should()
+            .Contain("7/7 tenant admin control");
+        harness.ViewModel.ProductionReadinessTenantAdminText.Should()
+            .Contain("3 retained evidence link");
+        harness.ViewModel.TenantAdministrationControlRows.Should().OnlyContain(row => row.Status == "Configured");
     }
 
     [Fact]
@@ -928,12 +993,14 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             [new QuickBooksFixtureAccountingProvider()]);
         var policyService = new AccountingPolicyService();
         var postingCandidateService = new TestAccountingPostingCandidateService();
+        var tenantAdministrationProfileStore = new InMemoryAccountingTenantAdministrationProfileStore();
         var services = new ServiceCollection();
         services.AddSingleton<ILedgerBookService>(ledgerBookService);
         services.AddSingleton<IAccountingConfigurationService>(configurationService);
         services.AddSingleton<IManualJournalEntryWorkbenchService>(manualJournalService);
         services.AddSingleton<IManualJournalEntryLifecycleService>(manualJournalService);
         services.AddSingleton(accountingSystemIntegrationService);
+        services.AddSingleton<IAccountingTenantAdministrationProfileStore>(tenantAdministrationProfileStore);
         var productionReadinessService = new AccountingProductionReadinessService(services.BuildServiceProvider());
         var viewModel = new AccountingConfigureViewModel(
             fundContext,
@@ -947,9 +1014,16 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             capitalAccountWorkbenchService,
             postingCandidateService,
             ledgerBookService: ledgerBookService,
-            accountingProductionReadinessService: productionReadinessService);
+            accountingProductionReadinessService: productionReadinessService,
+            tenantAdministrationProfileStore: tenantAdministrationProfileStore);
 
-        return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath, configurationService, postingCandidateService);
+        return new AccountingConfigureHarness(
+            viewModel,
+            configurationPath,
+            draftsPath,
+            configurationService,
+            postingCandidateService,
+            tenantAdministrationProfileStore);
     }
 
     private sealed record AccountingConfigureHarness(
@@ -957,7 +1031,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         string ConfigurationPath,
         string DraftsPath,
         AccountingConfigurationService ConfigurationService,
-        TestAccountingPostingCandidateService PostingCandidateService);
+        TestAccountingPostingCandidateService PostingCandidateService,
+        IAccountingTenantAdministrationProfileStore TenantAdministrationProfileStore);
 
 
     private sealed record PresetExpectation(

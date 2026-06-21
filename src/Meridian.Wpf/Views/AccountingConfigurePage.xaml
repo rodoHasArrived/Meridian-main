@@ -217,6 +217,66 @@
                                             <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="220" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Tenant Administration Setup" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding TenantAdministrationProfileScopeText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingTenantAdministrationProfileScopeText" />
+                                    <TextBlock Text="{Binding TenantAdministrationProfileUpdatedText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,4,0,10"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingTenantAdministrationProfileUpdatedText" />
+                                    <UniformGrid Columns="5" Margin="0,0,0,12" AutomationProperties.AutomationId="AccountingTenantAdministrationProfileControlPanel">
+                                        <CheckBox Content="Tenant config"
+                                                  IsChecked="{Binding TenantScopeConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminTenantScopeCheckBox" />
+                                        <CheckBox Content="Admin roles"
+                                                  IsChecked="{Binding AdminRoleProfileConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminRoleProfileCheckBox" />
+                                        <CheckBox Content="Scoped access"
+                                                  IsChecked="{Binding ScopedAccessPoliciesConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminScopedAccessCheckBox" />
+                                        <CheckBox Content="Reporting groups"
+                                                  IsChecked="{Binding ReportingGroupsConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminReportingGroupsCheckBox" />
+                                        <CheckBox Content="Operator surface"
+                                                  IsChecked="{Binding AccountingAdminSurfaceConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminSurfaceCheckBox" />
+                                    </UniformGrid>
+                                    <TextBox Text="{Binding TenantAdministrationEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             MinHeight="32"
+                                             Margin="0,0,0,10"
+                                             AutomationProperties.Name="Retained tenant administration setup evidence"
+                                             AutomationProperties.AutomationId="AccountingTenantAdministrationEvidenceTextBox" />
+                                    <Button AutomationProperties.AutomationId="AccountingTenantAdministrationSaveButton"
+                                            Content="Save Tenant Setup"
+                                            Command="{Binding SaveTenantAdministrationProfileCommand}"
+                                            IsEnabled="{Binding CanSaveTenantAdministrationProfile}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left"
+                                            ToolTip="{Binding TenantAdministrationProfileStatusText}"
+                                            ToolTipService.ShowOnDisabled="True"
+                                            Margin="0,0,0,8" />
+                                    <TextBlock Text="{Binding TenantAdministrationProfileStatusText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,0,0,12"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingTenantAdministrationProfileStatusText" />
+                                    <DataGrid ItemsSource="{Binding TenantAdministrationControlRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,0,0,18" AutomationProperties.AutomationId="AccountingTenantAdministrationControlGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Control" Binding="{Binding Name}" Width="170" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Scope / Evidence" Binding="{Binding Evidence}" Width="200" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Setup Readiness" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding SetupReadinessRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="AccountingConfigurationSetupReadinessGrid">
                                         <DataGrid.Columns>

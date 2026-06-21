@@ -155,6 +155,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly IManualJournalEntryLifecycleService? _manualJournalEntryLifecycleService;
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly AccountingProductionReadinessService? _accountingProductionReadinessService;
+    private readonly IAccountingTenantAdministrationProfileStore? _tenantAdministrationProfileStore;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
@@ -188,6 +189,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _productionReadinessLedgerBookText = "Ledger-book rollout readiness has not loaded.";
     private string _productionReadinessExternalGlText = "External GL readiness has not loaded.";
     private string _productionReadinessTenantAdminText = "Tenant administration readiness has not loaded.";
+    private string _tenantAdministrationProfileStatusText = "Tenant administration setup profile has not loaded.";
+    private string _tenantAdministrationProfileScopeText = "Tenant and company scope have not loaded.";
+    private string _tenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
+    private string _tenantAdministrationEvidenceText = string.Empty;
+    private bool _tenantScopeConfigured;
+    private bool _adminRoleProfileConfigured;
+    private bool _scopedAccessPoliciesConfigured;
+    private bool _reportingGroupsConfigured;
+    private bool _accountingAdminSurfaceConfigured;
     private string _selectedReconciliationView = "Open breaks";
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
     private string _draftMemo = "Manual accounting adjustment";
@@ -212,7 +222,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IAccountingPostingCandidateService? accountingPostingCandidateService = null,
         IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null,
         ILedgerBookService? ledgerBookService = null,
-        AccountingProductionReadinessService? accountingProductionReadinessService = null)
+        AccountingProductionReadinessService? accountingProductionReadinessService = null,
+        IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -228,6 +239,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ?? manualJournalEntryWorkbenchService as IManualJournalEntryLifecycleService;
         _ledgerBookService = ledgerBookService;
         _accountingProductionReadinessService = accountingProductionReadinessService;
+        _tenantAdministrationProfileStore = tenantAdministrationProfileStore;
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
         SeedBaselineConfigurationCommand = new AsyncRelayCommand(() => SeedBaselineConfigurationAsync());
@@ -241,6 +253,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ExecuteRulesStudioTestsCommand = new AsyncRelayCommand(() => ExecuteRulesStudioTestsAsync());
         ApproveRulesStudioPromotionCommand = new AsyncRelayCommand(() => ApproveRulesStudioPromotionAsync());
         CreateLedgerBookSetupCommand = new AsyncRelayCommand(() => CreateLedgerBookSetupAsync());
+        SaveTenantAdministrationProfileCommand = new AsyncRelayCommand(() => SaveTenantAdministrationProfileAsync());
         ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve));
         PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post));
         ReverseManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse));
@@ -272,6 +285,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public IAsyncRelayCommand ExecuteRulesStudioTestsCommand { get; }
     public IAsyncRelayCommand ApproveRulesStudioPromotionCommand { get; }
     public IAsyncRelayCommand CreateLedgerBookSetupCommand { get; }
+    public IAsyncRelayCommand SaveTenantAdministrationProfileCommand { get; }
     public IAsyncRelayCommand ApproveManualJournalCommand { get; }
     public IAsyncRelayCommand PostManualJournalCommand { get; }
     public IAsyncRelayCommand ReverseManualJournalCommand { get; }
@@ -312,6 +326,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLifecycleRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessComponentRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessIssueRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> TenantAdministrationControlRows { get; } = [];
     public ObservableCollection<string> ReconciliationViewOptions { get; } =
     [
         "Open breaks",
@@ -496,6 +511,71 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         private set => SetProperty(ref _productionReadinessTenantAdminText, value);
     }
 
+    public string TenantAdministrationProfileStatusText
+    {
+        get => _tenantAdministrationProfileStatusText;
+        private set => SetProperty(ref _tenantAdministrationProfileStatusText, value);
+    }
+
+    public string TenantAdministrationProfileScopeText
+    {
+        get => _tenantAdministrationProfileScopeText;
+        private set => SetProperty(ref _tenantAdministrationProfileScopeText, value);
+    }
+
+    public string TenantAdministrationProfileUpdatedText
+    {
+        get => _tenantAdministrationProfileUpdatedText;
+        private set => SetProperty(ref _tenantAdministrationProfileUpdatedText, value);
+    }
+
+    public string TenantAdministrationEvidenceText
+    {
+        get => _tenantAdministrationEvidenceText;
+        set
+        {
+            if (SetProperty(ref _tenantAdministrationEvidenceText, value))
+            {
+                RaisePropertyChanged(nameof(CanSaveTenantAdministrationProfile));
+            }
+        }
+    }
+
+    public bool TenantScopeConfigured
+    {
+        get => _tenantScopeConfigured;
+        set => SetProperty(ref _tenantScopeConfigured, value);
+    }
+
+    public bool AdminRoleProfileConfigured
+    {
+        get => _adminRoleProfileConfigured;
+        set => SetProperty(ref _adminRoleProfileConfigured, value);
+    }
+
+    public bool ScopedAccessPoliciesConfigured
+    {
+        get => _scopedAccessPoliciesConfigured;
+        set => SetProperty(ref _scopedAccessPoliciesConfigured, value);
+    }
+
+    public bool ReportingGroupsConfigured
+    {
+        get => _reportingGroupsConfigured;
+        set => SetProperty(ref _reportingGroupsConfigured, value);
+    }
+
+    public bool AccountingAdminSurfaceConfigured
+    {
+        get => _accountingAdminSurfaceConfigured;
+        set => SetProperty(ref _accountingAdminSurfaceConfigured, value);
+    }
+
+    public bool CanSaveTenantAdministrationProfile =>
+        _activeFundProfile is not null
+        && _tenantAdministrationProfileStore is not null
+        && NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText).Count > 0;
+
     public string SelectedReconciliationView
     {
         get => _selectedReconciliationView;
@@ -634,6 +714,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
             await LoadOperationsPostureAsync(ct).ConfigureAwait(false);
             await RefreshExternalGlAsync(ct).ConfigureAwait(false);
+            await LoadTenantAdministrationProfileAsync(ct).ConfigureAwait(false);
             await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
             StatusText = "Accounting configuration, journal drafts, close evidence, external GL evidence, reconciliation triage, and policies are loaded from shared services.";
         }
@@ -854,6 +935,66 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         {
             LedgerBookSetupStatusText = $"Ledger-book setup is blocked: {ex.Message}";
             StatusText = LedgerBookSetupStatusText;
+        }
+    }
+
+    public async Task SaveTenantAdministrationProfileAsync(CancellationToken ct = default)
+    {
+        if (_activeFundProfile is null)
+        {
+            TenantAdministrationProfileStatusText = "Select a fund-linked context before saving tenant administration setup controls.";
+            StatusText = TenantAdministrationProfileStatusText;
+            return;
+        }
+
+        if (_tenantAdministrationProfileStore is null)
+        {
+            TenantAdministrationProfileStatusText = "Tenant administration profile store is not registered for this desktop session.";
+            StatusText = TenantAdministrationProfileStatusText;
+            return;
+        }
+
+        var evidence = NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText);
+        if (evidence.Count == 0)
+        {
+            TenantAdministrationProfileStatusText = "Retained setup evidence is required before saving tenant administration controls.";
+            StatusText = TenantAdministrationProfileStatusText;
+            RaisePropertyChanged(nameof(CanSaveTenantAdministrationProfile));
+            return;
+        }
+
+        try
+        {
+            var correlationId = $"wpf-accounting-tenant-admin-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            var profile = new AccountingTenantAdministrationProfileDto(
+                ResolveTenantAdministrationTenantId(),
+                ResolveTenantAdministrationCompanyId(),
+                TenantScopeConfigured,
+                AdminRoleProfileConfigured,
+                ScopedAccessPoliciesConfigured,
+                ReportingGroupsConfigured,
+                AccountingAdminSurfaceConfigured,
+                DateTimeOffset.UtcNow,
+                DefaultLifecycleActor,
+                evidence,
+                correlationId);
+
+            var saved = await _tenantAdministrationProfileStore.UpsertAsync(
+                new AccountingTenantAdministrationProfileUpsertRequestDto(
+                    profile,
+                    DefaultLifecycleActor,
+                    correlationId,
+                    evidence),
+                ct).ConfigureAwait(false);
+
+            ApplyTenantAdministrationProfile(saved, "Tenant administration setup profile saved; production readiness refreshed from retained controls.");
+            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
+            StatusText = TenantAdministrationProfileStatusText;
+        }
+        catch (Exception ex)
+        {
+            TenantAdministrationProfileStatusText = $"Tenant administration setup profile save failed: {ex.Message}";
+            StatusText = TenantAdministrationProfileStatusText;
         }
     }
 
@@ -1357,6 +1498,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProductionReadinessLedgerBookText = "Locked until a fund context is selected.";
         ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
         ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
+        TenantAdministrationProfileStatusText = "Locked until a fund context is selected.";
+        TenantAdministrationProfileScopeText = "Tenant and company scope require a fund context.";
+        TenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
+        TenantAdministrationEvidenceText = string.Empty;
+        TenantScopeConfigured = false;
+        AdminRoleProfileConfigured = false;
+        ScopedAccessPoliciesConfigured = false;
+        ReportingGroupsConfigured = false;
+        AccountingAdminSurfaceConfigured = false;
         BatchReconciliationActionText = "No reconciliation rows are loaded.";
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
@@ -1504,6 +1654,109 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         return $"{from} to {to}";
     }
 
+    private async Task LoadTenantAdministrationProfileAsync(CancellationToken ct)
+    {
+        if (_activeFundProfile is null)
+        {
+            TenantAdministrationProfileStatusText = "Locked until a fund context is selected.";
+            TenantAdministrationProfileScopeText = "Tenant and company scope require a fund context.";
+            TenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
+            TenantAdministrationControlRows.Clear();
+            return;
+        }
+
+        var tenantId = ResolveTenantAdministrationTenantId();
+        var companyId = ResolveTenantAdministrationCompanyId();
+        TenantAdministrationProfileScopeText = $"Tenant {tenantId}; company {companyId}.";
+
+        if (_tenantAdministrationProfileStore is null)
+        {
+            TenantAdministrationProfileStatusText = "Tenant administration profile store is not registered for this desktop session.";
+            TenantAdministrationProfileUpdatedText = "Retained tenant setup controls are unavailable.";
+            ApplyTenantAdministrationControlRows();
+            RaisePropertyChanged(nameof(CanSaveTenantAdministrationProfile));
+            return;
+        }
+
+        try
+        {
+            var profile = await _tenantAdministrationProfileStore.GetAsync(tenantId, companyId, ct).ConfigureAwait(false);
+            if (profile is null)
+            {
+                TenantAdministrationProfileStatusText = "No retained tenant administration setup profile exists for the active fund context.";
+                TenantAdministrationProfileUpdatedText = "Save setup controls with retained evidence before production certification.";
+                TenantAdministrationEvidenceText = $"evidence://tenant-admin/{tenantId}/{companyId}/setup";
+                ApplyTenantAdministrationControlRows();
+                RaisePropertyChanged(nameof(CanSaveTenantAdministrationProfile));
+                return;
+            }
+
+            ApplyTenantAdministrationProfile(profile, "Tenant administration setup profile loaded from the shared store.");
+        }
+        catch (Exception ex)
+        {
+            TenantAdministrationProfileStatusText = $"Tenant administration setup profile could not load: {ex.Message}";
+            TenantAdministrationProfileUpdatedText = "Retained tenant setup controls are unavailable.";
+            ApplyTenantAdministrationControlRows();
+            RaisePropertyChanged(nameof(CanSaveTenantAdministrationProfile));
+        }
+    }
+
+    private void ApplyTenantAdministrationProfile(
+        AccountingTenantAdministrationProfileDto profile,
+        string statusText)
+    {
+        TenantScopeConfigured = profile.TenantScopeConfigured;
+        AdminRoleProfileConfigured = profile.AdminRoleProfileConfigured;
+        ScopedAccessPoliciesConfigured = profile.ScopedAccessPoliciesConfigured;
+        ReportingGroupsConfigured = profile.ReportingGroupsConfigured;
+        AccountingAdminSurfaceConfigured = profile.AccountingAdminSurfaceConfigured;
+        TenantAdministrationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
+        TenantAdministrationProfileScopeText = $"Tenant {profile.TenantId}; company {profile.CompanyId}.";
+        TenantAdministrationProfileUpdatedText =
+            $"Last retained by {profile.UpdatedBy} at {profile.UpdatedAtUtc.ToLocalTime():g}.";
+        TenantAdministrationProfileStatusText = statusText;
+        ApplyTenantAdministrationControlRows();
+        RaisePropertyChanged(nameof(CanSaveTenantAdministrationProfile));
+    }
+
+    private void ApplyTenantAdministrationControlRows()
+    {
+        TenantAdministrationControlRows.ReplaceWith(
+        [
+            new AccountingWorkbenchRow(
+                "Tenant config",
+                TenantScopeConfigured ? "Configured" : "Missing",
+                "Tenant scope, accounting configuration, and company setup are retained.",
+                ResolveTenantAdministrationTenantId(),
+                "tenant-config"),
+            new AccountingWorkbenchRow(
+                "Admin roles",
+                AdminRoleProfileConfigured ? "Configured" : "Missing",
+                "Accounting admin role profiles are configured for governed setup.",
+                DefaultLifecycleActor,
+                "admin-roles"),
+            new AccountingWorkbenchRow(
+                "Scoped access",
+                ScopedAccessPoliciesConfigured ? "Configured" : "Missing",
+                "Accounting permissions are scoped to tenant, company, fund, or book boundaries.",
+                ResolveTenantAdministrationCompanyId(),
+                "scoped-access"),
+            new AccountingWorkbenchRow(
+                "Reporting groups",
+                ReportingGroupsConfigured ? "Configured" : "Missing",
+                "Reporting group principals are configured for close, report, and export review.",
+                "close/report/export",
+                "reporting-groups"),
+            new AccountingWorkbenchRow(
+                "Operator surface",
+                AccountingAdminSurfaceConfigured ? "Configured" : "Missing",
+                "Accounting setup controls are exposed through the governed operator surface.",
+                "WPF Accounting Configure",
+                "operator-surface")
+        ]);
+    }
+
     private async Task RefreshProductionReadinessAsync(CancellationToken ct)
     {
         if (_activeFundProfile is null)
@@ -1585,6 +1838,14 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             workspace?.LedgerBookId,
             setupCandidate?.AccountingBasis ?? (workspace is null ? null : ResolveActiveLedgerBook(workspace)?.AccountingBasis),
             ProviderId: null,
+            TenantId: ResolveTenantAdministrationTenantId(),
+            CompanyId: ResolveTenantAdministrationCompanyId(),
+            TenantScopeConfigured: TenantScopeConfigured,
+            AdminRoleProfileConfigured: AdminRoleProfileConfigured,
+            ScopedAccessPoliciesConfigured: ScopedAccessPoliciesConfigured,
+            ReportingGroupsConfigured: ReportingGroupsConfigured,
+            AccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
+            TenantAdministrationEvidenceLinks: NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
             RequiredLedgerBookScopes: requiredScopes);
     }
 
@@ -2557,6 +2818,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ManualJournalLifecycleRows.Clear();
         ProductionReadinessComponentRows.Clear();
         ProductionReadinessIssueRows.Clear();
+        TenantAdministrationControlRows.Clear();
         ClearCapitalAccountWorkbenchRows();
         EvidenceRows.Clear();
         ReconciliationRows.Clear();
@@ -2575,6 +2837,33 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private static IReadOnlyList<string> NormalizeEvidenceLink(string? value)
         => string.IsNullOrWhiteSpace(value) ? [] : [value.Trim()];
+
+    private string ResolveTenantAdministrationTenantId()
+        => NormalizeTenantAdministrationScope(_activeFundProfile?.FundProfileId, "desktop-tenant");
+
+    private string ResolveTenantAdministrationCompanyId()
+        => NormalizeTenantAdministrationScope(
+            _activeFundProfile?.LegalEntityName
+            ?? _activeFundProfile?.EntityIds?.FirstOrDefault()
+            ?? _activeFundProfile?.DisplayName,
+            "desktop-company");
+
+    private static string NormalizeTenantAdministrationScope(string? value, string fallback)
+    {
+        var normalized = string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+        return normalized
+            .Replace('|', '-')
+            .Replace(Environment.NewLine, " ", StringComparison.Ordinal);
+    }
+
+    private static IReadOnlyList<string> NormalizeTenantAdministrationEvidence(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? []
+            : value
+                .Split(['\r', '\n', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(static item => !string.IsNullOrWhiteSpace(item))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 }
 
 public sealed record AccountingWorkbenchRow(
