@@ -846,9 +846,10 @@ the dedicated promotion-approval request for approving a retained rule version w
 retained approval/review evidence that identifies the retained rule, rule version, and approval id in the same artifact,
 human-operator action origin, and passing saved current-version regression tests whose retained evidence identifies the test case, expected rule, and expected version in the same artifact. Activation-readiness blockers for promotion-gated rules
 remain contract-visible. Chart, template, posting-rule, regression-test, and promotion mutation
-requests can carry `LedgerBookId`, and `IAccountingConfigurationStore.GetAsync` accepts the same
-book scope so clients can address fund-level and ledger-book-specific rule studios without sharing
-one fund-wide workspace by accident. Dry-run generation expands positive static
+requests can carry `LedgerBookId`, `TenantId`, and `CompanyId`, and
+`IAccountingConfigurationStore.GetAsync` accepts the same tenant/company/fund/book scope so clients
+can address tenant-isolated fund-level and ledger-book-specific rule studios without sharing one
+fund-wide workspace by accident. Dry-run generation expands positive static
 or formula-backed allocation weights into generated posting lines, preserves balance through
 residual rounding, and merges allocation target dimensions into the preview payload. Generated
 posting-rule predicates can evaluate dimensional fields and external GL dimensions through the

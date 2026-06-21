@@ -20,10 +20,12 @@ public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurat
     public Task<AccountingConfigurationWorkspaceDto?> GetAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
-        _workspaces.TryGetValue(Key(fundProfileId, ledgerBookId), out var workspace);
+        _workspaces.TryGetValue(Key(fundProfileId, ledgerBookId, tenantId, companyId), out var workspace);
         return Task.FromResult(workspace);
     }
 
@@ -31,15 +33,18 @@ public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurat
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(workspace);
-        _workspaces[Key(workspace.FundProfileId, workspace.LedgerBookId)] = workspace;
+        _workspaces[Key(workspace.FundProfileId, workspace.LedgerBookId, workspace.TenantId, workspace.CompanyId)] = workspace;
         return Task.CompletedTask;
     }
 
-    private static string Key(string fundProfileId, Guid? ledgerBookId)
-        => $"{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "fund"}";
+    private static string Key(string fundProfileId, Guid? ledgerBookId, string? tenantId, string? companyId)
+        => $"{NormalizeOptional(tenantId) ?? "all"}|{NormalizeOptional(companyId) ?? "all"}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "fund"}";
 
     private static string NormalizeFundProfileId(string value)
         => string.IsNullOrWhiteSpace(value) ? "default-fund" : value.Trim();
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 public sealed class InMemoryAccountingActionAuditStore : IAccountingActionAuditStore
@@ -56,18 +61,25 @@ public sealed class InMemoryAccountingActionAuditStore : IAccountingActionAuditS
     public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var events = _events
             .Where(item => string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(item.FundProfileId, fundProfileId.Trim(), StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
+            .Where(item => normalizedCompanyId is null || string.Equals(item.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(item => item.RecordedAtUtc)
             .ThenBy(item => item.AuditEventId)
             .ToArray();
 
         return Task.FromResult<IReadOnlyList<AccountingActionAuditEventDto>>(events);
     }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 public sealed class FileAccountingConfigurationStore : IAccountingConfigurationStore, IAccountingActionAuditStore
@@ -90,13 +102,19 @@ public sealed class FileAccountingConfigurationStore : IAccountingConfigurationS
     public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
         return snapshot.Workspaces.FirstOrDefault(item =>
             string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) &&
-            item.LedgerBookId == ledgerBookId) is { } workspace
+            item.LedgerBookId == ledgerBookId &&
+            string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase)) is { } workspace
             ? workspace with { FundProfileId = normalizedFundProfileId, AuditTrail = [] }
             : null;
     }
@@ -108,14 +126,26 @@ public sealed class FileAccountingConfigurationStore : IAccountingConfigurationS
         try
         {
             var normalizedFundProfileId = NormalizeFundProfileId(workspace.FundProfileId);
+            var normalizedTenantId = NormalizeOptional(workspace.TenantId);
+            var normalizedCompanyId = NormalizeOptional(workspace.CompanyId);
             var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
             var workspaces = snapshot.Workspaces
                 .Where(item =>
                     !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) ||
-                    item.LedgerBookId != workspace.LedgerBookId)
-                .Append(workspace with { FundProfileId = normalizedFundProfileId, AuditTrail = [] })
+                    item.LedgerBookId != workspace.LedgerBookId ||
+                    !string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
+                .Append(workspace with
+                {
+                    FundProfileId = normalizedFundProfileId,
+                    TenantId = normalizedTenantId,
+                    CompanyId = normalizedCompanyId,
+                    AuditTrail = []
+                })
                 .OrderBy(item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(item => item.LedgerBookId?.ToString("D") ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(item => item.TenantId ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(item => item.CompanyId ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
             await WriteSnapshotAsync(snapshot with { Workspaces = workspaces }, ct).ConfigureAwait(false);
@@ -150,14 +180,18 @@ public sealed class FileAccountingConfigurationStore : IAccountingConfigurationS
     public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         var normalizedFundProfileId = NormalizeOptional(fundProfileId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
         return snapshot.AuditEvents
             .Where(item => string.IsNullOrWhiteSpace(normalizedFundProfileId) ||
                            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
+            .Where(item => normalizedCompanyId is null || string.Equals(item.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(item => item.RecordedAtUtc)
             .ThenBy(item => item.AuditEventId)
             .ToArray();
@@ -231,16 +265,20 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     public async Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
-        var workspace = await LoadWorkspaceAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(normalizedFundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         var ledgerBooks = await LoadLedgerBooksAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         var scopedWorkspace = workspace with
         {
             LedgerBookId = ledgerBookId ?? workspace.LedgerBookId,
+            TenantId = NormalizeOptional(tenantId) ?? workspace.TenantId,
+            CompanyId = NormalizeOptional(companyId) ?? workspace.CompanyId,
             LedgerBooks = ledgerBooks
         };
         var validation = Validate(
@@ -264,7 +302,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         RequireText(request.Node.NodeId, nameof(request.Node.NodeId));
         RequireText(request.Node.Path, nameof(request.Node.Path));
@@ -284,7 +322,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "chart.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "chart.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.TenantId, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertTemplateAsync(
@@ -293,7 +331,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         RequireText(request.Template.TemplateId, nameof(request.Template.TemplateId));
         RequireText(request.Template.DisplayName, nameof(request.Template.DisplayName));
@@ -311,7 +349,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "template.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "template.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.TenantId, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertPostingRuleAsync(
@@ -320,7 +358,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         RequireText(request.Rule.RuleId, nameof(request.Rule.RuleId));
         RequireText(request.Rule.SourceEventType, nameof(request.Rule.SourceEventType));
@@ -349,7 +387,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.TenantId, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> ApprovePostingRulePromotionAsync(
@@ -358,7 +396,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         var ruleId = RequireText(request.RuleId, nameof(request.RuleId));
         var ruleVersion = RequireText(request.RuleVersion, nameof(request.RuleVersion));
@@ -458,7 +496,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = now
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, actor, "posting-rule.promotion-approve", request.LedgerBookId, request.CorrelationId, evidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, actor, "posting-rule.promotion-approve", request.LedgerBookId, request.CorrelationId, evidenceLinks, request.TenantId, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertRuleTestCaseAsync(
@@ -469,7 +507,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.TestCase);
 
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         RequireText(request.TestCase.TestCaseId, nameof(request.TestCase.TestCaseId));
         RequireText(request.TestCase.DisplayName, nameof(request.TestCase.DisplayName));
@@ -498,7 +536,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "rule-test-case.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "rule-test-case.upsert", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.TenantId, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingJournalTemplatePreviewDto> PreviewTemplateAsync(
@@ -507,7 +545,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var template = workspace.JournalTemplates.FirstOrDefault(item =>
             string.Equals(item.TemplateId, request.TemplateId, StringComparison.OrdinalIgnoreCase) && !item.IsArchived);
 
@@ -560,7 +598,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
         var templateById = workspace.JournalTemplates
             .Where(static item => !item.IsArchived)
@@ -742,7 +780,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var actor = RequireText(request.Actor, nameof(request.Actor));
         var workspace = request.TestCases.Count == 0
-            ? await LoadWorkspaceAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false)
+            ? await LoadWorkspaceAsync(fundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             : null;
         var testCases = request.TestCases.Count == 0
             ? workspace?.RuleTestCases ?? []
@@ -761,7 +799,9 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 Actor = actor,
                 CorrelationId = string.IsNullOrWhiteSpace(testCase.Request.CorrelationId)
                     ? request.CorrelationId
-                    : testCase.Request.CorrelationId
+                    : testCase.Request.CorrelationId,
+                TenantId = testCase.Request.TenantId ?? request.TenantId,
+                CompanyId = testCase.Request.CompanyId ?? request.CompanyId
             };
             var dryRun = await DryRunPostingRuleAsync(dryRunRequest, ct).ConfigureAwait(false);
             var assertionIssues = EvaluateRuleTestCaseAssertions(testCase, dryRun);
@@ -792,7 +832,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
-        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false);
         var beforeHash = Hash(workspace);
         EnsureRuleStudioHumanOrigin(request.ActionOrigin, "activate accounting configurations");
         var issues = await ValidateActivationReadinessAsync(workspace, request, ct).ConfigureAwait(false);
@@ -810,14 +850,16 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "configuration.activate", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct, issues).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "configuration.activate", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.TenantId, request.CompanyId, request.ReportGroupPrincipalIds, ct, issues).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
-        => _auditStore.ListAsync(NormalizeFundProfileId(fundProfileId), ledgerBookId, ct);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
+        => _auditStore.ListAsync(NormalizeFundProfileId(fundProfileId), ledgerBookId, ct, tenantId, companyId);
 
     private async Task<AccountingConfigurationWorkspaceDto> SaveWithAuditAsync(
         AccountingConfigurationWorkspaceDto workspace,
@@ -827,6 +869,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         Guid? ledgerBookId,
         string? correlationId,
         IReadOnlyList<string>? evidenceLinks,
+        string? tenantId,
         string? companyId,
         IReadOnlyList<string>? reportGroupPrincipalIds,
         CancellationToken ct,
@@ -835,6 +878,8 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         var validation = validationOverride ?? Validate(workspace);
         var finalWorkspace = workspace with
         {
+            TenantId = NormalizeOptional(tenantId) ?? workspace.TenantId,
+            CompanyId = NormalizeOptional(companyId) ?? workspace.CompanyId,
             ValidationIssues = validation,
             RulesStudio = BuildRulesStudio(workspace, validation)
         };
@@ -857,26 +902,38 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 NormalizePrincipalIds(reportGroupPrincipalIds)),
             ct).ConfigureAwait(false);
 
-        return await GetWorkspaceAsync(finalWorkspace.FundProfileId, ledgerBookId ?? finalWorkspace.LedgerBookId, ct).ConfigureAwait(false);
+        return await GetWorkspaceAsync(finalWorkspace.FundProfileId, ledgerBookId ?? finalWorkspace.LedgerBookId, ct, finalWorkspace.TenantId, finalWorkspace.CompanyId).ConfigureAwait(false);
     }
 
     private async Task<AccountingConfigurationWorkspaceDto> LoadWorkspaceAsync(
         string fundProfileId,
         Guid? ledgerBookId,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
     {
-        var workspace = await _store.GetAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var workspace = await _store.GetAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         if (workspace is not null)
         {
-            return workspace with { LedgerBookId = ledgerBookId ?? workspace.LedgerBookId };
+            return workspace with
+            {
+                LedgerBookId = ledgerBookId ?? workspace.LedgerBookId,
+                TenantId = NormalizeOptional(tenantId) ?? workspace.TenantId,
+                CompanyId = NormalizeOptional(companyId) ?? workspace.CompanyId
+            };
         }
 
         if (ledgerBookId.HasValue && _ledgerBookService is null)
         {
-            var fundWorkspace = await _store.GetAsync(fundProfileId, ledgerBookId: null, ct).ConfigureAwait(false);
+            var fundWorkspace = await _store.GetAsync(fundProfileId, ledgerBookId: null, ct, tenantId, companyId).ConfigureAwait(false);
             if (fundWorkspace is not null)
             {
-                return fundWorkspace with { LedgerBookId = ledgerBookId };
+                return fundWorkspace with
+                {
+                    LedgerBookId = ledgerBookId,
+                    TenantId = NormalizeOptional(tenantId) ?? fundWorkspace.TenantId,
+                    CompanyId = NormalizeOptional(companyId) ?? fundWorkspace.CompanyId
+                };
             }
         }
 
@@ -892,7 +949,9 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             PostingRules: [],
             ValidationIssues: [],
             AuditTrail: [],
-            RuleTestCases: []);
+            RuleTestCases: [],
+            TenantId: NormalizeOptional(tenantId),
+            CompanyId: NormalizeOptional(companyId));
     }
 
     private async Task<IReadOnlyList<LedgerBookDto>> LoadLedgerBooksAsync(string fundProfileId, Guid? ledgerBookId, CancellationToken ct)

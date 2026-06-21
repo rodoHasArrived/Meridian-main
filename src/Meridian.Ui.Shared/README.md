@@ -116,6 +116,11 @@ rules for an unconfigured book. When the requested book is missing but the fund 
 ledger-book scope, the same workspace carries a server-derived ledger-book setup candidate so
 clients can call the shared ledger-book endpoint without reconstructing fund-structure node details
 locally.
+`FileAccountingConfigurationStore` persists accounting configuration workspaces by authenticated
+tenant, company, fund profile, and ledger book. The shared accounting endpoints stamp the resolved
+tenant/company context on chart, template, posting-rule, rule-test, promotion, activation, read,
+dry-run, execution, and audit requests so browser and WPF clients cannot spoof a different
+configuration workspace through request body fields.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained

@@ -19,7 +19,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
@@ -145,7 +147,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
@@ -179,6 +183,12 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         {
             command.CommandText += " and ledger_book_id = @ledger_book_id";
             command.Parameters.AddWithValue("ledger_book_id", ledgerBookId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(companyId))
+        {
+            command.CommandText += " and company_id = @company_id";
+            command.Parameters.AddWithValue("company_id", companyId.Trim());
         }
 
         command.CommandText += " order by recorded_at_utc desc, audit_event_id;";

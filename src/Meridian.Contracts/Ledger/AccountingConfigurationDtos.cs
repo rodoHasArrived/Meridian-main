@@ -587,7 +587,9 @@ public sealed record AccountingConfigurationWorkspaceDto(
     IReadOnlyList<AccountingActionAuditEventDto> AuditTrail,
     IReadOnlyList<AccountingRuleTestCaseDto>? RuleTestCases = null,
     AccountingRulesStudioDto? RulesStudio = null,
-    LedgerBookSetupCandidateDto? LedgerBookSetupCandidate = null)
+    LedgerBookSetupCandidateDto? LedgerBookSetupCandidate = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<AccountingRuleTestCaseDto> RuleTestCases { get; init; } =
         RuleTestCases ?? [];
@@ -601,7 +603,8 @@ public sealed record UpsertChartOfAccountsNodeRequest(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
     IReadOnlyList<string>? ReportGroupPrincipalIds = null,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    string? TenantId = null);
 
 public sealed record UpsertJournalEntryTemplateRequest(
     string FundProfileId,
@@ -611,7 +614,8 @@ public sealed record UpsertJournalEntryTemplateRequest(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
     IReadOnlyList<string>? ReportGroupPrincipalIds = null,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    string? TenantId = null);
 
 public sealed record UpsertPostingRuleRequest(
     string FundProfileId,
@@ -621,7 +625,8 @@ public sealed record UpsertPostingRuleRequest(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
     IReadOnlyList<string>? ReportGroupPrincipalIds = null,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    string? TenantId = null);
 
 public sealed record ApprovePostingRulePromotionRequest(
     string FundProfileId,
@@ -637,7 +642,8 @@ public sealed record ApprovePostingRulePromotionRequest(
     string? CompanyId = null,
     IReadOnlyList<string>? ReportGroupPrincipalIds = null,
     Guid? LedgerBookId = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    string? TenantId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -651,14 +657,17 @@ public sealed record UpsertAccountingRuleTestCaseRequest(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
-    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null,
+    string? TenantId = null);
 
 public sealed record PreviewJournalTemplateRequest(
     string FundProfileId,
     string TemplateId,
     string Actor,
     Guid? LedgerBookId = null,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    string? TenantId = null,
+    string? CompanyId = null);
 
 public sealed record AccountingJournalPreviewLineDto(
     string AccountPath,
@@ -769,7 +778,9 @@ public sealed record RuleDryRunRequestDto(
     LedgerDimensionSetDto? Dimensions = null,
     string? CounterpartyId = null,
     string? InstrumentSymbol = null,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    string? TenantId = null,
+    string? CompanyId = null);
 
 public sealed record AccountingRuleDryRunMatchDto(
     string RuleId,
@@ -906,7 +917,9 @@ public sealed record ExecuteAccountingRuleTestCasesRequestDto(
     string Actor,
     IReadOnlyList<AccountingRuleTestCaseDto>? TestCases = null,
     Guid? LedgerBookId = null,
-    string? CorrelationId = null)
+    string? CorrelationId = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<AccountingRuleTestCaseDto> TestCases { get; init; } =
         TestCases ?? [];
@@ -2096,14 +2109,17 @@ public sealed record ActivateAccountingConfigurationRequest(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CompanyId = null,
     IReadOnlyList<string>? ReportGroupPrincipalIds = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    string? TenantId = null);
 
 public interface IAccountingConfigurationService
 {
     Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 
     Task<AccountingConfigurationWorkspaceDto> UpsertChartNodeAsync(
         UpsertChartOfAccountsNodeRequest request,
@@ -2144,7 +2160,9 @@ public interface IAccountingConfigurationService
     Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 }
 
 public interface IManualJournalEntryLifecycleService
@@ -2232,7 +2250,9 @@ public interface IAccountingConfigurationStore
     Task<AccountingConfigurationWorkspaceDto?> GetAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 
     Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);
 }
@@ -2244,5 +2264,7 @@ public interface IAccountingActionAuditStore
     Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 }

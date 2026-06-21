@@ -13,6 +13,46 @@ namespace Meridian.Tests.Ui;
 public sealed class AccountingConfigurationServiceTests
 {
     [Fact]
+    public async Task AccountingConfigurationService_IsolatesWorkspacesByTenantAndCompanyScope()
+    {
+        var store = new InMemoryAccountingConfigurationStore();
+        var auditStore = new InMemoryAccountingActionAuditStore();
+        var service = new AccountingConfigurationService(store, auditStore);
+
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto("cash-alpha", "Assets:Cash", "Alpha Cash", "Asset"),
+            "controller-alpha",
+            CompanyId: "company-alpha",
+            TenantId: "tenant-alpha"));
+
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto("cash-beta", "Assets:Cash", "Beta Cash", "Asset"),
+            "controller-beta",
+            CompanyId: "company-beta",
+            TenantId: "tenant-beta"));
+
+        var alpha = await service.GetWorkspaceAsync("fund-alpha", tenantId: "tenant-alpha", companyId: "company-alpha");
+        var beta = await service.GetWorkspaceAsync("fund-alpha", tenantId: "tenant-beta", companyId: "company-beta");
+        var unscoped = await service.GetWorkspaceAsync("fund-alpha");
+        var alphaAudit = await service.ListAuditAsync("fund-alpha", companyId: "company-alpha");
+
+        alpha.TenantId.Should().Be("tenant-alpha");
+        alpha.CompanyId.Should().Be("company-alpha");
+        alpha.ChartOfAccounts.Should().ContainSingle(node => node.NodeId == "cash-alpha");
+        alpha.ChartOfAccounts.Should().NotContain(node => node.NodeId == "cash-beta");
+        beta.TenantId.Should().Be("tenant-beta");
+        beta.CompanyId.Should().Be("company-beta");
+        beta.ChartOfAccounts.Should().ContainSingle(node => node.NodeId == "cash-beta");
+        beta.ChartOfAccounts.Should().NotContain(node => node.NodeId == "cash-alpha");
+        unscoped.ChartOfAccounts.Should().BeEmpty();
+        alphaAudit.Should().ContainSingle(item =>
+            item.Action == "chart.upsert" &&
+            item.CompanyId == "company-alpha");
+    }
+
+    [Fact]
     public void PrivateCapitalActivityProjection_NormalizesOmittedFundEventRecordsToEmptyList()
     {
         var projection = new PrivateCapitalActivityProjectionDto(

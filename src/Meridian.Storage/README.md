@@ -208,6 +208,11 @@ retain separate primary, GAAP, tax, or shadow-book rule studios without delete/r
 crossing ledger-book boundaries. The ledger-book scope migration drops and recreates the scoped
 workspace foreign keys before rebuilding composite keys, keeping migration replay compatible with
 operational schema validation.
+The accounting configuration store interface now accepts tenant and company scope, and audit reads
+filter by retained `company_id` when a shared endpoint supplies authenticated company context.
+Durable PostgreSQL workspace rows are not yet keyed by tenant/company; that database migration
+remains a separate production-hardening slice before Postgres-backed Rules Studio workspaces can be
+treated as fully tenant-isolated.
 
 ## Glossary
 

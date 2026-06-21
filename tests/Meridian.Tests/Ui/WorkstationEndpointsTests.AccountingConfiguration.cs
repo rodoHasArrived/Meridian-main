@@ -215,7 +215,9 @@ public sealed partial class WorkstationEndpointsTests
                 FundProfileId: "fund-alpha",
                 Node: new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
                 Actor: "browser-user",
-                CorrelationId: "endpoint-chart-cash"),
+                CorrelationId: "endpoint-chart-cash",
+                CompanyId: "spoofed-company",
+                TenantId: "spoofed-tenant"),
             ServerJsonOptions);
         using var incomeResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerAccountingConfigurationChart,
@@ -275,12 +277,18 @@ public sealed partial class WorkstationEndpointsTests
         activateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var preview = await previewResponse.Content.ReadFromJsonAsync<AccountingJournalTemplatePreviewDto>(ServerJsonOptions);
+        var chartWorkspace = await cashResponse.Content.ReadFromJsonAsync<AccountingConfigurationWorkspaceDto>(ServerJsonOptions);
         var activated = await activateResponse.Content.ReadFromJsonAsync<AccountingConfigurationWorkspaceDto>(ServerJsonOptions);
         var audit = await auditResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingActionAuditEventDto>>(ServerJsonOptions);
         preview.Should().NotBeNull();
         preview!.IsBalanced.Should().BeTrue();
+        chartWorkspace.Should().NotBeNull();
+        chartWorkspace!.TenantId.Should().Be("company-alpha");
+        chartWorkspace.CompanyId.Should().Be("company-alpha");
         activated.Should().NotBeNull();
         activated!.Status.Should().Be(AccountingConfigurationStatusDto.Active);
+        activated.TenantId.Should().Be("company-alpha");
+        activated.CompanyId.Should().Be("company-alpha");
         audit.Should().NotBeNull();
         audit!.Select(item => item.Action).Should().Contain("configuration.activate");
         audit.Should().Contain(item =>

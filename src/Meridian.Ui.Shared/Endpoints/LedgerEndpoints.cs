@@ -546,7 +546,10 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var workspace = await service.GetWorkspaceAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var workspace = await service
+                .GetWorkspaceAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
+                .ConfigureAwait(false);
             return Results.Json(workspace, jsonOptions);
         })
         .WithName("GetAccountingConfiguration")
@@ -722,7 +725,13 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var result = await service.PreviewTemplateAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var result = await service.PreviewTemplateAsync(request with
+            {
+                Actor = ResolveMutationActor(context, request.Actor),
+                TenantId = tenantContext.TenantId ?? request.TenantId,
+                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+            }, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("PreviewAccountingConfigurationTemplate")
@@ -745,7 +754,13 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.DryRunPostingRuleAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.DryRunPostingRuleAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId ?? request.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -805,7 +820,13 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.ExecuteRuleTestCasesAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.ExecuteRuleTestCasesAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId ?? request.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -869,7 +890,10 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var audit = await service.ListAuditAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var audit = await service
+                .ListAuditAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
+                .ConfigureAwait(false);
             return Results.Json(audit, jsonOptions);
         })
         .WithName("ListAccountingConfigurationAudit")
@@ -1840,62 +1864,86 @@ public static class LedgerEndpoints
     private static UpsertChartOfAccountsNodeRequest WithAccessContext(
         UpsertChartOfAccountsNodeRequest request,
         HttpContext context)
-        => request with
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            TenantId = tenantContext.TenantId ?? request.TenantId,
+            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
+    }
 
     private static UpsertJournalEntryTemplateRequest WithAccessContext(
         UpsertJournalEntryTemplateRequest request,
         HttpContext context)
-        => request with
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            TenantId = tenantContext.TenantId ?? request.TenantId,
+            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
+    }
 
     private static UpsertPostingRuleRequest WithAccessContext(
         UpsertPostingRuleRequest request,
         HttpContext context)
-        => request with
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            TenantId = tenantContext.TenantId ?? request.TenantId,
+            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
+    }
 
     private static ApprovePostingRulePromotionRequest WithAccessContext(
         ApprovePostingRulePromotionRequest request,
         HttpContext context)
-        => request with
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            TenantId = tenantContext.TenantId ?? request.TenantId,
+            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
+    }
 
     private static UpsertAccountingRuleTestCaseRequest WithAccessContext(
         UpsertAccountingRuleTestCaseRequest request,
         HttpContext context)
-        => request with
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            TenantId = tenantContext.TenantId ?? request.TenantId,
+            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
+    }
 
     private static ActivateAccountingConfigurationRequest WithAccessContext(
         ActivateAccountingConfigurationRequest request,
         HttpContext context)
-        => request with
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return request with
         {
             Actor = ResolveMutationActor(context, request.Actor),
-            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            TenantId = tenantContext.TenantId ?? request.TenantId,
+            CompanyId = tenantContext.CompanyId ?? request.CompanyId,
             ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
         };
+    }
 
     private static IResult MapServiceException(LedgerBookServiceException exception)
         => exception switch
