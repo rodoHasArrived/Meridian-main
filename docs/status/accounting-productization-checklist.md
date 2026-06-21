@@ -102,9 +102,11 @@ the requirement end to end.
   browser/WPF endpoint entry, preventing a candidate or readiness assessment for one company from
   falling back to another company's retained Rules Studio workspace.
 - [x] Ledger-book-native production certification is now evidence-qualified by workflow lane:
-  posting rules, journal lifecycle, close/reporting, and external GL require retained evidence for
-  that lane, or an explicit full workflow certification packet, before readiness counts the control
-  as complete.
+  posting rules, journal lifecycle, close/reporting, external GL, reconciliation, direct-lending
+  projections, and strategy ledger reads require retained evidence for that lane, or an explicit
+  full workflow certification packet, before readiness counts the control as complete. Browser and
+  WPF production-certification editors can retain the added reconciliation, direct-lending, and
+  strategy-ledger-read controls under the shared Accounting System profile store.
 - [x] Dimensional reporting/export production certification is now evidence-qualified by lane:
   period reports, cross-period reports, journal filters, and external export mappings require
   retained evidence for that lane, or an explicit full dimensional/production certification packet,
@@ -117,11 +119,13 @@ the requirement end to end.
   scope, admin roles, scoped access, reporting groups, aggregate operator surface, browser admin
   studio, and WPF admin studio each require retained evidence for that lane, or an explicit
   setup-certified tenant-admin packet, before readiness counts the control as complete.
-- [x] Posting Rule Execution, Journal Lifecycle, Close/Reporting, and External GL
+- [x] Posting Rule Execution, Journal Lifecycle, Close/Reporting, External GL, reconciliation,
+  direct-lending, and strategy ledger-read
   production-readiness components now consume ledger-book-native workflow certification and
   retained lane evidence directly, so those components remain blocked even when generated rules or
   services are present until the selected ledger book has posting-candidate, lifecycle,
-  close/reporting, import, reconciliation, mapping, and guarded-export proof.
+  close/reporting, import, reconciliation, mapping, guarded-export, direct-lending projection, and
+  strategy-run ledger-read proof.
 - [x] Tenant administration readiness now includes explicit enterprise configuration studio
   controls for chart administration, rule-test/promotion setup, close setup, provider/external-GL
   mapping setup, and tenant/company/report-group setup. The shared profile, browser editor, WPF

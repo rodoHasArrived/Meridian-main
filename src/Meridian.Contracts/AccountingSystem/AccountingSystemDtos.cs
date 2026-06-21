@@ -204,7 +204,10 @@ public sealed record AccountingProductionCertificationProfileDto(
     IReadOnlyList<string>? EvidenceReferences = null,
     string? CorrelationId = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    bool ReconciliationLedgerBookNativeCertified = false,
+    bool DirectLendingLedgerBookNativeCertified = false,
+    bool StrategyLedgerReadLedgerBookNativeCertified = false)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -249,6 +252,9 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool JournalLifecycleLedgerBookNativeCertified = false,
     bool CloseReportingLedgerBookNativeCertified = false,
     bool ExternalGlLedgerBookNativeCertified = false,
+    bool ReconciliationLedgerBookNativeCertified = false,
+    bool DirectLendingLedgerBookNativeCertified = false,
+    bool StrategyLedgerReadLedgerBookNativeCertified = false,
     IReadOnlyList<string>? LedgerBookWorkflowEvidenceLinks = null,
     bool PeriodReportDimensionQueriesCertified = false,
     bool CrossPeriodReportDimensionQueriesCertified = false,
@@ -288,6 +294,9 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
     bool JournalLifecycleLedgerBookNativeCertified,
     bool CloseReportingLedgerBookNativeCertified,
     bool ExternalGlLedgerBookNativeCertified,
+    bool ReconciliationLedgerBookNativeCertified = false,
+    bool DirectLendingLedgerBookNativeCertified = false,
+    bool StrategyLedgerReadLedgerBookNativeCertified = false,
     IReadOnlyList<string>? EvidenceReferences = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
@@ -301,10 +310,13 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
             PostingRulesLedgerBookNativeCertified && HasPostingRulesLedgerBookNativeEvidence,
             JournalLifecycleLedgerBookNativeCertified && HasJournalLifecycleLedgerBookNativeEvidence,
             CloseReportingLedgerBookNativeCertified && HasCloseReportingLedgerBookNativeEvidence,
-            ExternalGlLedgerBookNativeCertified && HasExternalGlLedgerBookNativeEvidence
+            ExternalGlLedgerBookNativeCertified && HasExternalGlLedgerBookNativeEvidence,
+            ReconciliationLedgerBookNativeCertified && HasReconciliationLedgerBookNativeEvidence,
+            DirectLendingLedgerBookNativeCertified && HasDirectLendingLedgerBookNativeEvidence,
+            StrategyLedgerReadLedgerBookNativeCertified && HasStrategyLedgerReadLedgerBookNativeEvidence
         }.Count(static control => control);
 
-    public int RequiredControlCount => 6;
+    public int RequiredControlCount => 9;
 
     public bool HasLedgerBookScope => LedgerBookId.HasValue;
 
@@ -325,6 +337,15 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
 
     public bool HasExternalGlLedgerBookNativeEvidence =>
         HasWorkflowEvidence("external-gl", "external-ledger", "gl-export", "gl-import");
+
+    public bool HasReconciliationLedgerBookNativeEvidence =>
+        HasWorkflowEvidence("reconciliation", "break-queue", "statement-reconciliation", "reconciliation-case");
+
+    public bool HasDirectLendingLedgerBookNativeEvidence =>
+        HasWorkflowEvidence("direct-lending", "loan-account", "borrower", "direct-lending-projection");
+
+    public bool HasStrategyLedgerReadLedgerBookNativeEvidence =>
+        HasWorkflowEvidence("strategy-ledger", "strategy-run", "run-ledger", "strategy-ledger-read");
 
     private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
     {

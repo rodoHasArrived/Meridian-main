@@ -485,6 +485,9 @@ interface AccountingProductionCertificationProfileDraft {
   journalLifecycleLedgerBookNativeCertified: boolean;
   closeReportingLedgerBookNativeCertified: boolean;
   externalGlLedgerBookNativeCertified: boolean;
+  reconciliationLedgerBookNativeCertified: boolean;
+  directLendingLedgerBookNativeCertified: boolean;
+  strategyLedgerReadLedgerBookNativeCertified: boolean;
   periodReportDimensionQueriesCertified: boolean;
   crossPeriodReportDimensionQueriesCertified: boolean;
   journalQueryDimensionFiltersCertified: boolean;
@@ -3398,6 +3401,12 @@ export function useAccountingConfigurationViewModel(
           return { ...current, closeReportingLedgerBookNativeCertified: checked };
         case "external-gl-book":
           return { ...current, externalGlLedgerBookNativeCertified: checked };
+        case "reconciliation-book":
+          return { ...current, reconciliationLedgerBookNativeCertified: checked };
+        case "direct-lending-book":
+          return { ...current, directLendingLedgerBookNativeCertified: checked };
+        case "strategy-ledger-reads-book":
+          return { ...current, strategyLedgerReadLedgerBookNativeCertified: checked };
         case "period-report-dimensions":
           return { ...current, periodReportDimensionQueriesCertified: checked };
         case "cross-period-dimensions":
@@ -3433,6 +3442,9 @@ export function useAccountingConfigurationViewModel(
       journalLifecycleLedgerBookNativeCertified: productionCertificationDraft.journalLifecycleLedgerBookNativeCertified,
       closeReportingLedgerBookNativeCertified: productionCertificationDraft.closeReportingLedgerBookNativeCertified,
       externalGlLedgerBookNativeCertified: productionCertificationDraft.externalGlLedgerBookNativeCertified,
+      reconciliationLedgerBookNativeCertified: productionCertificationDraft.reconciliationLedgerBookNativeCertified,
+      directLendingLedgerBookNativeCertified: productionCertificationDraft.directLendingLedgerBookNativeCertified,
+      strategyLedgerReadLedgerBookNativeCertified: productionCertificationDraft.strategyLedgerReadLedgerBookNativeCertified,
       periodReportDimensionQueriesCertified: productionCertificationDraft.periodReportDimensionQueriesCertified,
       crossPeriodReportDimensionQueriesCertified: productionCertificationDraft.crossPeriodReportDimensionQueriesCertified,
       journalQueryDimensionFiltersCertified: productionCertificationDraft.journalQueryDimensionFiltersCertified,
@@ -5182,7 +5194,7 @@ function buildAccountingProductionReadinessViewModel(
         : "No critical production-readiness blockers",
     externalGlLabel: `${readiness.externalGlProviderCount} provider${readiness.externalGlProviderCount === 1 ? "" : "s"} | ${readiness.certifiedExternalGlMappingProfileCount} certified mapping${readiness.certifiedExternalGlMappingProfileCount === 1 ? "" : "s"} | live posting ${readiness.externalGlLivePostingEnabled ? "enabled" : "disabled"}`,
     ledgerBookRolloutLabel: readiness.ledgerBookRollout
-      ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"} | ${readiness.ledgerBookWorkflows?.completedControlCount ?? 0}/${readiness.ledgerBookWorkflows?.requiredControlCount ?? 6} workflow controls`
+      ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"} | ${readiness.ledgerBookWorkflows?.completedControlCount ?? 0}/${readiness.ledgerBookWorkflows?.requiredControlCount ?? 9} workflow controls`
       : "Ledger-book rollout evidence unavailable",
     dimensionalReportingLabel,
     dimensionalReportingEvidenceLabel,
@@ -5286,6 +5298,24 @@ function buildAccountingProductionCertificationProfileControls(
       checked: draft?.externalGlLedgerBookNativeCertified ?? false
     },
     {
+      id: "reconciliation-book",
+      label: "Reconciliation by book",
+      description: "Break queues, statement reconciliation, and cases retain ledger-book scope.",
+      checked: draft?.reconciliationLedgerBookNativeCertified ?? false
+    },
+    {
+      id: "direct-lending-book",
+      label: "Direct lending by book",
+      description: "Loan-account and borrower projections retain the selected ledger book.",
+      checked: draft?.directLendingLedgerBookNativeCertified ?? false
+    },
+    {
+      id: "strategy-ledger-reads-book",
+      label: "Strategy reads by book",
+      description: "Strategy run trial-balance and journal reads fail closed on cross-book data.",
+      checked: draft?.strategyLedgerReadLedgerBookNativeCertified ?? false
+    },
+    {
       id: "period-report-dimensions",
       label: "Period dimensions",
       description: "Period reports support required accounting dimensions.",
@@ -5320,6 +5350,9 @@ function buildAccountingProductionCertificationProfileDraft(
     journalLifecycleLedgerBookNativeCertified: profile.journalLifecycleLedgerBookNativeCertified,
     closeReportingLedgerBookNativeCertified: profile.closeReportingLedgerBookNativeCertified,
     externalGlLedgerBookNativeCertified: profile.externalGlLedgerBookNativeCertified,
+    reconciliationLedgerBookNativeCertified: profile.reconciliationLedgerBookNativeCertified ?? false,
+    directLendingLedgerBookNativeCertified: profile.directLendingLedgerBookNativeCertified ?? false,
+    strategyLedgerReadLedgerBookNativeCertified: profile.strategyLedgerReadLedgerBookNativeCertified ?? false,
     periodReportDimensionQueriesCertified: profile.periodReportDimensionQueriesCertified,
     crossPeriodReportDimensionQueriesCertified: profile.crossPeriodReportDimensionQueriesCertified,
     journalQueryDimensionFiltersCertified: profile.journalQueryDimensionFiltersCertified,
@@ -5347,6 +5380,9 @@ function buildAccountingProductionCertificationProfileFromReadiness(
     journalLifecycleLedgerBookNativeCertified: ledgerBookWorkflows?.journalLifecycleLedgerBookNativeCertified ?? false,
     closeReportingLedgerBookNativeCertified: ledgerBookWorkflows?.closeReportingLedgerBookNativeCertified ?? false,
     externalGlLedgerBookNativeCertified: ledgerBookWorkflows?.externalGlLedgerBookNativeCertified ?? false,
+    reconciliationLedgerBookNativeCertified: ledgerBookWorkflows?.reconciliationLedgerBookNativeCertified ?? false,
+    directLendingLedgerBookNativeCertified: ledgerBookWorkflows?.directLendingLedgerBookNativeCertified ?? false,
+    strategyLedgerReadLedgerBookNativeCertified: ledgerBookWorkflows?.strategyLedgerReadLedgerBookNativeCertified ?? false,
     periodReportDimensionQueriesCertified: dimensionalReporting?.periodReportDimensionQueriesCertified ?? false,
     crossPeriodReportDimensionQueriesCertified: dimensionalReporting?.crossPeriodReportDimensionQueriesCertified ?? false,
     journalQueryDimensionFiltersCertified: dimensionalReporting?.journalQueryDimensionFiltersCertified ?? false,

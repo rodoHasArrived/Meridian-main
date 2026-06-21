@@ -223,20 +223,23 @@ assessment. `AccountingProductionReadinessService` composes ledger-book rollout,
 configuration and Rules Studio, generated posting and dimensional coverage, manual journal
 lifecycle registration, close/report service registration, external-GL provider and certified
 mapping posture, explicit ledger-book-native workflow certification for posting rules, journal
-lifecycle, close/reporting, and external GL with retained ledger-book-scoped workflow
+lifecycle, close/reporting, external GL, reconciliation, direct-lending projections, and strategy
+ledger reads with retained ledger-book-scoped workflow
 evidence, migration-rollout certification for ledger-book
 scoping, historical journal backfill, dimensional backfill, accounting configuration promotion,
 close/reporting evidence migration, retained migration run artifacts, and tenant-admin rollout
 guidance into one shared fail-closed payload for browser, WPF, and admin setup surfaces.
 Ledger-book-native workflow controls are evidence-qualified per lane: posting rules, journal
-lifecycle, close/reporting, and external GL only count as complete when the selected ledger book has
+lifecycle, close/reporting, external GL, reconciliation, direct-lending projections, and strategy
+ledger reads only count as complete when the selected ledger book has
 retained evidence for that workflow or an explicit full workflow certification packet. A generic
 ledger-book evidence link no longer certifies every workflow control by implication. Posting Rule
-Execution, Journal Lifecycle, Close/Reporting, and External GL readiness components consume
+Execution, Journal Lifecycle, Close/Reporting, External GL, reconciliation, direct-lending, and
+strategy-ledger readiness controls consume
 the same workflow certification state, so those lanes remain blocked even when their services or
 generated rules are present until retained evidence proves the selected ledger book is native
-through posting candidates, lifecycle, close/reporting, import, reconciliation, mapping, and
-guarded-export workflows.
+through posting candidates, lifecycle, close/reporting, import, reconciliation, mapping,
+guarded-export, direct-lending projection, and strategy-run ledger-read workflows.
 Close/Reporting readiness also consumes dimensional reporting readiness directly, so report
 packages remain blocked until period reports, cross-period reports, journal dimension filters, and
 external-export dimension mappings have retained ledger-book-scoped evidence.

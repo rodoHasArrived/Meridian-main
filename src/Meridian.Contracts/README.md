@@ -197,7 +197,8 @@ Accounting-system contracts also publish `AccountingProductionReadinessDto`, a r
 assessment for production rollout. The payload aggregates ledger-book rollout, Rules Studio,
 posting-rule execution, journal lifecycle, dimensional accounting, external GL, close/reporting,
 tenant-administration posture, explicit ledger-book-native workflow certification for posting
-rules, journal lifecycle, close/reporting, and external GL with retained ledger-book-scoped
+rules, journal lifecycle, close/reporting, external GL, reconciliation, direct-lending
+projections, and strategy ledger reads with retained ledger-book-scoped
 workflow evidence, and migration-rollout controls for
 ledger-book migration, historical journal backfill, dimensional backfill, accounting configuration
 promotion, and close/reporting evidence migration with shared blocker codes and retained
@@ -209,7 +210,7 @@ expected to retain fund, ledger-book, entity, sleeve, strategy, investor, capita
 instrument, tax-lot, cost-center, counterparty, and external-GL dimensions with the migration
 evidence instead of relying on account or run names.
 `AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle, close/reporting,
-and external GL controls as complete only when the certification flag is paired with retained
+external GL, reconciliation, direct-lending, and strategy-ledger-read controls as complete only when the certification flag is paired with retained
 ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
 certification packet. Generic evidence links do not certify every workflow lane by implication.
 `AccountingDimensionalReportingReadinessDto` separately certifies period reports, cross-period

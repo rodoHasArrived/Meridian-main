@@ -181,7 +181,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         blocked.LedgerBookWorkflows.Should().NotBeNull();
         blocked.LedgerBookWorkflows!.LedgerBookId.Should().Be(ledgerBookId);
         blocked.LedgerBookWorkflows.CompletedControlCount.Should().Be(1);
-        blocked.LedgerBookWorkflows.RequiredControlCount.Should().Be(6);
+        blocked.LedgerBookWorkflows.RequiredControlCount.Should().Be(9);
         blocked.Issues.Should().Contain(issue =>
             issue.Code == "ledger-books.journal-lifecycle-not-certified" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
@@ -190,10 +190,22 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Code == "ledger-books.posting-rules-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.reconciliation-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.direct-lending-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.strategy-ledger-reads-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         blocked.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
-            component.Summary.Contains("1/6 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase));
+            component.Summary.Contains("1/9 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase));
         blocked.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.PostingRules &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
@@ -220,6 +232,9 @@ public sealed class AccountingSystemIntegrationServiceTests
                 JournalLifecycleLedgerBookNativeCertified: true,
                 CloseReportingLedgerBookNativeCertified: true,
                 ExternalGlLedgerBookNativeCertified: true,
+                ReconciliationLedgerBookNativeCertified: true,
+                DirectLendingLedgerBookNativeCertified: true,
+                StrategyLedgerReadLedgerBookNativeCertified: true,
                 LedgerBookWorkflowEvidenceLinks: [$"evidence://ledger-book/{otherLedgerBookId:D}/workflow-certification/full"]));
 
         mismatchedEvidence.Issues.Should().Contain(issue =>
@@ -236,6 +251,9 @@ public sealed class AccountingSystemIntegrationServiceTests
                 JournalLifecycleLedgerBookNativeCertified: true,
                 CloseReportingLedgerBookNativeCertified: true,
                 ExternalGlLedgerBookNativeCertified: true,
+                ReconciliationLedgerBookNativeCertified: true,
+                DirectLendingLedgerBookNativeCertified: true,
+                StrategyLedgerReadLedgerBookNativeCertified: true,
                 LedgerBookWorkflowEvidenceLinks: [$"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification"]));
 
         partialEvidence.LedgerBookWorkflows.Should().NotBeNull();
@@ -249,6 +267,15 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "ledger-books.external-gl-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.reconciliation-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.direct-lending-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.strategy-ledger-reads-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
         partialEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.PostingRules &&
@@ -280,10 +307,13 @@ public sealed class AccountingSystemIntegrationServiceTests
                 JournalLifecycleLedgerBookNativeCertified: true,
                 CloseReportingLedgerBookNativeCertified: true,
                 ExternalGlLedgerBookNativeCertified: true,
+                ReconciliationLedgerBookNativeCertified: true,
+                DirectLendingLedgerBookNativeCertified: true,
+                StrategyLedgerReadLedgerBookNativeCertified: true,
                 LedgerBookWorkflowEvidenceLinks: [certifiedEvidence]));
 
         certified.LedgerBookWorkflows.Should().NotBeNull();
-        certified.LedgerBookWorkflows!.CompletedControlCount.Should().Be(6);
+        certified.LedgerBookWorkflows!.CompletedControlCount.Should().Be(9);
         certified.LedgerBookWorkflows.EvidenceReferences.Should().Contain(certifiedEvidence);
         certified.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
@@ -293,7 +323,7 @@ public sealed class AccountingSystemIntegrationServiceTests
              issue.Code == "ledger-books.workflow-evidence-scope-mismatch"));
         certified.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
-            component.Summary.Contains("6/6 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase) &&
+            component.Summary.Contains("9/9 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase) &&
             component.EvidenceReferences.Contains(certifiedEvidence));
         certified.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.PostingRules &&
@@ -693,7 +723,10 @@ public sealed class AccountingSystemIntegrationServiceTests
                 UpdatedBy: "controller",
                 EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"],
                 TenantId: "tenant-alpha",
-                CompanyId: "company-alpha"),
+                CompanyId: "company-alpha",
+                ReconciliationLedgerBookNativeCertified: true,
+                DirectLendingLedgerBookNativeCertified: true,
+                StrategyLedgerReadLedgerBookNativeCertified: true),
             "controller",
             CorrelationId: "production-certification-default-fund",
             EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"]));
@@ -706,7 +739,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CompanyId: "company-alpha"));
 
         readiness.LedgerBookWorkflows.Should().NotBeNull();
-        readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(6);
+        readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(9);
         readiness.DimensionalReporting.Should().NotBeNull();
         readiness.DimensionalReporting!.CompletedControlCount.Should().Be(6);
         readiness.Issues.Should().NotContain(issue =>
@@ -803,7 +836,10 @@ public sealed class AccountingSystemIntegrationServiceTests
                 UpdatedBy: "controller",
                 EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/tenant-alpha"],
                 TenantId: "tenant-alpha",
-                CompanyId: "company-alpha"),
+                CompanyId: "company-alpha",
+                ReconciliationLedgerBookNativeCertified: true,
+                DirectLendingLedgerBookNativeCertified: true,
+                StrategyLedgerReadLedgerBookNativeCertified: true),
             "controller",
             CorrelationId: "production-certification-tenant-alpha",
             EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification:tenant-alpha"]));
@@ -3090,7 +3126,10 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ExternalExportDimensionMappingCertified: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "controller",
-                    EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"]),
+                    EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"],
+                    ReconciliationLedgerBookNativeCertified: true,
+                    DirectLendingLedgerBookNativeCertified: true,
+                    StrategyLedgerReadLedgerBookNativeCertified: true),
                 "controller",
                 CorrelationId: "production-certification-default-fund",
                 EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"])));
@@ -3120,7 +3159,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
         readiness.LedgerBookWorkflows.Should().NotBeNull();
-        readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(6);
+        readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(9);
         readiness.DimensionalReporting.Should().NotBeNull();
         readiness.DimensionalReporting!.CompletedControlCount.Should().Be(6);
         readiness.Issues.Should().NotContain(issue =>

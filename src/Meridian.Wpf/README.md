@@ -66,7 +66,8 @@ administration, rule-test/promotion setup, close setup, provider mapping, and te
 group setup, plus separate operational-hardening controls for audit review tooling, bulk
 import/export safeguards, performance validation, and disaster-recovery runbooks, renders
 the shared ledger-book-native workflow control count and retained ledger-book-scoped
-workflow evidence for posting rules, JE lifecycle, close/reporting, and external GL, renders
+workflow evidence for posting rules, JE lifecycle, close/reporting, external GL, reconciliation,
+direct-lending projections, and strategy ledger reads, renders
 dimensional report/query/export control counts with retained ledger-book-scoped evidence, renders
 and saves retained tenant/company/fund/book-scoped production-certification controls through the
 shared Accounting System profile store,

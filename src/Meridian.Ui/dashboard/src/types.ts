@@ -5606,6 +5606,9 @@ export interface AccountingProductionReadinessRequest {
   journalLifecycleLedgerBookNativeCertified?: boolean;
   closeReportingLedgerBookNativeCertified?: boolean;
   externalGlLedgerBookNativeCertified?: boolean;
+  reconciliationLedgerBookNativeCertified?: boolean;
+  directLendingLedgerBookNativeCertified?: boolean;
+  strategyLedgerReadLedgerBookNativeCertified?: boolean;
   ledgerBookWorkflowEvidenceLinks?: string[] | null;
   periodReportDimensionQueriesCertified?: boolean;
   crossPeriodReportDimensionQueriesCertified?: boolean;
@@ -5705,6 +5708,9 @@ export interface AccountingLedgerBookWorkflowReadiness {
   journalLifecycleLedgerBookNativeCertified: boolean;
   closeReportingLedgerBookNativeCertified: boolean;
   externalGlLedgerBookNativeCertified: boolean;
+  reconciliationLedgerBookNativeCertified?: boolean;
+  directLendingLedgerBookNativeCertified?: boolean;
+  strategyLedgerReadLedgerBookNativeCertified?: boolean;
   evidenceReferences: string[];
   completedControlCount: number;
   requiredControlCount: number;
@@ -5768,6 +5774,9 @@ export interface AccountingProductionCertificationProfile {
   journalLifecycleLedgerBookNativeCertified: boolean;
   closeReportingLedgerBookNativeCertified: boolean;
   externalGlLedgerBookNativeCertified: boolean;
+  reconciliationLedgerBookNativeCertified?: boolean;
+  directLendingLedgerBookNativeCertified?: boolean;
+  strategyLedgerReadLedgerBookNativeCertified?: boolean;
   periodReportDimensionQueriesCertified: boolean;
   crossPeriodReportDimensionQueriesCertified: boolean;
   journalQueryDimensionFiltersCertified: boolean;

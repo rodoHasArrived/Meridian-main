@@ -199,6 +199,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private bool _journalLifecycleLedgerBookNativeCertified;
     private bool _closeReportingLedgerBookNativeCertified;
     private bool _externalGlLedgerBookNativeCertified;
+    private bool _reconciliationLedgerBookNativeCertified;
+    private bool _directLendingLedgerBookNativeCertified;
+    private bool _strategyLedgerReadLedgerBookNativeCertified;
     private bool _periodReportDimensionQueriesCertified;
     private bool _crossPeriodReportDimensionQueriesCertified;
     private bool _journalQueryDimensionFiltersCertified;
@@ -592,6 +595,24 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _externalGlLedgerBookNativeCertified;
         set => SetProperty(ref _externalGlLedgerBookNativeCertified, value);
+    }
+
+    public bool ReconciliationLedgerBookNativeCertified
+    {
+        get => _reconciliationLedgerBookNativeCertified;
+        set => SetProperty(ref _reconciliationLedgerBookNativeCertified, value);
+    }
+
+    public bool DirectLendingLedgerBookNativeCertified
+    {
+        get => _directLendingLedgerBookNativeCertified;
+        set => SetProperty(ref _directLendingLedgerBookNativeCertified, value);
+    }
+
+    public bool StrategyLedgerReadLedgerBookNativeCertified
+    {
+        get => _strategyLedgerReadLedgerBookNativeCertified;
+        set => SetProperty(ref _strategyLedgerReadLedgerBookNativeCertified, value);
     }
 
     public bool PeriodReportDimensionQueriesCertified
@@ -1189,7 +1210,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 evidence,
                 correlationId,
                 ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId());
+                ResolveTenantAdministrationCompanyId(),
+                ReconciliationLedgerBookNativeCertified,
+                DirectLendingLedgerBookNativeCertified,
+                StrategyLedgerReadLedgerBookNativeCertified);
 
             var saved = await _productionCertificationProfileStore.UpsertAsync(
                 new AccountingProductionCertificationProfileUpsertRequestDto(
@@ -1719,6 +1743,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         JournalLifecycleLedgerBookNativeCertified = false;
         CloseReportingLedgerBookNativeCertified = false;
         ExternalGlLedgerBookNativeCertified = false;
+        ReconciliationLedgerBookNativeCertified = false;
+        DirectLendingLedgerBookNativeCertified = false;
+        StrategyLedgerReadLedgerBookNativeCertified = false;
         PeriodReportDimensionQueriesCertified = false;
         CrossPeriodReportDimensionQueriesCertified = false;
         JournalQueryDimensionFiltersCertified = false;
@@ -1941,6 +1968,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         JournalLifecycleLedgerBookNativeCertified = profile.JournalLifecycleLedgerBookNativeCertified;
         CloseReportingLedgerBookNativeCertified = profile.CloseReportingLedgerBookNativeCertified;
         ExternalGlLedgerBookNativeCertified = profile.ExternalGlLedgerBookNativeCertified;
+        ReconciliationLedgerBookNativeCertified = profile.ReconciliationLedgerBookNativeCertified;
+        DirectLendingLedgerBookNativeCertified = profile.DirectLendingLedgerBookNativeCertified;
+        StrategyLedgerReadLedgerBookNativeCertified = profile.StrategyLedgerReadLedgerBookNativeCertified;
         PeriodReportDimensionQueriesCertified = profile.PeriodReportDimensionQueriesCertified;
         CrossPeriodReportDimensionQueriesCertified = profile.CrossPeriodReportDimensionQueriesCertified;
         JournalQueryDimensionFiltersCertified = profile.JournalQueryDimensionFiltersCertified;
@@ -2191,6 +2221,19 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             PerformanceValidationConfigured: PerformanceValidationConfigured,
             DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured,
             TenantAdministrationEvidenceLinks: NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
+            PostingRulesLedgerBookNativeCertified: PostingRulesLedgerBookNativeCertified,
+            JournalLifecycleLedgerBookNativeCertified: JournalLifecycleLedgerBookNativeCertified,
+            CloseReportingLedgerBookNativeCertified: CloseReportingLedgerBookNativeCertified,
+            ExternalGlLedgerBookNativeCertified: ExternalGlLedgerBookNativeCertified,
+            ReconciliationLedgerBookNativeCertified: ReconciliationLedgerBookNativeCertified,
+            DirectLendingLedgerBookNativeCertified: DirectLendingLedgerBookNativeCertified,
+            StrategyLedgerReadLedgerBookNativeCertified: StrategyLedgerReadLedgerBookNativeCertified,
+            LedgerBookWorkflowEvidenceLinks: NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText),
+            PeriodReportDimensionQueriesCertified: PeriodReportDimensionQueriesCertified,
+            CrossPeriodReportDimensionQueriesCertified: CrossPeriodReportDimensionQueriesCertified,
+            JournalQueryDimensionFiltersCertified: JournalQueryDimensionFiltersCertified,
+            ExternalExportDimensionMappingCertified: ExternalExportDimensionMappingCertified,
+            DimensionalReportingEvidenceLinks: NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText),
             RequiredLedgerBookScopes: requiredScopes);
     }
 
@@ -2202,7 +2245,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             $"{readiness.Components.Count} component(s), {readiness.CriticalIssueCount} critical issue(s), {readiness.WarningIssueCount} warning issue(s); generated {readiness.GeneratedAtUtc.ToLocalTime():g}.";
         ProductionReadinessLedgerBookText = readiness.LedgerBookRollout is null
             ? "Ledger-book rollout assessment is unavailable."
-            : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s); {readiness.LedgerBookWorkflows?.CompletedControlCount ?? 0}/{readiness.LedgerBookWorkflows?.RequiredControlCount ?? 6} workflow control(s).";
+            : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s); {readiness.LedgerBookWorkflows?.CompletedControlCount ?? 0}/{readiness.LedgerBookWorkflows?.RequiredControlCount ?? 9} workflow control(s).";
         ProductionReadinessExternalGlText =
             $"{readiness.ExternalGlProviderCount} provider(s), {readiness.CertifiedExternalGlMappingProfileCount} certified mapping profile(s); live posting {(readiness.ExternalGlLivePostingEnabled ? "available" : "disabled")}.";
         ProductionReadinessDimensionalReportingText = readiness.DimensionalReporting is null

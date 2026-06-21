@@ -255,6 +255,18 @@
                                                   IsChecked="{Binding ExternalGlLedgerBookNativeCertified, Mode=TwoWay}"
                                                   Margin="0,0,0,6"
                                                   AutomationProperties.AutomationId="AccountingProductionCertificationExternalGlBookCheckBox" />
+                                        <CheckBox Content="Reconciliation by book"
+                                                  IsChecked="{Binding ReconciliationLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationReconciliationBookCheckBox" />
+                                        <CheckBox Content="Direct lending by book"
+                                                  IsChecked="{Binding DirectLendingLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationDirectLendingBookCheckBox" />
+                                        <CheckBox Content="Strategy reads by book"
+                                                  IsChecked="{Binding StrategyLedgerReadLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationStrategyLedgerReadsBookCheckBox" />
                                         <CheckBox Content="Period dimensions"
                                                   IsChecked="{Binding PeriodReportDimensionQueriesCertified, Mode=TwoWay}"
                                                   Margin="0,0,10,6"

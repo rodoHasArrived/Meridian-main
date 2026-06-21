@@ -160,6 +160,9 @@ public sealed class AccountingProductionReadinessService
             JournalLifecycleLedgerBookNativeCertified = request.JournalLifecycleLedgerBookNativeCertified || profile.JournalLifecycleLedgerBookNativeCertified,
             CloseReportingLedgerBookNativeCertified = request.CloseReportingLedgerBookNativeCertified || profile.CloseReportingLedgerBookNativeCertified,
             ExternalGlLedgerBookNativeCertified = request.ExternalGlLedgerBookNativeCertified || profile.ExternalGlLedgerBookNativeCertified,
+            ReconciliationLedgerBookNativeCertified = request.ReconciliationLedgerBookNativeCertified || profile.ReconciliationLedgerBookNativeCertified,
+            DirectLendingLedgerBookNativeCertified = request.DirectLendingLedgerBookNativeCertified || profile.DirectLendingLedgerBookNativeCertified,
+            StrategyLedgerReadLedgerBookNativeCertified = request.StrategyLedgerReadLedgerBookNativeCertified || profile.StrategyLedgerReadLedgerBookNativeCertified,
             LedgerBookWorkflowEvidenceLinks = workflowEvidence,
             PeriodReportDimensionQueriesCertified = request.PeriodReportDimensionQueriesCertified || profile.PeriodReportDimensionQueriesCertified,
             CrossPeriodReportDimensionQueriesCertified = request.CrossPeriodReportDimensionQueriesCertified || profile.CrossPeriodReportDimensionQueriesCertified,
@@ -222,6 +225,9 @@ public sealed class AccountingProductionReadinessService
             request.JournalLifecycleLedgerBookNativeCertified,
             request.CloseReportingLedgerBookNativeCertified,
             request.ExternalGlLedgerBookNativeCertified,
+            request.ReconciliationLedgerBookNativeCertified,
+            request.DirectLendingLedgerBookNativeCertified,
+            request.StrategyLedgerReadLedgerBookNativeCertified,
             workflowEvidence);
         var workflowIssues = BuildLedgerBookWorkflowIssues(workflowReadiness);
         var service = _services.GetService<ILedgerBookService>();
@@ -271,7 +277,7 @@ public sealed class AccountingProductionReadinessService
             "Ledger books",
             status,
             status == AccountingProductionReadinessStatusDto.Ready ? 100 : status == AccountingProductionReadinessStatusDto.ReviewRequired ? 70 : 20,
-            $"{rollout.BookCount} ledger book(s), {rollout.OpenPeriodCount} open period(s), {rollout.CriticalIssueCount} critical issue(s); {workflowReadiness.CompletedControlCount}/{workflowReadiness.RequiredControlCount} ledger-book-native workflow control(s) certified; {workflowReadiness.EvidenceReferences.Count} retained workflow evidence link(s).",
+            $"{rollout.BookCount} ledger book(s), {rollout.OpenPeriodCount} open period(s), {rollout.CriticalIssueCount} critical issue(s); {workflowReadiness.CompletedControlCount}/{workflowReadiness.RequiredControlCount} ledger-book-native workflow control(s) certified across posting, lifecycle, close/reporting, external GL, reconciliation, direct lending, and strategy-ledger reads; {workflowReadiness.EvidenceReferences.Count} retained workflow evidence link(s).",
             issues,
             UiApiRoutes.LedgerBookRolloutAssessment,
             workflowReadiness.EvidenceReferences));
@@ -290,7 +296,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.LedgerBooks,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Accounting workflow certification is not scoped to a Meridian ledger book.",
-                "Select the target ledger book before certifying posting rules, journal lifecycle, close/reporting, and external-GL workflows as ledger-book-native."));
+                "Select the target ledger book before certifying posting rules, journal lifecycle, close/reporting, external-GL, reconciliation, direct-lending, and strategy-ledger workflows as ledger-book-native."));
         }
 
         if (!readiness.HasRetainedEvidence)
@@ -300,7 +306,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.LedgerBooks,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Ledger-book-native workflow certification has no retained evidence links.",
-                "Attach retained evidence identifying the selected ledger book and the certified posting-rule, journal-lifecycle, close/reporting, and external-GL workflow checks before production rollout."));
+                "Attach retained evidence identifying the selected ledger book and the certified posting-rule, journal-lifecycle, close/reporting, external-GL, reconciliation, direct-lending, and strategy-ledger workflow checks before production rollout."));
         }
         else if (readiness.HasLedgerBookScope && !readiness.HasLedgerBookScopedEvidence)
         {
@@ -390,6 +396,66 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "External GL certification lacks retained external-GL workflow evidence for the selected ledger book.",
                 "Attach evidence naming the selected ledger book and external-GL import, reconciliation, mapping, or guarded-export workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.ReconciliationLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.reconciliation-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Reconciliation workflows have not been certified as ledger-book-native.",
+                "Prove break queues, statement reconciliation, casework, and retained reconciliation snapshots are bound to the selected ledger book before production rollout."));
+        }
+        else if (!readiness.HasReconciliationLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.reconciliation-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Reconciliation certification lacks retained reconciliation workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and reconciliation, break-queue, statement-reconciliation, or reconciliation-case workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.DirectLendingLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.direct-lending-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Direct-lending accounting projections have not been certified as ledger-book-native.",
+                "Prove loan-account, borrower, accrual, and direct-lending projection workflows retain the selected ledger book before production rollout."));
+        }
+        else if (!readiness.HasDirectLendingLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.direct-lending-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Direct-lending certification lacks retained direct-lending workflow evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and direct-lending, loan-account, borrower, or direct-lending-projection workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.StrategyLedgerReadLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.strategy-ledger-reads-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Strategy ledger reads have not been certified as ledger-book-native.",
+                "Prove strategy-run trial-balance, journal, and drill-through reads preserve the selected ledger book and fail closed on cross-book data before production rollout."));
+        }
+        else if (!readiness.HasStrategyLedgerReadLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.strategy-ledger-reads-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Strategy ledger-read certification lacks retained strategy-ledger evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and strategy-ledger, strategy-run, run-ledger, or strategy-ledger-read workflow before production rollout.",
                 readiness.EvidenceReferences));
         }
 
