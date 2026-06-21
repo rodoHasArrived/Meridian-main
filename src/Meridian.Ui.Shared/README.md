@@ -263,6 +263,10 @@ with retained evidence naming the selected ledger book. Those dimensional contro
 evidence-qualified per lane: period reports, cross-period reports, journal filters, and external
 export mappings each require matching retained evidence, or an explicit full dimensional or
 production certification packet, before readiness counts the control as complete.
+Tenant administration readiness also treats operational hardening as first-class setup scope:
+audit review tooling, bulk import/export safeguards, performance validation, and
+disaster-recovery runbooks each require retained tenant-admin evidence, or a full setup packet,
+before the tenant/company rollout is considered ready.
 External GL guarded-export package endpoints stamp export creation, certification, and manifest
 lookup with the authenticated workstation tenant/company scope, so browser and WPF callers cannot
 retrieve or certify another company's retained export artifact by submitting tenant or company

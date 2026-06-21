@@ -212,6 +212,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private bool _scopedAccessPoliciesConfigured;
     private bool _reportingGroupsConfigured;
     private bool _accountingAdminSurfaceConfigured;
+    private bool _auditReviewToolingConfigured;
+    private bool _bulkImportExportSafeguardsConfigured;
+    private bool _performanceValidationConfigured;
+    private bool _disasterRecoveryRunbookConfigured;
     private string _selectedReconciliationView = "Open breaks";
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
     private string _draftMemo = "Manual accounting adjustment";
@@ -679,6 +683,30 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         set => SetProperty(ref _accountingAdminSurfaceConfigured, value);
     }
 
+    public bool AuditReviewToolingConfigured
+    {
+        get => _auditReviewToolingConfigured;
+        set => SetProperty(ref _auditReviewToolingConfigured, value);
+    }
+
+    public bool BulkImportExportSafeguardsConfigured
+    {
+        get => _bulkImportExportSafeguardsConfigured;
+        set => SetProperty(ref _bulkImportExportSafeguardsConfigured, value);
+    }
+
+    public bool PerformanceValidationConfigured
+    {
+        get => _performanceValidationConfigured;
+        set => SetProperty(ref _performanceValidationConfigured, value);
+    }
+
+    public bool DisasterRecoveryRunbookConfigured
+    {
+        get => _disasterRecoveryRunbookConfigured;
+        set => SetProperty(ref _disasterRecoveryRunbookConfigured, value);
+    }
+
     public bool CanSaveTenantAdministrationProfile =>
         _activeFundProfile is not null
         && _tenantAdministrationProfileStore is not null
@@ -1092,7 +1120,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 RuleTestPromotionStudioConfigured: AccountingAdminSurfaceConfigured,
                 CloseSetupStudioConfigured: AccountingAdminSurfaceConfigured,
                 ProviderMappingStudioConfigured: AccountingAdminSurfaceConfigured,
-                TenantCompanyReportGroupSetupStudioConfigured: AccountingAdminSurfaceConfigured);
+                TenantCompanyReportGroupSetupStudioConfigured: AccountingAdminSurfaceConfigured,
+                AuditReviewToolingConfigured: AuditReviewToolingConfigured,
+                BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
+                PerformanceValidationConfigured: PerformanceValidationConfigured,
+                DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured);
 
             var saved = await _tenantAdministrationProfileStore.UpsertAsync(
                 new AccountingTenantAdministrationProfileUpsertRequestDto(
@@ -1700,6 +1732,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ScopedAccessPoliciesConfigured = false;
         ReportingGroupsConfigured = false;
         AccountingAdminSurfaceConfigured = false;
+        AuditReviewToolingConfigured = false;
+        BulkImportExportSafeguardsConfigured = false;
+        PerformanceValidationConfigured = false;
+        DisasterRecoveryRunbookConfigured = false;
         BatchReconciliationActionText = "No reconciliation rows are loaded.";
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
@@ -1976,6 +2012,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ScopedAccessPoliciesConfigured = profile.ScopedAccessPoliciesConfigured;
         ReportingGroupsConfigured = profile.ReportingGroupsConfigured;
         AccountingAdminSurfaceConfigured = profile.AccountingAdminSurfaceConfigured;
+        AuditReviewToolingConfigured = profile.AuditReviewToolingConfigured;
+        BulkImportExportSafeguardsConfigured = profile.BulkImportExportSafeguardsConfigured;
+        PerformanceValidationConfigured = profile.PerformanceValidationConfigured;
+        DisasterRecoveryRunbookConfigured = profile.DisasterRecoveryRunbookConfigured;
         TenantAdministrationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
         TenantAdministrationProfileScopeText = $"Tenant {profile.TenantId}; company {profile.CompanyId}.";
         TenantAdministrationProfileUpdatedText =
@@ -2018,7 +2058,31 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 AccountingAdminSurfaceConfigured ? "Configured" : "Missing",
                 "Accounting setup controls are exposed through the governed operator surface.",
                 "WPF Accounting Configure",
-                "operator-surface")
+                "operator-surface"),
+            new AccountingWorkbenchRow(
+                "Audit review",
+                AuditReviewToolingConfigured ? "Configured" : "Missing",
+                "Audit, evidence, transition, and exception review tooling are retained for operations.",
+                "audit/evidence review",
+                "audit-review-tooling"),
+            new AccountingWorkbenchRow(
+                "Bulk safeguards",
+                BulkImportExportSafeguardsConfigured ? "Configured" : "Missing",
+                "Bulk import, guarded export, reconciliation, preview, approval, and rollback safeguards are retained.",
+                "import/export",
+                "bulk-import-export-safeguards"),
+            new AccountingWorkbenchRow(
+                "Performance proof",
+                PerformanceValidationConfigured ? "Configured" : "Missing",
+                "Accounting configuration, ledger queries, close, report, and export performance validation is retained.",
+                "load/capacity",
+                "performance-validation"),
+            new AccountingWorkbenchRow(
+                "Recovery runbook",
+                DisasterRecoveryRunbookConfigured ? "Configured" : "Missing",
+                "Disaster recovery, restore, replay, escalation, and operating runbook evidence is retained.",
+                "DR/runbook",
+                "disaster-recovery-runbook")
         ]);
     }
 
@@ -2122,6 +2186,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             CloseSetupStudioConfigured: AccountingAdminSurfaceConfigured,
             ProviderMappingStudioConfigured: AccountingAdminSurfaceConfigured,
             TenantCompanyReportGroupSetupStudioConfigured: AccountingAdminSurfaceConfigured,
+            AuditReviewToolingConfigured: AuditReviewToolingConfigured,
+            BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
+            PerformanceValidationConfigured: PerformanceValidationConfigured,
+            DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured,
             TenantAdministrationEvidenceLinks: NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
             RequiredLedgerBookScopes: requiredScopes);
     }

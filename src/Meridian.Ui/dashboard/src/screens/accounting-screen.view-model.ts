@@ -473,6 +473,10 @@ interface AccountingTenantAdministrationProfileDraft {
   closeSetupStudioConfigured: boolean;
   providerMappingStudioConfigured: boolean;
   tenantCompanyReportGroupSetupStudioConfigured: boolean;
+  auditReviewToolingConfigured: boolean;
+  bulkImportExportSafeguardsConfigured: boolean;
+  performanceValidationConfigured: boolean;
+  disasterRecoveryRunbookConfigured: boolean;
   evidenceText: string;
 }
 
@@ -3488,6 +3492,14 @@ export function useAccountingConfigurationViewModel(
           return { ...current, providerMappingStudioConfigured: checked };
         case "tenant-company-report-group-studio":
           return { ...current, tenantCompanyReportGroupSetupStudioConfigured: checked };
+        case "audit-review-tooling":
+          return { ...current, auditReviewToolingConfigured: checked };
+        case "bulk-import-export-safeguards":
+          return { ...current, bulkImportExportSafeguardsConfigured: checked };
+        case "performance-validation":
+          return { ...current, performanceValidationConfigured: checked };
+        case "disaster-recovery-runbook":
+          return { ...current, disasterRecoveryRunbookConfigured: checked };
         default:
           return current;
       }
@@ -3523,6 +3535,10 @@ export function useAccountingConfigurationViewModel(
       closeSetupStudioConfigured: tenantAdministrationDraft.closeSetupStudioConfigured,
       providerMappingStudioConfigured: tenantAdministrationDraft.providerMappingStudioConfigured,
       tenantCompanyReportGroupSetupStudioConfigured: tenantAdministrationDraft.tenantCompanyReportGroupSetupStudioConfigured,
+      auditReviewToolingConfigured: tenantAdministrationDraft.auditReviewToolingConfigured,
+      bulkImportExportSafeguardsConfigured: tenantAdministrationDraft.bulkImportExportSafeguardsConfigured,
+      performanceValidationConfigured: tenantAdministrationDraft.performanceValidationConfigured,
+      disasterRecoveryRunbookConfigured: tenantAdministrationDraft.disasterRecoveryRunbookConfigured,
       updatedAtUtc: new Date().toISOString(),
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
@@ -5451,6 +5467,30 @@ function buildAccountingTenantAdministrationProfileControls(
       label: "Tenant groups",
       description: "Tenant, company, scoped access, admin role, report group, and delivery group setup are exposed.",
       checked: draft?.tenantCompanyReportGroupSetupStudioConfigured ?? false
+    },
+    {
+      id: "audit-review-tooling",
+      label: "Audit review",
+      description: "Audit, evidence, transition, and exception review tooling are certified for operations.",
+      checked: draft?.auditReviewToolingConfigured ?? false
+    },
+    {
+      id: "bulk-import-export-safeguards",
+      label: "Bulk safeguards",
+      description: "Bulk import, guarded export, reconciliation, preview, approval, and rollback safeguards are certified.",
+      checked: draft?.bulkImportExportSafeguardsConfigured ?? false
+    },
+    {
+      id: "performance-validation",
+      label: "Performance proof",
+      description: "Accounting configuration, ledger queries, close, reports, and exports have retained performance validation.",
+      checked: draft?.performanceValidationConfigured ?? false
+    },
+    {
+      id: "disaster-recovery-runbook",
+      label: "Recovery runbook",
+      description: "Disaster recovery, restore, replay, escalation, and accounting operating runbook evidence is certified.",
+      checked: draft?.disasterRecoveryRunbookConfigured ?? false
     }
   ];
 }
@@ -5471,6 +5511,10 @@ function buildAccountingTenantAdministrationProfileDraft(
     closeSetupStudioConfigured: profile.closeSetupStudioConfigured ?? false,
     providerMappingStudioConfigured: profile.providerMappingStudioConfigured ?? false,
     tenantCompanyReportGroupSetupStudioConfigured: profile.tenantCompanyReportGroupSetupStudioConfigured ?? false,
+    auditReviewToolingConfigured: profile.auditReviewToolingConfigured ?? false,
+    bulkImportExportSafeguardsConfigured: profile.bulkImportExportSafeguardsConfigured ?? false,
+    performanceValidationConfigured: profile.performanceValidationConfigured ?? false,
+    disasterRecoveryRunbookConfigured: profile.disasterRecoveryRunbookConfigured ?? false,
     evidenceText: profile.evidenceReferences.join("\n")
   };
 }
@@ -5498,6 +5542,10 @@ function buildAccountingTenantAdministrationProfileFromReadiness(
     closeSetupStudioConfigured: tenantAdministration.closeSetupStudioConfigured ?? false,
     providerMappingStudioConfigured: tenantAdministration.providerMappingStudioConfigured ?? false,
     tenantCompanyReportGroupSetupStudioConfigured: tenantAdministration.tenantCompanyReportGroupSetupStudioConfigured ?? false,
+    auditReviewToolingConfigured: tenantAdministration.auditReviewToolingConfigured ?? false,
+    bulkImportExportSafeguardsConfigured: tenantAdministration.bulkImportExportSafeguardsConfigured ?? false,
+    performanceValidationConfigured: tenantAdministration.performanceValidationConfigured ?? false,
+    disasterRecoveryRunbookConfigured: tenantAdministration.disasterRecoveryRunbookConfigured ?? false,
     updatedAtUtc: "",
     updatedBy: "not retained",
     evidenceReferences: tenantAdministration.evidenceReferences ?? [],
@@ -5538,6 +5586,10 @@ function buildAccountingTenantAdministrationControls(
     ["close-setup-studio", "Close setup", tenantAdministration.closeSetupStudioConfigured ?? false],
     ["provider-mapping-studio", "Provider mapping", tenantAdministration.providerMappingStudioConfigured ?? false],
     ["tenant-company-report-group-studio", "Tenant groups", tenantAdministration.tenantCompanyReportGroupSetupStudioConfigured ?? false],
+    ["audit-review-tooling", "Audit review", tenantAdministration.auditReviewToolingConfigured ?? false],
+    ["bulk-import-export-safeguards", "Bulk safeguards", tenantAdministration.bulkImportExportSafeguardsConfigured ?? false],
+    ["performance-validation", "Performance proof", tenantAdministration.performanceValidationConfigured ?? false],
+    ["disaster-recovery-runbook", "Recovery runbook", tenantAdministration.disasterRecoveryRunbookConfigured ?? false],
     ["retained-evidence", "Setup evidence", tenantAdministration.hasRetainedEvidence]
   ];
 

@@ -2782,9 +2782,13 @@ describe("accounting-screen view model", () => {
         closeSetupStudioConfigured: false,
         providerMappingStudioConfigured: false,
         tenantCompanyReportGroupSetupStudioConfigured: false,
+        auditReviewToolingConfigured: false,
+        bulkImportExportSafeguardsConfigured: false,
+        performanceValidationConfigured: false,
+        disasterRecoveryRunbookConfigured: false,
         evidenceReferences: ["evidence://tenant-admin/gap"],
         completedControlCount: 5,
-        requiredControlCount: 14,
+        requiredControlCount: 18,
         hasTenantScope: true,
         hasCompanyScope: true,
         hasRetainedEvidence: true
@@ -2847,6 +2851,10 @@ describe("accounting-screen view model", () => {
       closeSetupStudioConfigured: false,
       providerMappingStudioConfigured: false,
       tenantCompanyReportGroupSetupStudioConfigured: false,
+      auditReviewToolingConfigured: false,
+      bulkImportExportSafeguardsConfigured: false,
+      performanceValidationConfigured: false,
+      disasterRecoveryRunbookConfigured: false,
       updatedAtUtc: "2026-06-30T11:55:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://tenant-admin/setup"],
@@ -3045,7 +3053,7 @@ describe("accounting-screen view model", () => {
       ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers | 4/6 workflow controls",
       dimensionalReportingLabel: "4/6 report/query/export dimension controls | ledger book book-primary",
       dimensionalReportingEvidenceLabel: "1 retained dimensional evidence reference",
-      tenantAdministrationLabel: "5/14 admin controls | tenant tenant-alpha | company company-alpha",
+      tenantAdministrationLabel: "5/18 admin controls | tenant tenant-alpha | company company-alpha",
       tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
     });
     expect(result.current.productionReadiness.tenantAdministrationControls).toEqual(expect.arrayContaining([
@@ -3056,7 +3064,11 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "wpf-admin-studio", statusLabel: "Missing", tone: "danger" }),
       expect.objectContaining({ id: "chart-administration-studio", statusLabel: "Missing", tone: "danger" }),
       expect.objectContaining({ id: "rule-test-promotion-studio", statusLabel: "Missing", tone: "danger" }),
-      expect.objectContaining({ id: "provider-mapping-studio", statusLabel: "Missing", tone: "danger" })
+      expect.objectContaining({ id: "provider-mapping-studio", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "audit-review-tooling", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "bulk-import-export-safeguards", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "performance-validation", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "disaster-recovery-runbook", statusLabel: "Missing", tone: "danger" })
     ]));
     expect(result.current.productionReadiness.components).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -3118,7 +3130,11 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "operator-surface", checked: false }),
       expect.objectContaining({ id: "chart-administration-studio", checked: false }),
       expect.objectContaining({ id: "rule-test-promotion-studio", checked: false }),
-      expect.objectContaining({ id: "provider-mapping-studio", checked: false })
+      expect.objectContaining({ id: "provider-mapping-studio", checked: false }),
+      expect.objectContaining({ id: "audit-review-tooling", checked: false }),
+      expect.objectContaining({ id: "bulk-import-export-safeguards", checked: false }),
+      expect.objectContaining({ id: "performance-validation", checked: false }),
+      expect.objectContaining({ id: "disaster-recovery-runbook", checked: false })
     ]));
     expect(result.current.tenantAdministrationProfile.canSave).toBe(true);
 
@@ -3127,7 +3143,11 @@ describe("accounting-screen view model", () => {
       result.current.tenantAdministrationProfile.updateControl("chart-administration-studio", true);
       result.current.tenantAdministrationProfile.updateControl("rule-test-promotion-studio", true);
       result.current.tenantAdministrationProfile.updateControl("provider-mapping-studio", true);
-      result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup\nevidence://tenant-admin/operator-surface\nevidence://tenant-admin/chart-administration\nevidence://tenant-admin/rules-studio\nevidence://tenant-admin/provider-mapping");
+      result.current.tenantAdministrationProfile.updateControl("audit-review-tooling", true);
+      result.current.tenantAdministrationProfile.updateControl("bulk-import-export-safeguards", true);
+      result.current.tenantAdministrationProfile.updateControl("performance-validation", true);
+      result.current.tenantAdministrationProfile.updateControl("disaster-recovery-runbook", true);
+      result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup\nevidence://tenant-admin/operator-surface\nevidence://tenant-admin/chart-administration\nevidence://tenant-admin/rules-studio\nevidence://tenant-admin/provider-mapping\nevidence://tenant-admin/audit-review\nevidence://tenant-admin/bulk-import-export\nevidence://tenant-admin/performance-validation\nevidence://tenant-admin/disaster-recovery");
     });
 
     await act(async () => {
@@ -3147,12 +3167,20 @@ describe("accounting-screen view model", () => {
         closeSetupStudioConfigured: false,
         providerMappingStudioConfigured: true,
         tenantCompanyReportGroupSetupStudioConfigured: false,
+        auditReviewToolingConfigured: true,
+        bulkImportExportSafeguardsConfigured: true,
+        performanceValidationConfigured: true,
+        disasterRecoveryRunbookConfigured: true,
         evidenceReferences: [
           "evidence://tenant-admin/setup",
           "evidence://tenant-admin/operator-surface",
           "evidence://tenant-admin/chart-administration",
           "evidence://tenant-admin/rules-studio",
-          "evidence://tenant-admin/provider-mapping"
+          "evidence://tenant-admin/provider-mapping",
+          "evidence://tenant-admin/audit-review",
+          "evidence://tenant-admin/bulk-import-export",
+          "evidence://tenant-admin/performance-validation",
+          "evidence://tenant-admin/disaster-recovery"
         ]
       }),
       evidenceLinks: [
@@ -3160,7 +3188,11 @@ describe("accounting-screen view model", () => {
         "evidence://tenant-admin/operator-surface",
         "evidence://tenant-admin/chart-administration",
         "evidence://tenant-admin/rules-studio",
-        "evidence://tenant-admin/provider-mapping"
+        "evidence://tenant-admin/provider-mapping",
+        "evidence://tenant-admin/audit-review",
+        "evidence://tenant-admin/bulk-import-export",
+        "evidence://tenant-admin/performance-validation",
+        "evidence://tenant-admin/disaster-recovery"
       ]
     }));
     expect(result.current.tenantAdministrationProfile.statusText).toBe("Tenant administration setup profile saved; production readiness refreshed from retained controls.");

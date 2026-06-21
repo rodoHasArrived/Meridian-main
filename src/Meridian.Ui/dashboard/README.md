@@ -228,8 +228,9 @@ production-readiness policy in React. Tenant administration uses the shared
 `AccountingTenantAdministrationReadinessDto` to render
 tenant, company, admin-role, scoped-access, reporting-group, aggregate operator-surface, browser
 accounting admin-studio, WPF accounting admin-studio, chart administration, rule-test/promotion
-setup, close setup, provider/external-GL mapping setup, tenant/company/report-group setup, and
-retained-evidence controls instead of treating setup readiness as a generic component row, and the
+setup, close setup, provider/external-GL mapping setup, tenant/company/report-group setup, audit
+review tooling, bulk import/export safeguards, performance validation, disaster-recovery runbooks,
+and retained-evidence controls instead of treating setup readiness as a generic component row, and the
 dashboard route catalog exposes the retained tenant-administration profile endpoint. The Configure
 surface can load, edit, and save that retained profile with browser accounting admin-studio,
 enterprise configuration studio coverage, and setup evidence before refreshing

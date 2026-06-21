@@ -168,7 +168,11 @@ public sealed record AccountingTenantAdministrationProfileDto(
     bool RuleTestPromotionStudioConfigured = false,
     bool CloseSetupStudioConfigured = false,
     bool ProviderMappingStudioConfigured = false,
-    bool TenantCompanyReportGroupSetupStudioConfigured = false)
+    bool TenantCompanyReportGroupSetupStudioConfigured = false,
+    bool AuditReviewToolingConfigured = false,
+    bool BulkImportExportSafeguardsConfigured = false,
+    bool PerformanceValidationConfigured = false,
+    bool DisasterRecoveryRunbookConfigured = false)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -236,6 +240,10 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool CloseSetupStudioConfigured = false,
     bool ProviderMappingStudioConfigured = false,
     bool TenantCompanyReportGroupSetupStudioConfigured = false,
+    bool AuditReviewToolingConfigured = false,
+    bool BulkImportExportSafeguardsConfigured = false,
+    bool PerformanceValidationConfigured = false,
+    bool DisasterRecoveryRunbookConfigured = false,
     IReadOnlyList<string>? TenantAdministrationEvidenceLinks = null,
     bool PostingRulesLedgerBookNativeCertified = false,
     bool JournalLifecycleLedgerBookNativeCertified = false,
@@ -420,7 +428,11 @@ public sealed record AccountingTenantAdministrationReadinessDto(
     bool CloseSetupStudioConfigured,
     bool ProviderMappingStudioConfigured,
     bool TenantCompanyReportGroupSetupStudioConfigured,
-    IReadOnlyList<string>? EvidenceReferences = null)
+    IReadOnlyList<string>? EvidenceReferences = null,
+    bool AuditReviewToolingConfigured = false,
+    bool BulkImportExportSafeguardsConfigured = false,
+    bool PerformanceValidationConfigured = false,
+    bool DisasterRecoveryRunbookConfigured = false)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -441,10 +453,14 @@ public sealed record AccountingTenantAdministrationReadinessDto(
             RuleTestPromotionStudioConfigured && HasRuleTestPromotionStudioEvidence,
             CloseSetupStudioConfigured && HasCloseSetupStudioEvidence,
             ProviderMappingStudioConfigured && HasProviderMappingStudioEvidence,
-            TenantCompanyReportGroupSetupStudioConfigured && HasTenantCompanyReportGroupSetupStudioEvidence
+            TenantCompanyReportGroupSetupStudioConfigured && HasTenantCompanyReportGroupSetupStudioEvidence,
+            AuditReviewToolingConfigured && HasAuditReviewToolingEvidence,
+            BulkImportExportSafeguardsConfigured && HasBulkImportExportSafeguardsEvidence,
+            PerformanceValidationConfigured && HasPerformanceValidationEvidence,
+            DisasterRecoveryRunbookConfigured && HasDisasterRecoveryRunbookEvidence
         }.Count(static control => control);
 
-    public int RequiredControlCount => 14;
+    public int RequiredControlCount => 18;
 
     public bool HasTenantScope => !string.IsNullOrWhiteSpace(TenantId);
 
@@ -487,6 +503,18 @@ public sealed record AccountingTenantAdministrationReadinessDto(
 
     public bool HasTenantCompanyReportGroupSetupStudioEvidence =>
         HasTenantAdministrationEvidence("tenant-company-report-group", "tenant-company-setup", "report-group-setup", "company-report-group");
+
+    public bool HasAuditReviewToolingEvidence =>
+        HasTenantAdministrationEvidence("audit-review", "audit-tooling", "audit-workbench", "evidence-review");
+
+    public bool HasBulkImportExportSafeguardsEvidence =>
+        HasTenantAdministrationEvidence("bulk-import-export", "bulk-import", "bulk-export", "import-export-safeguard");
+
+    public bool HasPerformanceValidationEvidence =>
+        HasTenantAdministrationEvidence("performance-validation", "performance-test", "load-test", "capacity-validation");
+
+    public bool HasDisasterRecoveryRunbookEvidence =>
+        HasTenantAdministrationEvidence("disaster-recovery", "dr-runbook", "operating-runbook", "recovery-validation");
 
     private bool HasTenantAdministrationEvidence(params string[] aliases)
         => EvidenceReferences.Any(reference =>

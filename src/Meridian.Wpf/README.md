@@ -63,7 +63,8 @@ shared readiness DTO, persists tenant-admin setup controls and retained evidence
 accounting tenant administration profile store with WPF accounting admin-studio coverage, maps the
 desktop aggregate setup checkbox into the shared enterprise configuration studio controls for chart
 administration, rule-test/promotion setup, close setup, provider mapping, and tenant/company/report
-group setup until separate desktop toggles land, renders
+group setup, plus separate operational-hardening controls for audit review tooling, bulk
+import/export safeguards, performance validation, and disaster-recovery runbooks, renders
 the shared ledger-book-native workflow control count and retained ledger-book-scoped
 workflow evidence for posting rules, JE lifecycle, close/reporting, and external GL, renders
 dimensional report/query/export control counts with retained ledger-book-scoped evidence, renders

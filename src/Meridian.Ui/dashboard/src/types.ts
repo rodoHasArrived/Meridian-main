@@ -5597,6 +5597,10 @@ export interface AccountingProductionReadinessRequest {
   closeSetupStudioConfigured?: boolean;
   providerMappingStudioConfigured?: boolean;
   tenantCompanyReportGroupSetupStudioConfigured?: boolean;
+  auditReviewToolingConfigured?: boolean;
+  bulkImportExportSafeguardsConfigured?: boolean;
+  performanceValidationConfigured?: boolean;
+  disasterRecoveryRunbookConfigured?: boolean;
   tenantAdministrationEvidenceLinks?: string[] | null;
   postingRulesLedgerBookNativeCertified?: boolean;
   journalLifecycleLedgerBookNativeCertified?: boolean;
@@ -5683,6 +5687,10 @@ export interface AccountingTenantAdministrationReadiness {
   closeSetupStudioConfigured?: boolean;
   providerMappingStudioConfigured?: boolean;
   tenantCompanyReportGroupSetupStudioConfigured?: boolean;
+  auditReviewToolingConfigured?: boolean;
+  bulkImportExportSafeguardsConfigured?: boolean;
+  performanceValidationConfigured?: boolean;
+  disasterRecoveryRunbookConfigured?: boolean;
   evidenceReferences: string[];
   completedControlCount: number;
   requiredControlCount: number;
@@ -5734,6 +5742,10 @@ export interface AccountingTenantAdministrationProfile {
   closeSetupStudioConfigured?: boolean;
   providerMappingStudioConfigured?: boolean;
   tenantCompanyReportGroupSetupStudioConfigured?: boolean;
+  auditReviewToolingConfigured?: boolean;
+  bulkImportExportSafeguardsConfigured?: boolean;
+  performanceValidationConfigured?: boolean;
+  disasterRecoveryRunbookConfigured?: boolean;
   updatedAtUtc: string;
   updatedBy: string;
   evidenceReferences: string[];

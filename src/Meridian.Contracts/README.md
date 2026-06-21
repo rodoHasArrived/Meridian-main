@@ -221,8 +221,10 @@ ledger-book evidence link cannot certify all dimensional reporting controls by i
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
 admin-studio, chart administration, rule-test and promotion, close setup, provider/external-GL
-mapping setup, tenant/company/report-group setup, and retained-evidence readiness so production
-accounting setup is blocked by shared contract state rather than workstation-local assumptions.
+mapping setup, tenant/company/report-group setup, audit review tooling, bulk import/export
+safeguards, performance validation, disaster-recovery runbooks, and retained-evidence readiness so
+production accounting setup is blocked by shared contract state rather than workstation-local
+assumptions.
 Each configured tenant administration or enterprise configuration studio control requires retained
 evidence for that setup lane, or an explicit setup-certified tenant-admin packet, before readiness
 counts the control as complete.

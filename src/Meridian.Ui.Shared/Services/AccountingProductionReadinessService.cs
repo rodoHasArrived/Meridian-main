@@ -201,6 +201,10 @@ public sealed class AccountingProductionReadinessService
             CloseSetupStudioConfigured = profile.CloseSetupStudioConfigured,
             ProviderMappingStudioConfigured = profile.ProviderMappingStudioConfigured,
             TenantCompanyReportGroupSetupStudioConfigured = profile.TenantCompanyReportGroupSetupStudioConfigured,
+            AuditReviewToolingConfigured = profile.AuditReviewToolingConfigured,
+            BulkImportExportSafeguardsConfigured = profile.BulkImportExportSafeguardsConfigured,
+            PerformanceValidationConfigured = profile.PerformanceValidationConfigured,
+            DisasterRecoveryRunbookConfigured = profile.DisasterRecoveryRunbookConfigured,
             TenantAdministrationEvidenceLinks = evidence
         };
     }
@@ -977,7 +981,11 @@ public sealed class AccountingProductionReadinessService
             request.CloseSetupStudioConfigured,
             request.ProviderMappingStudioConfigured,
             request.TenantCompanyReportGroupSetupStudioConfigured,
-            evidenceReferences);
+            evidenceReferences,
+            AuditReviewToolingConfigured: request.AuditReviewToolingConfigured,
+            BulkImportExportSafeguardsConfigured: request.BulkImportExportSafeguardsConfigured,
+            PerformanceValidationConfigured: request.PerformanceValidationConfigured,
+            DisasterRecoveryRunbookConfigured: request.DisasterRecoveryRunbookConfigured);
         var issues = new List<AccountingProductionReadinessIssueDto>();
         if (!readiness.HasTenantScope)
         {
@@ -1250,6 +1258,90 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Tenant, company, and report-group setup studio certification lacks retained setup evidence.",
                 "Attach tenant administration evidence for tenant/company setup, report-group setup, or company report-group controls.",
+                evidenceReferences));
+        }
+
+        if (!readiness.AuditReviewToolingConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.audit-review-tooling-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Audit review tooling coverage has not been certified.",
+                "Bind audit review, evidence review, transition audit, and exception-review tooling into the shared accounting administration surface before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasAuditReviewToolingEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.audit-review-tooling-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Audit review tooling certification lacks retained audit-review evidence.",
+                "Attach tenant administration evidence for audit review, evidence review, audit workbench, or transition-audit tooling.",
+                evidenceReferences));
+        }
+
+        if (!readiness.BulkImportExportSafeguardsConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.bulk-import-export-safeguards-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Bulk import/export safeguards have not been certified.",
+                "Bind bulk import, guarded export, reconciliation, preview, approval, and rollback safeguards into tenant administration before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasBulkImportExportSafeguardsEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.bulk-import-export-safeguards-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Bulk import/export safeguard certification lacks retained safeguard evidence.",
+                "Attach tenant administration evidence for bulk import/export, guarded export, import preview, rollback, or reconciliation safeguards.",
+                evidenceReferences));
+        }
+
+        if (!readiness.PerformanceValidationConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.performance-validation-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Accounting performance validation has not been certified.",
+                "Retain performance, load, capacity, or query-latency validation for accounting configuration, ledger queries, close, reports, and exports before rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasPerformanceValidationEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.performance-validation-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Performance validation certification lacks retained performance evidence.",
+                "Attach tenant administration evidence for performance validation, load tests, capacity tests, or production query-latency validation.",
+                evidenceReferences));
+        }
+
+        if (!readiness.DisasterRecoveryRunbookConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.disaster-recovery-runbook-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Disaster recovery and operating runbooks have not been certified.",
+                "Retain disaster-recovery, restore, replay, escalation, and accounting operating-runbook evidence before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasDisasterRecoveryRunbookEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.disaster-recovery-runbook-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Disaster recovery runbook certification lacks retained runbook evidence.",
+                "Attach tenant administration evidence for disaster recovery, operating runbooks, restore validation, replay validation, or escalation procedures.",
                 evidenceReferences));
         }
 

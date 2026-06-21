@@ -323,6 +323,22 @@
                                                   IsChecked="{Binding AccountingAdminSurfaceConfigured, Mode=TwoWay}"
                                                   Margin="0,0,0,6"
                                                   AutomationProperties.AutomationId="AccountingTenantAdminSurfaceCheckBox" />
+                                        <CheckBox Content="Audit review"
+                                                  IsChecked="{Binding AuditReviewToolingConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminAuditReviewCheckBox" />
+                                        <CheckBox Content="Bulk safeguards"
+                                                  IsChecked="{Binding BulkImportExportSafeguardsConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminBulkSafeguardsCheckBox" />
+                                        <CheckBox Content="Performance proof"
+                                                  IsChecked="{Binding PerformanceValidationConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminPerformanceValidationCheckBox" />
+                                        <CheckBox Content="Recovery runbook"
+                                                  IsChecked="{Binding DisasterRecoveryRunbookConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminRecoveryRunbookCheckBox" />
                                     </UniformGrid>
                                     <TextBox Text="{Binding TenantAdministrationEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              MinHeight="32"

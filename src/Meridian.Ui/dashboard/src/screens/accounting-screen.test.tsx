@@ -1938,9 +1938,13 @@ describe("AccountingScreen", () => {
         closeSetupStudioConfigured: false,
         providerMappingStudioConfigured: false,
         tenantCompanyReportGroupSetupStudioConfigured: false,
+        auditReviewToolingConfigured: false,
+        bulkImportExportSafeguardsConfigured: false,
+        performanceValidationConfigured: false,
+        disasterRecoveryRunbookConfigured: false,
         evidenceReferences: ["evidence://tenant-admin/gap"],
         completedControlCount: 5,
-        requiredControlCount: 14,
+        requiredControlCount: 18,
         hasTenantScope: true,
         hasCompanyScope: true,
         hasRetainedEvidence: true
@@ -2020,6 +2024,10 @@ describe("AccountingScreen", () => {
       closeSetupStudioConfigured: false,
       providerMappingStudioConfigured: false,
       tenantCompanyReportGroupSetupStudioConfigured: false,
+      auditReviewToolingConfigured: false,
+      bulkImportExportSafeguardsConfigured: false,
+      performanceValidationConfigured: false,
+      disasterRecoveryRunbookConfigured: false,
       updatedAtUtc: "2026-06-30T11:55:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://tenant-admin/setup"],
@@ -2075,7 +2083,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Dimensions")).toBeInTheDocument();
     expect(screen.getByText("4/6 report/query/export dimension controls | ledger book book-primary")).toBeInTheDocument();
     expect(screen.getByText("1 retained dimensional evidence reference")).toBeInTheDocument();
-    expect(screen.getByText("5/14 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
+    expect(screen.getByText("5/18 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
     expect(screen.getByText("1 retained setup evidence reference")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
     expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);

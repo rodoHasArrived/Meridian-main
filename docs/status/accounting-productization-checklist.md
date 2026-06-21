@@ -127,6 +127,10 @@ the requirement end to end.
   mapping setup, and tenant/company/report-group setup. The shared profile, browser editor, WPF
   request/profile path, production-readiness blockers, and retained evidence checks all use the
   same control-plane model.
+- [x] Tenant administration readiness now also exposes operational-hardening controls for audit
+  review tooling, bulk import/export safeguards, performance validation, and disaster-recovery
+  runbooks. Browser and WPF setup surfaces carry the same shared profile fields, and production
+  readiness blocks until those controls have retained tenant-admin evidence or a full setup packet.
 
 ## Still To Complete
 
@@ -167,8 +171,8 @@ the requirement end to end.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes.
-- [ ] Add broader operational hardening: admin UX, tenant-level setup workflows, authorization and
-  report-group scoping, audit review tooling, bulk import/export safeguards, performance tests, and
-  disaster-recovery validation. The shared production-readiness endpoint now exposes the blocker
-  contract for these lanes, but full browser/WPF admin setup workflows and operating runbooks are
-  still open.
+- [ ] Add broader operational hardening: deeper admin UX, tenant-level setup workflows,
+  authorization and report-group scoping, audit review workflows, bulk import/export execution
+  safeguards, performance test automation, and disaster-recovery validation. The shared
+  production-readiness endpoint now exposes explicit blocker controls for these lanes, but full
+  browser/WPF workflow depth and operating runbooks are still open.
