@@ -227,10 +227,12 @@ with retained ledger-book-scoped evidence, certified external-GL mapping coverag
 production-readiness policy in React. Tenant administration uses the shared
 `AccountingTenantAdministrationReadinessDto` to render
 tenant, company, admin-role, scoped-access, reporting-group, aggregate operator-surface, browser
-accounting admin-studio, WPF accounting admin-studio, and retained-evidence controls instead of
-treating setup readiness as a generic component row, and the dashboard route catalog exposes the
-retained tenant-administration profile endpoint. The Configure surface can load, edit, and save that
-retained profile with browser accounting admin-studio coverage and setup evidence before refreshing
+accounting admin-studio, WPF accounting admin-studio, chart administration, rule-test/promotion
+setup, close setup, provider/external-GL mapping setup, tenant/company/report-group setup, and
+retained-evidence controls instead of treating setup readiness as a generic component row, and the
+dashboard route catalog exposes the retained tenant-administration profile endpoint. The Configure
+surface can load, edit, and save that retained profile with browser accounting admin-studio,
+enterprise configuration studio coverage, and setup evidence before refreshing
 production-readiness posture from the shared Accounting System service. The Configure surface also
 loads, edits, and saves the retained production-certification profile for ledger-book-native
 workflow controls and dimensional reporting/export controls, preserving tenant/company/fund/book

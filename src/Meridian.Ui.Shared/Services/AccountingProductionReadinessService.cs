@@ -196,6 +196,11 @@ public sealed class AccountingProductionReadinessService
             AccountingAdminSurfaceConfigured = profile.AccountingAdminSurfaceConfigured,
             BrowserAccountingAdminSurfaceConfigured = profile.BrowserAccountingAdminSurfaceConfigured,
             WpfAccountingAdminSurfaceConfigured = profile.WpfAccountingAdminSurfaceConfigured,
+            ChartAdministrationStudioConfigured = profile.ChartAdministrationStudioConfigured,
+            RuleTestPromotionStudioConfigured = profile.RuleTestPromotionStudioConfigured,
+            CloseSetupStudioConfigured = profile.CloseSetupStudioConfigured,
+            ProviderMappingStudioConfigured = profile.ProviderMappingStudioConfigured,
+            TenantCompanyReportGroupSetupStudioConfigured = profile.TenantCompanyReportGroupSetupStudioConfigured,
             TenantAdministrationEvidenceLinks = evidence
         };
     }
@@ -831,6 +836,11 @@ public sealed class AccountingProductionReadinessService
             request.AccountingAdminSurfaceConfigured,
             request.BrowserAccountingAdminSurfaceConfigured,
             request.WpfAccountingAdminSurfaceConfigured,
+            request.ChartAdministrationStudioConfigured,
+            request.RuleTestPromotionStudioConfigured,
+            request.CloseSetupStudioConfigured,
+            request.ProviderMappingStudioConfigured,
+            request.TenantCompanyReportGroupSetupStudioConfigured,
             evidenceReferences);
         var issues = new List<AccountingProductionReadinessIssueDto>();
         if (!readiness.HasTenantScope)
@@ -999,6 +1009,111 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "WPF accounting administration studio certification lacks retained WPF setup evidence.",
                 "Attach tenant administration evidence for WPF accounting admin-studio or desktop setup coverage before production rollout.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ChartAdministrationStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.chart-administration-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Enterprise chart administration coverage has not been certified.",
+                "Bind chart-of-accounts, ledger-book chart, account template, and activation controls into the shared accounting configuration studio before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasChartAdministrationStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.chart-administration-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Chart administration studio certification lacks retained chart setup evidence.",
+                "Attach tenant administration evidence for chart administration, ledger-book chart, or chart-of-accounts setup.",
+                evidenceReferences));
+        }
+
+        if (!readiness.RuleTestPromotionStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.rule-test-promotion-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Rules Studio test and promotion queue coverage has not been certified.",
+                "Bind rule authoring, saved test cases, dry-run preview, generated postings, and promotion approvals into the shared enterprise accounting configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasRuleTestPromotionStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.rule-test-promotion-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Rules Studio test and promotion queue certification lacks retained rule setup evidence.",
+                "Attach tenant administration evidence for Rules Studio, rule tests, generated-posting preview, or promotion queues.",
+                evidenceReferences));
+        }
+
+        if (!readiness.CloseSetupStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.close-setup-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Close setup studio coverage has not been certified.",
+                "Bind close checklist, dependency graph, sign-off matrix, materiality policy, late-adjustment, period-lock, and close-calendar setup into the shared configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasCloseSetupStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.close-setup-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Close setup studio certification lacks retained close setup evidence.",
+                "Attach tenant administration evidence for close setup, close checklist, close calendar, or materiality policy setup.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ProviderMappingStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.provider-mapping-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Provider and external-GL mapping setup coverage has not been certified.",
+                "Bind QuickBooks, Xero, NetSuite, dimension mapping, import evidence, reconciliation, and guarded export setup into the shared enterprise configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasProviderMappingStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.provider-mapping-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Provider mapping studio certification lacks retained provider or external-GL setup evidence.",
+                "Attach tenant administration evidence for provider mapping, external-GL mapping, or mapping-profile setup.",
+                evidenceReferences));
+        }
+
+        if (!readiness.TenantCompanyReportGroupSetupStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-company-report-group-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Tenant, company, and report-group setup studio coverage has not been certified.",
+                "Bind tenant/company selection, scoped access, admin roles, reporting groups, and delivery group setup into the shared enterprise accounting configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasTenantCompanyReportGroupSetupStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-company-report-group-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Tenant, company, and report-group setup studio certification lacks retained setup evidence.",
+                "Attach tenant administration evidence for tenant/company setup, report-group setup, or company report-group controls.",
                 evidenceReferences));
         }
 

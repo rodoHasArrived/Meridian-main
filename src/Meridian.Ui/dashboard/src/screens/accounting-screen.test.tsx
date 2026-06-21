@@ -1933,9 +1933,14 @@ describe("AccountingScreen", () => {
         accountingAdminSurfaceConfigured: false,
         browserAccountingAdminSurfaceConfigured: false,
         wpfAccountingAdminSurfaceConfigured: false,
+        chartAdministrationStudioConfigured: false,
+        ruleTestPromotionStudioConfigured: false,
+        closeSetupStudioConfigured: false,
+        providerMappingStudioConfigured: false,
+        tenantCompanyReportGroupSetupStudioConfigured: false,
         evidenceReferences: ["evidence://tenant-admin/gap"],
         completedControlCount: 5,
-        requiredControlCount: 9,
+        requiredControlCount: 14,
         hasTenantScope: true,
         hasCompanyScope: true,
         hasRetainedEvidence: true
@@ -2010,6 +2015,11 @@ describe("AccountingScreen", () => {
       accountingAdminSurfaceConfigured: false,
       browserAccountingAdminSurfaceConfigured: false,
       wpfAccountingAdminSurfaceConfigured: false,
+      chartAdministrationStudioConfigured: false,
+      ruleTestPromotionStudioConfigured: false,
+      closeSetupStudioConfigured: false,
+      providerMappingStudioConfigured: false,
+      tenantCompanyReportGroupSetupStudioConfigured: false,
       updatedAtUtc: "2026-06-30T11:55:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://tenant-admin/setup"],
@@ -2065,11 +2075,14 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Dimensions")).toBeInTheDocument();
     expect(screen.getByText("4/6 report/query/export dimension controls | ledger book book-primary")).toBeInTheDocument();
     expect(screen.getByText("1 retained dimensional evidence reference")).toBeInTheDocument();
-    expect(screen.getByText("5/9 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
+    expect(screen.getByText("5/14 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
     expect(screen.getByText("1 retained setup evidence reference")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
     expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Operator surface").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Chart setup").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rule tests").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Provider mapping").length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Accounting production certification profile editor" })).toBeInTheDocument();
     expect(screen.getByText("Tenant context | company context | fund fund-alpha | ledger book book-primary")).toBeInTheDocument();
     expect(screen.getByText("Rules by book")).toBeInTheDocument();

@@ -468,6 +468,11 @@ interface AccountingTenantAdministrationProfileDraft {
   accountingAdminSurfaceConfigured: boolean;
   browserAccountingAdminSurfaceConfigured: boolean;
   wpfAccountingAdminSurfaceConfigured: boolean;
+  chartAdministrationStudioConfigured: boolean;
+  ruleTestPromotionStudioConfigured: boolean;
+  closeSetupStudioConfigured: boolean;
+  providerMappingStudioConfigured: boolean;
+  tenantCompanyReportGroupSetupStudioConfigured: boolean;
   evidenceText: string;
 }
 
@@ -3473,6 +3478,16 @@ export function useAccountingConfigurationViewModel(
           return { ...current, reportingGroupsConfigured: checked };
         case "operator-surface":
           return { ...current, accountingAdminSurfaceConfigured: checked, browserAccountingAdminSurfaceConfigured: checked };
+        case "chart-administration-studio":
+          return { ...current, chartAdministrationStudioConfigured: checked };
+        case "rule-test-promotion-studio":
+          return { ...current, ruleTestPromotionStudioConfigured: checked };
+        case "close-setup-studio":
+          return { ...current, closeSetupStudioConfigured: checked };
+        case "provider-mapping-studio":
+          return { ...current, providerMappingStudioConfigured: checked };
+        case "tenant-company-report-group-studio":
+          return { ...current, tenantCompanyReportGroupSetupStudioConfigured: checked };
         default:
           return current;
       }
@@ -3503,6 +3518,11 @@ export function useAccountingConfigurationViewModel(
       accountingAdminSurfaceConfigured: tenantAdministrationDraft.accountingAdminSurfaceConfigured,
       browserAccountingAdminSurfaceConfigured: tenantAdministrationDraft.browserAccountingAdminSurfaceConfigured,
       wpfAccountingAdminSurfaceConfigured: tenantAdministrationDraft.wpfAccountingAdminSurfaceConfigured,
+      chartAdministrationStudioConfigured: tenantAdministrationDraft.chartAdministrationStudioConfigured,
+      ruleTestPromotionStudioConfigured: tenantAdministrationDraft.ruleTestPromotionStudioConfigured,
+      closeSetupStudioConfigured: tenantAdministrationDraft.closeSetupStudioConfigured,
+      providerMappingStudioConfigured: tenantAdministrationDraft.providerMappingStudioConfigured,
+      tenantCompanyReportGroupSetupStudioConfigured: tenantAdministrationDraft.tenantCompanyReportGroupSetupStudioConfigured,
       updatedAtUtc: new Date().toISOString(),
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
@@ -5401,6 +5421,36 @@ function buildAccountingTenantAdministrationProfileControls(
       label: "Operator surface",
       description: "Accounting setup controls are exposed through the governed operator surface.",
       checked: draft?.accountingAdminSurfaceConfigured ?? false
+    },
+    {
+      id: "chart-administration-studio",
+      label: "Chart setup",
+      description: "Chart, ledger-book chart, and account template setup are exposed in the configuration studio.",
+      checked: draft?.chartAdministrationStudioConfigured ?? false
+    },
+    {
+      id: "rule-test-promotion-studio",
+      label: "Rule tests",
+      description: "Rule authoring, saved tests, dry-runs, generated postings, and promotion queues are exposed.",
+      checked: draft?.ruleTestPromotionStudioConfigured ?? false
+    },
+    {
+      id: "close-setup-studio",
+      label: "Close setup",
+      description: "Close checklist, dependencies, sign-offs, materiality, period locks, and calendar setup are exposed.",
+      checked: draft?.closeSetupStudioConfigured ?? false
+    },
+    {
+      id: "provider-mapping-studio",
+      label: "Provider mapping",
+      description: "External provider, GL mapping, reconciliation, and guarded export setup are exposed.",
+      checked: draft?.providerMappingStudioConfigured ?? false
+    },
+    {
+      id: "tenant-company-report-group-studio",
+      label: "Tenant groups",
+      description: "Tenant, company, scoped access, admin role, report group, and delivery group setup are exposed.",
+      checked: draft?.tenantCompanyReportGroupSetupStudioConfigured ?? false
     }
   ];
 }
@@ -5416,6 +5466,11 @@ function buildAccountingTenantAdministrationProfileDraft(
     accountingAdminSurfaceConfigured: profile.accountingAdminSurfaceConfigured,
     browserAccountingAdminSurfaceConfigured: profile.browserAccountingAdminSurfaceConfigured ?? false,
     wpfAccountingAdminSurfaceConfigured: profile.wpfAccountingAdminSurfaceConfigured ?? false,
+    chartAdministrationStudioConfigured: profile.chartAdministrationStudioConfigured ?? false,
+    ruleTestPromotionStudioConfigured: profile.ruleTestPromotionStudioConfigured ?? false,
+    closeSetupStudioConfigured: profile.closeSetupStudioConfigured ?? false,
+    providerMappingStudioConfigured: profile.providerMappingStudioConfigured ?? false,
+    tenantCompanyReportGroupSetupStudioConfigured: profile.tenantCompanyReportGroupSetupStudioConfigured ?? false,
     evidenceText: profile.evidenceReferences.join("\n")
   };
 }
@@ -5438,6 +5493,11 @@ function buildAccountingTenantAdministrationProfileFromReadiness(
     accountingAdminSurfaceConfigured: tenantAdministration.accountingAdminSurfaceConfigured,
     browserAccountingAdminSurfaceConfigured: tenantAdministration.browserAccountingAdminSurfaceConfigured ?? false,
     wpfAccountingAdminSurfaceConfigured: tenantAdministration.wpfAccountingAdminSurfaceConfigured ?? false,
+    chartAdministrationStudioConfigured: tenantAdministration.chartAdministrationStudioConfigured ?? false,
+    ruleTestPromotionStudioConfigured: tenantAdministration.ruleTestPromotionStudioConfigured ?? false,
+    closeSetupStudioConfigured: tenantAdministration.closeSetupStudioConfigured ?? false,
+    providerMappingStudioConfigured: tenantAdministration.providerMappingStudioConfigured ?? false,
+    tenantCompanyReportGroupSetupStudioConfigured: tenantAdministration.tenantCompanyReportGroupSetupStudioConfigured ?? false,
     updatedAtUtc: "",
     updatedBy: "not retained",
     evidenceReferences: tenantAdministration.evidenceReferences ?? [],
@@ -5473,6 +5533,11 @@ function buildAccountingTenantAdministrationControls(
     ["operator-surface", "Operator surface", tenantAdministration.accountingAdminSurfaceConfigured],
     ["browser-admin-studio", "Browser admin studio", tenantAdministration.browserAccountingAdminSurfaceConfigured ?? false],
     ["wpf-admin-studio", "WPF admin studio", tenantAdministration.wpfAccountingAdminSurfaceConfigured ?? false],
+    ["chart-administration-studio", "Chart setup", tenantAdministration.chartAdministrationStudioConfigured ?? false],
+    ["rule-test-promotion-studio", "Rule tests", tenantAdministration.ruleTestPromotionStudioConfigured ?? false],
+    ["close-setup-studio", "Close setup", tenantAdministration.closeSetupStudioConfigured ?? false],
+    ["provider-mapping-studio", "Provider mapping", tenantAdministration.providerMappingStudioConfigured ?? false],
+    ["tenant-company-report-group-studio", "Tenant groups", tenantAdministration.tenantCompanyReportGroupSetupStudioConfigured ?? false],
     ["retained-evidence", "Setup evidence", tenantAdministration.hasRetainedEvidence]
   ];
 

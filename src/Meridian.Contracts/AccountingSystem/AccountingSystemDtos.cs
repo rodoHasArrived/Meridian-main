@@ -163,7 +163,12 @@ public sealed record AccountingTenantAdministrationProfileDto(
     IReadOnlyList<string>? EvidenceReferences = null,
     string? CorrelationId = null,
     bool BrowserAccountingAdminSurfaceConfigured = false,
-    bool WpfAccountingAdminSurfaceConfigured = false)
+    bool WpfAccountingAdminSurfaceConfigured = false,
+    bool ChartAdministrationStudioConfigured = false,
+    bool RuleTestPromotionStudioConfigured = false,
+    bool CloseSetupStudioConfigured = false,
+    bool ProviderMappingStudioConfigured = false,
+    bool TenantCompanyReportGroupSetupStudioConfigured = false)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -226,6 +231,11 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool AccountingAdminSurfaceConfigured = false,
     bool BrowserAccountingAdminSurfaceConfigured = false,
     bool WpfAccountingAdminSurfaceConfigured = false,
+    bool ChartAdministrationStudioConfigured = false,
+    bool RuleTestPromotionStudioConfigured = false,
+    bool CloseSetupStudioConfigured = false,
+    bool ProviderMappingStudioConfigured = false,
+    bool TenantCompanyReportGroupSetupStudioConfigured = false,
     IReadOnlyList<string>? TenantAdministrationEvidenceLinks = null,
     bool PostingRulesLedgerBookNativeCertified = false,
     bool JournalLifecycleLedgerBookNativeCertified = false,
@@ -405,6 +415,11 @@ public sealed record AccountingTenantAdministrationReadinessDto(
     bool AccountingAdminSurfaceConfigured,
     bool BrowserAccountingAdminSurfaceConfigured,
     bool WpfAccountingAdminSurfaceConfigured,
+    bool ChartAdministrationStudioConfigured,
+    bool RuleTestPromotionStudioConfigured,
+    bool CloseSetupStudioConfigured,
+    bool ProviderMappingStudioConfigured,
+    bool TenantCompanyReportGroupSetupStudioConfigured,
     IReadOnlyList<string>? EvidenceReferences = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
@@ -421,10 +436,15 @@ public sealed record AccountingTenantAdministrationReadinessDto(
             ReportingGroupsConfigured && HasReportingGroupEvidence,
             AccountingAdminSurfaceConfigured && HasAccountingAdminSurfaceEvidence,
             BrowserAccountingAdminSurfaceConfigured && HasBrowserAccountingAdminSurfaceEvidence,
-            WpfAccountingAdminSurfaceConfigured && HasWpfAccountingAdminSurfaceEvidence
+            WpfAccountingAdminSurfaceConfigured && HasWpfAccountingAdminSurfaceEvidence,
+            ChartAdministrationStudioConfigured && HasChartAdministrationStudioEvidence,
+            RuleTestPromotionStudioConfigured && HasRuleTestPromotionStudioEvidence,
+            CloseSetupStudioConfigured && HasCloseSetupStudioEvidence,
+            ProviderMappingStudioConfigured && HasProviderMappingStudioEvidence,
+            TenantCompanyReportGroupSetupStudioConfigured && HasTenantCompanyReportGroupSetupStudioEvidence
         }.Count(static control => control);
 
-    public int RequiredControlCount => 9;
+    public int RequiredControlCount => 14;
 
     public bool HasTenantScope => !string.IsNullOrWhiteSpace(TenantId);
 
@@ -452,6 +472,21 @@ public sealed record AccountingTenantAdministrationReadinessDto(
 
     public bool HasWpfAccountingAdminSurfaceEvidence =>
         HasTenantAdministrationEvidence("wpf-admin-studio", "desktop-accounting-admin", "wpf-setup");
+
+    public bool HasChartAdministrationStudioEvidence =>
+        HasTenantAdministrationEvidence("chart-admin", "chart-administration", "chart-of-accounts", "ledger-book-chart");
+
+    public bool HasRuleTestPromotionStudioEvidence =>
+        HasTenantAdministrationEvidence("rule-test-promotion", "rules-studio", "rule-tests", "promotion-queue");
+
+    public bool HasCloseSetupStudioEvidence =>
+        HasTenantAdministrationEvidence("close-setup", "close-checklist", "close-calendar", "materiality-policy");
+
+    public bool HasProviderMappingStudioEvidence =>
+        HasTenantAdministrationEvidence("provider-mapping", "external-gl-mapping", "gl-mapping", "mapping-profile");
+
+    public bool HasTenantCompanyReportGroupSetupStudioEvidence =>
+        HasTenantAdministrationEvidence("tenant-company-report-group", "tenant-company-setup", "report-group-setup", "company-report-group");
 
     private bool HasTenantAdministrationEvidence(params string[] aliases)
         => EvidenceReferences.Any(reference =>

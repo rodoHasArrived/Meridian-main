@@ -115,6 +115,11 @@ the requirement end to end.
   ledger-book-native workflow certification and retained lane evidence directly, so those
   components remain blocked even when services are registered until the selected ledger book has
   lifecycle, close, and reporting proof.
+- [x] Tenant administration readiness now includes explicit enterprise configuration studio
+  controls for chart administration, rule-test/promotion setup, close setup, provider/external-GL
+  mapping setup, and tenant/company/report-group setup. The shared profile, browser editor, WPF
+  request/profile path, production-readiness blockers, and retained evidence checks all use the
+  same control-plane model.
 
 ## Still To Complete
 

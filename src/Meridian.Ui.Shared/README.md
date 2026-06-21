@@ -262,10 +262,13 @@ The production-readiness endpoint resolves authenticated tenant/company scope fr
 session when the request omits it, evaluates Rules Studio readiness against the scoped
 tenant/company/fund/book workspace, and blocks tenant administration readiness until tenant scope,
 company scope, admin roles, scoped accounting access, reporting groups, aggregate operator setup,
-browser accounting admin-studio coverage, WPF accounting admin-studio coverage, and retained setup
-evidence are present. Tenant administration controls are evidence-qualified per lane, so retained
-setup proof for admin roles does not certify scoped access, reporting groups, browser setup, or WPF
-setup unless the evidence is an explicit setup-certified tenant-admin packet.
+browser accounting admin-studio coverage, WPF accounting admin-studio coverage, chart
+administration, rule-test and promotion, close setup, provider/external-GL mapping setup,
+tenant/company/report-group setup, and retained setup evidence are present. Tenant administration
+and enterprise configuration studio controls are evidence-qualified per lane, so retained setup
+proof for admin roles does not certify scoped access, reporting groups, browser setup, WPF setup,
+chart setup, rule-test/promotion setup, close setup, provider mapping, or report-group setup unless
+the evidence is an explicit setup-certified tenant-admin packet.
 `/api/accounting-system/tenant-administration-profile` retains those tenant/company setup controls in
 the shared Accounting System store. Reads require accounting access, writes require
 `AdminMaintenance`, and production readiness loads the retained profile so setup certification is no

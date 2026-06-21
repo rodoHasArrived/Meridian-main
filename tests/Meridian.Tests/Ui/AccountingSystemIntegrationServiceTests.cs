@@ -377,6 +377,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 AccountingAdminSurfaceConfigured: true,
                 BrowserAccountingAdminSurfaceConfigured: true,
                 WpfAccountingAdminSurfaceConfigured: true,
+                ChartAdministrationStudioConfigured: true,
+                RuleTestPromotionStudioConfigured: true,
+                CloseSetupStudioConfigured: true,
+                ProviderMappingStudioConfigured: true,
+                TenantCompanyReportGroupSetupStudioConfigured: true,
                 TenantAdministrationEvidenceLinks:
                 [
                     "evidence://tenant-admin/tenant-alpha/admin-role/accounting-controller",
@@ -401,6 +406,21 @@ public sealed class AccountingSystemIntegrationServiceTests
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "tenant-admin.wpf-admin-studio-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.chart-administration-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.rule-test-promotion-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.close-setup-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.provider-mapping-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.tenant-company-report-group-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
 
         var readyControls = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
@@ -414,6 +434,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 AccountingAdminSurfaceConfigured: true,
                 BrowserAccountingAdminSurfaceConfigured: true,
                 WpfAccountingAdminSurfaceConfigured: true,
+                ChartAdministrationStudioConfigured: true,
+                RuleTestPromotionStudioConfigured: true,
+                CloseSetupStudioConfigured: true,
+                ProviderMappingStudioConfigured: true,
+                TenantCompanyReportGroupSetupStudioConfigured: true,
                 TenantAdministrationEvidenceLinks:
                 [
                     "evidence://tenant-admin/tenant-alpha/setup-certified",
@@ -423,7 +448,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readyControls.TenantAdministration.Should().NotBeNull();
         readyControls.TenantAdministration!.TenantId.Should().Be("tenant-alpha");
         readyControls.TenantAdministration.CompanyId.Should().Be("company-alpha");
-        readyControls.TenantAdministration.CompletedControlCount.Should().Be(9);
+        readyControls.TenantAdministration.CompletedControlCount.Should().Be(14);
         readyControls.TenantAdministration.HasRetainedEvidence.Should().BeTrue();
         readyControls.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
@@ -503,6 +528,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 AccountingAdminSurfaceConfigured: true,
                 BrowserAccountingAdminSurfaceConfigured: true,
                 WpfAccountingAdminSurfaceConfigured: true,
+                ChartAdministrationStudioConfigured: true,
+                RuleTestPromotionStudioConfigured: true,
+                CloseSetupStudioConfigured: true,
+                ProviderMappingStudioConfigured: true,
+                TenantCompanyReportGroupSetupStudioConfigured: true,
                 UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                 UpdatedBy: "controller",
                 EvidenceReferences: ["evidence://tenant-admin/tenant-alpha/setup-certified"]),
@@ -517,7 +547,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CompanyId: "company-alpha"));
 
         readiness.TenantAdministration.Should().NotBeNull();
-        readiness.TenantAdministration!.CompletedControlCount.Should().Be(9);
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(14);
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("evidence://tenant-admin/tenant-alpha/setup-certified");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("approval:tenant-admin:tenant-alpha");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("correlation:tenant-admin-tenant-alpha");
@@ -2839,6 +2869,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                     AccountingAdminSurfaceConfigured: true,
                     BrowserAccountingAdminSurfaceConfigured: true,
                     WpfAccountingAdminSurfaceConfigured: true,
+                    ChartAdministrationStudioConfigured: true,
+                    RuleTestPromotionStudioConfigured: true,
+                    CloseSetupStudioConfigured: true,
+                    ProviderMappingStudioConfigured: true,
+                    TenantCompanyReportGroupSetupStudioConfigured: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "controller",
                     EvidenceReferences: ["evidence://tenant-admin/company-alpha/setup-certified"]),
@@ -2864,7 +2899,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
         readiness.TenantAdministration.Should().NotBeNull();
-        readiness.TenantAdministration!.CompletedControlCount.Should().Be(9);
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(14);
         readiness.Issues.Should().NotContain(issue => issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&

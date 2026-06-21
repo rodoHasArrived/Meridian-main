@@ -1087,7 +1087,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 DefaultLifecycleActor,
                 evidence,
                 correlationId,
-                WpfAccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured);
+                WpfAccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
+                ChartAdministrationStudioConfigured: AccountingAdminSurfaceConfigured,
+                RuleTestPromotionStudioConfigured: AccountingAdminSurfaceConfigured,
+                CloseSetupStudioConfigured: AccountingAdminSurfaceConfigured,
+                ProviderMappingStudioConfigured: AccountingAdminSurfaceConfigured,
+                TenantCompanyReportGroupSetupStudioConfigured: AccountingAdminSurfaceConfigured);
 
             var saved = await _tenantAdministrationProfileStore.UpsertAsync(
                 new AccountingTenantAdministrationProfileUpsertRequestDto(
@@ -2112,6 +2117,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ReportingGroupsConfigured: ReportingGroupsConfigured,
             AccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
             WpfAccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
+            ChartAdministrationStudioConfigured: AccountingAdminSurfaceConfigured,
+            RuleTestPromotionStudioConfigured: AccountingAdminSurfaceConfigured,
+            CloseSetupStudioConfigured: AccountingAdminSurfaceConfigured,
+            ProviderMappingStudioConfigured: AccountingAdminSurfaceConfigured,
+            TenantCompanyReportGroupSetupStudioConfigured: AccountingAdminSurfaceConfigured,
             TenantAdministrationEvidenceLinks: NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
             RequiredLedgerBookScopes: requiredScopes);
     }

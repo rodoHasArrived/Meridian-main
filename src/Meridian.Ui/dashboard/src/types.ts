@@ -5592,6 +5592,11 @@ export interface AccountingProductionReadinessRequest {
   accountingAdminSurfaceConfigured?: boolean;
   browserAccountingAdminSurfaceConfigured?: boolean;
   wpfAccountingAdminSurfaceConfigured?: boolean;
+  chartAdministrationStudioConfigured?: boolean;
+  ruleTestPromotionStudioConfigured?: boolean;
+  closeSetupStudioConfigured?: boolean;
+  providerMappingStudioConfigured?: boolean;
+  tenantCompanyReportGroupSetupStudioConfigured?: boolean;
   tenantAdministrationEvidenceLinks?: string[] | null;
   postingRulesLedgerBookNativeCertified?: boolean;
   journalLifecycleLedgerBookNativeCertified?: boolean;
@@ -5673,6 +5678,11 @@ export interface AccountingTenantAdministrationReadiness {
   accountingAdminSurfaceConfigured: boolean;
   browserAccountingAdminSurfaceConfigured: boolean;
   wpfAccountingAdminSurfaceConfigured: boolean;
+  chartAdministrationStudioConfigured?: boolean;
+  ruleTestPromotionStudioConfigured?: boolean;
+  closeSetupStudioConfigured?: boolean;
+  providerMappingStudioConfigured?: boolean;
+  tenantCompanyReportGroupSetupStudioConfigured?: boolean;
   evidenceReferences: string[];
   completedControlCount: number;
   requiredControlCount: number;
@@ -5719,6 +5729,11 @@ export interface AccountingTenantAdministrationProfile {
   accountingAdminSurfaceConfigured: boolean;
   browserAccountingAdminSurfaceConfigured: boolean;
   wpfAccountingAdminSurfaceConfigured: boolean;
+  chartAdministrationStudioConfigured?: boolean;
+  ruleTestPromotionStudioConfigured?: boolean;
+  closeSetupStudioConfigured?: boolean;
+  providerMappingStudioConfigured?: boolean;
+  tenantCompanyReportGroupSetupStudioConfigured?: boolean;
   updatedAtUtc: string;
   updatedBy: string;
   evidenceReferences: string[];
