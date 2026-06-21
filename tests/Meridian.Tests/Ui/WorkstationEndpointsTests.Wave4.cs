@@ -1254,6 +1254,77 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task LedgerAccountingReportPackageHistoryEndpoint_FiltersByDimensionScope()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var alphaDimensions = new LedgerDimensionSetDto(
+            FundId: "fund-dimensioned",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            },
+            BookId: ledgerBookId.ToString("D"));
+        var betaDimensions = alphaDimensions with
+        {
+            EntityId = "entity-beta",
+            ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Operations"
+            }
+        };
+
+        using var alphaResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            BuildDimensionedPackageRequest("capital-account-alpha", alphaDimensions),
+            ServerJsonOptions);
+        using var betaResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            BuildDimensionedPackageRequest("capital-account-beta", betaDimensions),
+            ServerJsonOptions);
+
+        alphaResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        betaResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var alpha = await alphaResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+
+        using var historyResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-dimensioned&periodId=2026-12&ledgerBookId={ledgerBookId:D}&entityId=entity-alpha&externalGl.Department=Investments");
+
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
+        history.Should().ContainSingle(row => row.FinancialStatements.PackageId == alpha!.FinancialStatements.PackageId);
+        history![0].FinancialStatements.Dimensions.EntityId.Should().Be("entity-alpha");
+        history[0].FinancialStatements.Dimensions.ExternalGlDimensions.Should().Contain("Department", "Investments");
+
+        AccountingReportPackageRequestDto BuildDimensionedPackageRequest(
+            string capitalAccountId,
+            LedgerDimensionSetDto dimensions)
+            => new(
+                FundProfileId: "fund-dimensioned",
+                PeriodId: "2026-12",
+                Actor: "browser-user",
+                LedgerBookId: ledgerBookId,
+                CapitalAccountId: capitalAccountId,
+                BeginningCapital: 100_000m,
+                Contributions: 25_000m,
+                Distributions: 5_000m,
+                RealizedGainLoss: 10_000m,
+                Nav: 130_000m,
+                EvidenceLinks:
+                [
+                    $"evidence:ledger:trial-balance:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:reconciliation:gl-tie-out:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:report-render:financial-statements:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:nav:support-package:2026-12:book:{ledgerBookId:D}"
+                ],
+                Dimensions: dimensions);
+    }
+
+    [Fact]
     public async Task LedgerAccountingReportPackageCertificationEndpoint_RequiresAdminMaintenance()
     {
         await using var app = await CreateAppAsync(

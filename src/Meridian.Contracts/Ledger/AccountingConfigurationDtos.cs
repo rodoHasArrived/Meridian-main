@@ -1993,7 +1993,8 @@ public sealed record AccountingReportPackageRequestDto(
     string? RestatementReasonCode = null,
     string? PriorPackageId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
-    string? CorrelationId = null)
+    string? CorrelationId = null,
+    LedgerDimensionSetDto? Dimensions = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

@@ -1150,7 +1150,15 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var result = await service.ListPackagesAsync(fundProfileId, periodId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
+            var result = await service
+                .ListPackagesAsync(
+                    fundProfileId,
+                    periodId,
+                    ledgerBookId,
+                    ToLedgerDimensionSetDto(dimensionFilter),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("ListLedgerAccountingReportPackages")
@@ -2157,6 +2165,37 @@ public static class LedgerEndpoints
             ? parsedInstrumentId
             : (Guid?)null;
         return new LedgerLineDimensionSet(
+            FundId: filter.FundId,
+            EntityId: filter.EntityId,
+            SleeveId: filter.SleeveId,
+            StrategyId: filter.StrategyId,
+            InvestorId: filter.InvestorId,
+            CapitalAccountId: filter.CapitalAccountId,
+            InstrumentId: instrumentId,
+            TaxLotId: filter.TaxLotId,
+            CostCenterId: filter.CostCenterId,
+            CounterpartyId: filter.CounterpartyId,
+            ExternalGlDimensions: filter.ExternalGlDimensions,
+            OrganizationId: filter.OrganizationId,
+            PortfolioId: filter.PortfolioId,
+            BookId: filter.BookId,
+            AccountId: filter.AccountId,
+            CustomerId: filter.CustomerId,
+            VendorId: filter.VendorId,
+            ProjectId: filter.ProjectId);
+    }
+
+    private static LedgerDimensionSetDto? ToLedgerDimensionSetDto(LedgerDimensionReportFilter filter)
+    {
+        if (!filter.HasCriteria)
+        {
+            return null;
+        }
+
+        var instrumentId = Guid.TryParse(filter.InstrumentId, out var parsedInstrumentId)
+            ? parsedInstrumentId
+            : (Guid?)null;
+        return new LedgerDimensionSetDto(
             FundId: filter.FundId,
             EntityId: filter.EntityId,
             SleeveId: filter.SleeveId,

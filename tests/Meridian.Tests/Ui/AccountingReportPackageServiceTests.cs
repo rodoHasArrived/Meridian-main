@@ -540,6 +540,95 @@ public sealed class AccountingReportPackageServiceTests
         gaapOnly.Should().ContainSingle(row => row.FinancialStatements.LedgerBookId == AlternateLedgerBookId);
     }
 
+    [Fact]
+    public async Task BuildPackageAsync_CarriesExplicitDimensionsAndFiltersRetainedHistoryByScope()
+    {
+        var service = new AccountingReportPackageService();
+        var alphaDimensions = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            StrategyId: "strategy-credit",
+            CapitalAccountId: "capital-account-lp-1",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            },
+            BookId: DefaultLedgerBookId.ToString("D"));
+        var betaDimensions = alphaDimensions with
+        {
+            EntityId = "entity-beta",
+            CapitalAccountId = "capital-account-lp-2",
+            ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Operations"
+            }
+        };
+
+        var alpha = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-07",
+            CapitalAccountId: "capital-account-lp-1",
+            Dimensions: alphaDimensions));
+        var beta = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-07",
+            CapitalAccountId: "capital-account-lp-2",
+            Dimensions: betaDimensions));
+
+        alpha.FinancialStatements.PackageId.Should().NotBe(beta.FinancialStatements.PackageId);
+        alpha.FinancialStatements.Dimensions.EntityId.Should().Be("entity-alpha");
+        alpha.FinancialStatements.Dimensions.StrategyId.Should().Be("strategy-credit");
+        alpha.FinancialStatements.Dimensions.ExternalGlDimensions.Should().Contain("Department", "Investments");
+        alpha.FinancialStatements.LineProvenance.Should().OnlyContain(row =>
+            row.Dimensions.EntityId == "entity-alpha" &&
+            row.Dimensions.ExternalGlDimensions["Department"] == "Investments");
+        alpha.ExportArtifacts.Should().OnlyContain(artifact =>
+            artifact.Dimensions.EntityId == "entity-alpha" &&
+            artifact.Dimensions.ExternalGlDimensions["Department"] == "Investments");
+
+        var all = await service.ListPackagesAsync("fund-alpha", "2027-07", DefaultLedgerBookId);
+        var alphaOnly = await service.ListPackagesAsync(
+            "fund-alpha",
+            "2027-07",
+            DefaultLedgerBookId,
+            new LedgerDimensionSetDto(
+                EntityId: "entity-alpha",
+                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["Department"] = "Investments"
+                }));
+        var betaOnly = await service.ListPackagesAsync(
+            "fund-alpha",
+            "2027-07",
+            DefaultLedgerBookId,
+            new LedgerDimensionSetDto(EntityId: "entity-beta"));
+
+        all.Should().HaveCount(2);
+        alphaOnly.Should().ContainSingle(row => row.FinancialStatements.PackageId == alpha.FinancialStatements.PackageId);
+        betaOnly.Should().ContainSingle(row => row.FinancialStatements.PackageId == beta.FinancialStatements.PackageId);
+    }
+
+    [Fact]
+    public async Task BuildPackageAsync_BlocksConflictingExplicitDimensionScope()
+    {
+        var service = new AccountingReportPackageService();
+
+        var package = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-08",
+            Dimensions: new LedgerDimensionSetDto(
+                FundId: "fund-beta",
+                BookId: AlternateLedgerBookId.ToString("D"))));
+
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportPackageFundDimensionMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportPackageLedgerBookDimensionMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
     private static AccountingReportPackageRequestDto CompletePackageRequest(
         string fundProfileId,
         string periodId,
@@ -547,6 +636,9 @@ public sealed class AccountingReportPackageServiceTests
         string? PriorPackageId = null,
         Guid? CloseWorkflowId = null,
         Guid? LedgerBookId = null,
+        string? CapitalAccountId = null,
+        string? InvestorId = null,
+        LedgerDimensionSetDto? Dimensions = null,
         IReadOnlyList<string>? EvidenceLinks = null)
     {
         var effectiveLedgerBookId = LedgerBookId ?? DefaultLedgerBookId;
@@ -557,6 +649,8 @@ public sealed class AccountingReportPackageServiceTests
             Actor: "controller",
             LedgerBookId: effectiveLedgerBookId,
             CloseWorkflowId: CloseWorkflowId,
+            CapitalAccountId: CapitalAccountId,
+            InvestorId: InvestorId,
             BeginningCapital: 200_000m,
             Contributions: 25_000m,
             Distributions: 5_000m,
@@ -570,7 +664,8 @@ public sealed class AccountingReportPackageServiceTests
                 $"evidence:reconciliation:gl-tie-out:{periodId}:book:{ledgerBookEvidenceScope}",
                 $"evidence:report-render:financial-statements:{periodId}:book:{ledgerBookEvidenceScope}",
                 $"evidence:nav:support-package:{periodId}:book:{ledgerBookEvidenceScope}"
-            ]);
+            ],
+            Dimensions: Dimensions);
     }
 
     private static string CertificationEvidence(

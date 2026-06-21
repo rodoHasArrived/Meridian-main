@@ -19,6 +19,7 @@ public interface IAccountingReportPackageService
         string? fundProfileId = null,
         string? periodId = null,
         Guid? ledgerBookId = null,
+        LedgerDimensionSetDto? dimensions = null,
         CancellationToken ct = default);
 
     Task<AccountingReportPackageBundleDto?> CertifyPackageAsync(
@@ -129,12 +130,14 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 "Attach close package, ledger, reconciliation, and report-render evidence before certification."));
         }
 
+        var packageDimensions = BuildReportPackageDimensions(request, fundProfileId, ledgerBookId);
+        validationIssues.AddRange(BuildReportDimensionScopeIssues(request, fundProfileId, ledgerBookId, packageDimensions));
         validationIssues.AddRange(BuildReportCertificationEvidenceIssues(periodId, evidenceLinks));
         validationIssues.AddRange(BuildRestatementCertificationIssues(request, fundProfileId, periodId, evidenceLinks, ReadPackages()));
 
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var state = hasCritical ? AccountingCertificationStateDto.Draft : AccountingCertificationStateDto.ReadyForReview;
-        var packageId = BuildPackageId(fundProfileId, periodId, ledgerBookId);
+        var packageId = BuildPackageId(fundProfileId, periodId, ledgerBookId, request.Dimensions is null ? null : packageDimensions);
         ThrowIfCertifiedPackageWouldBeReplaced(packageId, ReadPackages());
         var certification = new ReportCertificationDto(
             $"report-certification-{Sanitize(packageId)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
@@ -147,7 +150,6 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             evidenceLinks);
         var restatement = BuildRestatement(request, actor, evidenceLinks);
         var endingCapital = request.BeginningCapital + request.Contributions - request.Distributions + request.RealizedGainLoss;
-        var packageDimensions = BuildReportPackageDimensions(request, fundProfileId, ledgerBookId);
         var lineProvenance = BuildReportLineProvenance(
             request,
             periodId,
@@ -234,15 +236,18 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         string? fundProfileId = null,
         string? periodId = null,
         Guid? ledgerBookId = null,
+        LedgerDimensionSetDto? dimensions = null,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim();
         var normalizedPeriodId = string.IsNullOrWhiteSpace(periodId) ? null : periodId.Trim();
+        var normalizedDimensions = NormalizeDimensionSet(dimensions);
         var rows = ReadPackages()
             .Where(package => normalizedFundProfileId is null || string.Equals(package.FinancialStatements.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(package => normalizedPeriodId is null || string.Equals(package.FinancialStatements.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase))
             .Where(package => !ledgerBookId.HasValue || package.FinancialStatements.LedgerBookId == ledgerBookId.Value)
+            .Where(package => MatchesDimensionScope(package.FinancialStatements.Dimensions, normalizedDimensions))
             .OrderByDescending(static package => package.Certification.RecordedAtUtc)
             .ToArray();
 
@@ -686,10 +691,19 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
     private static string BuildPackageId(
         string fundProfileId,
         string periodId,
-        Guid? ledgerBookId)
-        => ledgerBookId.HasValue
+        Guid? ledgerBookId,
+        LedgerDimensionSetDto? explicitDimensions)
+    {
+        var baseId = ledgerBookId.HasValue
             ? $"accounting-report-package-{Sanitize(fundProfileId)}-{Sanitize(periodId)}-book-{ledgerBookId.Value:N}"
             : $"accounting-report-package-{Sanitize(fundProfileId)}-{Sanitize(periodId)}";
+        if (explicitDimensions is null || !HasExplicitDimensionScope(explicitDimensions, fundProfileId, ledgerBookId))
+        {
+            return baseId;
+        }
+
+        return $"{baseId}-scope-{BuildDimensionScopeHash(explicitDimensions)}";
+    }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportCertificationEvidenceIssues(
         string periodId,
@@ -1120,11 +1134,82 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         AccountingReportPackageRequestDto request,
         string fundProfileId,
         Guid? ledgerBookId)
-        => new(
+    {
+        var dimensions = NormalizeDimensionSet(request.Dimensions);
+        return new LedgerDimensionSetDto(
             FundId: fundProfileId,
-            InvestorId: string.IsNullOrWhiteSpace(request.InvestorId) ? null : request.InvestorId.Trim(),
-            CapitalAccountId: string.IsNullOrWhiteSpace(request.CapitalAccountId) ? null : request.CapitalAccountId.Trim(),
-            BookId: ledgerBookId?.ToString("D"));
+            EntityId: dimensions?.EntityId,
+            SleeveId: dimensions?.SleeveId,
+            StrategyId: dimensions?.StrategyId,
+            InvestorId: NormalizeOptional(request.InvestorId) ?? dimensions?.InvestorId,
+            CapitalAccountId: NormalizeOptional(request.CapitalAccountId) ?? dimensions?.CapitalAccountId,
+            InstrumentId: dimensions?.InstrumentId,
+            TaxLotId: dimensions?.TaxLotId,
+            CostCenterId: dimensions?.CostCenterId,
+            CounterpartyId: dimensions?.CounterpartyId,
+            ExternalGlDimensions: dimensions?.ExternalGlDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            OrganizationId: dimensions?.OrganizationId,
+            PortfolioId: dimensions?.PortfolioId,
+            BookId: ledgerBookId?.ToString("D") ?? dimensions?.BookId,
+            AccountId: dimensions?.AccountId,
+            CustomerId: dimensions?.CustomerId,
+            VendorId: dimensions?.VendorId,
+            ProjectId: dimensions?.ProjectId);
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportDimensionScopeIssues(
+        AccountingReportPackageRequestDto request,
+        string fundProfileId,
+        Guid? ledgerBookId,
+        LedgerDimensionSetDto packageDimensions)
+    {
+        if (request.Dimensions is null)
+        {
+            return [];
+        }
+
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        AddDimensionConflict(
+            issues,
+            "ReportPackageFundDimensionMismatch",
+            "fund",
+            request.Dimensions.FundId,
+            fundProfileId,
+            request.PeriodId);
+        AddDimensionConflict(
+            issues,
+            "ReportPackageLedgerBookDimensionMismatch",
+            "ledger book",
+            request.Dimensions.BookId,
+            ledgerBookId?.ToString("D"),
+            request.PeriodId);
+        AddDimensionConflict(
+            issues,
+            "ReportPackageInvestorDimensionMismatch",
+            "investor",
+            request.Dimensions.InvestorId,
+            NormalizeOptional(request.InvestorId),
+            request.PeriodId);
+        AddDimensionConflict(
+            issues,
+            "ReportPackageCapitalAccountDimensionMismatch",
+            "capital account",
+            request.Dimensions.CapitalAccountId,
+            NormalizeOptional(request.CapitalAccountId),
+            request.PeriodId);
+
+        if (!MatchesDimensionScope(packageDimensions, NormalizeDimensionSet(request.Dimensions)))
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "ReportPackageDimensionScopeMismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Accounting report package for period '{request.PeriodId}' could not retain the requested dimensional scope.",
+                request.PeriodId,
+                "Align request identifiers and dimension filters before certifying the report package."));
+        }
+
+        return issues;
+    }
 
     private static IReadOnlyList<ReportLineProvenanceDto> BuildReportLineProvenance(
         AccountingReportPackageRequestDto request,
@@ -1235,6 +1320,179 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
     private static bool IsLateAdjustmentDecisionPending(LateAdjustmentRequestDto adjustment)
         => adjustment.ApprovalState is not ManualJournalEntryStatusDto.Approved
             and not ManualJournalEntryStatusDto.Rejected;
+
+    private static void AddDimensionConflict(
+        List<AccountingConfigurationValidationIssueDto> issues,
+        string code,
+        string label,
+        string? requestedValue,
+        string? authoritativeValue,
+        string periodId)
+    {
+        var requested = NormalizeOptional(requestedValue);
+        var authoritative = NormalizeOptional(authoritativeValue);
+        if (requested is null || authoritative is null ||
+            string.Equals(requested, authoritative, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        issues.Add(new AccountingConfigurationValidationIssueDto(
+            code,
+            AccountingConfigurationValidationSeverityDto.Critical,
+            $"Accounting report package dimension scope requested {label} '{requested}', but the package context resolves to '{authoritative}'.",
+            periodId,
+            "Use one consistent fund, ledger book, investor, capital account, and dimension scope before report certification."));
+    }
+
+    private static bool MatchesDimensionScope(
+        LedgerDimensionSetDto? dimensions,
+        LedgerDimensionSetDto? filter)
+    {
+        if (filter is null)
+        {
+            return true;
+        }
+
+        var normalized = NormalizeDimensionSet(dimensions);
+        if (normalized is null)
+        {
+            return false;
+        }
+
+        return MatchesDimensionValue(normalized.FundId, filter.FundId)
+               && MatchesDimensionValue(normalized.EntityId, filter.EntityId)
+               && MatchesDimensionValue(normalized.SleeveId, filter.SleeveId)
+               && MatchesDimensionValue(normalized.StrategyId, filter.StrategyId)
+               && MatchesDimensionValue(normalized.InvestorId, filter.InvestorId)
+               && MatchesDimensionValue(normalized.CapitalAccountId, filter.CapitalAccountId)
+               && MatchesDimensionGuid(normalized.InstrumentId, filter.InstrumentId)
+               && MatchesDimensionValue(normalized.TaxLotId, filter.TaxLotId)
+               && MatchesDimensionValue(normalized.CostCenterId, filter.CostCenterId)
+               && MatchesDimensionValue(normalized.CounterpartyId, filter.CounterpartyId)
+               && MatchesDimensionValue(normalized.OrganizationId, filter.OrganizationId)
+               && MatchesDimensionValue(normalized.PortfolioId, filter.PortfolioId)
+               && MatchesDimensionValue(normalized.BookId, filter.BookId)
+               && MatchesDimensionValue(normalized.AccountId, filter.AccountId)
+               && MatchesDimensionValue(normalized.CustomerId, filter.CustomerId)
+               && MatchesDimensionValue(normalized.VendorId, filter.VendorId)
+               && MatchesDimensionValue(normalized.ProjectId, filter.ProjectId)
+               && MatchesExternalGlDimensions(normalized.ExternalGlDimensions, filter.ExternalGlDimensions);
+    }
+
+    private static bool MatchesDimensionValue(string? actual, string? expected)
+    {
+        var normalizedExpected = NormalizeOptional(expected);
+        return normalizedExpected is null ||
+               string.Equals(NormalizeOptional(actual), normalizedExpected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool MatchesDimensionGuid(Guid? actual, Guid? expected)
+        => !expected.HasValue || actual == expected;
+
+    private static bool MatchesExternalGlDimensions(
+        IReadOnlyDictionary<string, string> actual,
+        IReadOnlyDictionary<string, string> expected)
+        => expected.All(pair =>
+            actual.TryGetValue(pair.Key, out var actualValue) &&
+            string.Equals(NormalizeOptional(actualValue), NormalizeOptional(pair.Value), StringComparison.OrdinalIgnoreCase));
+
+    private static LedgerDimensionSetDto? NormalizeDimensionSet(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return null;
+        }
+
+        var externalGlDimensions = dimensions.ExternalGlDimensions
+            .Where(pair => NormalizeOptional(pair.Key) is not null && NormalizeOptional(pair.Value) is not null)
+            .ToDictionary(
+                pair => NormalizeOptional(pair.Key)!,
+                pair => NormalizeOptional(pair.Value)!,
+                StringComparer.OrdinalIgnoreCase);
+
+        var normalized = new LedgerDimensionSetDto(
+            FundId: NormalizeOptional(dimensions.FundId),
+            EntityId: NormalizeOptional(dimensions.EntityId),
+            SleeveId: NormalizeOptional(dimensions.SleeveId),
+            StrategyId: NormalizeOptional(dimensions.StrategyId),
+            InvestorId: NormalizeOptional(dimensions.InvestorId),
+            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
+            InstrumentId: dimensions.InstrumentId,
+            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
+            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
+            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
+            ExternalGlDimensions: externalGlDimensions,
+            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
+            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
+            BookId: NormalizeOptional(dimensions.BookId),
+            AccountId: NormalizeOptional(dimensions.AccountId),
+            CustomerId: NormalizeOptional(dimensions.CustomerId),
+            VendorId: NormalizeOptional(dimensions.VendorId),
+            ProjectId: NormalizeOptional(dimensions.ProjectId));
+        return HasAnyDimensionScope(normalized) ? normalized : null;
+    }
+
+    private static bool HasExplicitDimensionScope(
+        LedgerDimensionSetDto dimensions,
+        string fundProfileId,
+        Guid? ledgerBookId)
+    {
+        var filter = new LedgerDimensionSetDto(
+            FundId: fundProfileId,
+            BookId: ledgerBookId?.ToString("D"));
+        return !MatchesDimensionScope(filter, dimensions) || !MatchesDimensionScope(dimensions, filter);
+    }
+
+    private static bool HasAnyDimensionScope(LedgerDimensionSetDto dimensions)
+        => dimensions.FundId is not null
+           || dimensions.EntityId is not null
+           || dimensions.SleeveId is not null
+           || dimensions.StrategyId is not null
+           || dimensions.InvestorId is not null
+           || dimensions.CapitalAccountId is not null
+           || dimensions.InstrumentId.HasValue
+           || dimensions.TaxLotId is not null
+           || dimensions.CostCenterId is not null
+           || dimensions.CounterpartyId is not null
+           || dimensions.OrganizationId is not null
+           || dimensions.PortfolioId is not null
+           || dimensions.BookId is not null
+           || dimensions.AccountId is not null
+           || dimensions.CustomerId is not null
+           || dimensions.VendorId is not null
+           || dimensions.ProjectId is not null
+           || dimensions.ExternalGlDimensions.Count > 0;
+
+    private static string BuildDimensionScopeHash(LedgerDimensionSetDto dimensions)
+    {
+        var payload = string.Join(
+            "|",
+            NormalizeOptional(dimensions.FundId) ?? string.Empty,
+            NormalizeOptional(dimensions.EntityId) ?? string.Empty,
+            NormalizeOptional(dimensions.SleeveId) ?? string.Empty,
+            NormalizeOptional(dimensions.StrategyId) ?? string.Empty,
+            NormalizeOptional(dimensions.InvestorId) ?? string.Empty,
+            NormalizeOptional(dimensions.CapitalAccountId) ?? string.Empty,
+            dimensions.InstrumentId?.ToString("D") ?? string.Empty,
+            NormalizeOptional(dimensions.TaxLotId) ?? string.Empty,
+            NormalizeOptional(dimensions.CostCenterId) ?? string.Empty,
+            NormalizeOptional(dimensions.CounterpartyId) ?? string.Empty,
+            NormalizeOptional(dimensions.OrganizationId) ?? string.Empty,
+            NormalizeOptional(dimensions.PortfolioId) ?? string.Empty,
+            NormalizeOptional(dimensions.BookId) ?? string.Empty,
+            NormalizeOptional(dimensions.AccountId) ?? string.Empty,
+            NormalizeOptional(dimensions.CustomerId) ?? string.Empty,
+            NormalizeOptional(dimensions.VendorId) ?? string.Empty,
+            NormalizeOptional(dimensions.ProjectId) ?? string.Empty,
+            string.Join(";", dimensions.ExternalGlDimensions
+                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => $"{NormalizeOptional(pair.Key)}={NormalizeOptional(pair.Value)}")));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
+    }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string RequireText(string? value, string label)
         => string.IsNullOrWhiteSpace(value)

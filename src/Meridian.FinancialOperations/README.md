@@ -41,8 +41,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   evidence, file-backed late-adjustment requests, and materiality policy validation.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
-  certification state, validation issues, retained package history, evidence-backed package
-  certification, and restatement workflow metadata.
+  dimension-scoped package requests, certification state, validation issues, retained package
+  history, evidence-backed package certification, and restatement workflow metadata.
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
@@ -231,15 +231,19 @@ close workflow, duplicate decisions, and decisions after close-package period lo
 `AccountingReportPackageService` assembles the implementation-grade report package DTO family:
 financial statement package, investor capital statement, realized gain/loss report, NAV package,
 certification, validation issues, deterministic report-line provenance, deterministic export
-artifact rows, and optional restatement workflow metadata. It stamps the retained ledger book and
-canonical `LedgerDimensionSetDto` scope onto child financial statement, investor capital, realized
-gain/loss, NAV, and provenance artifacts so report consumers do not have to infer dimensional scope
-from package identifiers or parent rows. It carries close-plan validation into the package certification state, keeps
+artifact rows, and optional restatement workflow metadata. It accepts explicit canonical
+`LedgerDimensionSetDto` scope on package requests, validates conflicting fund, ledger-book,
+investor, and capital-account dimensions, and stamps the retained ledger book and dimension scope
+onto child financial statement, investor capital, realized gain/loss, NAV, export, and provenance
+artifacts so report consumers do not have to infer dimensional scope from package identifiers or
+parent rows. It carries close-plan validation into the package certification state, keeps
 standalone packages ready-for-review when non-blocking warnings remain, returns draft state when
 ledger-book scope is missing, and uses ledger-book-scoped retained package identifiers so primary,
-GAAP, tax, or other book packages for the same fund period do not overwrite one another. Package
-history can also be filtered by ledger book so close, reporting, and export review surfaces inspect
-the intended book rather than a fund-period aggregate.
+GAAP, tax, or other book packages for the same fund period do not overwrite one another. Explicit
+dimension-scoped packages add a deterministic scope suffix so entity, strategy, capital-account, or
+external-GL packages for the same book and period can coexist. Package history can also be filtered
+by ledger book and dimensions so close, reporting, and export review surfaces inspect the intended
+book/scope rather than a fund-period aggregate.
 blocking close-plan evidence is missing, close checklist dependencies are incomplete, the attached
 close workflow has not reached period-lock, approved
 sign-offs are missing, or material late adjustments are still unapproved, blocks restatement

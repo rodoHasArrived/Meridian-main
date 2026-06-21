@@ -945,12 +945,15 @@ aggregate back to retained ledger-book postings and dimensional lines.
 trace contract for the customer-neutral proof path from operational event through evidence,
 posting candidate, journal lifecycle, ledger impact, report line, package, and audit event without
 introducing a new posting command or bypassing manual journal lifecycle controls.
+`AccountingReportPackageRequestDto` accepts an optional `LedgerDimensionSetDto` so report package
+assembly can be scoped by fund, entity, sleeve, strategy, investor, capital account, instrument,
+tax lot, cost center, counterparty, book, project, and external GL dimensions before certification.
 `AccountingReportPackageBundleDto` carries close-plan validation and optional retained close workflow
 lineage into financial statement, investor capital, realized gain/loss, NAV, line-level provenance,
 export-artifact manifest, certification, and restatement outputs. Financial statement, investor
 capital, realized gain/loss, NAV, and provenance artifacts carry the retained ledger-book and
 `LedgerDimensionSetDto` scope so report consumers can remain book- and dimension-native without
-reconstructing package context from parent rows. Package
+reconstructing package context from parent rows or retained-history routes. Package
 certification remains `Draft` when close checklist dependencies are incomplete, approved sign-offs
 are missing, or material late adjustments are not approved, and close-backed certification can
 refresh the current close plan before moving a retained package to `Certified`.
