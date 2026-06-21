@@ -631,6 +631,28 @@ public sealed record AccountingProductionReadinessComponentDto(
         EvidenceReferences ?? [];
 }
 
+public sealed record AccountingMigrationRolloutPlanItemDto(
+    AccountingMigrationRunKindDto Kind,
+    string Code,
+    string Label,
+    bool Certified,
+    AccountingProductionReadinessStatusDto Status,
+    string ScopeLabel,
+    string RequiredAction,
+    string? LatestRunId = null,
+    AccountingMigrationRunStatusDto? LatestRunStatus = null,
+    int MigratedRecordCount = 0,
+    int IssueCount = 0,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<string>? BlockingIssueCodes = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public IReadOnlyList<string> BlockingIssueCodes { get; init; } =
+        BlockingIssueCodes ?? [];
+}
+
 public sealed record AccountingProductionReadinessDto(
     DateTimeOffset GeneratedAtUtc,
     string FundProfileId,
@@ -647,6 +669,7 @@ public sealed record AccountingProductionReadinessDto(
     int CertifiedExternalGlMappingProfileCount = 0,
     bool ExternalGlLivePostingEnabled = false,
     IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null,
+    IReadOnlyList<AccountingMigrationRolloutPlanItemDto>? MigrationRolloutPlan = null,
     AccountingTenantAdministrationReadinessDto? TenantAdministration = null)
 {
     public IReadOnlyList<AccountingProductionReadinessComponentDto> Components { get; init; } =
@@ -657,6 +680,9 @@ public sealed record AccountingProductionReadinessDto(
 
     public IReadOnlyList<AccountingMigrationRunArtifactDto> MigrationRunArtifacts { get; init; } =
         MigrationRunArtifacts ?? [];
+
+    public IReadOnlyList<AccountingMigrationRolloutPlanItemDto> MigrationRolloutPlan { get; init; } =
+        MigrationRolloutPlan ?? [];
 
     public int CriticalIssueCount => Issues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 

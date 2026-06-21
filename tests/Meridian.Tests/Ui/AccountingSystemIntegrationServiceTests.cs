@@ -978,6 +978,22 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         readiness.MigrationRunArtifacts.Should().HaveCount(2);
+        readiness.MigrationRolloutPlan.Should().HaveCount(5);
+        readiness.MigrationRolloutPlan.Should().Contain(row =>
+            row.Kind == AccountingMigrationRunKindDto.LedgerBookScope &&
+            row.Status == AccountingProductionReadinessStatusDto.Ready &&
+            row.LatestRunId == "migration-run-ledger-book-scope-default-fund" &&
+            row.MigratedRecordCount == 24 &&
+            row.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund"));
+        readiness.MigrationRolloutPlan.Should().Contain(row =>
+            row.Kind == AccountingMigrationRunKindDto.HistoricalJournalBackfill &&
+            row.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            row.BlockingIssueCodes.Contains("migration.historical-journal-backfill-certified-run-missing"));
+        readiness.MigrationRolloutPlan.Should().Contain(row =>
+            row.Kind == AccountingMigrationRunKindDto.DimensionalBackfill &&
+            row.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            row.LatestRunStatus == AccountingMigrationRunStatusDto.Failed &&
+            row.BlockingIssueCodes.Contains("migration.dimensional-backfill-run-failed"));
         readiness.Issues.Should().Contain(issue =>
             issue.Code == "migration.historical-journal-backfill-certified-run-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&

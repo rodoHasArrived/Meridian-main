@@ -92,11 +92,16 @@ the requirement end to end.
   controls are not certified, certified controls lack retained certified run artifacts, or retained
   run artifacts failed. Retained migration run artifacts now have a shared file-backed store and
   Accounting System list/upsert endpoints, and production readiness automatically merges stored
-  fund/book-scoped artifacts into the assessment. Browser Accounting Configure now reads the
-  retained artifact list endpoint and renders run kind, status, scope, migrated-record count,
-  issue count, and evidence-reference count beside production-readiness blockers. Migration rollout
-  readiness now also fails closed when the assessment lacks tenant/company scope or when retained
-  migration run artifacts belong to another tenant/company rollout.
+  fund/book-scoped artifacts into the assessment. The shared production-readiness payload now also
+  emits a migration rollout plan for ledger-book scope, historical journal backfill, dimensional
+  backfill, configuration promotion, and close/reporting evidence migration, including lane status,
+  scope, latest retained run, migrated-record and issue counts, blocking issue codes, and required
+  actions. Browser Accounting Configure now reads the retained artifact list endpoint and renders
+  both the rollout plan and run kind, status, scope, migrated-record count, issue count, and
+  evidence-reference count beside production-readiness blockers. WPF Accounting Configure renders
+  the same shared migration rollout plan and retained run evidence. Migration rollout readiness now
+  also fails closed when the assessment lacks tenant/company scope or when retained migration run
+  artifacts belong to another tenant/company rollout.
 - [x] Source-event posting candidates and production-readiness Rules Studio checks now use
   tenant/company/fund/ledger-book scope for dry-run, workspace lookup, chart resolution, and
   browser/WPF endpoint entry, preventing a candidate or readiness assessment for one company from
@@ -168,8 +173,9 @@ the requirement end to end.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
   evidence migration. The shared readiness contract now exposes fail-closed certification inputs,
-  tenant/company-scoped retained migration run artifacts, and retained-artifact blockers for these
-  controls, but it does not yet execute migration jobs or backfill data.
+  tenant/company-scoped retained migration run artifacts, retained-artifact blockers, and a shared
+  migration rollout plan/checklist for these controls, but it does not yet execute migration jobs
+  or backfill data.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, but live credentialed import adapters, richer mapping fixtures, and controlled
   export certification still need provider-specific coverage before any separately approved live

@@ -1960,6 +1960,38 @@ describe("AccountingScreen", () => {
         hasCompanyScope: true,
         hasRetainedEvidence: true
       },
+      migrationRolloutPlan: [
+        {
+          kind: "LedgerBookScope",
+          code: "ledger-book-scope",
+          label: "Ledger-book migration scope",
+          certified: true,
+          status: "Ready",
+          scopeLabel: "tenant tenant-alpha | company company-alpha | fund fund-alpha | book book-primary",
+          requiredAction: "Ledger-book scope migration is retained.",
+          latestRunId: "migration-run-ledger-book-scope-book-primary",
+          latestRunStatus: "Certified",
+          migratedRecordCount: 24,
+          issueCount: 0,
+          evidenceReferences: ["evidence://migration/ledger-book-scope/book-primary"],
+          blockingIssueCodes: []
+        },
+        {
+          kind: "HistoricalJournalBackfill",
+          code: "historical-journal-backfill",
+          label: "Historical journal backfill",
+          certified: false,
+          status: "Blocked",
+          scopeLabel: "tenant tenant-alpha | company company-alpha | fund fund-alpha | book book-primary",
+          requiredAction: "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
+          latestRunId: null,
+          latestRunStatus: null,
+          migratedRecordCount: 0,
+          issueCount: 0,
+          evidenceReferences: [],
+          blockingIssueCodes: ["migration.historical-journal-backfill-not-certified"]
+        }
+      ],
       components: [
         {
           area: "RulesStudio",
@@ -2118,6 +2150,11 @@ describe("AccountingScreen", () => {
     expect(screen.getAllByText("Approvals").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Dimension maps").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Sandbox proof").length).toBeGreaterThan(0);
+    expect(screen.getByRole("region", { name: "Accounting migration rollout plan" })).toBeInTheDocument();
+    expect(screen.getByText("Ledger-book migration scope")).toBeInTheDocument();
+    expect(screen.getByText("Historical journal backfill")).toBeInTheDocument();
+    expect(screen.getByText(/migration-run-ledger-book-scope-book-primary/)).toBeInTheDocument();
+    expect(screen.getByText("migration.historical-journal-backfill-not-certified")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting production certification profile editor" })).toBeInTheDocument();
     expect(screen.getByText("Tenant context | company context | fund fund-alpha | ledger book book-primary")).toBeInTheDocument();
     expect(screen.getByText("Rules by book")).toBeInTheDocument();

@@ -3586,6 +3586,38 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
       summary: "Fixture dimensional backfill retained and certified."
     }
   ],
+  migrationRolloutPlan: [
+    {
+      kind: "LedgerBookScope",
+      code: "ledger-book-scope",
+      label: "Ledger-book migration scope",
+      certified: true,
+      status: "Ready",
+      scopeLabel: "tenant fixture-tenant | company fixture-company | fund default-fund | book missing",
+      requiredAction: "Ledger-book scoping and historical fund-level compatibility paths are retained.",
+      latestRunId: "migration-run-ledger-book-scope-default-fund",
+      latestRunStatus: "Certified",
+      migratedRecordCount: 24,
+      issueCount: 0,
+      evidenceReferences: ["fixture:migration:ledger-book-run"],
+      blockingIssueCodes: []
+    },
+    {
+      kind: "HistoricalJournalBackfill",
+      code: "historical-journal-backfill",
+      label: "Historical journal backfill",
+      certified: false,
+      status: "Blocked",
+      scopeLabel: "tenant fixture-tenant | company fixture-company | fund default-fund | book missing",
+      requiredAction: "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
+      latestRunId: null,
+      latestRunStatus: null,
+      migratedRecordCount: 0,
+      issueCount: 0,
+      evidenceReferences: [],
+      blockingIssueCodes: ["migration.historical-journal-backfill-not-certified"]
+    }
+  ],
   ledgerBookRollout: {
     generatedAtUtc: "2026-02-01T00:15:00Z",
     fundProfileId: "default-fund",

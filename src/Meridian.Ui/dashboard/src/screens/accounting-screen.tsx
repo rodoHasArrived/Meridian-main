@@ -6754,6 +6754,27 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             ) : null}
           </div>
 
+          {view.productionReadiness.migrationPlanRows.length > 0 ? (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Accounting migration rollout plan">
+              {view.productionReadiness.migrationPlanRows.map((item) => (
+                <div key={item.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(item.tone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-foreground">{item.title}</div>
+                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.id}</div>
+                    </div>
+                    <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.statusLabel}</Badge>
+                  </div>
+                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{item.certificationLabel} | {item.latestRunLabel}</div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">{item.scopeLabel}</div>
+                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{item.metricsLabel} | {item.evidenceLabel}</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.requiredAction}</p>
+                  <div className="mt-2 text-[11px] text-muted-foreground">{item.blockingIssueLabel}</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           {view.productionReadiness.migrationArtifactRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3" role="region" aria-label="Retained accounting migration run artifacts">
               {view.productionReadiness.migrationArtifactRows.map((artifact) => (

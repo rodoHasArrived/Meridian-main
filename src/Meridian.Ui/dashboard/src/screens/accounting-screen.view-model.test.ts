@@ -2804,6 +2804,38 @@ describe("accounting-screen view model", () => {
         hasCompanyScope: true,
         hasRetainedEvidence: true
       },
+      migrationRolloutPlan: [
+        {
+          kind: "LedgerBookScope",
+          code: "ledger-book-scope",
+          label: "Ledger-book migration scope",
+          certified: true,
+          status: "Ready",
+          scopeLabel: "tenant tenant-alpha | company company-alpha | fund fund-alpha | book book-primary",
+          requiredAction: "Ledger-book scope migration is retained.",
+          latestRunId: "migration-run-ledger-book-scope-book-primary",
+          latestRunStatus: "Certified",
+          migratedRecordCount: 24,
+          issueCount: 0,
+          evidenceReferences: ["evidence://migration/ledger-book-scope/book-primary"],
+          blockingIssueCodes: []
+        },
+        {
+          kind: "HistoricalJournalBackfill",
+          code: "historical-journal-backfill",
+          label: "Historical journal backfill",
+          certified: false,
+          status: "Blocked",
+          scopeLabel: "tenant tenant-alpha | company company-alpha | fund fund-alpha | book book-primary",
+          requiredAction: "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
+          latestRunId: null,
+          latestRunStatus: null,
+          migratedRecordCount: 0,
+          issueCount: 0,
+          evidenceReferences: [],
+          blockingIssueCodes: ["migration.historical-journal-backfill-not-certified"]
+        }
+      ],
       components: [
         {
           area: "RulesStudio",
@@ -3093,6 +3125,24 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "approval-queue-studio", statusLabel: "Missing", tone: "danger" }),
       expect.objectContaining({ id: "dimension-mapping-studio", statusLabel: "Missing", tone: "danger" }),
       expect.objectContaining({ id: "implementation-sandbox", statusLabel: "Missing", tone: "danger" })
+    ]));
+    expect(result.current.productionReadiness.migrationPlanRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "ledger-book-scope",
+        statusLabel: "Ready",
+        certificationLabel: "Certified",
+        latestRunLabel: "migration-run-ledger-book-scope-book-primary | Certified",
+        metricsLabel: "24 records | 0 issues",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "historical-journal-backfill",
+        statusLabel: "Blocked",
+        certificationLabel: "Not certified",
+        latestRunLabel: "No retained run",
+        blockingIssueLabel: "migration.historical-journal-backfill-not-certified",
+        tone: "danger"
+      })
     ]));
     expect(result.current.productionReadiness.components).toEqual(expect.arrayContaining([
       expect.objectContaining({

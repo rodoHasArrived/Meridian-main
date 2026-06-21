@@ -73,8 +73,9 @@ direct-lending projections, and strategy ledger reads, renders
 dimensional ledger/query/report/export control counts with retained ledger-book-scoped evidence, renders
 and saves retained tenant/company/fund/book-scoped production-certification controls through the
 shared Accounting System profile store,
-retained migration-run evidence with ledger-book scope
-and canonical dimensions from the shared production-readiness payload, surfaces
+retained migration-run evidence plus generated migration rollout plan rows with ledger-book scope,
+latest retained run, blocking issue codes, required actions, and canonical dimensions from the shared
+production-readiness payload, surfaces
 shared ledger-book setup candidate guidance and can create the ledger book through the shared ledger-book service when book-scoped
 configuration targets a missing registered book, renders a shared-workspace ledger-book
 administration grid with selected/available books, fund-structure scope, basis, currency, policy,

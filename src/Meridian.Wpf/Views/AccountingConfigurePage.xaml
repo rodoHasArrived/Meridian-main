@@ -218,6 +218,15 @@
                                             <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="220" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Migration Rollout Plan" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessMigrationPlanRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessMigrationPlanGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Lane" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150" />
+                                            <DataGridTextColumn Header="Scope / Run" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Required Action" Binding="{Binding Evidence}" Width="300" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Migration Run Evidence" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding ProductionReadinessMigrationArtifactRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessMigrationArtifactGrid">
                                         <DataGrid.Columns>

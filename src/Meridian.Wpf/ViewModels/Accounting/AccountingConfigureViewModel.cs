@@ -359,6 +359,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLifecycleRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessComponentRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessIssueRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationPlanRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationArtifactRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> TenantAdministrationControlRows { get; } = [];
     public ObservableCollection<string> ReconciliationViewOptions { get; } =
@@ -2239,6 +2240,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessIssueRows.Clear();
+            ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             return;
         }
@@ -2253,6 +2255,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessDimensionalReportingText = "Dimensional reporting readiness cannot be assessed.";
             ProductionReadinessTenantAdminText = "Tenant administration readiness cannot be assessed.";
             ProductionReadinessComponentRows.Clear();
+            ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
             [
@@ -2281,6 +2284,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessDimensionalReportingText = "Dimensional reporting readiness could not be assessed.";
             ProductionReadinessTenantAdminText = "Tenant administration readiness could not be assessed.";
             ProductionReadinessComponentRows.Clear();
+            ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
             [
@@ -2394,6 +2398,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 issue.EvidenceReferences.Count > 0
                     ? string.Join("; ", issue.EvidenceReferences)
                     : issue.Area.ToString())));
+        ProductionReadinessMigrationPlanRows.ReplaceWith(readiness.MigrationRolloutPlan.Select(item =>
+            new AccountingWorkbenchRow(
+                item.Label,
+                $"{item.Status} | {(item.Certified ? "Certified" : "Not certified")}",
+                $"{item.ScopeLabel}; latest run {(string.IsNullOrWhiteSpace(item.LatestRunId) ? "missing" : item.LatestRunId)}{(item.LatestRunStatus.HasValue ? $" ({item.LatestRunStatus.Value})" : string.Empty)}; {item.MigratedRecordCount:N0} record(s), {item.IssueCount:N0} issue(s).",
+                item.BlockingIssueCodes.Count > 0
+                    ? $"{item.RequiredAction} | {string.Join(", ", item.BlockingIssueCodes)}"
+                    : item.RequiredAction,
+                item.Code)));
         ProductionReadinessMigrationArtifactRows.ReplaceWith(readiness.MigrationRunArtifacts
             .OrderByDescending(static artifact => artifact.StartedAtUtc)
             .ThenBy(static artifact => artifact.RunId, StringComparer.OrdinalIgnoreCase)
@@ -3399,6 +3412,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProductionReadinessComponentRows.Clear();
         ProductionReadinessIssueRows.Clear();
         ProductionReadinessMigrationArtifactRows.Clear();
+        ProductionReadinessMigrationPlanRows.Clear();
         TenantAdministrationControlRows.Clear();
         ClearCapitalAccountWorkbenchRows();
         EvidenceRows.Clear();

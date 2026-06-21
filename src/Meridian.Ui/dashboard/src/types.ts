@@ -5657,6 +5657,22 @@ export interface AccountingMigrationRunArtifact {
   dimensions?: LedgerDimensionSet | null;
 }
 
+export interface AccountingMigrationRolloutPlanItem {
+  kind: AccountingMigrationRunKind;
+  code: string;
+  label: string;
+  certified: boolean;
+  status: AccountingProductionReadinessStatus;
+  scopeLabel: string;
+  requiredAction: string;
+  latestRunId?: string | null;
+  latestRunStatus?: AccountingMigrationRunStatus | null;
+  migratedRecordCount: number;
+  issueCount: number;
+  evidenceReferences: string[];
+  blockingIssueCodes: string[];
+}
+
 export interface AccountingMigrationRunArtifactList {
   fundProfileId?: string | null;
   ledgerBookId?: string | null;
@@ -5834,6 +5850,7 @@ export interface AccountingProductionReadiness {
   certifiedExternalGlMappingProfileCount: number;
   externalGlLivePostingEnabled: boolean;
   migrationRunArtifacts?: AccountingMigrationRunArtifact[];
+  migrationRolloutPlan?: AccountingMigrationRolloutPlanItem[];
   tenantAdministration?: AccountingTenantAdministrationReadiness | null;
   criticalIssueCount: number;
   warningIssueCount: number;

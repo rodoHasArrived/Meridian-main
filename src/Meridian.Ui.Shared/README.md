@@ -253,7 +253,11 @@ tenant/company-scoped migration artifacts for the exact requested ledger book. F
 other-book, or other-company migration artifacts cannot satisfy certification controls for a
 selected ledger-book rollout. Migration rollout readiness also blocks when the assessment has no
 tenant or company scope, so historical backfill, dimensional backfill, configuration promotion, and
-close/reporting evidence migration cannot be certified as anonymous fund-level work. External GL
+close/reporting evidence migration cannot be certified as anonymous fund-level work. The same
+readiness payload now emits generated migration rollout plan rows for ledger-book scope,
+historical journal backfill, dimensional backfill, configuration promotion, and close/reporting
+evidence migration, including lane status, scope, latest retained run, migrated-record and issue
+counts, blocking issue codes, and required actions for browser and WPF. External GL
 readiness is blocked until the assessment
 names the target Meridian ledger book for import/reconciliation/mapping/export certification, has
 retained external-GL workflow evidence for that selected book, and has certified mapping profiles;

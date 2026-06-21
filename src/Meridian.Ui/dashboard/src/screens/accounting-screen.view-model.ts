@@ -82,6 +82,7 @@ import type {
   AccountingConfigurationWorkspace,
   AccountingMigrationRunArtifact,
   AccountingMigrationRunArtifactList,
+  AccountingMigrationRolloutPlanItem,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
   AccountingProductionCertificationProfile,
@@ -380,6 +381,20 @@ export interface AccountingMigrationRunArtifactViewModel {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+export interface AccountingMigrationRolloutPlanItemViewModel {
+  id: string;
+  title: string;
+  statusLabel: string;
+  certificationLabel: string;
+  scopeLabel: string;
+  latestRunLabel: string;
+  metricsLabel: string;
+  evidenceLabel: string;
+  requiredAction: string;
+  blockingIssueLabel: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
 export interface AccountingTenantAdministrationControlViewModel {
   id: string;
   label: string;
@@ -401,6 +416,7 @@ export interface AccountingProductionReadinessViewModel {
   tenantAdministrationLabel: string;
   tenantAdministrationEvidenceLabel: string;
   tenantAdministrationControls: AccountingTenantAdministrationControlViewModel[];
+  migrationPlanRows: AccountingMigrationRolloutPlanItemViewModel[];
   migrationArtifactSummaryLabel: string;
   migrationArtifactRows: AccountingMigrationRunArtifactViewModel[];
   components: AccountingProductionReadinessComponentViewModel[];
@@ -5164,6 +5180,7 @@ function buildAccountingProductionReadinessViewModel(
       tenantAdministrationLabel: "Tenant administration unavailable",
       tenantAdministrationEvidenceLabel: "No tenant setup evidence loaded",
       tenantAdministrationControls: [],
+      migrationPlanRows: [],
       migrationArtifactSummaryLabel: artifactRows.length > 0
         ? `${artifactRows.length} retained migration run artifact${artifactRows.length === 1 ? "" : "s"} loaded`
         : "No retained migration run artifacts loaded",
@@ -5193,6 +5210,7 @@ function buildAccountingProductionReadinessViewModel(
     ? retainedMigrationRunArtifacts
     : readiness.migrationRunArtifacts ?? [];
   const migrationArtifactRows = buildAccountingMigrationRunArtifactRows(retainedArtifacts);
+  const migrationPlanRows = buildAccountingMigrationRolloutPlanRows(readiness.migrationRolloutPlan ?? []);
   const certifiedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Certified").length;
   const failedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Failed").length;
   const tenantAdministration = readiness.tenantAdministration ?? null;
@@ -5233,6 +5251,7 @@ function buildAccountingProductionReadinessViewModel(
     tenantAdministrationLabel,
     tenantAdministrationEvidenceLabel,
     tenantAdministrationControls,
+    migrationPlanRows,
     migrationArtifactSummaryLabel: retainedArtifacts.length > 0
       ? `${certifiedArtifactCount}/${retainedArtifacts.length} retained artifact${retainedArtifacts.length === 1 ? "" : "s"} certified${failedArtifactCount > 0 ? ` | ${failedArtifactCount} failed` : ""}`
       : "No retained migration run artifacts loaded",
@@ -5760,6 +5779,30 @@ function buildAccountingMigrationRunArtifactRows(artifacts: AccountingMigrationR
         tone: migrationRunStatusTone(artifact.status)
       };
     });
+}
+
+function buildAccountingMigrationRolloutPlanRows(plan: AccountingMigrationRolloutPlanItem[]): AccountingMigrationRolloutPlanItemViewModel[] {
+  return plan.map((item) => {
+    const tone = productionReadinessStatusTone(item.status);
+    const latestRunLabel = item.latestRunId
+      ? `${item.latestRunId} | ${item.latestRunStatus ? formatMigrationRunStatus(item.latestRunStatus) : "status unknown"}`
+      : "No retained run";
+    return {
+      id: item.code,
+      title: item.label,
+      statusLabel: formatProductionReadinessStatus(item.status),
+      certificationLabel: item.certified ? "Certified" : "Not certified",
+      scopeLabel: item.scopeLabel,
+      latestRunLabel,
+      metricsLabel: `${formatCount(item.migratedRecordCount, "record")} | ${formatCount(item.issueCount, "issue")}`,
+      evidenceLabel: `${item.evidenceReferences.length} evidence reference${item.evidenceReferences.length === 1 ? "" : "s"}`,
+      requiredAction: item.requiredAction,
+      blockingIssueLabel: item.blockingIssueCodes.length > 0
+        ? item.blockingIssueCodes.join(", ")
+        : "No blocking migration issues",
+      tone
+    };
+  });
 }
 
 function formatMigrationRunKind(kind: AccountingMigrationRunArtifact["kind"]): string {

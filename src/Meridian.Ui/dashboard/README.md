@@ -246,7 +246,10 @@ flags. It also lists retained migration run artifacts from
 `/api/accounting-system/migration-run-artifacts`, including run kind, certification status,
 fund/book scope, migrated-record and issue counts, and evidence reference counts, so operators can
 inspect migration proof retained in the shared Accounting System store rather than re-entering
-request-only evidence.
+request-only evidence. The same production-readiness panel renders the generated migration rollout
+plan for ledger-book scope, historical journal backfill, dimensional backfill, configuration
+promotion, and close/reporting evidence migration, including latest retained run, blocking issue
+codes, and required actions for each lane.
 After a dry run selects a rule, operators can build a governed journal draft candidate through the
 shared posting-rule candidate endpoint. The browser carries the selected event, amount, dimensions,
 policy, counterparty, source evidence, tenant/company context, and browser correlation metadata to
