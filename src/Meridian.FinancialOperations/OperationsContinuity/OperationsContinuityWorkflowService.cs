@@ -2968,7 +2968,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             DisplayName(gate.GateKey),
             gate.Status,
             IsRequired: true,
-            Description(gate.GateKey) ,
+            Description(gate.GateKey),
             gate.Blockers,
             gate.NextActions,
             gate.CompletedAtUtc,

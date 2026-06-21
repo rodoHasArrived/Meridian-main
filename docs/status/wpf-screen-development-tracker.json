@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "c36633371fb0",
+  "sourceFingerprint": "ec85d8de0f78",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 91,
@@ -2810,6 +2810,7 @@
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceShellContextServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/BackfillViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundAccountsViewModelTests.cs",
@@ -2841,7 +2842,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +30 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +31 more."
         }
       ],
       "openTaskCount": 0

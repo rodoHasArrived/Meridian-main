@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `c36633371fb0`
+- Source fingerprint: `ec85d8de0f78`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `91`
 - Open automated tasks: `76`
@@ -649,7 +649,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Backfill (BackfillPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-backfill.png (2026-06-16).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +30 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +31 more.
 
 #### Symbols (`Symbols`)
 

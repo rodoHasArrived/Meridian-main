@@ -2842,6 +2842,22 @@ describe("accounting-screen view model", () => {
       evidenceReferences: ["evidence://tenant-admin/setup"],
       correlationId: "tenant-admin-existing"
     };
+    let retainedProductionCertificationProfile = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      postingRulesLedgerBookNativeCertified: true,
+      journalLifecycleLedgerBookNativeCertified: true,
+      closeReportingLedgerBookNativeCertified: false,
+      externalGlLedgerBookNativeCertified: false,
+      periodReportDimensionQueriesCertified: true,
+      crossPeriodReportDimensionQueriesCertified: false,
+      journalQueryDimensionFiltersCertified: true,
+      externalExportDimensionMappingCertified: false,
+      updatedAtUtc: "2026-06-30T11:50:00Z",
+      updatedBy: "controller",
+      evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
+      correlationId: "production-certification-existing"
+    };
     const upsertRule = vi.fn(async (request: Parameters<AccountingConfigurationServices["upsertRule"]>[0]) => {
       const existingRuleIndex = retainedWorkspace.postingRules.findIndex((rule) => rule.ruleId === request.rule.ruleId);
       const postingRules = existingRuleIndex >= 0
@@ -2873,6 +2889,11 @@ describe("accounting-screen view model", () => {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       assessProductionReadiness: vi.fn().mockResolvedValue(productionReadiness),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: productionReadiness.migrationRunArtifacts ?? [] }),
+      getProductionCertificationProfile: vi.fn(async () => retainedProductionCertificationProfile),
+      upsertProductionCertificationProfile: vi.fn(async (request) => {
+        retainedProductionCertificationProfile = request.profile;
+        return retainedProductionCertificationProfile;
+      }),
       getTenantAdministrationProfile: vi.fn(async () => retainedTenantAdministrationProfile),
       upsertTenantAdministrationProfile: vi.fn(async (request) => {
         retainedTenantAdministrationProfile = request.profile;
@@ -3043,6 +3064,42 @@ describe("accounting-screen view model", () => {
         tone: "warning"
       })
     ]);
+    expect(result.current.productionCertificationProfile.scopeLabel).toBe("Tenant context | company context | fund fund-alpha | ledger book book-primary");
+    expect(result.current.productionCertificationProfile.controls).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "posting-rules-book", checked: true }),
+      expect.objectContaining({ id: "close-reporting-book", checked: false }),
+      expect.objectContaining({ id: "cross-period-dimensions", checked: false })
+    ]));
+    expect(result.current.productionCertificationProfile.canSave).toBe(true);
+
+    act(() => {
+      result.current.productionCertificationProfile.updateControl("close-reporting-book", true);
+      result.current.productionCertificationProfile.updateControl("cross-period-dimensions", true);
+      result.current.productionCertificationProfile.updateEvidence("evidence://ledger-book/book-primary/workflow-certification\nevidence://ledger-book/book-primary/close-reporting");
+    });
+
+    await act(async () => {
+      await result.current.productionCertificationProfile.save();
+    });
+
+    expect(services.upsertProductionCertificationProfile).toHaveBeenCalledWith(expect.objectContaining({
+      actor: "browser-accounting-operator",
+      profile: expect.objectContaining({
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "book-primary",
+        closeReportingLedgerBookNativeCertified: true,
+        crossPeriodReportDimensionQueriesCertified: true,
+        evidenceReferences: [
+          "evidence://ledger-book/book-primary/workflow-certification",
+          "evidence://ledger-book/book-primary/close-reporting"
+        ]
+      }),
+      evidenceLinks: [
+        "evidence://ledger-book/book-primary/workflow-certification",
+        "evidence://ledger-book/book-primary/close-reporting"
+      ]
+    }));
+    expect(result.current.productionCertificationProfile.statusText).toBe("Production certification profile saved; readiness refreshed from retained book and dimension controls.");
     expect(result.current.tenantAdministrationProfile.scopeLabel).toBe("Tenant tenant-alpha | company company-alpha");
     expect(result.current.tenantAdministrationProfile.controls).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "operator-surface", checked: false })
@@ -3517,6 +3574,8 @@ describe("accounting-screen view model", () => {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: [] }),
+      getProductionCertificationProfile: vi.fn(),
+      upsertProductionCertificationProfile: vi.fn(),
       getTenantAdministrationProfile: vi.fn(),
       upsertTenantAdministrationProfile: vi.fn(),
       createLedgerBook: vi.fn(),
@@ -3704,6 +3763,8 @@ describe("accounting-screen view model", () => {
       getConfiguration,
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-missing", artifacts: [] }),
+      getProductionCertificationProfile: vi.fn(),
+      upsertProductionCertificationProfile: vi.fn(),
       getTenantAdministrationProfile: vi.fn(),
       upsertTenantAdministrationProfile: vi.fn(),
       createLedgerBook,

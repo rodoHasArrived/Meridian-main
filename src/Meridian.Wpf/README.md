@@ -64,7 +64,8 @@ accounting tenant administration profile store with WPF accounting admin-studio 
 the shared ledger-book-native workflow control count and retained ledger-book-scoped
 workflow evidence for posting rules, JE lifecycle, close/reporting, and external GL, renders
 dimensional report/query/export control counts with retained ledger-book-scoped evidence, renders
-retained production-certification profile support registered in the Accounting feature module,
+and saves retained tenant/company/fund/book-scoped production-certification controls through the
+shared Accounting System profile store,
 retained migration-run evidence with ledger-book scope
 and canonical dimensions from the shared production-readiness payload, surfaces
 shared ledger-book setup candidate guidance and can create the ledger book through the shared ledger-book service when book-scoped

@@ -189,7 +189,9 @@ public sealed record AccountingProductionCertificationProfileDto(
     DateTimeOffset UpdatedAtUtc,
     string UpdatedBy,
     IReadOnlyList<string>? EvidenceReferences = null,
-    string? CorrelationId = null)
+    string? CorrelationId = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];

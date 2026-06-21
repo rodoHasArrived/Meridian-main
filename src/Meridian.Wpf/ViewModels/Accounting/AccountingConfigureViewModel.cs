@@ -155,6 +155,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly IManualJournalEntryLifecycleService? _manualJournalEntryLifecycleService;
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly AccountingProductionReadinessService? _accountingProductionReadinessService;
+    private readonly IAccountingProductionCertificationProfileStore? _productionCertificationProfileStore;
     private readonly IAccountingTenantAdministrationProfileStore? _tenantAdministrationProfileStore;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
@@ -190,6 +191,18 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _productionReadinessExternalGlText = "External GL readiness has not loaded.";
     private string _productionReadinessDimensionalReportingText = "Dimensional reporting readiness has not loaded.";
     private string _productionReadinessTenantAdminText = "Tenant administration readiness has not loaded.";
+    private string _productionCertificationProfileStatusText = "Production certification profile has not loaded.";
+    private string _productionCertificationProfileScopeText = "Fund and ledger-book scope have not loaded.";
+    private string _productionCertificationProfileUpdatedText = "No retained production certification profile loaded.";
+    private string _productionCertificationEvidenceText = string.Empty;
+    private bool _postingRulesLedgerBookNativeCertified;
+    private bool _journalLifecycleLedgerBookNativeCertified;
+    private bool _closeReportingLedgerBookNativeCertified;
+    private bool _externalGlLedgerBookNativeCertified;
+    private bool _periodReportDimensionQueriesCertified;
+    private bool _crossPeriodReportDimensionQueriesCertified;
+    private bool _journalQueryDimensionFiltersCertified;
+    private bool _externalExportDimensionMappingCertified;
     private string _tenantAdministrationProfileStatusText = "Tenant administration setup profile has not loaded.";
     private string _tenantAdministrationProfileScopeText = "Tenant and company scope have not loaded.";
     private string _tenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
@@ -224,6 +237,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null,
         ILedgerBookService? ledgerBookService = null,
         AccountingProductionReadinessService? accountingProductionReadinessService = null,
+        IAccountingProductionCertificationProfileStore? productionCertificationProfileStore = null,
         IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -240,6 +254,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ?? manualJournalEntryWorkbenchService as IManualJournalEntryLifecycleService;
         _ledgerBookService = ledgerBookService;
         _accountingProductionReadinessService = accountingProductionReadinessService;
+        _productionCertificationProfileStore = productionCertificationProfileStore;
         _tenantAdministrationProfileStore = tenantAdministrationProfileStore;
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
@@ -254,6 +269,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ExecuteRulesStudioTestsCommand = new AsyncRelayCommand(() => ExecuteRulesStudioTestsAsync());
         ApproveRulesStudioPromotionCommand = new AsyncRelayCommand(() => ApproveRulesStudioPromotionAsync());
         CreateLedgerBookSetupCommand = new AsyncRelayCommand(() => CreateLedgerBookSetupAsync());
+        SaveProductionCertificationProfileCommand = new AsyncRelayCommand(() => SaveProductionCertificationProfileAsync());
         SaveTenantAdministrationProfileCommand = new AsyncRelayCommand(() => SaveTenantAdministrationProfileAsync());
         ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve));
         PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post));
@@ -286,6 +302,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public IAsyncRelayCommand ExecuteRulesStudioTestsCommand { get; }
     public IAsyncRelayCommand ApproveRulesStudioPromotionCommand { get; }
     public IAsyncRelayCommand CreateLedgerBookSetupCommand { get; }
+    public IAsyncRelayCommand SaveProductionCertificationProfileCommand { get; }
     public IAsyncRelayCommand SaveTenantAdministrationProfileCommand { get; }
     public IAsyncRelayCommand ApproveManualJournalCommand { get; }
     public IAsyncRelayCommand PostManualJournalCommand { get; }
@@ -519,6 +536,89 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         private set => SetProperty(ref _productionReadinessTenantAdminText, value);
     }
 
+    public string ProductionCertificationProfileStatusText
+    {
+        get => _productionCertificationProfileStatusText;
+        private set => SetProperty(ref _productionCertificationProfileStatusText, value);
+    }
+
+    public string ProductionCertificationProfileScopeText
+    {
+        get => _productionCertificationProfileScopeText;
+        private set => SetProperty(ref _productionCertificationProfileScopeText, value);
+    }
+
+    public string ProductionCertificationProfileUpdatedText
+    {
+        get => _productionCertificationProfileUpdatedText;
+        private set => SetProperty(ref _productionCertificationProfileUpdatedText, value);
+    }
+
+    public string ProductionCertificationEvidenceText
+    {
+        get => _productionCertificationEvidenceText;
+        set
+        {
+            if (SetProperty(ref _productionCertificationEvidenceText, value))
+            {
+                RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
+            }
+        }
+    }
+
+    public bool PostingRulesLedgerBookNativeCertified
+    {
+        get => _postingRulesLedgerBookNativeCertified;
+        set => SetProperty(ref _postingRulesLedgerBookNativeCertified, value);
+    }
+
+    public bool JournalLifecycleLedgerBookNativeCertified
+    {
+        get => _journalLifecycleLedgerBookNativeCertified;
+        set => SetProperty(ref _journalLifecycleLedgerBookNativeCertified, value);
+    }
+
+    public bool CloseReportingLedgerBookNativeCertified
+    {
+        get => _closeReportingLedgerBookNativeCertified;
+        set => SetProperty(ref _closeReportingLedgerBookNativeCertified, value);
+    }
+
+    public bool ExternalGlLedgerBookNativeCertified
+    {
+        get => _externalGlLedgerBookNativeCertified;
+        set => SetProperty(ref _externalGlLedgerBookNativeCertified, value);
+    }
+
+    public bool PeriodReportDimensionQueriesCertified
+    {
+        get => _periodReportDimensionQueriesCertified;
+        set => SetProperty(ref _periodReportDimensionQueriesCertified, value);
+    }
+
+    public bool CrossPeriodReportDimensionQueriesCertified
+    {
+        get => _crossPeriodReportDimensionQueriesCertified;
+        set => SetProperty(ref _crossPeriodReportDimensionQueriesCertified, value);
+    }
+
+    public bool JournalQueryDimensionFiltersCertified
+    {
+        get => _journalQueryDimensionFiltersCertified;
+        set => SetProperty(ref _journalQueryDimensionFiltersCertified, value);
+    }
+
+    public bool ExternalExportDimensionMappingCertified
+    {
+        get => _externalExportDimensionMappingCertified;
+        set => SetProperty(ref _externalExportDimensionMappingCertified, value);
+    }
+
+    public bool CanSaveProductionCertificationProfile =>
+        _activeFundProfile is not null
+        && _productionCertificationProfileStore is not null
+        && NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText).Count > 0;
+
     public string TenantAdministrationProfileStatusText
     {
         get => _tenantAdministrationProfileStatusText;
@@ -722,6 +822,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
             await LoadOperationsPostureAsync(ct).ConfigureAwait(false);
             await RefreshExternalGlAsync(ct).ConfigureAwait(false);
+            await LoadProductionCertificationProfileAsync(ct).ConfigureAwait(false);
             await LoadTenantAdministrationProfileAsync(ct).ConfigureAwait(false);
             await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
             StatusText = "Accounting configuration, journal drafts, close evidence, external GL evidence, reconciliation triage, and policies are loaded from shared services.";
@@ -1004,6 +1105,71 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         {
             TenantAdministrationProfileStatusText = $"Tenant administration setup profile save failed: {ex.Message}";
             StatusText = TenantAdministrationProfileStatusText;
+        }
+    }
+
+    public async Task SaveProductionCertificationProfileAsync(CancellationToken ct = default)
+    {
+        if (_activeFundProfile is null)
+        {
+            ProductionCertificationProfileStatusText = "Select a fund-linked context before saving production certification controls.";
+            StatusText = ProductionCertificationProfileStatusText;
+            return;
+        }
+
+        if (_productionCertificationProfileStore is null)
+        {
+            ProductionCertificationProfileStatusText = "Production certification profile store is not registered for this desktop session.";
+            StatusText = ProductionCertificationProfileStatusText;
+            return;
+        }
+
+        var evidence = NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText);
+        if (evidence.Count == 0)
+        {
+            ProductionCertificationProfileStatusText = "Retained evidence is required before saving production certification controls.";
+            StatusText = ProductionCertificationProfileStatusText;
+            RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
+            return;
+        }
+
+        try
+        {
+            var correlationId = $"wpf-accounting-production-certification-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            var profile = new AccountingProductionCertificationProfileDto(
+                _activeFundProfile.FundProfileId,
+                _configuration?.LedgerBookId,
+                PostingRulesLedgerBookNativeCertified,
+                JournalLifecycleLedgerBookNativeCertified,
+                CloseReportingLedgerBookNativeCertified,
+                ExternalGlLedgerBookNativeCertified,
+                PeriodReportDimensionQueriesCertified,
+                CrossPeriodReportDimensionQueriesCertified,
+                JournalQueryDimensionFiltersCertified,
+                ExternalExportDimensionMappingCertified,
+                DateTimeOffset.UtcNow,
+                DefaultLifecycleActor,
+                evidence,
+                correlationId,
+                ResolveTenantAdministrationTenantId(),
+                ResolveTenantAdministrationCompanyId());
+
+            var saved = await _productionCertificationProfileStore.UpsertAsync(
+                new AccountingProductionCertificationProfileUpsertRequestDto(
+                    profile,
+                    DefaultLifecycleActor,
+                    correlationId,
+                    evidence),
+                ct).ConfigureAwait(false);
+
+            ApplyProductionCertificationProfile(saved, "Production certification profile saved; readiness refreshed from retained book and dimension controls.");
+            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
+            StatusText = ProductionCertificationProfileStatusText;
+        }
+        catch (Exception ex)
+        {
+            ProductionCertificationProfileStatusText = $"Production certification profile save failed: {ex.Message}";
+            StatusText = ProductionCertificationProfileStatusText;
         }
     }
 
@@ -1508,6 +1674,18 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProductionReadinessExternalGlText = "Locked until a fund context is selected.";
         ProductionReadinessDimensionalReportingText = "Locked until a fund context is selected.";
         ProductionReadinessTenantAdminText = "Locked until a fund context is selected.";
+        ProductionCertificationProfileStatusText = "Locked until a fund context is selected.";
+        ProductionCertificationProfileScopeText = "Fund and ledger-book scope require a fund context.";
+        ProductionCertificationProfileUpdatedText = "No retained production certification profile loaded.";
+        ProductionCertificationEvidenceText = string.Empty;
+        PostingRulesLedgerBookNativeCertified = false;
+        JournalLifecycleLedgerBookNativeCertified = false;
+        CloseReportingLedgerBookNativeCertified = false;
+        ExternalGlLedgerBookNativeCertified = false;
+        PeriodReportDimensionQueriesCertified = false;
+        CrossPeriodReportDimensionQueriesCertified = false;
+        JournalQueryDimensionFiltersCertified = false;
+        ExternalExportDimensionMappingCertified = false;
         TenantAdministrationProfileStatusText = "Locked until a fund context is selected.";
         TenantAdministrationProfileScopeText = "Tenant and company scope require a fund context.";
         TenantAdministrationProfileUpdatedText = "No retained tenant administration setup profile loaded.";
@@ -1521,6 +1699,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
+        RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
         RaiseManualJournalDraftComputedProperties();
     }
 
@@ -1662,6 +1841,77 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var from = effectiveFrom?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "open";
         var to = effectiveTo?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "open";
         return $"{from} to {to}";
+    }
+
+    private async Task LoadProductionCertificationProfileAsync(CancellationToken ct)
+    {
+        if (_activeFundProfile is null)
+        {
+            ProductionCertificationProfileStatusText = "Locked until a fund context is selected.";
+            ProductionCertificationProfileScopeText = "Fund and ledger-book scope require a fund context.";
+            ProductionCertificationProfileUpdatedText = "No retained production certification profile loaded.";
+            return;
+        }
+
+        var tenantId = ResolveTenantAdministrationTenantId();
+        var companyId = ResolveTenantAdministrationCompanyId();
+        var ledgerBookId = _configuration?.LedgerBookId;
+        ProductionCertificationProfileScopeText = ledgerBookId.HasValue
+            ? $"Tenant {tenantId}; company {companyId}; fund {_activeFundProfile.FundProfileId}; ledger book {ledgerBookId:D}."
+            : $"Tenant {tenantId}; company {companyId}; fund {_activeFundProfile.FundProfileId}; fund-level scope.";
+
+        if (_productionCertificationProfileStore is null)
+        {
+            ProductionCertificationProfileStatusText = "Production certification profile store is not registered for this desktop session.";
+            ProductionCertificationProfileUpdatedText = "Retained production certification controls are unavailable.";
+            RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
+            return;
+        }
+
+        try
+        {
+            var profile = await _productionCertificationProfileStore.GetAsync(tenantId, companyId, _activeFundProfile.FundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+            if (profile is null)
+            {
+                ProductionCertificationProfileStatusText = "No retained production certification profile exists for the active accounting scope.";
+                ProductionCertificationProfileUpdatedText = "Save book-native and dimensional controls with retained evidence before production certification.";
+                ProductionCertificationEvidenceText = ledgerBookId.HasValue
+                    ? $"evidence://ledger-book/{ledgerBookId:D}/production-certification"
+                    : $"evidence://fund/{_activeFundProfile.FundProfileId}/production-certification";
+                RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
+                return;
+            }
+
+            ApplyProductionCertificationProfile(profile, "Production certification profile loaded from the shared store.");
+        }
+        catch (Exception ex)
+        {
+            ProductionCertificationProfileStatusText = $"Production certification profile could not load: {ex.Message}";
+            ProductionCertificationProfileUpdatedText = "Retained production certification controls are unavailable.";
+            RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
+        }
+    }
+
+    private void ApplyProductionCertificationProfile(
+        AccountingProductionCertificationProfileDto profile,
+        string statusText)
+    {
+        PostingRulesLedgerBookNativeCertified = profile.PostingRulesLedgerBookNativeCertified;
+        JournalLifecycleLedgerBookNativeCertified = profile.JournalLifecycleLedgerBookNativeCertified;
+        CloseReportingLedgerBookNativeCertified = profile.CloseReportingLedgerBookNativeCertified;
+        ExternalGlLedgerBookNativeCertified = profile.ExternalGlLedgerBookNativeCertified;
+        PeriodReportDimensionQueriesCertified = profile.PeriodReportDimensionQueriesCertified;
+        CrossPeriodReportDimensionQueriesCertified = profile.CrossPeriodReportDimensionQueriesCertified;
+        JournalQueryDimensionFiltersCertified = profile.JournalQueryDimensionFiltersCertified;
+        ExternalExportDimensionMappingCertified = profile.ExternalExportDimensionMappingCertified;
+        ProductionCertificationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
+        ProductionCertificationProfileScopeText = profile.LedgerBookId.HasValue
+            ? $"Tenant {FormatReadinessScope(profile.TenantId)}; company {FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; ledger book {profile.LedgerBookId:D}."
+            : $"Tenant {FormatReadinessScope(profile.TenantId)}; company {FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; fund-level scope.";
+        ProductionCertificationProfileUpdatedText =
+            $"Last retained by {profile.UpdatedBy} at {profile.UpdatedAtUtc.ToLocalTime():g}.";
+        ProductionCertificationProfileStatusText = statusText;
+        RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
     }
 
     private async Task LoadTenantAdministrationProfileAsync(CancellationToken ct)

@@ -115,6 +115,8 @@ public static class AccountingSystemEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
+            string? tenantId,
+            string? companyId,
             string? fundProfileId,
             Guid? ledgerBookId,
             HttpContext context,
@@ -125,7 +127,10 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await store.GetAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var resolvedTenantId = tenantContext.TenantId ?? tenantId;
+            var resolvedCompanyId = tenantContext.CompanyId ?? companyId;
+            var result = await store.GetAsync(resolvedTenantId, resolvedCompanyId, fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             return result is null
                 ? Results.NotFound(new { error = "Accounting production certification profile was not found." })
                 : Results.Json(result, jsonOptions);
@@ -145,9 +150,16 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var trustedProfile = request.Profile with
+            {
+                TenantId = tenantContext.TenantId ?? request.Profile.TenantId ?? string.Empty,
+                CompanyId = tenantContext.CompanyId ?? request.Profile.CompanyId ?? string.Empty
+            };
+            var trustedRequest = request with { Profile = trustedProfile };
             try
             {
-                var result = await store.UpsertAsync(request, context.RequestAborted).ConfigureAwait(false);
+                var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)

@@ -8,6 +8,8 @@ namespace Meridian.Ui.Shared.Services;
 public interface IAccountingProductionCertificationProfileStore
 {
     Task<AccountingProductionCertificationProfileDto?> GetAsync(
+        string? tenantId,
+        string? companyId,
         string? fundProfileId,
         Guid? ledgerBookId,
         CancellationToken ct = default);
@@ -22,12 +24,14 @@ public sealed class InMemoryAccountingProductionCertificationProfileStore : IAcc
     private readonly Dictionary<string, AccountingProductionCertificationProfileDto> _profiles = new(StringComparer.OrdinalIgnoreCase);
 
     public Task<AccountingProductionCertificationProfileDto?> GetAsync(
+        string? tenantId,
+        string? companyId,
         string? fundProfileId,
         Guid? ledgerBookId,
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var key = BuildKey(fundProfileId, ledgerBookId);
+        var key = BuildKey(tenantId, companyId, fundProfileId, ledgerBookId);
         return Task.FromResult(_profiles.TryGetValue(key, out var profile) ? profile : null);
     }
 
@@ -37,12 +41,12 @@ public sealed class InMemoryAccountingProductionCertificationProfileStore : IAcc
     {
         ct.ThrowIfCancellationRequested();
         var profile = FileAccountingProductionCertificationProfileStore.NormalizeProfile(request);
-        _profiles[BuildKey(profile.FundProfileId, profile.LedgerBookId)] = profile;
+        _profiles[BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId)] = profile;
         return Task.FromResult(profile);
     }
 
-    private static string BuildKey(string? fundProfileId, Guid? ledgerBookId)
-        => FileAccountingProductionCertificationProfileStore.BuildKey(fundProfileId, ledgerBookId);
+    private static string BuildKey(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId)
+        => FileAccountingProductionCertificationProfileStore.BuildKey(tenantId, companyId, fundProfileId, ledgerBookId);
 }
 
 public sealed class FileAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
@@ -67,11 +71,13 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
     }
 
     public async Task<AccountingProductionCertificationProfileDto?> GetAsync(
+        string? tenantId,
+        string? companyId,
         string? fundProfileId,
         Guid? ledgerBookId,
         CancellationToken ct = default)
     {
-        var key = BuildKey(fundProfileId, ledgerBookId);
+        var key = BuildKey(tenantId, companyId, fundProfileId, ledgerBookId);
         if (string.IsNullOrWhiteSpace(key))
         {
             return null;
@@ -79,7 +85,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
 
         var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
         return snapshot.Profiles.FirstOrDefault(profile =>
-            string.Equals(BuildKey(profile.FundProfileId, profile.LedgerBookId), key, StringComparison.OrdinalIgnoreCase));
+            string.Equals(BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId), key, StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task<AccountingProductionCertificationProfileDto> UpsertAsync(
@@ -91,11 +97,13 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         try
         {
             var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-            var key = BuildKey(profile.FundProfileId, profile.LedgerBookId);
+            var key = BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId);
             var profiles = snapshot.Profiles
-                .Where(item => !string.Equals(BuildKey(item.FundProfileId, item.LedgerBookId), key, StringComparison.OrdinalIgnoreCase))
+                .Where(item => !string.Equals(BuildKey(item.TenantId, item.CompanyId, item.FundProfileId, item.LedgerBookId), key, StringComparison.OrdinalIgnoreCase))
                 .Append(profile)
-                .OrderBy(static item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(static item => item.TenantId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static item => item.CompanyId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static item => item.LedgerBookId?.ToString("D") ?? string.Empty, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             var json = JsonSerializer.Serialize(new AccountingProductionCertificationProfileSnapshot(profiles), JsonOptions);
@@ -119,6 +127,8 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Profile);
+        var tenantId = RequireText(request.Profile.TenantId, "tenant id");
+        var companyId = RequireText(request.Profile.CompanyId, "company id");
         var fundProfileId = RequireText(request.Profile.FundProfileId, "fund profile id");
         var actor = string.IsNullOrWhiteSpace(request.Actor)
             ? RequireText(request.Profile.UpdatedBy, "actor")
@@ -133,6 +143,8 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
 
         return request.Profile with
         {
+            TenantId = tenantId,
+            CompanyId = companyId,
             FundProfileId = fundProfileId,
             UpdatedAtUtc = request.Profile.UpdatedAtUtc == default ? DateTimeOffset.UtcNow : request.Profile.UpdatedAtUtc,
             UpdatedBy = actor,
@@ -143,10 +155,14 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         };
     }
 
-    internal static string BuildKey(string? fundProfileId, Guid? ledgerBookId)
+    internal static string BuildKey(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId)
     {
+        var tenant = TrimOrNull(tenantId);
+        var company = TrimOrNull(companyId);
         var fund = TrimOrNull(fundProfileId);
-        return fund is null ? string.Empty : $"{fund}|{ledgerBookId?.ToString("D") ?? "fund"}";
+        return tenant is null || company is null || fund is null
+            ? string.Empty
+            : $"{tenant}|{company}|{fund}|{ledgerBookId?.ToString("D") ?? "fund"}";
     }
 
     private async Task<AccountingProductionCertificationProfileSnapshot> ReadSnapshotAsync(CancellationToken ct)

@@ -227,6 +227,70 @@
                                             <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="260" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Production Certification Profile" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding ProductionCertificationProfileScopeText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingProductionCertificationProfileScopeText" />
+                                    <TextBlock Text="{Binding ProductionCertificationProfileUpdatedText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,4,0,10"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingProductionCertificationProfileUpdatedText" />
+                                    <UniformGrid Columns="4" Margin="0,0,0,12" AutomationProperties.AutomationId="AccountingProductionCertificationProfileControlPanel">
+                                        <CheckBox Content="Rules by book"
+                                                  IsChecked="{Binding PostingRulesLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationRulesBookCheckBox" />
+                                        <CheckBox Content="JE by book"
+                                                  IsChecked="{Binding JournalLifecycleLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationJournalBookCheckBox" />
+                                        <CheckBox Content="Close by book"
+                                                  IsChecked="{Binding CloseReportingLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationCloseBookCheckBox" />
+                                        <CheckBox Content="External GL by book"
+                                                  IsChecked="{Binding ExternalGlLedgerBookNativeCertified, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationExternalGlBookCheckBox" />
+                                        <CheckBox Content="Period dimensions"
+                                                  IsChecked="{Binding PeriodReportDimensionQueriesCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationPeriodDimensionsCheckBox" />
+                                        <CheckBox Content="Cross-period dimensions"
+                                                  IsChecked="{Binding CrossPeriodReportDimensionQueriesCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationCrossPeriodDimensionsCheckBox" />
+                                        <CheckBox Content="JE dimensions"
+                                                  IsChecked="{Binding JournalQueryDimensionFiltersCertified, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationJournalDimensionsCheckBox" />
+                                        <CheckBox Content="Export dimensions"
+                                                  IsChecked="{Binding ExternalExportDimensionMappingCertified, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingProductionCertificationExportDimensionsCheckBox" />
+                                    </UniformGrid>
+                                    <TextBox Text="{Binding ProductionCertificationEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             MinHeight="32"
+                                             Margin="0,0,0,10"
+                                             AutomationProperties.Name="Retained production certification evidence"
+                                             AutomationProperties.AutomationId="AccountingProductionCertificationEvidenceTextBox" />
+                                    <Button AutomationProperties.AutomationId="AccountingProductionCertificationSaveButton"
+                                            Content="Save Certification"
+                                            Command="{Binding SaveProductionCertificationProfileCommand}"
+                                            IsEnabled="{Binding CanSaveProductionCertificationProfile}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left"
+                                            ToolTip="{Binding ProductionCertificationProfileStatusText}"
+                                            ToolTipService.ShowOnDisabled="True"
+                                            Margin="0,0,0,8" />
+                                    <TextBlock Text="{Binding ProductionCertificationProfileStatusText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,0,0,18"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingProductionCertificationProfileStatusText" />
                                     <TextBlock Text="Tenant Administration Setup" Style="{StaticResource CardHeaderStyle}" />
                                     <TextBlock Text="{Binding TenantAdministrationProfileScopeText}"
                                                Style="{StaticResource CardDescriptionStyle}"

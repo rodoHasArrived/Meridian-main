@@ -193,6 +193,8 @@ vi.mock("@/lib/api", async () => {
     getAccountingSystemExportPackageManifest: vi.fn(),
     certifyAccountingSystemExportPackage: vi.fn(),
     assessAccountingProductionReadiness: vi.fn(),
+    getAccountingProductionCertificationProfile: vi.fn(),
+    upsertAccountingProductionCertificationProfile: vi.fn(),
     getAccountingTenantAdministrationProfile: vi.fn(),
     upsertAccountingTenantAdministrationProfile: vi.fn(),
     getAccountingConfiguration: vi.fn(),
@@ -1982,6 +1984,22 @@ describe("AccountingScreen", () => {
     };
     vi.mocked(api.getAccountingConfiguration).mockResolvedValueOnce(workspace);
     vi.mocked(api.assessAccountingProductionReadiness).mockResolvedValueOnce(productionReadiness);
+    vi.mocked(api.getAccountingProductionCertificationProfile).mockResolvedValueOnce({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      postingRulesLedgerBookNativeCertified: true,
+      journalLifecycleLedgerBookNativeCertified: true,
+      closeReportingLedgerBookNativeCertified: false,
+      externalGlLedgerBookNativeCertified: false,
+      periodReportDimensionQueriesCertified: true,
+      crossPeriodReportDimensionQueriesCertified: false,
+      journalQueryDimensionFiltersCertified: true,
+      externalExportDimensionMappingCertified: false,
+      updatedAtUtc: "2026-06-30T11:50:00Z",
+      updatedBy: "controller",
+      evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
+      correlationId: "production-certification-existing"
+    });
     vi.mocked(api.getAccountingTenantAdministrationProfile).mockResolvedValueOnce({
       tenantId: "tenant-alpha",
       companyId: "company-alpha",
@@ -2052,6 +2070,11 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
     expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Operator surface").length).toBeGreaterThan(0);
+    expect(screen.getByRole("region", { name: "Accounting production certification profile editor" })).toBeInTheDocument();
+    expect(screen.getByText("Tenant context | company context | fund fund-alpha | ledger book book-primary")).toBeInTheDocument();
+    expect(screen.getByText("Rules by book")).toBeInTheDocument();
+    expect(screen.getByText("Cross-period dimensions")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("evidence://ledger-book/book-primary/workflow-certification")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting tenant administration setup editor" })).toBeInTheDocument();
     expect(screen.getByText("Tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
     expect(screen.getByDisplayValue("evidence://tenant-admin/setup")).toBeInTheDocument();

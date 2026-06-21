@@ -231,10 +231,11 @@ accounting admin-studio, WPF accounting admin-studio, and retained-evidence cont
 treating setup readiness as a generic component row, and the dashboard route catalog exposes the
 retained tenant-administration profile endpoint. The Configure surface can load, edit, and save that
 retained profile with browser accounting admin-studio coverage and setup evidence before refreshing
-production-readiness posture from the shared Accounting System service. The dashboard route catalog
-also exposes the retained production-certification profile endpoint for ledger-book-native workflow
-and dimensional reporting controls, so future admin-studio controls can persist certification
-evidence through the shared Accounting System store rather than request-only flags. It also lists retained migration run artifacts from
+production-readiness posture from the shared Accounting System service. The Configure surface also
+loads, edits, and saves the retained production-certification profile for ledger-book-native
+workflow controls and dimensional reporting/export controls, preserving tenant/company/fund/book
+scope plus retained evidence through the shared Accounting System store rather than request-only
+flags. It also lists retained migration run artifacts from
 `/api/accounting-system/migration-run-artifacts`, including run kind, certification status,
 fund/book scope, migrated-record and issue counts, and evidence reference counts, so operators can
 inspect migration proof retained in the shared Accounting System store rather than re-entering

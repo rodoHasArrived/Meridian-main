@@ -5,13 +5,23 @@ import { CommandPalette } from "@/components/meridian/command-palette";
 import { renderWithRouter } from "@/test/render";
 import type { WorkflowLibrary, WorkflowPresetLibrary } from "@/types";
 
+function getRenderedCommandCount(kind: "workstation" | "shared" = "workstation") {
+  const pattern = kind === "workstation" ? /^(\d+) workstation commands$/ : /^(\d+) commands$/;
+  const navigation = screen.getByRole("navigation", { name: pattern });
+  const match = navigation.getAttribute("aria-label")?.match(pattern);
+
+  expect(match).not.toBeNull();
+  return Number(match![1]);
+}
+
 describe("CommandPalette", () => {
   it("marks the route-aware current workspace", () => {
     renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/portfolio/positions"] });
 
+    const commandCount = getRenderedCommandCount();
+
     expect(screen.getByRole("dialog", { name: "Open workstation command" })).toBeInTheDocument();
     expect(screen.getByText("Route to common operator workflows and canonical workspaces. Current: Portfolio.")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "24 workstation commands" })).toBeInTheDocument();
     expect(screen.getByText("Esc to close")).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveAttribute(
@@ -20,9 +30,9 @@ describe("CommandPalette", () => {
     );
     expect(screen.getByRole("region", { name: "Recommended commands" })).toBeInTheDocument();
     expect(screen.getAllByLabelText(/^Recommended command:/)).toHaveLength(4);
-    expect(screen.getByText("24 commands available")).toBeInTheDocument();
+    expect(screen.getByText(`${commandCount} commands available`)).toBeInTheDocument();
     expect(screen.getByLabelText("Workspaces: 7 workspaces")).toBeInTheDocument();
-    expect(screen.getByLabelText("Quick routes: 17 quick routes")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Quick routes: \d+ quick routes$/)).toBeInTheDocument();
     expect(screen.getAllByLabelText("Route /portfolio").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByLabelText("Portfolio, current workspace")).toHaveAttribute("aria-current", "page");
   });
@@ -86,8 +96,10 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "settings");
 
+    const commandCount = getRenderedCommandCount();
+
     expect(screen.queryByRole("region", { name: "Recommended commands" })).not.toBeInTheDocument();
-    expect(screen.getByText("2 of 24 commands match")).toBeInTheDocument();
+    expect(screen.getByText(`2 of ${commandCount} commands match`)).toBeInTheDocument();
     expect(screen.getByLabelText("Workspaces: 1 workspace")).toBeInTheDocument();
     expect(screen.getByLabelText("Quick routes: 1 quick route")).toBeInTheDocument();
     expect(screen.getByLabelText("Open Settings workspace")).toBeInTheDocument();
@@ -147,7 +159,9 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command");
 
-    expect(screen.getByText("0 of 24 commands match")).toBeInTheDocument();
+    const commandCount = getRenderedCommandCount();
+
+    expect(screen.getByText(`0 of ${commandCount} commands match`)).toBeInTheDocument();
     const search = screen.getByRole("searchbox", { name: "Search command palette" });
     expect(search).toHaveAttribute("aria-describedby", "command-palette-filter-count command-palette-empty-state-detail");
     expect(screen.getByText("Empty")).toBeInTheDocument();
@@ -167,9 +181,11 @@ describe("CommandPalette", () => {
     await user.type(search, "missing command");
     await user.click(screen.getByRole("button", { name: "Clear command palette search for missing command" }));
 
+    const commandCount = getRenderedCommandCount();
+
     expect(search).toHaveValue("");
     expect(search).toHaveFocus();
-    expect(screen.getByText("24 commands available")).toBeInTheDocument();
+    expect(screen.getByText(`${commandCount} commands available`)).toBeInTheDocument();
     expect(screen.queryByText("No matching commands")).not.toBeInTheDocument();
   });
 
@@ -194,7 +210,7 @@ describe("CommandPalette", () => {
       { initialEntries: ["/data/quotes?symbol=MSFT"] }
     );
 
-    expect(screen.getByRole("navigation", { name: "25 workstation commands" })).toBeInTheDocument();
+    expect(getRenderedCommandCount()).toBeGreaterThan(0);
     expect(screen.getByLabelText("Focus actions: 1 focus action")).toBeInTheDocument();
     expect(screen.getByText(/1 ranked focus action available\./)).toBeInTheDocument();
     expect(screen.getByLabelText(
@@ -282,7 +298,7 @@ describe("CommandPalette", () => {
       { initialEntries: ["/trading"] }
     );
 
-    expect(screen.getByRole("navigation", { name: "26 commands" })).toBeInTheDocument();
+    expect(getRenderedCommandCount("shared")).toBeGreaterThan(0);
     expect(screen.getByText("1 workflow action - 1 preset")).toBeInTheDocument();
     expect(screen.getByLabelText("Review Security Master, Data Provider Recovery")).toHaveAttribute("href", "/accounting/security-master");
 

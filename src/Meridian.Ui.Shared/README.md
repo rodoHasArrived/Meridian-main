@@ -245,10 +245,12 @@ retained setup evidence are present.
 the shared Accounting System store. Reads require accounting access, writes require
 `AdminMaintenance`, and production readiness loads the retained profile so setup certification is no
 longer represented only by request-time flags.
-`/api/accounting-system/production-certification-profile` retains fund/book workflow and
-dimensional reporting certification controls in the same shared store. Reads require accounting
-access, writes require `AdminMaintenance`, and production readiness merges the retained evidence
-before evaluating ledger-book-native workflow and dimensional reporting blockers.
+`/api/accounting-system/production-certification-profile` retains tenant/company/fund/book workflow
+and dimensional reporting certification controls in the same shared store. Reads require accounting
+access, writes require `AdminMaintenance`, endpoint saves resolve tenant/company scope from the
+workstation session, and production readiness merges retained evidence only for the active tenant,
+company, fund, and ledger-book scope before evaluating ledger-book-native workflow and dimensional
+reporting blockers.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers
@@ -315,7 +317,9 @@ persists chart accounts, templates, posting rules, saved rule test cases, and ac
 persists draft and submitted manual journal records at
 `workstation/accounting/manual-journal-drafts.json`. `FileAccountingMigrationRunArtifactStore`
 persists retained accounting migration run evidence at
-`workstation/accounting/migration-run-artifacts.json`, and shared Accounting System endpoints let
+`workstation/accounting/migration-run-artifacts.json`, and `FileAccountingProductionCertificationProfileStore`
+persists tenant/company/fund/book certification profiles at
+`workstation/accounting/production-certification-profiles.json`. Shared Accounting System endpoints let
 operators list/upsert scoped migration artifacts before the production-readiness endpoint merges
 them into ledger-book, historical journal backfill, dimensional backfill, configuration promotion,
 and close/reporting migration checks. Manual journal drafts carry a shared

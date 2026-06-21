@@ -16,6 +16,7 @@ import {
   getAccountingMigrationRunArtifacts,
   getLedgerCloseManagementPeriodPlan,
   getAccountingTenantAdministrationProfile,
+  getAccountingProductionCertificationProfile,
   getLedgerAccountingReportPackageExport,
   reviewLedgerCloseManagementLateAdjustment,
   signOffLedgerCloseManagementTask,
@@ -46,6 +47,7 @@ import {
   searchSecurities,
   submitManualJournalEntryApproval,
   upsertAccountingTenantAdministrationProfile,
+  upsertAccountingProductionCertificationProfile,
   upsertAccountingConfigurationPostingRule,
   upsertAccountingConfigurationPostingRuleTestCase,
   validateManualJournalEntryDraft,
@@ -82,6 +84,8 @@ import type {
   AccountingMigrationRunArtifactList,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
+  AccountingProductionCertificationProfile,
+  AccountingProductionCertificationProfileUpsertRequest,
   AccountingTenantAdministrationProfile,
   AccountingTenantAdministrationProfileUpsertRequest,
   AccountingReportPackageBundle,
@@ -224,6 +228,8 @@ export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
   assessProductionReadiness: (request: AccountingProductionReadinessRequest) => Promise<AccountingProductionReadiness>;
   listMigrationRunArtifacts: (query: { fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingMigrationRunArtifactList>;
+  getProductionCertificationProfile: (query: { tenantId?: string | null; companyId?: string | null; fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingProductionCertificationProfile>;
+  upsertProductionCertificationProfile: (request: AccountingProductionCertificationProfileUpsertRequest) => Promise<AccountingProductionCertificationProfile>;
   getTenantAdministrationProfile: (query: { tenantId?: string | null; companyId?: string | null }) => Promise<AccountingTenantAdministrationProfile>;
   upsertTenantAdministrationProfile: (request: AccountingTenantAdministrationProfileUpsertRequest) => Promise<AccountingTenantAdministrationProfile>;
   createLedgerBook: (request: CreateLedgerBookRequest) => Promise<LedgerBook>;
@@ -429,6 +435,31 @@ export interface AccountingTenantAdministrationProfileEditorViewModel {
   save: () => Promise<void>;
 }
 
+export interface AccountingProductionCertificationProfileControlEditViewModel {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean;
+}
+
+export interface AccountingProductionCertificationProfileEditorViewModel {
+  title: string;
+  scopeLabel: string;
+  updatedLabel: string;
+  evidenceValue: string;
+  controls: AccountingProductionCertificationProfileControlEditViewModel[];
+  saveButtonLabel: string;
+  saveDisabledReason: string | null;
+  saveBusy: boolean;
+  canSave: boolean;
+  statusText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
+  updateControl: (controlId: string, checked: boolean) => void;
+  updateEvidence: (value: string) => void;
+  save: () => Promise<void>;
+}
+
 interface AccountingTenantAdministrationProfileDraft {
   tenantScopeConfigured: boolean;
   adminRoleProfileConfigured: boolean;
@@ -437,6 +468,18 @@ interface AccountingTenantAdministrationProfileDraft {
   accountingAdminSurfaceConfigured: boolean;
   browserAccountingAdminSurfaceConfigured: boolean;
   wpfAccountingAdminSurfaceConfigured: boolean;
+  evidenceText: string;
+}
+
+interface AccountingProductionCertificationProfileDraft {
+  postingRulesLedgerBookNativeCertified: boolean;
+  journalLifecycleLedgerBookNativeCertified: boolean;
+  closeReportingLedgerBookNativeCertified: boolean;
+  externalGlLedgerBookNativeCertified: boolean;
+  periodReportDimensionQueriesCertified: boolean;
+  crossPeriodReportDimensionQueriesCertified: boolean;
+  journalQueryDimensionFiltersCertified: boolean;
+  externalExportDimensionMappingCertified: boolean;
   evidenceText: string;
 }
 
@@ -480,6 +523,7 @@ export interface AccountingConfigurationViewModel {
   ledgerBookSummaryLabel: string;
   ledgerBookEmptyText: string | null;
   productionReadiness: AccountingProductionReadinessViewModel;
+  productionCertificationProfile: AccountingProductionCertificationProfileEditorViewModel;
   tenantAdministrationProfile: AccountingTenantAdministrationProfileEditorViewModel;
   templates: AccountingConfigurationTemplateViewModel[];
   rules: AccountingRulesStudioRuleViewModel[];
@@ -2432,6 +2476,8 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   getConfiguration: () => getAccountingConfiguration(),
   assessProductionReadiness: (request) => assessAccountingProductionReadiness(request),
   listMigrationRunArtifacts: (query) => getAccountingMigrationRunArtifacts(query),
+  getProductionCertificationProfile: (query) => getAccountingProductionCertificationProfile(query),
+  upsertProductionCertificationProfile: (request) => upsertAccountingProductionCertificationProfile(request),
   getTenantAdministrationProfile: (query) => getAccountingTenantAdministrationProfile(query),
   upsertTenantAdministrationProfile: (request) => upsertAccountingTenantAdministrationProfile(request),
   createLedgerBook: (request) => createLedgerBook(request),
@@ -3157,6 +3203,12 @@ export function useAccountingConfigurationViewModel(
   const [migrationRunArtifacts, setMigrationRunArtifacts] = useState<AccountingMigrationRunArtifact[]>([]);
   const [productionReadinessLoading, setProductionReadinessLoading] = useState(false);
   const [productionReadinessError, setProductionReadinessError] = useState<ApiErrorDisplay | null>(null);
+  const [productionCertificationProfile, setProductionCertificationProfile] = useState<AccountingProductionCertificationProfile | null>(null);
+  const [productionCertificationDraft, setProductionCertificationDraft] = useState<AccountingProductionCertificationProfileDraft | null>(null);
+  const [productionCertificationProfileError, setProductionCertificationProfileError] = useState<ApiErrorDisplay | null>(null);
+  const [productionCertificationProfileSaveBusy, setProductionCertificationProfileSaveBusy] = useState(false);
+  const [productionCertificationProfileSaveError, setProductionCertificationProfileSaveError] = useState<ApiErrorDisplay | null>(null);
+  const [productionCertificationProfileSaveMessage, setProductionCertificationProfileSaveMessage] = useState<string | null>(null);
   const [tenantAdministrationProfile, setTenantAdministrationProfile] = useState<AccountingTenantAdministrationProfile | null>(null);
   const [tenantAdministrationDraft, setTenantAdministrationDraft] = useState<AccountingTenantAdministrationProfileDraft | null>(null);
   const [tenantAdministrationProfileError, setTenantAdministrationProfileError] = useState<ApiErrorDisplay | null>(null);
@@ -3222,6 +3274,8 @@ export function useAccountingConfigurationViewModel(
     setError(null);
     setProductionReadinessLoading(true);
     setProductionReadinessError(null);
+    setProductionCertificationProfileError(null);
+    setProductionCertificationProfileSaveError(null);
     setTenantAdministrationProfileError(null);
     setTenantAdministrationProfileSaveError(null);
     try {
@@ -3250,6 +3304,21 @@ export function useAccountingConfigurationViewModel(
         }
         setProductionReadiness(readiness);
         try {
+          const profile = await services.getProductionCertificationProfile({
+            tenantId: readiness.tenantAdministration?.tenantId ?? null,
+            companyId: readiness.tenantAdministration?.companyId ?? null,
+            fundProfileId: readiness.fundProfileId,
+            ledgerBookId: readiness.ledgerBookId ?? next.ledgerBookId ?? null
+          });
+          setProductionCertificationProfile(profile);
+          setProductionCertificationDraft(buildAccountingProductionCertificationProfileDraft(profile));
+        } catch (profileErr) {
+          const fallbackProfile = buildAccountingProductionCertificationProfileFromReadiness(readiness);
+          setProductionCertificationProfile(fallbackProfile);
+          setProductionCertificationDraft(fallbackProfile ? buildAccountingProductionCertificationProfileDraft(fallbackProfile) : null);
+          setProductionCertificationProfileError(describeApiError(profileErr, "Retained production certification profile has not been saved yet."));
+        }
+        try {
           const profile = await services.getTenantAdministrationProfile({
             tenantId: readiness.tenantAdministration?.tenantId ?? null,
             companyId: readiness.tenantAdministration?.companyId ?? null
@@ -3273,6 +3342,8 @@ export function useAccountingConfigurationViewModel(
         }
       } catch (readinessErr) {
         setProductionReadiness(null);
+        setProductionCertificationProfile(null);
+        setProductionCertificationDraft(null);
         setMigrationRunArtifacts([]);
         setProductionReadinessError(describeApiError(readinessErr, "Accounting production readiness is unavailable."));
       } finally {
@@ -3289,6 +3360,8 @@ export function useAccountingConfigurationViewModel(
       setError(describeApiError(err, "Accounting configuration is unavailable."));
       setProductionReadiness(null);
       setMigrationRunArtifacts([]);
+      setProductionCertificationProfile(null);
+      setProductionCertificationDraft(null);
       setTenantAdministrationProfile(null);
       setTenantAdministrationDraft(null);
       setProductionReadinessLoading(false);
@@ -3300,6 +3373,88 @@ export function useAccountingConfigurationViewModel(
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  const updateProductionCertificationControl = useCallback((controlId: string, checked: boolean) => {
+    setProductionCertificationDraft((current) => {
+      if (!current) {
+        return current;
+      }
+
+      switch (controlId) {
+        case "posting-rules-book":
+          return { ...current, postingRulesLedgerBookNativeCertified: checked };
+        case "journal-lifecycle-book":
+          return { ...current, journalLifecycleLedgerBookNativeCertified: checked };
+        case "close-reporting-book":
+          return { ...current, closeReportingLedgerBookNativeCertified: checked };
+        case "external-gl-book":
+          return { ...current, externalGlLedgerBookNativeCertified: checked };
+        case "period-report-dimensions":
+          return { ...current, periodReportDimensionQueriesCertified: checked };
+        case "cross-period-dimensions":
+          return { ...current, crossPeriodReportDimensionQueriesCertified: checked };
+        case "journal-dimension-filters":
+          return { ...current, journalQueryDimensionFiltersCertified: checked };
+        case "external-export-dimensions":
+          return { ...current, externalExportDimensionMappingCertified: checked };
+        default:
+          return current;
+      }
+    });
+    setProductionCertificationProfileSaveMessage(null);
+    setProductionCertificationProfileSaveError(null);
+  }, []);
+
+  const updateProductionCertificationEvidence = useCallback((value: string) => {
+    setProductionCertificationDraft((current) => current ? { ...current, evidenceText: value } : current);
+    setProductionCertificationProfileSaveMessage(null);
+    setProductionCertificationProfileSaveError(null);
+  }, []);
+
+  const saveProductionCertificationProfile = useCallback(async () => {
+    if (!productionCertificationProfile || !productionCertificationDraft || productionCertificationProfileSaveBusy) {
+      return;
+    }
+
+    const correlationId = `browser-accounting-production-certification-${Date.now()}`;
+    const evidenceReferences = splitAccountingEvidenceReferences(productionCertificationDraft.evidenceText);
+    const nextProfile: AccountingProductionCertificationProfile = {
+      ...productionCertificationProfile,
+      postingRulesLedgerBookNativeCertified: productionCertificationDraft.postingRulesLedgerBookNativeCertified,
+      journalLifecycleLedgerBookNativeCertified: productionCertificationDraft.journalLifecycleLedgerBookNativeCertified,
+      closeReportingLedgerBookNativeCertified: productionCertificationDraft.closeReportingLedgerBookNativeCertified,
+      externalGlLedgerBookNativeCertified: productionCertificationDraft.externalGlLedgerBookNativeCertified,
+      periodReportDimensionQueriesCertified: productionCertificationDraft.periodReportDimensionQueriesCertified,
+      crossPeriodReportDimensionQueriesCertified: productionCertificationDraft.crossPeriodReportDimensionQueriesCertified,
+      journalQueryDimensionFiltersCertified: productionCertificationDraft.journalQueryDimensionFiltersCertified,
+      externalExportDimensionMappingCertified: productionCertificationDraft.externalExportDimensionMappingCertified,
+      updatedAtUtc: new Date().toISOString(),
+      updatedBy: "browser-accounting-operator",
+      evidenceReferences,
+      correlationId
+    };
+
+    setProductionCertificationProfileSaveBusy(true);
+    setProductionCertificationProfileSaveError(null);
+    setProductionCertificationProfileSaveMessage(null);
+    try {
+      const saved = await services.upsertProductionCertificationProfile({
+        profile: nextProfile,
+        actor: "browser-accounting-operator",
+        correlationId,
+        evidenceLinks: evidenceReferences
+      });
+      setProductionCertificationProfile(saved);
+      setProductionCertificationDraft(buildAccountingProductionCertificationProfileDraft(saved));
+      setProductionCertificationProfileError(null);
+      setProductionCertificationProfileSaveMessage("Production certification profile saved; readiness refreshed from retained book and dimension controls.");
+      await refresh();
+    } catch (err) {
+      setProductionCertificationProfileSaveError(describeApiError(err, "Production certification profile save failed."));
+    } finally {
+      setProductionCertificationProfileSaveBusy(false);
+    }
+  }, [productionCertificationDraft, productionCertificationProfile, productionCertificationProfileSaveBusy, refresh, services]);
 
   const updateTenantAdministrationControl = useCallback((controlId: string, checked: boolean) => {
     setTenantAdministrationDraft((current) => {
@@ -4563,6 +4718,17 @@ export function useAccountingConfigurationViewModel(
       productionReadinessError,
       workspace
     );
+    const productionCertificationProfileView = buildAccountingProductionCertificationProfileEditorViewModel(
+      productionCertificationProfile,
+      productionCertificationDraft,
+      productionCertificationProfileError,
+      productionCertificationProfileSaveError,
+      productionCertificationProfileSaveMessage,
+      productionCertificationProfileSaveBusy,
+      updateProductionCertificationControl,
+      updateProductionCertificationEvidence,
+      saveProductionCertificationProfile
+    );
     const tenantAdministrationProfileView = buildAccountingTenantAdministrationProfileEditorViewModel(
       tenantAdministrationProfile,
       tenantAdministrationDraft,
@@ -4649,6 +4815,7 @@ export function useAccountingConfigurationViewModel(
       ledgerBookSummaryLabel,
       ledgerBookEmptyText,
       productionReadiness: productionReadinessView,
+      productionCertificationProfile: productionCertificationProfileView,
       tenantAdministrationProfile: tenantAdministrationProfileView,
       templates,
       rules,
@@ -4843,6 +5010,12 @@ export function useAccountingConfigurationViewModel(
     migrationRunArtifacts,
     productionReadinessError,
     productionReadinessLoading,
+    productionCertificationDraft,
+    productionCertificationProfile,
+    productionCertificationProfileError,
+    productionCertificationProfileSaveBusy,
+    productionCertificationProfileSaveError,
+    productionCertificationProfileSaveMessage,
     refresh,
     previewFirstTemplate,
     ruleTestBusy,
@@ -4852,6 +5025,7 @@ export function useAccountingConfigurationViewModel(
     saveDryRunAsRuleTest,
     saveRuleTestBusy,
     saveRuleTestError,
+    saveProductionCertificationProfile,
     saveTenantAdministrationProfile,
     selectedRuleId,
     scopedRuleId,
@@ -4862,6 +5036,8 @@ export function useAccountingConfigurationViewModel(
     tenantAdministrationProfileSaveError,
     tenantAdministrationProfileSaveMessage,
     thresholdRuleId,
+    updateProductionCertificationControl,
+    updateProductionCertificationEvidence,
     updateTenantAdministrationControl,
     updateTenantAdministrationEvidence,
     workspace
@@ -4999,6 +5175,153 @@ function buildAccountingProductionReadinessViewModel(
   };
 }
 
+function buildAccountingProductionCertificationProfileEditorViewModel(
+  profile: AccountingProductionCertificationProfile | null,
+  draft: AccountingProductionCertificationProfileDraft | null,
+  loadError: ApiErrorDisplay | null,
+  saveError: ApiErrorDisplay | null,
+  saveMessage: string | null,
+  saveBusy: boolean,
+  updateControl: (controlId: string, checked: boolean) => void,
+  updateEvidence: (value: string) => void,
+  save: () => Promise<void>
+): AccountingProductionCertificationProfileEditorViewModel {
+  const hasFundScope = Boolean(profile?.fundProfileId?.trim());
+  const controls = buildAccountingProductionCertificationProfileControls(draft);
+  const evidenceValue = draft?.evidenceText ?? "";
+  const missingEvidence = splitAccountingEvidenceReferences(evidenceValue).length === 0;
+  const saveDisabledReason = !profile || !draft
+    ? "Load accounting production scope before saving certification controls."
+    : !hasFundScope
+      ? "Fund scope is required before saving production certification controls."
+      : missingEvidence
+        ? "Retained evidence is required before saving production certification controls."
+        : null;
+
+  return {
+    title: "Production certification profile",
+    scopeLabel: profile
+      ? `Tenant ${profile.tenantId || "context"} | company ${profile.companyId || "context"} | fund ${profile.fundProfileId || "missing"} | ledger book ${profile.ledgerBookId || "fund-level"}`
+      : "Tenant, company, fund, and ledger-book scope have not loaded.",
+    updatedLabel: profile
+      ? `Last retained by ${profile.updatedBy || "unknown"} at ${profile.updatedAtUtc || "not retained"}`
+      : "No retained profile loaded.",
+    evidenceValue,
+    controls,
+    saveButtonLabel: saveBusy ? "Saving certification" : "Save certification",
+    saveDisabledReason,
+    saveBusy,
+    canSave: saveDisabledReason === null && !saveBusy,
+    statusText: saveError?.summary ?? saveMessage ?? loadError?.summary ?? null,
+    errorText: saveError?.summary ?? null,
+    errorDetails: saveError?.details ?? [],
+    updateControl,
+    updateEvidence,
+    save
+  };
+}
+
+function buildAccountingProductionCertificationProfileControls(
+  draft: AccountingProductionCertificationProfileDraft | null
+): AccountingProductionCertificationProfileControlEditViewModel[] {
+  return [
+    {
+      id: "posting-rules-book",
+      label: "Rules by book",
+      description: "Posting rules execute with retained ledger-book scope and evidence.",
+      checked: draft?.postingRulesLedgerBookNativeCertified ?? false
+    },
+    {
+      id: "journal-lifecycle-book",
+      label: "JE by book",
+      description: "Journal lifecycle controls are certified for the selected ledger book.",
+      checked: draft?.journalLifecycleLedgerBookNativeCertified ?? false
+    },
+    {
+      id: "close-reporting-book",
+      label: "Close by book",
+      description: "Close and reporting workflows retain ledger-book-scoped evidence.",
+      checked: draft?.closeReportingLedgerBookNativeCertified ?? false
+    },
+    {
+      id: "external-gl-book",
+      label: "External GL by book",
+      description: "Guarded exports and mappings carry ledger-book scope.",
+      checked: draft?.externalGlLedgerBookNativeCertified ?? false
+    },
+    {
+      id: "period-report-dimensions",
+      label: "Period dimensions",
+      description: "Period reports support required accounting dimensions.",
+      checked: draft?.periodReportDimensionQueriesCertified ?? false
+    },
+    {
+      id: "cross-period-dimensions",
+      label: "Cross-period dimensions",
+      description: "Cross-period reporting preserves dimensional filters.",
+      checked: draft?.crossPeriodReportDimensionQueriesCertified ?? false
+    },
+    {
+      id: "journal-dimension-filters",
+      label: "JE dimensions",
+      description: "Journal queries expose fund, entity, instrument, and related dimensions.",
+      checked: draft?.journalQueryDimensionFiltersCertified ?? false
+    },
+    {
+      id: "external-export-dimensions",
+      label: "Export dimensions",
+      description: "External GL export mappings retain certified dimensions.",
+      checked: draft?.externalExportDimensionMappingCertified ?? false
+    }
+  ];
+}
+
+function buildAccountingProductionCertificationProfileDraft(
+  profile: AccountingProductionCertificationProfile
+): AccountingProductionCertificationProfileDraft {
+  return {
+    postingRulesLedgerBookNativeCertified: profile.postingRulesLedgerBookNativeCertified,
+    journalLifecycleLedgerBookNativeCertified: profile.journalLifecycleLedgerBookNativeCertified,
+    closeReportingLedgerBookNativeCertified: profile.closeReportingLedgerBookNativeCertified,
+    externalGlLedgerBookNativeCertified: profile.externalGlLedgerBookNativeCertified,
+    periodReportDimensionQueriesCertified: profile.periodReportDimensionQueriesCertified,
+    crossPeriodReportDimensionQueriesCertified: profile.crossPeriodReportDimensionQueriesCertified,
+    journalQueryDimensionFiltersCertified: profile.journalQueryDimensionFiltersCertified,
+    externalExportDimensionMappingCertified: profile.externalExportDimensionMappingCertified,
+    evidenceText: profile.evidenceReferences.join("\n")
+  };
+}
+
+function buildAccountingProductionCertificationProfileFromReadiness(
+  readiness: AccountingProductionReadiness
+): AccountingProductionCertificationProfile {
+  const ledgerBookWorkflows = readiness.ledgerBookWorkflows;
+  const dimensionalReporting = readiness.dimensionalReporting;
+  const evidenceReferences = [
+    ...(ledgerBookWorkflows?.evidenceReferences ?? []),
+    ...(dimensionalReporting?.evidenceReferences ?? [])
+  ].filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
+
+  return {
+    fundProfileId: readiness.fundProfileId,
+    ledgerBookId: readiness.ledgerBookId ?? ledgerBookWorkflows?.ledgerBookId ?? dimensionalReporting?.ledgerBookId ?? null,
+    tenantId: readiness.tenantAdministration?.tenantId ?? null,
+    companyId: readiness.tenantAdministration?.companyId ?? null,
+    postingRulesLedgerBookNativeCertified: ledgerBookWorkflows?.postingRulesLedgerBookNativeCertified ?? false,
+    journalLifecycleLedgerBookNativeCertified: ledgerBookWorkflows?.journalLifecycleLedgerBookNativeCertified ?? false,
+    closeReportingLedgerBookNativeCertified: ledgerBookWorkflows?.closeReportingLedgerBookNativeCertified ?? false,
+    externalGlLedgerBookNativeCertified: ledgerBookWorkflows?.externalGlLedgerBookNativeCertified ?? false,
+    periodReportDimensionQueriesCertified: dimensionalReporting?.periodReportDimensionQueriesCertified ?? false,
+    crossPeriodReportDimensionQueriesCertified: dimensionalReporting?.crossPeriodReportDimensionQueriesCertified ?? false,
+    journalQueryDimensionFiltersCertified: dimensionalReporting?.journalQueryDimensionFiltersCertified ?? false,
+    externalExportDimensionMappingCertified: dimensionalReporting?.externalExportDimensionMappingCertified ?? false,
+    updatedAtUtc: "",
+    updatedBy: "not retained",
+    evidenceReferences,
+    correlationId: null
+  };
+}
+
 function buildAccountingTenantAdministrationProfileEditorViewModel(
   profile: AccountingTenantAdministrationProfile | null,
   draft: AccountingTenantAdministrationProfileDraft | null,
@@ -5123,6 +5446,10 @@ function buildAccountingTenantAdministrationProfileFromReadiness(
 }
 
 function splitAccountingTenantAdministrationEvidence(value: string): string[] {
+  return splitAccountingEvidenceReferences(value);
+}
+
+function splitAccountingEvidenceReferences(value: string): string[] {
   return value
     .split(/[\n,]/)
     .map((item) => item.trim())

@@ -2034,10 +2034,18 @@ export function upsertAccountingTenantAdministrationProfile(
 }
 
 export function getAccountingProductionCertificationProfile(
-  query: { fundProfileId?: string | null; ledgerBookId?: string | null } = {},
+  query: { tenantId?: string | null; companyId?: string | null; fundProfileId?: string | null; ledgerBookId?: string | null } = {},
   options: ApiRequestOptions = {}
 ) {
   const params = new URLSearchParams();
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.companyId) {
+    params.set("companyId", query.companyId);
+  }
+
   if (query.fundProfileId) {
     params.set("fundProfileId", query.fundProfileId);
   }

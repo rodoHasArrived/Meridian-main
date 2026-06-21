@@ -5735,6 +5735,8 @@ export interface AccountingTenantAdministrationProfileUpsertRequest {
 export interface AccountingProductionCertificationProfile {
   fundProfileId: string;
   ledgerBookId?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
   postingRulesLedgerBookNativeCertified: boolean;
   journalLifecycleLedgerBookNativeCertified: boolean;
   closeReportingLedgerBookNativeCertified: boolean;

@@ -6658,6 +6658,54 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             </div>
           ) : null}
 
+          <div className="rounded-lg border border-border/70 bg-background/35 p-3" role="region" aria-label="Accounting production certification profile editor">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="font-semibold text-foreground">{view.productionCertificationProfile.title}</div>
+                <div className="mt-1 font-mono text-xs text-muted-foreground">{view.productionCertificationProfile.scopeLabel}</div>
+                <div className="mt-1 text-xs text-muted-foreground">{view.productionCertificationProfile.updatedLabel}</div>
+              </div>
+              <Button
+                size="sm"
+                disabled={!view.productionCertificationProfile.canSave}
+                disabledReason={view.productionCertificationProfile.saveDisabledReason}
+                busy={view.productionCertificationProfile.saveBusy}
+                busyLabel={view.productionCertificationProfile.saveButtonLabel}
+                onClick={() => void view.productionCertificationProfile.save()}
+              >
+                {view.productionCertificationProfile.saveButtonLabel}
+              </Button>
+            </div>
+            <div className="mt-3 grid gap-2 md:grid-cols-4">
+              {view.productionCertificationProfile.controls.map((control) => (
+                <label key={control.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
+                  <span className="flex items-center gap-2 font-semibold text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={control.checked}
+                      onChange={(event) => view.productionCertificationProfile.updateControl(control.id, event.currentTarget.checked)}
+                    />
+                    {control.label}
+                  </span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{control.description}</span>
+                </label>
+              ))}
+            </div>
+            <FormRow label="Retained certification evidence" labelFor="accounting-production-certification-evidence">
+              <Input
+                id="accounting-production-certification-evidence"
+                value={view.productionCertificationProfile.evidenceValue}
+                onChange={(event) => view.productionCertificationProfile.updateEvidence(event.currentTarget.value)}
+                placeholder="evidence://accounting/production-certification"
+              />
+            </FormRow>
+            {view.productionCertificationProfile.statusText ? (
+              <p className={cn("text-sm", view.productionCertificationProfile.errorText ? "text-danger" : "text-muted-foreground")}>
+                {view.productionCertificationProfile.statusText}
+              </p>
+            ) : null}
+          </div>
+
           <div className="rounded-lg border border-border/70 bg-background/35 p-3" role="region" aria-label="Accounting tenant administration setup editor">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>

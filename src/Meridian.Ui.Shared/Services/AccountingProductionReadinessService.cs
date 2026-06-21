@@ -125,7 +125,7 @@ public sealed class AccountingProductionReadinessService
             return null;
         }
 
-        return await store.GetAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+        return await store.GetAsync(request.TenantId, request.CompanyId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
     }
 
     private static AccountingProductionReadinessRequestDto MergeProductionCertificationProfile(
