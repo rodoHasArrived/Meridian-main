@@ -231,10 +231,11 @@ tenant, company, admin-role, scoped-access, reporting-group, aggregate operator-
 accounting admin-studio, WPF accounting admin-studio, chart administration, rule-test/promotion
 setup, close setup, provider/external-GL mapping setup, tenant/company/report-group setup, audit
 review tooling, bulk import/export safeguards, performance validation, disaster-recovery runbooks,
+ledger-book administration, posting-rule authoring, approval queues, dimension mapping, implementation sandbox validation,
 and retained-evidence controls instead of treating setup readiness as a generic component row, and the
 dashboard route catalog exposes the retained tenant-administration profile endpoint. The Configure
 surface can load, edit, and save that retained profile with browser accounting admin-studio,
-enterprise configuration studio coverage, and setup evidence before refreshing
+enterprise configuration studio lane coverage, and setup evidence before refreshing
 production-readiness posture from the shared Accounting System service. The Configure surface also
 loads, edits, and saves the retained production-certification profile for ledger-book-native
 workflow controls, including reconciliation, direct-lending, and strategy-ledger-read

@@ -222,6 +222,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private bool _bulkImportExportSafeguardsConfigured;
     private bool _performanceValidationConfigured;
     private bool _disasterRecoveryRunbookConfigured;
+    private bool _ledgerBookAdministrationStudioConfigured;
+    private bool _postingRuleAuthoringStudioConfigured;
+    private bool _approvalQueueStudioConfigured;
+    private bool _dimensionMappingStudioConfigured;
+    private bool _implementationSandboxConfigured;
     private string _selectedReconciliationView = "Open breaks";
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
     private string _draftMemo = "Manual accounting adjustment";
@@ -749,6 +754,36 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         set => SetProperty(ref _disasterRecoveryRunbookConfigured, value);
     }
 
+    public bool LedgerBookAdministrationStudioConfigured
+    {
+        get => _ledgerBookAdministrationStudioConfigured;
+        set => SetProperty(ref _ledgerBookAdministrationStudioConfigured, value);
+    }
+
+    public bool PostingRuleAuthoringStudioConfigured
+    {
+        get => _postingRuleAuthoringStudioConfigured;
+        set => SetProperty(ref _postingRuleAuthoringStudioConfigured, value);
+    }
+
+    public bool ApprovalQueueStudioConfigured
+    {
+        get => _approvalQueueStudioConfigured;
+        set => SetProperty(ref _approvalQueueStudioConfigured, value);
+    }
+
+    public bool DimensionMappingStudioConfigured
+    {
+        get => _dimensionMappingStudioConfigured;
+        set => SetProperty(ref _dimensionMappingStudioConfigured, value);
+    }
+
+    public bool ImplementationSandboxConfigured
+    {
+        get => _implementationSandboxConfigured;
+        set => SetProperty(ref _implementationSandboxConfigured, value);
+    }
+
     public bool CanSaveTenantAdministrationProfile =>
         _activeFundProfile is not null
         && _tenantAdministrationProfileStore is not null
@@ -1166,7 +1201,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 AuditReviewToolingConfigured: AuditReviewToolingConfigured,
                 BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
                 PerformanceValidationConfigured: PerformanceValidationConfigured,
-                DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured);
+                DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured,
+                LedgerBookAdministrationStudioConfigured: LedgerBookAdministrationStudioConfigured,
+                PostingRuleAuthoringStudioConfigured: PostingRuleAuthoringStudioConfigured,
+                ApprovalQueueStudioConfigured: ApprovalQueueStudioConfigured,
+                DimensionMappingStudioConfigured: DimensionMappingStudioConfigured,
+                ImplementationSandboxConfigured: ImplementationSandboxConfigured);
 
             var saved = await _tenantAdministrationProfileStore.UpsertAsync(
                 new AccountingTenantAdministrationProfileUpsertRequestDto(
@@ -1790,6 +1830,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         BulkImportExportSafeguardsConfigured = false;
         PerformanceValidationConfigured = false;
         DisasterRecoveryRunbookConfigured = false;
+        LedgerBookAdministrationStudioConfigured = false;
+        PostingRuleAuthoringStudioConfigured = false;
+        ApprovalQueueStudioConfigured = false;
+        DimensionMappingStudioConfigured = false;
+        ImplementationSandboxConfigured = false;
         BatchReconciliationActionText = "No reconciliation rows are loaded.";
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
@@ -2076,6 +2121,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         BulkImportExportSafeguardsConfigured = profile.BulkImportExportSafeguardsConfigured;
         PerformanceValidationConfigured = profile.PerformanceValidationConfigured;
         DisasterRecoveryRunbookConfigured = profile.DisasterRecoveryRunbookConfigured;
+        LedgerBookAdministrationStudioConfigured = profile.LedgerBookAdministrationStudioConfigured;
+        PostingRuleAuthoringStudioConfigured = profile.PostingRuleAuthoringStudioConfigured;
+        ApprovalQueueStudioConfigured = profile.ApprovalQueueStudioConfigured;
+        DimensionMappingStudioConfigured = profile.DimensionMappingStudioConfigured;
+        ImplementationSandboxConfigured = profile.ImplementationSandboxConfigured;
         TenantAdministrationEvidenceText = string.Join(Environment.NewLine, profile.EvidenceReferences);
         TenantAdministrationProfileScopeText = $"Tenant {profile.TenantId}; company {profile.CompanyId}.";
         TenantAdministrationProfileUpdatedText =
@@ -2142,7 +2192,37 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 DisasterRecoveryRunbookConfigured ? "Configured" : "Missing",
                 "Disaster recovery, restore, replay, escalation, and operating runbook evidence is retained.",
                 "DR/runbook",
-                "disaster-recovery-runbook")
+                "disaster-recovery-runbook"),
+            new AccountingWorkbenchRow(
+                "Book admin",
+                LedgerBookAdministrationStudioConfigured ? "Configured" : "Missing",
+                "Ledger-book creation, selection, policy, activation, and period setup are retained.",
+                "ledger books",
+                "ledger-book-administration-studio"),
+            new AccountingWorkbenchRow(
+                "Rule authoring",
+                PostingRuleAuthoringStudioConfigured ? "Configured" : "Missing",
+                "Event predicates, scopes, thresholds, formulas, allocations, and posting previews are retained.",
+                "posting rules",
+                "posting-rule-authoring-studio"),
+            new AccountingWorkbenchRow(
+                "Approvals",
+                ApprovalQueueStudioConfigured ? "Configured" : "Missing",
+                "Rule promotion, journal, configuration, and segregation approval queues are retained.",
+                "approvals",
+                "approval-queue-studio"),
+            new AccountingWorkbenchRow(
+                "Dimension maps",
+                DimensionMappingStudioConfigured ? "Configured" : "Missing",
+                "Canonical and external GL dimension mapping setup is retained.",
+                "dimensions",
+                "dimension-mapping-studio"),
+            new AccountingWorkbenchRow(
+                "Sandbox proof",
+                ImplementationSandboxConfigured ? "Configured" : "Missing",
+                "Implementation fixture, migration rehearsal, import, rule, close, and report validation is retained.",
+                "implementation",
+                "implementation-sandbox")
         ]);
     }
 
@@ -2250,6 +2330,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
             PerformanceValidationConfigured: PerformanceValidationConfigured,
             DisasterRecoveryRunbookConfigured: DisasterRecoveryRunbookConfigured,
+            LedgerBookAdministrationStudioConfigured: LedgerBookAdministrationStudioConfigured,
+            PostingRuleAuthoringStudioConfigured: PostingRuleAuthoringStudioConfigured,
+            ApprovalQueueStudioConfigured: ApprovalQueueStudioConfigured,
+            DimensionMappingStudioConfigured: DimensionMappingStudioConfigured,
+            ImplementationSandboxConfigured: ImplementationSandboxConfigured,
             TenantAdministrationEvidenceLinks: NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
             PostingRulesLedgerBookNativeCertified: PostingRulesLedgerBookNativeCertified,
             JournalLifecycleLedgerBookNativeCertified: JournalLifecycleLedgerBookNativeCertified,

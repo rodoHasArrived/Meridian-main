@@ -172,7 +172,12 @@ public sealed record AccountingTenantAdministrationProfileDto(
     bool AuditReviewToolingConfigured = false,
     bool BulkImportExportSafeguardsConfigured = false,
     bool PerformanceValidationConfigured = false,
-    bool DisasterRecoveryRunbookConfigured = false)
+    bool DisasterRecoveryRunbookConfigured = false,
+    bool LedgerBookAdministrationStudioConfigured = false,
+    bool PostingRuleAuthoringStudioConfigured = false,
+    bool ApprovalQueueStudioConfigured = false,
+    bool DimensionMappingStudioConfigured = false,
+    bool ImplementationSandboxConfigured = false)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -250,6 +255,11 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool BulkImportExportSafeguardsConfigured = false,
     bool PerformanceValidationConfigured = false,
     bool DisasterRecoveryRunbookConfigured = false,
+    bool LedgerBookAdministrationStudioConfigured = false,
+    bool PostingRuleAuthoringStudioConfigured = false,
+    bool ApprovalQueueStudioConfigured = false,
+    bool DimensionMappingStudioConfigured = false,
+    bool ImplementationSandboxConfigured = false,
     IReadOnlyList<string>? TenantAdministrationEvidenceLinks = null,
     bool PostingRulesLedgerBookNativeCertified = false,
     bool JournalLifecycleLedgerBookNativeCertified = false,
@@ -474,7 +484,12 @@ public sealed record AccountingTenantAdministrationReadinessDto(
     bool AuditReviewToolingConfigured = false,
     bool BulkImportExportSafeguardsConfigured = false,
     bool PerformanceValidationConfigured = false,
-    bool DisasterRecoveryRunbookConfigured = false)
+    bool DisasterRecoveryRunbookConfigured = false,
+    bool LedgerBookAdministrationStudioConfigured = false,
+    bool PostingRuleAuthoringStudioConfigured = false,
+    bool ApprovalQueueStudioConfigured = false,
+    bool DimensionMappingStudioConfigured = false,
+    bool ImplementationSandboxConfigured = false)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -499,10 +514,15 @@ public sealed record AccountingTenantAdministrationReadinessDto(
             AuditReviewToolingConfigured && HasAuditReviewToolingEvidence,
             BulkImportExportSafeguardsConfigured && HasBulkImportExportSafeguardsEvidence,
             PerformanceValidationConfigured && HasPerformanceValidationEvidence,
-            DisasterRecoveryRunbookConfigured && HasDisasterRecoveryRunbookEvidence
+            DisasterRecoveryRunbookConfigured && HasDisasterRecoveryRunbookEvidence,
+            LedgerBookAdministrationStudioConfigured && HasLedgerBookAdministrationStudioEvidence,
+            PostingRuleAuthoringStudioConfigured && HasPostingRuleAuthoringStudioEvidence,
+            ApprovalQueueStudioConfigured && HasApprovalQueueStudioEvidence,
+            DimensionMappingStudioConfigured && HasDimensionMappingStudioEvidence,
+            ImplementationSandboxConfigured && HasImplementationSandboxEvidence
         }.Count(static control => control);
 
-    public int RequiredControlCount => 18;
+    public int RequiredControlCount => 23;
 
     public bool HasTenantScope => !string.IsNullOrWhiteSpace(TenantId);
 
@@ -557,6 +577,21 @@ public sealed record AccountingTenantAdministrationReadinessDto(
 
     public bool HasDisasterRecoveryRunbookEvidence =>
         HasTenantAdministrationEvidence("disaster-recovery", "dr-runbook", "operating-runbook", "recovery-validation");
+
+    public bool HasLedgerBookAdministrationStudioEvidence =>
+        HasTenantAdministrationEvidence("ledger-book-admin", "ledger-book-administration", "book-administration", "ledger-book-setup");
+
+    public bool HasPostingRuleAuthoringStudioEvidence =>
+        HasTenantAdministrationEvidence("posting-rule-authoring", "posting-rule-studio", "rule-authoring", "posting-rule-setup");
+
+    public bool HasApprovalQueueStudioEvidence =>
+        HasTenantAdministrationEvidence("approval-queue", "promotion-approval", "je-approval", "configuration-approval");
+
+    public bool HasDimensionMappingStudioEvidence =>
+        HasTenantAdministrationEvidence("dimension-mapping", "dimension-map", "external-dimension-mapping", "gl-dimension-mapping");
+
+    public bool HasImplementationSandboxEvidence =>
+        HasTenantAdministrationEvidence("implementation-sandbox", "sandbox-validation", "fixture-validation", "implementation-fixture");
 
     private bool HasTenantAdministrationEvidence(params string[] aliases)
         => EvidenceReferences.Any(reference =>

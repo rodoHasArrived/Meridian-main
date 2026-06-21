@@ -5601,6 +5601,11 @@ export interface AccountingProductionReadinessRequest {
   bulkImportExportSafeguardsConfigured?: boolean;
   performanceValidationConfigured?: boolean;
   disasterRecoveryRunbookConfigured?: boolean;
+  ledgerBookAdministrationStudioConfigured?: boolean;
+  postingRuleAuthoringStudioConfigured?: boolean;
+  approvalQueueStudioConfigured?: boolean;
+  dimensionMappingStudioConfigured?: boolean;
+  implementationSandboxConfigured?: boolean;
   tenantAdministrationEvidenceLinks?: string[] | null;
   postingRulesLedgerBookNativeCertified?: boolean;
   journalLifecycleLedgerBookNativeCertified?: boolean;
@@ -5697,6 +5702,11 @@ export interface AccountingTenantAdministrationReadiness {
   bulkImportExportSafeguardsConfigured?: boolean;
   performanceValidationConfigured?: boolean;
   disasterRecoveryRunbookConfigured?: boolean;
+  ledgerBookAdministrationStudioConfigured?: boolean;
+  postingRuleAuthoringStudioConfigured?: boolean;
+  approvalQueueStudioConfigured?: boolean;
+  dimensionMappingStudioConfigured?: boolean;
+  implementationSandboxConfigured?: boolean;
   evidenceReferences: string[];
   completedControlCount: number;
   requiredControlCount: number;
@@ -5758,6 +5768,11 @@ export interface AccountingTenantAdministrationProfile {
   bulkImportExportSafeguardsConfigured?: boolean;
   performanceValidationConfigured?: boolean;
   disasterRecoveryRunbookConfigured?: boolean;
+  ledgerBookAdministrationStudioConfigured?: boolean;
+  postingRuleAuthoringStudioConfigured?: boolean;
+  approvalQueueStudioConfigured?: boolean;
+  dimensionMappingStudioConfigured?: boolean;
+  implementationSandboxConfigured?: boolean;
   updatedAtUtc: string;
   updatedBy: string;
   evidenceReferences: string[];

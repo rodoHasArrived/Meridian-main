@@ -477,6 +477,11 @@ interface AccountingTenantAdministrationProfileDraft {
   bulkImportExportSafeguardsConfigured: boolean;
   performanceValidationConfigured: boolean;
   disasterRecoveryRunbookConfigured: boolean;
+  ledgerBookAdministrationStudioConfigured: boolean;
+  postingRuleAuthoringStudioConfigured: boolean;
+  approvalQueueStudioConfigured: boolean;
+  dimensionMappingStudioConfigured: boolean;
+  implementationSandboxConfigured: boolean;
   evidenceText: string;
 }
 
@@ -3524,6 +3529,16 @@ export function useAccountingConfigurationViewModel(
           return { ...current, performanceValidationConfigured: checked };
         case "disaster-recovery-runbook":
           return { ...current, disasterRecoveryRunbookConfigured: checked };
+        case "ledger-book-administration-studio":
+          return { ...current, ledgerBookAdministrationStudioConfigured: checked };
+        case "posting-rule-authoring-studio":
+          return { ...current, postingRuleAuthoringStudioConfigured: checked };
+        case "approval-queue-studio":
+          return { ...current, approvalQueueStudioConfigured: checked };
+        case "dimension-mapping-studio":
+          return { ...current, dimensionMappingStudioConfigured: checked };
+        case "implementation-sandbox":
+          return { ...current, implementationSandboxConfigured: checked };
         default:
           return current;
       }
@@ -3563,6 +3578,11 @@ export function useAccountingConfigurationViewModel(
       bulkImportExportSafeguardsConfigured: tenantAdministrationDraft.bulkImportExportSafeguardsConfigured,
       performanceValidationConfigured: tenantAdministrationDraft.performanceValidationConfigured,
       disasterRecoveryRunbookConfigured: tenantAdministrationDraft.disasterRecoveryRunbookConfigured,
+      ledgerBookAdministrationStudioConfigured: tenantAdministrationDraft.ledgerBookAdministrationStudioConfigured,
+      postingRuleAuthoringStudioConfigured: tenantAdministrationDraft.postingRuleAuthoringStudioConfigured,
+      approvalQueueStudioConfigured: tenantAdministrationDraft.approvalQueueStudioConfigured,
+      dimensionMappingStudioConfigured: tenantAdministrationDraft.dimensionMappingStudioConfigured,
+      implementationSandboxConfigured: tenantAdministrationDraft.implementationSandboxConfigured,
       updatedAtUtc: new Date().toISOString(),
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
@@ -5563,6 +5583,36 @@ function buildAccountingTenantAdministrationProfileControls(
       label: "Recovery runbook",
       description: "Disaster recovery, restore, replay, escalation, and accounting operating runbook evidence is certified.",
       checked: draft?.disasterRecoveryRunbookConfigured ?? false
+    },
+    {
+      id: "ledger-book-administration-studio",
+      label: "Book admin",
+      description: "Ledger-book creation, selection, policy, activation, and period setup are exposed.",
+      checked: draft?.ledgerBookAdministrationStudioConfigured ?? false
+    },
+    {
+      id: "posting-rule-authoring-studio",
+      label: "Rule authoring",
+      description: "Event predicates, scopes, thresholds, formulas, allocations, and posting previews are exposed.",
+      checked: draft?.postingRuleAuthoringStudioConfigured ?? false
+    },
+    {
+      id: "approval-queue-studio",
+      label: "Approvals",
+      description: "Rule promotion, journal, configuration, and segregation approval queues are exposed.",
+      checked: draft?.approvalQueueStudioConfigured ?? false
+    },
+    {
+      id: "dimension-mapping-studio",
+      label: "Dimension maps",
+      description: "Canonical and external GL dimension mapping setup is exposed.",
+      checked: draft?.dimensionMappingStudioConfigured ?? false
+    },
+    {
+      id: "implementation-sandbox",
+      label: "Sandbox proof",
+      description: "Implementation fixture, migration rehearsal, import, rule, close, and report validation is retained.",
+      checked: draft?.implementationSandboxConfigured ?? false
     }
   ];
 }
@@ -5587,6 +5637,11 @@ function buildAccountingTenantAdministrationProfileDraft(
     bulkImportExportSafeguardsConfigured: profile.bulkImportExportSafeguardsConfigured ?? false,
     performanceValidationConfigured: profile.performanceValidationConfigured ?? false,
     disasterRecoveryRunbookConfigured: profile.disasterRecoveryRunbookConfigured ?? false,
+    ledgerBookAdministrationStudioConfigured: profile.ledgerBookAdministrationStudioConfigured ?? false,
+    postingRuleAuthoringStudioConfigured: profile.postingRuleAuthoringStudioConfigured ?? false,
+    approvalQueueStudioConfigured: profile.approvalQueueStudioConfigured ?? false,
+    dimensionMappingStudioConfigured: profile.dimensionMappingStudioConfigured ?? false,
+    implementationSandboxConfigured: profile.implementationSandboxConfigured ?? false,
     evidenceText: profile.evidenceReferences.join("\n")
   };
 }
@@ -5618,6 +5673,11 @@ function buildAccountingTenantAdministrationProfileFromReadiness(
     bulkImportExportSafeguardsConfigured: tenantAdministration.bulkImportExportSafeguardsConfigured ?? false,
     performanceValidationConfigured: tenantAdministration.performanceValidationConfigured ?? false,
     disasterRecoveryRunbookConfigured: tenantAdministration.disasterRecoveryRunbookConfigured ?? false,
+    ledgerBookAdministrationStudioConfigured: tenantAdministration.ledgerBookAdministrationStudioConfigured ?? false,
+    postingRuleAuthoringStudioConfigured: tenantAdministration.postingRuleAuthoringStudioConfigured ?? false,
+    approvalQueueStudioConfigured: tenantAdministration.approvalQueueStudioConfigured ?? false,
+    dimensionMappingStudioConfigured: tenantAdministration.dimensionMappingStudioConfigured ?? false,
+    implementationSandboxConfigured: tenantAdministration.implementationSandboxConfigured ?? false,
     updatedAtUtc: "",
     updatedBy: "not retained",
     evidenceReferences: tenantAdministration.evidenceReferences ?? [],
@@ -5662,6 +5722,11 @@ function buildAccountingTenantAdministrationControls(
     ["bulk-import-export-safeguards", "Bulk safeguards", tenantAdministration.bulkImportExportSafeguardsConfigured ?? false],
     ["performance-validation", "Performance proof", tenantAdministration.performanceValidationConfigured ?? false],
     ["disaster-recovery-runbook", "Recovery runbook", tenantAdministration.disasterRecoveryRunbookConfigured ?? false],
+    ["ledger-book-administration-studio", "Book admin", tenantAdministration.ledgerBookAdministrationStudioConfigured ?? false],
+    ["posting-rule-authoring-studio", "Rule authoring", tenantAdministration.postingRuleAuthoringStudioConfigured ?? false],
+    ["approval-queue-studio", "Approvals", tenantAdministration.approvalQueueStudioConfigured ?? false],
+    ["dimension-mapping-studio", "Dimension maps", tenantAdministration.dimensionMappingStudioConfigured ?? false],
+    ["implementation-sandbox", "Sandbox proof", tenantAdministration.implementationSandboxConfigured ?? false],
     ["retained-evidence", "Setup evidence", tenantAdministration.hasRetainedEvidence]
   ];
 

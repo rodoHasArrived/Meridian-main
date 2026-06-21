@@ -517,6 +517,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 BulkImportExportSafeguardsConfigured: true,
                 PerformanceValidationConfigured: true,
                 DisasterRecoveryRunbookConfigured: true,
+                LedgerBookAdministrationStudioConfigured: true,
+                PostingRuleAuthoringStudioConfigured: true,
+                ApprovalQueueStudioConfigured: true,
+                DimensionMappingStudioConfigured: true,
+                ImplementationSandboxConfigured: true,
                 TenantAdministrationEvidenceLinks:
                 [
                     "evidence://tenant-admin/tenant-alpha/admin-role/accounting-controller",
@@ -568,6 +573,21 @@ public sealed class AccountingSystemIntegrationServiceTests
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "tenant-admin.disaster-recovery-runbook-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.ledger-book-administration-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.posting-rule-authoring-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.approval-queue-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.dimension-mapping-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.implementation-sandbox-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
 
         var readyControls = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
@@ -590,6 +610,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 BulkImportExportSafeguardsConfigured: true,
                 PerformanceValidationConfigured: true,
                 DisasterRecoveryRunbookConfigured: true,
+                LedgerBookAdministrationStudioConfigured: true,
+                PostingRuleAuthoringStudioConfigured: true,
+                ApprovalQueueStudioConfigured: true,
+                DimensionMappingStudioConfigured: true,
+                ImplementationSandboxConfigured: true,
                 TenantAdministrationEvidenceLinks:
                 [
                     "evidence://tenant-admin/tenant-alpha/setup-certified",
@@ -599,7 +624,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readyControls.TenantAdministration.Should().NotBeNull();
         readyControls.TenantAdministration!.TenantId.Should().Be("tenant-alpha");
         readyControls.TenantAdministration.CompanyId.Should().Be("company-alpha");
-        readyControls.TenantAdministration.CompletedControlCount.Should().Be(18);
+        readyControls.TenantAdministration.CompletedControlCount.Should().Be(23);
         readyControls.TenantAdministration.HasRetainedEvidence.Should().BeTrue();
         readyControls.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
@@ -701,6 +726,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 BulkImportExportSafeguardsConfigured: true,
                 PerformanceValidationConfigured: true,
                 DisasterRecoveryRunbookConfigured: true,
+                LedgerBookAdministrationStudioConfigured: true,
+                PostingRuleAuthoringStudioConfigured: true,
+                ApprovalQueueStudioConfigured: true,
+                DimensionMappingStudioConfigured: true,
+                ImplementationSandboxConfigured: true,
                 UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                 UpdatedBy: "controller",
                 EvidenceReferences: ["evidence://tenant-admin/tenant-alpha/setup-certified"]),
@@ -715,7 +745,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CompanyId: "company-alpha"));
 
         readiness.TenantAdministration.Should().NotBeNull();
-        readiness.TenantAdministration!.CompletedControlCount.Should().Be(18);
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("evidence://tenant-admin/tenant-alpha/setup-certified");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("approval:tenant-admin:tenant-alpha");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("correlation:tenant-admin-tenant-alpha");
@@ -3107,6 +3137,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                     BulkImportExportSafeguardsConfigured: true,
                     PerformanceValidationConfigured: true,
                     DisasterRecoveryRunbookConfigured: true,
+                    LedgerBookAdministrationStudioConfigured: true,
+                    PostingRuleAuthoringStudioConfigured: true,
+                    ApprovalQueueStudioConfigured: true,
+                    DimensionMappingStudioConfigured: true,
+                    ImplementationSandboxConfigured: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "controller",
                     EvidenceReferences: ["evidence://tenant-admin/company-alpha/setup-certified"]),
@@ -3132,7 +3167,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
         readiness.TenantAdministration.Should().NotBeNull();
-        readiness.TenantAdministration!.CompletedControlCount.Should().Be(18);
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
         readiness.Issues.Should().NotContain(issue => issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&

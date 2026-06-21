@@ -2792,9 +2792,14 @@ describe("accounting-screen view model", () => {
         bulkImportExportSafeguardsConfigured: false,
         performanceValidationConfigured: false,
         disasterRecoveryRunbookConfigured: false,
+        ledgerBookAdministrationStudioConfigured: false,
+        postingRuleAuthoringStudioConfigured: false,
+        approvalQueueStudioConfigured: false,
+        dimensionMappingStudioConfigured: false,
+        implementationSandboxConfigured: false,
         evidenceReferences: ["evidence://tenant-admin/gap"],
         completedControlCount: 5,
-        requiredControlCount: 18,
+        requiredControlCount: 23,
         hasTenantScope: true,
         hasCompanyScope: true,
         hasRetainedEvidence: true
@@ -2861,6 +2866,11 @@ describe("accounting-screen view model", () => {
       bulkImportExportSafeguardsConfigured: false,
       performanceValidationConfigured: false,
       disasterRecoveryRunbookConfigured: false,
+      ledgerBookAdministrationStudioConfigured: false,
+      postingRuleAuthoringStudioConfigured: false,
+      approvalQueueStudioConfigured: false,
+      dimensionMappingStudioConfigured: false,
+      implementationSandboxConfigured: false,
       updatedAtUtc: "2026-06-30T11:55:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://tenant-admin/setup"],
@@ -3062,7 +3072,7 @@ describe("accounting-screen view model", () => {
       ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers | 4/9 workflow controls",
       dimensionalReportingLabel: "4/9 ledger/query/report/export dimension controls | ledger book book-primary",
       dimensionalReportingEvidenceLabel: "1 retained dimensional evidence reference",
-      tenantAdministrationLabel: "5/18 admin controls | tenant tenant-alpha | company company-alpha",
+      tenantAdministrationLabel: "5/23 admin controls | tenant tenant-alpha | company company-alpha",
       tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
     });
     expect(result.current.productionReadiness.tenantAdministrationControls).toEqual(expect.arrayContaining([
@@ -3077,7 +3087,12 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "audit-review-tooling", statusLabel: "Missing", tone: "danger" }),
       expect.objectContaining({ id: "bulk-import-export-safeguards", statusLabel: "Missing", tone: "danger" }),
       expect.objectContaining({ id: "performance-validation", statusLabel: "Missing", tone: "danger" }),
-      expect.objectContaining({ id: "disaster-recovery-runbook", statusLabel: "Missing", tone: "danger" })
+      expect.objectContaining({ id: "disaster-recovery-runbook", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "ledger-book-administration-studio", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "posting-rule-authoring-studio", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "approval-queue-studio", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "dimension-mapping-studio", statusLabel: "Missing", tone: "danger" }),
+      expect.objectContaining({ id: "implementation-sandbox", statusLabel: "Missing", tone: "danger" })
     ]));
     expect(result.current.productionReadiness.components).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -3149,7 +3164,12 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "audit-review-tooling", checked: false }),
       expect.objectContaining({ id: "bulk-import-export-safeguards", checked: false }),
       expect.objectContaining({ id: "performance-validation", checked: false }),
-      expect.objectContaining({ id: "disaster-recovery-runbook", checked: false })
+      expect.objectContaining({ id: "disaster-recovery-runbook", checked: false }),
+      expect.objectContaining({ id: "ledger-book-administration-studio", checked: false }),
+      expect.objectContaining({ id: "posting-rule-authoring-studio", checked: false }),
+      expect.objectContaining({ id: "approval-queue-studio", checked: false }),
+      expect.objectContaining({ id: "dimension-mapping-studio", checked: false }),
+      expect.objectContaining({ id: "implementation-sandbox", checked: false })
     ]));
     expect(result.current.tenantAdministrationProfile.canSave).toBe(true);
 
@@ -3162,7 +3182,12 @@ describe("accounting-screen view model", () => {
       result.current.tenantAdministrationProfile.updateControl("bulk-import-export-safeguards", true);
       result.current.tenantAdministrationProfile.updateControl("performance-validation", true);
       result.current.tenantAdministrationProfile.updateControl("disaster-recovery-runbook", true);
-      result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup\nevidence://tenant-admin/operator-surface\nevidence://tenant-admin/chart-administration\nevidence://tenant-admin/rules-studio\nevidence://tenant-admin/provider-mapping\nevidence://tenant-admin/audit-review\nevidence://tenant-admin/bulk-import-export\nevidence://tenant-admin/performance-validation\nevidence://tenant-admin/disaster-recovery");
+      result.current.tenantAdministrationProfile.updateControl("ledger-book-administration-studio", true);
+      result.current.tenantAdministrationProfile.updateControl("posting-rule-authoring-studio", true);
+      result.current.tenantAdministrationProfile.updateControl("approval-queue-studio", true);
+      result.current.tenantAdministrationProfile.updateControl("dimension-mapping-studio", true);
+      result.current.tenantAdministrationProfile.updateControl("implementation-sandbox", true);
+      result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup\nevidence://tenant-admin/operator-surface\nevidence://tenant-admin/chart-administration\nevidence://tenant-admin/rules-studio\nevidence://tenant-admin/provider-mapping\nevidence://tenant-admin/audit-review\nevidence://tenant-admin/bulk-import-export\nevidence://tenant-admin/performance-validation\nevidence://tenant-admin/disaster-recovery\nevidence://tenant-admin/ledger-book-administration\nevidence://tenant-admin/posting-rule-authoring\nevidence://tenant-admin/approval-queue\nevidence://tenant-admin/dimension-mapping\nevidence://tenant-admin/implementation-sandbox");
     });
 
     await act(async () => {
@@ -3186,6 +3211,11 @@ describe("accounting-screen view model", () => {
         bulkImportExportSafeguardsConfigured: true,
         performanceValidationConfigured: true,
         disasterRecoveryRunbookConfigured: true,
+        ledgerBookAdministrationStudioConfigured: true,
+        postingRuleAuthoringStudioConfigured: true,
+        approvalQueueStudioConfigured: true,
+        dimensionMappingStudioConfigured: true,
+        implementationSandboxConfigured: true,
         evidenceReferences: [
           "evidence://tenant-admin/setup",
           "evidence://tenant-admin/operator-surface",
@@ -3195,7 +3225,12 @@ describe("accounting-screen view model", () => {
           "evidence://tenant-admin/audit-review",
           "evidence://tenant-admin/bulk-import-export",
           "evidence://tenant-admin/performance-validation",
-          "evidence://tenant-admin/disaster-recovery"
+          "evidence://tenant-admin/disaster-recovery",
+          "evidence://tenant-admin/ledger-book-administration",
+          "evidence://tenant-admin/posting-rule-authoring",
+          "evidence://tenant-admin/approval-queue",
+          "evidence://tenant-admin/dimension-mapping",
+          "evidence://tenant-admin/implementation-sandbox"
         ]
       }),
       evidenceLinks: [
@@ -3207,7 +3242,12 @@ describe("accounting-screen view model", () => {
         "evidence://tenant-admin/audit-review",
         "evidence://tenant-admin/bulk-import-export",
         "evidence://tenant-admin/performance-validation",
-        "evidence://tenant-admin/disaster-recovery"
+        "evidence://tenant-admin/disaster-recovery",
+        "evidence://tenant-admin/ledger-book-administration",
+        "evidence://tenant-admin/posting-rule-authoring",
+        "evidence://tenant-admin/approval-queue",
+        "evidence://tenant-admin/dimension-mapping",
+        "evidence://tenant-admin/implementation-sandbox"
       ]
     }));
     expect(result.current.tenantAdministrationProfile.statusText).toBe("Tenant administration setup profile saved; production readiness refreshed from retained controls.");

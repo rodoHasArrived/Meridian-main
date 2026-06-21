@@ -130,9 +130,10 @@ the requirement end to end.
   strategy-run ledger-read proof.
 - [x] Tenant administration readiness now includes explicit enterprise configuration studio
   controls for chart administration, rule-test/promotion setup, close setup, provider/external-GL
-  mapping setup, and tenant/company/report-group setup. The shared profile, browser editor, WPF
-  request/profile path, production-readiness blockers, and retained evidence checks all use the
-  same control-plane model.
+  mapping setup, tenant/company/report-group setup, ledger-book administration, posting-rule
+  authoring, approval queues, dimension mapping, and implementation sandbox validation. The shared
+  profile, browser editor, WPF request/profile path, production-readiness blockers, and retained
+  evidence checks all use the same control-plane model.
 - [x] Tenant administration readiness now also exposes operational-hardening controls for audit
   review tooling, bulk import/export safeguards, performance validation, and disaster-recovery
   runbooks. Browser and WPF setup surfaces carry the same shared profile fields, and production
@@ -143,10 +144,12 @@ the requirement end to end.
 - [ ] Prove every accounting workflow is ledger-book-native end to end, including close, reporting,
   reconciliation, external GL, direct-lending projections, strategy ledger reads, and any remaining
   fund-level compatibility paths.
-- [ ] Turn Accounting Configure into a complete enterprise configuration studio: richer ledger-book
-  editing/selection, chart administration, rule authoring, rule test management, approval queues,
-  close setup, provider mapping setup, and tenant/company/report-group controls from both browser
-  and WPF.
+- [ ] Turn Accounting Configure into a complete enterprise configuration studio: the shared
+  certification model now separately tracks ledger-book administration, chart administration,
+  posting-rule authoring, rule-test management, approval queues, dimension mapping, close setup,
+  provider mapping setup, tenant/company/report-group controls, and implementation sandbox proof
+  from both browser and WPF, but the underlying authoring/editing workflows still need deeper
+  production-grade UX and execution coverage.
 - [ ] Complete durable dimensional ledger persistence and query coverage for fund, entity, sleeve,
   strategy, investor, capital account, instrument, tax lot, cost center, counterparty, and external
   GL dimensions across all journal lines, report filters, close checks, and export mappings; close

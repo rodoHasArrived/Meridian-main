@@ -1948,9 +1948,14 @@ describe("AccountingScreen", () => {
         bulkImportExportSafeguardsConfigured: false,
         performanceValidationConfigured: false,
         disasterRecoveryRunbookConfigured: false,
+        ledgerBookAdministrationStudioConfigured: false,
+        postingRuleAuthoringStudioConfigured: false,
+        approvalQueueStudioConfigured: false,
+        dimensionMappingStudioConfigured: false,
+        implementationSandboxConfigured: false,
         evidenceReferences: ["evidence://tenant-admin/gap"],
         completedControlCount: 5,
-        requiredControlCount: 18,
+        requiredControlCount: 23,
         hasTenantScope: true,
         hasCompanyScope: true,
         hasRetainedEvidence: true
@@ -2040,6 +2045,11 @@ describe("AccountingScreen", () => {
       bulkImportExportSafeguardsConfigured: false,
       performanceValidationConfigured: false,
       disasterRecoveryRunbookConfigured: false,
+      ledgerBookAdministrationStudioConfigured: false,
+      postingRuleAuthoringStudioConfigured: false,
+      approvalQueueStudioConfigured: false,
+      dimensionMappingStudioConfigured: false,
+      implementationSandboxConfigured: false,
       updatedAtUtc: "2026-06-30T11:55:00Z",
       updatedBy: "controller",
       evidenceReferences: ["evidence://tenant-admin/setup"],
@@ -2095,7 +2105,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Dimensions")).toBeInTheDocument();
     expect(screen.getByText("4/9 ledger/query/report/export dimension controls | ledger book book-primary")).toBeInTheDocument();
     expect(screen.getByText("1 retained dimensional evidence reference")).toBeInTheDocument();
-    expect(screen.getByText("5/18 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
+    expect(screen.getByText("5/23 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
     expect(screen.getByText("1 retained setup evidence reference")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
     expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);
@@ -2103,6 +2113,11 @@ describe("AccountingScreen", () => {
     expect(screen.getAllByText("Chart setup").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Rule tests").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Provider mapping").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Book admin").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rule authoring").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Approvals").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Dimension maps").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Sandbox proof").length).toBeGreaterThan(0);
     expect(screen.getByRole("region", { name: "Accounting production certification profile editor" })).toBeInTheDocument();
     expect(screen.getByText("Tenant context | company context | fund fund-alpha | ledger book book-primary")).toBeInTheDocument();
     expect(screen.getByText("Rules by book")).toBeInTheDocument();

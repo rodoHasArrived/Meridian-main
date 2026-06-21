@@ -211,6 +211,11 @@ public sealed class AccountingProductionReadinessService
             BulkImportExportSafeguardsConfigured = profile.BulkImportExportSafeguardsConfigured,
             PerformanceValidationConfigured = profile.PerformanceValidationConfigured,
             DisasterRecoveryRunbookConfigured = profile.DisasterRecoveryRunbookConfigured,
+            LedgerBookAdministrationStudioConfigured = profile.LedgerBookAdministrationStudioConfigured,
+            PostingRuleAuthoringStudioConfigured = profile.PostingRuleAuthoringStudioConfigured,
+            ApprovalQueueStudioConfigured = profile.ApprovalQueueStudioConfigured,
+            DimensionMappingStudioConfigured = profile.DimensionMappingStudioConfigured,
+            ImplementationSandboxConfigured = profile.ImplementationSandboxConfigured,
             TenantAdministrationEvidenceLinks = evidence
         };
     }
@@ -1117,7 +1122,12 @@ public sealed class AccountingProductionReadinessService
             AuditReviewToolingConfigured: request.AuditReviewToolingConfigured,
             BulkImportExportSafeguardsConfigured: request.BulkImportExportSafeguardsConfigured,
             PerformanceValidationConfigured: request.PerformanceValidationConfigured,
-            DisasterRecoveryRunbookConfigured: request.DisasterRecoveryRunbookConfigured);
+            DisasterRecoveryRunbookConfigured: request.DisasterRecoveryRunbookConfigured,
+            LedgerBookAdministrationStudioConfigured: request.LedgerBookAdministrationStudioConfigured,
+            PostingRuleAuthoringStudioConfigured: request.PostingRuleAuthoringStudioConfigured,
+            ApprovalQueueStudioConfigured: request.ApprovalQueueStudioConfigured,
+            DimensionMappingStudioConfigured: request.DimensionMappingStudioConfigured,
+            ImplementationSandboxConfigured: request.ImplementationSandboxConfigured);
         var issues = new List<AccountingProductionReadinessIssueDto>();
         if (!readiness.HasTenantScope)
         {
@@ -1474,6 +1484,111 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Disaster recovery runbook certification lacks retained runbook evidence.",
                 "Attach tenant administration evidence for disaster recovery, operating runbooks, restore validation, replay validation, or escalation procedures.",
+                evidenceReferences));
+        }
+
+        if (!readiness.LedgerBookAdministrationStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.ledger-book-administration-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Ledger-book administration studio coverage has not been certified.",
+                "Bind ledger-book creation, selection, basis/currency policy, scope, activation, and period setup into the shared enterprise configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasLedgerBookAdministrationStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.ledger-book-administration-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Ledger-book administration studio certification lacks retained book-administration evidence.",
+                "Attach tenant administration evidence for ledger-book administration, book setup, book activation, or ledger-book period setup.",
+                evidenceReferences));
+        }
+
+        if (!readiness.PostingRuleAuthoringStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.posting-rule-authoring-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Posting-rule authoring studio coverage has not been certified.",
+                "Bind event predicates, scopes, thresholds, generated multi-line postings, formulas, allocations, and dry-run previews into the shared accounting configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasPostingRuleAuthoringStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.posting-rule-authoring-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Posting-rule authoring studio certification lacks retained rule-authoring evidence.",
+                "Attach tenant administration evidence for posting-rule authoring, rule setup, generated-posting setup, or dry-run authoring.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ApprovalQueueStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.approval-queue-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Approval queue studio coverage has not been certified.",
+                "Bind rule promotion approvals, journal approvals, configuration approvals, segregation checks, and retained approval evidence into the shared accounting configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasApprovalQueueStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.approval-queue-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Approval queue studio certification lacks retained approval-queue evidence.",
+                "Attach tenant administration evidence for approval queues, promotion approvals, journal approvals, or configuration approvals.",
+                evidenceReferences));
+        }
+
+        if (!readiness.DimensionMappingStudioConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.dimension-mapping-studio-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Dimension mapping studio coverage has not been certified.",
+                "Bind fund, entity, sleeve, strategy, investor, capital account, instrument, tax lot, cost center, counterparty, and external-GL dimension mapping setup into the shared configuration studio.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasDimensionMappingStudioEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.dimension-mapping-studio-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Dimension mapping studio certification lacks retained dimension-mapping evidence.",
+                "Attach tenant administration evidence for canonical dimension mapping, external dimension mapping, or GL dimension mapping.",
+                evidenceReferences));
+        }
+
+        if (!readiness.ImplementationSandboxConfigured)
+        {
+            issues.Add(Issue(
+                "tenant-admin.implementation-sandbox-required",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Implementation sandbox and fixture validation have not been certified.",
+                "Retain sandbox, fixture, migration rehearsal, provider import, rule dry-run, and close/report package validation evidence before production rollout.",
+                evidenceReferences));
+        }
+        else if (!readiness.HasImplementationSandboxEvidence)
+        {
+            issues.Add(Issue(
+                "tenant-admin.implementation-sandbox-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Implementation sandbox certification lacks retained sandbox validation evidence.",
+                "Attach tenant administration evidence for implementation sandbox validation, fixture validation, migration rehearsal, or provider-import rehearsal.",
                 evidenceReferences));
         }
 

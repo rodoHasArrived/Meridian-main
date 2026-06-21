@@ -283,10 +283,12 @@ tenant/company/fund/book workspace, and blocks tenant administration readiness u
 company scope, admin roles, scoped accounting access, reporting groups, aggregate operator setup,
 browser accounting admin-studio coverage, WPF accounting admin-studio coverage, chart
 administration, rule-test and promotion, close setup, provider/external-GL mapping setup,
-tenant/company/report-group setup, and retained setup evidence are present. Tenant administration
+tenant/company/report-group setup, ledger-book administration, posting-rule authoring, approval
+queues, dimension mapping, implementation sandbox validation, and retained setup evidence are present. Tenant administration
 and enterprise configuration studio controls are evidence-qualified per lane, so retained setup
 proof for admin roles does not certify scoped access, reporting groups, browser setup, WPF setup,
-chart setup, rule-test/promotion setup, close setup, provider mapping, or report-group setup unless
+chart setup, rule-test/promotion setup, close setup, provider mapping, report-group setup,
+ledger-book administration, posting-rule authoring, approval queues, dimension mapping, or sandbox validation unless
 the evidence is an explicit setup-certified tenant-admin packet.
 `/api/accounting-system/tenant-administration-profile` retains those tenant/company setup controls in
 the shared Accounting System store. Reads require accounting access, writes require
