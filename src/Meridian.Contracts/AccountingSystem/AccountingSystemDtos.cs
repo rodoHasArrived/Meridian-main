@@ -120,7 +120,8 @@ public sealed record AccountingMigrationRunArtifactDto(
     IReadOnlyList<string>? EvidenceReferences = null,
     string? FundProfileId = null,
     Guid? LedgerBookId = null,
-    string? Summary = null)
+    string? Summary = null,
+    LedgerDimensionSetDto? Dimensions = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];

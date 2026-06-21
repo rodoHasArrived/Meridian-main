@@ -218,9 +218,11 @@ mapping posture, migration-rollout certification for ledger-book scoping, histor
 backfill, dimensional backfill, accounting configuration promotion, close/reporting evidence
 migration, retained migration run artifacts, and tenant-admin rollout guidance into one shared
 fail-closed payload for browser, WPF, and admin setup surfaces. Certification flags without retained
-certified migration run artifacts remain blocked, artifacts outside the requested fund or
-ledger-book rollout scope cannot satisfy certification controls, and failed retained migration runs
-are surfaced as critical rollout issues. The route does not create ledger books, run migrations,
+certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
+retain canonical fund and ledger-book dimension scope before production readiness treats them as
+valid dimensional accounting evidence, artifacts outside the requested fund or ledger-book rollout
+scope cannot satisfy certification controls, and failed retained migration runs are surfaced as
+critical rollout issues. The route does not create ledger books, run migrations,
 import external GL data, post journals, certify exports, or close periods.
 The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
 session when the request omits it, and the service now blocks tenant administration readiness until

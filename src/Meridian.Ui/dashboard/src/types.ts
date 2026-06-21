@@ -2578,6 +2578,13 @@ export interface LedgerDimensionSet {
   costCenterId?: string | null;
   counterpartyId?: string | null;
   externalGlDimensions?: Record<string, string> | null;
+  organizationId?: string | null;
+  portfolioId?: string | null;
+  bookId?: string | null;
+  accountId?: string | null;
+  customerId?: string | null;
+  vendorId?: string | null;
+  projectId?: string | null;
 }
 
 export interface DimensionMappingProfile {
@@ -5615,6 +5622,7 @@ export interface AccountingMigrationRunArtifact {
   fundProfileId?: string | null;
   ledgerBookId?: string | null;
   summary?: string | null;
+  dimensions?: LedgerDimensionSet | null;
 }
 
 export interface AccountingMigrationRunArtifactList {

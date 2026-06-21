@@ -1983,7 +1983,17 @@ describe("AccountingScreen", () => {
           evidenceReferences: ["evidence://migration/dimensions/book-primary"],
           fundProfileId: "fund-alpha",
           ledgerBookId: "book-primary",
-          summary: "Dimensional backfill retained for primary book."
+          summary: "Dimensional backfill retained for primary book.",
+          dimensions: {
+            fundId: "fund-alpha",
+            bookId: "book-primary",
+            entityId: "entity-master",
+            costCenterId: "fund-accounting",
+            counterpartyId: "administrator",
+            externalGlDimensions: {
+              department: "fund-accounting"
+            }
+          }
         }
       ]
     });
@@ -2016,6 +2026,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Retained accounting migration run artifacts" })).toBeInTheDocument();
     expect(screen.getByText("Dimensional backfill")).toBeInTheDocument();
     expect(screen.getByText("Dimensional backfill retained for primary book.")).toBeInTheDocument();
+    expect(screen.getByText(/Dimensions Fund: fund-alpha, Entity: entity-master/)).toBeInTheDocument();
     expect(api.assessAccountingProductionReadiness).toHaveBeenCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",

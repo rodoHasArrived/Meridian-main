@@ -170,7 +170,10 @@ regression-test actions carry the active `ledgerBookId` so book-scoped configura
 fall back to fund-level rules while the operator is working inside a selected ledger book. Operators
 also see setup-readiness rows from shared validation; a missing registered ledger book is surfaced
 as the critical `configuration.ledger-book-missing` activation blocker instead of being hidden in
-the generic validation list. Operators
+the generic validation list. Retained migration run artifacts render their canonical fund, book,
+entity, cost-center, counterparty, and external-GL dimensions so dimensional backfill proof is
+visible in the same browser control plane that consumes the shared readiness blocker codes.
+Operators
 can apply the selected dry-run source
 event as a required predicate through the same shared upsert route, replacing stale event-kind
 predicates, clearing stale promotion approval, and requiring fresh promotion before activation.

@@ -646,6 +646,11 @@ public sealed class AccountingProductionReadinessService
                 scopedEvidenceReferences));
         }
 
+        if (kind == AccountingMigrationRunKindDto.DimensionalBackfill)
+        {
+            AddDimensionalBackfillScopeIssues(request, issues, scopedArtifacts, scopedEvidenceReferences);
+        }
+
         if (certified && scopedArtifacts.All(static artifact => artifact.Status != AccountingMigrationRunStatusDto.Certified))
         {
             issues.Add(Issue(
@@ -656,6 +661,54 @@ public sealed class AccountingProductionReadinessService
                 "Attach the retained certified migration run artifact before production rollout certification.",
                 evidenceReferences));
         }
+    }
+
+    private static void AddDimensionalBackfillScopeIssues(
+        AccountingProductionReadinessRequestDto request,
+        ICollection<AccountingProductionReadinessIssueDto> issues,
+        IReadOnlyList<AccountingMigrationRunArtifactDto> scopedArtifacts,
+        IReadOnlyList<string> scopedEvidenceReferences)
+    {
+        var certifiedArtifacts = scopedArtifacts
+            .Where(static artifact => artifact.Status == AccountingMigrationRunStatusDto.Certified)
+            .ToArray();
+        if (certifiedArtifacts.Length == 0)
+        {
+            return;
+        }
+
+        if (certifiedArtifacts.Any(static artifact => artifact.Dimensions is null))
+        {
+            issues.Add(Issue(
+                "migration.dimensional-backfill-dimensions-missing",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimensional backfill has certified migration run artifacts without retained ledger dimensions.",
+                "Attach canonical fund and ledger-book dimensions to the certified dimensional backfill artifact before production reporting certification.",
+                scopedEvidenceReferences));
+            return;
+        }
+
+        var requestedFundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var requestedBookId = request.LedgerBookId?.ToString("D");
+        var hasMismatchedDimensions = certifiedArtifacts.Any(artifact =>
+            !string.Equals(artifact.Dimensions!.FundId, requestedFundProfileId, StringComparison.OrdinalIgnoreCase) ||
+            (requestedBookId is not null &&
+                !string.Equals(artifact.Dimensions.BookId, requestedBookId, StringComparison.OrdinalIgnoreCase)) ||
+            (artifact.LedgerBookId.HasValue &&
+                !string.Equals(artifact.Dimensions.BookId, artifact.LedgerBookId.Value.ToString("D"), StringComparison.OrdinalIgnoreCase)));
+        if (!hasMismatchedDimensions)
+        {
+            return;
+        }
+
+        issues.Add(Issue(
+            "migration.dimensional-backfill-dimensions-scope-mismatch",
+            AccountingProductionReadinessAreaDto.MigrationRollout,
+            AccountingConfigurationValidationSeverityDto.Critical,
+            "Dimensional backfill has retained dimensions outside the requested fund or ledger-book rollout scope.",
+            "Re-run or re-certify the dimensional backfill with canonical dimensions matching the requested fund and ledger book.",
+            scopedEvidenceReferences));
     }
 
     private static bool IsMigrationArtifactInScope(

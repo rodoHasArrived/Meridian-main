@@ -201,7 +201,9 @@ historical journal backfill, dimensional backfill, accounting configuration prom
 close/reporting evidence migration with shared blocker codes and retained
 `AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can render the
 same fail-closed readiness state instead of recomputing production gaps or treating certification
-booleans as executable migration proof.
+booleans as executable migration proof. Migration run artifacts can carry the canonical
+`LedgerDimensionSetDto`; dimensional backfill certification is expected to retain fund and
+ledger-book dimensions with the migration evidence instead of relying on account or run names.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, operator-surface, and retained-evidence readiness so production accounting setup is
 blocked by shared contract state rather than workstation-local assumptions.

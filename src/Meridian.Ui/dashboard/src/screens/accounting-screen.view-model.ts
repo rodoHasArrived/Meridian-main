@@ -5143,10 +5143,11 @@ function buildAccountingMigrationRunArtifactRows(artifacts: AccountingMigrationR
         artifact.fundProfileId ? `Fund ${artifact.fundProfileId}` : "Fund default-fund",
         artifact.ledgerBookId ? `Book ${artifact.ledgerBookId}` : "Fund-level"
       ];
+      const dimensionScope = formatLedgerDimensionSet(artifact.dimensions).join(", ");
       return {
         id: artifact.runId,
         title: artifact.summary?.trim() || artifact.runId,
-        detail: `${scopeParts.join(" | ")} | Started ${formatDateTimeLabel(artifact.startedAtUtc)}${artifact.completedAtUtc ? ` | Completed ${formatDateTimeLabel(artifact.completedAtUtc)}` : ""}`,
+        detail: `${scopeParts.join(" | ")}${dimensionScope ? ` | Dimensions ${dimensionScope}` : ""} | Started ${formatDateTimeLabel(artifact.startedAtUtc)}${artifact.completedAtUtc ? ` | Completed ${formatDateTimeLabel(artifact.completedAtUtc)}` : ""}`,
         statusLabel: formatMigrationRunStatus(artifact.status),
         kindLabel: formatMigrationRunKind(artifact.kind),
         recordCountLabel: `${artifact.migratedRecordCount} record${artifact.migratedRecordCount === 1 ? "" : "s"}`,
@@ -5823,7 +5824,14 @@ function formatLedgerDimensionSet(dimensions?: PostingRule["scope"]): string[] {
     ["Instrument", dimensions.instrumentId],
     ["Tax lot", dimensions.taxLotId],
     ["Cost center", dimensions.costCenterId],
-    ["Counterparty", dimensions.counterpartyId]
+    ["Counterparty", dimensions.counterpartyId],
+    ["Organization", dimensions.organizationId],
+    ["Portfolio", dimensions.portfolioId],
+    ["Book", dimensions.bookId],
+    ["Account", dimensions.accountId],
+    ["Customer", dimensions.customerId],
+    ["Vendor", dimensions.vendorId],
+    ["Project", dimensions.projectId]
   ];
   for (const [label, value] of scalarEntries) {
     if (value) {
