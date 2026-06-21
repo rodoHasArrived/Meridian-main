@@ -702,6 +702,84 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingCommand_MetadataLineDimensions_AreMaterializedBeforeAppend()
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var commandId = Guid.NewGuid();
+        var instrumentId = Guid.NewGuid();
+        var write = BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId
+        };
+        var debitLine = write.Entry.Lines.Single(line => line.Debit > 0m);
+        var creditLine = write.Entry.Lines.Single(line => line.Credit > 0m);
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [$"lineDimensions.{debitLine.EntryId:N}.fundId"] = " fund-alpha ",
+            [$"lineDimensions.{debitLine.EntryId:N}.entityId"] = "entity-master",
+            [$"lineDimensions.{debitLine.EntryId:N}.instrumentId"] = instrumentId.ToString("D"),
+            [$"lineDimensions.{debitLine.EntryId:N}.costCenterId"] = "investment-ops",
+            [$"lineDimensions.{debitLine.EntryId:N}.counterpartyId"] = "custodian-bny",
+            [$"lineDimensions.{debitLine.EntryId:N}.externalGl.Department"] = " InvestmentOps ",
+            [$"lineDimensions.{creditLine.EntryId:N}.fundId"] = "fund-alpha",
+            [$"lineDimensions.{creditLine.EntryId:N}.entityId"] = "entity-master",
+            [$"lineDimensions.{creditLine.EntryId:N}.costCenterId"] = "income-review",
+            [$"lineDimensions.{creditLine.EntryId:N}.externalGl.Department"] = "FundAccounting"
+        };
+        write = write with
+        {
+            Entry = new JournalEntry(
+                write.Entry.JournalEntryId,
+                write.Entry.Timestamp,
+                write.Entry.Description,
+                write.Entry.Lines,
+                new JournalEntryMetadata(
+                    ActivityType: "CustodianInterestAccrual",
+                    Tags: tags)),
+            PostingCommand = new AccountingPostingCommandDto(
+                commandId,
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "custodian-interest:fund-alpha:20260131",
+                SourceEventId: sourceEventId,
+                SourceEventType: "CustodianInterestAccrual",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-interest-accrual-1",
+                        "evidence://custodian/interest-accrual-1",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "DocumentVault",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ])
+        };
+
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        var normalizedDebit = normalized.Entry.Lines.Single(line => line.EntryId == debitLine.EntryId);
+        normalizedDebit.Dimensions.Should().NotBeNull();
+        normalizedDebit.Dimensions!.FundId.Should().Be("fund-alpha");
+        normalizedDebit.Dimensions.EntityId.Should().Be("entity-master");
+        normalizedDebit.Dimensions.InstrumentId.Should().Be(instrumentId);
+        normalizedDebit.Dimensions.CostCenterId.Should().Be("investment-ops");
+        normalizedDebit.Dimensions.CounterpartyId.Should().Be("custodian-bny");
+        normalizedDebit.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
+
+        var normalizedCredit = normalized.Entry.Lines.Single(line => line.EntryId == creditLine.EntryId);
+        normalizedCredit.Dimensions.Should().NotBeNull();
+        normalizedCredit.Dimensions!.FundId.Should().Be("fund-alpha");
+        normalizedCredit.Dimensions.EntityId.Should().Be("entity-master");
+        normalizedCredit.Dimensions.CostCenterId.Should().Be("income-review");
+        normalizedCredit.Dimensions.ExternalGlDimensions["Department"].Should().Be("FundAccounting");
+    }
+
+    [Fact]
     public void PostingCommand_PendingReviewerState_RejectsBeforeAppend()
     {
         var periodId = Guid.NewGuid();

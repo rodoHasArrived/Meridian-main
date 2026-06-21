@@ -138,13 +138,137 @@ public static class AccountingPostingCommandValidator
             EvidenceReferences = MergeEvidence(metadata.EvidenceReferences, evidence)
         };
 
+        var lines = NormalizeLineDimensions(entry.Lines, normalizedMetadata.Tags);
         return new JournalEntry(
             entry.JournalEntryId,
             entry.Timestamp,
             entry.Description,
-            entry.Lines,
+            lines,
             normalizedMetadata);
     }
+
+    private static IReadOnlyList<LedgerEntry> NormalizeLineDimensions(
+        IReadOnlyList<LedgerEntry> lines,
+        IReadOnlyDictionary<string, string>? tags)
+    {
+        if (tags is null || tags.Count == 0)
+        {
+            return lines;
+        }
+
+        LedgerEntry[]? normalized = null;
+        for (var index = 0; index < lines.Count; index++)
+        {
+            var line = lines[index];
+            if (line.Dimensions is not null)
+            {
+                continue;
+            }
+
+            var dimensions = BuildLineDimensions(line.EntryId, tags);
+            if (dimensions is null)
+            {
+                continue;
+            }
+
+            normalized ??= [.. lines];
+            normalized[index] = new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                line.Timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                line.Description,
+                dimensions);
+        }
+
+        return normalized ?? lines;
+    }
+
+    private static LedgerLineDimensionSet? BuildLineDimensions(
+        Guid lineEntryId,
+        IReadOnlyDictionary<string, string> tags)
+    {
+        var prefix = $"lineDimensions.{lineEntryId:N}.";
+        var externalGlDimensions = tags
+            .Where(pair => pair.Key.StartsWith(prefix + "externalGl.", StringComparison.OrdinalIgnoreCase))
+            .Select(pair => new
+            {
+                Key = NormalizeOptional(pair.Key[(prefix.Length + "externalGl.".Length)..]),
+                Value = NormalizeOptional(pair.Value)
+            })
+            .Where(pair => pair.Key is not null && pair.Value is not null)
+            .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(pair => pair.Key!, pair => pair.Value!, StringComparer.OrdinalIgnoreCase);
+
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: GetLineDimensionTag(tags, prefix, "fundId"),
+            EntityId: GetLineDimensionTag(tags, prefix, "entityId"),
+            SleeveId: GetLineDimensionTag(tags, prefix, "sleeveId"),
+            StrategyId: GetLineDimensionTag(tags, prefix, "strategyId"),
+            InvestorId: GetLineDimensionTag(tags, prefix, "investorId"),
+            CapitalAccountId: GetLineDimensionTag(tags, prefix, "capitalAccountId"),
+            InstrumentId: GetLineDimensionGuidTag(tags, prefix, "instrumentId"),
+            TaxLotId: GetLineDimensionTag(tags, prefix, "taxLotId"),
+            CostCenterId: GetLineDimensionTag(tags, prefix, "costCenterId"),
+            CounterpartyId: GetLineDimensionTag(tags, prefix, "counterpartyId"),
+            ExternalGlDimensions: externalGlDimensions,
+            OrganizationId: GetLineDimensionTag(tags, prefix, "organizationId"),
+            PortfolioId: GetLineDimensionTag(tags, prefix, "portfolioId"),
+            BookId: GetLineDimensionTag(tags, prefix, "bookId"),
+            AccountId: GetLineDimensionTag(tags, prefix, "accountId"),
+            CustomerId: GetLineDimensionTag(tags, prefix, "customerId"),
+            VendorId: GetLineDimensionTag(tags, prefix, "vendorId"),
+            ProjectId: GetLineDimensionTag(tags, prefix, "projectId"));
+
+        return HasAnyLineDimension(dimensions) ? dimensions : null;
+    }
+
+    private static string? GetLineDimensionTag(
+        IReadOnlyDictionary<string, string> tags,
+        string prefix,
+        string field)
+        => tags.TryGetValue(prefix + field, out var value) ? NormalizeOptional(value) : null;
+
+    private static Guid? GetLineDimensionGuidTag(
+        IReadOnlyDictionary<string, string> tags,
+        string prefix,
+        string field)
+    {
+        var value = GetLineDimensionTag(tags, prefix, field);
+        if (value is null)
+        {
+            return null;
+        }
+
+        if (Guid.TryParse(value, out var parsed))
+        {
+            return parsed;
+        }
+
+        throw new LedgerValidationException($"Line dimension '{field}' must be a valid GUID.");
+    }
+
+    private static bool HasAnyLineDimension(LedgerLineDimensionSet dimensions)
+        => !string.IsNullOrWhiteSpace(dimensions.FundId)
+           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
+           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
+           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
+           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
+           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
+           || dimensions.InstrumentId.HasValue
+           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
+           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
+           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
+           || dimensions.ExternalGlDimensions.Count > 0
+           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
+           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
+           || !string.IsNullOrWhiteSpace(dimensions.BookId)
+           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
+           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
+           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
+           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
 
     private static IReadOnlyList<JournalEvidenceReference> MergeEvidence(
         IReadOnlyList<JournalEvidenceReference> existing,
@@ -164,4 +288,7 @@ public static class AccountingPostingCommandValidator
 
     private static string? FirstText(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
