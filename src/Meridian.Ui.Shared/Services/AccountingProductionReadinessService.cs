@@ -28,8 +28,12 @@ public sealed class AccountingProductionReadinessService
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var migrationRunArtifacts = await LoadMigrationRunArtifactsAsync(request, fundProfileId, ct).ConfigureAwait(false);
         var tenantAdministrationProfile = await LoadTenantAdministrationProfileAsync(request, ct).ConfigureAwait(false);
-        var effectiveRequest = MergeTenantAdministrationProfile(
+        var productionCertificationProfile = await LoadProductionCertificationProfileAsync(request, fundProfileId, ct).ConfigureAwait(false);
+        var profileMergedRequest = MergeProductionCertificationProfile(
             request with { FundProfileId = fundProfileId, MigrationRunArtifacts = migrationRunArtifacts },
+            productionCertificationProfile);
+        var effectiveRequest = MergeTenantAdministrationProfile(
+            profileMergedRequest,
             tenantAdministrationProfile);
         var components = new List<AccountingProductionReadinessComponentDto>();
         var ledgerBookResult = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
@@ -108,6 +112,57 @@ public sealed class AccountingProductionReadinessService
         }
 
         return await store.GetAsync(request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+    }
+
+    private async Task<AccountingProductionCertificationProfileDto?> LoadProductionCertificationProfileAsync(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        CancellationToken ct)
+    {
+        var store = _services.GetService<IAccountingProductionCertificationProfileStore>();
+        if (store is null)
+        {
+            return null;
+        }
+
+        return await store.GetAsync(fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+    }
+
+    private static AccountingProductionReadinessRequestDto MergeProductionCertificationProfile(
+        AccountingProductionReadinessRequestDto request,
+        AccountingProductionCertificationProfileDto? profile)
+    {
+        if (profile is null)
+        {
+            return request;
+        }
+
+        var workflowEvidence = request.LedgerBookWorkflowEvidenceLinks
+            .Concat(profile.EvidenceReferences)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var dimensionalEvidence = request.DimensionalReportingEvidenceLinks
+            .Concat(profile.EvidenceReferences)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return request with
+        {
+            PostingRulesLedgerBookNativeCertified = request.PostingRulesLedgerBookNativeCertified || profile.PostingRulesLedgerBookNativeCertified,
+            JournalLifecycleLedgerBookNativeCertified = request.JournalLifecycleLedgerBookNativeCertified || profile.JournalLifecycleLedgerBookNativeCertified,
+            CloseReportingLedgerBookNativeCertified = request.CloseReportingLedgerBookNativeCertified || profile.CloseReportingLedgerBookNativeCertified,
+            ExternalGlLedgerBookNativeCertified = request.ExternalGlLedgerBookNativeCertified || profile.ExternalGlLedgerBookNativeCertified,
+            LedgerBookWorkflowEvidenceLinks = workflowEvidence,
+            PeriodReportDimensionQueriesCertified = request.PeriodReportDimensionQueriesCertified || profile.PeriodReportDimensionQueriesCertified,
+            CrossPeriodReportDimensionQueriesCertified = request.CrossPeriodReportDimensionQueriesCertified || profile.CrossPeriodReportDimensionQueriesCertified,
+            JournalQueryDimensionFiltersCertified = request.JournalQueryDimensionFiltersCertified || profile.JournalQueryDimensionFiltersCertified,
+            ExternalExportDimensionMappingCertified = request.ExternalExportDimensionMappingCertified || profile.ExternalExportDimensionMappingCertified,
+            DimensionalReportingEvidenceLinks = dimensionalEvidence
+        };
     }
 
     private static AccountingProductionReadinessRequestDto MergeTenantAdministrationProfile(

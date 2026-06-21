@@ -1,0 +1,197 @@
+using System.Text.Json;
+using Meridian.Contracts.AccountingSystem;
+using Meridian.Storage.Archival;
+using Microsoft.Extensions.Logging;
+
+namespace Meridian.Ui.Shared.Services;
+
+public interface IAccountingProductionCertificationProfileStore
+{
+    Task<AccountingProductionCertificationProfileDto?> GetAsync(
+        string? fundProfileId,
+        Guid? ledgerBookId,
+        CancellationToken ct = default);
+
+    Task<AccountingProductionCertificationProfileDto> UpsertAsync(
+        AccountingProductionCertificationProfileUpsertRequestDto request,
+        CancellationToken ct = default);
+}
+
+public sealed class InMemoryAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
+{
+    private readonly Dictionary<string, AccountingProductionCertificationProfileDto> _profiles = new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<AccountingProductionCertificationProfileDto?> GetAsync(
+        string? fundProfileId,
+        Guid? ledgerBookId,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var key = BuildKey(fundProfileId, ledgerBookId);
+        return Task.FromResult(_profiles.TryGetValue(key, out var profile) ? profile : null);
+    }
+
+    public Task<AccountingProductionCertificationProfileDto> UpsertAsync(
+        AccountingProductionCertificationProfileUpsertRequestDto request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var profile = FileAccountingProductionCertificationProfileStore.NormalizeProfile(request);
+        _profiles[BuildKey(profile.FundProfileId, profile.LedgerBookId)] = profile;
+        return Task.FromResult(profile);
+    }
+
+    private static string BuildKey(string? fundProfileId, Guid? ledgerBookId)
+        => FileAccountingProductionCertificationProfileStore.BuildKey(fundProfileId, ledgerBookId);
+}
+
+public sealed class FileAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
+{
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true
+    };
+
+    private readonly string _snapshotPath;
+    private readonly ILogger<FileAccountingProductionCertificationProfileStore> _logger;
+    private readonly SemaphoreSlim _gate = new(1, 1);
+
+    public FileAccountingProductionCertificationProfileStore(
+        string snapshotPath,
+        ILogger<FileAccountingProductionCertificationProfileStore> logger)
+    {
+        _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
+            ? throw new ArgumentException("Accounting production certification profile snapshot path is required.", nameof(snapshotPath))
+            : snapshotPath;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public async Task<AccountingProductionCertificationProfileDto?> GetAsync(
+        string? fundProfileId,
+        Guid? ledgerBookId,
+        CancellationToken ct = default)
+    {
+        var key = BuildKey(fundProfileId, ledgerBookId);
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return null;
+        }
+
+        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        return snapshot.Profiles.FirstOrDefault(profile =>
+            string.Equals(BuildKey(profile.FundProfileId, profile.LedgerBookId), key, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public async Task<AccountingProductionCertificationProfileDto> UpsertAsync(
+        AccountingProductionCertificationProfileUpsertRequestDto request,
+        CancellationToken ct = default)
+    {
+        var profile = NormalizeProfile(request);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
+            var key = BuildKey(profile.FundProfileId, profile.LedgerBookId);
+            var profiles = snapshot.Profiles
+                .Where(item => !string.Equals(BuildKey(item.FundProfileId, item.LedgerBookId), key, StringComparison.OrdinalIgnoreCase))
+                .Append(profile)
+                .OrderBy(static item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static item => item.LedgerBookId?.ToString("D") ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var json = JsonSerializer.Serialize(new AccountingProductionCertificationProfileSnapshot(profiles), JsonOptions);
+            var directory = Path.GetDirectoryName(_snapshotPath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
+            return profile;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    internal static AccountingProductionCertificationProfileDto NormalizeProfile(
+        AccountingProductionCertificationProfileUpsertRequestDto request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Profile);
+        var fundProfileId = RequireText(request.Profile.FundProfileId, "fund profile id");
+        var actor = string.IsNullOrWhiteSpace(request.Actor)
+            ? RequireText(request.Profile.UpdatedBy, "actor")
+            : request.Actor.Trim();
+        var evidence = request.Profile.EvidenceReferences
+            .Concat(request.EvidenceLinks)
+            .Append(string.IsNullOrWhiteSpace(request.CorrelationId) ? null : $"correlation:{request.CorrelationId!.Trim()}")
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return request.Profile with
+        {
+            FundProfileId = fundProfileId,
+            UpdatedAtUtc = request.Profile.UpdatedAtUtc == default ? DateTimeOffset.UtcNow : request.Profile.UpdatedAtUtc,
+            UpdatedBy = actor,
+            EvidenceReferences = evidence,
+            CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
+                ? request.Profile.CorrelationId
+                : request.CorrelationId.Trim()
+        };
+    }
+
+    internal static string BuildKey(string? fundProfileId, Guid? ledgerBookId)
+    {
+        var fund = TrimOrNull(fundProfileId);
+        return fund is null ? string.Empty : $"{fund}|{ledgerBookId?.ToString("D") ?? "fund"}";
+    }
+
+    private async Task<AccountingProductionCertificationProfileSnapshot> ReadSnapshotAsync(CancellationToken ct)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task<AccountingProductionCertificationProfileSnapshot> ReadSnapshotWithoutLockAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!File.Exists(_snapshotPath))
+        {
+            return new AccountingProductionCertificationProfileSnapshot([]);
+        }
+
+        try
+        {
+            await using var stream = File.OpenRead(_snapshotPath);
+            return await JsonSerializer
+                .DeserializeAsync<AccountingProductionCertificationProfileSnapshot>(stream, JsonOptions, ct)
+                .ConfigureAwait(false) ?? new AccountingProductionCertificationProfileSnapshot([]);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Failed to read accounting production certification profile snapshot {SnapshotPath}", _snapshotPath);
+            return new AccountingProductionCertificationProfileSnapshot([]);
+        }
+    }
+
+    private static string RequireText(string? value, string label)
+        => string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException($"Accounting production certification profile {label} is required.")
+            : value.Trim();
+
+    private static string? TrimOrNull(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private sealed record AccountingProductionCertificationProfileSnapshot(
+        IReadOnlyList<AccountingProductionCertificationProfileDto> Profiles);
+}

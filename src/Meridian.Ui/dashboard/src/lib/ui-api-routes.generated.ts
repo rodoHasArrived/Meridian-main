@@ -100,6 +100,7 @@ export const UI_API_ROUTES = {
   AccountingSystemExportPackageCertification: "/api/accounting-system/export-packages/certification",
   AccountingSystemMigrationRunArtifacts: "/api/accounting-system/migration-run-artifacts",
   AccountingSystemTenantAdministrationProfile: "/api/accounting-system/tenant-administration-profile",
+  AccountingSystemProductionCertificationProfile: "/api/accounting-system/production-certification-profile",
   AccountingSystemQuickBooksOAuthStart: "/api/accounting-system/quickbooks/oauth/start",
   AccountingSystemQuickBooksOAuthCallback: "/api/accounting-system/quickbooks/oauth/callback",
   ProvidersDashboard: "/api/providers/dashboard",

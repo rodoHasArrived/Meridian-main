@@ -177,6 +177,10 @@ public static class WorkstationServiceCollectionExtensions
             new FileAccountingTenantAdministrationProfileStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "tenant-administration-profiles.json"),
                 sp.GetRequiredService<ILogger<FileAccountingTenantAdministrationProfileStore>>()));
+        services.TryAddSingleton<IAccountingProductionCertificationProfileStore>(sp =>
+            new FileAccountingProductionCertificationProfileStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "production-certification-profiles.json"),
+                sp.GetRequiredService<ILogger<FileAccountingProductionCertificationProfileStore>>()));
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>

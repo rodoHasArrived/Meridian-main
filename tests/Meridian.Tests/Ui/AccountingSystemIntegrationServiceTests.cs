@@ -407,6 +407,62 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_LoadsRetainedProductionCertificationProfileFromStore()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAccountingProductionCertificationProfileStore, InMemoryAccountingProductionCertificationProfileStore>();
+        services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
+        services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<IAccountingProductionCertificationProfileStore>();
+
+        await store.UpsertAsync(new AccountingProductionCertificationProfileUpsertRequestDto(
+            new AccountingProductionCertificationProfileDto(
+                "default-fund",
+                ExternalGlLedgerBookId,
+                PostingRulesLedgerBookNativeCertified: true,
+                JournalLifecycleLedgerBookNativeCertified: true,
+                CloseReportingLedgerBookNativeCertified: true,
+                ExternalGlLedgerBookNativeCertified: true,
+                PeriodReportDimensionQueriesCertified: true,
+                CrossPeriodReportDimensionQueriesCertified: true,
+                JournalQueryDimensionFiltersCertified: true,
+                ExternalExportDimensionMappingCertified: true,
+                UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                UpdatedBy: "controller",
+                EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"]),
+            "controller",
+            CorrelationId: "production-certification-default-fund",
+            EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"]));
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId));
+
+        readiness.LedgerBookWorkflows.Should().NotBeNull();
+        readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(6);
+        readiness.DimensionalReporting.Should().NotBeNull();
+        readiness.DimensionalReporting!.CompletedControlCount.Should().Be(6);
+        readiness.Issues.Should().NotContain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            (issue.Code.Contains("workflow", StringComparison.OrdinalIgnoreCase) ||
+             issue.Code.EndsWith("-not-certified", StringComparison.OrdinalIgnoreCase)));
+        readiness.Issues.Should().NotContain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            (issue.Code.StartsWith("dimensions.reporting-", StringComparison.OrdinalIgnoreCase) ||
+             issue.Code.EndsWith("-not-certified", StringComparison.OrdinalIgnoreCase)));
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            component.EvidenceReferences.Contains($"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"));
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            component.EvidenceReferences.Contains($"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"));
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_RequiresRetainedMigrationRunArtifactsForCertifiedControls()
     {
         var services = new ServiceCollection();
@@ -2424,6 +2480,62 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_PersistsAndFeedsReadiness()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    ExternalGlLedgerBookId,
+                    PostingRulesLedgerBookNativeCertified: true,
+                    JournalLifecycleLedgerBookNativeCertified: true,
+                    CloseReportingLedgerBookNativeCertified: true,
+                    ExternalGlLedgerBookNativeCertified: true,
+                    PeriodReportDimensionQueriesCertified: true,
+                    CrossPeriodReportDimensionQueriesCertified: true,
+                    JournalQueryDimensionFiltersCertified: true,
+                    ExternalExportDimensionMappingCertified: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"]),
+                "controller",
+                CorrelationId: "production-certification-default-fund",
+                EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"])));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var upserted = await ReadAsync<AccountingProductionCertificationProfileDto>(upsertResponse);
+        upserted.FundProfileId.Should().Be("default-fund");
+        upserted.LedgerBookId.Should().Be(ExternalGlLedgerBookId);
+        upserted.EvidenceReferences.Should().Contain($"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification");
+
+        var getResponse = await client.GetAsync(
+            $"{UiApiRoutes.AccountingSystemProductionCertificationProfile}?fundProfileId=default-fund&ledgerBookId={ExternalGlLedgerBookId:D}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var retained = await ReadAsync<AccountingProductionCertificationProfileDto>(getResponse);
+        retained.EvidenceReferences.Should().Contain("correlation:production-certification-default-fund");
+
+        var readinessResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionReadiness,
+            JsonContent(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId)));
+
+        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
+        readiness.LedgerBookWorkflows.Should().NotBeNull();
+        readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(6);
+        readiness.DimensionalReporting.Should().NotBeNull();
+        readiness.DimensionalReporting!.CompletedControlCount.Should().Be(6);
+        readiness.Issues.Should().NotContain(issue =>
+            issue.Code == "ledger-books.workflow-evidence-missing" ||
+            issue.Code == "dimensions.reporting-evidence-missing");
+    }
+
+    [Fact]
     public async Task AccountingSystemEndpoints_WithoutAccountingAccess_ReturnForbidden()
     {
         await using var app = await CreateAppAsync(UserPermission.ViewMarketData);
@@ -2660,6 +2772,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         builder.Services.AddSingleton<IAccountingMigrationRunArtifactStore, InMemoryAccountingMigrationRunArtifactStore>();
         builder.Services.AddSingleton<IAccountingTenantAdministrationProfileStore, InMemoryAccountingTenantAdministrationProfileStore>();
+        builder.Services.AddSingleton<IAccountingProductionCertificationProfileStore, InMemoryAccountingProductionCertificationProfileStore>();
         builder.Services.AddSingleton<AccountingProductionReadinessService>();
         builder.Services.AddRateLimiter(options =>
         {

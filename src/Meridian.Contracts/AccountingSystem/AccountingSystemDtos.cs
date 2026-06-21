@@ -175,6 +175,36 @@ public sealed record AccountingTenantAdministrationProfileUpsertRequestDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record AccountingProductionCertificationProfileDto(
+    string FundProfileId,
+    Guid? LedgerBookId,
+    bool PostingRulesLedgerBookNativeCertified,
+    bool JournalLifecycleLedgerBookNativeCertified,
+    bool CloseReportingLedgerBookNativeCertified,
+    bool ExternalGlLedgerBookNativeCertified,
+    bool PeriodReportDimensionQueriesCertified,
+    bool CrossPeriodReportDimensionQueriesCertified,
+    bool JournalQueryDimensionFiltersCertified,
+    bool ExternalExportDimensionMappingCertified,
+    DateTimeOffset UpdatedAtUtc,
+    string UpdatedBy,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? CorrelationId = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+}
+
+public sealed record AccountingProductionCertificationProfileUpsertRequestDto(
+    AccountingProductionCertificationProfileDto Profile,
+    string Actor,
+    string? CorrelationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
 public sealed record AccountingProductionReadinessRequestDto(
     string? FundProfileId = null,
     Guid? LedgerBookId = null,

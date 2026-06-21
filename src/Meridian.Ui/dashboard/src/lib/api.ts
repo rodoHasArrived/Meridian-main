@@ -4,6 +4,8 @@ import type {
   BackfillTriggerRequest,
   BackfillTriggerResult,
   AccountingMigrationRunArtifactList,
+  AccountingProductionCertificationProfile,
+  AccountingProductionCertificationProfileUpsertRequest,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
   AccountingTenantAdministrationProfile,
@@ -2029,6 +2031,33 @@ export function upsertAccountingTenantAdministrationProfile(
   options: ApiRequestOptions = {}
 ) {
   return postJson<AccountingTenantAdministrationProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile, request, options);
+}
+
+export function getAccountingProductionCertificationProfile(
+  query: { fundProfileId?: string | null; ledgerBookId?: string | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix
+    ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.productionCertificationProfile}?${suffix}`
+    : ACCOUNTING_SYSTEM_API_ENDPOINTS.productionCertificationProfile;
+  return getJson<AccountingProductionCertificationProfile>(route, options);
+}
+
+export function upsertAccountingProductionCertificationProfile(
+  request: AccountingProductionCertificationProfileUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingProductionCertificationProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionCertificationProfile, request, options);
 }
 
 export function previewAccountingSystemImport(

@@ -6145,6 +6145,22 @@ const fixtures = {
     evidenceReferences: ["fixture:tenant-admin:gap"],
     correlationId: "fixture-tenant-admin"
   },
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.productionCertificationProfile]: {
+    fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
+    ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId,
+    postingRulesLedgerBookNativeCertified: false,
+    journalLifecycleLedgerBookNativeCertified: false,
+    closeReportingLedgerBookNativeCertified: false,
+    externalGlLedgerBookNativeCertified: false,
+    periodReportDimensionQueriesCertified: true,
+    crossPeriodReportDimensionQueriesCertified: false,
+    journalQueryDimensionFiltersCertified: true,
+    externalExportDimensionMappingCertified: false,
+    updatedAtUtc: "2026-02-01T00:15:00Z",
+    updatedBy: "fixture-controller",
+    evidenceReferences: ["fixture:production-certification:dimensions-gap"],
+    correlationId: "fixture-production-certification"
+  },
   "/api/workstation/runs/run-42/ledger/trial-balance": fixtureLedgerTrialBalance,
   "/api/workstation/governance": fixtureAccountingWorkspace,
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,

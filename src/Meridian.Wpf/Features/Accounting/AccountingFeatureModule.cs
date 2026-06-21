@@ -105,6 +105,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new FileAccountingTenantAdministrationProfileStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "tenant-administration-profiles.json"),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingTenantAdministrationProfileStore>>()));
+        services.TryAddSingleton<IAccountingProductionCertificationProfileStore>(sp =>
+            new FileAccountingProductionCertificationProfileStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "production-certification-profiles.json"),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingProductionCertificationProfileStore>>()));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());

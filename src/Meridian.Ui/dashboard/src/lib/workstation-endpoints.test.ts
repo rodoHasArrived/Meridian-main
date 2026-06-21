@@ -773,6 +773,7 @@ describe("workstation API endpoint catalog", () => {
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness).toBe("/api/accounting-system/production-readiness");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile).toBe("/api/accounting-system/tenant-administration-profile");
+    expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionCertificationProfile).toBe("/api/accounting-system/production-certification-profile");
     expect(PROVIDER_ROUTING_API_ENDPOINTS).toMatchObject({
       connections: "/api/provider-routing/connections",
       bindings: "/api/provider-routing/bindings",

@@ -912,6 +912,155 @@ public sealed class FundLedgerViewModelTests
     }
 
     [Fact]
+    public void LedgerDimensionFilter_PreservesTrialBalanceSelectionByCanonicalDimensions()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-fund-ledger-tests",
+                $"{Guid.NewGuid():N}.json");
+
+            try
+            {
+                var navigation = NavigationService.Instance;
+                navigation.ResetForTests();
+                navigation.Initialize(new Frame());
+
+                var fundContext = new FundContextService(storagePath);
+                var fundAccountService = new InMemoryFundAccountService();
+                var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var store = new StrategyRunStore();
+                var portfolioReadService = new PortfolioReadService();
+                var ledgerReadService = new LedgerReadService();
+                var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
+                var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var strategyReconciliationService = new ReconciliationRunService(
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: new InMemoryReconciliationRunRepository());
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
+
+                using var viewModel = new FundLedgerViewModel(
+                    new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService),
+                    fundContext,
+                    navigation,
+                    fundAccountReadService,
+                    new CashFinancingReadService(workspaceService, fundAccountReadService),
+                    new NoOpFundReconciliationWorkbenchService(),
+                    fundOperationsWorkspaceReadService,
+                    workspaceService);
+
+                var alphaDimensions = new LedgerDimensionSetDto(
+                    FundId: "alpha-fund",
+                    EntityId: "entity-alpha",
+                    PortfolioId: "portfolio-main",
+                    BookId: "book-gaap",
+                    AccountId: "acct-operating");
+                var betaDimensions = alphaDimensions with
+                {
+                    EntityId = "entity-beta",
+                    ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["Class"] = "SecondaryEntity"
+                    }
+                };
+                var alphaLine = new FundTrialBalanceLine(
+                    AccountName: "Cash",
+                    AccountType: "Asset",
+                    Symbol: null,
+                    FinancialAccountId: "acct-operating",
+                    Balance: 100m,
+                    EntryCount: 1,
+                    Dimensions: alphaDimensions);
+                var betaLine = alphaLine with
+                {
+                    Balance = 200m,
+                    Dimensions = betaDimensions
+                };
+                var consolidatedSlice = new FundLedgerSliceDto(
+                    SliceKey: "consolidated",
+                    LedgerKey: "ledger-consolidated",
+                    LedgerGroupId: "fund-ledger",
+                    ScopeKind: FundLedgerScope.Consolidated,
+                    ScopeId: null,
+                    DisplayName: "Consolidated",
+                    Totals: new FundLedgerTotalsDto(0, 2, 300m, 0m, 300m, 0m, 0m),
+                    TrialBalance: [alphaLine, betaLine],
+                    Journal: []);
+                var entityAlphaSlice = consolidatedSlice with
+                {
+                    SliceKey = "entity-alpha",
+                    LedgerKey = "ledger-entity-alpha",
+                    ScopeKind = FundLedgerScope.Entity,
+                    ScopeId = "entity-alpha",
+                    DisplayName = "Entity Alpha",
+                    TrialBalance = [alphaLine]
+                };
+                var entityBetaSlice = consolidatedSlice with
+                {
+                    SliceKey = "entity-beta",
+                    LedgerKey = "ledger-entity-beta",
+                    ScopeKind = FundLedgerScope.Entity,
+                    ScopeId = "entity-beta",
+                    DisplayName = "Entity Beta",
+                    TrialBalance = [betaLine]
+                };
+                var consolidatedView = new FundLedgerDimensionView(
+                    Key: "consolidated",
+                    DisplayName: "Consolidated Fund View",
+                    CoverageText: "full fund view",
+                    StatusText: "ready",
+                    ExpectedScopeCount: 1,
+                    MaterializedScopeCount: 1,
+                    LinkedAccountCount: 1,
+                    TrialBalanceLineCount: 2,
+                    JournalEntryCount: 0,
+                    Totals: consolidatedSlice.Totals,
+                    IsConsolidated: true,
+                    HasScopedLedgerData: true,
+                    LedgerSlices: [consolidatedSlice]);
+                var entityView = consolidatedView with
+                {
+                    Key = "entity-linked",
+                    DisplayName = "Entity-Linked View",
+                    ExpectedScopeCount = 2,
+                    MaterializedScopeCount = 2,
+                    IsConsolidated = false,
+                    LedgerSlices = [entityAlphaSlice, entityBetaSlice]
+                };
+
+                viewModel.LedgerDimensions.Add(consolidatedView);
+                viewModel.LedgerDimensions.Add(entityView);
+                viewModel.SelectedLedgerDimension = consolidatedView;
+                viewModel.SelectedTrialBalanceLine = betaLine;
+
+                viewModel.SelectedLedgerDimension = entityView;
+
+                viewModel.VisibleTrialBalance.Select(line => line.Dimensions?.EntityId)
+                    .Should()
+                    .Equal("entity-alpha", "entity-beta");
+                viewModel.SelectedTrialBalanceLine.Should().BeSameAs(betaLine);
+                viewModel.SelectedTrialBalanceInspector.Facts.Should().Contain(fact =>
+                    fact.Label == "Entity" && fact.Value == "entity-beta");
+                viewModel.SelectedTrialBalanceInspector.Facts.Should().Contain(fact =>
+                    fact.Label == "External GL" && fact.Value.Contains("SecondaryEntity", StringComparison.Ordinal));
+            }
+            finally
+            {
+                if (File.Exists(storagePath))
+                {
+                    File.Delete(storagePath);
+                }
+            }
+        });
+    }
+
+    [Fact]
     public void FundLedgerViewModelSource_ShouldOpenCanonicalAccountingShell()
     {
         var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.cs"));
@@ -2020,6 +2169,45 @@ public sealed class FundLedgerViewModelTests
 
     private static OperationsEvidenceLinkDto CloseEvidence(string evidenceId, string label, string route)
         => new(evidenceId, label, route, "test", new DateTimeOffset(2026, 6, 30, 21, 0, 0, TimeSpan.Zero));
+
+    private sealed class NoOpFundReconciliationWorkbenchService : IFundReconciliationWorkbenchService
+    {
+        public Task<FundReconciliationWorkbenchSnapshot> GetSnapshotAsync(string fundProfileId, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<FundReconciliationDetailModel?> GetBreakDetailAsync(
+            FundReconciliationBreakQueueRow breakRow,
+            string baseCurrency,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<FundReconciliationDetailModel?> GetRunDetailAsync(
+            FundReconciliationRunRow runRow,
+            string baseCurrency,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<WorkstationReconciliationActionResult> StartReviewAsync(
+            FundReconciliationBreakQueueRow breakRow,
+            string operatorName,
+            string? note,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<WorkstationReconciliationActionResult> ResolveAsync(
+            FundReconciliationBreakQueueRow breakRow,
+            string operatorName,
+            string note,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<WorkstationReconciliationActionResult> DismissAsync(
+            FundReconciliationBreakQueueRow breakRow,
+            string operatorName,
+            string note,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+    }
 
     private sealed class StubPrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
     {

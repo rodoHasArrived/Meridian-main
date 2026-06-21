@@ -217,6 +217,10 @@ contract state rather than workstation-local assumptions.
 `AccountingTenantAdministrationProfileDto` is the retained setup profile shape for the same controls,
 allowing shared endpoints, browser, and WPF to review or certify tenant administration posture
 without passing transient request-only booleans.
+`AccountingProductionCertificationProfileDto` is the retained fund/book certification profile for
+ledger-book-native workflow controls and dimensional report/query/export controls, so production
+readiness can load approved evidence from the shared Accounting System store instead of trusting
+request-time certification flags alone.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

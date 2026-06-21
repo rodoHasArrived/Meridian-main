@@ -245,6 +245,10 @@ retained setup evidence are present.
 the shared Accounting System store. Reads require accounting access, writes require
 `AdminMaintenance`, and production readiness loads the retained profile so setup certification is no
 longer represented only by request-time flags.
+`/api/accounting-system/production-certification-profile` retains fund/book workflow and
+dimensional reporting certification controls in the same shared store. Reads require accounting
+access, writes require `AdminMaintenance`, and production readiness merges the retained evidence
+before evaluating ledger-book-native workflow and dimensional reporting blockers.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers

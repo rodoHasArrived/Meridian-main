@@ -5732,6 +5732,30 @@ export interface AccountingTenantAdministrationProfileUpsertRequest {
   evidenceLinks?: string[] | null;
 }
 
+export interface AccountingProductionCertificationProfile {
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  postingRulesLedgerBookNativeCertified: boolean;
+  journalLifecycleLedgerBookNativeCertified: boolean;
+  closeReportingLedgerBookNativeCertified: boolean;
+  externalGlLedgerBookNativeCertified: boolean;
+  periodReportDimensionQueriesCertified: boolean;
+  crossPeriodReportDimensionQueriesCertified: boolean;
+  journalQueryDimensionFiltersCertified: boolean;
+  externalExportDimensionMappingCertified: boolean;
+  updatedAtUtc: string;
+  updatedBy: string;
+  evidenceReferences: string[];
+  correlationId?: string | null;
+}
+
+export interface AccountingProductionCertificationProfileUpsertRequest {
+  profile: AccountingProductionCertificationProfile;
+  actor: string;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
+}
+
 export interface AccountingProductionReadiness {
   generatedAtUtc: string;
   fundProfileId: string;

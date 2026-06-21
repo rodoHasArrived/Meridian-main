@@ -114,6 +114,56 @@ public static class AccountingSystemEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        group.MapGet(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            HttpContext context,
+            IAccountingProductionCertificationProfileStore store) =>
+        {
+            if (!HasAccountingAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var result = await store.GetAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            return result is null
+                ? Results.NotFound(new { error = "Accounting production certification profile was not found." })
+                : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetAccountingProductionCertificationProfile")
+        .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapPost(UiApiRoutes.AccountingSystemProductionCertificationProfile, async (
+            AccountingProductionCertificationProfileUpsertRequestDto request,
+            HttpContext context,
+            IAccountingProductionCertificationProfileStore store) =>
+        {
+            if (!HasAccountingCertificationAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            try
+            {
+                var result = await store.UpsertAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("UpsertAccountingProductionCertificationProfile")
+        .Produces<AccountingProductionCertificationProfileDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         group.MapGet(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
             string? fundProfileId,
             Guid? ledgerBookId,

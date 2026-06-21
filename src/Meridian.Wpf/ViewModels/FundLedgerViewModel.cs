@@ -1425,7 +1425,55 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private static string? BuildTrialBalanceSelectionKey(FundTrialBalanceLine? line)
         => line is null
             ? null
-            : string.Join("|", line.AccountName, line.AccountType, line.Symbol ?? string.Empty, line.FinancialAccountId ?? string.Empty);
+            : string.Join(
+                "|",
+                line.AccountName,
+                line.AccountType,
+                line.Symbol ?? string.Empty,
+                line.FinancialAccountId ?? string.Empty,
+                BuildLedgerDimensionSelectionKey(line.Dimensions));
+
+    private static string BuildLedgerDimensionSelectionKey(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return string.Empty;
+        }
+
+        var externalGlDimensions = dimensions.ExternalGlDimensions.Count == 0
+            ? string.Empty
+            : string.Join(
+                ",",
+                dimensions.ExternalGlDimensions
+                    .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                    .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                    .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}"));
+
+        return string.Join(
+            "|",
+            DimensionKeyValue(dimensions.FundId),
+            DimensionKeyValue(dimensions.EntityId),
+            DimensionKeyValue(dimensions.SleeveId),
+            DimensionKeyValue(dimensions.StrategyId),
+            DimensionKeyValue(dimensions.InvestorId),
+            DimensionKeyValue(dimensions.CapitalAccountId),
+            dimensions.InstrumentId?.ToString("D") ?? string.Empty,
+            DimensionKeyValue(dimensions.TaxLotId),
+            DimensionKeyValue(dimensions.CostCenterId),
+            DimensionKeyValue(dimensions.CounterpartyId),
+            externalGlDimensions,
+            DimensionKeyValue(dimensions.OrganizationId),
+            DimensionKeyValue(dimensions.PortfolioId),
+            DimensionKeyValue(dimensions.BookId),
+            DimensionKeyValue(dimensions.AccountId),
+            DimensionKeyValue(dimensions.CustomerId),
+            DimensionKeyValue(dimensions.VendorId),
+            DimensionKeyValue(dimensions.ProjectId));
+    }
+
+    private static string DimensionKeyValue(string? value)
+        => value?.Trim() ?? string.Empty;
+
     private static FundLedgerTotalsDto BuildSummaryTotals(FundLedgerSummary? ledger)
         => ledger is null
             ? new FundLedgerTotalsDto(0, 0, 0m, 0m, 0m, 0m, 0m)
