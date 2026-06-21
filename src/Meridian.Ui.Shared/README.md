@@ -215,10 +215,13 @@ Accounting-system endpoints are also registered as a shared endpoint group from 
 assessment. `AccountingProductionReadinessService` composes ledger-book rollout, accounting
 configuration and Rules Studio, generated posting and dimensional coverage, manual journal
 lifecycle registration, close/report service registration, external-GL provider and certified
-mapping posture, migration-rollout certification for ledger-book scoping, historical journal
-backfill, dimensional backfill, accounting configuration promotion, close/reporting evidence
-migration, retained migration run artifacts, and tenant-admin rollout guidance into one shared
-fail-closed payload for browser, WPF, and admin setup surfaces. Certification flags without retained
+mapping posture, explicit ledger-book-native workflow certification for posting rules, journal
+lifecycle, close/reporting, and external GL with retained ledger-book-scoped workflow
+evidence, migration-rollout certification for ledger-book
+scoping, historical journal backfill, dimensional backfill, accounting configuration promotion,
+close/reporting evidence migration, retained migration run artifacts, and tenant-admin rollout
+guidance into one shared fail-closed payload for browser, WPF, and admin setup surfaces.
+Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
 tax-lot, cost-center, counterparty, and external-GL dimension coverage before production readiness

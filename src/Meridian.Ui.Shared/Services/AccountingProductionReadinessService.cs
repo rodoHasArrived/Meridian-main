@@ -32,7 +32,7 @@ public sealed class AccountingProductionReadinessService
             request with { FundProfileId = fundProfileId, MigrationRunArtifacts = migrationRunArtifacts },
             tenantAdministrationProfile);
         var components = new List<AccountingProductionReadinessComponentDto>();
-        var ledgerRollout = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
+        var ledgerBookResult = await BuildLedgerBookComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         var rulesSummary = await BuildRulesStudioComponentAsync(effectiveRequest, fundProfileId, components, ct).ConfigureAwait(false);
         BuildJournalLifecycleComponent(components);
         BuildCloseReportingComponent(components);
@@ -57,8 +57,9 @@ public sealed class AccountingProductionReadinessService
             score,
             components,
             issues,
-            ledgerRollout,
+            ledgerBookResult.Rollout,
             rulesSummary,
+            ledgerBookResult.WorkflowReadiness,
             externalGlCounts.ProviderCount,
             externalGlCounts.CertifiedMappingProfileCount,
             externalGlCounts.LivePostingEnabled,
@@ -139,24 +140,39 @@ public sealed class AccountingProductionReadinessService
         };
     }
 
-    private async Task<LedgerBookRolloutAssessmentDto?> BuildLedgerBookComponentAsync(
+    private async Task<LedgerBookComponentResult> BuildLedgerBookComponentAsync(
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
+        var workflowEvidence = NormalizeEvidenceReferences(request.LedgerBookWorkflowEvidenceLinks);
+        var workflowReadiness = new AccountingLedgerBookWorkflowReadinessDto(
+            request.LedgerBookId,
+            request.PostingRulesLedgerBookNativeCertified,
+            request.JournalLifecycleLedgerBookNativeCertified,
+            request.CloseReportingLedgerBookNativeCertified,
+            request.ExternalGlLedgerBookNativeCertified,
+            workflowEvidence);
+        var workflowIssues = BuildLedgerBookWorkflowIssues(workflowReadiness);
         var service = _services.GetService<ILedgerBookService>();
         if (service is null)
         {
+            var serviceIssues = new List<AccountingProductionReadinessIssueDto>
+            {
+                Issue("ledger-books.service-missing", AccountingProductionReadinessAreaDto.LedgerBooks, AccountingConfigurationValidationSeverityDto.Critical, "Ledger-book service is not registered.", "Register ILedgerBookService before production accounting rollout.")
+            };
+            serviceIssues.AddRange(workflowIssues);
             components.Add(Component(
                 AccountingProductionReadinessAreaDto.LedgerBooks,
                 "Ledger books",
                 AccountingProductionReadinessStatusDto.Unavailable,
                 0,
                 "No ledger-book service is registered for production readiness assessment.",
-                [Issue("ledger-books.service-missing", AccountingProductionReadinessAreaDto.LedgerBooks, AccountingConfigurationValidationSeverityDto.Critical, "Ledger-book service is not registered.", "Register ILedgerBookService before production accounting rollout.")],
-                UiApiRoutes.LedgerBooks));
-            return null;
+                serviceIssues,
+                UiApiRoutes.LedgerBooks,
+                workflowReadiness.EvidenceReferences));
+            return new LedgerBookComponentResult(null, workflowReadiness);
         }
 
         var rollout = await service.AssessRolloutAsync(
@@ -177,23 +193,98 @@ public sealed class AccountingProductionReadinessService
                     ? "Create or migrate the missing ledger-book scope before production cutover."
                     : "Review ledger-book close and policy posture before production certification.",
                 issue.LedgerBookId.HasValue ? [$"ledger-book:{issue.LedgerBookId.Value:D}"] : []))
+            .Concat(workflowIssues)
             .ToArray();
-        var status = issues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
-            ? AccountingProductionReadinessStatusDto.Blocked
-            : issues.Length > 0
-                ? AccountingProductionReadinessStatusDto.ReviewRequired
-                : AccountingProductionReadinessStatusDto.Ready;
+        var status = ResolveIssueStatus(issues);
 
         components.Add(Component(
             AccountingProductionReadinessAreaDto.LedgerBooks,
             "Ledger books",
             status,
             status == AccountingProductionReadinessStatusDto.Ready ? 100 : status == AccountingProductionReadinessStatusDto.ReviewRequired ? 70 : 20,
-            $"{rollout.BookCount} ledger book(s), {rollout.OpenPeriodCount} open period(s), {rollout.CriticalIssueCount} critical issue(s).",
+            $"{rollout.BookCount} ledger book(s), {rollout.OpenPeriodCount} open period(s), {rollout.CriticalIssueCount} critical issue(s); {workflowReadiness.CompletedControlCount}/{workflowReadiness.RequiredControlCount} ledger-book-native workflow control(s) certified; {workflowReadiness.EvidenceReferences.Count} retained workflow evidence link(s).",
             issues,
-            UiApiRoutes.LedgerBookRolloutAssessment));
+            UiApiRoutes.LedgerBookRolloutAssessment,
+            workflowReadiness.EvidenceReferences));
 
-        return rollout;
+        return new LedgerBookComponentResult(rollout, workflowReadiness);
+    }
+
+    private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildLedgerBookWorkflowIssues(
+        AccountingLedgerBookWorkflowReadinessDto readiness)
+    {
+        var issues = new List<AccountingProductionReadinessIssueDto>();
+        if (!readiness.HasLedgerBookScope)
+        {
+            issues.Add(Issue(
+                "ledger-books.workflow-ledger-book-scope-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting workflow certification is not scoped to a Meridian ledger book.",
+                "Select the target ledger book before certifying posting rules, journal lifecycle, close/reporting, and external-GL workflows as ledger-book-native."));
+        }
+
+        if (!readiness.HasRetainedEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.workflow-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Ledger-book-native workflow certification has no retained evidence links.",
+                "Attach retained evidence identifying the selected ledger book and the certified posting-rule, journal-lifecycle, close/reporting, and external-GL workflow checks before production rollout."));
+        }
+        else if (readiness.HasLedgerBookScope && !readiness.HasLedgerBookScopedEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.workflow-evidence-scope-mismatch",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Ledger-book-native workflow certification evidence does not identify the selected ledger book.",
+                "Retain workflow certification evidence that names the selected ledgerBookId before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.PostingRulesLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.posting-rules-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting rule execution has not been certified as ledger-book-native.",
+                "Prove source-event predicates, generated posting candidates, evidence, and draft handoff all preserve the selected ledger book before production rollout."));
+        }
+
+        if (!readiness.JournalLifecycleLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.journal-lifecycle-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Journal entry lifecycle has not been certified as ledger-book-native.",
+                "Prove draft, validation, submission, approval, posting, correction, close-lock, and audit transitions cannot cross ledger-book scope."));
+        }
+
+        if (!readiness.CloseReportingLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.close-reporting-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close and reporting workflows have not been certified as ledger-book-native.",
+                "Prove close checklists, period locks, report packages, certification, and restatement workflows consume only the selected ledger book and its dimensions."));
+        }
+
+        if (!readiness.ExternalGlLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.external-gl-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL import, reconciliation, mapping, and guarded export workflows have not been certified as ledger-book-native.",
+                "Prove provider imports, reconciliation snapshots, mapping profiles, and export packages are bound to the selected Meridian ledger book."));
+        }
+
+        return issues;
     }
 
     private async Task<AccountingRulesStudioSummaryDto?> BuildRulesStudioComponentAsync(
@@ -984,6 +1075,15 @@ public sealed class AccountingProductionReadinessService
             _ => AccountingConfigurationValidationSeverityDto.Info
         };
 
+    private static IReadOnlyList<string> NormalizeEvidenceReferences(IEnumerable<string>? evidenceReferences)
+        => evidenceReferences is null
+            ? Array.Empty<string>()
+            : evidenceReferences
+                .Where(static item => !string.IsNullOrWhiteSpace(item))
+                .Select(static item => item.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
     private static string MigrationArtifactKey(AccountingMigrationRunArtifactDto artifact)
         => $"{NormalizeFundProfileId(artifact.FundProfileId)}|{artifact.LedgerBookId?.ToString("D") ?? "all"}|{artifact.RunId}";
 
@@ -997,4 +1097,8 @@ public sealed class AccountingProductionReadinessService
         int ProviderCount,
         int CertifiedMappingProfileCount,
         bool LivePostingEnabled);
+
+    private sealed record LedgerBookComponentResult(
+        LedgerBookRolloutAssessmentDto? Rollout,
+        AccountingLedgerBookWorkflowReadinessDto WorkflowReadiness);
 }

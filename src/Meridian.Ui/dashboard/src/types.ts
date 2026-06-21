@@ -5593,6 +5593,11 @@ export interface AccountingProductionReadinessRequest {
   browserAccountingAdminSurfaceConfigured?: boolean;
   wpfAccountingAdminSurfaceConfigured?: boolean;
   tenantAdministrationEvidenceLinks?: string[] | null;
+  postingRulesLedgerBookNativeCertified?: boolean;
+  journalLifecycleLedgerBookNativeCertified?: boolean;
+  closeReportingLedgerBookNativeCertified?: boolean;
+  externalGlLedgerBookNativeCertified?: boolean;
+  ledgerBookWorkflowEvidenceLinks?: string[] | null;
   ledgerBookMigrationCertified?: boolean;
   historicalJournalBackfillCertified?: boolean;
   dimensionalBackfillCertified?: boolean;
@@ -5671,6 +5676,20 @@ export interface AccountingTenantAdministrationReadiness {
   hasRetainedEvidence: boolean;
 }
 
+export interface AccountingLedgerBookWorkflowReadiness {
+  ledgerBookId?: string | null;
+  postingRulesLedgerBookNativeCertified: boolean;
+  journalLifecycleLedgerBookNativeCertified: boolean;
+  closeReportingLedgerBookNativeCertified: boolean;
+  externalGlLedgerBookNativeCertified: boolean;
+  evidenceReferences: string[];
+  completedControlCount: number;
+  requiredControlCount: number;
+  hasLedgerBookScope: boolean;
+  hasRetainedEvidence: boolean;
+  hasLedgerBookScopedEvidence: boolean;
+}
+
 export interface AccountingTenantAdministrationProfile {
   tenantId: string;
   companyId: string;
@@ -5704,6 +5723,7 @@ export interface AccountingProductionReadiness {
   issues: AccountingProductionReadinessIssue[];
   ledgerBookRollout?: LedgerBookRolloutAssessment | null;
   rulesStudioSummary?: AccountingRulesStudioSummary | null;
+  ledgerBookWorkflows?: AccountingLedgerBookWorkflowReadiness | null;
   externalGlProviderCount: number;
   certifiedExternalGlMappingProfileCount: number;
   externalGlLivePostingEnabled: boolean;

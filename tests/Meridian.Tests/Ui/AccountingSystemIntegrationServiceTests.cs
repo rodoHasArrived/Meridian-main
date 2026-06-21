@@ -95,6 +95,16 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Code == "migration.dimensional-backfill-not-certified" &&
             issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.LedgerBookWorkflows.Should().NotBeNull();
+        readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(1);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.posting-rules-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         readiness.Issues.Should().Contain(issue =>
             issue.Code == "external-gl.live-posting-disabled" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
@@ -119,6 +129,77 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.ExternalGlProviderCount.Should().BeGreaterThan(0);
         readiness.CertifiedExternalGlMappingProfileCount.Should().Be(0);
         readiness.ExternalGlLivePostingEnabled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ProductionReadinessService_RequiresLedgerBookNativeWorkflowCertification()
+    {
+        var services = new ServiceCollection();
+        var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        services.AddSingleton<ILedgerJournalStore>(_ => CreateMatchedQuickBooksFixtureLedgerStore(ledgerBookId));
+        services.AddSingleton<ILedgerBookService>(sp => new PostgresLedgerBookService(sp.GetRequiredService<ILedgerJournalStore>()));
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var blocked = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PostingRulesLedgerBookNativeCertified: true));
+
+        blocked.LedgerBookWorkflows.Should().NotBeNull();
+        blocked.LedgerBookWorkflows!.LedgerBookId.Should().Be(ledgerBookId);
+        blocked.LedgerBookWorkflows.CompletedControlCount.Should().Be(2);
+        blocked.LedgerBookWorkflows.RequiredControlCount.Should().Be(6);
+        blocked.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.journal-lifecycle-not-certified" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            component.Summary.Contains("2/6 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase));
+
+        var otherLedgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var mismatchedEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PostingRulesLedgerBookNativeCertified: true,
+                JournalLifecycleLedgerBookNativeCertified: true,
+                CloseReportingLedgerBookNativeCertified: true,
+                ExternalGlLedgerBookNativeCertified: true,
+                LedgerBookWorkflowEvidenceLinks: [$"evidence://ledger-book/{otherLedgerBookId:D}/workflow-certification/full"]));
+
+        mismatchedEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-evidence-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains($"evidence://ledger-book/{otherLedgerBookId:D}/workflow-certification/full"));
+
+        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/workflow-certification/full";
+        var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PostingRulesLedgerBookNativeCertified: true,
+                JournalLifecycleLedgerBookNativeCertified: true,
+                CloseReportingLedgerBookNativeCertified: true,
+                ExternalGlLedgerBookNativeCertified: true,
+                LedgerBookWorkflowEvidenceLinks: [certifiedEvidence]));
+
+        certified.LedgerBookWorkflows.Should().NotBeNull();
+        certified.LedgerBookWorkflows!.CompletedControlCount.Should().Be(6);
+        certified.LedgerBookWorkflows.EvidenceReferences.Should().Contain(certifiedEvidence);
+        certified.Issues.Should().NotContain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            (issue.Code.EndsWith("-not-certified", StringComparison.OrdinalIgnoreCase) ||
+             issue.Code == "ledger-books.workflow-evidence-missing" ||
+             issue.Code == "ledger-books.workflow-evidence-scope-mismatch"));
+        certified.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            component.Summary.Contains("6/6 ledger-book-native workflow control", StringComparison.OrdinalIgnoreCase) &&
+            component.EvidenceReferences.Contains(certifiedEvidence));
     }
 
     [Fact]

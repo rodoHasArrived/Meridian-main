@@ -4959,7 +4959,7 @@ function buildAccountingProductionReadinessViewModel(
         : "No critical production-readiness blockers",
     externalGlLabel: `${readiness.externalGlProviderCount} provider${readiness.externalGlProviderCount === 1 ? "" : "s"} | ${readiness.certifiedExternalGlMappingProfileCount} certified mapping${readiness.certifiedExternalGlMappingProfileCount === 1 ? "" : "s"} | live posting ${readiness.externalGlLivePostingEnabled ? "enabled" : "disabled"}`,
     ledgerBookRolloutLabel: readiness.ledgerBookRollout
-      ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"}`
+      ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"} | ${readiness.ledgerBookWorkflows?.completedControlCount ?? 0}/${readiness.ledgerBookWorkflows?.requiredControlCount ?? 6} workflow controls`
       : "Ledger-book rollout evidence unavailable",
     tenantAdministrationLabel,
     tenantAdministrationEvidenceLabel,

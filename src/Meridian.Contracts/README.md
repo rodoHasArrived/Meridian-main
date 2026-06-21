@@ -196,9 +196,11 @@ that candidate for ledger-book setup actions instead of guessing fund-structure 
 Accounting-system contracts also publish `AccountingProductionReadinessDto`, a read-only control-plane
 assessment for production rollout. The payload aggregates ledger-book rollout, Rules Studio,
 posting-rule execution, journal lifecycle, dimensional accounting, external GL, close/reporting,
-tenant-administration posture, and migration-rollout controls for ledger-book migration,
-historical journal backfill, dimensional backfill, accounting configuration promotion, and
-close/reporting evidence migration with shared blocker codes and retained
+tenant-administration posture, explicit ledger-book-native workflow certification for posting
+rules, journal lifecycle, close/reporting, and external GL with retained ledger-book-scoped
+workflow evidence, and migration-rollout controls for
+ledger-book migration, historical journal backfill, dimensional backfill, accounting configuration
+promotion, and close/reporting evidence migration with shared blocker codes and retained
 `AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can render the
 same fail-closed readiness state instead of recomputing production gaps or treating certification
 booleans as executable migration proof. Migration run artifacts can carry the canonical

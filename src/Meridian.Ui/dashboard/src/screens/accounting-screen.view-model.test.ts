@@ -2741,6 +2741,19 @@ describe("accounting-screen view model", () => {
         openPeriodCount: 1
       },
       rulesStudioSummary: workspace.rulesStudio.summary,
+      ledgerBookWorkflows: {
+        ledgerBookId: "book-primary",
+        postingRulesLedgerBookNativeCertified: true,
+        journalLifecycleLedgerBookNativeCertified: true,
+        closeReportingLedgerBookNativeCertified: false,
+        externalGlLedgerBookNativeCertified: false,
+        evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
+        completedControlCount: 4,
+        requiredControlCount: 6,
+        hasLedgerBookScope: true,
+        hasRetainedEvidence: true,
+        hasLedgerBookScopedEvidence: true
+      },
       tenantAdministration: {
         tenantId: "tenant-alpha",
         companyId: "company-alpha",
@@ -2985,7 +2998,7 @@ describe("accounting-screen view model", () => {
       scoreLabel: "78/100",
       issueSummaryLabel: "1 warning requires review",
       externalGlLabel: "3 providers | 1 certified mapping | live posting disabled",
-      ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers",
+      ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers | 4/6 workflow controls",
       tenantAdministrationLabel: "5/9 admin controls | tenant tenant-alpha | company company-alpha",
       tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
     });

@@ -220,9 +220,11 @@ The same Configure surface also calls the shared `/api/accounting-system/product
 assessment for the active fund and ledger-book scope, then renders the service-owned control-plane
 posture for ledger books, Rules Studio, posting rules, JE lifecycle, dimensions, external GL,
 close/reporting, migration rollout, and tenant administration. The panel displays returned blockers, suggested
-actions, evidence counts, retained migration run artifact posture, certified external-GL mapping
-coverage, and the disabled live-posting stance without deriving production-readiness policy in
-React. Tenant administration uses the shared `AccountingTenantAdministrationReadinessDto` to render
+actions, evidence counts, retained migration run artifact posture, explicit ledger-book-native
+workflow control counts and retained ledger-book-scoped workflow evidence for posting rules,
+JE lifecycle, close/reporting, and external GL, certified external-GL mapping coverage, and the disabled live-posting stance without deriving
+production-readiness policy in React. Tenant administration uses the shared
+`AccountingTenantAdministrationReadinessDto` to render
 tenant, company, admin-role, scoped-access, reporting-group, aggregate operator-surface, browser
 accounting admin-studio, WPF accounting admin-studio, and retained-evidence controls instead of
 treating setup readiness as a generic component row, and the dashboard route catalog exposes the

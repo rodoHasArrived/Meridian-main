@@ -3611,6 +3611,19 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
     openPeriodCount: 1
   },
   rulesStudioSummary: fixtureAccountingConfiguration.rulesStudio?.summary ?? null,
+  ledgerBookWorkflows: {
+    ledgerBookId: null,
+    postingRulesLedgerBookNativeCertified: false,
+    journalLifecycleLedgerBookNativeCertified: false,
+    closeReportingLedgerBookNativeCertified: false,
+    externalGlLedgerBookNativeCertified: false,
+    evidenceReferences: [],
+    completedControlCount: 0,
+    requiredControlCount: 6,
+    hasLedgerBookScope: false,
+    hasRetainedEvidence: false,
+    hasLedgerBookScopedEvidence: false
+  },
   tenantAdministration: {
     tenantId: "fixture-tenant",
     companyId: "fixture-company",

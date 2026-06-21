@@ -60,8 +60,11 @@ through the shared accounting configuration service, renders the shared accounti
 assessment across ledger books, Rules Studio, posting execution, dimensions, external GL,
 close/reporting, and tenant-admin blockers, renders tenant-admin control/evidence progress from the
 shared readiness DTO, persists tenant-admin setup controls and retained evidence through the shared
-accounting tenant administration profile store with WPF accounting admin-studio coverage, renders retained migration-run evidence with
-ledger-book scope and canonical dimensions from the shared production-readiness payload, surfaces
+accounting tenant administration profile store with WPF accounting admin-studio coverage, renders
+the shared ledger-book-native workflow control count and retained ledger-book-scoped
+workflow evidence for posting rules, JE lifecycle, close/reporting, and external GL, renders
+retained migration-run evidence with ledger-book scope
+and canonical dimensions from the shared production-readiness payload, surfaces
 shared ledger-book setup candidate guidance and can create the ledger book through the shared ledger-book service when book-scoped
 configuration targets a missing registered book, renders a shared-workspace ledger-book
 administration grid with selected/available books, fund-structure scope, basis, currency, policy,

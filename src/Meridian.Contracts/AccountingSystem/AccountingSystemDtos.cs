@@ -191,6 +191,11 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool BrowserAccountingAdminSurfaceConfigured = false,
     bool WpfAccountingAdminSurfaceConfigured = false,
     IReadOnlyList<string>? TenantAdministrationEvidenceLinks = null,
+    bool PostingRulesLedgerBookNativeCertified = false,
+    bool JournalLifecycleLedgerBookNativeCertified = false,
+    bool CloseReportingLedgerBookNativeCertified = false,
+    bool ExternalGlLedgerBookNativeCertified = false,
+    IReadOnlyList<string>? LedgerBookWorkflowEvidenceLinks = null,
     bool LedgerBookMigrationCertified = false,
     bool HistoricalJournalBackfillCertified = false,
     bool DimensionalBackfillCertified = false,
@@ -205,11 +210,59 @@ public sealed record AccountingProductionReadinessRequestDto(
     public IReadOnlyList<string> TenantAdministrationEvidenceLinks { get; init; } =
         TenantAdministrationEvidenceLinks ?? [];
 
+    public IReadOnlyList<string> LedgerBookWorkflowEvidenceLinks { get; init; } =
+        LedgerBookWorkflowEvidenceLinks ?? [];
+
     public IReadOnlyList<string> MigrationEvidenceLinks { get; init; } =
         MigrationEvidenceLinks ?? [];
 
     public IReadOnlyList<AccountingMigrationRunArtifactDto> MigrationRunArtifacts { get; init; } =
         MigrationRunArtifacts ?? [];
+}
+
+public sealed record AccountingLedgerBookWorkflowReadinessDto(
+    Guid? LedgerBookId,
+    bool PostingRulesLedgerBookNativeCertified,
+    bool JournalLifecycleLedgerBookNativeCertified,
+    bool CloseReportingLedgerBookNativeCertified,
+    bool ExternalGlLedgerBookNativeCertified,
+    IReadOnlyList<string>? EvidenceReferences = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public int CompletedControlCount =>
+        new[]
+        {
+            HasLedgerBookScope,
+            HasLedgerBookScopedEvidence,
+            PostingRulesLedgerBookNativeCertified,
+            JournalLifecycleLedgerBookNativeCertified,
+            CloseReportingLedgerBookNativeCertified,
+            ExternalGlLedgerBookNativeCertified
+        }.Count(static control => control);
+
+    public int RequiredControlCount => 6;
+
+    public bool HasLedgerBookScope => LedgerBookId.HasValue;
+
+    public bool HasRetainedEvidence => EvidenceReferences.Count > 0;
+
+    public bool HasLedgerBookScopedEvidence =>
+        LedgerBookId.HasValue &&
+        EvidenceReferences.Any(reference => IsLedgerBookEvidence(reference, LedgerBookId.Value));
+
+    private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
+    {
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return false;
+        }
+
+        var ledgerBookIdText = ledgerBookId.ToString("D");
+        return reference.Contains(ledgerBookIdText, StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 public sealed record AccountingTenantAdministrationReadinessDto(
@@ -289,6 +342,7 @@ public sealed record AccountingProductionReadinessDto(
     IReadOnlyList<AccountingProductionReadinessIssueDto> Issues,
     LedgerBookRolloutAssessmentDto? LedgerBookRollout = null,
     AccountingRulesStudioSummaryDto? RulesStudioSummary = null,
+    AccountingLedgerBookWorkflowReadinessDto? LedgerBookWorkflows = null,
     int ExternalGlProviderCount = 0,
     int CertifiedExternalGlMappingProfileCount = 0,
     bool ExternalGlLivePostingEnabled = false,

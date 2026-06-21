@@ -1895,6 +1895,19 @@ describe("AccountingScreen", () => {
         openPeriodCount: 1
       },
       rulesStudioSummary: workspace.rulesStudio?.summary ?? null,
+      ledgerBookWorkflows: {
+        ledgerBookId: "book-primary",
+        postingRulesLedgerBookNativeCertified: true,
+        journalLifecycleLedgerBookNativeCertified: true,
+        closeReportingLedgerBookNativeCertified: false,
+        externalGlLedgerBookNativeCertified: false,
+        evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
+        completedControlCount: 4,
+        requiredControlCount: 6,
+        hasLedgerBookScope: true,
+        hasRetainedEvidence: true,
+        hasLedgerBookScopedEvidence: true
+      },
       tenantAdministration: {
         tenantId: "tenant-alpha",
         companyId: "company-alpha",
