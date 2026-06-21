@@ -209,10 +209,15 @@ public sealed class AccountingReportPackageServiceTests
             ["evidence:nav:support-package:2027-03"]));
 
         ready.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        ready.FinancialStatements.Dimensions.FundId.Should().Be("fund-alpha");
+        ready.FinancialStatements.Dimensions.BookId.Should().Be(DefaultLedgerBookId.ToString("D"));
         ready.ExportArtifacts.Should().Contain(row =>
             row.ArtifactKind == "financial-statements" &&
             row.Format == "pdf" &&
             row.CertificationState == AccountingCertificationStateDto.ReadyForReview &&
+            row.LedgerBookId == DefaultLedgerBookId &&
+            row.Dimensions.FundId == "fund-alpha" &&
+            row.Dimensions.BookId == DefaultLedgerBookId.ToString("D") &&
             row.Route.Contains(ready.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) &&
             row.ContentHash.Length == 64 &&
             row.EvidenceLinks.Contains("evidence:ledger:trial-balance:2027-03"));
@@ -304,7 +309,12 @@ public sealed class AccountingReportPackageServiceTests
         manifest.ContentHash.Should().Be(artifact.ContentHash);
         manifest.ContentType.Should().Be("application/json");
         manifest.ExternalPostingAllowed.Should().BeFalse();
+        manifest.LedgerBookId.Should().Be(DefaultLedgerBookId);
+        manifest.Dimensions.FundId.Should().Be("fund-alpha");
+        manifest.Dimensions.BookId.Should().Be(DefaultLedgerBookId.ToString("D"));
         manifest.Payload.Should().Contain("\"packageId\"");
+        manifest.Payload.Should().Contain("\"ledgerBookId\"");
+        manifest.Payload.Should().Contain("\"dimensions\"");
         manifest.Payload.Should().Contain(CertificationEvidence(ready));
     }
 

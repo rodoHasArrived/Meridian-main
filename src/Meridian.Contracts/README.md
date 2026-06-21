@@ -944,9 +944,10 @@ is the shared evidence-backed command payload for moving a retained ready-for-re
 carry approval, certification, sign-off, or review evidence and identify the retained package,
 certification id, and package period on the same evidence artifact,
 while Financial Operations owns the validation and state transition. Export artifact rows expose
-artifact kind, format, route, content hash, source statement id, retained evidence, and
-certification state so browser and WPF clients do not infer report output readiness from package
-ids or route strings.
+artifact kind, format, route, content hash, source statement id, retained ledger-book scope,
+`LedgerDimensionSetDto` scope, retained evidence, and certification state so browser and WPF
+clients do not infer report output readiness or dimensional context from package ids or route
+strings.
 Guarded external GL export packages require certified account and dimension mapping coverage before
 they can reach `ReadyForReview`: account mappings must be present, every dimension mapping must be
 certified, both Meridian and external GL dimension sides must carry fund/entity scope, and generated

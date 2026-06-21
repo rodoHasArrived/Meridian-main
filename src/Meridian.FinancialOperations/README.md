@@ -249,8 +249,9 @@ artifact, so split generic support plus wrong-period approval evidence cannot ce
 report package. Report package certification, close task sign-off, and late-adjustment request/review commands also reject
 assistant or automation-origin requests before retaining approvals, sign-offs, decisions, or
 certified report evidence.
-Child export artifacts receive certified timestamps and recomputed content hashes that include the
-certified state and retained certification evidence. When the package is a restatement, final
+Child export artifacts retain ledger-book and canonical dimension scope, and receive certified
+timestamps plus recomputed content hashes that include the book, dimensions, certified state, and
+retained certification evidence. When the package is a restatement, final
 certification also promotes the retained restatement workflow metadata to approved and merges the
 certification evidence into the statement and NAV restatement records.
 Certified accounting report packages are immutable at the retained package boundary; rebuilding the
@@ -259,8 +260,8 @@ restatement lineage instead of replacing certification evidence.
 Provenance rows identify the statement, report line, amount, source kind,
 fund/investor/capital-account dimensions, and retained evidence used for balance sheet, income
 statement, statement of changes in capital, investor capital, NAV, and restatement lineage rows.
-Export artifact rows identify the retained output kind, format, route, certification-state-bound
-content hash, source statement id, evidence links, and certification state for financial statement PDFs/workbooks,
+Export artifact rows identify the retained output kind, format, route, ledger book, dimensions,
+certification-state-bound content hash, source statement id, evidence links, and certification state for financial statement PDFs/workbooks,
 investor capital statements, realized gain/loss CSV, NAV packages, report-line provenance
 manifests, and restatement manifests. The generated routes resolve to controlled JSON retrieval
 manifests that preserve evidence, content hashes, certification state, and an explicit

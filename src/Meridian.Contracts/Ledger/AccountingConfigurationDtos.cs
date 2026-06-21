@@ -1878,10 +1878,15 @@ public sealed record ReportExportArtifactDto(
     DateTimeOffset GeneratedAtUtc,
     string ContentHash,
     IReadOnlyList<string>? EvidenceLinks = null,
-    string? SourceStatementId = null)
+    string? SourceStatementId = null,
+    Guid? LedgerBookId = null,
+    LedgerDimensionSetDto? Dimensions = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
+
+    public LedgerDimensionSetDto Dimensions { get; init; } =
+        Dimensions ?? new LedgerDimensionSetDto(BookId: LedgerBookId?.ToString("D"));
 }
 
 public sealed record ReportExportArtifactManifestDto(
@@ -1899,10 +1904,15 @@ public sealed record ReportExportArtifactManifestDto(
     bool ExternalPostingAllowed,
     string Payload,
     IReadOnlyList<string>? EvidenceLinks = null,
-    string? SourceStatementId = null)
+    string? SourceStatementId = null,
+    Guid? LedgerBookId = null,
+    LedgerDimensionSetDto? Dimensions = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
+
+    public LedgerDimensionSetDto Dimensions { get; init; } =
+        Dimensions ?? new LedgerDimensionSetDto(BookId: LedgerBookId?.ToString("D"));
 }
 
 public sealed record FinancialStatementPackageDto(
@@ -1915,10 +1925,14 @@ public sealed record FinancialStatementPackageDto(
     IReadOnlyList<string> EvidenceLinks,
     ReportCertificationDto? Certification = null,
     RestatementWorkflowDto? Restatement = null,
-    IReadOnlyList<ReportLineProvenanceDto>? LineProvenance = null)
+    IReadOnlyList<ReportLineProvenanceDto>? LineProvenance = null,
+    LedgerDimensionSetDto? Dimensions = null)
 {
     public IReadOnlyList<ReportLineProvenanceDto> LineProvenance { get; init; } =
         LineProvenance ?? [];
+
+    public LedgerDimensionSetDto Dimensions { get; init; } =
+        Dimensions ?? new LedgerDimensionSetDto(FundId: FundProfileId, BookId: LedgerBookId?.ToString("D"));
 }
 
 public sealed record InvestorCapitalStatementDto(

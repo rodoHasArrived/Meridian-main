@@ -162,7 +162,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             evidenceLinks,
             certification,
             restatement,
-            lineProvenance);
+            lineProvenance,
+            packageDimensions);
         var investorStatement = new InvestorCapitalStatementDto(
             $"investor-capital-statement-{Sanitize(fundProfileId)}-{Sanitize(periodId)}-{Sanitize(request.CapitalAccountId ?? "aggregate")}",
             fundProfileId,
@@ -812,7 +813,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 certificationState,
                 generatedAtUtc,
                 evidenceLinks,
-                financialStatements.PackageId),
+                financialStatements.PackageId,
+                financialStatements.LedgerBookId,
+                financialStatements.Dimensions),
             BuildReportExportArtifact(
                 packageId,
                 "financial-statements-workbook",
@@ -822,7 +825,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 certificationState,
                 generatedAtUtc,
                 evidenceLinks,
-                financialStatements.PackageId),
+                financialStatements.PackageId,
+                financialStatements.LedgerBookId,
+                financialStatements.Dimensions),
             BuildReportExportArtifact(
                 packageId,
                 "realized-gain-loss",
@@ -832,7 +837,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 certificationState,
                 generatedAtUtc,
                 realizedGainLoss.EvidenceLinks,
-                realizedGainLoss.ReportId),
+                realizedGainLoss.ReportId,
+                realizedGainLoss.LedgerBookId,
+                realizedGainLoss.Dimensions),
             BuildReportExportArtifact(
                 packageId,
                 "nav-package",
@@ -842,7 +849,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 certificationState,
                 generatedAtUtc,
                 navPackage.EvidenceLinks,
-                navPackage.PackageId),
+                navPackage.PackageId,
+                navPackage.LedgerBookId,
+                navPackage.Dimensions),
             BuildReportExportArtifact(
                 packageId,
                 "report-line-provenance",
@@ -852,7 +861,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 certificationState,
                 generatedAtUtc,
                 financialStatements.LineProvenance.SelectMany(static row => row.EvidenceLinks).ToArray(),
-                $"{financialStatements.PackageId}:line-provenance")
+                $"{financialStatements.PackageId}:line-provenance",
+                financialStatements.LedgerBookId,
+                financialStatements.Dimensions)
         };
 
         rows.AddRange(investorCapitalStatements.Select(statement => BuildReportExportArtifact(
@@ -864,7 +875,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             certificationState,
             generatedAtUtc,
             statement.EvidenceLinks,
-            statement.StatementId)));
+            statement.StatementId,
+            statement.LedgerBookId,
+            statement.Dimensions)));
 
         if (restatement is not null)
         {
@@ -877,7 +890,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 certificationState,
                 generatedAtUtc,
                 restatement.EvidenceLinks,
-                restatement.RestatementId));
+                restatement.RestatementId,
+                financialStatements.LedgerBookId,
+                financialStatements.Dimensions));
         }
 
         return rows
@@ -895,7 +910,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         AccountingCertificationStateDto certificationState,
         DateTimeOffset generatedAtUtc,
         IReadOnlyList<string> evidenceLinks,
-        string? sourceStatementId)
+        string? sourceStatementId,
+        Guid? ledgerBookId,
+        LedgerDimensionSetDto dimensions)
     {
         var artifactId = $"report-export-{Sanitize(packageId)}-{Sanitize(artifactKind)}-{Sanitize(sourceStatementId ?? "aggregate")}";
         var normalizedEvidence = NormalizeEvidenceLinks(evidenceLinks);
@@ -907,6 +924,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             format,
             periodId,
             sourceStatementId ?? string.Empty,
+            ledgerBookId,
+            dimensions,
             certificationState,
             generatedAtUtc,
             normalizedEvidence);
@@ -920,7 +939,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             generatedAtUtc,
             contentHash,
             normalizedEvidence,
-            sourceStatementId);
+            sourceStatementId,
+            ledgerBookId,
+            dimensions);
     }
 
     private static ReportExportArtifactDto CertifyExportArtifact(
@@ -938,6 +959,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             artifact.Format,
             periodId,
             artifact.SourceStatementId ?? string.Empty,
+            artifact.LedgerBookId,
+            artifact.Dimensions,
             AccountingCertificationStateDto.Certified,
             certifiedAtUtc,
             mergedEvidenceLinks);
@@ -957,6 +980,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         string format,
         string periodId,
         string sourceStatementId,
+        Guid? ledgerBookId,
+        LedgerDimensionSetDto dimensions,
         AccountingCertificationStateDto certificationState,
         DateTimeOffset generatedAtUtc,
         IReadOnlyList<string> evidenceLinks)
@@ -969,6 +994,17 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             format,
             periodId,
             sourceStatementId,
+            ledgerBookId?.ToString("D") ?? string.Empty,
+            dimensions.FundId ?? string.Empty,
+            dimensions.EntityId ?? string.Empty,
+            dimensions.InvestorId ?? string.Empty,
+            dimensions.CapitalAccountId ?? string.Empty,
+            dimensions.InstrumentId?.ToString("D") ?? string.Empty,
+            dimensions.CostCenterId ?? string.Empty,
+            dimensions.CounterpartyId ?? string.Empty,
+            string.Join(",", dimensions.ExternalGlDimensions
+                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => $"{pair.Key}={pair.Value}")),
             certificationState,
             generatedAtUtc.ToString("O"),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
@@ -984,6 +1020,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             {
                 packageId = package.FinancialStatements.PackageId,
                 fundProfileId = package.FinancialStatements.FundProfileId,
+                ledgerBookId = artifact.LedgerBookId,
+                dimensions = artifact.Dimensions,
                 periodId = package.FinancialStatements.PeriodId,
                 artifactId = artifact.ArtifactId,
                 artifactKind = artifact.ArtifactKind,
@@ -1012,7 +1050,9 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             ExternalPostingAllowed: false,
             payload,
             artifact.EvidenceLinks,
-            artifact.SourceStatementId);
+            artifact.SourceStatementId,
+            artifact.LedgerBookId,
+            artifact.Dimensions);
     }
 
     private static LedgerDimensionSetDto BuildReportPackageDimensions(
