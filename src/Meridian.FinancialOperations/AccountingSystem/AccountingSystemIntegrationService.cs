@@ -166,7 +166,7 @@ public sealed class AccountingSystemIntegrationService
         var tenantId = NormalizeOptional(request.TenantId);
         var companyId = NormalizeOptional(request.CompanyId);
         var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId, tenantId, companyId);
-        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
         var requestEvidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
@@ -337,10 +337,20 @@ public sealed class AccountingSystemIntegrationService
         request ??= new AccountingSystemImportRequestDto();
         var provider = await ResolveProviderAsync(request.ProviderId, ct).ConfigureAwait(false);
         var detail = await provider.ImportAsync(request, ct).ConfigureAwait(false);
+        var tenantId = NormalizeOptional(request.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId);
+        detail = detail with
+        {
+            Summary = detail.Summary with
+            {
+                TenantId = tenantId,
+                CompanyId = companyId
+            }
+        };
 
         if (request.PersistPreview)
         {
-            _latestImports[ImportKey(detail.Summary.ProviderId, detail.Summary.FundProfileId, detail.Summary.LedgerBookId)] = detail;
+            _latestImports[ImportKey(detail.Summary.ProviderId, detail.Summary.FundProfileId, detail.Summary.LedgerBookId, tenantId, companyId)] = detail;
         }
 
         return detail;
@@ -350,12 +360,16 @@ public sealed class AccountingSystemIntegrationService
         string? providerId = null,
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedProviderId = await ResolveProviderIdAsync(providerId, ct).ConfigureAwait(false);
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
-        if (_latestImports.TryGetValue(ImportKey(normalizedProviderId, normalizedFundProfileId, ledgerBookId), out var detail))
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        if (_latestImports.TryGetValue(ImportKey(normalizedProviderId, normalizedFundProfileId, ledgerBookId, normalizedTenantId, normalizedCompanyId), out var detail))
         {
             return detail;
         }
@@ -365,7 +379,9 @@ public sealed class AccountingSystemIntegrationService
                 normalizedProviderId,
                 normalizedFundProfileId,
                 ledgerBookId,
-                PersistPreview: true),
+                PersistPreview: true,
+                TenantId: normalizedTenantId,
+                CompanyId: normalizedCompanyId),
             ct).ConfigureAwait(false);
     }
 
@@ -373,10 +389,12 @@ public sealed class AccountingSystemIntegrationService
         string? providerId = null,
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
-        var latest = await GetLatestImportAsync(providerId, fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var latest = await GetLatestImportAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         var meridianTotals = await LoadMeridianTotalsAsync(latest.Summary, ct).ConfigureAwait(false);
         var externalRows = latest.TrialBalance.ToDictionary(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase);
         var accountCodes = externalRows.Keys.Concat(meridianTotals.Keys).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
@@ -493,7 +511,9 @@ public sealed class AccountingSystemIntegrationService
         string providerId,
         string fundProfileId,
         Guid? ledgerBookId,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
     {
         if (!_providers.Any(provider => string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase)))
         {
@@ -502,7 +522,7 @@ public sealed class AccountingSystemIntegrationService
 
         try
         {
-            return await ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+            return await ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         }
         catch (ArgumentException)
         {
@@ -525,7 +545,9 @@ public sealed class AccountingSystemIntegrationService
             package.ProviderId,
             package.FundProfileId,
             package.LedgerBookId,
-            ct).ConfigureAwait(false);
+            ct,
+            package.TenantId,
+            package.CompanyId).ConfigureAwait(false);
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, package.LedgerBookId);
 
         return BuildExportValidationIssues(
@@ -1396,8 +1418,13 @@ public sealed class AccountingSystemIntegrationService
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static string ImportKey(string providerId, string fundProfileId, Guid? ledgerBookId)
-        => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}";
+    private static string ImportKey(
+        string providerId,
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string? tenantId = null,
+        string? companyId = null)
+        => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}|{BuildTenantPackageScope(tenantId, companyId)}";
 
     private static string MappingProfileKey(
         string providerId,

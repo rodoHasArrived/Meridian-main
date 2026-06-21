@@ -249,7 +249,13 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var previewRequest = request with { PersistPreview = request.PersistPreview };
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var previewRequest = request with
+            {
+                PersistPreview = request.PersistPreview,
+                TenantId = tenantContext.TenantId ?? request.TenantId,
+                CompanyId = tenantContext.CompanyId ?? request.CompanyId
+            };
             var result = await service.ImportAsync(previewRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -269,7 +275,16 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.GetLatestImportAsync(providerId, fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var result = await service
+                .GetLatestImportAsync(
+                    providerId,
+                    fundProfileId,
+                    ledgerBookId,
+                    context.RequestAborted,
+                    tenantContext.TenantId,
+                    tenantContext.CompanyId)
+                .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetLatestAccountingSystemImport")
@@ -287,7 +302,16 @@ public static class AccountingSystemEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            var result = await service.ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var result = await service
+                .ReconcileLatestAsync(
+                    providerId,
+                    fundProfileId,
+                    ledgerBookId,
+                    context.RequestAborted,
+                    tenantContext.TenantId,
+                    tenantContext.CompanyId)
+                .ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetLatestAccountingSystemReconciliation")

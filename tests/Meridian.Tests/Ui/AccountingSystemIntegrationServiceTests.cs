@@ -1751,6 +1751,52 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
     }
 
+    [Fact]
+    public async Task LatestImportAndReconciliation_AreIsolatedByTenantAndCompanyScope()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+
+        var alphaImport = await service.ImportAsync(new AccountingSystemImportRequestDto(
+            "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 2, 1),
+            PeriodEnd: new DateOnly(2026, 2, 28),
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+        var alphaLatest = await service.GetLatestImportAsync(
+            "quickbooks-fixture",
+            "default-fund",
+            ExternalGlLedgerBookId,
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha");
+        var betaLatest = await service.GetLatestImportAsync(
+            "quickbooks-fixture",
+            "default-fund",
+            ExternalGlLedgerBookId,
+            tenantId: "tenant-beta",
+            companyId: "company-beta");
+        var betaReconciliation = await service.ReconcileLatestAsync(
+            "quickbooks-fixture",
+            "default-fund",
+            ExternalGlLedgerBookId,
+            tenantId: "tenant-beta",
+            companyId: "company-beta");
+
+        alphaImport.Summary.TenantId.Should().Be("tenant-alpha");
+        alphaImport.Summary.CompanyId.Should().Be("company-alpha");
+        alphaLatest.Summary.ImportId.Should().Be(alphaImport.Summary.ImportId);
+        alphaLatest.Summary.PeriodEnd.Should().Be(new DateOnly(2026, 2, 28));
+        alphaLatest.Summary.TenantId.Should().Be("tenant-alpha");
+        alphaLatest.Summary.CompanyId.Should().Be("company-alpha");
+        betaLatest.Summary.PeriodEnd.Should().Be(new DateOnly(2026, 1, 31));
+        betaLatest.Summary.TenantId.Should().Be("tenant-beta");
+        betaLatest.Summary.CompanyId.Should().Be("company-beta");
+        betaLatest.Summary.ImportId.Should().NotBe(alphaImport.Summary.ImportId);
+        betaReconciliation.ImportId.Should().Be(betaLatest.Summary.ImportId);
+        betaReconciliation.PeriodEnd.Should().Be(betaLatest.Summary.PeriodEnd);
+    }
+
 
     [Theory]
     [InlineData("xero-fixture", "xero-default-fund-certified", "090", "xero-bank-001", 179_050)]

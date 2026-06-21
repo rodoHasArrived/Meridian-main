@@ -722,7 +722,9 @@ public sealed record AccountingSystemImportRequestDto(
     Guid? LedgerBookId = null,
     DateOnly? PeriodStart = null,
     DateOnly? PeriodEnd = null,
-    bool PersistPreview = true);
+    bool PersistPreview = true,
+    string? TenantId = null,
+    string? CompanyId = null);
 
 public sealed record AccountingSystemImportSummaryDto(
     string ImportId,
@@ -738,7 +740,9 @@ public sealed record AccountingSystemImportSummaryDto(
     int JournalEntryCount,
     int TrialBalanceLineCount,
     IReadOnlyList<string> EvidenceReferences,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    string? TenantId = null,
+    string? CompanyId = null);
 
 public sealed record AccountingSystemChartAccountDto(
     string ExternalAccountId,
