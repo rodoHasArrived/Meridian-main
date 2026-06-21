@@ -160,7 +160,7 @@ public sealed class AccountingSystemIntegrationService
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
         var requestEvidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
-        var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation);
+        var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, request.LedgerBookId);
         var validationIssues = BuildExportValidationIssues(
             providerId,
             fundProfileId,
@@ -500,7 +500,7 @@ public sealed class AccountingSystemIntegrationService
             package.FundProfileId,
             package.LedgerBookId,
             ct).ConfigureAwait(false);
-        var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation);
+        var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, package.LedgerBookId);
 
         return BuildExportValidationIssues(
             package.ProviderId,
@@ -530,6 +530,8 @@ public sealed class AccountingSystemIntegrationService
         string? packageReconciliationId = null)
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        var mappingProfileLedgerBookMatchesExport = exportLedgerBookId is null ||
+            (mappingProfile is not null && mappingProfile.LedgerBookId == exportLedgerBookId);
         if (exportLedgerBookId is null)
         {
             issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -579,6 +581,17 @@ public sealed class AccountingSystemIntegrationService
         }
         else
         {
+            if (exportLedgerBookId is Guid scopedLedgerBookId &&
+                mappingProfile.LedgerBookId != scopedLedgerBookId)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ExternalGlMappingProfileLedgerBookMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"External GL mapping profile '{mappingProfile.Profile.ProfileId}' targets ledger book '{mappingProfile.LedgerBookId?.ToString("D") ?? "unscoped"}', not export package ledger book '{scopedLedgerBookId:D}'.",
+                    mappingProfile.Profile.ProfileId,
+                    "Certify an external GL mapping profile for the selected ledger book before creating or certifying the guarded export package."));
+            }
+
             if (mappingProfile.Profile.AccountMappings.Count == 0)
             {
                 issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -693,6 +706,7 @@ public sealed class AccountingSystemIntegrationService
             }
 
             if (mappingProfile?.Profile.CertificationState == AccountingCertificationStateDto.Certified &&
+                mappingProfileLedgerBookMatchesExport &&
                 generatedLines.Count == 0)
             {
                 issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -720,11 +734,14 @@ public sealed class AccountingSystemIntegrationService
 
     private static IReadOnlyList<ExternalGlExportLineDto> BuildGeneratedExportLines(
         ScopedExternalGlMappingProfile? mappingProfile,
-        AccountingSystemReconciliationSummaryDto? reconciliation)
+        AccountingSystemReconciliationSummaryDto? reconciliation,
+        Guid? exportLedgerBookId)
     {
         if (mappingProfile is null ||
             mappingProfile.Profile.CertificationState != AccountingCertificationStateDto.Certified ||
-            reconciliation is null)
+            reconciliation is null ||
+            (exportLedgerBookId is not null && mappingProfile.LedgerBookId != exportLedgerBookId) ||
+            (exportLedgerBookId is not null && reconciliation.LedgerBookId != exportLedgerBookId))
         {
             return [];
         }

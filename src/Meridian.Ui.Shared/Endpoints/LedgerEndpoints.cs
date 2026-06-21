@@ -2126,7 +2126,7 @@ public static class LedgerEndpoints
         }
 
         return new LedgerDimensionReportFilter(
-            FundId: NormalizeOptional(GetQueryValue(query, "dimensionFundId")),
+            FundId: NormalizeOptional(GetFirstQueryValue(query, "dimensionFundId", "fundId", "fundProfileId")),
             EntityId: NormalizeOptional(GetQueryValue(query, "entityId")),
             SleeveId: NormalizeOptional(GetQueryValue(query, "sleeveId")),
             StrategyId: NormalizeOptional(GetQueryValue(query, "strategyId")),
@@ -2138,7 +2138,7 @@ public static class LedgerEndpoints
             CounterpartyId: NormalizeOptional(GetQueryValue(query, "counterpartyId")),
             OrganizationId: NormalizeOptional(GetQueryValue(query, "organizationId")),
             PortfolioId: NormalizeOptional(GetQueryValue(query, "portfolioId")),
-            BookId: NormalizeOptional(GetQueryValue(query, "bookId")),
+            BookId: NormalizeOptional(GetFirstQueryValue(query, "bookId", "ledgerBookDimensionId", "dimensionBookId")),
             AccountId: NormalizeOptional(GetQueryValue(query, "accountId")),
             CustomerId: NormalizeOptional(GetQueryValue(query, "customerId")),
             VendorId: NormalizeOptional(GetQueryValue(query, "vendorId")),
@@ -2179,6 +2179,20 @@ public static class LedgerEndpoints
 
     private static string? GetQueryValue(IQueryCollection query, string key)
         => query.TryGetValue(key, out var value) ? value.ToString() : null;
+
+    private static string? GetFirstQueryValue(IQueryCollection query, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            var value = GetQueryValue(query, key);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
 
     private static LedgerPeriodSummaryDto ApplyDimensionFilter(
         LedgerPeriodSummaryDto summary,

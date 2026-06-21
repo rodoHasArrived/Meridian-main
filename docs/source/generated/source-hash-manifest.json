@@ -72,8 +72,8 @@
       "id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
       "path": "src/Meridian.FinancialOperations",
       "readme": "src/Meridian.FinancialOperations/README.md",
-      "readme_hash": "768725f8a7cecdb741941296629387b18ba16a3bd72ac856ae9459710def2628",
-      "source_hash": "66587c491fd57a0aba816fb2bd729d4f262fe51f6a6a759748d36b23237ca8d4"
+      "readme_hash": "0de51d168edb0a0b3cf3c8aa3d8c49b19b3d02c8b7529327d9d5c21e057b70c7",
+      "source_hash": "9ead18123d2d8b01f71d7cb93bc01304f1a9e8c62a104994602a9d1723a0e0ba"
     },
     {
       "id": "SRC-DESIGN-IDENTITY",
@@ -268,8 +268,8 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "cf2dd86f605f90c553421b3208158ed81be3e45fb0c55587d2768fd3e04458bb",
-      "source_hash": "e87fd51979aeb1d30e26a52998f2b91b6f71ae1a2d71c5f11fec653fc601001d"
+      "readme_hash": "0fde9629d11382fd5e054063eae1d8c49d9339e0440c14827bc1c35775f00b62",
+      "source_hash": "926041071d6d4d99eb0fcb6f7a5892621a9cd3d900f0c2be67be70c9c4a8617f"
     },
     {
       "id": "SRC-WPF",

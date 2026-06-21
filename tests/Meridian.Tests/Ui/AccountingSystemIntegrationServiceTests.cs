@@ -947,6 +947,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
         var profiles = await service.ListMappingProfilesAsync("quickbooks-fixture", "default-fund");
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
@@ -1012,6 +1013,40 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
     }
 
+    [Fact]
+    public async Task CreateExportPackageAsync_RequiresLedgerBookScopedMappingProfileBeforeReview()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: ["approval:export-package:qbo-default-fund-2026-01-01-2026-01-31"]));
+
+        package.PostingEnabled.Should().BeFalse();
+        package.GeneratedLines.Should().BeEmpty();
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ExternalGlMappingProfileLedgerBookMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == profile.ProfileId);
+    }
+
+
     [Theory]
     [InlineData("xero-fixture", "xero-default-fund-certified", "090", "xero-bank-001", 179_050)]
     [InlineData("netsuite-fixture", "netsuite-default-fund-certified", "1000", "ns-1000", 308_125)]
@@ -1030,6 +1065,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             ProviderId: providerId,
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: [$"approval:external-gl-mapping:{profileId}"]));
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
             "accounting-ops",
@@ -1219,6 +1255,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
 
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
@@ -1248,6 +1285,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
 
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
@@ -1280,6 +1318,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
 
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
@@ -1317,6 +1356,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
 
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
@@ -1348,6 +1388,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
             "accounting-ops",
@@ -1468,6 +1509,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
             "accounting-ops",
@@ -1484,7 +1526,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
             profile with { DisplayName = "Default fund QBO mapping requiring recertification" },
             "accounting-ops",
-            FundProfileId: "default-fund"));
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId));
 
         var act = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
             package.ExportPackageId,
@@ -1505,6 +1548,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
             "accounting-ops",
@@ -1877,6 +1921,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CertifiedQuickBooksMappingProfile(),
                 "endpoint-operator",
                 FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId,
                 EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"])));
         var mappingProfilesResponse = await app.GetTestClient().GetAsync("/api/accounting-system/mapping-profiles?providerId=quickbooks-fixture&fundProfileId=default-fund");
         var exportPackageResponse = await app.GetTestClient().PostAsync(
@@ -1963,6 +2008,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CertifiedQuickBooksMappingProfile(),
                 "endpoint-operator",
                 FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId,
                 EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"])));
         var exportPackageResponse = await app.GetTestClient().PostAsync(
             "/api/accounting-system/export-packages",

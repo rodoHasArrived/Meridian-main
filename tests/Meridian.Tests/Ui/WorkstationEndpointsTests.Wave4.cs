@@ -78,6 +78,110 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task LedgerCrossPeriodTrialBalanceReport_ShouldFilterByCanonicalDimensionAliases()
+    {
+        var periodId = Guid.Parse("aaaaaaaa-2222-4222-8222-aaaaaaaaaaaa");
+        var ledgerBookId = Guid.Parse("11111111-2222-4222-8222-111111111111");
+        var instrumentId = Guid.Parse("33333333-3333-4333-8333-333333333333");
+        var period = new LedgerPeriodDto(
+            periodId,
+            ledgerBookId,
+            FiscalYear: 2026,
+            PeriodNo: 12,
+            Label: "December 2026",
+            StartDate: new DateOnly(2026, 12, 1),
+            EndDate: new DateOnly(2026, 12, 31),
+            Status: LedgerPeriodStatusDto.HardClosed,
+            OpenedAt: new DateTimeOffset(2026, 12, 1, 0, 0, 0, TimeSpan.Zero),
+            ClosedAt: new DateTimeOffset(2027, 1, 3, 18, 0, 0, TimeSpan.Zero),
+            Version: 4);
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-alpha",
+            StrategyId: "strategy-credit",
+            InvestorId: "investor-lp-1",
+            CapitalAccountId: "capital-lp-1",
+            InstrumentId: instrumentId,
+            TaxLotId: "taxlot-2026-001",
+            CostCenterId: "cc-investments",
+            CounterpartyId: "counterparty-bank",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "InvestmentOps"
+            },
+            PortfolioId: "portfolio-credit",
+            BookId: "book-gaap",
+            AccountId: "acct-investments");
+        var summary = new LedgerPeriodSummaryDto(
+            periodId,
+            ledgerBookId,
+            FiscalYear: 2026,
+            PeriodNo: 12,
+            Label: "December 2026",
+            TrialBalance:
+            [
+                new LedgerPeriodTrialBalanceLineDto(
+                    "Investments",
+                    "Asset",
+                    Symbol: null,
+                    FinancialAccountId: "gl-investments",
+                    DebitTotal: 1_000m,
+                    CreditTotal: 0m,
+                    Balance: 1_000m,
+                    EntryCount: 1,
+                    Dimensions: dimensions),
+                new LedgerPeriodTrialBalanceLineDto(
+                    "Management fees",
+                    "Expense",
+                    Symbol: null,
+                    FinancialAccountId: "gl-fees",
+                    DebitTotal: 250m,
+                    CreditTotal: 0m,
+                    Balance: 250m,
+                    EntryCount: 1,
+                    Dimensions: dimensions with { FundId = "fund-beta" })
+            ],
+            TotalDebits: 1_250m,
+            TotalCredits: 0m,
+            NetIncome: -250m,
+            PeriodOnPeriodVariance: null,
+            OpenBreakCount: 0,
+            SignoffStatus: LedgerPeriodSignoffStatusDto.SignedOff,
+            CompletedAt: new DateTimeOffset(2027, 1, 3, 18, 0, 0, TimeSpan.Zero));
+
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<ILedgerBookService>(new DriftedLedgerBookReportService(period, summary)),
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={ledgerBookId:D}&fundId=fund-alpha&entityId=entity-master&dimensionBookId=book-gaap&taxLotId=taxlot-2026-001&costCenterId=cc-investments&counterpartyId=counterparty-bank&externalGl.Department=InvestmentOps");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        var lines = document.RootElement.GetProperty("lines");
+        lines.GetArrayLength().Should().Be(1);
+        var line = lines[0];
+        line.GetProperty("accountName").GetString().Should().Be("Investments");
+        var returnedDimensions = line.GetProperty("dimensions");
+        returnedDimensions.GetProperty("fundId").GetString().Should().Be("fund-alpha");
+        returnedDimensions.GetProperty("entityId").GetString().Should().Be("entity-master");
+        returnedDimensions.GetProperty("bookId").GetString().Should().Be("book-gaap");
+        returnedDimensions.GetProperty("taxLotId").GetString().Should().Be("taxlot-2026-001");
+        returnedDimensions.GetProperty("costCenterId").GetString().Should().Be("cc-investments");
+        returnedDimensions.GetProperty("counterpartyId").GetString().Should().Be("counterparty-bank");
+        returnedDimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
+
+        using var mismatchResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={ledgerBookId:D}&fundId=fund-missing&dimensionBookId=book-gaap");
+
+        mismatchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var mismatchDocument = await JsonDocument.ParseAsync(await mismatchResponse.Content.ReadAsStreamAsync());
+        mismatchDocument.RootElement.GetProperty("lines").GetArrayLength().Should().Be(0);
+    }
+
+    [Fact]
     public async Task OperationsContinuityEndpoints_ApprovalPolicyMatrix_ExposesServerOwnedRules()
     {
         await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
