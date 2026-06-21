@@ -1002,7 +1002,9 @@ certified, both Meridian and external GL dimension sides must carry fund/entity 
 export lines must come from mapped Meridian-owned ledger totals rather than external-only evidence.
 Reconciliation summaries carry `LedgerBookId`, and guarded export package requests must name the
 target Meridian ledger book and use reconciliation evidence from the same book before review or
-certification can proceed.
+certification can proceed. Retained export package and manifest DTOs also carry a reconciliation
+snapshot hash so certification can detect content drift in rows, totals, or evidence even when the
+provider-facing reconciliation id is unchanged.
 Certified mapping profiles must retain mapping approval, certification, sign-off, or review evidence
 that identifies the mapping profile or provider/fund scope on the same evidence artifact; split
 support and approval links leave the profile in `Draft`.

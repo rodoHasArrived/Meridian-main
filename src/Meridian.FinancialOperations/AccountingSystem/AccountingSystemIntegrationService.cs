@@ -171,6 +171,7 @@ public sealed class AccountingSystemIntegrationService
         var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
         var requestEvidenceLinks = NormalizeEvidenceReferences(request.EvidenceLinks);
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, request.LedgerBookId);
+        var reconciliationSnapshotHash = ComputeReconciliationSnapshotHash(reconciliation);
         var validationIssues = BuildExportValidationIssues(
             providerId,
             fundProfileId,
@@ -181,7 +182,8 @@ public sealed class AccountingSystemIntegrationService
             periodEnd,
             request.RequireBalancedReconciliation,
             requestEvidenceLinks,
-            generatedLines);
+            generatedLines,
+            packageReconciliationSnapshotHash: reconciliationSnapshotHash);
         var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var certificationState = hasCritical
@@ -217,7 +219,8 @@ public sealed class AccountingSystemIntegrationService
             reconciliation?.ReconciliationId,
             request.RequireBalancedReconciliation,
             tenantId,
-            companyId);
+            companyId,
+            reconciliationSnapshotHash);
         _exportPackages[package.ExportPackageId] = package;
         return package;
     }
@@ -549,6 +552,7 @@ public sealed class AccountingSystemIntegrationService
             package.TenantId,
             package.CompanyId).ConfigureAwait(false);
         var generatedLines = BuildGeneratedExportLines(mappingProfile, reconciliation, package.LedgerBookId);
+        var currentReconciliationSnapshotHash = ComputeReconciliationSnapshotHash(reconciliation);
 
         return BuildExportValidationIssues(
             package.ProviderId,
@@ -561,7 +565,9 @@ public sealed class AccountingSystemIntegrationService
             package.RequireBalancedReconciliation,
             package.EvidenceLinks,
             generatedLines,
-            package.ReconciliationId);
+            package.ReconciliationId,
+            package.ReconciliationSnapshotHash,
+            currentReconciliationSnapshotHash);
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
@@ -575,7 +581,9 @@ public sealed class AccountingSystemIntegrationService
         bool requireBalancedReconciliation,
         IReadOnlyList<string> requestEvidenceLinks,
         IReadOnlyList<ExternalGlExportLineDto> generatedLines,
-        string? packageReconciliationId = null)
+        string? packageReconciliationId = null,
+        string? packageReconciliationSnapshotHash = null,
+        string? currentReconciliationSnapshotHash = null)
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var mappingProfileLedgerBookMatchesExport = exportLedgerBookId is null ||
@@ -743,6 +751,18 @@ public sealed class AccountingSystemIntegrationService
                     "Recreate the guarded export package from the latest retained reconciliation before certification."));
             }
 
+            if (!string.IsNullOrWhiteSpace(packageReconciliationSnapshotHash) &&
+                !string.IsNullOrWhiteSpace(currentReconciliationSnapshotHash) &&
+                !string.Equals(packageReconciliationSnapshotHash, currentReconciliationSnapshotHash, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ExternalGlReconciliationSnapshotChanged",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "External GL reconciliation snapshot content changed after export package creation.",
+                    reconciliation.ReconciliationId,
+                    "Recreate the guarded export package from the latest retained reconciliation before certification."));
+            }
+
             if (requireBalancedReconciliation && reconciliation.BreakCount > 0)
             {
                 issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -879,6 +899,7 @@ public sealed class AccountingSystemIntegrationService
                 package.PeriodEnd,
                 package.MappingProfileId,
                 package.ReconciliationId,
+                package.ReconciliationSnapshotHash,
                 package.RequireBalancedReconciliation,
                 certificationState,
                 package.PostingEnabled,
@@ -912,7 +933,47 @@ public sealed class AccountingSystemIntegrationService
             package.ReconciliationId,
             package.RequireBalancedReconciliation,
             package.TenantId,
-            package.CompanyId);
+            package.CompanyId,
+            package.ReconciliationSnapshotHash);
+    }
+
+    private static string? ComputeReconciliationSnapshotHash(AccountingSystemReconciliationSummaryDto? reconciliation)
+    {
+        if (reconciliation is null)
+        {
+            return null;
+        }
+
+        var payload = string.Join(
+            "|",
+            reconciliation.ReconciliationId,
+            reconciliation.ImportId,
+            reconciliation.ProviderId,
+            reconciliation.FundProfileId,
+            reconciliation.LedgerBookId?.ToString("D") ?? string.Empty,
+            reconciliation.PeriodStart.ToString("yyyy-MM-dd"),
+            reconciliation.PeriodEnd.ToString("yyyy-MM-dd"),
+            reconciliation.MatchedCount,
+            reconciliation.BreakCount,
+            reconciliation.TotalExternalDebits.ToString("0.00", CultureInfo.InvariantCulture),
+            reconciliation.TotalExternalCredits.ToString("0.00", CultureInfo.InvariantCulture),
+            reconciliation.TotalMeridianDebits.ToString("0.00", CultureInfo.InvariantCulture),
+            reconciliation.TotalMeridianCredits.ToString("0.00", CultureInfo.InvariantCulture),
+            string.Join(",", reconciliation.Rows
+                .OrderBy(static row => row.RowId, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatReconciliationRowForHash)),
+            string.Join(",", reconciliation.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+            string.Join(",", reconciliation.EvidencePackages
+                .OrderBy(static package => package.PackageId, StringComparer.OrdinalIgnoreCase)
+                .Select(static package => string.Join(
+                    ":",
+                    package.PackageId,
+                    package.Label,
+                    package.Status,
+                    package.EvidenceReferenceCount,
+                    string.Join("\u001d", package.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+                    string.Join("\u001d", package.RequiredActions.Order(StringComparer.OrdinalIgnoreCase))))));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
 
     private static string ComputeExportPackageHash(
@@ -932,6 +993,7 @@ public sealed class AccountingSystemIntegrationService
             package.PeriodEnd.ToString("yyyy-MM-dd"),
             package.MappingProfileId ?? string.Empty,
             package.ReconciliationId ?? string.Empty,
+            package.ReconciliationSnapshotHash ?? string.Empty,
             package.RequireBalancedReconciliation,
             certificationState,
             package.PostingEnabled,
@@ -946,6 +1008,25 @@ public sealed class AccountingSystemIntegrationService
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
     }
+
+    private static string FormatReconciliationRowForHash(AccountingSystemReconciliationRowDto row)
+        => string.Join(
+            ":",
+            row.RowId,
+            row.AccountCode,
+            row.AccountName,
+            row.Currency,
+            row.Status,
+            row.ExternalDebit.ToString("0.00", CultureInfo.InvariantCulture),
+            row.ExternalCredit.ToString("0.00", CultureInfo.InvariantCulture),
+            row.MeridianDebit.ToString("0.00", CultureInfo.InvariantCulture),
+            row.MeridianCredit.ToString("0.00", CultureInfo.InvariantCulture),
+            row.Variance.ToString("0.00", CultureInfo.InvariantCulture),
+            row.Detail,
+            row.EvidenceRef ?? string.Empty,
+            string.Join(",", row.ExternalEvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+            string.Join(",", row.MeridianEvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+            string.Join(",", row.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)));
 
     private static string FormatGeneratedExportLineForHash(ExternalGlExportLineDto line)
         => string.Join(

@@ -2204,6 +2204,7 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         package.MappingProfileId.Should().Be(profile.ProfileId);
         package.ReconciliationId.Should().NotBeNullOrWhiteSpace();
+        package.ReconciliationSnapshotHash.Should().NotBeNullOrWhiteSpace();
         package.RequireBalancedReconciliation.Should().BeFalse();
 
         var weakCertification = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
@@ -2306,10 +2307,12 @@ public sealed class AccountingSystemIntegrationServiceTests
         manifest.GeneratedLines.Should().HaveSameCount(certified.GeneratedLines);
         manifest.MappingProfileId.Should().Be(profile.ProfileId);
         manifest.ReconciliationId.Should().Be(package.ReconciliationId);
+        manifest.ReconciliationSnapshotHash.Should().Be(package.ReconciliationSnapshotHash);
         manifest.RequireBalancedReconciliation.Should().BeFalse();
         manifest.EvidenceLinks.Should().Contain(certificationEvidence);
         manifest.Payload.Should().Contain(certified.ExportPackageId);
         manifest.Payload.Should().Contain(certificationEvidence);
+        manifest.Payload.Should().Contain(package.ReconciliationSnapshotHash);
 
         var changedLedgerBookId = Guid.Parse("99999999-9999-4999-9999-999999999999");
         RetainExportPackage(service, certified with { LedgerBookId = changedLedgerBookId });
@@ -2390,6 +2393,43 @@ public sealed class AccountingSystemIntegrationServiceTests
             package.ExportPackageId,
             "controller",
             "Controller attempted to certify after reconciliation evidence changed.",
+            [ExportCertificationEvidence(package)]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*current mapping or reconciliation blockers*ExternalGlReconciliationSnapshotChanged*");
+    }
+
+    [Fact]
+    public async Task CertifyExportPackageAsync_RevalidatesCurrentReconciliationSnapshotContentBeforeCertification()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.ReconciliationId.Should().NotBeNullOrWhiteSpace();
+        package.ReconciliationSnapshotHash.Should().NotBeNullOrWhiteSpace();
+
+        RetainExportPackage(service, package with { ReconciliationSnapshotHash = "stale-retained-content-hash" });
+
+        var act = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Controller attempted to certify after reconciliation content changed.",
             [ExportCertificationEvidence(package)]));
 
         await act.Should().ThrowAsync<InvalidOperationException>()

@@ -1660,7 +1660,8 @@ public sealed record ExternalGlExportPackageDto(
     string? ReconciliationId = null,
     bool RequireBalancedReconciliation = false,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    string? ReconciliationSnapshotHash = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
@@ -1691,7 +1692,8 @@ public sealed record ExternalGlExportPackageManifestDto(
     string? ReconciliationId = null,
     bool RequireBalancedReconciliation = false,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    string? ReconciliationSnapshotHash = null)
 {
     public IReadOnlyList<ExternalGlExportLineDto> GeneratedLines { get; init; } =
         GeneratedLines ?? [];
