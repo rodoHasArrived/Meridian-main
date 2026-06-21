@@ -267,8 +267,9 @@ Close-backed packages retain the source workflow id and re-query the current clo
 certification time, so a package assembled while ready-for-review cannot be certified after a new
 period-lock blocker, incomplete checklist item, missing sign-off, or material late adjustment appears.
 Certification evidence must be a retained approval, certification, sign-off, or review artifact
-that references the retained package id, certification id, and exact package period in the same
-artifact, so split generic support plus wrong-period approval evidence cannot certify a different
+that references the retained package id, certification id, ledger book, exact package period, and
+explicit dimension scope when the package is dimension-scoped in the same artifact, so split generic
+support plus wrong-period or wrong-scope approval evidence cannot certify a different
 report package. Report package certification, close task sign-off, and late-adjustment request/review commands also reject
 assistant or automation-origin requests before retaining approvals, sign-offs, decisions, or
 certified report evidence.

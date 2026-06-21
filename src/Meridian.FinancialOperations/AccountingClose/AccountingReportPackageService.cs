@@ -313,7 +313,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             var package = rows[index];
             if (!HasReportCertificationEvidenceWithProvenance(package, evidenceLinks))
             {
-                throw new ArgumentException("Accounting report package certification evidence must reference the retained package, certification id, and exact package period in the same artifact.");
+                throw new ArgumentException("Accounting report package certification evidence must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact.");
             }
 
             var currentCloseIssues = await BuildCurrentCloseCertificationIssuesAsync(package, ct).ConfigureAwait(false);
@@ -1019,11 +1019,61 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             HasReportCertificationEvidence([link]) &&
             link.Contains(package.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) &&
             link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
-            link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase));
+            link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase) &&
+            EvidenceReferencesReportLedgerBook(package, link) &&
+            EvidenceReferencesReportDimensionScope(package, link));
+
+    private static bool EvidenceReferencesReportLedgerBook(
+        AccountingReportPackageBundleDto package,
+        string evidenceLink)
+        => TryGetReportLedgerBookId(package, out var ledgerBookId) is false ||
+           EvidenceReferencesLedgerBook(evidenceLink, ledgerBookId);
+
+    private static bool EvidenceReferencesReportDimensionScope(
+        AccountingReportPackageBundleDto package,
+        string evidenceLink)
+    {
+        var dimensions = package.FinancialStatements.Dimensions;
+        if (!HasExplicitDimensionScope(
+                dimensions,
+                package.FinancialStatements.FundProfileId,
+                TryGetReportLedgerBookId(package, out var ledgerBookId) ? ledgerBookId : null))
+        {
+            return true;
+        }
+
+        return evidenceLink.Contains($"dimension-scope:{BuildDimensionScopeHash(dimensions)}", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryGetReportLedgerBookId(AccountingReportPackageBundleDto package, out Guid ledgerBookId)
+    {
+        if (package.FinancialStatements.LedgerBookId is Guid retainedLedgerBookId)
+        {
+            ledgerBookId = retainedLedgerBookId;
+            return true;
+        }
+
+        if (Guid.TryParse(package.FinancialStatements.Dimensions.BookId, out var dimensionLedgerBookId))
+        {
+            ledgerBookId = dimensionLedgerBookId;
+            return true;
+        }
+
+        ledgerBookId = default;
+        return false;
+    }
 
     private static bool EvidenceReferencesLedgerBook(string evidenceLink, Guid ledgerBookId)
-        => evidenceLink.Contains(ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-           evidenceLink.Contains(ledgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+    {
+        var ledgerBookIdText = ledgerBookId.ToString("D");
+        var ledgerBookIdCompact = ledgerBookId.ToString("N");
+        return evidenceLink.Contains($"book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"ledger-book/{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"book:{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"ledger-book:{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"ledger-book/{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {

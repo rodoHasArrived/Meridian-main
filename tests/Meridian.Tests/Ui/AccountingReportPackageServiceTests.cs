@@ -1,4 +1,6 @@
 using FluentAssertions;
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
@@ -297,7 +299,7 @@ public sealed class AccountingReportPackageServiceTests
             "Controller certified the wrong retained report package.",
             ["evidence:report-certification:controller-approval:2027-04"]));
         await wrongPeriodEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
         var splitCertificationEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
@@ -308,7 +310,7 @@ public sealed class AccountingReportPackageServiceTests
                 "evidence:report-certification:controller-approval:2027-04"
             ]));
         await splitCertificationEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
         var missingCertificationIdEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
@@ -316,7 +318,16 @@ public sealed class AccountingReportPackageServiceTests
             "Controller certified with package and period evidence that omits the certification id.",
             [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:2027-03"]));
         await missingCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*must reference the retained package, certification id, and exact package period in the same artifact*");
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var missingLedgerBookEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with package, certification, and period evidence that omits the ledger book.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:{ready.FinancialStatements.PeriodId}"]));
+
+        await missingLedgerBookEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
         var assistantCertification = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
@@ -368,6 +379,50 @@ public sealed class AccountingReportPackageServiceTests
         manifest.Payload.Should().Contain("\"ledgerBookId\"");
         manifest.Payload.Should().Contain("\"dimensions\"");
         manifest.Payload.Should().Contain(CertificationEvidence(ready));
+    }
+
+    [Fact]
+    public async Task CertifyPackageAsync_RequiresExplicitDimensionScopeEvidence()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            CostCenterId: "cost-center-investments",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            },
+            BookId: DefaultLedgerBookId.ToString("D"));
+        var ready = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            Dimensions: dimensions));
+
+        ready.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        ready.FinancialStatements.PackageId.Should().Contain("scope-");
+
+        var missingScopeEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification without retained dimension-scope proof.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}"]));
+
+        await missingScopeEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified the retained dimension-scoped report package.",
+            [CertificationEvidence(ready)]));
+
+        certified.Should().NotBeNull();
+        certified!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.Certification.EvidenceLinks.Should().Contain(CertificationEvidence(ready));
     }
 
     [Fact]
@@ -733,7 +788,60 @@ public sealed class AccountingReportPackageServiceTests
     private static string CertificationEvidence(
         AccountingReportPackageBundleDto package,
         string approvalLabel = "controller-approval")
-        => $"evidence:report-certification:{approvalLabel}:{package.FinancialStatements.PackageId}:{package.Certification.CertificationId}:{package.FinancialStatements.PeriodId}";
+    {
+        var ledgerBookScope = package.FinancialStatements.LedgerBookId is Guid ledgerBookId
+            ? $":book:{ledgerBookId:D}"
+            : string.Empty;
+        var dimensionScope = HasExplicitDimensionScope(package.FinancialStatements)
+            ? $":dimension-scope:{BuildDimensionScopeHash(package.FinancialStatements.Dimensions)}"
+            : string.Empty;
+        return $"evidence:report-certification:{approvalLabel}:{package.FinancialStatements.PackageId}:{package.Certification.CertificationId}{ledgerBookScope}{dimensionScope}:{package.FinancialStatements.PeriodId}";
+    }
+
+    private static bool HasExplicitDimensionScope(FinancialStatementPackageDto package)
+        => package.Dimensions.EntityId is not null ||
+           package.Dimensions.SleeveId is not null ||
+           package.Dimensions.StrategyId is not null ||
+           package.Dimensions.InvestorId is not null ||
+           package.Dimensions.CapitalAccountId is not null ||
+           package.Dimensions.InstrumentId.HasValue ||
+           package.Dimensions.TaxLotId is not null ||
+           package.Dimensions.CostCenterId is not null ||
+           package.Dimensions.CounterpartyId is not null ||
+           package.Dimensions.OrganizationId is not null ||
+           package.Dimensions.PortfolioId is not null ||
+           package.Dimensions.AccountId is not null ||
+           package.Dimensions.CustomerId is not null ||
+           package.Dimensions.VendorId is not null ||
+           package.Dimensions.ProjectId is not null ||
+           package.Dimensions.ExternalGlDimensions.Count > 0;
+
+    private static string BuildDimensionScopeHash(LedgerDimensionSetDto dimensions)
+    {
+        var payload = string.Join(
+            "|",
+            dimensions.FundId ?? string.Empty,
+            dimensions.EntityId ?? string.Empty,
+            dimensions.SleeveId ?? string.Empty,
+            dimensions.StrategyId ?? string.Empty,
+            dimensions.InvestorId ?? string.Empty,
+            dimensions.CapitalAccountId ?? string.Empty,
+            dimensions.InstrumentId?.ToString("D") ?? string.Empty,
+            dimensions.TaxLotId ?? string.Empty,
+            dimensions.CostCenterId ?? string.Empty,
+            dimensions.CounterpartyId ?? string.Empty,
+            dimensions.OrganizationId ?? string.Empty,
+            dimensions.PortfolioId ?? string.Empty,
+            dimensions.BookId ?? string.Empty,
+            dimensions.AccountId ?? string.Empty,
+            dimensions.CustomerId ?? string.Empty,
+            dimensions.VendorId ?? string.Empty,
+            dimensions.ProjectId ?? string.Empty,
+            string.Join(";", dimensions.ExternalGlDimensions
+                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                .Select(static pair => $"{pair.Key}={pair.Value}")));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
+    }
 
     private static ClosePeriodPlanDto BuildSignedOffClosePlan(
         Guid workflowId,

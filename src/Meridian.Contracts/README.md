@@ -990,7 +990,8 @@ refresh the current close plan before moving a retained package to `Certified`.
 is the shared evidence-backed command payload for moving a retained ready-for-review package to
 `Certified`; consumers supply the package id, reviewer notes, actor context, and evidence links that
 carry approval, certification, sign-off, or review evidence and identify the retained package,
-certification id, and package period on the same evidence artifact,
+certification id, ledger book, package period, and explicit dimension scope when the package is
+dimension-scoped on the same evidence artifact,
 while Financial Operations owns the validation and state transition. Export artifact rows expose
 artifact kind, format, route, content hash, source statement id, retained ledger-book scope,
 `LedgerDimensionSetDto` scope, retained evidence, and certification state so browser and WPF
