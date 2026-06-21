@@ -94,7 +94,9 @@ the requirement end to end.
   Accounting System list/upsert endpoints, and production readiness automatically merges stored
   fund/book-scoped artifacts into the assessment. Browser Accounting Configure now reads the
   retained artifact list endpoint and renders run kind, status, scope, migrated-record count,
-  issue count, and evidence-reference count beside production-readiness blockers.
+  issue count, and evidence-reference count beside production-readiness blockers. Migration rollout
+  readiness now also fails closed when the assessment lacks tenant/company scope or when retained
+  migration run artifacts belong to another tenant/company rollout.
 - [x] Source-event posting candidates and production-readiness Rules Studio checks now use
   tenant/company/fund/ledger-book scope for dry-run, workspace lookup, chart resolution, and
   browser/WPF endpoint entry, preventing a candidate or readiness assessment for one company from
@@ -153,8 +155,8 @@ the requirement end to end.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
   evidence migration. The shared readiness contract now exposes fail-closed certification inputs,
-  file-backed retained migration run artifacts, and retained-artifact blockers for these controls,
-  but it does not yet execute migration jobs or backfill data.
+  tenant/company-scoped retained migration run artifacts, and retained-artifact blockers for these
+  controls, but it does not yet execute migration jobs or backfill data.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, but live credentialed import adapters, richer mapping fixtures, and controlled
   export certification still need provider-specific coverage before any separately approved live

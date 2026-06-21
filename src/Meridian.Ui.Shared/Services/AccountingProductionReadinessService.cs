@@ -1280,6 +1280,7 @@ public sealed class AccountingProductionReadinessService
         ICollection<AccountingProductionReadinessComponentDto> components)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
+        AddMigrationRolloutScopeIssues(request, issues);
         AddMigrationControlIssues(
             request,
             issues,
@@ -1353,6 +1354,41 @@ public sealed class AccountingProductionReadinessService
             issues,
             route: UiApiRoutes.AccountingSystemProductionReadiness,
             evidenceReferences: evidenceReferences));
+    }
+
+    private static void AddMigrationRolloutScopeIssues(
+        AccountingProductionReadinessRequestDto request,
+        ICollection<AccountingProductionReadinessIssueDto> issues)
+    {
+        var evidenceReferences = request.MigrationRunArtifacts
+            .SelectMany(static artifact => artifact.EvidenceReferences)
+            .Concat(request.MigrationEvidenceLinks)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (string.IsNullOrWhiteSpace(request.TenantId))
+        {
+            issues.Add(Issue(
+                "migration.tenant-scope-missing",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Migration rollout is not scoped to a tenant.",
+                "Select the target tenant before certifying ledger-book migration, historical backfill, dimensional backfill, configuration promotion, or close/reporting evidence migration.",
+                evidenceReferences));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.CompanyId))
+        {
+            issues.Add(Issue(
+                "migration.company-scope-missing",
+                AccountingProductionReadinessAreaDto.MigrationRollout,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Migration rollout is not scoped to a company.",
+                "Select the target company before using retained migration run evidence for production accounting rollout.",
+                evidenceReferences));
+        }
     }
 
     private static void AddMigrationControlIssues(
@@ -1577,8 +1613,24 @@ public sealed class AccountingProductionReadinessService
             return false;
         }
 
-        return request.LedgerBookId is null ||
-            artifact.LedgerBookId == request.LedgerBookId;
+        if (request.LedgerBookId is not null &&
+            artifact.LedgerBookId != request.LedgerBookId)
+        {
+            return false;
+        }
+
+        var requestedTenantId = TrimOrNull(request.TenantId);
+        var artifactTenantId = TrimOrNull(artifact.TenantId);
+        if (requestedTenantId is not null &&
+            !string.Equals(artifactTenantId, requestedTenantId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var requestedCompanyId = TrimOrNull(request.CompanyId);
+        var artifactCompanyId = TrimOrNull(artifact.CompanyId);
+        return requestedCompanyId is null ||
+            string.Equals(artifactCompanyId, requestedCompanyId, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string MigrationKindCode(AccountingMigrationRunKindDto kind)

@@ -95,6 +95,14 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Code == "migration.dimensional-backfill-not-certified" &&
             issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.tenant-scope-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.company-scope-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         readiness.LedgerBookWorkflows.Should().NotBeNull();
         readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(1);
         readiness.Issues.Should().Contain(issue =>
@@ -2834,6 +2842,55 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         mismatched.MigrationRunArtifacts.Should().BeEmpty();
         mismatched.Issues.Should().Contain(issue => issue.Code == "migration.dimensional-backfill-certified-run-missing");
+    }
+
+    [Fact]
+    public async Task ProductionReadinessService_RejectsMigrationArtifactsOutsideRequestedTenantCompanyScope()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                LedgerBookMigrationCertified: true,
+                MigrationRunArtifacts:
+                [
+                    new AccountingMigrationRunArtifactDto(
+                        "migration-run-ledger-book-scope-beta",
+                        AccountingMigrationRunKindDto.LedgerBookScope,
+                        AccountingMigrationRunStatusDto.Certified,
+                        DateTimeOffset.Parse("2026-03-02T00:00:00Z"),
+                        CompletedAtUtc: DateTimeOffset.Parse("2026-03-02T00:15:00Z"),
+                        MigratedRecordCount: 275,
+                        IssueCount: 0,
+                        EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/company-beta"],
+                        FundProfileId: "default-fund",
+                        LedgerBookId: ledgerBookId,
+                        Summary: "Beta company ledger-book migration.",
+                        TenantId: "tenant-beta",
+                        CompanyId: "company-beta")
+                ]));
+
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.ledger-book-scope-artifact-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund/company-beta"));
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "migration.ledger-book-scope-certified-run-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().NotContain(issue => issue.Code == "migration.tenant-scope-missing");
+        readiness.Issues.Should().NotContain(issue => issue.Code == "migration.company-scope-missing");
+        readiness.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
     }
 
     [Fact]

@@ -247,7 +247,10 @@ tax-lot, cost-center, counterparty, and external-GL dimension coverage before pr
 treats them as valid dimensional accounting evidence, and book-scoped readiness only loads retained
 tenant/company-scoped migration artifacts for the exact requested ledger book. Fund-level,
 other-book, or other-company migration artifacts cannot satisfy certification controls for a
-selected ledger-book rollout. External GL readiness is blocked until the assessment
+selected ledger-book rollout. Migration rollout readiness also blocks when the assessment has no
+tenant or company scope, so historical backfill, dimensional backfill, configuration promotion, and
+close/reporting evidence migration cannot be certified as anonymous fund-level work. External GL
+readiness is blocked until the assessment
 names the target Meridian ledger book for import/reconciliation/mapping/export certification, has
 retained external-GL workflow evidence for that selected book, and has certified mapping profiles;
 it also blocks when an available external-GL provider advertises live posting support so the first
