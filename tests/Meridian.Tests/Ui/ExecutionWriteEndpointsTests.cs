@@ -149,6 +149,27 @@ public sealed class ExecutionWriteEndpointsTests
         result.Message.Should().Contain("0");
     }
 
+
+    [Fact]
+    public async Task CancelAllOrders_WhenProductionPhaseDisabled_StillCancels()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterMinimalOms(services);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                ProductionRoutingPhaseEnabled = false
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/cancel-all", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Completed");
+    }
+
     // ------------------------------------------------------------------ //
     //  POST /api/execution/positions/*                                    //
     // ------------------------------------------------------------------ //
@@ -162,6 +183,29 @@ public sealed class ExecutionWriteEndpointsTests
         var response = await client.PostAsync("/api/execution/positions/AAPL/close", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+    }
+
+
+    [Fact]
+    public async Task ClosePosition_WhenProductionPhaseDisabled_StillSubmitsPaperClose()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterMinimalOms(
+                services,
+                new ExecutionPosition("AAPL", 5, 180m, 10m, 0m));
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                ProductionRoutingPhaseEnabled = false
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/positions/AAPL/close", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Accepted");
     }
 
     [Fact]
