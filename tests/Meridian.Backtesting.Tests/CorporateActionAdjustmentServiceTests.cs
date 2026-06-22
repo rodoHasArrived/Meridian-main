@@ -48,7 +48,9 @@ public sealed class CorporateActionAdjustmentServiceTests
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
-        _mockQueryService.SetCorporateActions([]);
+        _mockQueryService.SetCorporateActions([
+            new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", new DateOnly(2024, 2, 1), null, 0.5m, "USD", null, null, null, null, null, null, null)
+        ]);
 
         var bars = new[] { CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m) };
 
@@ -191,7 +193,9 @@ public sealed class CorporateActionAdjustmentServiceTests
     {
         var securityId = Guid.NewGuid();
         _mockResolver.SetResolveResult(securityId);
-        _mockQueryService.SetCorporateActions([]);
+        _mockQueryService.SetCorporateActions([
+            new CorporateActionDto(Guid.NewGuid(), securityId, "Dividend", new DateOnly(2024, 2, 1), null, 0.5m, "USD", null, null, null, null, null, null, null)
+        ]);
 
         var bars = new[] { CreateBar("SPY", new DateOnly(2024, 1, 1), 100m, 110m, 90m, 105m) };
 
