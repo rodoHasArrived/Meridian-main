@@ -2805,6 +2805,30 @@ describe("AccountingScreen", () => {
     }));
   });
 
+  it("scopes the close command center workflow lookup to route fund and period", async () => {
+    const unrelatedWorkflowSummary: OperationsContinuityWorkflowSummary = {
+      ...approvalWorkflowSummary,
+      workflowId: "workflow-unrelated-newer",
+      fundAccountId: "fund-beta",
+      periodId: "2026-06",
+      updatedAtUtc: "2026-06-15T12:00:00Z"
+    };
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([
+      unrelatedWorkflowSummary,
+      approvalWorkflowSummary
+    ]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
+
+    await renderAccountingScreen(data, "/accounting?fundAccountId=fund-alpha&periodId=2026-05");
+
+    expect(api.getOperationsContinuityWorkflows).toHaveBeenCalledWith({
+      fundAccountId: "fund-alpha",
+      periodId: "2026-05",
+      status: undefined
+    });
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+  });
+
   it("renders reconciliation, cash-flow, and reporting summaries", async () => {
     await renderAccountingScreen();
 

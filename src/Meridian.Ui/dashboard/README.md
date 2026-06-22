@@ -887,6 +887,9 @@ rules. External GL provider warnings compare read-only provider evidence against
 ledger truth; they must not make the external GL the source of ledger authority. When QuickBooks
 Online local config is ready, the Accounting GL evidence panel previews the selected company
 instead of the deterministic fixture; without that config it remains on `quickbooks-fixture`.
+Route-provided `fundAccountId`, `periodId`, and `workflowStatus` now scope the close command center's
+operations-continuity lookup before workflow detail is loaded, preventing a newer unrelated close
+workflow from driving the accounting cockpit when operators open a scoped Accounting route.
 During workstation bootstrap, the shell lets the Accounting route render its own actionable loading
 workspace. That loading view shows the route/workstream being prepared, the Accounting payload groups
 still loading, and links to continuity, entity setup, provider posture, and retained report evidence

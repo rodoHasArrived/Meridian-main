@@ -1001,6 +1001,42 @@ function mergeExternalGlExportPackage(
   return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
+function parseCloseWorkflowQuery(search: string): { fundAccountId?: string; periodId?: string; status?: string } {
+  const params = new URLSearchParams(search);
+  return {
+    fundAccountId: normalizeOptionalQueryValue(params.get("fundAccountId")),
+    periodId: normalizeOptionalQueryValue(params.get("periodId")),
+    status: normalizeOptionalQueryValue(params.get("workflowStatus"))
+  };
+}
+
+function normalizeOptionalQueryValue(value: string | null): string | undefined {
+  const normalized = value?.trim();
+  return normalized ? normalized : undefined;
+}
+
+function selectCloseWorkflowSummary(
+  rows: OperationsContinuityWorkflowSummary[],
+  query: { fundAccountId?: string; periodId?: string; status?: string }
+): OperationsContinuityWorkflowSummary | null {
+  const sorted = [...rows].sort((left, right) => right.updatedAtUtc.localeCompare(left.updatedAtUtc));
+  const scopedRows = sorted.filter((row) =>
+    matchesOptionalValue(row.fundAccountId, query.fundAccountId) &&
+    matchesOptionalValue(row.periodId, query.periodId) &&
+    matchesOptionalValue(row.status, query.status)
+  );
+
+  if ((query.fundAccountId || query.periodId || query.status) && scopedRows.length === 0) {
+    return null;
+  }
+
+  return scopedRows[0] ?? sorted[0] ?? null;
+}
+
+function matchesOptionalValue(actual: string, expected: string | undefined): boolean {
+  return expected === undefined || actual.localeCompare(expected, undefined, { sensitivity: "accent" }) === 0;
+}
+
 function AccountingApprovalsWorkstream() {
   const { search } = useLocation();
   const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
@@ -1473,6 +1509,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const { pathname, search } = useLocation();
   const workstream = resolveAccountingWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
+  const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const reconciliation = useAccountingReconciliationViewModel(data, workstream);
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
@@ -1782,8 +1819,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     setCloseWorkflowLoading(true);
     setCloseWorkflowError(null);
     try {
-      const rows = await getOperationsContinuityWorkflows();
-      const selected = [...rows].sort((left, right) => right.updatedAtUtc.localeCompare(left.updatedAtUtc))[0] ?? null;
+      const rows = await getOperationsContinuityWorkflows(closeWorkflowQuery);
+      const selected = selectCloseWorkflowSummary(rows, closeWorkflowQuery);
       if (!selected) {
         setCloseWorkflow(null);
         return;
@@ -1801,7 +1838,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
   useEffect(() => {
     void refreshCloseWorkflow();
-  }, [data]);
+  }, [data, closeWorkflowQuery]);
 
   const closeCommandCenter = useMemo(
     () => data ? buildCloseCommandCenterViewState({
