@@ -138,6 +138,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             PostingCommand = approvedCommand
         };
 
+        EnsureAccountingPeriodAcceptsPosting(approvedWrite, period);
         await journalStore.AppendAsync(approvedWrite, ct).ConfigureAwait(false);
         var posted = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
         return new PostedPostingRuleJournalCandidateResultDto(
@@ -146,6 +147,42 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 ? BuildPostedResult(approvedWrite, ledgerBookId, recordedAtUtc)
                 : BuildPostedResult(posted, ledgerBookId),
             WasReplay: false);
+    }
+
+    private static void EnsureAccountingPeriodAcceptsPosting(
+        LedgerJournalEntryWrite write,
+        LedgerAccountingPeriod period)
+    {
+        if (string.Equals(period.Status, "Open", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        if (string.Equals(period.Status, "SoftClosed", StringComparison.Ordinal))
+        {
+            if (write.PostingKind != LedgerPostingKindDto.Adjustment)
+            {
+                throw new LedgerValidationException(
+                    $"Accounting period '{period.Label}' is soft-closed; only Adjustment postings are accepted.");
+            }
+
+            if (write.AdjustmentApproval?.Status != LedgerAdjustmentApprovalStatusDto.Approved)
+            {
+                throw new LedgerValidationException(
+                    $"Accounting period '{period.Label}' is soft-closed; Adjustment postings require approved governance metadata.");
+            }
+
+            return;
+        }
+
+        if (string.Equals(period.Status, "HardClosed", StringComparison.Ordinal))
+        {
+            throw new LedgerValidationException(
+                $"Accounting period '{period.Label}' is hard-closed; no postings are permitted.");
+        }
+
+        throw new LedgerValidationException(
+            $"Accounting period '{period.Label}' has unsupported status '{period.Status}'.");
     }
 
     private static PostingRuleJournalCandidateRequestDto WithPostingContext(

@@ -558,6 +558,34 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task PostCandidateAsync_HardClosedPeriodBlocksGeneratedPostingBeforeAppend()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId, "HardClosed"));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                ledgerBookId,
+                periodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1"),
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: ["approval://workpaper/generated-interest-202605"]));
+
+        await act.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*hard-closed; no postings are permitted*");
+        store.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task PostCandidateAsync_WithoutLedgerStoreFailsClosed()
     {
         var ledgerBookId = Guid.NewGuid();
@@ -814,7 +842,7 @@ public sealed class AccountingPostingCandidateServiceTests
             AccountingPolicyId: PolicyIdForBasis(accountingBasis),
             AccountingPolicyVersion: "v1");
 
-    private static LedgerAccountingPeriod BuildPeriod(Guid periodId, Guid ledgerBookId)
+    private static LedgerAccountingPeriod BuildPeriod(Guid periodId, Guid ledgerBookId, string status = "Open")
         => new(
             periodId,
             ledgerBookId,
@@ -823,9 +851,11 @@ public sealed class AccountingPostingCandidateServiceTests
             "May 2026",
             new DateOnly(2026, 5, 1),
             new DateOnly(2026, 5, 31),
-            "Open",
+            status,
             DateTimeOffset.Parse("2026-05-01T00:00:00Z"),
-            ClosedAt: null,
+            ClosedAt: string.Equals(status, "Open", StringComparison.Ordinal)
+                ? null
+                : DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
             Version: 1);
 
     private sealed class CapturingJournalDraftService : IAccountingJournalDraftService
