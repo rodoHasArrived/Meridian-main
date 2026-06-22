@@ -162,6 +162,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
+    private LedgerPeriodDto? _selectedManualJournalPeriod;
     private FundProfileDetail? _activeFundProfile;
     private bool _isLoading;
     private string _statusText = "Select a fund-linked context to load accounting configuration.";
@@ -889,6 +890,13 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public string ManualJournalDraftDateText
         => (_selectedDraft?.AccountingDate ?? DateOnly.FromDateTime(DateTime.UtcNow)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+    public string ManualJournalDraftPeriodText
+        => !string.IsNullOrWhiteSpace(_selectedDraft?.PeriodId)
+            ? _selectedDraft.PeriodId
+            : _selectedManualJournalPeriod is { } period
+                ? $"{period.Label} | {period.PeriodId:D}"
+                : "No open ledger period selected";
+
     public string ManualJournalDraftBalanceText
         => _selectedDraft is { } draft
             ? $"{draft.TotalDebits:0.##} / {draft.TotalCredits:0.##} {draft.Currency}"
@@ -929,6 +937,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             }
 
             ApplyConfiguration(_configuration);
+            await LoadManualJournalPeriodAsync(ct).ConfigureAwait(false);
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
             await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
             await LoadOperationsPostureAsync(ct).ConfigureAwait(false);
@@ -1060,6 +1069,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
             _configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
             ApplyConfiguration(_configuration);
+            await LoadManualJournalPeriodAsync(ct).ConfigureAwait(false);
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
             await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
             StatusText = "Baseline chart, template, and posting policy were saved with audit evidence.";
@@ -1089,6 +1099,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     EvidenceLinks: ["accounting-config://desktop-activation"]),
                 ct).ConfigureAwait(false);
             ApplyConfiguration(_configuration);
+            await LoadManualJournalPeriodAsync(ct).ConfigureAwait(false);
             await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
             StatusText = "Accounting configuration is active.";
         }
@@ -1142,6 +1153,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 created.LedgerBookId,
                 ct).ConfigureAwait(false);
             ApplyConfiguration(_configuration);
+            await LoadManualJournalPeriodAsync(ct).ConfigureAwait(false);
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
             await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
             await LoadOperationsPostureAsync(ct).ConfigureAwait(false);
@@ -1785,6 +1797,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         RulesStudioStatusText = "Locked";
         RulesStudioDetailText = "Select a fund-linked context before reviewing effective-dated rules, tests, and promotion approvals.";
         ManualJournalStatusText = "Locked until a fund context is selected.";
+        _selectedManualJournalPeriod = null;
         CapitalAccountWorkbenchStatusText = "Locked until a fund context is selected.";
         ExternalGlStatusText = "Locked until a fund context is selected.";
         PostingPostureText = "Posting/export remains disabled.";
@@ -2977,8 +2990,35 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         RaisePropertyChanged(nameof(ManualJournalDraftReferenceText));
         RaisePropertyChanged(nameof(ManualJournalDraftDateText));
+        RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
         RaisePropertyChanged(nameof(ManualJournalDraftBalanceText));
         RaisePropertyChanged(nameof(ManualJournalDraftBalanceBadgeText));
+    }
+
+    private async Task LoadManualJournalPeriodAsync(CancellationToken ct)
+    {
+        _selectedManualJournalPeriod = null;
+        if (_ledgerBookService is null || _configuration is null)
+        {
+            RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
+            return;
+        }
+
+        var ledgerBookId = ResolveActiveLedgerBook(_configuration)?.LedgerBookId ?? _configuration.LedgerBookId;
+        if (!ledgerBookId.HasValue)
+        {
+            RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
+            return;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var openPeriods = await _ledgerBookService.ListOpenPeriodsAsync(ledgerBookId.Value, ct).ConfigureAwait(false);
+        _selectedManualJournalPeriod = openPeriods
+            .OrderByDescending(period => period.StartDate <= today && today <= period.EndDate)
+            .ThenByDescending(period => period.StartDate)
+            .ThenByDescending(period => period.PeriodNo)
+            .FirstOrDefault();
+        RaisePropertyChanged(nameof(ManualJournalDraftPeriodText));
     }
 
     private async Task LoadCapitalAccountWorkbenchAsync(CancellationToken ct)
@@ -3155,11 +3195,13 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var ledgerBookId = _configuration?.LedgerBookId ?? _configuration?.LedgerBooks.FirstOrDefault()?.LedgerBookId;
         var journalEntryId = _selectedDraft?.JournalEntryId ?? Guid.NewGuid();
         var accountingDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        var periodId = _selectedDraft?.PeriodId ?? CreateStableGuid(
-            "manual-je-period",
-            fundProfileId,
-            ledgerBookId?.ToString("D") ?? "fund-level",
-            accountingDate.ToString("yyyy-MM", CultureInfo.InvariantCulture)).ToString("D");
+        var periodId = _selectedDraft?.PeriodId
+            ?? _selectedManualJournalPeriod?.PeriodId.ToString("D", CultureInfo.InvariantCulture)
+            ?? CreateStableGuid(
+                "manual-je-period",
+                fundProfileId,
+                ledgerBookId?.ToString("D") ?? "fund-level",
+                accountingDate.ToString("yyyy-MM", CultureInfo.InvariantCulture)).ToString("D");
         var entityId = (_activeFundProfile?.EntityIds ?? []).FirstOrDefault();
         var dimensions = new LedgerDimensionSetDto(
             FundId: fundProfileId,

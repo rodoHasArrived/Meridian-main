@@ -704,6 +704,8 @@
                                             <TextBox Text="{Binding ManualJournalDraftReferenceText}" IsReadOnly="True" Margin="0,4,0,0" />
                                         </StackPanel>
                                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,10">
+                                            <TextBlock Text="Ledger Period" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ManualJournalDraftPeriodText}" IsReadOnly="True" Margin="0,4,0,8" AutomationProperties.AutomationId="AccountingManualJournalPeriodText" />
                                             <TextBlock Text="Memo" Style="{StaticResource MetricLabelStyle}" />
                                             <TextBox Text="{Binding DraftMemo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                         </StackPanel>

@@ -377,6 +377,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && draft.TreasuryContext != null
             && draft.TreasuryContext.FundEventType == nameof(ManualJournalEntryTypeDto.CapitalCall)
             && draft.TreasuryContext.CapitalAccountId == "capital-account:alpha-fund:default"
+            && draft.PeriodId == harness.LedgerBookService.OpenPeriod.PeriodId.ToString("D")
             && draft.TotalDebits == 250m
             && draft.TotalCredits == 250m);
     }
@@ -1006,6 +1007,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingProductionReadinessIssueGrid");
         xaml.Should().Contain("AccountingProductionReadinessGapGrid");
         xaml.Should().Contain("ProductionReadinessGapRows");
+        xaml.Should().Contain("AccountingManualJournalPeriodText");
+        xaml.Should().Contain("ManualJournalDraftPeriodText");
         xaml.Should().Contain("AccountingProductionReadinessWorkflowGrid");
         xaml.Should().Contain("ProductionReadinessWorkflowRows");
         xaml.Should().Contain("AccountingProductionReadinessDimensionalControlGrid");
@@ -1117,7 +1120,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             configurationService,
             postingCandidateService,
             tenantAdministrationProfileStore,
-            migrationRunArtifactStore);
+            migrationRunArtifactStore,
+            ledgerBookService);
     }
 
     private sealed record AccountingConfigureHarness(
@@ -1127,7 +1131,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         AccountingConfigurationService ConfigurationService,
         TestAccountingPostingCandidateService PostingCandidateService,
         IAccountingTenantAdministrationProfileStore TenantAdministrationProfileStore,
-        IAccountingMigrationRunArtifactStore MigrationRunArtifactStore);
+        IAccountingMigrationRunArtifactStore MigrationRunArtifactStore,
+        TestLedgerBookService LedgerBookService);
 
 
     private sealed record PresetExpectation(
@@ -1307,6 +1312,22 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
 
         public LedgerBookDto Book => _book;
 
+        public LedgerPeriodDto OpenPeriod { get; } = new(
+            Guid.Parse("84ee5cf3-d598-4540-89f5-c8650d6cfef5"),
+            Guid.Parse("7e0be005-49e1-46eb-9d4f-89d75e2328bd"),
+            2026,
+            6,
+            "2026-06",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30),
+            LedgerPeriodStatusDto.Open,
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z", CultureInfo.InvariantCulture),
+            null,
+            1,
+            AccountingBasisKindDto.Primary,
+            "legacy-v1",
+            "legacy-v1");
+
         public CreateLedgerBookRequest? LastCreateRequest { get; private set; }
 
         public Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default)
@@ -1392,13 +1413,21 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         public Task<IReadOnlyList<LedgerPeriodDto>> ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<LedgerPeriodDto>>([]);
+            var matches =
+                (!query.LedgerBookId.HasValue || query.LedgerBookId == OpenPeriod.LedgerBookId) &&
+                (!query.Status.HasValue || query.Status == OpenPeriod.Status) &&
+                (!query.AccountingBasis.HasValue || query.AccountingBasis == OpenPeriod.AccountingBasis) &&
+                (!query.OpenOnly || OpenPeriod.Status == LedgerPeriodStatusDto.Open);
+            return Task.FromResult<IReadOnlyList<LedgerPeriodDto>>(matches ? [OpenPeriod] : []);
         }
 
         public Task<IReadOnlyList<LedgerPeriodDto>> ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<LedgerPeriodDto>>([]);
+            return Task.FromResult<IReadOnlyList<LedgerPeriodDto>>(
+                !ledgerBookId.HasValue || ledgerBookId == OpenPeriod.LedgerBookId
+                    ? [OpenPeriod]
+                    : []);
         }
 
         public Task<LedgerPeriodSummaryDto?> GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default)

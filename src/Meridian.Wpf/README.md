@@ -78,7 +78,8 @@ latest retained run, blocking issue codes, required actions, and canonical dimen
 production-readiness payload, renders the shared production-gap checklist for configurable
 multi-ledger accounting, enterprise configuration studio coverage, guarded external GL integration,
 dimensional ledger and reporting coverage, and production-control hardening, surfaces
-shared ledger-book setup candidate guidance and can create the ledger book through the shared ledger-book service when book-scoped
+shared ledger-book setup candidate guidance, loads the active open ledger period through the shared ledger-book service for
+manual journal draft validation, and can create the ledger book through the shared ledger-book service when book-scoped
 configuration targets a missing registered book, renders a shared-workspace ledger-book
 administration grid with selected/available books, fund-structure scope, basis, currency, policy,
 description, and update timestamps, offers type-specific
