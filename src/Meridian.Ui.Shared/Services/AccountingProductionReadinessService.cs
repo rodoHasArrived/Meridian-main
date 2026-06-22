@@ -480,7 +480,7 @@ public sealed class AccountingProductionReadinessService
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
-        var dimensionalReportingReadiness = BuildDimensionalReportingReadiness(request);
+        var dimensionalReportingReadiness = await BuildDimensionalReportingReadinessAsync(request, fundProfileId, ct).ConfigureAwait(false);
         var service = _services.GetService<IAccountingConfigurationService>();
         if (service is null)
         {
@@ -625,9 +625,14 @@ public sealed class AccountingProductionReadinessService
         }
     }
 
-    private static AccountingDimensionalReportingReadinessDto BuildDimensionalReportingReadiness(
-        AccountingProductionReadinessRequestDto request)
-        => new(
+    private async Task<AccountingDimensionalReportingReadinessDto> BuildDimensionalReportingReadinessAsync(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        CancellationToken ct)
+    {
+        var retainedPackageEvidence = await LoadCertifiedReportPackageDimensionEvidenceAsync(request, fundProfileId, ct).ConfigureAwait(false);
+        var evidenceReferences = NormalizeEvidenceReferences(request.DimensionalReportingEvidenceLinks.Concat(retainedPackageEvidence));
+        return new AccountingDimensionalReportingReadinessDto(
             request.LedgerBookId,
             request.PeriodReportDimensionQueriesCertified,
             request.CrossPeriodReportDimensionQueriesCertified,
@@ -635,8 +640,54 @@ public sealed class AccountingProductionReadinessService
             request.ExternalExportDimensionMappingCertified,
             request.LedgerLineDimensionsPersistedCertified,
             request.TrialBalanceDimensionFiltersCertified,
-            request.ReportPackageDimensionProvenanceCertified,
-            NormalizeEvidenceReferences(request.DimensionalReportingEvidenceLinks));
+            request.ReportPackageDimensionProvenanceCertified || retainedPackageEvidence.Count > 0,
+            evidenceReferences);
+    }
+
+    private async Task<IReadOnlyList<string>> LoadCertifiedReportPackageDimensionEvidenceAsync(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        CancellationToken ct)
+    {
+        if (!request.LedgerBookId.HasValue)
+        {
+            return [];
+        }
+
+        var service = _services.GetService<IAccountingReportPackageService>();
+        if (service is null)
+        {
+            return [];
+        }
+
+        var packages = await service
+            .ListPackagesAsync(fundProfileId, null, request.LedgerBookId, null, request.TenantId, request.CompanyId, ct)
+            .ConfigureAwait(false);
+        return packages
+            .Where(static package => package.Certification.State == AccountingCertificationStateDto.Certified)
+            .Select(package => BuildReportPackageDimensionEvidenceReference(package, request.LedgerBookId.Value))
+            .Where(static reference => !string.IsNullOrWhiteSpace(reference))
+            .Select(static reference => reference!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static string? BuildReportPackageDimensionEvidenceReference(
+        AccountingReportPackageBundleDto package,
+        Guid ledgerBookId)
+    {
+        var scope = package.DimensionScope;
+        if (scope is null ||
+            !scope.HasExplicitScope ||
+            scope.LedgerBookId != ledgerBookId ||
+            string.IsNullOrWhiteSpace(scope.ScopeHash))
+        {
+            return null;
+        }
+
+        return $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-package-provenance/{package.FinancialStatements.PackageId}/dimension-scope/{scope.ScopeHash}";
+    }
 
     private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildDimensionalReportingIssues(
         AccountingDimensionalReportingReadinessDto readiness)

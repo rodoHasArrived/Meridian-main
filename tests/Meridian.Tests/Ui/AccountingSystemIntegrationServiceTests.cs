@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using IAccountingReportPackageService = Meridian.FinancialOperations.AccountingClose.IAccountingReportPackageService;
 
 namespace Meridian.Tests.Ui;
 
@@ -570,6 +571,85 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
             component.EvidenceReferences.Contains(certifiedEvidence) &&
             component.Issues.All(issue => issue.Code != "close-reporting.dimension-controls-incomplete"));
+    }
+
+    [Fact]
+    public async Task ProductionReadinessService_UsesCertifiedReportPackageDimensionScopeAsProvenanceEvidence()
+    {
+        var services = new ServiceCollection();
+        var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var retainedPackage = BuildReportPackage(
+            ledgerBookId,
+            AccountingCertificationStateDto.Certified,
+            "dimension-scope-alpha");
+        var reportPackageService = new StubAccountingReportPackageService([retainedPackage]);
+        services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
+        services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.AddSingleton<IAccountingReportPackageService>(reportPackageService);
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+
+        var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodReportDimensionQueriesCertified: true,
+                CrossPeriodReportDimensionQueriesCertified: true,
+                JournalQueryDimensionFiltersCertified: true,
+                ExternalExportDimensionMappingCertified: true,
+                LedgerLineDimensionsPersistedCertified: true,
+                TrialBalanceDimensionFiltersCertified: true,
+                DimensionalReportingEvidenceLinks:
+                [
+                    $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full/dimension-scope/canonical-production"
+                ]));
+
+        readiness.DimensionalReporting.Should().NotBeNull();
+        reportPackageService.ListCalls.Should().Be(1);
+        readiness.DimensionalReporting!.ReportPackageDimensionProvenanceCertified.Should().BeTrue();
+        readiness.DimensionalReporting.HasReportPackageDimensionProvenanceEvidence.Should().BeTrue();
+        readiness.DimensionalReporting.CompletedControlCount.Should().Be(10);
+        readiness.DimensionalReporting.EvidenceReferences.Should().Contain(reference =>
+            reference.Contains($"ledger-book/{ledgerBookId:D}", StringComparison.OrdinalIgnoreCase) &&
+            reference.Contains("report-package-provenance", StringComparison.OrdinalIgnoreCase) &&
+            reference.Contains("dimension-scope/dimension-scope-alpha", StringComparison.OrdinalIgnoreCase));
+        readiness.Issues.Should().NotContain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            (issue.Code == "dimensions.report-package-provenance-not-certified" ||
+             issue.Code == "dimensions.report-package-provenance-evidence-missing"));
+
+        var draftPackageServices = new ServiceCollection();
+        var draftReportPackageService = new StubAccountingReportPackageService(
+            [BuildReportPackage(ledgerBookId, AccountingCertificationStateDto.ReadyForReview, "dimension-scope-draft")]);
+        draftPackageServices.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
+        draftPackageServices.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        draftPackageServices.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        draftPackageServices.AddSingleton<IAccountingReportPackageService>(draftReportPackageService);
+        draftPackageServices.AddSingleton<AccountingProductionReadinessService>();
+        await using var draftProvider = draftPackageServices.BuildServiceProvider();
+
+        var draftReadiness = await draftProvider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodReportDimensionQueriesCertified: true,
+                CrossPeriodReportDimensionQueriesCertified: true,
+                JournalQueryDimensionFiltersCertified: true,
+                ExternalExportDimensionMappingCertified: true,
+                LedgerLineDimensionsPersistedCertified: true,
+                TrialBalanceDimensionFiltersCertified: true,
+                DimensionalReportingEvidenceLinks:
+                [
+                    $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full/dimension-scope/canonical-production"
+                ]));
+
+        draftReadiness.DimensionalReporting.Should().NotBeNull();
+        draftReportPackageService.ListCalls.Should().Be(1);
+        draftReadiness.DimensionalReporting!.ReportPackageDimensionProvenanceCertified.Should().BeFalse();
+        draftReadiness.Issues.Should().Contain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Code == "dimensions.report-package-provenance-not-certified");
     }
 
     [Fact]
@@ -4435,6 +4515,142 @@ public sealed class AccountingSystemIntegrationServiceTests
 
             throw new InvalidOperationException($"Unexpected QuickBooks request: {request.Method} {uri}");
         }
+    }
+
+    private static AccountingReportPackageBundleDto BuildReportPackage(
+        Guid ledgerBookId,
+        AccountingCertificationStateDto state,
+        string scopeHash)
+    {
+        var dimensions = new LedgerDimensionSetDto(
+            FundId: "default-fund",
+            EntityId: "entity-alpha",
+            SleeveId: "sleeve-alpha",
+            StrategyId: "strategy-alpha",
+            InvestorId: "investor-alpha",
+            CapitalAccountId: "capital-alpha",
+            InstrumentId: Guid.Parse("11111111-2222-3333-4444-555555555555"),
+            TaxLotId: "tax-lot-alpha",
+            CostCenterId: "cost-center-alpha",
+            CounterpartyId: "counterparty-alpha",
+            BookId: ledgerBookId.ToString("D"),
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var certification = new ReportCertificationDto(
+            $"cert-report-package-{scopeHash}",
+            state,
+            "controller@meridian.local",
+            DateTimeOffset.Parse("2026-06-30T22:00:00Z"),
+            "Report package dimensional provenance retained.",
+            [$"evidence://ledger-book/{ledgerBookId:D}/report-package/{scopeHash}"]);
+        var packageId = $"report-package-default-fund-2026-06-{scopeHash}";
+
+        return new AccountingReportPackageBundleDto(
+            new FinancialStatementPackageDto(
+                packageId,
+                "default-fund",
+                ledgerBookId,
+                "2026-06",
+                state,
+                ["balance-sheet", "income-statement"],
+                certification.EvidenceLinks,
+                certification,
+                LineProvenance:
+                [
+                    new ReportLineProvenanceDto(
+                        "balance-sheet",
+                        "cash",
+                        "Cash",
+                        "ledger",
+                        100m,
+                        "USD",
+                        dimensions,
+                        certification.EvidenceLinks)
+                ],
+                Dimensions: dimensions),
+            [],
+            new RealizedGainLossReportDto(
+                $"realized-gain-loss-{scopeHash}",
+                "default-fund",
+                ledgerBookId,
+                "2026-06",
+                dimensions,
+                0m,
+                "USD",
+                state,
+                certification.EvidenceLinks),
+            new NavPackageDto(
+                $"nav-package-{scopeHash}",
+                "default-fund",
+                ledgerBookId,
+                "2026-06",
+                dimensions,
+                100m,
+                "USD",
+                state,
+                certification.EvidenceLinks,
+                certification),
+            certification,
+            DimensionScope: new ReportDimensionScopeDto(
+                ledgerBookId,
+                dimensions,
+                true,
+                scopeHash,
+                $"dimension-scope:{scopeHash}",
+                ["bookId", "entityId", "externalGl.Department", "fundId"]));
+    }
+
+    private sealed class StubAccountingReportPackageService : IAccountingReportPackageService
+    {
+        private readonly IReadOnlyList<AccountingReportPackageBundleDto> _packages;
+
+        public StubAccountingReportPackageService(IReadOnlyList<AccountingReportPackageBundleDto> packages)
+        {
+            _packages = packages;
+        }
+
+        public int ListCalls { get; private set; }
+
+        public Task<AccountingReportPackageBundleDto> BuildPackageAsync(
+            AccountingReportPackageRequestDto request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<AccountingReportPackageBundleDto>> ListPackagesAsync(
+            string? fundProfileId = null,
+            string? periodId = null,
+            Guid? ledgerBookId = null,
+            LedgerDimensionSetDto? dimensions = null,
+            string? tenantId = null,
+            string? companyId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            ListCalls++;
+            return Task.FromResult<IReadOnlyList<AccountingReportPackageBundleDto>>(_packages
+                .Where(package => string.IsNullOrWhiteSpace(fundProfileId) ||
+                                  string.Equals(package.FinancialStatements.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
+                .Where(package => string.IsNullOrWhiteSpace(periodId) ||
+                                  string.Equals(package.FinancialStatements.PeriodId, periodId, StringComparison.OrdinalIgnoreCase))
+                .Where(package => !ledgerBookId.HasValue ||
+                                  package.FinancialStatements.LedgerBookId == ledgerBookId)
+                .ToArray());
+        }
+
+        public Task<AccountingReportPackageBundleDto?> CertifyPackageAsync(
+            CertifyAccountingReportPackageRequestDto request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ReportExportArtifactManifestDto?> GetExportArtifactManifestAsync(
+            string packageId,
+            string artifactId,
+            string? tenantId = null,
+            string? companyId = null,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
     }
 
     private sealed class FakeQuickBooksClient : IQuickBooksOnlineClient
