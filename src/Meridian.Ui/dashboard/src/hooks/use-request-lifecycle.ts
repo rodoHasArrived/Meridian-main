@@ -148,7 +148,18 @@ export function useRequestLifecycle({
     controllerRef.current?.abort();
     controllerRef.current = null;
     inFlightRef.current = false;
-  }, []);
+    if (mountedRef.current) {
+      const settledAt = new Date().toISOString();
+      setStatus((current) => ({
+        ...current,
+        phase: current.inFlight ? "stale" : current.phase,
+        inFlight: false,
+        version: versionRef.current,
+        message: current.inFlight ? staleMessage : current.message,
+        settledAt: current.inFlight ? settledAt : current.settledAt
+      }));
+    }
+  }, [staleMessage]);
 
   const start = useCallback((options: StartRequestOptions = {}): RequestLifecycleToken | null => {
     if (!mountedRef.current) {

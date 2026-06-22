@@ -91,6 +91,35 @@ describe("useRequestLifecycle", () => {
     expect(next?.version).toBeGreaterThan(first!.version);
   });
 
+  it("Scenario_FullRefreshInvalidatesSubsidiaryRequest_ClearsRunningStatus", () => {
+    const { result } = renderHook(() => useRequestLifecycle({ operation: "trading refresh" }));
+
+    let subsidiary: ReturnType<typeof result.current.start>;
+    act(() => {
+      subsidiary = result.current.start();
+    });
+
+    expect(subsidiary).not.toBeNull();
+    expect(result.current.status.phase).toBe("running");
+    expect(result.current.status.inFlight).toBe(true);
+
+    act(() => {
+      result.current.invalidate();
+    });
+
+    expect(result.current.status.phase).toBe("stale");
+    expect(result.current.status.inFlight).toBe(false);
+    expect(result.current.status.message).toBe("An older refresh response was discarded.");
+
+    act(() => {
+      expect(result.current.finish(subsidiary!)).toBe(false);
+    });
+
+    expect(result.current.status.phase).toBe("stale");
+    expect(result.current.status.inFlight).toBe(false);
+    expect(result.current.status.staleDiscardCount).toBe(1);
+  });
+
   it("Scenario_RetryableProviderFailure_ExposesBackoffMetadataForUserStatus", () => {
     const { result } = renderHook(() => useRequestLifecycle({
       operation: "provider routing refresh",
