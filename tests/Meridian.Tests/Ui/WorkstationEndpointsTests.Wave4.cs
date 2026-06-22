@@ -1207,7 +1207,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task LedgerAccountingReportPackageCertificationEndpoint_CertifiesReadyPackageAndPersistsState()
+    public async Task LedgerAccountingReportPackageCertificationEndpoint_BlocksReadyPackageWithoutCloseWorkflowAndRequiresBookEvidence()
     {
         await using var app = await CreateAppAsync(
             RegisterOperationsContinuityServices,
@@ -1239,7 +1239,8 @@ public sealed partial class WorkstationEndpointsTests
         var ready = await buildResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
         ready.Should().NotBeNull();
         ready!.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
-        var certificationEvidence = $"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:{ready.FinancialStatements.PeriodId}";
+        var genericCertificationEvidence = $"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:{ready.FinancialStatements.PeriodId}";
+        var certificationEvidence = $"{genericCertificationEvidence}:book:{ledgerBookId:D}";
 
         using var assistantCertifyResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerReportsAccountingPackageCertification,
@@ -1253,6 +1254,17 @@ public sealed partial class WorkstationEndpointsTests
 
         assistantCertifyResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
+        using var genericCertifyResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackageCertification,
+            new CertifyAccountingReportPackageRequestDto(
+                ready.FinancialStatements.PackageId,
+                "browser-user",
+                "Controller tried to certify the retained report package without ledger-book provenance.",
+                [genericCertificationEvidence]),
+            ServerJsonOptions);
+
+        genericCertifyResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
         using var certifyResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerReportsAccountingPackageCertification,
             new CertifyAccountingReportPackageRequestDto(
@@ -1262,18 +1274,7 @@ public sealed partial class WorkstationEndpointsTests
                 [certificationEvidence]),
             ServerJsonOptions);
 
-        certifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var certified = await certifyResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
-        certified.Should().NotBeNull();
-        certified!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
-        certified.Certification.Actor.Should().Be("ops-user");
-        certified.Certification.Summary.Should().Be("Controller certified the retained report package.");
-        certified.Certification.EvidenceLinks.Should().Contain(certificationEvidence);
-        certified.FinancialStatements.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
-        certified.InvestorCapitalStatements.Should().OnlyContain(statement =>
-            statement.CertificationState == AccountingCertificationStateDto.Certified);
-        certified.RealizedGainLoss.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
-        certified.NavPackage.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+        certifyResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
         using var historyResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-certify&periodId=2026-12&ledgerBookId={ledgerBookId:D}");
@@ -1281,7 +1282,7 @@ public sealed partial class WorkstationEndpointsTests
         var history = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
         history.Should().ContainSingle(row =>
             row.FinancialStatements.PackageId == ready.FinancialStatements.PackageId &&
-            row.Certification.State == AccountingCertificationStateDto.Certified);
+            row.Certification.State == AccountingCertificationStateDto.ReadyForReview);
 
         using var otherBookHistoryResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-certify&periodId=2026-12&ledgerBookId={Guid.Parse("22222222-2222-2222-2222-222222222222"):D}");
@@ -1289,17 +1290,8 @@ public sealed partial class WorkstationEndpointsTests
         var otherBookHistory = await otherBookHistoryResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
         otherBookHistory.Should().BeEmpty();
 
-        var exportArtifact = certified.ExportArtifacts.First(row => row.ArtifactKind == "financial-statements");
-        using var exportResponse = await client.GetAsync(exportArtifact.Route);
-        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var exportManifest = await exportResponse.Content.ReadFromJsonAsync<ReportExportArtifactManifestDto>(ServerJsonOptions);
-        exportManifest.Should().NotBeNull();
-        exportManifest!.PackageId.Should().Be(certified.FinancialStatements.PackageId);
-        exportManifest.ArtifactId.Should().Be(exportArtifact.ArtifactId);
-        exportManifest.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
-        exportManifest.ContentHash.Should().Be(exportArtifact.ContentHash);
-        exportManifest.ExternalPostingAllowed.Should().BeFalse();
-        exportManifest.Payload.Should().Contain(certificationEvidence);
+        var exportArtifact = ready.ExportArtifacts.First(row => row.ArtifactKind == "financial-statements");
+        exportArtifact.CertificationState.Should().Be(AccountingCertificationStateDto.ReadyForReview);
     }
 
     [Fact]
@@ -1480,6 +1472,7 @@ public sealed partial class WorkstationEndpointsTests
             RegisterOperationsContinuityServices,
             currentUserPermissions: UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
         using var buildResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerReportsAccountingPackage,
@@ -1487,7 +1480,7 @@ public sealed partial class WorkstationEndpointsTests
                 FundProfileId: "fund-draft-certify",
                 PeriodId: "2027-01",
                 Actor: "browser-user",
-                LedgerBookId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                LedgerBookId: ledgerBookId,
                 Nav: 10_000m,
                 EvidenceLinks: ["evidence:report-package:2027-01"]),
             ServerJsonOptions);
@@ -1495,7 +1488,7 @@ public sealed partial class WorkstationEndpointsTests
         var draft = await buildResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
         draft.Should().NotBeNull();
         draft!.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
-        var certificationEvidence = $"evidence:report-certification:controller-approval:{draft.FinancialStatements.PackageId}:{draft.Certification.CertificationId}:{draft.FinancialStatements.PeriodId}";
+        var certificationEvidence = $"evidence:report-certification:controller-approval:{draft.FinancialStatements.PackageId}:{draft.Certification.CertificationId}:{draft.FinancialStatements.PeriodId}:book:{ledgerBookId:D}";
 
         using var certifyResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerReportsAccountingPackageCertification,
