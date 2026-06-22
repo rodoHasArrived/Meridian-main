@@ -493,6 +493,7 @@ public static partial class WorkstationEndpoints
         group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsContinuity), async (
             Guid? fundAccountId,
             string? periodId,
+            Guid? ledgerBookId,
             string? status,
             HttpContext context) =>
         {
@@ -516,7 +517,7 @@ public static partial class WorkstationEndpoints
                 });
             }
 
-            var workflows = await service.ListAsync(fundAccountId, periodId, parsedStatus, context.RequestAborted).ConfigureAwait(false);
+            var workflows = await service.ListAsync(fundAccountId, periodId, parsedStatus, context.RequestAborted, ledgerBookId: ledgerBookId).ConfigureAwait(false);
             return Results.Json(workflows, jsonOptions);
         })
         .WithName("GetOperationsContinuitySummary");

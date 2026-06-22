@@ -1297,7 +1297,7 @@ export function setFeatureCapability(capabilityKey: string, isEnabled: boolean, 
 }
 
 export function getOperationsContinuityWorkflows(
-  filters: { fundAccountId?: string; periodId?: string; status?: string } = {},
+  filters: { fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } = {},
   options: ApiRequestOptions = {}
 ) {
   return getJson<OperationsContinuityWorkflowSummary[]>(workstationOperationsContinuityEndpoint(filters), options);

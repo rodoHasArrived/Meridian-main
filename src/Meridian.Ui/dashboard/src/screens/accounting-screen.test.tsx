@@ -412,6 +412,7 @@ const approvalWorkflowSummary: OperationsContinuityWorkflowSummary = {
   workflowId: "workflow-approval-1",
   fundAccountId: "fund-alpha",
   periodId: "2026-05",
+  ledgerBookId: "book-alpha",
   securityMasterSnapshotId: "sm-snapshot-1",
   brokerSource: "Northern Trust",
   status: "ApprovalPending",
@@ -2823,6 +2824,31 @@ describe("AccountingScreen", () => {
 
     expect(api.getOperationsContinuityWorkflows).toHaveBeenCalledWith({
       fundAccountId: "fund-alpha",
+      ledgerBookId: undefined,
+      periodId: "2026-05",
+      status: undefined
+    });
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+  });
+
+  it("scopes the close command center workflow lookup to route ledger book", async () => {
+    const otherBookWorkflowSummary: OperationsContinuityWorkflowSummary = {
+      ...approvalWorkflowSummary,
+      workflowId: "workflow-other-book-newer",
+      ledgerBookId: "book-tax",
+      updatedAtUtc: "2026-06-15T12:00:00Z"
+    };
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([
+      otherBookWorkflowSummary,
+      approvalWorkflowSummary
+    ]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
+
+    await renderAccountingScreen(data, "/accounting?fundAccountId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05");
+
+    expect(api.getOperationsContinuityWorkflows).toHaveBeenCalledWith({
+      fundAccountId: "fund-alpha",
+      ledgerBookId: "book-alpha",
       periodId: "2026-05",
       status: undefined
     });

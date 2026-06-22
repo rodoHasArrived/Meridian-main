@@ -694,6 +694,7 @@ export function workstationExtensibilityTenantTemplateReadinessEndpoint(tenantTe
 
 export function workstationOperationsContinuityEndpoint(options: {
   fundAccountId?: string;
+  ledgerBookId?: string;
   periodId?: string;
   status?: string;
 } = {}): string {

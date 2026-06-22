@@ -63,7 +63,8 @@ public sealed class PostgresOperationsContinuityStore :
         Guid? fundAccountId = null,
         string? periodId = null,
         OperationsWorkflowStatusDto? status = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
@@ -85,6 +86,12 @@ public sealed class PostgresOperationsContinuityStore :
         {
             command.CommandText += " and period_id = @period_id";
             command.Parameters.AddWithValue("period_id", periodId.Trim());
+        }
+
+        if (ledgerBookId.HasValue)
+        {
+            command.CommandText += " and workflow_json ->> 'ledgerBookId' = @ledger_book_id";
+            command.Parameters.AddWithValue("ledger_book_id", ledgerBookId.Value.ToString("D"));
         }
 
         if (status.HasValue)

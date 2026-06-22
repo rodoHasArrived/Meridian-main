@@ -453,11 +453,13 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
             Guid? fundAccountId = null,
             string? periodId = null,
             OperationsWorkflowStatusDto? status = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            Guid? ledgerBookId = null)
         {
             var summaries = _workflows
                 .Where(workflow => !fundAccountId.HasValue || workflow.FundAccountId == fundAccountId.Value)
                 .Where(workflow => string.IsNullOrWhiteSpace(periodId) || string.Equals(workflow.PeriodId, periodId, StringComparison.OrdinalIgnoreCase))
+                .Where(workflow => !ledgerBookId.HasValue || workflow.LedgerBookId == ledgerBookId.Value)
                 .Where(workflow => !status.HasValue || workflow.Status == status.Value)
                 .Select(ToSummary)
                 .ToArray();
@@ -504,6 +506,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
                 workflow.CreatedAtUtc,
                 workflow.UpdatedAtUtc,
                 workflow.Gates,
-                workflow.NextActions);
+                workflow.NextActions,
+                workflow.LedgerBookId);
     }
 }

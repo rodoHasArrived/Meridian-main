@@ -100,7 +100,8 @@ public interface IOperationsContinuityWorkflowService
         Guid? fundAccountId = null,
         string? periodId = null,
         OperationsWorkflowStatusDto? status = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null);
 
     Task<OperationsContinuityWorkflowDto?> GetAsync(Guid workflowId, CancellationToken ct = default);
 
@@ -206,12 +207,14 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         var existingWorkflows = await _repository
             .ListAsync(request.FundAccountId, request.PeriodId, status: null, ct)
             .ConfigureAwait(false);
-        var openWorkflow = existingWorkflows.FirstOrDefault(static workflow => !workflow.IsClosed);
+        var openWorkflow = existingWorkflows.FirstOrDefault(workflow =>
+            !workflow.IsClosed &&
+            WorkflowScopesCollide(workflow.LedgerBookId, request.LedgerBookId));
         if (openWorkflow is not null)
         {
             return Failure(
                 "WORKFLOW_ALREADY_EXISTS",
-                $"An operations continuity workflow already exists for fund account '{request.FundAccountId}' and period '{request.PeriodId.Trim()}'.",
+                $"An operations continuity workflow already exists for fund account '{request.FundAccountId}', period '{request.PeriodId.Trim()}', and ledger book '{FormatLedgerBookScope(request.LedgerBookId)}'.",
                 [
                     new OperationsWorkflowBlockerDto(
                         "OPERATIONS_CONTINUITY_WORKFLOW_ALREADY_EXISTS",
@@ -1089,9 +1092,10 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         Guid? fundAccountId = null,
         string? periodId = null,
         OperationsWorkflowStatusDto? status = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
-        var workflows = await _repository.ListAsync(fundAccountId, periodId, status, ct).ConfigureAwait(false);
+        var workflows = await _repository.ListAsync(fundAccountId, periodId, status, ct, ledgerBookId: ledgerBookId).ConfigureAwait(false);
         return workflows.Select(ToSummary).ToArray();
     }
 
@@ -2830,7 +2834,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             workflow.CreatedAtUtc,
             workflow.UpdatedAtUtc,
             gates,
-            gates.SelectMany(static gate => gate.NextActions).ToArray());
+            gates.SelectMany(static gate => gate.NextActions).ToArray(),
+            workflow.LedgerBookId);
     }
 
     private static OperationsCloseReadinessDto EvaluateCloseReadiness(OperationsContinuityWorkflow workflow)
@@ -3030,6 +3035,14 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
         return blockers;
     }
+
+    private static bool WorkflowScopesCollide(Guid? existingLedgerBookId, Guid? requestedLedgerBookId)
+        => existingLedgerBookId is null ||
+           requestedLedgerBookId is null ||
+           existingLedgerBookId == requestedLedgerBookId;
+
+    private static string FormatLedgerBookScope(Guid? ledgerBookId)
+        => ledgerBookId?.ToString("D") ?? "fund-level";
 
     private static IReadOnlyList<OperationsEvidenceLinkDto> NormalizeEvidence(
         IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks) =>

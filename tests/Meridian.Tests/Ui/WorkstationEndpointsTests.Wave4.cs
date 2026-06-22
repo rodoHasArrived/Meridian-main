@@ -404,6 +404,14 @@ public sealed partial class WorkstationEndpointsTests
         var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
         var workflowId = start!.Workflow!.WorkflowId;
         start.Workflow.LedgerBookId.Should().Be(ledgerBookId);
+
+        using var listResponse = await client.GetAsync($"{UiApiRoutes.OperationsContinuity}?fundAccountId={fundAccountId:D}&periodId=2026-07&ledgerBookId={ledgerBookId:D}");
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var workflowSummaries = await listResponse.Content.ReadFromJsonAsync<List<OperationsContinuityWorkflowSummaryDto>>(ServerJsonOptions);
+        workflowSummaries.Should().ContainSingle();
+        workflowSummaries![0].WorkflowId.Should().Be(workflowId);
+        workflowSummaries[0].LedgerBookId.Should().Be(ledgerBookId);
+
         var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan.Replace("{workflowId:guid}", workflowId.ToString("D"));
 
         using var planResponse = await client.GetAsync(planRoute);

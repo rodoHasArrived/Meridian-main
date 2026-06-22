@@ -1175,6 +1175,7 @@ export interface OperationsContinuityWorkflowSummary {
   workflowId: string;
   fundAccountId: string;
   periodId: string;
+  ledgerBookId?: string | null;
   securityMasterSnapshotId: string | null;
   brokerSource: string;
   status: OperationsWorkflowStatus;

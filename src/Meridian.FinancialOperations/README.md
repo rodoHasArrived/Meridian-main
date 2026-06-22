@@ -205,9 +205,11 @@ mappings preserve those canonical dimensions before dimensional reporting is tre
 Continuity workflow, converting workflow checklist tasks into dependency-aware close tasks,
 Operations approvals into sign-off rows, close-package publication into period-lock posture, and
 retained late-adjustment requests into materiality-policy validation issues. Workflows that are
-started with a ledger-book scope retain that `LedgerBookId` through the workflow projection and the
-close plan so report-package, close, and ledger-book review surfaces do not lose book context after
-handoff from Operations Continuity. Close-backed accounting report packages inherit the close plan
+started with a ledger-book scope retain that `LedgerBookId` through workflow summaries, workflow
+detail, and the close plan so report-package, close, and ledger-book review surfaces do not lose
+book context after handoff from Operations Continuity. Open workflow duplicate guards allow
+distinct ledger books for the same fund period while still blocking same-book or ambiguous
+fund-level duplicates. Close-backed accounting report packages inherit the close plan
 book when the request omits one, block explicit ledger-book mismatches during package assembly, and
 revalidate the current close-plan book before certification so certified exports cannot drift across
 books. Close-backed report packages with ledger-book scope also require retained ledger,

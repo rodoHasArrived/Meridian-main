@@ -306,10 +306,11 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperationsContinuityEndpoint()).toBe("/api/workstation/operations/continuity");
     expect(workstationOperationsContinuityEndpoint({
       fundAccountId: "fund / 1",
+      ledgerBookId: "book / 1",
       periodId: "2026-05",
       status: "Blocked"
     })).toBe(
-      "/api/workstation/operations/continuity?fundAccountId=fund+%2F+1&periodId=2026-05&status=Blocked"
+      "/api/workstation/operations/continuity?fundAccountId=fund+%2F+1&ledgerBookId=book+%2F+1&periodId=2026-05&status=Blocked"
     );
     expect(workstationOperationsContinuityDetailEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201"

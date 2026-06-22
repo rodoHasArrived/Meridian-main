@@ -1001,10 +1001,11 @@ function mergeExternalGlExportPackage(
   return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
-function parseCloseWorkflowQuery(search: string): { fundAccountId?: string; periodId?: string; status?: string } {
+function parseCloseWorkflowQuery(search: string): { fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } {
   const params = new URLSearchParams(search);
   return {
     fundAccountId: normalizeOptionalQueryValue(params.get("fundAccountId")),
+    ledgerBookId: normalizeOptionalQueryValue(params.get("ledgerBookId")),
     periodId: normalizeOptionalQueryValue(params.get("periodId")),
     status: normalizeOptionalQueryValue(params.get("workflowStatus"))
   };
@@ -1017,24 +1018,25 @@ function normalizeOptionalQueryValue(value: string | null): string | undefined {
 
 function selectCloseWorkflowSummary(
   rows: OperationsContinuityWorkflowSummary[],
-  query: { fundAccountId?: string; periodId?: string; status?: string }
+  query: { fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string }
 ): OperationsContinuityWorkflowSummary | null {
   const sorted = [...rows].sort((left, right) => right.updatedAtUtc.localeCompare(left.updatedAtUtc));
   const scopedRows = sorted.filter((row) =>
     matchesOptionalValue(row.fundAccountId, query.fundAccountId) &&
+    matchesOptionalValue(row.ledgerBookId ?? null, query.ledgerBookId) &&
     matchesOptionalValue(row.periodId, query.periodId) &&
     matchesOptionalValue(row.status, query.status)
   );
 
-  if ((query.fundAccountId || query.periodId || query.status) && scopedRows.length === 0) {
+  if ((query.fundAccountId || query.ledgerBookId || query.periodId || query.status) && scopedRows.length === 0) {
     return null;
   }
 
   return scopedRows[0] ?? sorted[0] ?? null;
 }
 
-function matchesOptionalValue(actual: string, expected: string | undefined): boolean {
-  return expected === undefined || actual.localeCompare(expected, undefined, { sensitivity: "accent" }) === 0;
+function matchesOptionalValue(actual: string | null, expected: string | undefined): boolean {
+  return expected === undefined || (actual?.localeCompare(expected, undefined, { sensitivity: "accent" }) ?? -1) === 0;
 }
 
 function AccountingApprovalsWorkstream() {

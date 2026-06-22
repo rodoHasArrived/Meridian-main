@@ -860,7 +860,8 @@ public sealed record OperationsContinuityWorkflowSummaryDto(
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
     IReadOnlyList<OperationsGateDto> Gates,
-    IReadOnlyList<OperationsNextActionDto> NextActions);
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    Guid? LedgerBookId = null);
 
 public sealed record OperationsReviewedAutomationSummaryDto(
     string SummaryId,

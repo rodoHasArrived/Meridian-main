@@ -397,10 +397,16 @@ public sealed class AuditTrailExplorerServiceTests
             Guid? fundAccountId = null,
             string? periodId = null,
             OperationsWorkflowStatusDto? status = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            Guid? ledgerBookId = null)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>>([summary]);
+            var matches =
+                (!fundAccountId.HasValue || summary.FundAccountId == fundAccountId.Value) &&
+                (string.IsNullOrWhiteSpace(periodId) || string.Equals(summary.PeriodId, periodId, StringComparison.OrdinalIgnoreCase)) &&
+                (!ledgerBookId.HasValue || summary.LedgerBookId == ledgerBookId.Value) &&
+                (!status.HasValue || summary.Status == status.Value);
+            return Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>>(matches ? [summary] : []);
         }
 
         public Task<IReadOnlyList<OperationsTimelineEntryDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default)

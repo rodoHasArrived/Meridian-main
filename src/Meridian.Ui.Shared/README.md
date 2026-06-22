@@ -69,7 +69,9 @@ changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 Operations Continuity workflow list, detail, timeline, break-list, ledger-preview, close-readiness,
 approval-policy, and close-calendar reads require the shared operations-continuity read permission
 because those payloads expose Financial Operations evidence, blockers, assignments, and period-close
-posture.
+posture. The workflow list route accepts `ledgerBookId` beside fund-account, period, and status
+filters, and returned summaries carry the retained workflow book scope so browser and WPF close
+surfaces do not select a newer workflow from another accounting book.
 `FundOperationsWorkspaceReadService` passes Operations Continuity reviewed-automation posture through
 the shared governance lifecycle projection so browser and WPF report-pack handoff surfaces render
 the same automation guardrails and retained review evidence.

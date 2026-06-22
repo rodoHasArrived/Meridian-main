@@ -63,7 +63,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             : await _manualJournalEntryWorkbenchService
                 .GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct)
                 .ConfigureAwait(false);
-        var workflows = await LoadWorkflowsAsync(fundAccountId, periodId, ct).ConfigureAwait(false);
+        var workflows = await LoadWorkflowsAsync(fundAccountId, ledgerBookId, periodId, ct).ConfigureAwait(false);
         var records = FilterFundEventRecords(activity, periodId, entityId);
         var subledgers = FilterSubledgers(activity, records);
         var reportOutputs = FilterReportOutputs(activity, records);
@@ -114,6 +114,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private async Task<IReadOnlyList<OperationsContinuityWorkflowDto>> LoadWorkflowsAsync(
         Guid? fundAccountId,
+        Guid? ledgerBookId,
         string? periodId,
         CancellationToken ct)
     {
@@ -123,7 +124,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         }
 
         var summaries = await _operationsContinuityWorkflowService
-            .ListAsync(fundAccountId, Normalize(periodId), status: null, ct)
+            .ListAsync(fundAccountId, Normalize(periodId), status: null, ct: ct, ledgerBookId: ledgerBookId)
             .ConfigureAwait(false);
         var workflows = new List<OperationsContinuityWorkflowDto>(summaries.Count);
         foreach (var summary in summaries)

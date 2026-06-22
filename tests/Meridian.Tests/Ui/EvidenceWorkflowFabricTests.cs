@@ -3343,12 +3343,14 @@ public sealed class EvidenceWorkflowFabricTests
             Guid? fundAccountId = null,
             string? periodId = null,
             OperationsWorkflowStatusDto? status = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            Guid? ledgerBookId = null)
         {
             ct.ThrowIfCancellationRequested();
             var summaries = _workflows.Values
                 .Where(workflow => !fundAccountId.HasValue || workflow.FundAccountId == fundAccountId.Value)
                 .Where(workflow => string.IsNullOrWhiteSpace(periodId) || string.Equals(workflow.PeriodId, periodId, StringComparison.OrdinalIgnoreCase))
+                .Where(workflow => !ledgerBookId.HasValue || workflow.LedgerBookId == ledgerBookId.Value)
                 .Where(workflow => !status.HasValue || workflow.Status == status.Value)
                 .Select(static workflow => new OperationsContinuityWorkflowSummaryDto(
                     workflow.WorkflowId,
@@ -3361,7 +3363,8 @@ public sealed class EvidenceWorkflowFabricTests
                     workflow.CreatedAtUtc,
                     workflow.UpdatedAtUtc,
                     workflow.Gates,
-                    workflow.NextActions))
+                    workflow.NextActions,
+                    workflow.LedgerBookId))
                 .ToArray();
             return Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>>(summaries);
         }

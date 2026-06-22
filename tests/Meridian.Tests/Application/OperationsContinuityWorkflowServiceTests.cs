@@ -156,6 +156,55 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task StartWorkflowAsync_ShouldAllowDistinctLedgerBooksForSameFundAndPeriod()
+    {
+        var service = CreateService(out _, out _);
+        var fundAccountId = Guid.NewGuid();
+        var primaryBookId = Guid.NewGuid();
+        var taxBookId = Guid.NewGuid();
+
+        var primary = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            fundAccountId,
+            "2026-05",
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "ibkr",
+            Actor: "ops-user",
+            Rationale: "Open primary-book monthly operations close workflow",
+            LedgerBookId: primaryBookId));
+
+        var tax = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            fundAccountId,
+            "2026-05",
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "ibkr",
+            Actor: "ops-user",
+            Rationale: "Open tax-book monthly operations close workflow",
+            LedgerBookId: taxBookId));
+
+        var duplicatePrimary = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            fundAccountId,
+            "2026-05",
+            SecurityMasterSnapshotId: Guid.NewGuid(),
+            BrokerSource: "ibkr",
+            Actor: "ops-user",
+            Rationale: "Retry duplicate primary-book close workflow",
+            LedgerBookId: primaryBookId));
+
+        primary.Success.Should().BeTrue();
+        tax.Success.Should().BeTrue();
+        duplicatePrimary.Success.Should().BeFalse();
+        duplicatePrimary.ErrorCode.Should().Be("WORKFLOW_ALREADY_EXISTS");
+
+        var allSummaries = await service.ListAsync(fundAccountId, "2026-05");
+        allSummaries.Select(static summary => summary.LedgerBookId)
+            .Should().BeEquivalentTo([primaryBookId, taxBookId]);
+
+        var primarySummaries = await service.ListAsync(fundAccountId, "2026-05", ledgerBookId: primaryBookId);
+        primarySummaries.Should().ContainSingle();
+        primarySummaries[0].LedgerBookId.Should().Be(primaryBookId);
+    }
+
+    [Fact]
     public async Task StartWorkflowAsync_ShouldNotPersistWorkflowWhenAuditAppendFails()
     {
         var derivation = new OperationsStatusDerivationService();

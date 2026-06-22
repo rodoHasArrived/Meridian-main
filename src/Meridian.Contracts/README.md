@@ -945,9 +945,9 @@ whose retained artifact identifies the task, sign-off role, and workflow or peri
 late-adjustment approval/rejection with request-, journal-, workflow-, or period-specific evidence
 on the same retained artifact, financial statement, investor capital
 statement, realized gain/loss, NAV, export-artifact manifest, certification, validation, and restatement vocabulary.
-Operations Continuity workflow start and workflow projection DTOs can carry an optional
-`LedgerBookId`, and close-plan DTOs preserve that book scope so close/reporting clients can remain
-ledger-book-native after workflow handoff. Close-backed report package contracts treat ledger-book
+Operations Continuity workflow start, summary-list, and workflow projection DTOs can carry an
+optional `LedgerBookId`, and close-plan DTOs preserve that book scope so close/reporting clients can
+remain ledger-book-native after workflow handoff. Close-backed report package contracts treat ledger-book
 scope as evidence scope as well: retained ledger, reconciliation, rendered-report, and NAV support
 links are expected to name the selected book before the package is ready for certification.
 Posting-rule promotion approval, close sign-off, late-adjustment, report-package certification, and external GL export certification
