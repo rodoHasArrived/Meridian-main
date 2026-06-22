@@ -1013,6 +1013,54 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntryWorkbench_IsolatesPostedPrivateCapitalActivityByTenantAndCompanyScope()
+    {
+        var configuration = CreateService();
+        await SeedManualJournalTenantConfigurationAsync(configuration, "tenant-alpha", "company-shared");
+        await SeedManualJournalTenantConfigurationAsync(configuration, "tenant-beta", "company-shared");
+        var timestamp = DateTimeOffset.UtcNow;
+        var alphaJournalEntryId = Guid.NewGuid();
+        var betaJournalEntryId = Guid.NewGuid();
+        var journalStore = new PostedPrivateCapitalLedgerJournalStore(
+            new LedgerBookRecord(
+                ManualJournalLedgerBookId,
+                "fund-alpha",
+                Guid.NewGuid(),
+                FundStructureNodeKindDto.Fund,
+                "Fund Alpha GAAP book",
+                "USD",
+                timestamp,
+                timestamp),
+            new LedgerAccountingPeriod(
+                ManualJournalPeriodId,
+                ManualJournalLedgerBookId,
+                2026,
+                6,
+                "2026-06",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30),
+                "Closed",
+                timestamp,
+                timestamp,
+                1),
+            CreatePostedPrivateCapitalJournalRecord(alphaJournalEntryId, "tenant-alpha", "company-shared", "fund-event:alpha", "capital-account:alpha", 1, timestamp),
+            CreatePostedPrivateCapitalJournalRecord(betaJournalEntryId, "tenant-beta", "company-shared", "fund-event:beta", "capital-account:beta", 2, timestamp));
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore);
+
+        var alphaActivity = await service.GetPrivateCapitalActivityAsync("fund-alpha", ManualJournalLedgerBookId, tenantId: "tenant-alpha", companyId: "company-shared");
+        var betaActivity = await service.GetPrivateCapitalActivityAsync("fund-alpha", ManualJournalLedgerBookId, tenantId: "tenant-beta", companyId: "company-shared");
+        var companyActivity = await service.GetPrivateCapitalActivityAsync("fund-alpha", ManualJournalLedgerBookId, companyId: "company-shared");
+
+        alphaActivity.FundEvents.Should().ContainSingle(item => item.FundEventId == "fund-event:alpha" && item.IsPosted);
+        alphaActivity.FundEvents.Should().NotContain(item => item.FundEventId == "fund-event:beta");
+        alphaActivity.LedgerImpacts.Should().ContainSingle(item => item.FundEventId == "fund-event:alpha");
+        alphaActivity.CapitalAccountSubledgerEntries.Should().ContainSingle(item => item.CapitalAccountId == "capital-account:alpha");
+        betaActivity.FundEvents.Should().ContainSingle(item => item.FundEventId == "fund-event:beta" && item.IsPosted);
+        betaActivity.FundEvents.Should().NotContain(item => item.FundEventId == "fund-event:alpha");
+        companyActivity.FundEvents.Select(item => item.FundEventId).Should().BeEquivalentTo("fund-event:alpha", "fund-event:beta");
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntryLifecycle_SubmitActionRetainsTransition()
     {
         var configuration = CreateService();
@@ -6791,6 +6839,65 @@ public sealed class AccountingConfigurationServiceTests
                 ? transactions.Where(transaction => transaction.EntityId == entityId.Value).ToArray()
                 : transactions);
         }
+    }
+
+
+    private static LedgerJournalEntryRecord CreatePostedPrivateCapitalJournalRecord(
+        Guid journalEntryId,
+        string tenantId,
+        string companyId,
+        string fundEventId,
+        string capitalAccountId,
+        long sequence,
+        DateTimeOffset timestamp)
+    {
+        var cashLedgerEntryId = Guid.NewGuid();
+        var capitalLedgerEntryId = Guid.NewGuid();
+        var journal = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            $"Posted private-capital event {fundEventId}",
+            [
+                new LedgerEntry(
+                    cashLedgerEntryId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Cash", LedgerAccountType.Asset, FinancialAccountId: "entity-master"),
+                    100m,
+                    0m,
+                    $"Posted private-capital event {fundEventId}"),
+                new LedgerEntry(
+                    capitalLedgerEntryId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Capital Contributions", LedgerAccountType.Equity, FinancialAccountId: capitalAccountId),
+                    0m,
+                    100m,
+                    $"Posted private-capital event {fundEventId}")
+            ],
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                FundEventId: fundEventId,
+                FundEventType: "CapitalCall",
+                CapitalAccountId: capitalAccountId,
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["tenantId"] = tenantId,
+                    ["companyId"] = companyId,
+                    ["automatedJournalStatus"] = "Posted",
+                    ["automatedJournalApprovalId"] = $"approval:{fundEventId}",
+                    ["evidenceLinks"] = $"/api/workstation/evidence/subjects/private-capital/{fundEventId}"
+                }));
+
+        return new LedgerJournalEntryRecord(
+            journal,
+            Guid.NewGuid(),
+            ManualJournalPeriodId,
+            CommandId: null,
+            CorrelationId: null,
+            GlobalSequence: sequence,
+            CreatedAt: timestamp);
     }
 
     private sealed class WritableManualJournalLedgerJournalStore(

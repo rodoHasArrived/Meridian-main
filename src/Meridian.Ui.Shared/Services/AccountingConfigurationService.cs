@@ -3368,7 +3368,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var drafts = await _draftStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
         var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
         var bankTransactions = await ListBankTransactionsAsync(ct).ConfigureAwait(false);
-        var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
         var reportPackWorkflowRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
         var privateCapitalActivity = PrivateCapitalActivityProjectionBuilder.Build(
             new PrivateCapitalActivityProjectionInput(
@@ -3405,7 +3405,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var drafts = await _draftStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
         var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
         var bankTransactions = await ListBankTransactionsAsync(ct).ConfigureAwait(false);
-        var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
         var reportPackWorkflowRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
         return PrivateCapitalActivityProjectionBuilder.Build(
             new PrivateCapitalActivityProjectionInput(
@@ -3421,7 +3421,9 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     private async Task<PostedPrivateCapitalActivityProjection?> BuildPostedPrivateCapitalActivityProjectionAsync(
         string fundProfileId,
         Guid? ledgerBookId,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? tenantId,
+        string? companyId)
     {
         if (_journalStore is null)
         {
@@ -3447,6 +3449,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             var records = await _journalStore.GetByPeriodAsync(period.PeriodId, ct).ConfigureAwait(false);
             foreach (var record in records.OrderBy(static item => item.GlobalSequence).ThenBy(static item => item.Entry.Timestamp))
             {
+                if (!MatchesPostedTenantScope(record.Entry.Metadata, tenantId, companyId))
+                {
+                    continue;
+                }
+
                 if (journalEntryIds.Add(record.Entry.JournalEntryId))
                 {
                     ledger.Post(record.Entry);
@@ -3458,6 +3465,36 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         return new PostedPrivateCapitalActivityProjection(
             PrivateCapitalFundEventLedgerProjector.Project(ledger),
             journalEntryCurrencies);
+    }
+
+
+    private static bool MatchesPostedTenantScope(JournalEntryMetadata? metadata, string? tenantId, string? companyId)
+    {
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        if (normalizedTenantId is null && normalizedCompanyId is null)
+        {
+            return true;
+        }
+
+        var tags = metadata?.Tags;
+        return MatchesPostedScopeTag(tags, "tenantId", normalizedTenantId) &&
+               MatchesPostedScopeTag(tags, "companyId", normalizedCompanyId);
+    }
+
+    private static bool MatchesPostedScopeTag(
+        IReadOnlyDictionary<string, string>? tags,
+        string tagName,
+        string? expected)
+    {
+        if (expected is null)
+        {
+            return true;
+        }
+
+        return tags is not null &&
+               tags.TryGetValue(tagName, out var actual) &&
+               string.Equals(NormalizeOptional(actual), expected, StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<string> ResolveLedgerBookCurrencyAsync(
@@ -4056,6 +4093,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         AddMetadataTag(tags, "accountingBasis", draft.AccountingBasis.ToString());
         AddMetadataTag(tags, "ledgerBookId", draft.LedgerBookId?.ToString("D"));
         AddMetadataTag(tags, "periodId", draft.PeriodId);
+        AddMetadataTag(tags, "tenantId", draft.TenantId);
+        AddMetadataTag(tags, "companyId", draft.CompanyId);
         AddMetadataTag(tags, "sourceEventId", postingCommand.SourceEventId?.ToString("D"));
         AddMetadataTag(tags, "sourceJournalEntryId", postingCommand.SourceJournalEntryId?.ToString("D"));
         if (evidenceLinks.Count > 0)
