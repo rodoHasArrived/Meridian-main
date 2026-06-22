@@ -246,7 +246,10 @@ flags. It also lists retained migration run artifacts from
 `/api/accounting-system/migration-run-artifacts`, including run kind, certification status,
 fund/book scope, migrated-record and issue counts, and evidence reference counts, so operators can
 inspect migration proof retained in the shared Accounting System store rather than re-entering
-request-only evidence. The same production-readiness panel renders the generated migration rollout
+request-only evidence. The dashboard API layer also exposes the retained guarded external-GL export
+package list query so Accounting surfaces can review package history by provider, fund, book,
+certification state, tenant, and company before loading a specific manifest. The same
+production-readiness panel renders the generated migration rollout
 plan for ledger-book scope, historical journal backfill, dimensional backfill, configuration
 promotion, and close/reporting evidence migration, including latest retained run, blocking issue
 codes, and required actions for each lane.

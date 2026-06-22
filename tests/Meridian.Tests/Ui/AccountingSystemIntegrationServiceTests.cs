@@ -1984,6 +1984,82 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ExportPackages_ListRetainedPackagesByProviderFundBookCertificationAndEnterpriseScope()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+        var otherBookId = Guid.Parse("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile with { ProfileId = "qbo-default-fund-certified-other-book" },
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: otherBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified-other-book"],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        var retained = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+        var otherBook = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: otherBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: "qbo-default-fund-certified-other-book",
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(otherBookId)],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        var filtered = await service.ListExportPackagesAsync(
+            providerId: "quickbooks-fixture",
+            fundProfileId: "default-fund",
+            ledgerBookId: ExternalGlLedgerBookId,
+            certificationState: AccountingCertificationStateDto.ReadyForReview,
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha");
+        var wrongTenant = await service.ListExportPackagesAsync(
+            ledgerBookId: ExternalGlLedgerBookId,
+            tenantId: "tenant-beta",
+            companyId: "company-alpha");
+        var allAlpha = await service.ListExportPackagesAsync(
+            providerId: "quickbooks-fixture",
+            fundProfileId: "default-fund",
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha");
+
+        filtered.Should().ContainSingle(package =>
+            package.ExportPackageId == retained.ExportPackageId &&
+            package.LedgerBookId == ExternalGlLedgerBookId &&
+            package.Certification!.State == AccountingCertificationStateDto.ReadyForReview);
+        filtered.Should().NotContain(package => package.ExportPackageId == otherBook.ExportPackageId);
+        wrongTenant.Should().BeEmpty();
+        allAlpha.Should().Contain(package => package.ExportPackageId == retained.ExportPackageId);
+        allAlpha.Should().Contain(package => package.ExportPackageId == otherBook.ExportPackageId);
+    }
+
+    [Fact]
     public async Task ExportPackages_StampLedgerBookScopeIntoRetainedPackageIdentity()
     {
         var primaryBookId = ExternalGlLedgerBookId;
@@ -3230,6 +3306,18 @@ public sealed class AccountingSystemIntegrationServiceTests
         exportPackage.GeneratedLines.Should().Contain(line =>
             line.MeridianAccountCode == "Assets:Cash:Operating" &&
             line.ExternalAccountId == "qbo-1000");
+
+        var exportPackagesResponse = await app.GetTestClient().GetAsync(
+            $"{UiApiRoutes.AccountingSystemExportPackages}?providerId=quickbooks-fixture&fundProfileId=default-fund&ledgerBookId={ExternalGlLedgerBookId:D}&certificationState=ReadyForReview&tenantId=spoofed-tenant&companyId=spoofed-company");
+
+        exportPackagesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var exportPackages = await ReadAsync<ExternalGlExportPackageDto[]>(exportPackagesResponse);
+        exportPackages.Should().ContainSingle(package =>
+            package.ExportPackageId == exportPackage.ExportPackageId &&
+            package.TenantId == "company-alpha" &&
+            package.CompanyId == "company-alpha" &&
+            package.LedgerBookId == ExternalGlLedgerBookId &&
+            package.Certification!.State == AccountingCertificationStateDto.ReadyForReview);
 
         var certificationResponse = await app.GetTestClient().PostAsync(
             UiApiRoutes.AccountingSystemExportPackageCertification,

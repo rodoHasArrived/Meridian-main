@@ -186,7 +186,9 @@ and approval links are not enough for certification.
 External GL mapping-profile certification evidence follows the same rule: retained mapping
 approval, certification, sign-off, or review evidence must identify the mapping profile or
 provider/fund scope on the same evidence artifact before the profile can feed generated export
-lines.
+lines. Retained guarded export packages can be listed by provider, fund, ledger book, certification
+state, tenant, and company so operator/admin surfaces can review retained export history and
+certification posture without knowing a package id in advance.
 
 Accounting close projections live here as deterministic Financial Operations behavior. Journal
 posting, FX translation, trial-balance, roll-forward, source-linked audit, and close evidence gates

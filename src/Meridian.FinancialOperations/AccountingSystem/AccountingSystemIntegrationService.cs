@@ -360,6 +360,35 @@ public sealed class AccountingSystemIntegrationService
             : null);
     }
 
+    public Task<IReadOnlyList<ExternalGlExportPackageDto>> ListExportPackagesAsync(
+        string? providerId = null,
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        AccountingCertificationStateDto? certificationState = null,
+        string? tenantId = null,
+        string? companyId = null,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var normalizedProviderId = string.IsNullOrWhiteSpace(providerId) ? null : NormalizeProviderId(providerId);
+        var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+
+        var rows = _exportPackages.Values
+            .Where(package => normalizedProviderId is null || string.Equals(package.ProviderId, normalizedProviderId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => normalizedFundProfileId is null || string.Equals(package.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => ledgerBookId is null || package.LedgerBookId == ledgerBookId)
+            .Where(package => normalizedTenantId is null || string.Equals(package.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => normalizedCompanyId is null || string.Equals(package.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
+            .Where(package => certificationState is null || package.Certification?.State == certificationState)
+            .OrderByDescending(static package => package.CreatedAtUtc)
+            .ThenBy(static package => package.ExportPackageId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyList<ExternalGlExportPackageDto>>(rows);
+    }
+
     public async Task<AccountingSystemImportDetailDto> ImportAsync(
         AccountingSystemImportRequestDto request,
         CancellationToken ct = default)

@@ -403,6 +403,38 @@ public static class AccountingSystemEndpoints
         .Produces(StatusCodes.Status409Conflict)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        group.MapGet(UiApiRoutes.AccountingSystemExportPackages, async (
+            string? providerId,
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            AccountingCertificationStateDto? certificationState,
+            string? tenantId,
+            string? companyId,
+            HttpContext context,
+            AccountingSystemIntegrationService service) =>
+        {
+            if (!HasAccountingAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var result = await service
+                .ListExportPackagesAsync(
+                    providerId,
+                    fundProfileId,
+                    ledgerBookId,
+                    certificationState,
+                    tenantContext.TenantId ?? tenantId,
+                    tenantContext.CompanyId ?? companyId,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ListAccountingSystemExportPackages")
+        .Produces<IReadOnlyList<ExternalGlExportPackageDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+
         group.MapPost(UiApiRoutes.AccountingSystemExportPackages, async (
             AccountingSystemExportPackageRequestDto request,
             HttpContext context,

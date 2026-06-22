@@ -2094,6 +2094,49 @@ export function upsertAccountingSystemMappingProfile(
   return postJson<ExternalGlMappingProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles, request, options);
 }
 
+export function listAccountingSystemExportPackages(
+  query: {
+    providerId?: string | null;
+    fundProfileId?: string | null;
+    ledgerBookId?: string | null;
+    certificationState?: string | null;
+    tenantId?: string | null;
+    companyId?: string | null;
+  } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.providerId) {
+    params.set("providerId", query.providerId);
+  }
+
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  if (query.certificationState) {
+    params.set("certificationState", query.certificationState);
+  }
+
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.companyId) {
+    params.set("companyId", query.companyId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix
+    ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages}?${suffix}`
+    : ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages;
+  return getJson<ExternalGlExportPackage[]>(route, options);
+}
+
 export function createAccountingSystemExportPackage(
   request: AccountingSystemExportPackageRequest,
   options: ApiRequestOptions = {}
