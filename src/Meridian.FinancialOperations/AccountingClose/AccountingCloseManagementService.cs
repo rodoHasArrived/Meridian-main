@@ -124,7 +124,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
         if (!HasLateAdjustmentRequestEvidenceWithProvenance(requestEvidence, request.JournalEntryId, workflow))
         {
-            throw new ArgumentException("Late adjustment request evidence must reference the journal entry, workflow, or exact close period.", nameof(request));
+            throw new ArgumentException("Late adjustment request evidence must reference the journal entry, workflow, or exact close period and selected ledger book on the same artifact.", nameof(request));
         }
 
         var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.RequestedBy, "RequestedBy") : actor.Trim();
@@ -227,7 +227,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             current = rows[index].Adjustment;
             if (!HasLateAdjustmentReviewEvidenceWithProvenance(reviewEvidence, requestId, current, workflow))
             {
-                throw new ArgumentException("Late adjustment review evidence must reference the request, journal entry, workflow, or exact close period.", nameof(request));
+                throw new ArgumentException("Late adjustment review evidence must reference the request, journal entry, workflow, or exact close period and selected ledger book on the same artifact.", nameof(request));
             }
 
             if (current.ApprovalState is ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Rejected)
@@ -293,7 +293,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
         if (!HasCloseTaskSignOffEvidenceWithProvenance(evidenceLinks, taskId, role, workflow))
         {
-            throw new ArgumentException("Close task sign-off evidence must reference the close task, sign-off role, and workflow or exact close period on the same artifact.", nameof(request));
+            throw new ArgumentException("Close task sign-off evidence must reference the close task, sign-off role, workflow or exact close period, and selected ledger book on the same artifact.", nameof(request));
         }
 
         if (workflow.Status == OperationsWorkflowStatusDto.Closed && workflow.ClosePackage is not null)
@@ -786,7 +786,8 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             EvidenceLinkContainsToken(link, role) &&
             (link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
              link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-             EvidenceLinkContainsToken(link, workflow.PeriodId)));
+             EvidenceLinkContainsToken(link, workflow.PeriodId)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
 
     private static bool EvidenceLinkContainsToken(string link, string token)
     {
@@ -818,11 +819,12 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         Guid journalEntryId,
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
-            link.Contains(journalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(journalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase));
+            (link.Contains(journalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(journalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
 
     private static bool HasLateAdjustmentRequestEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
@@ -834,7 +836,8 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
              link.Contains(journalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
              link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
              link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)));
+             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
 
     private static bool HasLateAdjustmentReviewEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>
@@ -849,12 +852,13 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         LateAdjustmentRequestDto adjustment,
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
-            link.Contains(requestId, StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(adjustment.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(adjustment.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase));
+            (link.Contains(requestId, StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(adjustment.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(adjustment.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
 
     private static bool HasLateAdjustmentReviewEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
@@ -868,7 +872,29 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
              link.Contains(adjustment.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
              link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
              link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)));
+             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
+
+    private static bool EvidenceLinkContainsLedgerBook(string link, OperationsContinuityWorkflowDto workflow)
+    {
+        if (workflow.LedgerBookId is not { } ledgerBookId)
+        {
+            return true;
+        }
+
+        if (!link.Contains(ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) &&
+            !link.Contains(ledgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return link.Contains("ledger-book", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("ledger book", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("ledgerbook", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("book:", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("book/", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("book=", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static DateOnly ResolveCloseDueDate(IReadOnlyList<CloseTaskDto> tasks, DateOnly fallback)
         => tasks.Count == 0 ? fallback : tasks.Max(static task => task.DueDate);

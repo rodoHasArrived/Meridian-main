@@ -38,7 +38,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   FX translation, source-linked audit rows, and period-close evidence gates.
 - `AccountingClose/AccountingCloseManagementService.cs` - close-period plan projection over
   Operations Continuity workflow state, checklist dependencies, approval sign-offs, period-lock
-  evidence, file-backed late-adjustment requests, and materiality policy validation.
+  evidence, file-backed late-adjustment requests, materiality policy validation, and ledger-book
+  scoped close-control evidence checks.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
   dimension-scoped package requests, certification state, validation issues, retained package

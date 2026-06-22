@@ -459,7 +459,7 @@ public sealed partial class WorkstationEndpointsTests
                     ManualJournalEntryStatusDto.Approved,
                     "untrusted-controller",
                     "Controller should not sign off a task before dependencies are complete.",
-                    EvidenceLinks: [$"evidence:close-task:{dependentTask.TaskId}:{dependentRole}:2026-07:dependency-block-signoff"]),
+                    EvidenceLinks: [$"evidence:close-task:{dependentTask.TaskId}:{dependentRole}:2026-07:book:{ledgerBookId:D}:dependency-block-signoff"]),
                 ServerJsonOptions);
 
             blockedSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
@@ -549,12 +549,26 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "untrusted-controller",
                 "A non-matrix role should not sign off this close task.",
-                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:tax-reviewer:2026-07:tax-reviewer-signoff"]),
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:tax-reviewer:2026-07:book:{ledgerBookId:D}:tax-reviewer-signoff"]),
             ServerJsonOptions);
 
         unassignedRoleSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
-        var controllerSignOffEvidence = $"evidence:close-task:{taskToSignOff.TaskId}:{requiredRole}:2026-07:controller-signoff";
+        using var missingBookSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                requiredRole,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "Controller tried to sign off with evidence that omits the selected ledger book.",
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:{requiredRole}:2026-07:controller-signoff"]),
+            ServerJsonOptions);
+
+        missingBookSignOffResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var controllerSignOffEvidence = $"evidence:close-task:{taskToSignOff.TaskId}:{requiredRole}:2026-07:book:{ledgerBookId:D}:controller-signoff";
         using var signOffResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementTaskSignOffs,
             new SignOffCloseTaskRequestDto(
@@ -597,7 +611,7 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "untrusted-controller",
                 "Duplicate sign-off should fail.",
-                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:{requiredRole}:2026-07:duplicate-signoff"]),
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}:{requiredRole}:2026-07:book:{ledgerBookId:D}:duplicate-signoff"]),
             ServerJsonOptions);
 
         duplicateSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
@@ -663,7 +677,21 @@ public sealed partial class WorkstationEndpointsTests
 
         splitAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var requestEvidence = "evidence:late-adjustment:2026-07:review";
+        using var missingBookAdjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Material close adjustment with evidence that omits the selected ledger book.",
+                RequestedBy: "untrusted-browser-user",
+                EvidenceLinks: ["evidence:late-adjustment:2026-07:review"]),
+            ServerJsonOptions);
+
+        missingBookAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var requestEvidence = $"evidence:late-adjustment:2026-07:book:{ledgerBookId:D}:review";
         using var adjustmentResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementLateAdjustments,
             new CreateLateAdjustmentRequestDto(
@@ -699,7 +727,7 @@ public sealed partial class WorkstationEndpointsTests
                 Currency: "usd",
                 Reason: "Duplicate material close adjustment request.",
                 RequestedBy: "untrusted-browser-user",
-                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.JournalEntryId:D}:duplicate-review"]),
+                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.JournalEntryId:D}:book:{ledgerBookId:D}:duplicate-review"]),
             ServerJsonOptions);
 
         duplicateAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
@@ -761,7 +789,20 @@ public sealed partial class WorkstationEndpointsTests
 
         splitReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var reviewEvidence = $"evidence:late-adjustment:{adjustment.RequestId}:controller-approval";
+        using var missingBookReviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-reviewer",
+                "Controller tried to approve a material late adjustment with evidence that omits the selected ledger book.",
+                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.RequestId}:controller-approval"]),
+            ServerJsonOptions);
+
+        missingBookReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var reviewEvidence = $"evidence:late-adjustment:{adjustment.RequestId}:book:{ledgerBookId:D}:controller-approval";
         using var reviewResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
             new ReviewLateAdjustmentRequestDto(
