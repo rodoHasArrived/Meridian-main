@@ -869,6 +869,97 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ProductionReadinessService_RequiresLedgerBookScopedTenantAdministrationEvidence()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<AccountingProductionReadinessService>();
+        await using var provider = services.BuildServiceProvider();
+        var ledgerBookId = ExternalGlLedgerBookId;
+
+        var genericEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                TenantScopeConfigured: true,
+                AdminRoleProfileConfigured: true,
+                ScopedAccessPoliciesConfigured: true,
+                ReportingGroupsConfigured: true,
+                AccountingAdminSurfaceConfigured: true,
+                BrowserAccountingAdminSurfaceConfigured: true,
+                WpfAccountingAdminSurfaceConfigured: true,
+                ChartAdministrationStudioConfigured: true,
+                RuleTestPromotionStudioConfigured: true,
+                CloseSetupStudioConfigured: true,
+                ProviderMappingStudioConfigured: true,
+                TenantCompanyReportGroupSetupStudioConfigured: true,
+                AuditReviewToolingConfigured: true,
+                BulkImportExportSafeguardsConfigured: true,
+                PerformanceValidationConfigured: true,
+                DisasterRecoveryRunbookConfigured: true,
+                LedgerBookAdministrationStudioConfigured: true,
+                PostingRuleAuthoringStudioConfigured: true,
+                ApprovalQueueStudioConfigured: true,
+                DimensionMappingStudioConfigured: true,
+                ImplementationSandboxConfigured: true,
+                TenantAdministrationEvidenceLinks:
+                [
+                    "evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full",
+                    "approval:tenant-admin:tenant-alpha:company-alpha"
+                ]));
+
+        genericEvidence.TenantAdministration.Should().NotBeNull();
+        genericEvidence.TenantAdministration!.CompletedControlCount.Should().Be(23);
+        genericEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.ledger-book-administration-studio-book-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"));
+        genericEvidence.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
+
+        var scopedEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                TenantScopeConfigured: true,
+                AdminRoleProfileConfigured: true,
+                ScopedAccessPoliciesConfigured: true,
+                ReportingGroupsConfigured: true,
+                AccountingAdminSurfaceConfigured: true,
+                BrowserAccountingAdminSurfaceConfigured: true,
+                WpfAccountingAdminSurfaceConfigured: true,
+                ChartAdministrationStudioConfigured: true,
+                RuleTestPromotionStudioConfigured: true,
+                CloseSetupStudioConfigured: true,
+                ProviderMappingStudioConfigured: true,
+                TenantCompanyReportGroupSetupStudioConfigured: true,
+                AuditReviewToolingConfigured: true,
+                BulkImportExportSafeguardsConfigured: true,
+                PerformanceValidationConfigured: true,
+                DisasterRecoveryRunbookConfigured: true,
+                LedgerBookAdministrationStudioConfigured: true,
+                PostingRuleAuthoringStudioConfigured: true,
+                ApprovalQueueStudioConfigured: true,
+                DimensionMappingStudioConfigured: true,
+                ImplementationSandboxConfigured: true,
+                TenantAdministrationEvidenceLinks:
+                [
+                    $"evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration/ledgerBookId={ledgerBookId:D}/tenant-admin/full",
+                    "approval:tenant-admin:tenant-alpha:company-alpha"
+                ]));
+
+        scopedEvidence.TenantAdministration.Should().NotBeNull();
+        scopedEvidence.TenantAdministration!.CompletedControlCount.Should().Be(23);
+        scopedEvidence.Issues.Should().NotContain(issue =>
+            issue.Code == "tenant-admin.ledger-book-administration-studio-book-evidence-missing");
+    }
+
+    [Fact]
     public async Task ProductionReadinessService_BlocksExternalGlReadinessWithoutLedgerBookScope()
     {
         var services = new ServiceCollection();

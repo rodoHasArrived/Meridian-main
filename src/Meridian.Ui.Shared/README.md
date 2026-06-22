@@ -349,7 +349,10 @@ and enterprise configuration studio controls are evidence-qualified per lane, so
 proof for admin roles does not certify scoped access, reporting groups, browser setup, WPF setup,
 chart setup, rule-test/promotion setup, close setup, provider mapping, report-group setup,
 ledger-book administration, posting-rule authoring, approval queues, dimension mapping, or sandbox validation unless
-the evidence is an explicit setup-certified tenant-admin packet.
+the evidence is an explicit setup-certified tenant-admin packet. When a production-readiness request
+selects a ledger book, the ledger-book administration studio control additionally requires retained
+tenant-admin evidence that names the selected `ledgerBookId`, so tenant/company-wide setup packets
+cannot certify multi-ledger book administration by implication.
 `/api/accounting-system/tenant-administration-profile` retains those tenant/company setup controls in
 the shared Accounting System store. Reads require accounting access, writes require
 `AdminMaintenance`, reads and writes resolve tenant/company scope from the authenticated workstation

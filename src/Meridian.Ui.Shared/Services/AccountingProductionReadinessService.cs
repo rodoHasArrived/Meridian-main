@@ -1626,6 +1626,17 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for ledger-book administration, book setup, book activation, or ledger-book period setup.",
                 evidenceReferences));
         }
+        else if (request.LedgerBookId is Guid ledgerBookId &&
+                 !evidenceReferences.Any(reference => ReferencesLedgerBookEvidence(reference, ledgerBookId)))
+        {
+            issues.Add(Issue(
+                "tenant-admin.ledger-book-administration-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Ledger-book administration studio certification lacks retained evidence for the selected ledger book.",
+                "Attach ledger-book administration evidence that names the selected ledgerBookId before certifying multi-ledger tenant setup controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.PostingRuleAuthoringStudioConfigured)
         {
