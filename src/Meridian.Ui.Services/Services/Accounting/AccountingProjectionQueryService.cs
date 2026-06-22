@@ -1,15 +1,20 @@
 using System.Collections.Immutable;
+using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.AccountingClose;
 
 namespace Meridian.Ui.Services.Services.Accounting;
 
 public interface IAccountingProjectionQueryService
 {
-    ImmutableArray<TrialBalanceLine> GetTrialBalance(string ledgerId);
-    ImmutableArray<RollForwardLine> GetRollForward(string ledgerId);
+    ImmutableArray<TrialBalanceLine> GetTrialBalance(string ledgerId, LedgerDimensionSetDto? dimensions = null);
+    ImmutableArray<RollForwardLine> GetRollForward(string ledgerId, LedgerDimensionSetDto? dimensions = null);
     ImmutableArray<SourceLinkedAuditLine> GetAuditLines(string ledgerId);
     SourceLinkedAuditLine? GetAuditLine(string ledgerId, Guid journalEntryId);
-    AccountingCloseProjection GetCloseProjection(string ledgerId, DateOnly period, CloseEvidence evidence);
+    AccountingCloseProjection GetCloseProjection(
+        string ledgerId,
+        DateOnly period,
+        CloseEvidence evidence,
+        LedgerDimensionSetDto? dimensions = null);
 }
 
 public sealed class AccountingProjectionQueryService : IAccountingProjectionQueryService
@@ -28,12 +33,12 @@ public sealed class AccountingProjectionQueryService : IAccountingProjectionQuer
         _closeStateMachine = closeStateMachine ?? new MonthEndCloseStateMachine();
     }
 
-    public ImmutableArray<TrialBalanceLine> GetTrialBalance(string ledgerId)
-        => _projectionService.BuildTrialBalance(_postingService.Replay(ledgerId));
+    public ImmutableArray<TrialBalanceLine> GetTrialBalance(string ledgerId, LedgerDimensionSetDto? dimensions = null)
+        => _projectionService.BuildTrialBalance(_postingService.Replay(ledgerId), dimensions);
 
-    public ImmutableArray<RollForwardLine> GetRollForward(string ledgerId)
+    public ImmutableArray<RollForwardLine> GetRollForward(string ledgerId, LedgerDimensionSetDto? dimensions = null)
     {
-        var trial = GetTrialBalance(ledgerId);
+        var trial = GetTrialBalance(ledgerId, dimensions);
         return _projectionService.BuildRollForward([], trial, []);
     }
 
@@ -43,10 +48,14 @@ public sealed class AccountingProjectionQueryService : IAccountingProjectionQuer
     public SourceLinkedAuditLine? GetAuditLine(string ledgerId, Guid journalEntryId)
         => GetAuditLines(ledgerId).FirstOrDefault(line => line.JournalEntryId == journalEntryId);
 
-    public AccountingCloseProjection GetCloseProjection(string ledgerId, DateOnly period, CloseEvidence evidence)
+    public AccountingCloseProjection GetCloseProjection(
+        string ledgerId,
+        DateOnly period,
+        CloseEvidence evidence,
+        LedgerDimensionSetDto? dimensions = null)
     {
-        var trialBalance = GetTrialBalance(ledgerId);
-        var rollForward = GetRollForward(ledgerId);
+        var trialBalance = GetTrialBalance(ledgerId, dimensions);
+        var rollForward = GetRollForward(ledgerId, dimensions);
         var audit = GetAuditLines(ledgerId);
         var balanced = _projectionService.IsBalanced(trialBalance);
         var closePeriod = new ClosePeriod(ledgerId, period, ClosePeriodState.Validating, evidence, []);
