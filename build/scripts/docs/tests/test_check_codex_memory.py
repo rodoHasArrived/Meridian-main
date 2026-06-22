@@ -247,6 +247,99 @@ class CheckCodexMemoryTests(unittest.TestCase):
 
             self.assertTrue(any("missing YAML front matter" in finding.message for finding in findings))
 
+    def test_front_matter_missing_required_metadata_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            entry = valid_entry().replace("source_refs:\n  - docs/ai/tooling/README.md\n", "")
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(
+                any("Memory front matter is missing source_refs" in finding.message for finding in findings)
+            )
+
+    def test_front_matter_mismatched_id_and_file_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            entry = valid_entry().replace("id: repo:validation", "id: repo:other", 1).replace(
+                "file: .codex/memory/repo/validation.md",
+                "file: .codex/memory/repo/other.md",
+                1,
+            )
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+            messages = finding_messages(findings)
+
+            self.assertTrue(
+                any("Front matter id does not match index value 'repo:validation'" in message for message in messages)
+            )
+            self.assertTrue(
+                any(
+                    "Front matter file does not match index value '.codex/memory/repo/validation.md'" in message
+                    for message in messages
+                )
+            )
+
+    def test_front_matter_mismatched_list_metadata_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / "docs" / "ai" / "other.md", "# Other source\n")
+            entry = valid_entry().replace("  - validation", "  - other", 1).replace(
+                "  - docs/ai/tooling/README.md",
+                "  - docs/ai/other.md",
+                1,
+            ).replace("  - Validation commands change.", "  - Other commands change.", 1)
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+            messages = finding_messages(findings)
+
+            self.assertTrue(any("Front matter tags does not match index value" in message for message in messages))
+            self.assertTrue(
+                any("Front matter source_refs does not match index value" in message for message in messages)
+            )
+            self.assertTrue(
+                any("Front matter invalidates_when does not match index value" in message for message in messages)
+            )
+
+    def test_empty_source_refs_fail_for_index_and_front_matter(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            index = valid_index().replace(
+                "source_refs:\n      - docs/ai/tooling/README.md", "source_refs: []"
+            )
+            entry = valid_entry().replace("source_refs:\n  - docs/ai/tooling/README.md", "source_refs: []")
+            write(root / ".codex" / "memory" / "index.yml", index)
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(
+                any("source_refs must include at least one source reference" in finding.message for finding in findings)
+            )
+
+    def test_front_matter_invalid_confidence_freshness_and_review_date_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            entry = valid_entry().replace("confidence: high", "confidence: certain", 1).replace(
+                "freshness: fresh", "freshness: ancient", 1
+            ).replace("review_after: 2999-01-01", "review_after: soon", 1)
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+            messages = finding_messages(findings)
+
+            self.assertTrue(any("Unknown front matter confidence: certain" in message for message in messages))
+            self.assertTrue(any("Unknown front matter freshness: ancient" in message for message in messages))
+            self.assertTrue(any("review_after is not a valid ISO date: soon" in message for message in messages))
+
     def test_unknown_tier_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

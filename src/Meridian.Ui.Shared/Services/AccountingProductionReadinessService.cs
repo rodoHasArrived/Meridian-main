@@ -1437,6 +1437,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for chart administration, ledger-book chart, or chart-of-accounts setup.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "chart-admin",
+                     "chart-administration",
+                     "chart-of-accounts",
+                     "ledger-book-chart"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.chart-administration-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Chart administration studio certification lacks retained evidence for the selected ledger book.",
+                "Attach chart administration evidence that names the selected ledgerBookId before certifying book-native chart setup controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.RuleTestPromotionStudioConfigured)
         {
@@ -1456,6 +1472,22 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Rules Studio test and promotion queue certification lacks retained rule setup evidence.",
                 "Attach tenant administration evidence for Rules Studio, rule tests, generated-posting preview, or promotion queues.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "rule-test-promotion",
+                     "rules-studio",
+                     "rule-tests",
+                     "promotion-queue"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.rule-test-promotion-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Rules Studio test and promotion certification lacks retained evidence for the selected ledger book.",
+                "Attach Rules Studio evidence that names the selected ledgerBookId before certifying book-native rule-test and promotion controls.",
                 evidenceReferences));
         }
 
@@ -1479,6 +1511,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for close setup, close checklist, close calendar, or materiality policy setup.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "close-setup",
+                     "close-checklist",
+                     "close-calendar",
+                     "materiality-policy"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.close-setup-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close setup studio certification lacks retained evidence for the selected ledger book.",
+                "Attach close setup evidence that names the selected ledgerBookId before certifying book-native close and period controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.ProviderMappingStudioConfigured)
         {
@@ -1498,6 +1546,22 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Provider mapping studio certification lacks retained provider or external-GL setup evidence.",
                 "Attach tenant administration evidence for provider mapping, external-GL mapping, or mapping-profile setup.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "provider-mapping",
+                     "external-gl-mapping",
+                     "gl-mapping",
+                     "mapping-profile"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.provider-mapping-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Provider mapping studio certification lacks retained evidence for the selected ledger book.",
+                "Attach provider or external-GL mapping setup evidence that names the selected ledgerBookId before certifying book-native mapping controls.",
                 evidenceReferences));
         }
 
@@ -1626,8 +1690,13 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for ledger-book administration, book setup, book activation, or ledger-book period setup.",
                 evidenceReferences));
         }
-        else if (request.LedgerBookId is Guid ledgerBookId &&
-                 !evidenceReferences.Any(reference => ReferencesLedgerBookEvidence(reference, ledgerBookId)))
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "ledger-book-admin",
+                     "ledger-book-administration",
+                     "book-administration",
+                     "ledger-book-setup"))
         {
             issues.Add(Issue(
                 "tenant-admin.ledger-book-administration-studio-book-evidence-missing",
@@ -1658,6 +1727,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for posting-rule authoring, rule setup, generated-posting setup, or dry-run authoring.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "posting-rule-authoring",
+                     "posting-rule-studio",
+                     "rule-authoring",
+                     "posting-rule-setup"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.posting-rule-authoring-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Posting-rule authoring studio certification lacks retained evidence for the selected ledger book.",
+                "Attach posting-rule authoring evidence that names the selected ledgerBookId before certifying book-native rule authoring controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.ApprovalQueueStudioConfigured)
         {
@@ -1677,6 +1762,22 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Approval queue studio certification lacks retained approval-queue evidence.",
                 "Attach tenant administration evidence for approval queues, promotion approvals, journal approvals, or configuration approvals.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "approval-queue",
+                     "promotion-approval",
+                     "je-approval",
+                     "configuration-approval"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.approval-queue-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Approval queue studio certification lacks retained evidence for the selected ledger book.",
+                "Attach approval queue evidence that names the selected ledgerBookId before certifying book-native approval controls.",
                 evidenceReferences));
         }
 
@@ -1700,6 +1801,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for canonical dimension mapping, external dimension mapping, or GL dimension mapping.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "dimension-mapping",
+                     "dimension-map",
+                     "external-dimension-mapping",
+                     "gl-dimension-mapping"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.dimension-mapping-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimension mapping studio certification lacks retained evidence for the selected ledger book.",
+                "Attach dimension mapping evidence that names the selected ledgerBookId before certifying book-native dimension controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.ImplementationSandboxConfigured)
         {
@@ -1719,6 +1836,22 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Implementation sandbox certification lacks retained sandbox validation evidence.",
                 "Attach tenant administration evidence for implementation sandbox validation, fixture validation, migration rehearsal, or provider-import rehearsal.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "implementation-sandbox",
+                     "sandbox-validation",
+                     "fixture-validation",
+                     "implementation-fixture"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.implementation-sandbox-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Implementation sandbox certification lacks retained evidence for the selected ledger book.",
+                "Attach sandbox or fixture-validation evidence that names the selected ledgerBookId before certifying book-native implementation controls.",
                 evidenceReferences));
         }
 
@@ -2442,6 +2575,25 @@ public sealed class AccountingProductionReadinessService
             reference.Contains(request.CompanyId, StringComparison.OrdinalIgnoreCase) &&
             reference.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) &&
             ReferencesLedgerBookEvidence(reference, ledgerBookId.Value));
+    }
+
+    private static bool HasLedgerBookScopedTenantAdministrationEvidence(
+        AccountingProductionReadinessRequestDto request,
+        IEnumerable<string> evidenceReferences,
+        params string[] aliases)
+    {
+        if (request.LedgerBookId is not Guid ledgerBookId)
+        {
+            return true;
+        }
+
+        return evidenceReferences.Any(reference =>
+            !string.IsNullOrWhiteSpace(reference) &&
+            reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) &&
+            ReferencesLedgerBookEvidence(reference, ledgerBookId) &&
+            (reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase) ||
+             reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
+             aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
     }
 
     private static bool ReferencesLedgerBookEvidence(string reference, Guid ledgerBookId)
