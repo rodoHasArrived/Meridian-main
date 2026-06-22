@@ -136,11 +136,6 @@ public static class ExecutionEndpoints
                 return Results.Unauthorized();
             }
 
-            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
-            {
-                return phaseGateFailure;
-            }
-
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -194,11 +189,6 @@ public static class ExecutionEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
-            {
-                return phaseGateFailure;
-            }
-
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
                 return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
@@ -233,11 +223,6 @@ public static class ExecutionEndpoints
 
         group.MapPost("/orders/cancel-all", async (HttpContext context) =>
         {
-            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
-            {
-                return phaseGateFailure;
-            }
-
             if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
             {
                 return EndpointHelpers.Forbidden();
@@ -886,11 +871,6 @@ public static class ExecutionEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
-            {
-                return phaseGateFailure;
-            }
-
             var snapshot = await BuildBlotterSnapshotAsync(
                 context.RequestServices,
                 context.RequestAborted).ConfigureAwait(false);
@@ -935,11 +915,6 @@ public static class ExecutionEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
-            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
-            {
-                return phaseGateFailure;
-            }
-
             var snapshot = await BuildBlotterSnapshotAsync(
                 context.RequestServices,
                 context.RequestAborted).ConfigureAwait(false);
@@ -982,11 +957,6 @@ public static class ExecutionEndpoints
             if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
             {
                 return EndpointHelpers.Forbidden();
-            }
-
-            if (TryRejectOrderRoutingForPhaseGate(context.RequestServices) is { } phaseGateFailure)
-            {
-                return phaseGateFailure;
             }
 
             var snapshot = await BuildBlotterSnapshotAsync(
