@@ -183,6 +183,9 @@ Data upload intake endpoints are registered under `/api/workstation/data/uploads
 route serves the contract-owned catalog, and the preview route accepts bounded CSV uploads,
 retains the source file under the resolved workstation upload root, and returns schema issues plus
 preview rows without mutating trades, transactions, Security Master assets, entity structure, or
+ledger/accounting records. Bank statement import is the fund-account evidence mutation in this
+endpoint family; keep it limited to `AdminMaintenance` or `ManageDirectLending` so Security Master
+maintainers cannot alter retained bank evidence or reconciliation lines.
 ledger/accounting records. Bank-statement CSV import uses
 `/api/workstation/data/uploads/bank-statements/import` to validate a retained bank statement,
 require a bank fund account, and apply the parsed lines through

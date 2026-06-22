@@ -139,7 +139,7 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             HttpRequest request) =>
         {
-            if (!HasOperationsContinuityMutationPermission(context))
+            if (!HasFundAccountEvidenceMutationPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }

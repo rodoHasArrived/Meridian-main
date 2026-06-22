@@ -7592,6 +7592,12 @@ public static partial class WorkstationEndpoints
     private static bool HasOperationsContinuityMutationPermission(HttpContext context)
         => HasReconciliationMutationPermission(context);
 
+    private static bool HasFundAccountEvidenceMutationPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.AdminMaintenance,
+            UserPermission.ManageDirectLending);
+
     private static bool HasGovernedWorkflowReopenPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
 
