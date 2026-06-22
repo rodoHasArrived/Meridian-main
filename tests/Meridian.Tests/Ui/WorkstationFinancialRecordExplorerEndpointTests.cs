@@ -233,9 +233,9 @@ public sealed partial class WorkstationEndpointsTests
         row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
             ["Source record", "Instrument", "Position / transaction", "Reconciliation", "Journal", "Approval", "Delivery history", "Evidence and audit links", "Restatement evidence"]);
         explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain(
-            ["Instrument", "Position / transaction", "Reconciliation", "Journal", "trial-balance.cash", "Published report pack", "Evidence and audit links"]);
+            ["Instrument", "Position / transaction", "Reconciliation", "Journal", "trial-balance.cash", "Published report pack", "Evidence and audit links", "Evidence", "Audit event"]);
         explorer.RecordGraph.Edges.Select(static edge => edge.Label).Should().Contain(
-            ["feeds", "reconciles", "posts", "reports", "included in", "retains audit"]);
+            ["feeds", "reconciles", "posts", "reports", "included in", "retains audit", "retains evidence", "audits"]);
     }
 
     [Fact]
@@ -278,9 +278,10 @@ public sealed partial class WorkstationEndpointsTests
 
         explorer.Should().NotBeNull();
         explorer!.ExplorerId.Should().Be("security-instrument");
-        explorer.SummaryItems.Select(static item => item.Label).Should().Contain(["Passports", "Operations", "Report Usage"]);
+        explorer.SummaryItems.Select(static item => item.Label).Should().Contain(
+            ["Passports", "Operations", "Terms", "Cash Flows", "Reconciliations", "Journal Impacts", "Report Usage", "Evidence", "Audit Events"]);
         explorer.Columns.Select(static column => column.ColumnId).Should().Contain(
-            ["trust", "identifierConfidence", "operations", "cashFlow", "ledger"]);
+            ["trust", "identifierConfidence", "operations", "cashFlow", "ledger", "terms", "reportUsage", "evidence", "auditTrail"]);
 
         var row = explorer.Rows.Should()
             .ContainSingle(item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}")
@@ -290,13 +291,51 @@ public sealed partial class WorkstationEndpointsTests
         row.Cells.Should().ContainSingle(cell => cell.ColumnId == "operations" && cell.DisplayValue == "Ready");
         row.Cells.Should().ContainSingle(cell => cell.ColumnId == "cashFlow" && cell.DisplayValue == "1 projected");
         row.Cells.Should().ContainSingle(cell => cell.ColumnId == "ledger" && cell.DisplayValue == "1 projection");
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "terms" && cell.DisplayValue == "1 term / 1 obligation");
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "reportUsage" && cell.DisplayValue == "holdings.aapl.market-value");
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "evidence" && cell.DisplayValue.Contains("evidence anchor", StringComparison.Ordinal));
+        row.Cells.Should().ContainSingle(cell => cell.ColumnId == "auditTrail" && cell.DisplayValue.Contains("audit event", StringComparison.Ordinal));
 
         row.Detail.Fields.Select(static field => field.Label).Should().Contain(
-            ["Trust Posture", "Identifier Confidence", "AssetOperations Readiness", "Projected Cash Flows", "Ledger Projection", "Report Usage"]);
+            [
+                "Instrument Identity",
+                "Identifier Map",
+                "Accounting Classification",
+                "Trust Posture",
+                "Identifier Confidence",
+                "Conflict Posture",
+                "Terms / Obligations",
+                "AssetOperations Readiness",
+                "Projected Cash Flows",
+                "Ledger Projection",
+                "Ledger / Journal Impact",
+                "Reconciliation",
+                "Report Usage",
+                "Evidence",
+                "Audit Trail"
+            ]);
+        row.Detail.Fields.Should().Contain(field =>
+            field.Label == "Evidence" &&
+            field.Detail.Contains("position-aapl-evidence", StringComparison.Ordinal));
+        row.Detail.Fields.Should().Contain(field =>
+            field.Label == "Audit Trail" &&
+            field.Detail.Contains("audit event", StringComparison.OrdinalIgnoreCase));
         row.Detail.UsedIn.Select(static relationship => relationship.Label).Should().Contain(
             ["Portfolio position", "Ledger trial balance", "Report-line provenance", "AssetOperations reconciliation"]);
         row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
-            ["Instrument passport", "AssetOperations readiness", "Projected cash flows", "Ledger projection"]);
+            [
+                "Position / transaction",
+                "Instrument passport",
+                "Terms / obligations",
+                "AssetOperations readiness",
+                "Projected cash flows",
+                "Reconciliation",
+                "Ledger projection",
+                "Journal",
+                "Report line",
+                "Evidence",
+                "Audit event"
+            ]);
 
         var actions = row.Detail.ProofActions.ToDictionary(static action => action.ActionId, StringComparer.OrdinalIgnoreCase);
         actions["open-security-master"].IsEnabled.Should().BeTrue();
@@ -304,8 +343,26 @@ public sealed partial class WorkstationEndpointsTests
         actions["open-instrument-passport"].Href.Should().Contain($"/api/workstation/security-master/securities/{FinancialRecordExplorerAaplSecurityId:D}/passport");
         actions["open-asset-operations"].IsEnabled.Should().BeTrue();
         actions["open-asset-operations"].Href.Should().Contain($"/api/workstation/assets/{FinancialRecordExplorerAaplSecurityId:D}/operations");
+        actions["open-position-transaction"].IsEnabled.Should().BeTrue();
+        actions["open-position-transaction"].Href.Should().Contain("/api/workstation/financial-record-explorers/portfolio");
+        actions["open-position-transaction"].Href.Should().Contain($"securityId={FinancialRecordExplorerAaplSecurityId:D}");
+        actions["open-reconciliation"].IsEnabled.Should().BeTrue();
+        actions["open-reconciliation"].Href.Should().Contain("/api/workstation/reconciliation/runs/recon-run-aapl");
+        actions["open-journal-impact"].IsEnabled.Should().BeTrue();
+        actions["open-journal-impact"].Href.Should().Contain("/api/workstation/runs/financial-record-explorer-security-run/ledger/journal");
+        actions["open-journal-impact"].Href.Should().Contain("ledgerEntryId=ledger-aapl-position");
         actions["open-report-line-provenance"].IsEnabled.Should().BeTrue();
         actions["open-report-line-provenance"].Href.Should().Contain("/api/workstation/financial-record-explorers/report-line-provenance");
+        actions["open-report-line-provenance"].Href.Should().Contain("lineKey=holdings.aapl.market-value");
+        actions["open-evidence"].IsEnabled.Should().BeTrue();
+        actions["open-evidence"].Href.Should().Contain("/api/workstation/evidence/subjects/report-line/position-aapl-evidence/packet");
+        actions["open-audit-trail"].IsEnabled.Should().BeTrue();
+        actions["open-audit-trail"].Href.Should().Contain($"/api/workstation/evidence/subjects/security-instrument/{FinancialRecordExplorerAaplSecurityId:D}/graph");
+
+        explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain(
+            ["Apple Inc.", "Position / transaction", "Reconciliation", "Journal", "Report line", "Evidence", "Audit event"]);
+        explorer.RecordGraph.Edges.Select(static edge => edge.Label).Should().Contain(
+            ["feeds", "reconciles", "posts", "reports", "retains evidence", "audits"]);
     }
 
     [Fact]
@@ -818,7 +875,19 @@ public sealed partial class WorkstationEndpointsTests
                         LedgerReferenceId: "journal-preview-aapl")
                 ],
                 Readiness: readiness,
-                WorkflowAudit: []);
+                WorkflowAudit:
+                [
+                    new AssetLifecycleEventDto(
+                        LifecycleEventId: Guid.Parse("88888888-8888-8888-8888-888888888888"),
+                        SecurityId: securityId,
+                        EventType: "AuditEvent",
+                        LifecycleState: "Approved",
+                        EffectiveDate: new DateOnly(2026, 3, 22),
+                        RecordedAt: _now.AddMinutes(-2),
+                        SourceDomain: "asset-operations",
+                        SourceEntityId: "audit-aapl",
+                        Summary: "Projection, reconciliation, and journal proof chain reviewed.")
+                ]);
         }
 
         private AssetOperationsReadinessDto CreateReadiness()

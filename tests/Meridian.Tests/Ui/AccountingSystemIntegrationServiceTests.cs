@@ -1357,6 +1357,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         await using var provider = services.BuildServiceProvider();
         var store = provider.GetRequiredService<IAccountingMigrationRunArtifactStore>();
         var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+        var evidence = $"evidence://migration/tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/ledger-book-scope/certified";
 
         await store.UpsertAsync(new AccountingMigrationRunArtifactUpsertRequestDto(
             new AccountingMigrationRunArtifactDto(
@@ -1366,11 +1367,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 DateTimeOffset.Parse("2026-02-02T00:00:00Z"),
                 CompletedAtUtc: DateTimeOffset.Parse("2026-02-02T00:05:00Z"),
                 MigratedRecordCount: 42,
-                EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/certified"],
+                EvidenceReferences: [evidence],
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
                 Summary: "Ledger-book migration scope certified.",
-                TenantId: "company-alpha",
+                TenantId: "tenant-alpha",
                 CompanyId: "company-alpha"),
             "controller",
             CorrelationId: "migration-ledger-book-scope-default-fund"));
@@ -1384,12 +1385,42 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.MigrationRunArtifacts.Should().ContainSingle(artifact =>
             artifact.RunId == "migration-run-ledger-book-scope-default-fund" &&
             artifact.Actor == "controller" &&
-            artifact.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund/certified") &&
+            artifact.EvidenceReferences.Contains(evidence) &&
             artifact.EvidenceReferences.Contains("correlation:migration-ledger-book-scope-default-fund"));
         readiness.Issues.Should().NotContain(issue => issue.Code == "migration.ledger-book-scope-certified-run-missing");
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
-            component.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund/certified"));
+            component.EvidenceReferences.Contains(evidence));
+    }
+
+    [Fact]
+    public async Task ProductionReadinessService_RejectsCertifiedMigrationRunArtifactsWithMismatchedEvidenceScope()
+    {
+        var store = new InMemoryAccountingMigrationRunArtifactStore();
+        var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+
+        var act = async () => await store.UpsertAsync(new AccountingMigrationRunArtifactUpsertRequestDto(
+            new AccountingMigrationRunArtifactDto(
+                "migration-run-ledger-book-scope-default-fund",
+                AccountingMigrationRunKindDto.LedgerBookScope,
+                AccountingMigrationRunStatusDto.Certified,
+                DateTimeOffset.Parse("2026-02-02T00:00:00Z"),
+                CompletedAtUtc: DateTimeOffset.Parse("2026-02-02T00:05:00Z"),
+                MigratedRecordCount: 42,
+                EvidenceReferences:
+                [
+                    $"evidence://migration/tenant/tenant-beta/company/company-beta/fund/default-fund/ledger-book/{ledgerBookId:D}/ledger-book-scope/certified"
+                ],
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                Summary: "Ledger-book migration scope certified with mismatched evidence.",
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha"),
+            "controller",
+            CorrelationId: "migration-ledger-book-scope-default-fund"));
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Certified migration run artifact evidence must identify the retained tenant, company, fund profile, and ledger book.*");
     }
 
     [Fact]
@@ -3710,7 +3741,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CompletedAtUtc: DateTimeOffset.Parse("2026-03-01T00:15:00Z"),
                 MigratedRecordCount: 1250,
                 IssueCount: 0,
-                EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/company-alpha"],
+                EvidenceReferences: [$"evidence://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/dimensional-backfill/certified"],
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
                 Summary: "Alpha company dimensional backfill.",
@@ -3730,7 +3761,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CompletedAtUtc: DateTimeOffset.Parse("2026-03-01T00:20:00Z"),
                 MigratedRecordCount: 900,
                 IssueCount: 0,
-                EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/company-beta"],
+                EvidenceReferences: [$"evidence://migration/tenant/company-beta/company/company-beta/fund/default-fund/ledger-book/{ledgerBookId:D}/dimensional-backfill/certified"],
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
                 Summary: "Beta company dimensional backfill.",
@@ -3835,7 +3866,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     CompletedAtUtc: DateTimeOffset.Parse("2026-03-01T00:15:00Z"),
                     MigratedRecordCount: 1250,
                     IssueCount: 0,
-                    EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/certified"],
+                    EvidenceReferences: [$"evidence://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/dimensional-backfill/certified"],
                     FundProfileId: "default-fund",
                     LedgerBookId: ledgerBookId,
                     Summary: "Dimensional backfill certified for retained journal/report paths.",
@@ -3983,7 +4014,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     CompletedAtUtc: DateTimeOffset.Parse("2026-03-02T00:15:00Z"),
                     MigratedRecordCount: 275,
                     IssueCount: 0,
-                    EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/sparse"],
+                    EvidenceReferences: [$"evidence://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/dimensional-backfill/sparse"],
                     FundProfileId: "default-fund",
                     LedgerBookId: ledgerBookId,
                     Summary: "Certified dimensional backfill retained sparse dimensions.",
@@ -4403,6 +4434,49 @@ public sealed class AccountingSystemIntegrationServiceTests
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
             error.Contains("certified dimension scope", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksSplitDimensionScopeEvidence()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    ExternalGlLedgerBookId,
+                    PostingRulesLedgerBookNativeCertified: true,
+                    JournalLifecycleLedgerBookNativeCertified: true,
+                    CloseReportingLedgerBookNativeCertified: true,
+                    ExternalGlLedgerBookNativeCertified: true,
+                    PeriodReportDimensionQueriesCertified: true,
+                    CrossPeriodReportDimensionQueriesCertified: true,
+                    JournalQueryDimensionFiltersCertified: true,
+                    ExternalExportDimensionMappingCertified: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences:
+                    [
+                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full",
+                        "evidence://dimensions/report-query-certification/full/dimension-scope/canonical-production"
+                    ],
+                    ReconciliationLedgerBookNativeCertified: true,
+                    DirectLendingLedgerBookNativeCertified: true,
+                    StrategyLedgerReadLedgerBookNativeCertified: true,
+                    LedgerLineDimensionsPersistedCertified: true,
+                    TrialBalanceDimensionFiltersCertified: true,
+                    ReportPackageDimensionProvenanceCertified: true),
+                "spoofed-browser-user",
+                CorrelationId: "production-certification-split-dimension-scope")));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
+        problem.Errors.Should().ContainKey("request");
+        problem.Errors["request"].Should().Contain(error =>
+            error.Contains("same retained artifact", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

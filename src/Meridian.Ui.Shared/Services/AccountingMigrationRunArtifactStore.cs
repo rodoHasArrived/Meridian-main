@@ -290,6 +290,15 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
             throw new ArgumentException("Certified migration run artifacts require retained evidence references.", nameof(artifact));
         }
 
+        if (!artifact.EvidenceReferences.Any(reference =>
+                ReferencesScope(reference, artifact.TenantId) &&
+                ReferencesScope(reference, artifact.CompanyId) &&
+                ReferencesScope(reference, artifact.FundProfileId) &&
+                ReferencesLedgerBook(reference, artifact.LedgerBookId)))
+        {
+            throw new ArgumentException("Certified migration run artifact evidence must identify the retained tenant, company, fund profile, and ledger book.", nameof(artifact));
+        }
+
         if (artifact.Kind == AccountingMigrationRunKindDto.DimensionalBackfill)
         {
             EnsureCertifiedDimensionalBackfillScope(artifact);
@@ -385,6 +394,39 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
         {
             yield return "external GL";
         }
+    }
+
+    private static bool ReferencesScope(string? reference, string? value)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           !string.IsNullOrWhiteSpace(value) &&
+           reference.Contains(value, StringComparison.OrdinalIgnoreCase);
+
+    private static bool ReferencesLedgerBook(string? reference, Guid? ledgerBookId)
+    {
+        if (!ledgerBookId.HasValue)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return false;
+        }
+
+        var ledgerBookText = ledgerBookId.Value.ToString("D");
+        var compactLedgerBookText = ledgerBookId.Value.ToString("N");
+        return reference.Contains($"ledger-book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId={ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book/{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId={compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId/{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed record AccountingMigrationRunArtifactSnapshot(IReadOnlyList<AccountingMigrationRunArtifactDto> Artifacts);

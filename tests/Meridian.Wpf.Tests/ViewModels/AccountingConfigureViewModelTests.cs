@@ -518,7 +518,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                 CompletedAtUtc: DateTimeOffset.Parse("2026-06-30T12:15:00Z", CultureInfo.InvariantCulture),
                 MigratedRecordCount: 128,
                 IssueCount: 0,
-                EvidenceReferences: ["evidence://migration/dimensional-backfill/alpha-fund/certified"],
+                EvidenceReferences: ["evidence://migration/tenant/alpha-fund/company/Alpha Fund LP/fund/alpha-fund/ledger-book/7e0be005-49e1-46eb-9d4f-89d75e2328bd/dimensional-backfill/certified"],
                 FundProfileId: "alpha-fund",
                 LedgerBookId: Guid.Parse("7e0be005-49e1-46eb-9d4f-89d75e2328bd"),
                 Summary: "Dimensional backfill certified for Alpha Fund primary book.",

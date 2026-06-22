@@ -275,6 +275,7 @@ public sealed class FinancialRecordExplorerViewModelTests
     [InlineData("/api/workstation/evidence/subjects/report-line/ledger-evidence-1/packet", "FundAuditTrail")]
     [InlineData("/api/workstation/evidence/subjects/provider-event/provider-event-position-aapl/packet", "FundAuditTrail")]
     [InlineData("/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111", "SecurityMaster")]
+    [InlineData("/api/workstation/assets/11111111-1111-1111-1111-111111111111/operations", "SecurityInstrumentExplorer")]
     [InlineData("/api/workstation/evidence/subjects/report-pack-delivery/report%3Aattempt/graph", "FundAuditTrail")]
     public void ProofActions_ReportLineProvenanceDrillThroughRoutes_ShouldMapToShellPageTags(string href, string expectedPageTag)
     {

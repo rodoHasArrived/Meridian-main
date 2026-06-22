@@ -317,6 +317,12 @@ public sealed class FinancialRecordExplorerReadService
         var passportCount = enrichments.Count(static enrichment => enrichment.Passport is not null);
         var operationsCount = enrichments.Count(static enrichment => enrichment.Readiness is not null);
         var reportLineUsageCount = enrichments.Sum(static enrichment => enrichment.ReportLineUsages.Count);
+        var termCount = enrichments.Sum(static enrichment => enrichment.Operations?.TermsHistory.Count ?? 0);
+        var cashFlowCount = enrichments.Sum(static enrichment => enrichment.Operations?.ProjectedCashFlows.Count ?? 0);
+        var reconciliationCount = enrichments.Sum(static enrichment => enrichment.Operations?.ReconciliationResults.Count ?? 0);
+        var journalImpactCount = enrichments.Sum(static enrichment => enrichment.Operations?.LedgerProjections.Count ?? 0);
+        var evidenceCount = enrichments.Sum(static enrichment => CountSecurityEvidenceAnchors(enrichment));
+        var auditCount = enrichments.Sum(static enrichment => CountSecurityAuditEvents(enrichment));
         var summaryItems = new List<FinancialRecordExplorerSummaryItemDto>
         {
             new("Securities", rows.Length.ToString(CultureInfo.InvariantCulture), "Distinct resolved or referenced instruments."),
@@ -333,9 +339,39 @@ public sealed class FinancialRecordExplorerReadService
             summaryItems.Add(new("Operations", operationsCount.ToString(CultureInfo.InvariantCulture), "AssetOperations readiness payloads available.", FinancialRecordExplorerTone.Info));
         }
 
+        if (termCount > 0)
+        {
+            summaryItems.Add(new("Terms", termCount.ToString(CultureInfo.InvariantCulture), "Instrument terms and obligation roots available.", FinancialRecordExplorerTone.Info));
+        }
+
+        if (cashFlowCount > 0)
+        {
+            summaryItems.Add(new("Cash Flows", cashFlowCount.ToString(CultureInfo.InvariantCulture), "Projected cash-flow obligations available.", FinancialRecordExplorerTone.Info));
+        }
+
+        if (reconciliationCount > 0)
+        {
+            summaryItems.Add(new("Reconciliations", reconciliationCount.ToString(CultureInfo.InvariantCulture), "AssetOperations reconciliation results available.", FinancialRecordExplorerTone.Info));
+        }
+
+        if (journalImpactCount > 0)
+        {
+            summaryItems.Add(new("Journal Impacts", journalImpactCount.ToString(CultureInfo.InvariantCulture), "Ledger or journal projection rows available.", FinancialRecordExplorerTone.Info));
+        }
+
         if (reportLineUsageCount > 0)
         {
             summaryItems.Add(new("Report Usage", reportLineUsageCount.ToString(CultureInfo.InvariantCulture), "Retained report-line provenance rows reference these instruments.", FinancialRecordExplorerTone.Info));
+        }
+
+        if (evidenceCount > 0)
+        {
+            summaryItems.Add(new("Evidence", evidenceCount.ToString(CultureInfo.InvariantCulture), "Evidence anchors retained for security-instrument proof chains.", FinancialRecordExplorerTone.Info));
+        }
+
+        if (auditCount > 0)
+        {
+            summaryItems.Add(new("Audit Events", auditCount.ToString(CultureInfo.InvariantCulture), "Audit events retained for security-instrument proof chains.", FinancialRecordExplorerTone.Info));
         }
 
         return await CreateExplorerAsync(
@@ -357,7 +393,11 @@ public sealed class FinancialRecordExplorerReadService
                 new("identifierConfidence", "Identifier Confidence", Width: 170),
                 new("operations", "Operations", Width: 140),
                 new("cashFlow", "Cash Flow", Width: 120),
-                new("ledger", "Ledger", Width: 120),
+                new("ledger", "Ledger / Journal", Width: 140),
+                new("terms", "Terms / Obligations", Width: 170),
+                new("reportUsage", "Report Usage", Width: 170),
+                new("evidence", "Evidence", Width: 140),
+                new("auditTrail", "Audit Trail", Width: 140),
                 new("identifier", "Identifier", Width: 160),
                 new("source", "Source", Width: 120)
             ],
@@ -505,7 +545,9 @@ public sealed class FinancialRecordExplorerReadService
             scoped.Rows,
             scoped.Rows.FirstOrDefault()?.Detail,
             proofActions,
-            BuildGraph(scoped.Rows));
+            string.Equals(explorerId, SecurityInstrumentExplorerId, StringComparison.OrdinalIgnoreCase)
+                ? BuildSecurityInstrumentGraph(scoped.Rows)
+                : BuildGraph(scoped.Rows));
     }
 
     private static FinancialRecordExplorerDto ApplyExplorerQuery(
@@ -521,6 +563,8 @@ public sealed class FinancialRecordExplorerReadService
             SelectedRecord = scoped.Rows.FirstOrDefault()?.Detail,
             RecordGraph = string.Equals(explorer.ExplorerId, ReportLineProvenanceExplorerId, StringComparison.OrdinalIgnoreCase)
                 ? BuildReportLineProvenanceGraph(scoped.Rows)
+                : string.Equals(explorer.ExplorerId, SecurityInstrumentExplorerId, StringComparison.OrdinalIgnoreCase)
+                    ? BuildSecurityInstrumentGraph(scoped.Rows)
                 : BuildGraph(scoped.Rows)
         };
     }
@@ -1115,6 +1159,10 @@ public sealed class FinancialRecordExplorerReadService
         var operationsCell = BuildAssetOperationsCell(enrichment.Readiness);
         var cashFlowCell = BuildCashFlowCell(enrichment.Operations);
         var ledgerCell = BuildLedgerCell(enrichment.Operations);
+        var termsCell = BuildTermsCell(enrichment.Operations);
+        var reportUsageCell = BuildReportUsageCell(reference, enrichment);
+        var evidenceCell = BuildEvidenceCell(reference, enrichment);
+        var auditTrailCell = BuildAuditTrailCell(reference, enrichment);
         var selected = new FinancialRecordExplorerSelectedRecordDto(
             recordId,
             "Security instrument",
@@ -1147,6 +1195,10 @@ public sealed class FinancialRecordExplorerReadService
                 operationsCell,
                 cashFlowCell,
                 ledgerCell,
+                termsCell,
+                reportUsageCell,
+                evidenceCell,
+                auditTrailCell,
                 new("identifier", reference.PrimaryIdentifier ?? reference.MatchedIdentifierValue ?? "-"),
                 new("source", reference.LookupSource ?? "Security Master")
             ],
@@ -1197,12 +1249,15 @@ public sealed class FinancialRecordExplorerReadService
     {
         var fields = new List<FinancialRecordExplorerSummaryItemDto>
         {
+            new("Instrument Identity", BuildInstrumentIdentityLabel(reference), BuildInstrumentIdentityDetail(reference), ToneFromCoverage(reference.CoverageStatus)),
+            new("Identifier Map", BuildIdentifierMapSummary(reference, enrichment.Passport), BuildIdentifierMapDetail(reference, enrichment.Passport), ToneFromIdentifierMap(reference, enrichment.Passport)),
             new("Asset Class", reference.AssetClass),
             new("Sub Type", reference.SubType ?? "None"),
             new("Currency", reference.Currency),
             new("Status", reference.Status.ToString()),
             new("Primary Identifier", reference.PrimaryIdentifier ?? "None"),
             new("Matched Provider", reference.MatchedProvider ?? "None"),
+            new("Accounting Classification", BuildAccountingClassificationSummary(reference, enrichment.Operations), BuildAccountingClassificationDetail(reference, enrichment.Operations), ToneFromCoverage(reference.CoverageStatus)),
             new("Coverage", reference.CoverageStatus.ToString(), Tone: ToneFromCoverage(reference.CoverageStatus))
         };
 
@@ -1219,6 +1274,22 @@ public sealed class FinancialRecordExplorerReadService
                 BuildIdentifierConfidenceLabel(passport),
                 BuildIdentifierConfidenceDetail(passport),
                 ToneFromIdentifierConfidence(passport)));
+            fields.Add(new(
+                "Conflict Posture",
+                passport.TrustPosture.HasOpenConflicts
+                    ? $"{passport.TrustPosture.OpenConflictCount.ToString(CultureInfo.InvariantCulture)} open conflict{Plural(passport.TrustPosture.OpenConflictCount)}"
+                    : "No open conflicts",
+                BuildTrustConflictDetail(passport.TrustPosture),
+                passport.TrustPosture.HasOpenConflicts ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Success));
+        }
+
+        if (enrichment.Operations is not null)
+        {
+            fields.Add(new(
+                "Terms / Obligations",
+                BuildTermsObligationsSummary(enrichment.Operations),
+                BuildTermsObligationsDetail(enrichment.Operations),
+                ToneFromTerms(enrichment.Operations)));
         }
 
         if (enrichment.Readiness is not null)
@@ -1242,6 +1313,16 @@ public sealed class FinancialRecordExplorerReadService
                 BuildLedgerProjectionSummary(enrichment.Operations),
                 BuildLedgerProjectionDetail(enrichment.Operations),
                 ToneFromLedgerProjections(enrichment.Operations)));
+            fields.Add(new(
+                "Ledger / Journal Impact",
+                BuildJournalImpactSummary(enrichment.Operations),
+                BuildJournalImpactDetail(enrichment.Operations),
+                ToneFromLedgerProjections(enrichment.Operations)));
+            fields.Add(new(
+                "Reconciliation",
+                BuildReconciliationSummary(enrichment.Operations),
+                BuildReconciliationDetail(enrichment.Operations),
+                ToneFromReconciliationResults(enrichment.Operations)));
         }
 
         if (enrichment.ReportLineUsages.Count > 0)
@@ -1252,6 +1333,17 @@ public sealed class FinancialRecordExplorerReadService
                 BuildReportLineUsageDetail(enrichment.ReportLineUsages),
                 FinancialRecordExplorerTone.Info));
         }
+
+        fields.Add(new(
+            "Evidence",
+            BuildSecurityEvidenceSummary(enrichment),
+            BuildSecurityEvidenceDetail(enrichment),
+            ToneFromSecurityEvidence(enrichment)));
+        fields.Add(new(
+            "Audit Trail",
+            BuildSecurityAuditSummary(enrichment),
+            BuildSecurityAuditDetail(enrichment),
+            ToneFromSecurityAudit(enrichment)));
 
         return fields;
     }
@@ -1291,6 +1383,30 @@ public sealed class FinancialRecordExplorerReadService
                 enrichment.Readiness is not null,
                 "AssetOperations readiness evidence is not available.",
                 ToneFromAssetOperationsReadiness(enrichment.Readiness)));
+            actions.Add(new(
+                "open-position-transaction",
+                "Open position/transaction",
+                "Open the retained position or transaction rows that reference this instrument.",
+                BuildSecurityPositionTransactionHref(reference, enrichment),
+                HasSecurityPositionTransaction(reference, enrichment),
+                "No retained position, transaction, or provider-event route references this instrument.",
+                HasSecurityPositionTransaction(reference, enrichment) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+            actions.Add(new(
+                "open-reconciliation",
+                "Open reconciliation",
+                "Open the reconciliation result or run linked to this instrument.",
+                BuildSecurityReconciliationHref(enrichment),
+                HasSecurityReconciliation(enrichment),
+                "No retained reconciliation result or run references this instrument.",
+                HasSecurityReconciliation(enrichment) ? ToneFromSecurityReconciliation(enrichment) : FinancialRecordExplorerTone.Warning));
+            actions.Add(new(
+                "open-journal-impact",
+                "Open journal impact",
+                "Open the ledger journal or projected journal impact linked to this instrument.",
+                BuildSecurityJournalHref(enrichment),
+                HasSecurityJournal(enrichment),
+                "No retained ledger or journal impact references this instrument.",
+                HasSecurityJournal(enrichment) ? ToneFromSecurityJournal(enrichment) : FinancialRecordExplorerTone.Warning));
         }
 
         if (enrichment.ReportLineUsages.Count > 0)
@@ -1299,11 +1415,28 @@ public sealed class FinancialRecordExplorerReadService
                 "open-report-line-provenance",
                 "Open report-line provenance",
                 "Open retained report-line provenance rows that reference this security.",
-                BuildReportLineProvenanceHref(),
+                BuildSecurityReportLineHref(reference, enrichment),
                 true,
                 string.Empty,
                 FinancialRecordExplorerTone.Info));
         }
+
+        actions.Add(new(
+            "open-evidence",
+            "Open evidence",
+            "Open the retained evidence packet for this instrument's proof chain.",
+            BuildSecurityEvidenceHref(reference, enrichment),
+            HasSecurityEvidence(enrichment),
+            "No retained evidence packet references this instrument.",
+            HasSecurityEvidence(enrichment) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+        actions.Add(new(
+            "open-audit-trail",
+            "Open audit trail",
+            "Open the retained audit graph for this instrument's proof chain.",
+            BuildSecurityAuditHref(reference, enrichment),
+            HasSecurityAudit(enrichment),
+            "No retained audit event references this instrument.",
+            HasSecurityAudit(enrichment) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
 
         return actions;
     }
@@ -1317,6 +1450,15 @@ public sealed class FinancialRecordExplorerReadService
         {
             new("instrument-coverage", "Instrument coverage", $"Coverage state is {reference.CoverageStatus}.", securityHref, ToneFromCoverage(reference.CoverageStatus))
         };
+        var positionTransactionHref = BuildSecurityPositionTransactionHref(reference, enrichment);
+        impacts.Add(new(
+            "position-transaction",
+            "Position / transaction",
+            HasSecurityPositionTransaction(reference, enrichment)
+                ? "Retained position, transaction, or provider-event evidence references this instrument."
+                : "No retained position, transaction, or provider-event evidence references this instrument.",
+            positionTransactionHref,
+            HasSecurityPositionTransaction(reference, enrichment) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
 
         if (enrichment.Passport is not null)
         {
@@ -1335,7 +1477,7 @@ public sealed class FinancialRecordExplorerReadService
                     "Conflict blockers",
                     $"{enrichment.Passport.TrustPosture.OpenConflictCount.ToString(CultureInfo.InvariantCulture)} Security Master conflict{Plural(enrichment.Passport.TrustPosture.OpenConflictCount)} require steward review.",
                     passportHref,
-                    FinancialRecordExplorerTone.Warning));
+                FinancialRecordExplorerTone.Warning));
             }
         }
 
@@ -1364,18 +1506,57 @@ public sealed class FinancialRecordExplorerReadService
         {
             var assetHref = BuildAssetOperationsHref(enrichment.Operations.Subject.SecurityId);
             impacts.Add(new(
+                "terms-obligations",
+                "Terms / obligations",
+                BuildTermsObligationsDetail(enrichment.Operations),
+                assetHref,
+                ToneFromTerms(enrichment.Operations)));
+            impacts.Add(new(
                 "projected-cash-flows",
                 "Projected cash flows",
                 BuildCashFlowDetail(enrichment.Operations),
                 assetHref,
                 ToneFromCashFlows(enrichment.Operations)));
             impacts.Add(new(
+                "reconciliation",
+                "Reconciliation",
+                BuildReconciliationDetail(enrichment.Operations),
+                BuildSecurityReconciliationHref(enrichment),
+                ToneFromReconciliationResults(enrichment.Operations)));
+            impacts.Add(new(
                 "ledger-projection",
                 "Ledger projection",
                 BuildLedgerProjectionDetail(enrichment.Operations),
                 assetHref,
                 ToneFromLedgerProjections(enrichment.Operations)));
+            impacts.Add(new(
+                "journal",
+                "Journal",
+                BuildJournalImpactDetail(enrichment.Operations),
+                BuildSecurityJournalHref(enrichment),
+                ToneFromLedgerProjections(enrichment.Operations)));
         }
+
+        impacts.Add(new(
+            "report-line",
+            "Report line",
+            enrichment.ReportLineUsages.Count > 0
+                ? BuildReportLineUsageDetail(enrichment.ReportLineUsages)
+                : "No retained report-line provenance references this instrument.",
+            BuildSecurityReportLineHref(reference, enrichment),
+            enrichment.ReportLineUsages.Count > 0 ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+        impacts.Add(new(
+            "evidence",
+            "Evidence",
+            BuildSecurityEvidenceDetail(enrichment),
+            BuildSecurityEvidenceHref(reference, enrichment),
+            ToneFromSecurityEvidence(enrichment)));
+        impacts.Add(new(
+            "audit-event",
+            "Audit event",
+            BuildSecurityAuditDetail(enrichment),
+            BuildSecurityAuditHref(reference, enrichment),
+            ToneFromSecurityAudit(enrichment)));
 
         return impacts;
     }
@@ -1439,6 +1620,507 @@ public sealed class FinancialRecordExplorerReadService
                 BuildLedgerProjectionDetail(operations),
                 ToneFromLedgerProjections(operations),
                 BuildAssetOperationsHref(operations.Subject.SecurityId));
+
+    private static FinancialRecordExplorerCellDto BuildTermsCell(AssetOperationsDetailDto? operations)
+        => operations is null
+            ? new("terms", "-")
+            : new(
+                "terms",
+                BuildTermsObligationsSummary(operations),
+                BuildTermsObligationsDetail(operations),
+                ToneFromTerms(operations),
+                BuildAssetOperationsHref(operations.Subject.SecurityId));
+
+    private static FinancialRecordExplorerCellDto BuildReportUsageCell(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+        => enrichment.ReportLineUsages.Count == 0
+            ? new("reportUsage", "-")
+            : new(
+                "reportUsage",
+                BuildReportUsageSummary(enrichment.ReportLineUsages),
+                BuildReportLineUsageDetail(enrichment.ReportLineUsages),
+                FinancialRecordExplorerTone.Info,
+                BuildSecurityReportLineHref(reference, enrichment));
+
+    private static FinancialRecordExplorerCellDto BuildEvidenceCell(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+        => new(
+            "evidence",
+            BuildSecurityEvidenceSummary(enrichment),
+            BuildSecurityEvidenceDetail(enrichment),
+            ToneFromSecurityEvidence(enrichment),
+            BuildSecurityEvidenceHref(reference, enrichment));
+
+    private static FinancialRecordExplorerCellDto BuildAuditTrailCell(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+        => new(
+            "auditTrail",
+            BuildSecurityAuditSummary(enrichment),
+            BuildSecurityAuditDetail(enrichment),
+            ToneFromSecurityAudit(enrichment),
+            BuildSecurityAuditHref(reference, enrichment));
+
+    private static string BuildInstrumentIdentityLabel(WorkstationSecurityReference reference)
+    {
+        var identifier = reference.PrimaryIdentifier ?? reference.MatchedIdentifierValue;
+        return HasText(identifier)
+            ? $"{identifier} / {reference.DisplayName}"
+            : reference.DisplayName;
+    }
+
+    private static string BuildInstrumentIdentityDetail(WorkstationSecurityReference reference)
+    {
+        var securityId = reference.SecurityId == Guid.Empty ? "unresolved" : reference.SecurityId.ToString("D");
+        return $"{reference.AssetClass} {reference.SubType ?? "instrument"} in {reference.Currency}; Security Master id {securityId}.";
+    }
+
+    private static string BuildIdentifierMapSummary(
+        WorkstationSecurityReference reference,
+        InstrumentPassportDto? passport)
+    {
+        if (passport is null)
+        {
+            return HasText(reference.PrimaryIdentifier)
+                ? $"{reference.PrimaryIdentifier} ({reference.MatchedProvider ?? "source"})"
+                : "No identifier map";
+        }
+
+        return $"{passport.IdentifierSummary.ActiveIdentifierCount.ToString(CultureInfo.InvariantCulture)} identifier{Plural(passport.IdentifierSummary.ActiveIdentifierCount)} / {passport.IdentifierSummary.ProviderMappingCount.ToString(CultureInfo.InvariantCulture)} provider mapping{Plural(passport.IdentifierSummary.ProviderMappingCount)}";
+    }
+
+    private static string BuildIdentifierMapDetail(
+        WorkstationSecurityReference reference,
+        InstrumentPassportDto? passport)
+    {
+        if (passport is null)
+        {
+            return reference.ResolutionReason ?? "Identifier map evidence is not available from Security Master.";
+        }
+
+        var providers = passport.IdentifierSummary.ProviderMappings
+            .Select(static mapping => mapping.Provider ?? mapping.MappingSource)
+            .Where(HasText)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray();
+        return providers.Length == 0
+            ? passport.IdentifierSummary.Summary
+            : $"{passport.IdentifierSummary.Summary} Providers: {string.Join(", ", providers)}.";
+    }
+
+    private static FinancialRecordExplorerTone ToneFromIdentifierMap(
+        WorkstationSecurityReference reference,
+        InstrumentPassportDto? passport)
+    {
+        if (passport is not null)
+        {
+            return passport.IdentifierSummary.HasPrimaryIdentifier && passport.IdentifierSummary.HasProviderMappings
+                ? FinancialRecordExplorerTone.Success
+                : FinancialRecordExplorerTone.Warning;
+        }
+
+        return HasText(reference.PrimaryIdentifier) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning;
+    }
+
+    private static string BuildAccountingClassificationSummary(
+        WorkstationSecurityReference reference,
+        AssetOperationsDetailDto? operations)
+    {
+        var ledgerBasis = operations?.LedgerProjections
+            .Select(static projection => projection.LedgerBasis)
+            .FirstOrDefault(HasText);
+        return HasText(ledgerBasis)
+            ? $"{reference.AssetClass} / {ledgerBasis}"
+            : reference.AssetClass;
+    }
+
+    private static string BuildAccountingClassificationDetail(
+        WorkstationSecurityReference reference,
+        AssetOperationsDetailDto? operations)
+    {
+        var projection = operations?.LedgerProjections
+            .OrderByDescending(static item => item.AccountingDate)
+            .FirstOrDefault();
+        if (projection is null)
+        {
+            return $"{reference.SubType ?? reference.AssetClass} classification is retained from Security Master coverage.";
+        }
+
+        return $"{projection.ProjectionType} is classified on {projection.LedgerBasis} with status {projection.Status}.";
+    }
+
+    private static string BuildTrustConflictDetail(SecurityMasterTrustPostureDto posture)
+        => posture.HasOpenConflicts
+            ? $"{posture.OpenConflictCount.ToString(CultureInfo.InvariantCulture)} open conflict{Plural(posture.OpenConflictCount)}; recommended steward review before accounting close or report publication."
+            : $"{posture.Summary} No open Security Master conflicts are retained.";
+
+    private static string BuildTermsObligationsSummary(AssetOperationsDetailDto operations)
+    {
+        var terms = operations.TermsHistory.Count;
+        var obligations = operations.ProjectedCashFlows.Count + operations.LifecycleEvents.Count;
+        if (terms == 0 && obligations == 0)
+        {
+            return "No terms";
+        }
+
+        return $"{terms.ToString(CultureInfo.InvariantCulture)} term{Plural(terms)} / {obligations.ToString(CultureInfo.InvariantCulture)} obligation{Plural(obligations)}";
+    }
+
+    private static string BuildTermsObligationsDetail(AssetOperationsDetailDto operations)
+    {
+        var latestTerms = operations.TermsHistory
+            .OrderByDescending(static terms => terms.EffectiveDate)
+            .FirstOrDefault();
+        var nextFlow = operations.ProjectedCashFlows
+            .OrderBy(static flow => flow.DueDate)
+            .FirstOrDefault();
+
+        if (latestTerms is null && nextFlow is null)
+        {
+            return "No retained terms or obligation rows are available.";
+        }
+
+        var parts = new List<string>();
+        if (latestTerms is not null)
+        {
+            parts.Add($"{latestTerms.Summary} Effective {latestTerms.EffectiveDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}.");
+        }
+
+        if (nextFlow is not null)
+        {
+            parts.Add($"Next obligation is {nextFlow.FlowType} due {nextFlow.DueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} for {FormatAmountCurrency(nextFlow.Amount, nextFlow.Currency)}.");
+        }
+
+        return string.Join(" ", parts);
+    }
+
+    private static FinancialRecordExplorerTone ToneFromTerms(AssetOperationsDetailDto operations)
+        => operations.TermsHistory.Count == 0 && operations.ProjectedCashFlows.Count == 0
+            ? FinancialRecordExplorerTone.Warning
+            : FinancialRecordExplorerTone.Success;
+
+    private static string BuildReconciliationSummary(AssetOperationsDetailDto operations)
+    {
+        var count = operations.ReconciliationResults.Count;
+        return count == 0
+            ? "No reconciliation"
+            : $"{count.ToString(CultureInfo.InvariantCulture)} result{Plural(count)}";
+    }
+
+    private static string BuildReconciliationDetail(AssetOperationsDetailDto operations)
+    {
+        var latest = operations.ReconciliationResults
+            .OrderByDescending(static result => result.ActualDate ?? result.ExpectedDate ?? DateOnly.MinValue)
+            .FirstOrDefault();
+        if (latest is null)
+        {
+            return "No retained reconciliation result is available.";
+        }
+
+        var expected = latest.ExpectedAmount.HasValue ? FormatAmountCurrency(latest.ExpectedAmount.Value, "USD") : "no expected amount";
+        var actual = latest.ActualAmount.HasValue ? FormatAmountCurrency(latest.ActualAmount.Value, "USD") : "no actual amount";
+        return $"{latest.MatchStatus} reconciliation result compares {expected} expected to {actual} actual.";
+    }
+
+    private static string BuildJournalImpactSummary(AssetOperationsDetailDto operations)
+    {
+        var count = operations.LedgerProjections.Count;
+        return count == 0
+            ? "No journal"
+            : $"{count.ToString(CultureInfo.InvariantCulture)} journal impact{Plural(count)}";
+    }
+
+    private static string BuildJournalImpactDetail(AssetOperationsDetailDto operations)
+    {
+        var latest = operations.LedgerProjections
+            .OrderByDescending(static projection => projection.AccountingDate)
+            .FirstOrDefault();
+        if (latest is null)
+        {
+            return "No retained journal or ledger impact is available.";
+        }
+
+        var reference = HasText(latest.LedgerReferenceId)
+            ? $" Journal reference {latest.LedgerReferenceId}."
+            : string.Empty;
+        return $"{latest.ProjectionType} {latest.Status} on {latest.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} for {latest.LedgerBasis}.{reference}";
+    }
+
+    private static string BuildReportUsageSummary(IReadOnlyList<SecurityReportLineUsage> usages)
+    {
+        if (usages.Count == 0)
+        {
+            return "No report usage";
+        }
+
+        var firstLine = usages
+            .Select(static usage => usage.Line.LineKey)
+            .FirstOrDefault(HasText);
+        return usages.Count == 1 && HasText(firstLine)
+            ? firstLine!
+            : $"{usages.Count.ToString(CultureInfo.InvariantCulture)} report line{Plural(usages.Count)}";
+    }
+
+    private static string BuildSecurityEvidenceSummary(SecurityInstrumentEnrichment enrichment)
+    {
+        var count = CountSecurityEvidenceAnchors(enrichment);
+        return count == 0
+            ? "No evidence"
+            : $"{count.ToString(CultureInfo.InvariantCulture)} evidence anchor{Plural(count)}";
+    }
+
+    private static string BuildSecurityEvidenceDetail(SecurityInstrumentEnrichment enrichment)
+    {
+        var reportLineEvidence = enrichment.ReportLineUsages
+            .Select(static usage => usage.Line.EvidenceId)
+            .FirstOrDefault(HasText);
+        if (HasText(reportLineEvidence))
+        {
+            return $"Report-line evidence {reportLineEvidence} anchors this instrument's retained proof chain.";
+        }
+
+        var reconciliationEvidence = enrichment.Operations?.ReconciliationResults
+            .Select(static result => result.EvidenceLink)
+            .FirstOrDefault(HasText);
+        if (HasText(reconciliationEvidence))
+        {
+            return $"AssetOperations reconciliation evidence is retained at {reconciliationEvidence}.";
+        }
+
+        var termsHash = enrichment.Operations?.TermsHistory
+            .Select(static terms => terms.TermsHash)
+            .FirstOrDefault(HasText);
+        return HasText(termsHash)
+            ? $"Terms hash {termsHash} is retained as instrument evidence."
+            : "No retained evidence anchor is available.";
+    }
+
+    private static FinancialRecordExplorerTone ToneFromSecurityEvidence(SecurityInstrumentEnrichment enrichment)
+        => CountSecurityEvidenceAnchors(enrichment) == 0
+            ? FinancialRecordExplorerTone.Warning
+            : FinancialRecordExplorerTone.Info;
+
+    private static string BuildSecurityAuditSummary(SecurityInstrumentEnrichment enrichment)
+    {
+        var count = CountSecurityAuditEvents(enrichment);
+        return count == 0
+            ? "No audit"
+            : $"{count.ToString(CultureInfo.InvariantCulture)} audit event{Plural(count)}";
+    }
+
+    private static string BuildSecurityAuditDetail(SecurityInstrumentEnrichment enrichment)
+    {
+        var latestWorkflowAudit = enrichment.Operations?.WorkflowAudit
+            .OrderByDescending(static item => item.RecordedAt)
+            .FirstOrDefault();
+        if (latestWorkflowAudit is not null)
+        {
+            return $"{latestWorkflowAudit.EventType} audit event retained from {latestWorkflowAudit.SourceDomain}: {latestWorkflowAudit.Summary}";
+        }
+
+        if (enrichment.ReportLineUsages.Any(static usage => HasText(usage.Line.EvidenceId)))
+        {
+            return "Report-line evidence id links this instrument to retained audit-packet history.";
+        }
+
+        return enrichment.Passport is null
+            ? "No retained audit event is available."
+            : $"Instrument passport was retrieved at {enrichment.Passport.RetrievedAtUtc.ToString("u", CultureInfo.InvariantCulture)}.";
+    }
+
+    private static FinancialRecordExplorerTone ToneFromSecurityAudit(SecurityInstrumentEnrichment enrichment)
+        => CountSecurityAuditEvents(enrichment) == 0
+            ? FinancialRecordExplorerTone.Warning
+            : FinancialRecordExplorerTone.Info;
+
+    private static int CountSecurityEvidenceAnchors(SecurityInstrumentEnrichment enrichment)
+        => enrichment.ReportLineUsages.Count(static usage => HasText(usage.Line.EvidenceId)) +
+           (enrichment.Operations?.ActualActivity.Count(static activity => HasText(activity.EvidenceLink)) ?? 0) +
+           (enrichment.Operations?.ReconciliationResults.Count(static result => HasText(result.EvidenceLink)) ?? 0) +
+           (enrichment.Operations?.TermsHistory.Count(static terms => HasText(terms.TermsHash)) ?? 0);
+
+    private static int CountSecurityAuditEvents(SecurityInstrumentEnrichment enrichment)
+        => (enrichment.Operations?.WorkflowAudit.Count ?? 0) +
+           (enrichment.Passport?.LifecycleEvents.Count ?? 0) +
+           enrichment.ReportLineUsages.Count(static usage => HasText(usage.Line.EvidenceId));
+
+    private static bool HasSecurityPositionTransaction(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+        => reference.SecurityId != Guid.Empty ||
+           enrichment.ReportLineUsages.Any(static usage =>
+               HasText(usage.Line.ProviderEventId) ||
+               HasText(usage.Line.SourceSessionId) ||
+               HasText(usage.Line.SourceId));
+
+    private static bool HasSecurityReconciliation(SecurityInstrumentEnrichment enrichment)
+        => enrichment.Operations?.ReconciliationResults.Count > 0 ||
+           enrichment.ReportLineUsages.Any(static usage =>
+               HasText(usage.Line.ReconciliationRunId) ||
+               HasText(usage.Line.ReconciliationCaseId));
+
+    private static bool HasSecurityJournal(SecurityInstrumentEnrichment enrichment)
+        => enrichment.Operations?.LedgerProjections.Count > 0 ||
+           enrichment.ReportLineUsages.Any(static usage =>
+               HasText(usage.Line.RunId) ||
+               HasText(usage.Line.LedgerEntryId));
+
+    private static bool HasSecurityEvidence(SecurityInstrumentEnrichment enrichment)
+        => CountSecurityEvidenceAnchors(enrichment) > 0;
+
+    private static bool HasSecurityAudit(SecurityInstrumentEnrichment enrichment)
+        => CountSecurityAuditEvents(enrichment) > 0 || enrichment.Passport is not null;
+
+    private static FinancialRecordExplorerTone ToneFromSecurityReconciliation(SecurityInstrumentEnrichment enrichment)
+    {
+        if (enrichment.Operations is not null && enrichment.Operations.ReconciliationResults.Count > 0)
+        {
+            return ToneFromReconciliationResults(enrichment.Operations);
+        }
+
+        var outcome = enrichment.ReportLineUsages
+            .Select(static usage => usage.Line.ReconciliationOutcome)
+            .FirstOrDefault(HasText);
+        return HasText(outcome) ? ToneFromReconciliationOutcome(outcome) : FinancialRecordExplorerTone.Warning;
+    }
+
+    private static FinancialRecordExplorerTone ToneFromSecurityJournal(SecurityInstrumentEnrichment enrichment)
+        => enrichment.Operations is not null && enrichment.Operations.LedgerProjections.Count > 0
+            ? ToneFromLedgerProjections(enrichment.Operations)
+            : FinancialRecordExplorerTone.Info;
+
+    private static string BuildSecurityPositionTransactionHref(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+    {
+        var usage = enrichment.ReportLineUsages.FirstOrDefault();
+        return BuildFinancialRecordExplorerHref(
+            PortfolioExplorerId,
+            BuildSecurityQueryParameters(reference, usage?.Line));
+    }
+
+    private static string BuildSecurityReconciliationHref(SecurityInstrumentEnrichment enrichment)
+    {
+        var reportLineHref = enrichment.ReportLineUsages
+            .Select(static usage => BuildReportLineReconciliationHref(usage.Line))
+            .FirstOrDefault(HasText);
+        if (HasText(reportLineHref))
+        {
+            return reportLineHref!;
+        }
+
+        var securityId = enrichment.Operations?.Subject.SecurityId ?? Guid.Empty;
+        return securityId == Guid.Empty ? string.Empty : BuildAssetOperationsHref(securityId);
+    }
+
+    private static string BuildSecurityJournalHref(SecurityInstrumentEnrichment enrichment)
+    {
+        var reportLineHref = enrichment.ReportLineUsages
+            .Select(static usage => BuildReportLineJournalHref(usage.Line))
+            .FirstOrDefault(HasText);
+        if (HasText(reportLineHref))
+        {
+            return reportLineHref!;
+        }
+
+        var ledgerReference = enrichment.Operations?.LedgerProjections
+            .Select(static projection => projection.LedgerReferenceId)
+            .FirstOrDefault(HasText);
+        return HasText(ledgerReference)
+            ? UiApiRoutes.WithQuery(
+                UiApiRoutes.LedgerManualJournalEntryWorkbench,
+                $"ledgerEntryId={Uri.EscapeDataString(ledgerReference!)}")
+            : string.Empty;
+    }
+
+    private static string BuildSecurityReportLineHref(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+    {
+        var usage = enrichment.ReportLineUsages.FirstOrDefault();
+        return BuildFinancialRecordExplorerHref(
+            ReportLineProvenanceExplorerId,
+            BuildSecurityQueryParameters(reference, usage?.Line));
+    }
+
+    private static string BuildSecurityEvidenceHref(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+    {
+        var reportLineHref = enrichment.ReportLineUsages
+            .Select(static usage => BuildReportLineAuditHref(usage.Line))
+            .FirstOrDefault(HasText);
+        if (HasText(reportLineHref))
+        {
+            return reportLineHref!;
+        }
+
+        var reconciliationEvidence = enrichment.Operations?.ReconciliationResults
+            .Select(static result => result.EvidenceLink)
+            .FirstOrDefault(HasText);
+        if (HasText(reconciliationEvidence))
+        {
+            return reconciliationEvidence!;
+        }
+
+        var subjectId = reference.SecurityId != Guid.Empty
+            ? reference.SecurityId.ToString("D")
+            : reference.PrimaryIdentifier ?? reference.MatchedIdentifierValue ?? reference.DisplayName;
+        return HasText(subjectId)
+            ? BuildEvidenceSubjectRoute(UiApiRoutes.WorkstationEvidenceSubjectPacket, "security-instrument", subjectId!)
+            : string.Empty;
+    }
+
+    private static string BuildSecurityAuditHref(
+        WorkstationSecurityReference reference,
+        SecurityInstrumentEnrichment enrichment)
+    {
+        var subjectId = reference.SecurityId != Guid.Empty
+            ? reference.SecurityId.ToString("D")
+            : reference.PrimaryIdentifier ?? reference.MatchedIdentifierValue ?? reference.DisplayName;
+        if (HasText(subjectId))
+        {
+            return BuildEvidenceSubjectRoute(
+                UiApiRoutes.WorkstationEvidenceSubjectGraph,
+                "security-instrument",
+                subjectId!);
+        }
+
+        return BuildSecurityEvidenceHref(reference, enrichment);
+    }
+
+    private static string BuildFinancialRecordExplorerHref(
+        string explorerId,
+        IReadOnlyList<string> queryParameters)
+    {
+        var route = UiApiRoutes.WithParam(UiApiRoutes.WorkstationFinancialRecordExplorer, "explorerId", explorerId);
+        return queryParameters.Count == 0
+            ? route
+            : UiApiRoutes.WithQuery(route, string.Join("&", queryParameters));
+    }
+
+    private static IReadOnlyList<string> BuildSecurityQueryParameters(
+        WorkstationSecurityReference reference,
+        ReportPackLineProvenanceDto? line)
+    {
+        var parameters = new List<string>();
+        AddQueryParameter(parameters, "securityId", reference.SecurityId == Guid.Empty ? null : reference.SecurityId.ToString("D"));
+        AddQueryParameter(parameters, "sourceId", reference.PrimaryIdentifier ?? reference.MatchedIdentifierValue ?? reference.DisplayName);
+        AddQueryParameter(parameters, "lineKey", line?.LineKey);
+        AddQueryParameter(parameters, "evidenceId", line?.EvidenceId);
+        return parameters;
+    }
+
+    private static void AddQueryParameter(ICollection<string> parameters, string key, string? value)
+    {
+        if (HasText(value))
+        {
+            parameters.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value!.Trim())}");
+        }
+    }
 
     private static string BuildTrustPostureLabel(SecurityMasterTrustPostureDto posture)
         => $"{posture.Tone} ({posture.TrustScore.ToString(CultureInfo.InvariantCulture)})";
@@ -2109,6 +2791,22 @@ public sealed class FinancialRecordExplorerReadService
             auditHref,
             HasText(auditHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
         relationships.Add(new(
+            "evidence",
+            "Evidence",
+            HasText(auditHref)
+                ? $"Evidence id {line.EvidenceId} anchors the report-line proof packet."
+                : "No retained evidence packet is linked to this report line.",
+            auditHref,
+            HasText(auditHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+        relationships.Add(new(
+            "audit-event",
+            "Audit event",
+            HasText(auditHref)
+                ? $"Audit trail retains evidence id {line.EvidenceId} for this report line."
+                : "No retained audit event is linked to this report line.",
+            auditHref,
+            HasText(auditHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+        relationships.Add(new(
             "restatement-evidence",
             "Restatement evidence",
             restatementLineCount > 0
@@ -2371,6 +3069,8 @@ public sealed class FinancialRecordExplorerReadService
             var journal = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "journal");
             var report = row.Detail.UsedIn.FirstOrDefault(static relationship => relationship.RelationshipId.StartsWith("report-pack:", StringComparison.OrdinalIgnoreCase));
             var evidence = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "evidence-audit-links");
+            var evidencePacket = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "evidence") ?? evidence;
+            var auditEvent = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "audit-event");
 
             var previousNodeId = AddRelationshipGraphNode(nodes, row.RecordId, instrument, "instrument");
             var activityNodeId = AddRelationshipGraphNode(nodes, row.RecordId, activity, "position-transaction");
@@ -2388,6 +3088,68 @@ public sealed class FinancialRecordExplorerReadService
 
             var evidenceNodeId = AddRelationshipGraphNode(nodes, row.RecordId, evidence, "evidence-audit-links");
             AddGraphEdge(edges, reportNodeId, evidenceNodeId, "retains audit", evidence?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var evidencePacketNodeId = AddRelationshipGraphNode(nodes, row.RecordId, evidencePacket, "evidence");
+            AddGraphEdge(edges, row.RecordId, evidencePacketNodeId, "retains evidence", evidencePacket?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var auditNodeId = AddRelationshipGraphNode(nodes, row.RecordId, auditEvent, "audit-event");
+            AddGraphEdge(edges, evidencePacketNodeId, auditNodeId, "audits", auditEvent?.Tone ?? FinancialRecordExplorerTone.Info);
+        }
+
+        return new FinancialRecordExplorerRecordGraphDto(nodes, edges);
+    }
+
+    private static FinancialRecordExplorerRecordGraphDto BuildSecurityInstrumentGraph(
+        IReadOnlyList<FinancialRecordExplorerRowDto> rows)
+    {
+        if (rows.Count == 0)
+        {
+            return new FinancialRecordExplorerRecordGraphDto([], []);
+        }
+
+        var nodes = new List<FinancialRecordExplorerGraphNodeDto>();
+        var edges = new List<FinancialRecordExplorerGraphEdgeDto>();
+
+        foreach (var row in rows.Take(12))
+        {
+            AddGraphNode(nodes, new(row.RecordId, row.Label, row.RecordType, row.Tone, row.Detail.FullRecordHref));
+
+            var positionTransaction = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "position-transaction");
+            var passport = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "instrument-passport");
+            var operations = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "asset-operations-readiness");
+            var terms = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "terms-obligations");
+            var reconciliation = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "reconciliation");
+            var journal = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "journal");
+            var reportLine = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "report-line");
+            var evidence = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "evidence");
+            var audit = row.Detail.Impacts.FirstOrDefault(static relationship => relationship.RelationshipId == "audit-event");
+
+            var positionTransactionNodeId = AddRelationshipGraphNode(nodes, row.RecordId, positionTransaction, "position-transaction");
+            AddGraphEdge(edges, row.RecordId, positionTransactionNodeId, "referenced by", positionTransaction?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var passportNodeId = AddRelationshipGraphNode(nodes, row.RecordId, passport, "instrument-passport");
+            AddGraphEdge(edges, row.RecordId, passportNodeId, "trust", passport?.Tone ?? row.Tone);
+
+            var operationsNodeId = AddRelationshipGraphNode(nodes, row.RecordId, operations, "asset-operations-readiness");
+            AddGraphEdge(edges, row.RecordId, operationsNodeId, "operations", operations?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var termsNodeId = AddRelationshipGraphNode(nodes, row.RecordId, terms, "terms-obligations");
+            AddGraphEdge(edges, operationsNodeId, termsNodeId, "terms", terms?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var reconciliationNodeId = AddRelationshipGraphNode(nodes, row.RecordId, reconciliation, "reconciliation");
+            AddGraphEdge(edges, operationsNodeId, reconciliationNodeId, "reconciles", reconciliation?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var journalNodeId = AddRelationshipGraphNode(nodes, row.RecordId, journal, "journal");
+            AddGraphEdge(edges, reconciliationNodeId, journalNodeId, "posts", journal?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var reportLineNodeId = AddRelationshipGraphNode(nodes, row.RecordId, reportLine, "report-line");
+            AddGraphEdge(edges, journalNodeId, reportLineNodeId, "reports", reportLine?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var evidenceNodeId = AddRelationshipGraphNode(nodes, row.RecordId, evidence, "evidence");
+            AddGraphEdge(edges, reportLineNodeId, evidenceNodeId, "retains evidence", evidence?.Tone ?? FinancialRecordExplorerTone.Info);
+
+            var auditNodeId = AddRelationshipGraphNode(nodes, row.RecordId, audit, "audit-event");
+            AddGraphEdge(edges, evidenceNodeId, auditNodeId, "audits", audit?.Tone ?? FinancialRecordExplorerTone.Info);
         }
 
         return new FinancialRecordExplorerRecordGraphDto(nodes, edges);

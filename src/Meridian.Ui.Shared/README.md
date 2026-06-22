@@ -285,9 +285,9 @@ packages remain blocked until posted ledger-line dimensions, trial-balance filte
 cross-period reports, journal dimension filters, report-package provenance, and external-export
 dimension mappings have retained ledger-book-scoped evidence. The retained dimensional evidence
 must also name the explicit dimension scope through a `dimension-scope` or `ledger-dimension-set`
-marker; generic ledger-book evidence can remain audit context, but it does not certify the
-fund/entity/instrument/counterparty/external-GL dimension set used by the query, report, or export
-path.
+marker on the same tenant/company/fund/book evidence artifact; generic ledger-book evidence can
+remain audit context, but it does not certify the fund/entity/instrument/counterparty/external-GL
+dimension set used by the query, report, or export path.
 Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
@@ -314,7 +314,8 @@ carry a nonzero issue count, so incomplete or unresolved ledger-book, historical
 dimensional, configuration-promotion, or close/reporting evidence migrations cannot serve as
 production rollout proof. The shared migration artifact store rejects certified artifacts before
 persistence unless they carry tenant, company, fund, ledger-book, completion, clean issue-count, and
-retained evidence scope. Certified dimensional-backfill artifacts must additionally retain
+retained evidence scope; at least one retained evidence reference must identify the same tenant,
+company, fund profile, and ledger book as the certified artifact. Certified dimensional-backfill artifacts must additionally retain
 canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
 tax-lot, cost-center, counterparty, and external-GL dimensions matching the certified book. Planned,
 running, completed, and failed artifacts can still be retained as operator evidence without being

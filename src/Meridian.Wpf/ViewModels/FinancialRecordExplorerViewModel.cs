@@ -557,6 +557,11 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
             return "SecurityMaster";
         }
 
+        if (normalized.Contains("/workstation/assets/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "SecurityInstrumentExplorer";
+        }
+
         if (normalized.Contains("/portfolio", StringComparison.OrdinalIgnoreCase))
         {
             return "PortfolioExplorer";

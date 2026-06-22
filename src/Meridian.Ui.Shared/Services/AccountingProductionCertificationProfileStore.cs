@@ -243,9 +243,14 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         }
 
         if (DeclaresDimensionalReportingCertification(profile) &&
-            !evidenceReferences.Any(ReferencesDimensionScope))
+            !evidenceReferences.Any(reference =>
+                ReferencesScope(reference, tenantId) &&
+                ReferencesScope(reference, companyId) &&
+                ReferencesScope(reference, fundProfileId) &&
+                ReferencesLedgerBook(reference, profile.LedgerBookId) &&
+                ReferencesDimensionScope(reference)))
         {
-            throw new ArgumentException("Accounting production certification evidence must identify the certified dimension scope.");
+            throw new ArgumentException("Accounting production certification evidence must identify the selected tenant, company, fund profile, ledger book, and certified dimension scope on the same retained artifact.");
         }
 
         EnsureDeclaredControlEvidence(profile, evidenceReferences);
