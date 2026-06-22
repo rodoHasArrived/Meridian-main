@@ -74,8 +74,11 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 `IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`,
 `IReportingRunStore`, `ReportGenerationService`, and `NavAttributionService` publish the Reporting
 module seams consumed by UI Shared report-pack workflows, UI Services reporting status projections,
-and WPF fund-operation views. `ReportWriterGridEngine` renders governed template grid definitions
-without script execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
+and WPF fund-operation views. `ReportGenerationService` retains the canonical ledger dimension
+envelope from dimensioned fund-ledger lines on generated trial-balance rows so downstream
+report-pack evidence artifacts do not reconstruct accounting scope from account names or route
+context. `ReportWriterGridEngine` renders governed template grid definitions without script
+execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
 metrics, Top-N limits, contribution percentages, and bounded arithmetic formulas are evaluated
 against caller-supplied dataset rows with structured warnings for missing or non-numeric inputs.
 Contribution grids generate `contributionPercent` and `contributionAbsPercent` after aggregation,

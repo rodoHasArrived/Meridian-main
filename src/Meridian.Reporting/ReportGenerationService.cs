@@ -1,3 +1,4 @@
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
@@ -33,8 +34,9 @@ public sealed class ReportGenerationService
             request.ReportKind, request.FundId, request.AsOf);
 
         var trialBalance = request.FundLedger.ConsolidatedTrialBalance();
+        var dimensionsByAccount = BuildDimensionsByAccount(request.FundLedger);
 
-        var enrichedRows = await EnrichWithSecurityMasterAsync(trialBalance, ct)
+        var enrichedRows = await EnrichWithSecurityMasterAsync(trialBalance, dimensionsByAccount, ct)
             .ConfigureAwait(false);
 
         var assetClassSections = BuildAssetClassSections(enrichedRows);
@@ -52,6 +54,7 @@ public sealed class ReportGenerationService
 
     private async Task<IReadOnlyList<EnrichedLedgerRow>> EnrichWithSecurityMasterAsync(
         IReadOnlyDictionary<LedgerAccount, decimal> trialBalance,
+        IReadOnlyDictionary<LedgerAccount, LedgerDimensionSetDto> dimensionsByAccount,
         CancellationToken ct)
     {
         var rows = new List<EnrichedLedgerRow>(trialBalance.Count);
@@ -101,7 +104,8 @@ public sealed class ReportGenerationService
                 RiskCountry: economicDefinition?.RiskCountry,
                 LookupQuality: lookupQuality,
                 DisplayName: detail?.DisplayName,
-                NetBalance: balance));
+                NetBalance: balance,
+                Dimensions: dimensionsByAccount.GetValueOrDefault(account)));
         }
 
         return rows
@@ -109,6 +113,137 @@ public sealed class ReportGenerationService
             .ThenBy(r => r.AccountName, StringComparer.Ordinal)
             .ToList();
     }
+
+    private static IReadOnlyDictionary<LedgerAccount, LedgerDimensionSetDto> BuildDimensionsByAccount(
+        FundLedgerBook fundLedger)
+    {
+        var accumulators = new Dictionary<LedgerAccount, AccountDimensionAccumulator>();
+
+        foreach (var journalEntry in fundLedger.ConsolidatedJournalEntries())
+        {
+            foreach (var line in journalEntry.Lines)
+            {
+                if (!accumulators.TryGetValue(line.Account, out var accumulator))
+                {
+                    accumulator = new AccountDimensionAccumulator();
+                    accumulators[line.Account] = accumulator;
+                }
+
+                if (line.Dimensions is null)
+                {
+                    accumulator.HasUndimensionedLine = true;
+                    continue;
+                }
+
+                accumulator.Dimensions.Add(line.Dimensions);
+            }
+        }
+
+        return accumulators
+            .Select(pair => (pair.Key, Dimensions: pair.Value.ToMergedDimensions()))
+            .Where(static pair => pair.Dimensions is not null)
+            .ToDictionary(static pair => pair.Key, static pair => pair.Dimensions!);
+    }
+
+    internal static LedgerDimensionSetDto? MergeDimensions(IReadOnlyList<LedgerLineDimensionSet> dimensions)
+    {
+        if (dimensions.Count == 0)
+        {
+            return null;
+        }
+
+        var merged = new LedgerDimensionSetDto(
+            FundId: SingleString(dimensions, static item => item.FundId),
+            EntityId: SingleString(dimensions, static item => item.EntityId),
+            SleeveId: SingleString(dimensions, static item => item.SleeveId),
+            StrategyId: SingleString(dimensions, static item => item.StrategyId),
+            InvestorId: SingleString(dimensions, static item => item.InvestorId),
+            CapitalAccountId: SingleString(dimensions, static item => item.CapitalAccountId),
+            InstrumentId: SingleGuid(dimensions, static item => item.InstrumentId),
+            TaxLotId: SingleString(dimensions, static item => item.TaxLotId),
+            CostCenterId: SingleString(dimensions, static item => item.CostCenterId),
+            CounterpartyId: SingleString(dimensions, static item => item.CounterpartyId),
+            ExternalGlDimensions: MergeExternalGlDimensions(dimensions),
+            OrganizationId: SingleString(dimensions, static item => item.OrganizationId),
+            PortfolioId: SingleString(dimensions, static item => item.PortfolioId),
+            BookId: SingleString(dimensions, static item => item.BookId),
+            AccountId: SingleString(dimensions, static item => item.AccountId),
+            CustomerId: SingleString(dimensions, static item => item.CustomerId),
+            VendorId: SingleString(dimensions, static item => item.VendorId),
+            ProjectId: SingleString(dimensions, static item => item.ProjectId));
+
+        return HasAnyDimension(merged) ? merged : null;
+    }
+
+    private static string? SingleString(
+        IReadOnlyList<LedgerLineDimensionSet> dimensions,
+        Func<LedgerLineDimensionSet, string?> selector)
+    {
+        var values = dimensions
+            .Select(selector)
+            .Select(TrimOrNull)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        return values.Length == 1 ? values[0] : null;
+    }
+
+    private static Guid? SingleGuid(
+        IReadOnlyList<LedgerLineDimensionSet> dimensions,
+        Func<LedgerLineDimensionSet, Guid?> selector)
+    {
+        var values = dimensions
+            .Select(selector)
+            .Distinct()
+            .ToArray();
+        return values.Length == 1 ? values[0] : null;
+    }
+
+    private static IReadOnlyDictionary<string, string> MergeExternalGlDimensions(
+        IReadOnlyList<LedgerLineDimensionSet> dimensions)
+    {
+        var keys = dimensions
+            .SelectMany(static item => item.ExternalGlDimensions.Keys)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static key => key, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var merged = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in keys)
+        {
+            var values = dimensions
+                .Select(item => item.ExternalGlDimensions.TryGetValue(key, out var value) ? TrimOrNull(value) : null)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if (values is [string value])
+            {
+                merged[key] = value;
+            }
+        }
+
+        return merged;
+    }
+
+    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions) =>
+        dimensions.FundId is not null ||
+        dimensions.EntityId is not null ||
+        dimensions.SleeveId is not null ||
+        dimensions.StrategyId is not null ||
+        dimensions.InvestorId is not null ||
+        dimensions.CapitalAccountId is not null ||
+        dimensions.InstrumentId is not null ||
+        dimensions.TaxLotId is not null ||
+        dimensions.CostCenterId is not null ||
+        dimensions.CounterpartyId is not null ||
+        dimensions.ExternalGlDimensions.Count > 0 ||
+        dimensions.OrganizationId is not null ||
+        dimensions.PortfolioId is not null ||
+        dimensions.BookId is not null ||
+        dimensions.AccountId is not null ||
+        dimensions.CustomerId is not null ||
+        dimensions.VendorId is not null ||
+        dimensions.ProjectId is not null;
+
+    private static string? TrimOrNull(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<AssetClassSection> BuildAssetClassSections(
         IReadOnlyList<EnrichedLedgerRow> rows)
@@ -185,7 +320,18 @@ public sealed record EnrichedLedgerRow(
     string? RiskCountry,
     string LookupQuality,
     string? DisplayName,
-    decimal NetBalance);
+    decimal NetBalance,
+    LedgerDimensionSetDto? Dimensions = null);
+
+file sealed class AccountDimensionAccumulator
+{
+    public bool HasUndimensionedLine { get; set; }
+
+    public List<LedgerLineDimensionSet> Dimensions { get; } = [];
+
+    public LedgerDimensionSetDto? ToMergedDimensions() =>
+        HasUndimensionedLine ? null : ReportGenerationService.MergeDimensions(Dimensions);
+}
 
 /// <summary>A section of a report grouped by asset class.</summary>
 public sealed record AssetClassSection(

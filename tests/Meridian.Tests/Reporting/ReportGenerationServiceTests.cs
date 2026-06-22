@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Reporting;
@@ -115,6 +116,79 @@ public sealed class ReportGenerationServiceTests
 
         report.AssetClassSections.Select(section => section.AssetClass).Should().Contain("PublicEquity");
         report.AssetClassSections.Select(section => section.AssetClass).Should().Contain("FixedIncome");
+    }
+
+    [Fact]
+    public async Task GenerateAsync_WithLineDimensions_RetainsCanonicalLedgerDimensionEnvelope()
+    {
+        var securityId = Guid.NewGuid();
+        var instrumentId = Guid.Parse("0f92e649-013f-4e7f-99bf-2b14396701e8");
+        var query = new StubSecurityMasterQueryService(
+            detailsBySymbol: new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = BuildDetail(securityId, "AAPL", "Equity")
+            },
+            economicsBySecurityId: new Dictionary<Guid, SecurityEconomicDefinitionRecord>());
+        var service = new ReportGenerationService(query);
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: "fund-1",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-credit",
+            StrategyId: "strategy-income",
+            InvestorId: "investor-lp",
+            CapitalAccountId: "capital-account-alpha",
+            InstrumentId: instrumentId,
+            TaxLotId: "tax-lot-alpha",
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting"
+            },
+            OrganizationId: "organization-alpha",
+            PortfolioId: "portfolio-credit",
+            BookId: "book-gaap",
+            AccountId: "account-investments",
+            CustomerId: "customer-alpha",
+            VendorId: "vendor-admin",
+            ProjectId: "project-close");
+        var ledgerBook = new FundLedgerBook("fund-1");
+        ledgerBook.FundLedger.PostLines(
+            new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero),
+            "Dimensioned investment activity",
+            [
+                (new LedgerAccount("Position AAPL", LedgerAccountType.Asset, "AAPL"), 100m, 0m, dimensions),
+                (new LedgerAccount("Capital", LedgerAccountType.Equity), 0m, 100m, dimensions)
+            ]);
+
+        var report = await service.GenerateAsync(new ReportRequest(
+            FundId: "fund-1",
+            AsOf: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
+            FundLedger: ledgerBook));
+
+        var row = report.TrialBalance.Single(r => string.Equals(r.Symbol, "AAPL", StringComparison.OrdinalIgnoreCase));
+        row.Dimensions.Should().BeEquivalentTo(new LedgerDimensionSetDto(
+            FundId: "fund-1",
+            EntityId: "entity-master",
+            SleeveId: "sleeve-credit",
+            StrategyId: "strategy-income",
+            InvestorId: "investor-lp",
+            CapitalAccountId: "capital-account-alpha",
+            InstrumentId: instrumentId,
+            TaxLotId: "tax-lot-alpha",
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting"
+            },
+            OrganizationId: "organization-alpha",
+            PortfolioId: "portfolio-credit",
+            BookId: "book-gaap",
+            AccountId: "account-investments",
+            CustomerId: "customer-alpha",
+            VendorId: "vendor-admin",
+            ProjectId: "project-close"));
     }
 
     private static FundLedgerBook BuildLedgerBookWithSymbols(IReadOnlyList<string> symbols)

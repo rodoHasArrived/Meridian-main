@@ -1076,7 +1076,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                 artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
             var csvLines = await File.ReadAllLinesAsync(ResolveArtifactPath(tempRoot, trialBalanceCsv));
             csvLines.Should().HaveCountGreaterThan(1);
-            csvLines[0].Should().Be("accountName,accountType,symbol,currency,assetClass,primaryIdentifierKind,primaryIdentifierValue,subType,assetFamily,issuerType,riskCountry,lookupQuality,displayName,netBalance");
+            csvLines[0].Should().Be("accountName,accountType,symbol,currency,assetClass,primaryIdentifierKind,primaryIdentifierValue,subType,assetFamily,issuerType,riskCountry,lookupQuality,displayName,fundId,entityId,sleeveId,strategyId,investorId,capitalAccountId,instrumentId,taxLotId,costCenterId,counterpartyId,organizationId,portfolioId,bookId,accountId,customerId,vendorId,projectId,externalGlDimensionsJson,netBalance");
             csvLines.Skip(1).Select(static line => line.Split(',')[0])
                 .Should()
                 .ContainInOrder("Cash", "Securities", "Capital Account");
@@ -1219,12 +1219,35 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         var fundProfileId = $"fund-report-{Guid.NewGuid():N}";
         var accountService = new InMemoryFundAccountService();
         var strategyRepository = new StrategyRunStore();
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: fundProfileId,
+            EntityId: "entity-bundle",
+            SleeveId: "sleeve-income",
+            StrategyId: "bundle-1",
+            InvestorId: "investor-bundle",
+            CapitalAccountId: "capital-account-bundle",
+            InstrumentId: Guid.Parse("0f92e649-013f-4e7f-99bf-2b14396701e8"),
+            TaxLotId: "tax-lot-bundle",
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting"
+            },
+            OrganizationId: "organization-bundle",
+            PortfolioId: "portfolio-income",
+            BookId: "book-gaap",
+            AccountId: "account-investments",
+            CustomerId: "customer-bundle",
+            VendorId: "vendor-admin",
+            ProjectId: "project-evidence-bundle");
         await strategyRepository.RecordRunAsync(BuildRun(
             runId: "run-bundle-001",
             strategyId: "bundle-1",
             strategyName: "Bundle Strategy",
             fundProfileId: fundProfileId,
-            fundDisplayName: "Bundle Fund"));
+            fundDisplayName: "Bundle Fund",
+            lineDimensions: dimensions));
 
         var tempRoot = CreateTempDirectory();
         try
@@ -1260,6 +1283,15 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             bundle.BundleArtifact.Should().NotBeNull();
             bundle.BundleArtifact!.ArtifactKind.Should().Be("evidence-bundle");
             bundle.BundleArtifact.Format.Should().Be(GovernanceReportArtifactFormatDto.Json);
+
+            var trialBalanceCsv = bundle.Artifacts.Single(artifact =>
+                artifact.ArtifactKind == "trial-balance" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
+            var trialBalanceCsvText = await File.ReadAllTextAsync(ResolveArtifactPath(tempRoot, trialBalanceCsv));
+            trialBalanceCsvText.Should().Contain("fundId,entityId,sleeveId,strategyId,investorId,capitalAccountId,instrumentId");
+            trialBalanceCsvText.Should().Contain($"{fundProfileId},entity-bundle,sleeve-income,bundle-1,investor-bundle,capital-account-bundle,0f92e649-013f-4e7f-99bf-2b14396701e8");
+            trialBalanceCsvText.Should().Contain("organization-bundle,portfolio-income,book-gaap,account-investments,customer-bundle,vendor-admin,project-evidence-bundle");
+            trialBalanceCsvText.Should().Contain("Department");
+            trialBalanceCsvText.Should().Contain("FundAccounting");
 
             var bundlePath = ResolveArtifactPath(tempRoot, bundle.BundleArtifact);
             File.Exists(bundlePath).Should().BeTrue(bundlePath);
@@ -1602,11 +1634,12 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         decimal realizedPnl = 0m,
         decimal unrealizedPnl = 0m,
         IReadOnlyDictionary<string, (decimal RealizedPnl, decimal UnrealizedPnl)>? positionPnl = null,
-        DateTimeOffset? startedAtUtc = null)
+        DateTimeOffset? startedAtUtc = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         var startedAt = startedAtUtc ?? new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddMinutes(30);
-        var ledger = CreateLedger();
+        var ledger = CreateLedger(lineDimensions);
         positionPnl ??= new Dictionary<string, (decimal RealizedPnl, decimal UnrealizedPnl)>(StringComparer.OrdinalIgnoreCase)
         {
             ["AAPL"] = (realizedPnl, unrealizedPnl)
@@ -1700,19 +1733,21 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         };
     }
 
-    private static Meridian.Ledger.Ledger CreateLedger()
+    private static Meridian.Ledger.Ledger CreateLedger(LedgerLineDimensionSet? lineDimensions = null)
     {
         var ledger = new Meridian.Ledger.Ledger();
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero), "Initial capital",
         [
             (LedgerAccounts.Cash, 1_000m, 0m),
             (LedgerAccounts.CapitalAccount, 0m, 1_000m)
-        ]);
+        ],
+        lineDimensions);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 4, 11, 14, 10, 0, TimeSpan.Zero), "Buy AAPL",
         [
             (LedgerAccounts.Securities("AAPL"), 400m, 0m),
             (LedgerAccounts.Cash, 0m, 400m)
-        ]);
+        ],
+        lineDimensions);
         return ledger;
     }
 
@@ -1720,7 +1755,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         Meridian.Ledger.Ledger ledger,
         DateTimeOffset timestamp,
         string description,
-        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines)
+        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         var journalId = Guid.NewGuid();
         var ledgerLines = lines
@@ -1731,7 +1767,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
                 line.Account,
                 line.Debit,
                 line.Credit,
-                description))
+                description,
+                lineDimensions))
             .ToArray();
         ledger.Post(new JournalEntry(journalId, timestamp, description, ledgerLines));
     }
