@@ -46,7 +46,6 @@ The memory system must not:
 
 | Tier | Scope | Lifetime | Default Loading | Write Rule |
 | --- | --- | --- | --- | --- |
-| `ephemeral` | Current reasoning turn only | Minutes | Active context only | Never written under `.codex/memory/`. |
 | `session` | Current Codex session | Until session end, compaction, or promotion | Loaded only by the current session or explicit session ID | May store temporary observations, inspected files, assumptions, and validation notes. |
 | `branch` | Current Git branch | Until branch merges, is abandoned, or review expires | Loaded only when branch scope matches | Must include branch invalidation triggers. |
 | `task` | Named work item, issue, plan, or prompt family | Until task closes or review expires | Loaded only when task descriptor matches | Must stay narrower than repo memory. |
@@ -55,8 +54,10 @@ The memory system must not:
 | `user` | Explicit operator profile outside repo | Durable outside repo | Disabled | Not read or written by repo-local tooling without explicit future opt-in. |
 | `global` | Cross-user or organization baseline outside repo | Durable outside repo | Disabled | Not read or written by repo-local tooling without explicit future opt-in. |
 
-The active repo-local tiers are `session`, `branch`, `task`, `repo`, and `archive`. `user` and
-`global` are schema-known so validators can reject accidental writes unless a later explicit opt-in
+The active repo-local tiers are only `session`, `branch`, `task`, `repo`, and `archive`.
+Per-turn reasoning notes are ephemeral context, not memory-system tiers, and must not be written under
+`.codex/memory/` unless they pass the promotion workflow. `user` and `global` are disabled tiers:
+they are schema-known only so validators can reject accidental writes unless a later explicit opt-in
 design enables them.
 
 ## Storage Layout
@@ -247,9 +248,31 @@ The command creates or updates one `progress_inventory` item, refreshes `updated
 result before writing, and prints a compact `Memory update` notice. Add `--next-action` or
 `--open-question` only when the checkpoint changes those lists.
 
-## Loading Rules
+## Routing Algorithm
 
-Memory loading must be selective and explainable.
+Memory loading must be selective and explainable. Use this routing algorithm for every memory-aware
+Codex task:
+
+1. Establish higher-precedence instructions and evidence first: direct user/system/developer
+   instructions, applicable `AGENTS.md`, source, tests, scripts, docs, and selected skill guidance.
+2. Identify the active branch and classify the task intent, selected skill, work mode, planned paths,
+   and explicit memory tags. Prefer a `.codex/memory/tasks/<task-id>.yml` descriptor for recurring
+   or multi-step work.
+3. If a goal inventory is active, resolve its `active_task_descriptor` before evaluating entries.
+4. Collect candidate entries whose `load_when` selectors match at least one relevant task, intent,
+   skill, path, branch, or explicit tag.
+5. Reject entries with disabled tiers, scope mismatches, missing files, invalid metadata, expired
+   trust without verification, or any matching `exclude_when` selector.
+6. Order remaining entries from narrowest to broadest scope: matching `session`, then `branch`,
+   then `task`, then `repo`. `archive` entries are not active guidance and load only for audit or
+   explicit maintenance.
+7. Read only the selected memory entries needed for the task and produce a receipt listing
+   referenced entries, dereferenced entries, match reasons, stale warnings, and skipped task or
+   branch scopes.
+8. If memory conflicts with higher-precedence sources, ignore the memory for guidance and mark it
+   for invalidation or review.
+
+### Routing Inputs
 
 By goal inventory:
 
@@ -333,9 +356,10 @@ Memory receipt:
 - Keep the receipt compact and inside the existing Codex workflow disclosure shape; it is context
   provenance, not a separate audit log.
 
-## Promotion And Compaction
+## Promotion
 
-Promotion is a review step, not an automatic dump.
+Promotion is a review step, not an automatic dump. Compaction may create short-lived session notes,
+but it must not promote them automatically.
 
 During work, Codex may keep temporary session notes. At task end, reusable observations should be
 classified as `discard`, `session only`, `branch`, `task`, or `repo`.
@@ -376,9 +400,10 @@ Promotion hygiene:
 - Repo-level promotion requires source references. User/global promotion requires explicit user
   approval and a future opt-in mechanism.
 
-## Staleness, Invalidation, And Conflict Rules
+## Invalidation
 
-Before using a memory entry as guidance, check:
+Invalidation is the workflow for retiring, narrowing, or refreshing memory that is no longer safe
+to use. Before using a memory entry as guidance, check:
 
 - `freshness`: `fresh` is normal; `review-soon` is cautionary; `stale` and `unknown` require
   verification.
@@ -386,18 +411,57 @@ Before using a memory entry as guidance, check:
 - `source_refs`: if referenced paths no longer exist or materially changed, review the memory.
 - `invalidates_when`: if any condition is true, do not rely on the entry until updated.
 
-Source precedence:
+Authoritative source precedence:
 
-1. Direct user instruction for the current turn.
-2. System and developer instructions.
-3. Applicable `AGENTS.md` instructions by directory scope.
-4. Canonical repository docs, source files, tests, scripts, and selected skill instructions.
-5. Fresh, high-confidence memory at the narrowest applicable scope.
-6. Broader or lower-confidence memory.
+1. Direct user, system, and developer instructions for the current turn.
+2. Applicable `AGENTS.md` instructions by directory scope.
+3. Source files.
+4. Tests.
+5. Scripts and maintained command implementations.
+6. Canonical docs and generated documentation sources.
+7. Selected skill `SKILL.md` files and their required shared context.
+8. Fresh, high-confidence memory at the narrowest applicable scope.
+9. Broader, lower-confidence, stale, or archived memory, which is advisory only.
 
 If memory conflicts with a higher-precedence source, use the higher-precedence source and mark the
-memory for review. Narrow an overbroad memory entry instead of deleting useful historical context
-when the entry still has audit value.
+memory for review. The invalidation workflow is:
+
+1. Identify the invalidating source, missing path, expired review date, scope mismatch, or true
+   `invalidates_when` condition.
+2. Stop using the entry as guidance for the current task; stale or conflicting entries may be read
+   only as warnings or audit history.
+3. Choose the smallest corrective action: refresh metadata and source refs, narrow `load_when`, add
+   `exclude_when`, demote to task or branch scope, move to `archive`, or delete only if there is no
+   audit value.
+4. Preserve an audit trail by naming the replacement guidance or archival reason when moving an
+   entry to `archive`.
+5. Re-run the memory checker and include the stale/conflict outcome in the task receipt or final
+   validation summary.
+
+Narrow an overbroad memory entry instead of deleting useful historical context when the entry still
+has audit value.
+
+
+## Security And Privacy Restrictions
+
+Memory is repo-local guidance, not a secret store or personal profile. Apply these restrictions to
+every tier, descriptor, goal inventory, receipt, and promotion candidate:
+
+- Do not store credentials, API keys, tokens, passwords, private keys, cookies, session IDs,
+  credential-store paths that expose a person, or recovery material.
+- Do not store personal data, customer data, investor data, account numbers, trade records tied to
+  real people, raw telemetry containing identifiers, or unredacted logs.
+- Do not store proprietary external content, licensed documentation, copied vendor text, or private
+  repository material from outside Meridian unless the user explicitly provides it for this repo and
+  it is safe to commit.
+- Do not store user preferences, user-profile facts, or cross-repository habits in repo-local memory.
+  The `user` and `global` tiers are disabled until an explicit opt-in design exists.
+- Keep receipts compact: report IDs, match reasons, stale warnings, and skipped scopes; do not paste
+  raw logs, secrets, or long source excerpts into receipts.
+- Redact sensitive values before adding validation evidence, source refs, progress summaries, or
+  promotion candidates. Prefer repo-relative paths and command names over machine-specific paths.
+- If sensitive material is discovered in memory, stop using the entry, remove or redact it in the
+  same change when safe, validate the index, and report the cleanup without repeating the secret.
 
 ## Meridian Seed Examples
 
