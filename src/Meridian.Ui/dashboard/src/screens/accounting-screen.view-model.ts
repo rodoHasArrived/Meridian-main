@@ -2911,13 +2911,12 @@ export function useAccountingCloseReportPackageViewModel(
     setLoading(true);
     setErrorText(null);
     try {
-      const [nextClosePlan, nextPackages] = await Promise.all([
-        services.getClosePlan(workflow.workflowId),
-        services.listPackages({
-          fundProfileId: workflow.fundAccountId,
-          periodId: workflow.periodId
-        })
-      ]);
+      const nextClosePlan = await services.getClosePlan(workflow.workflowId);
+      const nextPackages = await services.listPackages({
+        fundProfileId: nextClosePlan.fundProfileId || workflow.fundAccountId,
+        periodId: nextClosePlan.periodId || workflow.periodId,
+        ledgerBookId: nextClosePlan.ledgerBookId ?? null
+      });
       setClosePlan(nextClosePlan);
       setPackages(nextPackages);
       setSelectedPackageId((current) => {

@@ -282,6 +282,8 @@ materiality, close-calendar milestones, period-lock posture, late adjustments, p
 certification, investor statement counts, realized gain/loss, NAV, statement-line provenance,
 export artifact certification state, restatement state, validation issues, and retained evidence
 counts. It renders service-owned close/report readiness rows from the package bundle when present,
+and it scopes retained package history by the loaded close plan's fund, period, and ledger book so
+book-specific close packages do not blend into fund-level history.
 covering close checklist sign-off, period-lock posture, late-adjustment review, report evidence,
 export-artifact certification, restatement workflow state, blocker counts, and retained package
 evidence; older payloads still fall back to the browser's display-only safeguard aggregation. Its package-build

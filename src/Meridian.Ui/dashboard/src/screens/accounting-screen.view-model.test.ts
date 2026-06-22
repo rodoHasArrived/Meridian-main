@@ -2015,7 +2015,8 @@ describe("accounting-screen view model", () => {
     expect(getClosePlan).toHaveBeenCalledWith("workflow-close-1");
     expect(listPackages).toHaveBeenCalledWith({
       fundProfileId: "fund-alpha",
-      periodId: "2026-05"
+      periodId: "2026-05",
+      ledgerBookId: "book-alpha"
     });
     expect(result.current).toMatchObject({
       statusLabel: "Ready for review package",

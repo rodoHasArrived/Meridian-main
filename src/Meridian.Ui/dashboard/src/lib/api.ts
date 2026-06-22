@@ -2228,6 +2228,7 @@ export function certifyLedgerAccountingReportPackage(
 export interface AccountingReportPackageHistoryQuery {
   fundProfileId?: string | null;
   periodId?: string | null;
+  ledgerBookId?: string | null;
 }
 
 export function listLedgerAccountingReportPackages(
