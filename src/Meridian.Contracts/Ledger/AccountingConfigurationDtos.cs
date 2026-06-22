@@ -513,7 +513,16 @@ public sealed record AccountingRulesStudioSummaryDto(
     int RulesWithSavedRegressionTests,
     int RulesMissingCurrentVersionRegressionTests,
     int CriticalIssueCount,
-    int WarningIssueCount);
+    int WarningIssueCount,
+    int RulesReadyForActivation = 0,
+    int RulesBlockedByPromotionApproval = 0,
+    int RulesBlockedByRegressionTests = 0,
+    int RulesBlockedByCriticalIssues = 0,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
 
 public sealed record AccountingRulesStudioRuleRowDto(
     string RuleId,

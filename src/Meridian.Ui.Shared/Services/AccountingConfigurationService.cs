@@ -994,6 +994,28 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             .OrderByDescending(static item => item.CriticalIssueCount)
             .ThenBy(static item => item.RuleId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var rulesReadyForActivation = rows.Count(static row => row.CanActivate);
+        var rulesBlockedByPromotionApproval = rows.Count(static row =>
+            !row.IsArchived &&
+            row.RequiresPromotionApproval &&
+            !row.IsPromotionApproved);
+        var rulesBlockedByRegressionTests = rows.Count(static row =>
+            !row.IsArchived &&
+            row.RequiresPromotionApproval &&
+            row.SavedTestCaseCount == 0);
+        var rulesBlockedByCriticalIssues = rows.Count(static row =>
+            !row.IsArchived &&
+            row.CriticalIssueCount > 0);
+        var criticalIssueCount = validationIssues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        var warningIssueCount = validationIssues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
+        var requiredActions = BuildRulesStudioRequiredActions(
+            activeRules.Length,
+            rulesBlockedByPromotionApproval,
+            rulesBlockedByRegressionTests,
+            rulesBlockedByCriticalIssues,
+            criticalIssueCount,
+            promotionQueue.Length,
+            rulesReadyForActivation);
 
         var summary = new AccountingRulesStudioSummaryDto(
             TotalRules: rules.Count,
@@ -1013,10 +1035,54 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             RulesMissingCurrentVersionRegressionTests: activeRules.Count(rule =>
                 rule.RequiresPromotionApproval &&
                 !HasSavedRegressionTestForRuleVersion(workspace.RuleTestCases, rule)),
-            CriticalIssueCount: validationIssues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical),
-            WarningIssueCount: validationIssues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Warning));
+            CriticalIssueCount: criticalIssueCount,
+            WarningIssueCount: warningIssueCount,
+            RulesReadyForActivation: rulesReadyForActivation,
+            RulesBlockedByPromotionApproval: rulesBlockedByPromotionApproval,
+            RulesBlockedByRegressionTests: rulesBlockedByRegressionTests,
+            RulesBlockedByCriticalIssues: rulesBlockedByCriticalIssues,
+            RequiredActions: requiredActions);
 
         return new AccountingRulesStudioDto(summary, rows, promotionQueue);
+    }
+
+    private static IReadOnlyList<string> BuildRulesStudioRequiredActions(
+        int activeRuleCount,
+        int rulesBlockedByPromotionApproval,
+        int rulesBlockedByRegressionTests,
+        int rulesBlockedByCriticalIssues,
+        int criticalIssueCount,
+        int pendingPromotionQueueCount,
+        int rulesReadyForActivation)
+    {
+        var actions = new List<string>();
+        if (activeRuleCount == 0)
+        {
+            actions.Add("Configure at least one active posting rule before production activation.");
+            return actions;
+        }
+
+        if (criticalIssueCount > 0)
+        {
+            actions.Add($"{criticalIssueCount} critical validation issue(s) must be resolved before activation.");
+        }
+
+        if (rulesBlockedByRegressionTests > 0)
+        {
+            actions.Add($"{rulesBlockedByRegressionTests} promotion-gated rule(s) need a current-version saved regression test.");
+        }
+
+        if (pendingPromotionQueueCount > 0 || rulesBlockedByPromotionApproval > 0)
+        {
+            actions.Add($"{Math.Max(pendingPromotionQueueCount, rulesBlockedByPromotionApproval)} promotion approval(s) need human review.");
+        }
+
+        if (actions.Count == 0 && rulesReadyForActivation == activeRuleCount)
+        {
+            actions.Add("Rules Studio is ready for activation review.");
+        }
+
+        return actions;
     }
 
     private static AccountingRulesStudioRuleRowDto BuildRulesStudioRuleRow(

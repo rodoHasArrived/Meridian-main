@@ -107,9 +107,10 @@ explicit book scope are excluded from book-scoped responses instead of being inf
 route, or exception text.
 Accounting configuration workspace responses also include the computed Rules Studio read model from
 `AccountingConfigurationService`, covering rule rows, effective-dated/generated-posting coverage,
-saved regression-test coverage, validation counts, promotion queues, and activation readiness so
-browser and WPF accounting screens can behave like a configuration studio without duplicating rule
-approval logic in clients. Book-scoped configuration reads and activation readiness now also verify
+saved regression-test coverage, validation counts, promotion queues, activation readiness, and
+server-owned required-action counters so browser and WPF accounting screens can behave like a
+configuration studio without duplicating rule approval, regression-test, promotion, or validation
+logic in clients. Book-scoped configuration reads and activation readiness now also verify
 the selected ledger book against the registered ledger-book service when that service is available,
 returning a critical `configuration.ledger-book-missing` issue instead of letting operators activate
 rules for an unconfigured book. When the requested book is missing but the fund has registered

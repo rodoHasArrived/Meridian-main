@@ -3565,6 +3565,15 @@ public sealed class AccountingConfigurationServiceTests
             FundProfileId: "fund-alpha",
             Rule: gatedRule,
             Actor: "controller"));
+        var missingApprovalWorkspace = await service.GetWorkspaceAsync("fund-alpha");
+        missingApprovalWorkspace.RulesStudio.Should().NotBeNull();
+        missingApprovalWorkspace.RulesStudio!.Summary.RulesBlockedByPromotionApproval.Should().Be(1);
+        missingApprovalWorkspace.RulesStudio.Summary.RulesBlockedByRegressionTests.Should().Be(1);
+        missingApprovalWorkspace.RulesStudio.Summary.RulesReadyForActivation.Should().Be(0);
+        missingApprovalWorkspace.RulesStudio.Summary.RequiredActions.Should().Contain(action =>
+            action.Contains("current-version saved regression test", StringComparison.OrdinalIgnoreCase));
+        missingApprovalWorkspace.RulesStudio.Summary.RequiredActions.Should().Contain(action =>
+            action.Contains("human review", StringComparison.OrdinalIgnoreCase));
 
         var missingApprovalAct = async () => await service.ActivateAsync(new ActivateAccountingConfigurationRequest(
             FundProfileId: "fund-alpha",
@@ -3588,6 +3597,10 @@ public sealed class AccountingConfigurationServiceTests
             },
             Actor: "controller"));
         var weakApprovalWorkspace = await service.GetWorkspaceAsync("fund-alpha");
+        weakApprovalWorkspace.RulesStudio.Should().NotBeNull();
+        weakApprovalWorkspace.RulesStudio!.Summary.RulesBlockedByCriticalIssues.Should().BeGreaterThan(0);
+        weakApprovalWorkspace.RulesStudio.Summary.RequiredActions.Should().Contain(action =>
+            action.Contains("critical validation issue", StringComparison.OrdinalIgnoreCase));
         weakApprovalWorkspace.ValidationIssues.Should().Contain(issue =>
             issue.Code == "posting-rule.promotion-approval-required" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
@@ -3633,6 +3646,10 @@ public sealed class AccountingConfigurationServiceTests
                 ExpectedRuleVersion: "v1"),
             Actor: "controller"));
         var unevidencedRegressionWorkspace = await service.GetWorkspaceAsync("fund-alpha");
+        unevidencedRegressionWorkspace.RulesStudio.Should().NotBeNull();
+        unevidencedRegressionWorkspace.RulesStudio!.Summary.CriticalIssueCount.Should().BeGreaterThan(0);
+        unevidencedRegressionWorkspace.RulesStudio.Summary.RequiredActions.Should().Contain(action =>
+            action.Contains("critical validation issue", StringComparison.OrdinalIgnoreCase));
         unevidencedRegressionWorkspace.ValidationIssues.Should().Contain(issue =>
             issue.Code == "rule-test-case.evidence-required" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
@@ -3695,8 +3712,15 @@ public sealed class AccountingConfigurationServiceTests
             Actor: "controller",
             EvidenceLinks: ["evidence://accounting/configuration/activation"]));
         var audit = await service.ListAuditAsync("fund-alpha");
+        var activatedStudio = activated.RulesStudio;
 
         activated.Status.Should().Be(AccountingConfigurationStatusDto.Active);
+        activatedStudio.Should().NotBeNull();
+        activatedStudio!.Summary.RulesBlockedByPromotionApproval.Should().Be(0);
+        activatedStudio.Summary.RulesBlockedByRegressionTests.Should().Be(0);
+        activatedStudio.Summary.RulesBlockedByCriticalIssues.Should().Be(0);
+        activatedStudio.Summary.RulesReadyForActivation.Should().Be(activatedStudio.Summary.ActiveRules);
+        activatedStudio.Summary.RequiredActions.Should().Contain("Rules Studio is ready for activation review.");
         activated.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         audit.Should().Contain(item => item.Action == "configuration.activate");
     }
