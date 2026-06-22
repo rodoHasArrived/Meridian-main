@@ -173,6 +173,22 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public void UnsubscribeMarketDepth_DuplicateSubscribers_OnlyUnsubscribesUpstreamAfterLastRelease()
+    {
+        var cfg = new SymbolConfig("SPY", SubscribeDepth: true);
+        var firstId = _sut.SubscribeMarketDepth(cfg);
+        var secondId = _sut.SubscribeMarketDepth(cfg);
+
+        firstId.Should().Be(secondId);
+
+        _sut.UnsubscribeMarketDepth(firstId);
+        _primaryClient.UnsubscribedDepthIds.Should().BeEmpty("a duplicate subscriber is still attached to the shared upstream subscription");
+
+        _sut.UnsubscribeMarketDepth(secondId);
+        _primaryClient.UnsubscribedDepthIds.Should().ContainSingle().Which.Should().Be(firstId);
+    }
+
+    [Fact]
     public void UnsubscribeTrades_DelegatesToActiveClient()
     {
         var cfg = new SymbolConfig("AAPL", SubscribeTrades: true);
@@ -181,6 +197,22 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         _sut.UnsubscribeTrades(id);
 
         _primaryClient.UnsubscribedTradeIds.Should().Contain(id);
+    }
+
+    [Fact]
+    public void UnsubscribeTrades_DuplicateSubscribers_OnlyUnsubscribesUpstreamAfterLastRelease()
+    {
+        var cfg = new SymbolConfig("AAPL", SubscribeTrades: true);
+        var firstId = _sut.SubscribeTrades(cfg);
+        var secondId = _sut.SubscribeTrades(cfg);
+
+        firstId.Should().Be(secondId);
+
+        _sut.UnsubscribeTrades(firstId);
+        _primaryClient.UnsubscribedTradeIds.Should().BeEmpty("a duplicate subscriber is still attached to the shared upstream subscription");
+
+        _sut.UnsubscribeTrades(secondId);
+        _primaryClient.UnsubscribedTradeIds.Should().ContainSingle().Which.Should().Be(firstId);
     }
 
     [Fact]

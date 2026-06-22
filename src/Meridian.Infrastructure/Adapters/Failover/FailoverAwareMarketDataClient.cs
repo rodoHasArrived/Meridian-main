@@ -40,6 +40,8 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
     private readonly ConcurrentDictionary<string, SymbolConfig> _activeTradeSubscriptions = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, int> _depthSubIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, int> _tradeSubIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, int> _depthSubscriberCounts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, int> _tradeSubscriberCounts = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Creates a new failover-aware client.
@@ -103,7 +105,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         ArgumentNullException.ThrowIfNull(cfg);
 
         if (_depthSubIds.TryGetValue(cfg.Symbol, out var existingId))
+        {
+            _depthSubscriberCounts.AddOrUpdate(cfg.Symbol, 1, static (_, current) => current + 1);
             return existingId;
+        }
 
         try
         {
@@ -112,6 +117,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             {
                 _activeDepthSubscriptions[cfg.Symbol] = cfg;
                 _depthSubIds[cfg.Symbol] = id;
+                _depthSubscriberCounts[cfg.Symbol] = 1;
                 _failoverService.RecordSuccess(_activeProviderId);
             }
             return id;
@@ -127,13 +133,25 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public void UnsubscribeMarketDepth(int subscriptionId)
     {
-        // Find and remove the symbol for this subscription ID
+        var shouldUnsubscribeUpstream = true;
         var symbol = _depthSubIds.FirstOrDefault(kvp => kvp.Value == subscriptionId).Key;
         if (symbol != null)
         {
-            _activeDepthSubscriptions.TryRemove(symbol, out _);
-            _depthSubIds.TryRemove(symbol, out _);
+            if (_depthSubscriberCounts.TryGetValue(symbol, out var subscriberCount) && subscriberCount > 1)
+            {
+                _depthSubscriberCounts[symbol] = subscriberCount - 1;
+                shouldUnsubscribeUpstream = false;
+            }
+            else
+            {
+                _depthSubscriberCounts.TryRemove(symbol, out _);
+                _activeDepthSubscriptions.TryRemove(symbol, out _);
+                _depthSubIds.TryRemove(symbol, out _);
+            }
         }
+
+        if (!shouldUnsubscribeUpstream)
+            return;
 
         try
         {
@@ -150,7 +168,10 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
         ArgumentNullException.ThrowIfNull(cfg);
 
         if (_tradeSubIds.TryGetValue(cfg.Symbol, out var existingId))
+        {
+            _tradeSubscriberCounts.AddOrUpdate(cfg.Symbol, 1, static (_, current) => current + 1);
             return existingId;
+        }
 
         try
         {
@@ -159,6 +180,7 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
             {
                 _activeTradeSubscriptions[cfg.Symbol] = cfg;
                 _tradeSubIds[cfg.Symbol] = id;
+                _tradeSubscriberCounts[cfg.Symbol] = 1;
                 _failoverService.RecordSuccess(_activeProviderId);
             }
             return id;
@@ -174,12 +196,25 @@ public sealed class FailoverAwareMarketDataClient : IMarketDataClient
 
     public void UnsubscribeTrades(int subscriptionId)
     {
+        var shouldUnsubscribeUpstream = true;
         var symbol = _tradeSubIds.FirstOrDefault(kvp => kvp.Value == subscriptionId).Key;
         if (symbol != null)
         {
-            _activeTradeSubscriptions.TryRemove(symbol, out _);
-            _tradeSubIds.TryRemove(symbol, out _);
+            if (_tradeSubscriberCounts.TryGetValue(symbol, out var subscriberCount) && subscriberCount > 1)
+            {
+                _tradeSubscriberCounts[symbol] = subscriberCount - 1;
+                shouldUnsubscribeUpstream = false;
+            }
+            else
+            {
+                _tradeSubscriberCounts.TryRemove(symbol, out _);
+                _activeTradeSubscriptions.TryRemove(symbol, out _);
+                _tradeSubIds.TryRemove(symbol, out _);
+            }
         }
+
+        if (!shouldUnsubscribeUpstream)
+            return;
 
         try
         {
