@@ -33,6 +33,7 @@ tests, scripts, and skill instructions; it never overrides them.
 
 ## Maintenance Rules
 
+- Keep the required structure present: `README.md`, `index.yml`, and `repo/`, `tasks/`, `goals/`, `branches/`, `sessions/`, and `archive/` folders, each with its own `README.md`.
 - Prefer canonical docs over memory when facts disagree.
 - Record stable claims with explicit `source_refs`, review dates, and invalidation triggers.
 - Keep temporary findings in `sessions/`, `tasks/`, or `branches/` until promotion is reviewed.
@@ -40,5 +41,6 @@ tests, scripts, and skill instructions; it never overrides them.
   files as durable memory entries.
 - Use `goals/*.yml` inventories for very long Codex goals; keep progress evidence compact and link
   the active task descriptor instead of copying task memory into the goal file.
-- Do not store secrets, credentials, personal data, raw logs, or speculative assumptions here.
+- Do not store secrets, credentials, tokens, personal data, customer data, proprietary external content, raw logs, or speculative assumptions here.
+- Seed `repo/` only with stable, sourced claims; keep task-local guesses and unverified observations in narrower tiers until they expire or are deliberately promoted.
 - Run `python build/scripts/docs/check-codex-memory.py --summary` after memory changes.
