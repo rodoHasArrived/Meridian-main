@@ -3274,7 +3274,7 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
-    public async Task AccountingSystemExportCertificationEndpoint_RequiresAdminMaintenance()
+    public async Task AccountingSystemGovernedExportEndpoints_RequireAdminMaintenance()
     {
         await using var app = await CreateAppAsync(UserPermission.ManageFundStructure);
 
@@ -3299,17 +3299,16 @@ public sealed class AccountingSystemIntegrationServiceTests
                 RequireBalancedReconciliation: false,
                 EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)])));
 
-        mappingProfileResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        exportPackageResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var exportPackage = await ReadAsync<ExternalGlExportPackageDto>(exportPackageResponse);
+        mappingProfileResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        exportPackageResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 
         var certificationResponse = await app.GetTestClient().PostAsync(
             UiApiRoutes.AccountingSystemExportPackageCertification,
             JsonContent(new CertifyAccountingSystemExportPackageRequestDto(
-                exportPackage.ExportPackageId,
+                "external-gl-export-guarded-package",
                 "endpoint-controller",
                 "Fund-structure operator attempted to certify the guarded export package.",
-                [ExportCertificationEvidence(exportPackage)])));
+                ["approval:external-gl-export-package:external-gl-export-guarded-package"])));
 
         certificationResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
