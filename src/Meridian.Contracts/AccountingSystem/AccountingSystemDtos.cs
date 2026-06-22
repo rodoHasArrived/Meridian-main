@@ -920,7 +920,8 @@ public sealed record AccountingSystemMappingProfileUpsertRequestDto(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -939,7 +940,8 @@ public sealed record AccountingSystemExportPackageRequestDto(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CorrelationId = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 {
     public IReadOnlyList<Guid> JournalEntryIds { get; init; } =
         JournalEntryIds ?? [];

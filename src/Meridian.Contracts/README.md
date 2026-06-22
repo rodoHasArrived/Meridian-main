@@ -1044,10 +1044,12 @@ certification can proceed. Retained export package and manifest DTOs also carry 
 snapshot hash so certification can detect content drift in rows, totals, or evidence even when the
 provider-facing reconciliation id is unchanged.
 Certified mapping profiles must retain mapping approval, certification, sign-off, or review evidence
-that identifies the mapping profile or provider/fund scope on the same evidence artifact; split
-support and approval links leave the profile in `Draft`.
+that identifies the mapping profile or provider/fund scope on the same evidence artifact, and the
+certifying upsert must carry a human-operator action origin; split support and approval links leave
+the profile in `Draft`.
 The retained export-control evidence supplied at package creation must identify the export fund,
-provider/fund scope, or exact export period before the package can move beyond Draft.
+provider/fund scope, or exact export period before the package can move beyond Draft, and governed
+export package retention also requires a human-operator action origin.
 `CertifyAccountingSystemExportPackageRequestDto` carries the retained export package id, reviewer
 notes, actor context, and evidence links for the service-owned transition to `Certified`; the
 certification evidence artifact must itself identify the retained export package, certification id,

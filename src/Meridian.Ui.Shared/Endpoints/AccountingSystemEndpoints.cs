@@ -372,11 +372,35 @@ public static class AccountingSystemEndpoints
                 TenantId = tenantContext.TenantId ?? request.TenantId,
                 CompanyId = tenantContext.CompanyId ?? request.CompanyId
             };
-            var result = await service.UpsertMappingProfileAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions);
+            try
+            {
+                var result = await service.UpsertMappingProfileAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (IsReviewedAutomationOriginError(ex))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]>
+                    {
+                        ["request"] = [ex.Message]
+                    });
+                }
+
+                return Results.Conflict(new { error = ex.Message });
+            }
         })
         .WithName("UpsertAccountingSystemMappingProfile")
         .Produces<ExternalGlMappingProfileDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status409Conflict)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapPost(UiApiRoutes.AccountingSystemExportPackages, async (
@@ -395,11 +419,35 @@ public static class AccountingSystemEndpoints
                 TenantId = tenantContext.TenantId ?? request.TenantId,
                 CompanyId = tenantContext.CompanyId ?? request.CompanyId
             };
-            var result = await service.CreateExportPackageAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions);
+            try
+            {
+                var result = await service.CreateExportPackageAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (IsReviewedAutomationOriginError(ex))
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]>
+                    {
+                        ["request"] = [ex.Message]
+                    });
+                }
+
+                return Results.Conflict(new { error = ex.Message });
+            }
         })
         .WithName("CreateAccountingSystemExportPackage")
         .Produces<ExternalGlExportPackageDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status409Conflict)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         group.MapGet(UiApiRoutes.AccountingSystemExportPackageManifest, async (
@@ -500,4 +548,7 @@ public static class AccountingSystemEndpoints
            !string.IsNullOrWhiteSpace(currentUser)
             ? currentUser.Trim()
             : suppliedActor;
+
+    private static bool IsReviewedAutomationOriginError(Exception ex)
+        => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.OrdinalIgnoreCase);
 }

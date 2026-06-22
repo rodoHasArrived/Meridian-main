@@ -307,7 +307,10 @@ component prose.
 External GL guarded-export package endpoints stamp export creation, certification, and manifest
 lookup with the authenticated workstation tenant/company scope, so browser and WPF callers cannot
 retrieve or certify another company's retained export artifact by submitting tenant or company
-identifiers in the request body.
+identifiers in the request body. Certified mapping-profile upserts and controlled export-package
+retention also preserve explicit action-origin metadata, returning validation errors for
+assistant or automation-origin attempts before Financial Operations retains governed accounting
+evidence.
 The production-readiness endpoint resolves authenticated tenant/company scope from the workstation
 session when the request omits it, evaluates Rules Studio readiness against the scoped
 tenant/company/fund/book workspace, and blocks tenant administration readiness until tenant scope,

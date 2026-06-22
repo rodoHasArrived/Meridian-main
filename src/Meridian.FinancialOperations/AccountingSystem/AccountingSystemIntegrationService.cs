@@ -138,6 +138,11 @@ public sealed class AccountingSystemIntegrationService
             fundProfileId,
             profileId,
             evidenceLinks);
+        if (certificationState != AccountingCertificationStateDto.Draft)
+        {
+            EnsureHumanOrigin(request.ActionOrigin, "certify external GL mapping profiles");
+        }
+
         var normalizedProfile = request.Profile with
         {
             ProfileId = profileId,
@@ -169,6 +174,7 @@ public sealed class AccountingSystemIntegrationService
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
 
+        EnsureHumanOrigin(request.ActionOrigin, "retain external GL export review packages");
         var actor = RequireText(request.Actor, "Actor");
         var providerId = NormalizeProviderId(request.ProviderId);
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);

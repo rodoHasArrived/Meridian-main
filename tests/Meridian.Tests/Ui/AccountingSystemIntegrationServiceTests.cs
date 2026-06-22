@@ -1878,6 +1878,48 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task MappingProfiles_RejectAssistantOriginCertificationAndExportPackageRetention()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+
+        var assistantMappingCertification = () => service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "assistant",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"],
+            ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        await assistantMappingCertification.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Reviewed automation cannot certify external GL mapping profiles*human operator*");
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+
+        var assistantExportPackageRetention = () => service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "assistant",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)],
+            ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        await assistantExportPackageRetention.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Reviewed automation cannot retain external GL export review packages*human operator*");
+    }
+
+    [Fact]
     public async Task ExportPackages_IsolateManifestAndCertificationByTenantAndCompany()
     {
         var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
@@ -3927,7 +3969,31 @@ public sealed class AccountingSystemIntegrationServiceTests
                 EvidenceLinks: [$"approval:ledger-book:{ledgerBookId:D}:assistant-production-certification"],
                 ActionOrigin: OperationsActionOriginDto.AssistantDraft)));
 
-        foreach (var response in new[] { migrationResponse, tenantAdministrationResponse, productionCertificationResponse })
+        var mappingProfileResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMappingProfiles,
+            JsonContent(new AccountingSystemMappingProfileUpsertRequestDto(
+                CertifiedQuickBooksMappingProfile(),
+                "assistant",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft)));
+
+        var exportPackageResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemExportPackages,
+            JsonContent(new AccountingSystemExportPackageRequestDto(
+                "assistant",
+                ProviderId: "quickbooks-fixture",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodStart: new DateOnly(2026, 1, 1),
+                PeriodEnd: new DateOnly(2026, 1, 31),
+                MappingProfileId: "qbo-default-fund-certified",
+                RequireBalancedReconciliation: false,
+                EvidenceLinks: [ExportControlEvidence(ledgerBookId)],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft)));
+
+        foreach (var response in new[] { migrationResponse, tenantAdministrationResponse, productionCertificationResponse, mappingProfileResponse, exportPackageResponse })
         {
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var body = await response.Content.ReadAsStringAsync();
