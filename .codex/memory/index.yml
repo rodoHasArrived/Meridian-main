@@ -15,6 +15,9 @@ schema:
     - source_refs
     - review_after
     - invalidates_when
+  archive_required_fields:
+    - retired_because
+    - replaced_by
   active_tiers:
     - session
     - branch
