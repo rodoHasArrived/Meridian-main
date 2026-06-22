@@ -127,6 +127,9 @@ public sealed class EtlSourceDefinition
 
     [JsonPropertyName("deleteAfterSuccess")]
     public bool DeleteAfterSuccess { get; init; }
+
+    [JsonPropertyName("hostKeySha256Fingerprint")]
+    public string? HostKeySha256Fingerprint { get; init; }
 }
 
 public sealed class EtlDestinationDefinition
@@ -163,6 +166,9 @@ public sealed class EtlDestinationDefinition
 
     [JsonPropertyName("requiresRemoteAck")]
     public bool RequiresRemoteAck { get; init; }
+
+    [JsonPropertyName("hostKeySha256Fingerprint")]
+    public string? HostKeySha256Fingerprint { get; init; }
 }
 
 public sealed class EtlCheckpointToken

@@ -665,7 +665,9 @@ Workflow module provides the current local-first `EnvironmentDesignerService` im
 ETL contracts include `EtlJobDefinition`, run/export result payloads, `IEtlJobDefinitionStore`,
 and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so the Data
 Integration-owned export service can target SFTP without depending on Infrastructure, while the
-Infrastructure adapter implements transport-specific publishing details.
+Infrastructure adapter implements transport-specific publishing details. SFTP source and
+destination definitions carry `hostKeySha256Fingerprint` so shared job definitions can pin remote
+server identity without leaking transport-library types into Contracts.
 
 Event-pipeline metrics and monitoring delivery contracts live in `Monitoring/` under
 `Meridian.Contracts.Monitoring`. Keep `IEventMetrics`, `MetricsSnapshot`, and
