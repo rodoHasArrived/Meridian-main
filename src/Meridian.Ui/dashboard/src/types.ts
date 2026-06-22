@@ -5733,6 +5733,18 @@ export interface AccountingProductionReadinessComponent {
   route?: string | null;
 }
 
+export interface AccountingProductionGap {
+  code: string;
+  label: string;
+  status: AccountingProductionReadinessStatus;
+  highestSeverity: AccountingConfigurationValidationSeverity;
+  summary: string;
+  requiredAction: string;
+  areas: AccountingProductionReadinessArea[];
+  blockingIssueCodes: string[];
+  routes: string[];
+}
+
 export interface AccountingTenantAdministrationReadiness {
   tenantId?: string | null;
   companyId?: string | null;
@@ -5886,6 +5898,7 @@ export interface AccountingProductionReadiness {
   migrationRunArtifacts?: AccountingMigrationRunArtifact[];
   migrationRolloutPlan?: AccountingMigrationRolloutPlanItem[];
   tenantAdministration?: AccountingTenantAdministrationReadiness | null;
+  productionGaps?: AccountingProductionGap[];
   criticalIssueCount: number;
   warningIssueCount: number;
 }

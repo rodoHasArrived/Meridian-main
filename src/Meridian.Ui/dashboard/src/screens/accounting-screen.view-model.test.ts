@@ -2884,6 +2884,63 @@ describe("accounting-screen view model", () => {
         hasCompanyScope: true,
         hasRetainedEvidence: true
       },
+      productionGaps: [
+        {
+          code: "multi-ledger-native-workflows",
+          label: "Configurable multi-ledger accounting",
+          status: "ReviewRequired",
+          highestSeverity: "Warning",
+          summary: "Ledger-book-native certification still needs end-to-end workflow evidence.",
+          requiredAction: "Retain ledger-book-native workflow evidence for posting, JE lifecycle, reconciliation, close, and reporting.",
+          areas: ["LedgerBooks", "PostingRules", "JournalLifecycle", "CloseReporting"],
+          blockingIssueCodes: ["workflow.evidence.missing", "journal.lifecycle.missing"],
+          routes: ["/accounting/configure", "/accounting/journal-entries"]
+        },
+        {
+          code: "enterprise-accounting-configuration-studio",
+          label: "Enterprise accounting configuration studio",
+          status: "ReviewRequired",
+          highestSeverity: "Warning",
+          summary: "Operator setup controls still need enterprise admin-studio coverage.",
+          requiredAction: "Complete retained chart, rules, approval, tenant, and dimension setup controls.",
+          areas: ["RulesStudio", "TenantAdministration"],
+          blockingIssueCodes: ["tenant-admin.operator-surface-required"],
+          routes: ["/accounting/configure", "/settings"]
+        },
+        {
+          code: "external-gl-guarded-integration",
+          label: "External GL guarded integration",
+          status: "ReviewRequired",
+          highestSeverity: "Info",
+          summary: "External GL remains import-first with guarded export artifacts.",
+          requiredAction: "Retain mapping, reconciliation, and export-package evidence while live posting remains disabled.",
+          areas: ["ExternalGl"],
+          blockingIssueCodes: ["external-gl.live-posting-disabled"],
+          routes: ["/accounting/external-gl"]
+        },
+        {
+          code: "dimensional-ledger-reporting",
+          label: "Dimensional ledger and reporting",
+          status: "ReviewRequired",
+          highestSeverity: "Warning",
+          summary: "Dimensional ledger/query/report/export controls need full certification.",
+          requiredAction: "Certify ledger-line dimensions, trial-balance filters, report provenance, and export mappings.",
+          areas: ["DimensionalAccounting", "ExternalGl", "CloseReporting"],
+          blockingIssueCodes: ["dimensions.external-gl-missing"],
+          routes: ["/accounting/ledger", "/reporting"]
+        },
+        {
+          code: "production-controls-hardening",
+          label: "Production controls and rollout hardening",
+          status: "ReviewRequired",
+          highestSeverity: "Warning",
+          summary: "Migration, performance, disaster recovery, and bulk safeguard controls need completion.",
+          requiredAction: "Retain certified migration runs, performance proof, disaster-recovery runbooks, and bulk import/export safeguards.",
+          areas: ["MigrationRollout", "TenantAdministration", "CloseReporting"],
+          blockingIssueCodes: ["migration.close-reporting-evidence-not-certified"],
+          routes: ["/accounting/configure", "/settings", "/accounting/close"]
+        }
+      ],
       migrationRolloutPlan: [
         {
           kind: "LedgerBookScope",
@@ -3187,6 +3244,31 @@ describe("accounting-screen view model", () => {
       tenantAdministrationLabel: "5/23 admin controls | tenant tenant-alpha | company company-alpha",
       tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
     });
+    expect(result.current.productionReadiness.productionGapRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "multi-ledger-native-workflows",
+        label: "Configurable multi-ledger accounting",
+        statusLabel: "Review required",
+        severityLabel: "Warning",
+        areaLabel: "Ledger Books, Posting Rules, Journal Lifecycle, Close Reporting",
+        blockingIssueLabel: "workflow.evidence.missing, journal.lifecycle.missing",
+        routeLabel: "/accounting/configure, /accounting/journal-entries",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "external-gl-guarded-integration",
+        label: "External GL guarded integration",
+        severityLabel: "Info",
+        areaLabel: "External GL",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "production-controls-hardening",
+        label: "Production controls and rollout hardening",
+        blockingIssueLabel: "migration.close-reporting-evidence-not-certified",
+        routeLabel: "/accounting/configure, /settings, /accounting/close"
+      })
+    ]));
     expect(result.current.productionReadiness.tenantAdministrationControls).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "tenant-scope", statusLabel: "Ready", tone: "success" }),
       expect.objectContaining({ id: "reporting-groups", statusLabel: "Missing", tone: "danger" }),

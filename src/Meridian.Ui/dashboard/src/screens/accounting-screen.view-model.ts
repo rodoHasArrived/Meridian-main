@@ -370,6 +370,19 @@ export interface AccountingProductionReadinessIssueViewModel {
   tone: "default" | "warning" | "danger";
 }
 
+export interface AccountingProductionGapViewModel {
+  id: string;
+  label: string;
+  statusLabel: string;
+  severityLabel: string;
+  summary: string;
+  requiredAction: string;
+  areaLabel: string;
+  blockingIssueLabel: string;
+  routeLabel: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
 export interface AccountingMigrationRunArtifactViewModel {
   id: string;
   title: string;
@@ -420,6 +433,7 @@ export interface AccountingProductionReadinessViewModel {
   migrationPlanRows: AccountingMigrationRolloutPlanItemViewModel[];
   migrationArtifactSummaryLabel: string;
   migrationArtifactRows: AccountingMigrationRunArtifactViewModel[];
+  productionGapRows: AccountingProductionGapViewModel[];
   components: AccountingProductionReadinessComponentViewModel[];
   blockerIssues: AccountingProductionReadinessIssueViewModel[];
   loading: boolean;
@@ -5186,6 +5200,7 @@ function buildAccountingProductionReadinessViewModel(
         ? `${artifactRows.length} retained migration run artifact${artifactRows.length === 1 ? "" : "s"} loaded`
         : "No retained migration run artifacts loaded",
       migrationArtifactRows: artifactRows,
+      productionGapRows: [],
       components: [],
       blockerIssues: [],
       loading,
@@ -5229,6 +5244,24 @@ function buildAccountingProductionReadinessViewModel(
   const tenantAdministrationEvidenceLabel = tenantAdministration
     ? `${tenantAdministration.evidenceReferences.length} retained setup evidence reference${tenantAdministration.evidenceReferences.length === 1 ? "" : "s"}`
     : "No tenant setup evidence loaded";
+  const productionGapRows = (readiness.productionGaps ?? []).map<AccountingProductionGapViewModel>((gap) => ({
+    id: gap.code,
+    label: gap.label,
+    statusLabel: formatProductionReadinessStatus(gap.status),
+    severityLabel: gap.highestSeverity,
+    summary: gap.summary,
+    requiredAction: gap.requiredAction,
+    areaLabel: gap.areas.length > 0
+      ? gap.areas.map(formatProductionReadinessArea).join(", ")
+      : "No areas",
+    blockingIssueLabel: gap.blockingIssueCodes.length > 0
+      ? gap.blockingIssueCodes.join(", ")
+      : "No blocking issue codes",
+    routeLabel: gap.routes.length > 0
+      ? gap.routes.join(", ")
+      : "No routes",
+    tone: productionReadinessStatusTone(gap.status)
+  }));
 
   return {
     title: "Accounting production readiness",
@@ -5257,6 +5290,7 @@ function buildAccountingProductionReadinessViewModel(
       ? `${certifiedArtifactCount}/${retainedArtifacts.length} retained artifact${retainedArtifacts.length === 1 ? "" : "s"} certified${failedArtifactCount > 0 ? ` | ${failedArtifactCount} failed` : ""}`
       : "No retained migration run artifacts loaded",
     migrationArtifactRows,
+    productionGapRows,
     components: readiness.components.map<AccountingProductionReadinessComponentViewModel>((component) => ({
       id: component.area,
       label: component.label || formatProductionReadinessArea(component.area),

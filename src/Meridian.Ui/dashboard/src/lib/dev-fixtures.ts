@@ -3706,6 +3706,63 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
     hasCompanyScope: true,
     hasRetainedEvidence: true
   },
+  productionGaps: [
+    {
+      code: "multi-ledger-native-workflows",
+      label: "Configurable multi-ledger accounting",
+      status: "ReviewRequired",
+      highestSeverity: "Warning",
+      summary: "Ledger books and scoped workflow controls exist, but fixture certification still shows fund-level and open-period gaps.",
+      requiredAction: "Retain ledger-book-native workflow evidence for posting, JE lifecycle, reconciliation, close/reporting, direct lending, and strategy ledger reads.",
+      areas: ["LedgerBooks", "PostingRules", "JournalLifecycle", "CloseReporting"],
+      blockingIssueCodes: ["workflow.ledger-book-scope-missing", "workflow.close-reporting-not-certified"],
+      routes: ["/accounting/configure", "/accounting/journal-entries", "/accounting/close"]
+    },
+    {
+      code: "enterprise-accounting-configuration-studio",
+      label: "Enterprise accounting configuration studio",
+      status: "ReviewRequired",
+      highestSeverity: "Warning",
+      summary: "Rules Studio and ledger-book administration are visible, but tenant setup and admin-studio coverage remain incomplete.",
+      requiredAction: "Complete retained tenant/company/reporting-group setup, chart administration, rule promotion, approval queues, and implementation sandbox controls.",
+      areas: ["RulesStudio", "TenantAdministration"],
+      blockingIssueCodes: ["tenant-admin.operator-surface-required"],
+      routes: ["/accounting/configure", "/settings"]
+    },
+    {
+      code: "external-gl-guarded-integration",
+      label: "External GL guarded integration",
+      status: "ReviewRequired",
+      highestSeverity: "Info",
+      summary: "QuickBooks import, certified mapping, reconciliation, and guarded export artifacts exist while live posting stays disabled by policy.",
+      requiredAction: "Keep external GL import-first, retain export-package evidence, and expand Xero/NetSuite fixtures before considering a separate live-posting gate.",
+      areas: ["ExternalGl"],
+      blockingIssueCodes: ["external-gl.live-posting-disabled"],
+      routes: ["/accounting/external-gl"]
+    },
+    {
+      code: "dimensional-ledger-reporting",
+      label: "Dimensional ledger and reporting",
+      status: "ReviewRequired",
+      highestSeverity: "Warning",
+      summary: "Canonical dimensions flow through key accounting DTOs and fixtures, but full ledger-line, trial-balance, report, and export certification is not complete.",
+      requiredAction: "Certify ledger-line dimension persistence, trial-balance filters, report-package provenance, and external export dimension mappings.",
+      areas: ["DimensionalAccounting", "ExternalGl", "CloseReporting"],
+      blockingIssueCodes: ["dimensions.external-gl-missing"],
+      routes: ["/accounting/ledger", "/reporting", "/accounting/external-gl"]
+    },
+    {
+      code: "production-controls-hardening",
+      label: "Production controls and rollout hardening",
+      status: "ReviewRequired",
+      highestSeverity: "Warning",
+      summary: "Migration artifacts and tenant controls are retained, but broad migration, performance, disaster recovery, and bulk import/export safeguards still need completion.",
+      requiredAction: "Retain certified migration runs, performance validation, disaster-recovery runbooks, bulk import/export safeguards, and close/reporting evidence migration.",
+      areas: ["MigrationRollout", "TenantAdministration", "CloseReporting"],
+      blockingIssueCodes: ["migration.close-reporting-evidence-not-certified"],
+      routes: ["/accounting/configure", "/settings", "/accounting/close"]
+    }
+  ],
   components: [
     {
       area: "LedgerBooks",

@@ -6623,6 +6623,27 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             </div>
           </div>
 
+          {view.productionReadiness.productionGapRows.length > 0 ? (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5" role="region" aria-label="Accounting production gap checklist">
+              {view.productionReadiness.productionGapRows.map((gap) => (
+                <div key={gap.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(gap.tone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="font-semibold text-foreground">{gap.label}</div>
+                      <div className="mt-1 font-mono text-[11px] text-muted-foreground">{gap.id}</div>
+                    </div>
+                    <Badge variant={accountingToolingBadgeVariant(gap.tone)}>{gap.statusLabel}</Badge>
+                  </div>
+                  <div className="mt-2 text-[11px] text-muted-foreground">{gap.severityLabel} | {gap.areaLabel}</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{gap.summary}</p>
+                  <p className="mt-2 text-xs leading-5 text-foreground">{gap.requiredAction}</p>
+                  <div className="mt-2 font-mono text-[11px] text-muted-foreground">{gap.blockingIssueLabel}</div>
+                  <div className="mt-1 font-mono text-[11px] text-muted-foreground">{gap.routeLabel}</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           {view.productionReadiness.tenantAdministrationControls.length > 0 ? (
             <div className="grid gap-2 md:grid-cols-4" role="region" aria-label="Accounting tenant administration readiness controls">
               {view.productionReadiness.tenantAdministrationControls.map((control) => (
