@@ -1,6 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
@@ -361,6 +363,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessIssueRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessWorkflowRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessDimensionalControlRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessGapRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationPlanRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationArtifactRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> TenantAdministrationControlRows { get; } = [];
@@ -2244,6 +2247,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessIssueRows.Clear();
             ProductionReadinessWorkflowRows.Clear();
             ProductionReadinessDimensionalControlRows.Clear();
+            ProductionReadinessGapRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             return;
@@ -2261,6 +2265,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessWorkflowRows.Clear();
             ProductionReadinessDimensionalControlRows.Clear();
+            ProductionReadinessGapRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
@@ -2292,6 +2297,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessComponentRows.Clear();
             ProductionReadinessWorkflowRows.Clear();
             ProductionReadinessDimensionalControlRows.Clear();
+            ProductionReadinessGapRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
@@ -2408,6 +2414,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     : issue.Area.ToString())));
         ProductionReadinessWorkflowRows.ReplaceWith(BuildLedgerBookWorkflowRows(readiness.LedgerBookWorkflows));
         ProductionReadinessDimensionalControlRows.ReplaceWith(BuildDimensionalReportingRows(readiness.DimensionalReporting));
+        ProductionReadinessGapRows.ReplaceWith(BuildProductionGapRows(readiness.ProductionGaps));
         ProductionReadinessMigrationPlanRows.ReplaceWith(readiness.MigrationRolloutPlan.Select(item =>
             new AccountingWorkbenchRow(
                 item.Label,
@@ -2510,6 +2517,30 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             readiness.EvidenceReferences);
     }
 
+    private static IEnumerable<AccountingWorkbenchRow> BuildProductionGapRows(
+        IReadOnlyList<AccountingProductionGapDto> gaps)
+    {
+        foreach (var gap in gaps)
+        {
+            var areaText = gap.Areas.Count > 0
+                ? string.Join(", ", gap.Areas.Select(static area => FormatProductionReadinessArea(area.ToString())))
+                : "No readiness area";
+            var blockerText = gap.BlockingIssueCodes.Count > 0
+                ? string.Join(", ", gap.BlockingIssueCodes)
+                : "No blocking issue codes";
+            var routeText = gap.Routes.Count > 0
+                ? string.Join(", ", gap.Routes)
+                : "No route";
+
+            yield return new AccountingWorkbenchRow(
+                gap.Label,
+                $"{gap.Status} | {gap.HighestSeverity}",
+                $"{gap.Summary} Areas: {areaText}.",
+                $"{gap.RequiredAction} | {blockerText}",
+                $"{gap.Code} | {routeText}");
+        }
+    }
+
     private static IEnumerable<AccountingWorkbenchRow> BuildDimensionalReportingRows(
         AccountingDimensionalReportingReadinessDto? readiness)
     {
@@ -2603,8 +2634,28 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             evidenceReferences.Count > 0 ? string.Join("; ", evidenceReferences.Take(4)) : "No retained evidence.",
             key);
 
+    private static string FormatProductionReadinessArea(string area)
+        => area
+            .Replace("ExternalGl", "External GL", StringComparison.Ordinal)
+            .Replace("RulesStudio", "Rules Studio", StringComparison.Ordinal)
+            .Replace("PostingRules", "Posting Rules", StringComparison.Ordinal)
+            .Replace("JournalLifecycle", "Journal Lifecycle", StringComparison.Ordinal)
+            .Replace("DimensionalAccounting", "Dimensional Accounting", StringComparison.Ordinal)
+            .Replace("CloseReporting", "Close Reporting", StringComparison.Ordinal)
+            .Replace("TenantAdministration", "Tenant Administration", StringComparison.Ordinal)
+            .Replace("MigrationRollout", "Migration Rollout", StringComparison.Ordinal)
+            .Replace("LedgerBooks", "Ledger Books", StringComparison.Ordinal);
+
     private static string FormatReadinessScope(string? value)
         => string.IsNullOrWhiteSpace(value) ? "missing" : value.Trim();
+
+    private static Guid CreateStableGuid(params string?[] parts)
+    {
+        var input = string.Join("|", parts.Select(static part => part?.Trim() ?? string.Empty));
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        var bytes = hash[..16].ToArray();
+        return new Guid(bytes);
+    }
 
     private static string FormatMigrationArtifactKind(AccountingMigrationRunKindDto kind)
         => kind switch
@@ -2811,15 +2862,18 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ? draft.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             : draft.PeriodId;
         var actionToken = action.ToString().ToLowerInvariant();
+        var ledgerBookScope = draft.LedgerBookId.HasValue
+            ? $"ledger-book-{draft.LedgerBookId.Value:D}"
+            : "ledger-book-fund-level";
         var required = action switch
         {
-            JournalEntryLifecycleActionDto.Approve => $"approval://manual-je/{journalId}/review-approval/{period}",
-            JournalEntryLifecycleActionDto.Post => $"posting://manual-je/{journalId}/ledger-posting-review/{period}",
-            JournalEntryLifecycleActionDto.Reverse => $"correction://manual-je/{journalId}/reversal-review/{period}",
-            JournalEntryLifecycleActionDto.Rebook => $"correction://manual-je/{journalId}/rebook-review/{period}",
-            JournalEntryLifecycleActionDto.LockAfterClose => $"close://manual-je/{journalId}/period-lock-close-certification/{period}",
-            JournalEntryLifecycleActionDto.Reject => $"rejection://manual-je/{journalId}/review-rejection/{period}",
-            _ => $"review://manual-je/{journalId}/{actionToken}/{period}"
+            JournalEntryLifecycleActionDto.Approve => $"approval://manual-je/{journalId}/review-approval/{period}/{ledgerBookScope}",
+            JournalEntryLifecycleActionDto.Post => $"posting://manual-je/{journalId}/ledger-posting-review/{period}/{ledgerBookScope}",
+            JournalEntryLifecycleActionDto.Reverse => $"correction://manual-je/{journalId}/reversal-review/{period}/{ledgerBookScope}",
+            JournalEntryLifecycleActionDto.Rebook => $"correction://manual-je/{journalId}/rebook-review/{period}/{ledgerBookScope}",
+            JournalEntryLifecycleActionDto.LockAfterClose => $"close://manual-je/{journalId}/period-lock-close-certification/{period}/{ledgerBookScope}",
+            JournalEntryLifecycleActionDto.Reject => $"rejection://manual-je/{journalId}/review-rejection/{period}/{ledgerBookScope}",
+            _ => $"review://manual-je/{journalId}/{actionToken}/{period}/{ledgerBookScope}"
         };
 
         return draft.EvidenceLinks
@@ -3101,6 +3155,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var ledgerBookId = _configuration?.LedgerBookId ?? _configuration?.LedgerBooks.FirstOrDefault()?.LedgerBookId;
         var journalEntryId = _selectedDraft?.JournalEntryId ?? Guid.NewGuid();
         var accountingDate = DateOnly.FromDateTime(DateTime.UtcNow);
+        var periodId = _selectedDraft?.PeriodId ?? CreateStableGuid(
+            "manual-je-period",
+            fundProfileId,
+            ledgerBookId?.ToString("D") ?? "fund-level",
+            accountingDate.ToString("yyyy-MM", CultureInfo.InvariantCulture)).ToString("D");
         var entityId = (_activeFundProfile?.EntityIds ?? []).FirstOrDefault();
         var dimensions = new LedgerDimensionSetDto(
             FundId: fundProfileId,
@@ -3113,7 +3172,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ledgerBookId,
             SelectedAccountingBasis,
             accountingDate,
-            PeriodId: null,
+            PeriodId: periodId,
             EntityId: entityId,
             FundNodeId: null,
             currency,
@@ -3595,6 +3654,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProductionReadinessIssueRows.Clear();
         ProductionReadinessWorkflowRows.Clear();
         ProductionReadinessDimensionalControlRows.Clear();
+        ProductionReadinessGapRows.Clear();
         ProductionReadinessMigrationArtifactRows.Clear();
         ProductionReadinessMigrationPlanRows.Clear();
         TenantAdministrationControlRows.Clear();

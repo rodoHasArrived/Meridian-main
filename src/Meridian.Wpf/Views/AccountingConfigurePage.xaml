@@ -218,6 +218,15 @@
                                             <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="220" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Production Gap Checklist" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessGapRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessGapGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Gap" Binding="{Binding Name}" Width="220" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150" />
+                                            <DataGridTextColumn Header="Summary / Areas" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Required Action" Binding="{Binding Evidence}" Width="300" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Ledger-Book Workflow Controls" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding ProductionReadinessWorkflowRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessWorkflowGrid">
                                         <DataGrid.Columns>

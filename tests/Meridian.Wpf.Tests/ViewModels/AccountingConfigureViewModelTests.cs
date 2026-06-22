@@ -6,6 +6,8 @@ using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -192,8 +194,26 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "Report package provenance"
             && row.Key == "dimensional-reporting:report-package");
         harness.ViewModel.ProductionReadinessIssueRows.Should().Contain(row =>
-            row.Name == "external-gl.certified-mapping-missing"
+            row.Name == "ledger-books.external-gl-not-certified"
             && row.Status == AccountingConfigurationValidationSeverityDto.Critical.ToString());
+        harness.ViewModel.ProductionReadinessGapRows.Should().HaveCount(5);
+        harness.ViewModel.ProductionReadinessGapRows.Should().Contain(row =>
+            row.Name == "Configurable multi-ledger accounting"
+            && row.Status.Contains("Blocked", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("Ledger Books", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("multi-ledger-native-workflows", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessGapRows.Should().Contain(row =>
+            row.Name == "Enterprise accounting configuration studio"
+            && row.Evidence.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessGapRows.Should().Contain(row =>
+            row.Name == "External GL guarded integration"
+            && row.Evidence.Contains("live external posting disabled", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessGapRows.Should().Contain(row =>
+            row.Name == "Dimensional ledger and reporting"
+            && row.Detail.Contains("Dimensional Accounting", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessGapRows.Should().Contain(row =>
+            row.Name == "Production controls and rollout hardening"
+            && row.Evidence.Contains("migration", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ChartRows.Select(static row => row.Name)
             .Should()
             .Contain([
@@ -443,18 +463,18 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.TenantAdministrationProfileStatusText.Should()
             .Contain("Tenant administration setup profile saved");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
-            .Contain("8/9 tenant admin control");
+            .Contain("2/23 tenant admin control");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
             .Contain("3 retained evidence link");
-        harness.ViewModel.TenantAdministrationControlRows.Should().OnlyContain(row => row.Status == "Configured");
-        harness.ViewModel.ProductionReadinessMigrationArtifactRows.Should().ContainSingle(row =>
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Tenant config" && row.Status == "Configured");
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Reporting groups" && row.Status == "Configured");
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Audit review" && row.Status == "Missing");
+        harness.ViewModel.ProductionReadinessMigrationPlanRows.Should().Contain(row =>
             row.Name == "Dimensional backfill"
-            && row.Status == AccountingMigrationRunStatusDto.Certified.ToString()
-            && row.Detail.Contains("book 7e0be005-49e1-46eb-9d4f-89d75e2328bd", StringComparison.OrdinalIgnoreCase)
-            && row.Detail.Contains("cost center fund-accounting", StringComparison.OrdinalIgnoreCase)
-            && row.Detail.Contains("external Department=FundAccounting", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("approval:dimensional-backfill:alpha-fund", StringComparison.OrdinalIgnoreCase)
-            && row.Key == "migration-run-dimensional-backfill-alpha-fund");
+            && row.Evidence.Contains("migration.dimensional-backfill-not-certified", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -733,6 +753,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.SelectedEntryType = ManualJournalEntryTypeDto.CapitalCall;
         harness.ViewModel.DraftAmount = 275m;
         await harness.ViewModel.SaveManualJournalDraftAsync();
+        await harness.ViewModel.ValidateManualJournalDraftAsync();
         await harness.ViewModel.SubmitManualJournalDraftAsync();
 
         await harness.ViewModel.ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve);
@@ -983,6 +1004,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingProductionReadinessStatusText");
         xaml.Should().Contain("AccountingProductionReadinessComponentGrid");
         xaml.Should().Contain("AccountingProductionReadinessIssueGrid");
+        xaml.Should().Contain("AccountingProductionReadinessGapGrid");
+        xaml.Should().Contain("ProductionReadinessGapRows");
         xaml.Should().Contain("AccountingProductionReadinessWorkflowGrid");
         xaml.Should().Contain("ProductionReadinessWorkflowRows");
         xaml.Should().Contain("AccountingProductionReadinessDimensionalControlGrid");
@@ -1049,10 +1072,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var ledgerBookService = new TestLedgerBookService();
         var configurationService = new AccountingConfigurationService(configurationStore, configurationStore, ledgerBookService);
         var draftStore = new FileManualJournalEntryDraftStore(draftsPath);
+        var ledgerJournalStore = new RecordingLedgerJournalStore(ledgerBookService.Book);
         var manualJournalService = new ManualJournalEntryWorkbenchService(
             draftStore,
             configurationService,
-            configurationStore);
+            configurationStore,
+            journalStore: ledgerJournalStore);
         var capitalAccountWorkbenchService = new CapitalAccountWorkbenchService(manualJournalService);
         var accountingSystemIntegrationService = new AccountingSystemIntegrationService(
             [new QuickBooksFixtureAccountingProvider()]);
@@ -1065,6 +1090,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         services.AddSingleton<IAccountingConfigurationService>(configurationService);
         services.AddSingleton<IManualJournalEntryWorkbenchService>(manualJournalService);
         services.AddSingleton<IManualJournalEntryLifecycleService>(manualJournalService);
+        services.AddSingleton<ILedgerJournalStore>(ledgerJournalStore);
         services.AddSingleton(accountingSystemIntegrationService);
         services.AddSingleton<IAccountingTenantAdministrationProfileStore>(tenantAdministrationProfileStore);
         services.AddSingleton<IAccountingMigrationRunArtifactStore>(migrationRunArtifactStore);
@@ -1111,6 +1137,157 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         string DebitAccountPath,
         string CreditAccountPath,
         string EvidenceLink);
+
+    private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
+    {
+        private readonly List<LedgerJournalEntryRecord> _entries = [];
+        private readonly LedgerBookRecord _book;
+
+        public RecordingLedgerJournalStore(LedgerBookDto book)
+        {
+            _book = new LedgerBookRecord(
+                book.LedgerBookId,
+                book.FundProfileId,
+                book.FundStructureNodeId,
+                book.FundStructureNodeKind,
+                book.DisplayName,
+                book.BaseCurrency,
+                book.CreatedAt,
+                book.UpdatedAt,
+                book.Description,
+                book.AccountingBasis,
+                book.AccountingPolicyId,
+                book.AccountingPolicyVersion);
+        }
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!entry.Entry.IsBalanced)
+            {
+                throw new LedgerValidationException("Journal entry must be balanced.");
+            }
+
+            _entries.Add(new LedgerJournalEntryRecord(
+                entry.Entry,
+                entry.AggregateId,
+                entry.PeriodId,
+                entry.CommandId,
+                entry.CorrelationId,
+                _entries.Count + 1,
+                DateTimeOffset.UtcNow,
+                entry.AccountingBasis,
+                entry.AccountingPolicyId,
+                entry.AccountingPolicyVersion,
+                entry.RuleId,
+                entry.RuleVersion,
+                entry.SourceEventId,
+                entry.SourceJournalEntryId,
+                entry.PostingKind,
+                entry.AdjustmentApproval));
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                _entries.Where(entry => entry.PeriodId == periodId).ToArray());
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                _entries.Where(entry => entry.AggregateId == aggregateId).ToArray());
+        }
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerAccountingPeriod?>(new LedgerAccountingPeriod(
+                periodId,
+                _book.LedgerBookId,
+                2026,
+                6,
+                "2026-06",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30),
+                "Open",
+                DateTimeOffset.UtcNow,
+                null,
+                1));
+        }
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if ((ledgerBookId.HasValue && ledgerBookId != _book.LedgerBookId) ||
+                (!string.IsNullOrWhiteSpace(fundProfileId) && !string.Equals(fundProfileId, _book.FundProfileId, StringComparison.OrdinalIgnoreCase)) ||
+                (fundStructureNodeId.HasValue && fundStructureNodeId != _book.FundStructureNodeId) ||
+                (!string.IsNullOrWhiteSpace(status) && !string.Equals(status, "Open", StringComparison.OrdinalIgnoreCase)))
+            {
+                return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+            }
+
+            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(
+            [
+                new LedgerAccountingPeriod(
+                    Guid.Parse("84ee5cf3-d598-4540-89f5-c8650d6cfef5"),
+                    _book.LedgerBookId,
+                    2026,
+                    6,
+                    "2026-06",
+                    new DateOnly(2026, 6, 1),
+                    new DateOnly(2026, 6, 30),
+                    "Open",
+                    DateTimeOffset.UtcNow,
+                    null,
+                    1)
+            ]);
+        }
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(period);
+        }
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerBookRecord?>(ledgerBookId == _book.LedgerBookId ? _book : null);
+        }
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            Meridian.Contracts.FundStructure.FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(fundProfileId, _book.FundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || fundStructureNodeId == _book.FundStructureNodeId) &&
+                (!fundStructureNodeKind.HasValue || fundStructureNodeKind == _book.FundStructureNodeKind);
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>(matches ? [_book] : []);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(book);
+        }
+    }
 
     private sealed class TestLedgerBookService : ILedgerBookService
     {
