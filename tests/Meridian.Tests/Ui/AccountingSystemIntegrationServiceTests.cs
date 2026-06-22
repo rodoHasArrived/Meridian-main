@@ -43,12 +43,71 @@ public sealed class AccountingSystemIntegrationServiceTests
         var detail = await service.ImportAsync(new AccountingSystemImportRequestDto("quickbooks-fixture"));
 
         detail.Summary.ProviderId.Should().Be("quickbooks-fixture");
+        detail.Summary.ContentHash.Should().NotBeNullOrWhiteSpace();
+        detail.Summary.ContentHash.Should().HaveLength(64);
         detail.Summary.ChartAccountCount.Should().BeGreaterThan(0);
         detail.Summary.JournalEntryCount.Should().BeGreaterThan(0);
         detail.Summary.TrialBalanceLineCount.Should().BeGreaterThan(0);
         detail.Summary.Warnings.Should().Contain(warning => warning.Contains("source of all ledger truth", StringComparison.OrdinalIgnoreCase));
         detail.Summary.Warnings.Should().Contain(warning => warning.Contains("posting/export is disabled", StringComparison.OrdinalIgnoreCase));
         detail.JournalEntries.Should().OnlyContain(entry => entry.TotalDebits == entry.TotalCredits);
+    }
+
+    [Fact]
+    public async Task ImportAsync_StampsStableContentHashAndCarriesItIntoReconciliation()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var request = new AccountingSystemImportRequestDto(
+            "quickbooks-fixture",
+            "default-fund",
+            ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31));
+
+        var retained = await service.ImportAsync(request);
+        var preview = await service.ImportAsync(request with { PersistPreview = false });
+        var reconciliation = await service.ReconcileLatestAsync(
+            "quickbooks-fixture",
+            "default-fund",
+            ExternalGlLedgerBookId);
+
+        retained.Summary.ContentHash.Should().NotBeNullOrWhiteSpace();
+        retained.Summary.ContentHash.Should().HaveLength(64);
+        preview.Summary.State.Should().Be(AccountingSystemImportStateDto.Previewed);
+        preview.Summary.ContentHash.Should().Be(retained.Summary.ContentHash);
+        reconciliation.ImportContentHash.Should().Be(retained.Summary.ContentHash);
+    }
+
+    [Fact]
+    public async Task ImportAsync_BlocksProviderScopeCountAndBalanceMismatches()
+    {
+        var providerMismatch = new AccountingSystemIntegrationService(
+            [new TransformingQuickBooksAccountingProvider(detail => detail with
+            {
+                Summary = detail.Summary with { ProviderId = "wrong-provider" }
+            })]);
+        var countMismatch = new AccountingSystemIntegrationService(
+            [new TransformingQuickBooksAccountingProvider(detail => detail with
+            {
+                Summary = detail.Summary with { ChartAccountCount = detail.Summary.ChartAccountCount + 1 }
+            })]);
+        var balanceMismatch = new AccountingSystemIntegrationService(
+            [new TransformingQuickBooksAccountingProvider(detail =>
+            {
+                var first = detail.JournalEntries[0] with { TotalCredits = detail.JournalEntries[0].TotalCredits + 1m };
+                return detail with { JournalEntries = [first, .. detail.JournalEntries.Skip(1)] };
+            })]);
+
+        var providerAct = () => providerMismatch.ImportAsync(new AccountingSystemImportRequestDto("quickbooks-fixture"));
+        var countAct = () => countMismatch.ImportAsync(new AccountingSystemImportRequestDto("quickbooks-fixture"));
+        var balanceAct = () => balanceMismatch.ImportAsync(new AccountingSystemImportRequestDto("quickbooks-fixture"));
+
+        await providerAct.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*returned import evidence for provider 'wrong-provider'*");
+        await countAct.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*chart account count*payload contains*");
+        await balanceAct.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*unbalanced journal entry*");
     }
 
     [Fact]
@@ -3196,6 +3255,90 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task GetExportPackageManifestAsync_RevalidatesCurrentProviderPostingCapability()
+    {
+        var mutableProvider = new MutablePostingCapabilityAccountingSystemProvider("quickbooks-fixture");
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore(), mutableProvider);
+        var profile = CertifiedQuickBooksMappingProfile();
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Ready);
+
+        mutableProvider.SupportsPosting = true;
+
+        var manifest = await service.GetExportPackageManifestAsync(package.ExportPackageId);
+
+        manifest.Should().NotBeNull();
+        manifest!.ExternalPostingAllowed.Should().BeFalse();
+        manifest.CertificationState.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        manifest.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Blocked);
+        manifest.ReconciliationSafeguardIssueCodes.Should().Contain("LiveExternalPostingProviderEnabled");
+        manifest.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "LiveExternalPostingProviderEnabled" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        manifest.Payload.Should().Contain("\"reconciliationSafeguardState\": \"Blocked\"");
+        manifest.Payload.Should().Contain("LiveExternalPostingProviderEnabled");
+    }
+
+    [Fact]
+    public async Task GetExportPackageManifestAsync_ForcesPostingDisabledPayloadWhenRetainedPackageEnablesPosting()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
+        RetainExportPackage(service, package with
+        {
+            PostingEnabled = true,
+            PostingDisabledReason = string.Empty
+        });
+
+        var manifest = await service.GetExportPackageManifestAsync(package.ExportPackageId);
+
+        manifest.Should().NotBeNull();
+        manifest!.ExternalPostingAllowed.Should().BeFalse();
+        manifest.PostingDisabledReason.Should().Contain("live external GL posting remains disabled");
+        manifest.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Blocked);
+        manifest.ReconciliationSafeguardIssueCodes.Should().Contain("LiveExternalPostingRetainedPackageEnabled");
+        manifest.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == "LiveExternalPostingRetainedPackageEnabled" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == package.ExportPackageId);
+        manifest.Payload.Should().Contain("\"postingEnabled\": false");
+        manifest.Payload.Should().NotContain("\"postingEnabled\": true");
+        manifest.Payload.Should().Contain("LiveExternalPostingRetainedPackageEnabled");
+    }
+
+    [Fact]
     public async Task CertifyExportPackageAsync_BlocksDraftArtifact()
     {
         var service = CreateService();
@@ -4889,6 +5032,32 @@ public sealed class AccountingSystemIntegrationServiceTests
             VendorId: $"{providerId}:Vendor:Administrator",
             ProjectId: $"{providerId}:Project:MonthEndClose");
 
+    private sealed class TransformingQuickBooksAccountingProvider : IAccountingSystemProvider
+    {
+        private readonly QuickBooksFixtureAccountingProvider _fixture = new();
+        private readonly Func<AccountingSystemImportDetailDto, AccountingSystemImportDetailDto> _transform;
+
+        public TransformingQuickBooksAccountingProvider(
+            Func<AccountingSystemImportDetailDto, AccountingSystemImportDetailDto> transform)
+        {
+            _transform = transform;
+        }
+
+        public string ProviderId => QuickBooksFixtureAccountingProvider.Id;
+
+        public string DisplayName => "Transforming QuickBooks Fixture";
+
+        public AccountingSystemProviderCapabilities Capabilities => _fixture.Capabilities;
+
+        public async Task<AccountingSystemImportDetailDto> ImportAsync(
+            AccountingSystemImportRequestDto request,
+            CancellationToken ct = default)
+        {
+            var detail = await _fixture.ImportAsync(request, ct).ConfigureAwait(false);
+            return _transform(detail);
+        }
+    }
+
     private sealed class PostingCapableAccountingSystemProvider : IAccountingSystemProvider
     {
         private readonly QuickBooksFixtureAccountingProvider _fixture = new();
@@ -4950,6 +5119,31 @@ public sealed class AccountingSystemIntegrationServiceTests
                     .ToArray()
             };
         }
+    }
+
+    private sealed class MutablePostingCapabilityAccountingSystemProvider(string providerId) : IAccountingSystemProvider
+    {
+        private readonly QuickBooksFixtureAccountingProvider _fixture = new();
+
+        public string ProviderId { get; } = providerId;
+
+        public string DisplayName => "Mutable Posting Capability Provider";
+
+        public bool SupportsPosting { get; set; }
+
+        public AccountingSystemProviderCapabilities Capabilities => new(
+            SupportsChartOfAccounts: true,
+            SupportsJournalEntries: true,
+            SupportsTrialBalance: true,
+            SupportsPosting,
+            EvidenceKinds: SupportsPosting
+                ? ["chart", "journal", "trial-balance", "posting"]
+                : ["chart", "journal", "trial-balance"]);
+
+        public Task<AccountingSystemImportDetailDto> ImportAsync(
+            AccountingSystemImportRequestDto request,
+            CancellationToken ct = default)
+            => _fixture.ImportAsync(request, ct);
     }
 
     private static ILedgerJournalStore CreateMatchedQuickBooksFixtureLedgerStore(Guid? ledgerBookIdOverride = null)

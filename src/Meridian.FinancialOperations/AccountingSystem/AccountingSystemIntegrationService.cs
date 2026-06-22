@@ -49,6 +49,7 @@ public sealed class AccountingSystemIntegrationService
         "ExternalGlReconciliationSnapshotChanged",
         "UnresolvedExternalGlBreaks",
         "LiveExternalPostingProviderEnabled",
+        "LiveExternalPostingRetainedPackageEnabled",
         "MissingGeneratedExternalGlExportLines"
     ];
 
@@ -350,7 +351,7 @@ public sealed class AccountingSystemIntegrationService
         return certified;
     }
 
-    public Task<ExternalGlExportPackageManifestDto?> GetExportPackageManifestAsync(
+    public async Task<ExternalGlExportPackageManifestDto?> GetExportPackageManifestAsync(
         string exportPackageId,
         string? tenantId = null,
         string? companyId = null,
@@ -358,9 +359,13 @@ public sealed class AccountingSystemIntegrationService
     {
         ct.ThrowIfCancellationRequested();
         var normalizedExportPackageId = RequireText(exportPackageId, nameof(exportPackageId));
-        return Task.FromResult(TryGetExportPackage(normalizedExportPackageId, tenantId, companyId, out var package)
-            ? BuildExportPackageManifest(package)
-            : null);
+        if (!TryGetExportPackage(normalizedExportPackageId, tenantId, companyId, out var package))
+        {
+            return null;
+        }
+
+        var currentValidationIssues = await BuildCurrentExportCertificationIssuesAsync(package, ct).ConfigureAwait(false);
+        return BuildExportPackageManifest(package, currentValidationIssues);
     }
 
     public Task<IReadOnlyList<ExternalGlExportPackageDto>> ListExportPackagesAsync(
@@ -402,14 +407,7 @@ public sealed class AccountingSystemIntegrationService
         var detail = await provider.ImportAsync(request, ct).ConfigureAwait(false);
         var tenantId = NormalizeOptional(request.TenantId);
         var companyId = NormalizeOptional(request.CompanyId);
-        detail = detail with
-        {
-            Summary = detail.Summary with
-            {
-                TenantId = tenantId,
-                CompanyId = companyId
-            }
-        };
+        detail = NormalizeImportedDetail(provider, request, detail, tenantId, companyId);
 
         if (request.PersistPreview)
         {
@@ -522,7 +520,8 @@ public sealed class AccountingSystemIntegrationService
             PostingDisabledReason: "Meridian is the source of all ledger truth; external GL posting/export is disabled until an approved adapter publishes Meridian-owned ledger entries.",
             rows,
             summaryEvidenceReferences,
-            latest.Summary.LedgerBookId)
+            latest.Summary.LedgerBookId,
+            latest.Summary.ContentHash)
         {
             EvidencePackages = BuildEvidencePackages(
                 latest,
@@ -586,6 +585,12 @@ public sealed class AccountingSystemIntegrationService
         try
         {
             return await ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException ex) when (
+            ledgerBookId.HasValue &&
+            ex.Message.Contains("returned ledger book", StringComparison.OrdinalIgnoreCase))
+        {
+            return await ReconcileLatestAsync(providerId, fundProfileId, null, ct, tenantId, companyId).ConfigureAwait(false);
         }
         catch (ArgumentException)
         {
@@ -1010,9 +1015,21 @@ public sealed class AccountingSystemIntegrationService
     }
 
     private static ExternalGlExportPackageManifestDto BuildExportPackageManifest(
-        ExternalGlExportPackageDto package)
+        ExternalGlExportPackageDto package,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> currentValidationIssues)
     {
+        var manifestPostingDisabledReason = ResolveManifestPostingDisabledReason(package);
+        var validationIssues = MergeExportManifestValidationIssues(
+            package.ValidationIssues,
+            currentValidationIssues,
+            BuildRetainedPostingStateIssues(package));
+        var safeguardIssueCodes = BuildReconciliationSafeguardIssueCodes(validationIssues);
         var certificationState = package.Certification?.State ?? AccountingCertificationStateDto.Draft;
+        var safeguardState = ResolveReconciliationSafeguardState(
+            package.ReconciliationId,
+            package.ReconciliationSnapshotHash,
+            safeguardIssueCodes,
+            certificationState);
         var evidenceLinks = NormalizeEvidenceReferences(
             package.EvidenceLinks.Concat(package.Certification?.EvidenceLinks ?? []));
         var payload = JsonSerializer.Serialize(
@@ -1030,18 +1047,26 @@ public sealed class AccountingSystemIntegrationService
                 package.ReconciliationId,
                 package.ReconciliationSnapshotHash,
                 package.RequireBalancedReconciliation,
-                package.ReconciliationSafeguardState,
-                package.ReconciliationSafeguardIssueCodes,
+                ReconciliationSafeguardState = safeguardState,
+                ReconciliationSafeguardIssueCodes = safeguardIssueCodes,
                 certificationState,
-                package.PostingEnabled,
-                package.PostingDisabledReason,
+                PostingEnabled = false,
+                PostingDisabledReason = manifestPostingDisabledReason,
                 generatedLineCount = package.GeneratedLines.Count,
                 generatedLines = package.GeneratedLines,
                 evidenceLinks,
-                validationIssues = package.ValidationIssues
+                validationIssues
             },
             JsonOptions);
-        var contentHash = ComputeExportPackageHash(package, certificationState, evidenceLinks);
+        var contentHash = ComputeExportPackageHash(
+            package,
+            certificationState,
+            evidenceLinks,
+            validationIssues,
+            safeguardState,
+            safeguardIssueCodes,
+            postingEnabled: false,
+            manifestPostingDisabledReason);
         return new ExternalGlExportPackageManifestDto(
             package.ExportPackageId,
             package.ProviderId,
@@ -1055,20 +1080,63 @@ public sealed class AccountingSystemIntegrationService
             "application/json",
             $"{SanitizeId(package.ExportPackageId)}.external-gl-export.json",
             ExternalPostingAllowed: false,
-            package.PostingDisabledReason,
+            manifestPostingDisabledReason,
             payload,
             package.GeneratedLines,
             evidenceLinks,
-            package.ValidationIssues,
+            validationIssues,
             package.MappingProfileId,
             package.ReconciliationId,
             package.RequireBalancedReconciliation,
-            package.ReconciliationSafeguardState,
-            package.ReconciliationSafeguardIssueCodes,
+            safeguardState,
+            safeguardIssueCodes,
             package.TenantId,
             package.CompanyId,
             package.ReconciliationSnapshotHash);
     }
+
+    private static string ResolveManifestPostingDisabledReason(ExternalGlExportPackageDto package)
+        => !package.PostingEnabled && !string.IsNullOrWhiteSpace(package.PostingDisabledReason)
+            ? package.PostingDisabledReason
+            : "Controlled external GL export manifest only; live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries.";
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildRetainedPostingStateIssues(
+        ExternalGlExportPackageDto package)
+    {
+        if (!package.PostingEnabled && !string.IsNullOrWhiteSpace(package.PostingDisabledReason))
+        {
+            return [];
+        }
+
+        return
+        [
+            new AccountingConfigurationValidationIssueDto(
+                "LiveExternalPostingRetainedPackageEnabled",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Retained external GL export package state attempted to enable live posting or removed the posting-disabled reason; manifest output remains posting-disabled.",
+                package.ExportPackageId,
+                "Recreate the guarded external GL export package from the current import/reconciliation evidence before review or certification.")
+        ];
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> MergeExportManifestValidationIssues(
+        params IReadOnlyList<AccountingConfigurationValidationIssueDto>[] issueSets)
+        => issueSets
+            .SelectMany(static issues => issues)
+            .GroupBy(
+                static issue => string.Join(
+                    "\u001f",
+                    issue.Code,
+                    issue.Severity,
+                    issue.TargetId ?? string.Empty,
+                    issue.Message,
+                    issue.SuggestedAction ?? string.Empty),
+                StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderByDescending(static issue => issue.Severity)
+            .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     private static string? ComputeReconciliationSnapshotHash(AccountingSystemReconciliationSummaryDto? reconciliation)
     {
@@ -1084,6 +1152,7 @@ public sealed class AccountingSystemIntegrationService
             reconciliation.ProviderId,
             reconciliation.FundProfileId,
             reconciliation.LedgerBookId?.ToString("D") ?? string.Empty,
+            reconciliation.ImportContentHash ?? string.Empty,
             reconciliation.PeriodStart.ToString("yyyy-MM-dd"),
             reconciliation.PeriodEnd.ToString("yyyy-MM-dd"),
             reconciliation.MatchedCount,
@@ -1112,7 +1181,12 @@ public sealed class AccountingSystemIntegrationService
     private static string ComputeExportPackageHash(
         ExternalGlExportPackageDto package,
         AccountingCertificationStateDto certificationState,
-        IReadOnlyList<string> evidenceLinks)
+        IReadOnlyList<string> evidenceLinks,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
+        ExternalGlExportReconciliationSafeguardStateDto safeguardState,
+        IReadOnlyList<string> safeguardIssueCodes,
+        bool postingEnabled,
+        string postingDisabledReason)
     {
         var payload = string.Join(
             "|",
@@ -1128,15 +1202,15 @@ public sealed class AccountingSystemIntegrationService
             package.ReconciliationId ?? string.Empty,
             package.ReconciliationSnapshotHash ?? string.Empty,
             package.RequireBalancedReconciliation,
-            package.ReconciliationSafeguardState,
-            string.Join(",", package.ReconciliationSafeguardIssueCodes.Order(StringComparer.OrdinalIgnoreCase)),
+            safeguardState,
+            string.Join(",", safeguardIssueCodes.Order(StringComparer.OrdinalIgnoreCase)),
             certificationState,
-            package.PostingEnabled,
-            package.PostingDisabledReason,
+            postingEnabled,
+            postingDisabledReason,
             string.Join(",", package.GeneratedLines
                 .OrderBy(static line => line.ExportLineId, StringComparer.OrdinalIgnoreCase)
                 .Select(FormatGeneratedExportLineForHash)),
-            string.Join(",", package.ValidationIssues
+            string.Join(",", validationIssues
                 .OrderBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
                 .Select(static issue => $"{issue.Code}:{issue.Severity}:{issue.TargetId}:{issue.Message}:{issue.SuggestedAction}")),
@@ -1211,6 +1285,219 @@ public sealed class AccountingSystemIntegrationService
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty);
     }
+
+    private static AccountingSystemImportDetailDto NormalizeImportedDetail(
+        IAccountingSystemProvider provider,
+        AccountingSystemImportRequestDto request,
+        AccountingSystemImportDetailDto detail,
+        string? tenantId,
+        string? companyId)
+    {
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(detail);
+        ArgumentNullException.ThrowIfNull(detail.Summary);
+
+        var providerId = NormalizeProviderId(provider.ProviderId);
+        var summaryProviderId = NormalizeProviderId(detail.Summary.ProviderId);
+        if (!string.Equals(providerId, summaryProviderId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned import evidence for provider '{summaryProviderId}'.");
+        }
+
+        var requestedFundProfileId = string.IsNullOrWhiteSpace(request.FundProfileId)
+            ? null
+            : NormalizeFundProfileId(request.FundProfileId);
+        var summaryFundProfileId = NormalizeFundProfileId(detail.Summary.FundProfileId);
+        if (requestedFundProfileId is not null &&
+            !string.Equals(requestedFundProfileId, summaryFundProfileId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned fund profile '{summaryFundProfileId}' for requested fund profile '{requestedFundProfileId}'.");
+        }
+
+        if (request.LedgerBookId.HasValue && detail.Summary.LedgerBookId != request.LedgerBookId)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned ledger book '{detail.Summary.LedgerBookId?.ToString("D") ?? "unscoped"}' for requested ledger book '{request.LedgerBookId.Value:D}'.");
+        }
+
+        if (request.PeriodStart.HasValue && detail.Summary.PeriodStart != request.PeriodStart.Value)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned period start {detail.Summary.PeriodStart:yyyy-MM-dd} for requested period start {request.PeriodStart.Value:yyyy-MM-dd}.");
+        }
+
+        if (request.PeriodEnd.HasValue && detail.Summary.PeriodEnd != request.PeriodEnd.Value)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned period end {detail.Summary.PeriodEnd:yyyy-MM-dd} for requested period end {request.PeriodEnd.Value:yyyy-MM-dd}.");
+        }
+
+        if (detail.Summary.PeriodEnd < detail.Summary.PeriodStart)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned an invalid import period ending before it starts.");
+        }
+
+        var chartAccounts = detail.ChartAccounts ?? [];
+        var journalEntries = detail.JournalEntries ?? [];
+        var trialBalance = detail.TrialBalance ?? [];
+        EnsureImportCountMatches(providerId, "chart account", detail.Summary.ChartAccountCount, chartAccounts.Count);
+        EnsureImportCountMatches(providerId, "journal entry", detail.Summary.JournalEntryCount, journalEntries.Count);
+        EnsureImportCountMatches(providerId, "trial-balance line", detail.Summary.TrialBalanceLineCount, trialBalance.Count);
+        EnsureBalancedJournalEvidence(providerId, journalEntries);
+
+        var evidenceReferences = NormalizeEvidenceReferences(detail.Summary.EvidenceReferences);
+        var warnings = NormalizeEvidenceReferences(detail.Summary.Warnings);
+        var normalizedSummary = detail.Summary with
+        {
+            ProviderId = providerId,
+            FundProfileId = summaryFundProfileId,
+            State = request.PersistPreview
+                ? AccountingSystemImportStateDto.Imported
+                : AccountingSystemImportStateDto.Previewed,
+            ChartAccountCount = chartAccounts.Count,
+            JournalEntryCount = journalEntries.Count,
+            TrialBalanceLineCount = trialBalance.Count,
+            EvidenceReferences = evidenceReferences,
+            Warnings = warnings,
+            TenantId = tenantId,
+            CompanyId = companyId
+        };
+
+        normalizedSummary = normalizedSummary with
+        {
+            ContentHash = ComputeImportContentHash(
+                normalizedSummary,
+                chartAccounts,
+                journalEntries,
+                trialBalance)
+        };
+
+        return detail with
+        {
+            Summary = normalizedSummary,
+            ChartAccounts = chartAccounts,
+            JournalEntries = journalEntries,
+            TrialBalance = trialBalance
+        };
+    }
+
+    private static void EnsureImportCountMatches(
+        string providerId,
+        string label,
+        int summaryCount,
+        int actualCount)
+    {
+        if (summaryCount != actualCount)
+        {
+            throw new InvalidOperationException(
+                $"Accounting-system provider '{providerId}' returned {label} count {summaryCount}, but the payload contains {actualCount} {label}(s).");
+        }
+    }
+
+    private static void EnsureBalancedJournalEvidence(
+        string providerId,
+        IReadOnlyList<AccountingSystemJournalEntryDto> journalEntries)
+    {
+        foreach (var entry in journalEntries)
+        {
+            var lineDebitTotal = entry.Lines.Sum(static line => line.Debit);
+            var lineCreditTotal = entry.Lines.Sum(static line => line.Credit);
+            if (Math.Abs(entry.TotalDebits - entry.TotalCredits) > 0.01m ||
+                Math.Abs(lineDebitTotal - lineCreditTotal) > 0.01m ||
+                Math.Abs(entry.TotalDebits - lineDebitTotal) > 0.01m ||
+                Math.Abs(entry.TotalCredits - lineCreditTotal) > 0.01m)
+            {
+                throw new InvalidOperationException(
+                    $"Accounting-system provider '{providerId}' returned unbalanced journal entry '{entry.ExternalJournalEntryId}'.");
+            }
+        }
+    }
+
+    private static string ComputeImportContentHash(
+        AccountingSystemImportSummaryDto summary,
+        IReadOnlyList<AccountingSystemChartAccountDto> chartAccounts,
+        IReadOnlyList<AccountingSystemJournalEntryDto> journalEntries,
+        IReadOnlyList<AccountingSystemTrialBalanceLineDto> trialBalance)
+    {
+        var payload = string.Join(
+            "|",
+            summary.ImportId,
+            summary.ProviderId,
+            summary.FundProfileId,
+            summary.LedgerBookId?.ToString("D") ?? string.Empty,
+            summary.TenantId ?? string.Empty,
+            summary.CompanyId ?? string.Empty,
+            summary.PeriodStart.ToString("yyyy-MM-dd"),
+            summary.PeriodEnd.ToString("yyyy-MM-dd"),
+            string.Join(",", summary.EvidenceReferences.Order(StringComparer.OrdinalIgnoreCase)),
+            string.Join(",", chartAccounts
+                .OrderBy(static account => account.ExternalAccountId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static account => account.AccountCode, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatChartAccountForHash)),
+            string.Join(",", journalEntries
+                .OrderBy(static entry => entry.ExternalJournalEntryId, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatJournalEntryForHash)),
+            string.Join(",", trialBalance
+                .OrderBy(static line => line.ExternalAccountId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static line => line.AccountCode, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatTrialBalanceLineForHash)));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
+    }
+
+    private static string FormatChartAccountForHash(AccountingSystemChartAccountDto account)
+        => string.Join(
+            ":",
+            account.ExternalAccountId,
+            account.AccountCode,
+            account.DisplayName,
+            account.AccountType,
+            account.Currency,
+            account.IsActive,
+            account.ParentExternalAccountId ?? string.Empty,
+            account.EvidenceRef ?? string.Empty);
+
+    private static string FormatJournalEntryForHash(AccountingSystemJournalEntryDto entry)
+        => string.Join(
+            ":",
+            entry.ExternalJournalEntryId,
+            entry.AccountingDate.ToString("yyyy-MM-dd"),
+            entry.Description,
+            entry.Currency,
+            entry.TotalDebits.ToString("0.00", CultureInfo.InvariantCulture),
+            entry.TotalCredits.ToString("0.00", CultureInfo.InvariantCulture),
+            entry.EvidenceRef ?? string.Empty,
+            string.Join("\u001d", entry.Lines
+                .OrderBy(static line => line.ExternalLineId, StringComparer.OrdinalIgnoreCase)
+                .Select(FormatJournalLineForHash)));
+
+    private static string FormatJournalLineForHash(AccountingSystemJournalLineDto line)
+        => string.Join(
+            ":",
+            line.ExternalLineId,
+            line.ExternalAccountId,
+            line.AccountCode,
+            line.Description,
+            line.Debit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Credit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Currency,
+            line.EvidenceRef ?? string.Empty);
+
+    private static string FormatTrialBalanceLineForHash(AccountingSystemTrialBalanceLineDto line)
+        => string.Join(
+            ":",
+            line.ExternalAccountId,
+            line.AccountCode,
+            line.AccountName,
+            line.AccountType,
+            line.Debit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Credit.ToString("0.00", CultureInfo.InvariantCulture),
+            line.Currency,
+            line.AsOfDate.ToString("yyyy-MM-dd"),
+            line.EvidenceRef ?? string.Empty);
 
     private async Task<Dictionary<string, MeridianAccountTotal>> LoadMeridianTotalsAsync(
         AccountingSystemImportSummaryDto summary,

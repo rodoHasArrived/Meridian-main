@@ -821,7 +821,8 @@ public sealed record AccountingSystemImportSummaryDto(
     IReadOnlyList<string> EvidenceReferences,
     IReadOnlyList<string> Warnings,
     string? TenantId = null,
-    string? CompanyId = null);
+    string? CompanyId = null,
+    string? ContentHash = null);
 
 public sealed record AccountingSystemChartAccountDto(
     string ExternalAccountId,
@@ -896,7 +897,8 @@ public sealed record AccountingSystemReconciliationSummaryDto(
     string PostingDisabledReason,
     IReadOnlyList<AccountingSystemReconciliationRowDto> Rows,
     IReadOnlyList<string> EvidenceReferences,
-    Guid? LedgerBookId = null)
+    Guid? LedgerBookId = null,
+    string? ImportContentHash = null)
 {
     public IReadOnlyList<AccountingSystemReconciliationEvidencePackageDto> EvidencePackages { get; init; } = [];
 }

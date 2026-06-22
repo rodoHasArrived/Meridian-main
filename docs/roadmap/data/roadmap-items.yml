@@ -259,11 +259,12 @@ items:
     health: green
     priority: high
     evidence_posture: complete
-    current_summary: Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model.
+    current_summary: Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model. The next feature slice is the still-partial multi-asset reference-data workbench completion inside the existing Security Master detail/passport flow, not a new route.
     exit_criteria:
       - Equities, options, futures, FX, fixed income, loans, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
       - Missing retained provider data remains review-required or blocked evidence rather than fake completeness.
       - Browser and WPF surfaces consume the shared DTO without client-local readiness rules.
+      - Follow-on multi-asset reference-data workbench work extends the existing Security Master detail/passport flow with provider evidence, identifier confidence, terms and obligations, projected cash-flow readiness, ledger classification, and operations handoff without introducing a new route.
     source_modules:
       - SRC-APP
       - SRC-CONTRACTS
@@ -296,11 +297,11 @@ items:
       - Data
       - Reporting
     owner_lane: Workstation Shell and UX
-    status: planned
+    status: done
     health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Planned productization slice that turns the W1-W5 accounting-record, multi-asset evidence, and governed reporting baseline into shared Ledger Explorer, Portfolio Explorer, Security & Instrument Explorer, and Report-Line Provenance Explorer surfaces. This stays inside the operational-record scope gate and does not reopen deferred portal, payment-execution, mobile, or broad workflow-designer lanes.
+    evidence_posture: complete
+    current_summary: Completed shared Ledger, Portfolio, Security & Instrument, and Report-Line Provenance financial record explorers over the shared contracts/read-model seam. Endpoint, WPF, and browser tests now prove saved-view handling, dense-table and inspector parity, cross-explorer proof-action routing, Security Master/AssetOperations/report-usage projection, and report-line provenance drill-through without browser- or WPF-local business rules.
     exit_criteria:
       - Shared explorer framework contracts and read models support scope bars, saved views, filters, summary strips, dense grids, record drawers, proof ribbons, proof panels, column layouts, record graphs, Used In, Impacts, evidence links, approval state, reconciliation state, report usage, and audit timelines without browser- or WPF-local business rules.
       - Ledger Explorer exposes Journal Entries and Ledger Detail views with core filters, saved views, journal drawer and detail routing, evidence links, approval posture, reversal-chain context, and report-usage drill-through.
@@ -317,7 +318,16 @@ items:
     diagrams:
       - DIA-ASSURANCE-LOOP
       - DIA-BROWSER-WORKSTATION
-    last_reviewed: 2026-06-09
+    evidence:
+      - type: test
+        path: tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs
+      - type: test
+        path: tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.test.tsx
+      - type: fixture
+        path: tests/fixtures/security-instrument-explorer-parity.json
+    last_reviewed: 2026-06-22
 
   - id: W5X-FINOPS-001
     title: Financial operations control center

@@ -232,13 +232,14 @@ Closed 2026-06-02. Accounting record summaries with all six evidence categories 
 
 ### Current Summary
 
-Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model.
+Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model. The next feature slice is the still-partial multi-asset reference-data workbench completion inside the existing Security Master detail/passport flow, not a new route.
 
 ### Exit Criteria
 
 - Equities, options, futures, FX, fixed income, loans, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
 - Missing retained provider data remains review-required or blocked evidence rather than fake completeness.
 - Browser and WPF surfaces consume the shared DTO without client-local readiness rules.
+- Follow-on multi-asset reference-data workbench work extends the existing Security Master detail/passport flow with provider evidence, identifier confidence, terms and obligations, projected cash-flow readiness, ledger classification, and operations handoff without introducing a new route.
 
 ### Source Modules
 
@@ -287,16 +288,16 @@ Planned productization slice that makes Financial Operations the operator contro
 | Field | Value |
 | --- | --- |
 | Wave | W5X |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-09 |
+| Evidence posture | complete |
+| Last reviewed | 2026-06-22 |
 
 ### Current Summary
 
-Planned productization slice that turns the W1-W5 accounting-record, multi-asset evidence, and governed reporting baseline into shared Ledger Explorer, Portfolio Explorer, Security & Instrument Explorer, and Report-Line Provenance Explorer surfaces. This stays inside the operational-record scope gate and does not reopen deferred portal, payment-execution, mobile, or broad workflow-designer lanes.
+Completed shared Ledger, Portfolio, Security & Instrument, and Report-Line Provenance financial record explorers over the shared contracts/read-model seam. Endpoint, WPF, and browser tests now prove saved-view handling, dense-table and inspector parity, cross-explorer proof-action routing, Security Master/AssetOperations/report-usage projection, and report-line provenance drill-through without browser- or WPF-local business rules.
 
 ### Exit Criteria
 

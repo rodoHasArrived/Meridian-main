@@ -2,7 +2,7 @@
 
 **Status:** active execution tracker  
 **Owner:** core-team  
-**Reviewed:** 2026-06-16  
+**Reviewed:** 2026-06-22
 **Source:** [Meridian Design Document (Version 0.18)](meridian-design-document.md) and [Roadmap Registry](../roadmap/data/roadmap-items.yml)
 
 This file is the single planning-tooling tracker for implemented design-document items and remaining TODOs. Keep detailed status changes here, then leave the design document to explain the product rationale and link back to this tracker.
@@ -27,7 +27,7 @@ Reviewed on 2026-06-16 against:
 Result:
 
 - W1 through W5 roadmap rows are verified as `done` with `evidence_posture: complete`.
-- W5X, W6, and W7 are verified as `planned` with `evidence_posture: planned_evidence`.
+- W5X-FREX-001 is verified as `done` with `evidence_posture: complete`; W5X-FINOPS, W6, and W7 remain `planned` with `evidence_posture: planned_evidence`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
 ## Verified Complete Items
@@ -48,6 +48,8 @@ Result:
   Evidence: `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`, `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs`, `src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx`, `docs/roadmap/generated/ROADMAP_SUMMARY.md`; roadmap status `done`; evidence posture `complete`.
 - [x] `W5-MASSET-001`: Multi-asset operational coverage proof lane.
   Evidence: `tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts`; roadmap status `done`; evidence posture `complete`.
+- [x] `W5X-FREX-001`: Shared financial record explorers.
+  Evidence: `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.test.tsx`, `tests/fixtures/security-instrument-explorer-parity.json`; roadmap status `done`; evidence posture `complete`.
 
 ## Evidence-Backed Foundations Not Marked Complete
 
@@ -63,18 +65,25 @@ These are documented as implemented evidence, supported foundations, or design-l
 - [ ] Audit, Compliance & Regulatory: map audit events, evidence manifests, approval history, and close/report controls to acceptance tests before marking complete as a domain.
 - [ ] Reporting & Analytics Platform: separate W4/W5 report-pack baselines from full reporting platform completion.
 
-## W5X-FREX-001 TODOs: Shared Financial Record Explorers
+## W5X-FREX-001 Complete: Shared Financial Record Explorers
 
-- [ ] Define shared explorer contracts for scope bars, saved views, filters, summary strips, grids, drawers, proof ribbons, proof panels, column layouts, record graphs, `Used In`, `Impacts`, evidence links, approval state, reconciliation state, report usage, and audit timelines.
-- [ ] Implement shared read models in `src/Meridian.Contracts/`, `src/Meridian.Ui.Services/`, or `src/Meridian.Ui.Shared/` before browser/WPF surface work.
-- [ ] Build Ledger Explorer with Journal Entries and Ledger Detail views, core filters, saved views, journal drawer/detail routing, evidence links, approval posture, reversal-chain context, and report-usage drill-through.
-- [ ] Build Portfolio Explorer with Holdings and Transactions views, position drawer/detail routing, valuation state, reconciliation state, ledger-impact links, instrument links, evidence posture, and report usage.
-- [ ] Build Security & Instrument Explorer with instrument list, identifier map, terms/obligations, source conflicts, held positions, evidence links, valuation state, expected cash flows, and accounting classification.
-- [ ] Build Report-Line Provenance Explorer with report-line inputs, approved source records, reconciliations, journal impact, evidence packets, template/package versions, approvals, delivery history, restatements, and audit events.
-- [ ] Prove cross-explorer trail from Instrument to Position/Transaction to Reconciliation to Journal to Report Line to Evidence to Audit Event.
-- [ ] Add browser workstation tests for the first explorer flow that consumes shared DTOs without browser-local readiness rules.
-- [ ] Add WPF workstation tests for the same explorer flow and verify parity with the browser read model.
-- [ ] Update roadmap evidence and generated docs before moving `W5X-FREX-001` from planned to complete.
+- [x] Define shared explorer contracts for scope bars, saved views, filters, summary strips, grids, drawers, proof ribbons, proof panels, column layouts, record graphs, `Used In`, `Impacts`, evidence links, approval state, reconciliation state, report usage, and audit timelines.
+- [x] Implement shared read models in `src/Meridian.Contracts/`, `src/Meridian.Ui.Services/`, and `src/Meridian.Ui.Shared/` before browser/WPF surface work.
+- [x] Build Ledger Explorer with Journal Entries and Ledger Detail views, core filters, saved views, journal drawer/detail routing, evidence links, approval posture, reversal-chain context, and report-usage drill-through.
+- [x] Build Portfolio Explorer with Holdings and Transactions views, position drawer/detail routing, valuation state, reconciliation state, ledger-impact links, instrument links, evidence posture, and report usage.
+- [x] Build Security & Instrument Explorer with instrument list, identifier map, terms/obligations, source conflicts, held positions, evidence links, valuation state, expected cash flows, and accounting classification.
+- [x] Build Report-Line Provenance Explorer with report-line inputs, approved source records, reconciliations, journal impact, evidence packets, template/package versions, approvals, delivery history, restatements, and audit events.
+- [x] Prove cross-explorer trail from Instrument to Position/Transaction to Reconciliation to Journal to Report Line to Evidence to Audit Event.
+- [x] Add browser workstation tests for the explorer flow that consumes shared DTOs without browser-local readiness rules.
+- [x] Add WPF workstation tests for the same explorer flow and verify parity with the browser read model.
+- [x] Update roadmap evidence and generated docs before moving `W5X-FREX-001` from planned to complete.
+
+## Next Feature Slice: Multi-Asset Reference-Data Workbench
+
+- [ ] Complete the still-partial multi-asset reference-data workbench inside the existing Security Master detail flow.
+- [ ] Keep the work anchored to the current Security Master detail/passport route and shared read models; do not create a new route for this slice.
+- [ ] Extend the detail flow to cover multi-asset reference-data review, provider evidence, identifier confidence, terms/obligations, projected cash-flow readiness, ledger classification, and operations handoff from the retained Security Master context.
+- [ ] Add focused endpoint, browser, and WPF proof only where the existing Security Master detail flow exposes the new workbench state.
 
 ## W5X-FINOPS-001 TODOs: Financial Operations Control Center
 

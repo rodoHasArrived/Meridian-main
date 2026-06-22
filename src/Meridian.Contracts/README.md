@@ -963,7 +963,9 @@ without enabling live external posting.
 External GL export package manifests expose the same controlled-review posture for guarded
 QBO/Xero/NetSuite artifacts: generated mapped lines, validation state, retained evidence, content
 hash, mapping/reconciliation lineage, and `ExternalPostingAllowed = false` remain visible without
-enabling live posting.
+enabling live posting. Import summaries carry a stable `ContentHash`, and reconciliation summaries
+carry the selected import hash as `ImportContentHash` so shared clients and export certification
+guards can detect provider-evidence drift beyond row totals or provider-facing reconciliation ids.
 Export packages also retain mapping profile, reconciliation, and balanced-reconciliation lineage so
 Financial Operations can revalidate the current external-GL mapping and latest reconciliation state
 before certification.
@@ -1046,7 +1048,8 @@ Reconciliation summaries carry `LedgerBookId`, and guarded export package reques
 target Meridian ledger book and use reconciliation evidence from the same book before review or
 certification can proceed. Retained export package and manifest DTOs also carry a reconciliation
 snapshot hash so certification can detect content drift in rows, totals, or evidence even when the
-provider-facing reconciliation id is unchanged.
+provider-facing reconciliation id is unchanged; the snapshot includes the retained import content
+hash so chart, journal, trial-balance, or evidence-reference changes remain part of drift review.
 Certified mapping profiles must retain mapping approval, certification, sign-off, or review evidence
 that identifies the mapping profile or provider/fund scope on the same evidence artifact, and the
 certifying upsert must carry a human-operator action origin; split support and approval links leave
