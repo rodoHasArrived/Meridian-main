@@ -458,6 +458,7 @@ public sealed record AccountingDimensionalReportingReadinessDto(
         => LedgerBookId.HasValue &&
            EvidenceReferences.Any(reference =>
                IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
+               ReferencesDimensionScope(reference) &&
                (reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
                 reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase) ||
                 reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||

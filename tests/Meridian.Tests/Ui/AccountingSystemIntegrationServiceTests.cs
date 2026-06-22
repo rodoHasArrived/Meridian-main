@@ -515,8 +515,10 @@ public sealed class AccountingSystemIntegrationServiceTests
                 DimensionalReportingEvidenceLinks: [$"evidence://ledger-book/{ledgerBookId:D}/dimensions/period-reports/trial-balance"]));
 
         partialEvidence.DimensionalReporting.Should().NotBeNull();
-        partialEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(3);
-        partialEvidence.Issues.Should().NotContain(issue => issue.Code == "dimensions.period-reports-evidence-missing");
+        partialEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(2);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.period-reports-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.reporting-dimension-scope-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
@@ -542,6 +544,39 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.CloseReporting &&
             component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/dimensions/period-reports/trial-balance") &&
             component.Issues.Any(issue => issue.Code == "close-reporting.dimension-controls-incomplete"));
+
+        var splitRolloutEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodReportDimensionQueriesCertified: true,
+                CrossPeriodReportDimensionQueriesCertified: true,
+                JournalQueryDimensionFiltersCertified: true,
+                ExternalExportDimensionMappingCertified: true,
+                LedgerLineDimensionsPersistedCertified: true,
+                TrialBalanceDimensionFiltersCertified: true,
+                ReportPackageDimensionProvenanceCertified: true,
+                DimensionalReportingEvidenceLinks:
+                [
+                    $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/dimensions/dimension-scope/canonical-production",
+                    $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full/dimension-scope/canonical-production"
+                ]));
+
+        splitRolloutEvidence.DimensionalReporting.Should().NotBeNull();
+        splitRolloutEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(10);
+        splitRolloutEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.period-reports-evidence-rollout-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        splitRolloutEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.report-package-provenance-evidence-rollout-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        splitRolloutEvidence.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
 
         var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full/dimension-scope/canonical-production";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()

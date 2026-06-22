@@ -161,7 +161,9 @@ the selected tenant, company, fund profile, and ledger book, including route/que
 `ledgerBookId=<id>` on retained certification evidence, and each certified workflow lane must have
 its lane marker on that same scoped artifact. Dimensional certification evidence must also identify
 the explicit dimension scope on the same scoped artifact before browser or WPF clients can save the
-certification.
+certification. Direct production-readiness assessments apply the same same-artifact rule for
+dimensional controls when tenant, company, fund, and ledger-book rollout scope are known, so split
+support artifacts cannot certify ledger/query/report/export dimension coverage by implication.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained

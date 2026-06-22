@@ -230,14 +230,14 @@ evidence links do not certify every workflow lane by implication.
 persistence, trial-balance dimension filters, period reports, cross-period reports, journal
 dimension filters, report-package provenance, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
-Each dimensional control requires evidence for that specific ledger/query/report/export lane,
-unless the evidence is an explicit full dimensional or production certification packet, so one
-generic ledger-book evidence link or incidental bare GUID reference cannot certify all dimensional
-reporting controls by implication. Dimensional readiness also requires the retained evidence to
-identify the explicit dimension scope with a `dimension-scope` or `ledger-dimension-set` marker,
-keeping ledger-book proof separate from proof that fund, entity, sleeve, strategy, investor,
-capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL dimensions were
-covered by the certified query/report/export path.
+Each dimensional control requires evidence for that specific ledger/query/report/export lane and a
+`dimension-scope` or `ledger-dimension-set` marker on the same ledger-book-scoped artifact, unless
+the artifact is an explicit full dimensional or production certification packet with that same
+dimension-scope proof. This keeps one generic ledger-book evidence link, incidental bare GUID
+reference, or split support artifact from certifying all dimensional reporting controls by
+implication, and keeps ledger-book proof separate from proof that fund, entity, sleeve, strategy,
+investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL
+dimensions were covered by the certified query/report/export path.
 `AccountingTenantAdministrationReadinessDto` carries tenant, company, admin-role, scoped-access,
 reporting-group, aggregate operator-surface, browser accounting admin-studio, WPF accounting
 admin-studio, chart administration, rule-test and promotion, close setup, provider/external-GL

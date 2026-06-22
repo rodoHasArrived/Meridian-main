@@ -163,14 +163,26 @@ public sealed class StrategyRunLedgerViewModelTests
                     ["Department"] = "InvestmentOps",
                     ["Class"] = "PrivateCredit"
                 },
+                OrganizationId: "org-ops",
                 PortfolioId: "portfolio-credit",
-                AccountId: "acct-receivable"));
+                BookId: "book-gaap",
+                AccountId: "acct-receivable",
+                CustomerId: "customer-investor-services",
+                VendorId: "vendor-custodian",
+                ProjectId: "project-close"));
 
         var inspector = StrategyRunLedgerViewModel.BuildTrialBalanceInspector(line);
 
         inspector.Facts.Should().Contain(f => f.Label == "Fund" && f.Value == "fund-alpha");
         inspector.Facts.Should().Contain(f => f.Label == "Entity" && f.Value == "entity-master");
         inspector.Facts.Should().Contain(f => f.Label == "Cost center" && f.Value == "cost-center-ops");
+        inspector.Facts.Should().Contain(f => f.Label == "Organization" && f.Value == "org-ops");
+        inspector.Facts.Should().Contain(f => f.Label == "Portfolio" && f.Value == "portfolio-credit");
+        inspector.Facts.Should().Contain(f => f.Label == "Book" && f.Value == "book-gaap");
+        inspector.Facts.Should().Contain(f => f.Label == "Account scope" && f.Value == "acct-receivable");
+        inspector.Facts.Should().Contain(f => f.Label == "Customer" && f.Value == "customer-investor-services");
+        inspector.Facts.Should().Contain(f => f.Label == "Vendor" && f.Value == "vendor-custodian");
+        inspector.Facts.Should().Contain(f => f.Label == "Project" && f.Value == "project-close");
         inspector.Facts.Should().Contain(f =>
             f.Label == "External GL" &&
             f.Value.Contains("Class: PrivateCredit", StringComparison.Ordinal) &&
@@ -178,6 +190,7 @@ public sealed class StrategyRunLedgerViewModelTests
         inspector.Facts.Should().Contain(f =>
             f.Label == "Scope" &&
             f.Value.Contains("fund-alpha", StringComparison.Ordinal) &&
+            f.Value.Contains("org-ops", StringComparison.Ordinal) &&
             f.Value.Contains("acct-receivable", StringComparison.Ordinal));
         inspector.Facts.Single(f => f.Label == "Scope").Value.Should().NotContain("Legacy account scope");
     }
@@ -202,6 +215,10 @@ public sealed class StrategyRunLedgerViewModelTests
         viewModel.Should().Contain("public WorkstationTableModel<LedgerJournalLine> JournalTable");
         viewModel.Should().Contain("public InspectorPanelModel SelectedTrialBalanceInspector");
         viewModel.Should().Contain("new(\"Fund\", \"Dimensions.FundId\"");
+        viewModel.Should().Contain("new(\"Organization\", \"Dimensions.OrganizationId\"");
+        viewModel.Should().Contain("new(\"Customer\", \"Dimensions.CustomerId\"");
+        viewModel.Should().Contain("new(\"Vendor\", \"Dimensions.VendorId\"");
+        viewModel.Should().Contain("new(\"Project\", \"Dimensions.ProjectId\"");
         viewModel.Should().Contain("BuildExternalGlDimensionText");
     }
 }

@@ -785,6 +785,23 @@ public sealed class AccountingProductionReadinessService
                 "Attach retained evidence naming the selected ledger book and period report, trial-balance, financial-statement, NAV, or investor-package dimension checks.",
                 readiness.EvidenceReferences));
         }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "period-report",
+                     "period-reports",
+                     "trial-balance",
+                     "financial-statement",
+                     "nav",
+                     "investor-package"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.period-reports-evidence-rollout-scope-mismatch",
+                "Period report dimension certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain period report, trial-balance, financial-statement, NAV, or investor-package dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.CrossPeriodReportDimensionQueriesCertified)
         {
@@ -803,6 +820,20 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Cross-period report dimension certification lacks retained cross-period evidence for the selected ledger book.",
                 "Attach retained evidence naming the selected ledger book and cross-period, comparative, or roll-forward report dimension checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "cross-period",
+                     "comparative",
+                     "roll-forward"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.cross-period-reports-evidence-rollout-scope-mismatch",
+                "Cross-period report dimension certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain cross-period, comparative, or roll-forward report dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
                 readiness.EvidenceReferences));
         }
 
@@ -825,6 +856,21 @@ public sealed class AccountingProductionReadinessService
                 "Attach retained evidence naming the selected ledger book and journal query, journal filter, or ledger journal dimension checks.",
                 readiness.EvidenceReferences));
         }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "journal-query",
+                     "journal-filter",
+                     "journal-dimension",
+                     "ledger-journal"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.journal-query-filters-evidence-rollout-scope-mismatch",
+                "Journal query dimension certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain journal query, journal filter, or ledger journal dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.ExternalExportDimensionMappingCertified)
         {
@@ -843,6 +889,21 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "External export dimension mapping certification lacks retained export-mapping evidence for the selected ledger book.",
                 "Attach retained evidence naming the selected ledger book and external export, external-GL mapping, or GL export dimension checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "external-export",
+                     "export-dimension",
+                     "external-gl-mapping",
+                     "gl-export"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.external-export-mapping-evidence-rollout-scope-mismatch",
+                "External export dimension mapping certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain external export, external-GL mapping, or GL export dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
                 readiness.EvidenceReferences));
         }
 
@@ -865,6 +926,21 @@ public sealed class AccountingProductionReadinessService
                 "Attach retained evidence naming the selected ledger book and ledger-line, line-dimension, posted-ledger-line, or journal-line-dimension checks.",
                 readiness.EvidenceReferences));
         }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "ledger-line",
+                     "line-dimension",
+                     "posted-ledger-line",
+                     "journal-line-dimension"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.ledger-line-persistence-evidence-rollout-scope-mismatch",
+                "Ledger-line dimension persistence certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain ledger-line, line-dimension, posted-ledger-line, or journal-line-dimension evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.TrialBalanceDimensionFiltersCertified)
         {
@@ -885,6 +961,20 @@ public sealed class AccountingProductionReadinessService
                 "Attach retained evidence naming the selected ledger book and trial-balance-filter, trial-balance-dimension, or ledger-report-filter checks.",
                 readiness.EvidenceReferences));
         }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "trial-balance-filter",
+                     "trial-balance-dimension",
+                     "ledger-report-filter"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.trial-balance-filters-evidence-rollout-scope-mismatch",
+                "Trial-balance dimension filter certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain trial-balance-filter, trial-balance-dimension, or ledger-report-filter evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
+                readiness.EvidenceReferences));
+        }
 
         if (!readiness.ReportPackageDimensionProvenanceCertified)
         {
@@ -903,6 +993,21 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Report-package dimensional provenance certification lacks retained report-package evidence for the selected ledger book.",
                 "Attach retained evidence naming the selected ledger book and report-package-provenance, report-line-provenance, package-dimension, or NAV-package checks.",
+                readiness.EvidenceReferences));
+        }
+        else if (!HasRolloutScopedDimensionEvidence(
+                     readiness,
+                     request,
+                     fundProfileId,
+                     "report-package-provenance",
+                     "report-line-provenance",
+                     "package-dimension",
+                     "nav-package"))
+        {
+            issues.Add(DimensionEvidenceRolloutScopeIssue(
+                "dimensions.report-package-provenance-evidence-rollout-scope-mismatch",
+                "Report-package dimensional provenance certification evidence does not identify the selected tenant, company, fund, ledger book, and dimension scope on the same artifact.",
+                "Retain report-package-provenance, report-line-provenance, package-dimension, or NAV-package evidence on one artifact that names the authenticated tenant, company, fund profile, selected ledgerBookId, and dimension scope.",
                 readiness.EvidenceReferences));
         }
 
@@ -2569,13 +2674,65 @@ public sealed class AccountingProductionReadinessService
             return false;
         }
 
-        return evidenceReferences.Any(reference =>
-            !string.IsNullOrWhiteSpace(reference) &&
-            reference.Contains(request.TenantId, StringComparison.OrdinalIgnoreCase) &&
-            reference.Contains(request.CompanyId, StringComparison.OrdinalIgnoreCase) &&
-            reference.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) &&
-            ReferencesLedgerBookEvidence(reference, ledgerBookId.Value));
+        return evidenceReferences.Any(reference => IsRolloutScopedEvidenceReference(reference, request, fundProfileId, ledgerBookId.Value));
     }
+
+    private static bool HasRolloutScopedDimensionEvidence(
+        AccountingDimensionalReportingReadinessDto readiness,
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        params string[] aliases)
+    {
+        if (!HasRolloutScope(request, fundProfileId) ||
+            readiness.LedgerBookId is not Guid ledgerBookId)
+        {
+            return true;
+        }
+
+        if (!HasRolloutScopedEvidence(readiness.EvidenceReferences, request, fundProfileId, ledgerBookId))
+        {
+            return true;
+        }
+
+        return readiness.EvidenceReferences.Any(reference =>
+            IsRolloutScopedEvidenceReference(reference, request, fundProfileId, ledgerBookId) &&
+            ReferencesDimensionScopeEvidence(reference) &&
+            (reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
+             reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase) ||
+             reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
+             aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+    }
+
+    private static bool IsRolloutScopedEvidenceReference(
+        string? reference,
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        Guid ledgerBookId)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           reference.Contains(request.TenantId!, StringComparison.OrdinalIgnoreCase) &&
+           reference.Contains(request.CompanyId!, StringComparison.OrdinalIgnoreCase) &&
+           reference.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+           ReferencesLedgerBookEvidence(reference, ledgerBookId);
+
+    private static bool ReferencesDimensionScopeEvidence(string? reference)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           (reference.Contains("dimension-scope:", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("dimension-scope/", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("ledger-dimension-set:", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("ledger-dimension-set/", StringComparison.OrdinalIgnoreCase));
+
+    private static AccountingProductionReadinessIssueDto DimensionEvidenceRolloutScopeIssue(
+        string code,
+        string message,
+        string suggestedAction,
+        IReadOnlyList<string> evidenceReferences)
+        => Issue(
+            code,
+            AccountingProductionReadinessAreaDto.DimensionalAccounting,
+            AccountingConfigurationValidationSeverityDto.Critical,
+            message,
+            suggestedAction,
+            evidenceReferences);
 
     private static bool HasLedgerBookScopedTenantAdministrationEvidence(
         AccountingProductionReadinessRequestDto request,
