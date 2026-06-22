@@ -65,6 +65,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         {
             throw new ArgumentException("Generated accounting posting candidates require a source economic event id.", nameof(request));
         }
+        EnsureApprovalEvidenceScope(request, ledgerBookId, sourceEventId);
 
         var ledgerBook = await journalStore.GetLedgerBookAsync(ledgerBookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Ledger book '{ledgerBookId:D}' was not found.");
@@ -185,6 +186,32 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
         throw new LedgerValidationException(
             $"Accounting period '{period.Label}' has unsupported status '{period.Status}'.");
+    }
+
+    private static void EnsureApprovalEvidenceScope(
+        PostPostingRuleJournalCandidateRequestDto request,
+        Guid ledgerBookId,
+        Guid sourceEventId)
+    {
+        var tenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Candidate.TenantId);
+        var companyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Candidate.CompanyId);
+        var fundProfileId = RequireText(request.Candidate.FundProfileId, nameof(request.Candidate.FundProfileId));
+
+        if (request.EvidenceLinks.Any(link =>
+                ReferencesApproval(link) &&
+                ReferencesText(link, fundProfileId) &&
+                ReferencesLedgerBook(link, ledgerBookId) &&
+                ReferencesGuid(link, "source-event", sourceEventId) &&
+                (tenantId is null || ReferencesText(link, tenantId)) &&
+                (companyId is null || ReferencesText(link, companyId))))
+        {
+            return;
+        }
+
+        var tenantScope = tenantId is null ? string.Empty : $", tenant '{tenantId}'";
+        var companyScope = companyId is null ? string.Empty : $", company '{companyId}'";
+        throw new InvalidOperationException(
+            $"Generated accounting posting candidate approval evidence must name approval intent, fund '{fundProfileId}'{tenantScope}{companyScope}, ledger book '{ledgerBookId:D}', and source event '{sourceEventId:D}' on the same retained artifact.");
     }
 
     private static void EnsureWriteLedgerBookScope(
@@ -326,4 +353,39 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static bool ReferencesApproval(string? reference)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           (reference.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("approved", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("review", StringComparison.OrdinalIgnoreCase));
+
+    private static bool ReferencesText(string? reference, string value)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           !string.IsNullOrWhiteSpace(value) &&
+           reference.Contains(value.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool ReferencesLedgerBook(string? reference, Guid ledgerBookId)
+        => ReferencesGuid(reference, "ledger-book", ledgerBookId) ||
+           ReferencesGuid(reference, "book", ledgerBookId) ||
+           ReferencesGuid(reference, "ledgerBookId", ledgerBookId);
+
+    private static bool ReferencesGuid(string? reference, string label, Guid value)
+    {
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return false;
+        }
+
+        var dashed = value.ToString("D");
+        var compact = value.ToString("N");
+        return reference.Contains($"{label}:{dashed}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"{label}/{dashed}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"{label}={dashed}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"{label}:{compact}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"{label}/{compact}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"{label}={compact}", StringComparison.OrdinalIgnoreCase);
+    }
 }

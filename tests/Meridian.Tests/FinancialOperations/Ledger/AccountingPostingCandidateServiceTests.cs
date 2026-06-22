@@ -446,7 +446,7 @@ public sealed class AccountingPostingCandidateServiceTests
             "reviewer@meridian.local",
             "approval-generated-interest-202605",
             "Reviewed retained custodian source event.",
-            EvidenceLinks: ["approval://workpaper/generated-interest-202605"]));
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
 
         result.WasReplay.Should().BeFalse();
         result.Candidate.PostingCommand.Should().NotBeNull();
@@ -511,7 +511,7 @@ public sealed class AccountingPostingCandidateServiceTests
                 "gaap-accrual-v1"),
             "reviewer@meridian.local",
             "approval-gaap-interest-202605",
-            EvidenceLinks: ["approval://workpaper/gaap-interest-202605"]));
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", gaapLedgerBookId, sourceEventId)]));
         var cash = await service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
             BuildCandidateRequest(
                 cashLedgerBookId,
@@ -521,7 +521,7 @@ public sealed class AccountingPostingCandidateServiceTests
                 "cash-accrual-v1"),
             "reviewer@meridian.local",
             "approval-cash-interest-202605",
-            EvidenceLinks: ["approval://workpaper/cash-interest-202605"]));
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", cashLedgerBookId, sourceEventId)]));
 
         gaap.PostedJournal.SourceEventId.Should().Be(sourceEventId);
         cash.PostedJournal.SourceEventId.Should().Be(sourceEventId);
@@ -554,7 +554,7 @@ public sealed class AccountingPostingCandidateServiceTests
                 "gaap-accrual-v1"),
             "reviewer@meridian.local",
             "approval-generated-interest-202605",
-            EvidenceLinks: ["approval://workpaper/generated-interest-202605"]);
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]);
 
         var first = await service.PostCandidateAsync(request);
         var second = await service.PostCandidateAsync(request);
@@ -589,7 +589,8 @@ public sealed class AccountingPostingCandidateServiceTests
         var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
             request,
             "reviewer@meridian.local",
-            "approval-generated-interest-202605"));
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*aggregate id must equal the target ledger book id*");
@@ -621,7 +622,8 @@ public sealed class AccountingPostingCandidateServiceTests
         var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
             request,
             "reviewer@meridian.local",
-            "approval-generated-interest-202605"));
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
 
         await act.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*journal metadata ledger book*does not match approved ledger book*");
@@ -653,7 +655,8 @@ public sealed class AccountingPostingCandidateServiceTests
         var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
             request,
             "reviewer@meridian.local",
-            "approval-generated-interest-202605"));
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
 
         await act.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*dimension book*does not match approved ledger book*");
@@ -681,10 +684,71 @@ public sealed class AccountingPostingCandidateServiceTests
                 "gaap-accrual-v1"),
             "reviewer@meridian.local",
             "approval-generated-interest-202605",
-            EvidenceLinks: ["approval://workpaper/generated-interest-202605"]));
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
 
         await act.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*hard-closed; no postings are permitted*");
+        store.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostCandidateAsync_GenericApprovalEvidenceBlocksAppend()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                ledgerBookId,
+                periodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1"),
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: ["approval://workpaper/generated-interest-202605"]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*approval evidence must name approval intent, fund 'fund-alpha'*ledger book*source event*same retained artifact*");
+        store.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostCandidateAsync_TenantScopedCandidateRequiresTenantCompanyApprovalEvidence()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+        var tenantScopedCandidate = BuildCandidateRequest(
+            ledgerBookId,
+            periodId,
+            sourceEventId,
+            AccountingBasisKindDto.Gaap,
+            "gaap-accrual-v1") with
+            {
+                TenantId = "tenant-alpha",
+                CompanyId = "company-alpha"
+            };
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            tenantScopedCandidate,
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*tenant 'tenant-alpha', company 'company-alpha'*same retained artifact*");
         store.Appended.Should().BeEmpty();
     }
 
@@ -939,6 +1003,18 @@ public sealed class AccountingPostingCandidateServiceTests
                 PaymentIntentId: $"payment:fund-alpha:interest-accrual:{sourceEventId:N}",
                 SettlementReference: $"settlement:fund-alpha:interest-accrual:{sourceEventId:N}"),
             EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]);
+
+    private static string ApprovalEvidence(
+        string fundProfileId,
+        Guid ledgerBookId,
+        Guid sourceEventId,
+        string? tenantId = null,
+        string? companyId = null)
+    {
+        var tenantSegment = string.IsNullOrWhiteSpace(tenantId) ? string.Empty : $"/tenant/{tenantId.Trim()}";
+        var companySegment = string.IsNullOrWhiteSpace(companyId) ? string.Empty : $"/company/{companyId.Trim()}";
+        return $"approval://workpaper/{fundProfileId}{tenantSegment}{companySegment}/ledger-book:{ledgerBookId:D}/source-event:{sourceEventId:D}/reviewed";
+    }
 
     private static LedgerBookRecord BuildLedgerBook(Guid ledgerBookId, AccountingBasisKindDto accountingBasis)
         => new(

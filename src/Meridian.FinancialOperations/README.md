@@ -356,6 +356,10 @@ event)` return the existing journal, while the same economic event may still pro
 cash, tax, statutory, or primary postings because each basis uses its own ledger-book aggregate.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
+The retained approval evidence for generated candidate append must name approval intent, fund,
+ledger book, and source event on the same artifact, plus tenant and company when the request is
+enterprise-scoped, so generic workpaper links cannot approve a different book or company by
+association.
 Production certification profiles also fail closed before persistence when a retained profile marks
 posting rules, journal lifecycle, close/reporting, external GL, reconciliation, direct lending,
 strategy ledger reads, or dimensional reporting controls as certified without evidence that names
