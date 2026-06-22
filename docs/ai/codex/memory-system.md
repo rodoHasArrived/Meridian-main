@@ -46,8 +46,7 @@ The memory system must not:
 
 | Tier | Scope | Lifetime | Default Loading | Write Rule |
 | --- | --- | --- | --- | --- |
-| `ephemeral` | Current reasoning turn only | Minutes | Active context only | Never written under `.codex/memory/`. |
-| `session` | Current Codex session | Until session end, compaction, or promotion | Loaded only by the current session or explicit session ID | May store temporary observations, inspected files, assumptions, and validation notes. |
+| `session` | Current Codex session | Until session end, compaction, or promotion | Loaded only by explicit task/session routing; never as durable guidance | May store temporary observations, inspected files, assumptions, and validation notes, but broad selectors must stay empty until promoted. |
 | `branch` | Current Git branch | Until branch merges, is abandoned, or review expires | Loaded only when branch scope matches | Must include branch invalidation triggers. |
 | `task` | Named work item, issue, plan, or prompt family | Until task closes or review expires | Loaded only when task descriptor matches | Must stay narrower than repo memory. |
 | `repo` | Meridian repository | Durable, reviewed periodically | Loaded by task, skill, path, intent, branch, or tag | Requires current source references and stable repository relevance. |
@@ -55,9 +54,10 @@ The memory system must not:
 | `user` | Explicit operator profile outside repo | Durable outside repo | Disabled | Not read or written by repo-local tooling without explicit future opt-in. |
 | `global` | Cross-user or organization baseline outside repo | Durable outside repo | Disabled | Not read or written by repo-local tooling without explicit future opt-in. |
 
-The active repo-local tiers are `session`, `branch`, `task`, `repo`, and `archive`. `user` and
-`global` are schema-known so validators can reject accidental writes unless a later explicit opt-in
-design enables them.
+Every indexed memory entry must belong to exactly one supported persistence tier. The active
+repo-local tiers are `session`, `branch`, `task`, `repo`, and `archive`. `user` and `global` are
+schema-known but disabled; validators must fail any `user` or `global` entry unless a later explicit
+opt-in design enables those tiers.
 
 ## Storage Layout
 
@@ -99,6 +99,8 @@ Storage rules:
 - Use `repo/` only for stable, sourced facts. Put uncertain or temporary findings in `sessions/`,
   `tasks/`, or `branches/`.
 - Use `archive/` for retired entries that should remain auditable but should not guide active work.
+Indexed files must live in the folder that matches their tier: `repo/`, `tasks/`, `branches/`,
+`sessions/`, or `archive/`.
 
 ## Index Schema
 
@@ -118,6 +120,24 @@ Each `entries` item in `.codex/memory/index.yml` must contain:
 | `source_refs` | string array | Yes | Repo files or other explicit evidence supporting the memory. Repo-tier entries require existing repo paths. |
 | `review_after` | ISO date | Yes | Date after which the memory must be reviewed before being trusted as current guidance. |
 | `invalidates_when` | string array | Yes | Conditions that make the memory unsafe until reviewed. |
+
+Tier-specific validation rules:
+
+- `repo` entries must include at least one stable, existing repo-local `source_refs` path. External
+  URLs or fragment notes can supplement evidence, but they cannot be the only support for durable
+  repo guidance.
+- `task` entries must be bound to a task descriptor by `scope: task:<id>` or by
+  `load_when.task.ids`. Task memory must stay narrower than repo memory.
+- `branch` entries must include branch invalidation rules, such as merge, abandonment, deletion,
+  review expiry, or branch-scope change.
+- `session` entries must not be indexed as durable guidance unless they are promoted. Validators
+  allow only explicit task/session binding and require invalidation on session end, compaction, or
+  promotion; broad skill, path, intent, branch, tag, work-mode, task-intent, or task-path selectors
+  fail validation.
+- `archive` entries must not load as active guidance. Their `load_when` selectors must remain empty
+  so archived entries are retained only for auditability.
+- `user` and `global` entries fail validation. They remain disabled until a future explicit opt-in
+  design defines storage, consent, privacy, and loading behavior.
 
 `load_when.task` is required on every indexed entry and supports:
 
@@ -281,6 +301,8 @@ By intent:
   `ai-guidance`, or `ai-tooling`.
 - Load entries whose `load_when.intents` match the detected intent.
 - Load stale entries only as warnings or verification prompts, not as current instructions.
+- Do not load `archive` entries as active instructions; keep them dereferenced unless a human is
+  auditing historical memory.
 
 By skill:
 
@@ -338,7 +360,9 @@ Memory receipt:
 Promotion is a review step, not an automatic dump.
 
 During work, Codex may keep temporary session notes. At task end, reusable observations should be
-classified as `discard`, `session only`, `branch`, `task`, or `repo`.
+classified as `discard`, `session only`, `branch`, `task`, or `repo`. Session notes are not durable
+guidance: keep broad routing selectors empty until a reviewed promotion moves the observation to
+`task`, `branch`, or `repo`.
 
 Promote session memory to task memory when:
 
@@ -373,8 +397,9 @@ Promotion hygiene:
   tier, source evidence, and reason; keep promotion explicit through `--promote-session`.
 - In a goal inventory, use `promotion_candidates` only as a queue of candidate observations to
   review later; do not treat it as a write instruction.
-- Repo-level promotion requires source references. User/global promotion requires explicit user
-  approval and a future opt-in mechanism.
+- Repo-level promotion requires stable repo-local source references. User/global promotion is
+  disabled and must fail validation until explicit user approval and a future opt-in mechanism are
+  designed and implemented.
 
 ## Staleness, Invalidation, And Conflict Rules
 
@@ -444,7 +469,13 @@ The checker validates that:
 - `source_refs` for repo-local source paths exist.
 - `review_after` values are valid ISO dates.
 - Expired entries are visible as stale warnings.
-- Unknown active tiers, disabled tiers, and invalid scopes are rejected.
+- Unknown tiers, disabled `user`/`global` tiers, invalid scopes, and tier/file folder mismatches are
+  rejected.
+- `repo` entries have stable existing repo-local source references.
+- `task` entries have task descriptor or task-scope binding.
+- `branch` entries have branch invalidation rules.
+- `session` entries do not carry durable broad routing selectors unless promoted.
+- `archive` entries have no active `load_when` selectors and are dereferenced for active guidance.
 - Non-README memory files are indexed.
 - Task descriptor YAML files under `.codex/memory/tasks/` are exempt from entry indexing.
 - Goal inventory YAML files under `.codex/memory/goals/` are exempt from entry indexing.
