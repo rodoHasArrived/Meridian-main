@@ -25,7 +25,7 @@ CANONICAL = {
     "evidence_posture": {"none", "draft", "partial", "verified", "audited"},
     "completion_term": {"done", "complete", "completed", "closed", "shipped"},
 }
-REQUIRED_FIELDS = {"id", "status", "health", "priority", "evidence_posture", "completion_term", "owner", "last_updated"}
+REQUIRED_FIELDS = {"id", "title", "owner", "status", "health", "priority", "evidence_posture", "completion_term", "exit_criteria", "links", "created_at", "last_updated"}
 ALLOWED_FIELDS = REQUIRED_FIELDS | {"title", "summary", "exit_criteria", "links", "evidence", "created_at", "target_date", "notes", "extensions"}
 
 
