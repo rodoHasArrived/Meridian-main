@@ -534,6 +534,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                     InstrumentId: Guid.Parse("0f92e649-013f-4e7f-99bf-2b14396701e8"),
                     TaxLotId: "tax-lot-alpha",
                     BookId: "7e0be005-49e1-46eb-9d4f-89d75e2328bd",
+                    AccountId: "account-cash",
+                    OrganizationId: "organization-alpha",
+                    PortfolioId: "portfolio-credit",
+                    CustomerId: "customer-alpha",
+                    VendorId: "vendor-admin",
+                    ProjectId: "project-ledger-hardening",
                     CostCenterId: "fund-accounting",
                     CounterpartyId: "administrator",
                     ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -558,7 +564,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.AccountingAdminSurfaceConfigured = true;
         harness.ViewModel.LedgerBookAdministrationStudioConfigured = true;
         harness.ViewModel.TenantAdministrationEvidenceText =
-            "evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup\nEVIDENCE://tenant-admin/alpha-fund/Alpha Fund LP/setup\nevidence://tenant-admin/alpha-fund/Alpha Fund LP/operator-surface";
+            "evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup\nEVIDENCE://tenant-admin/alpha-fund/Alpha Fund LP/setup\nevidence://tenant-admin/full/alpha-fund/Alpha Fund LP/control-set\nevidence://tenant-admin/alpha-fund/Alpha Fund LP/operator-surface";
 
         await harness.ViewModel.SaveTenantAdministrationProfileAsync();
 
@@ -587,9 +593,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.TenantAdministrationProfileStatusText.Should()
             .Contain("Tenant administration setup profile saved");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
-            .Contain("4/23 tenant admin control");
+            .Contain("14/23 tenant admin control");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
-            .Contain("4 retained evidence link");
+            .Contain("5 retained evidence link");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
             row.Name == "Tenant config" && row.Status == "Configured");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
