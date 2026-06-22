@@ -34,6 +34,62 @@ public sealed class FinancialRecordExplorerViewModelTests
     }
 
     [Fact]
+    public void BuildExplorerRoute_WithSavedView_ShouldPreserveSharedEndpointAndEncodeViewId()
+    {
+        var route = FinancialRecordExplorerViewModel.BuildExplorerRoute("ledger", "operator cash/GAAP view");
+
+        route.Should().Be("/api/workstation/financial-record-explorers/ledger?viewId=operator%20cash%2FGAAP%20view");
+    }
+
+    [Fact]
+    public void BuildPresentation_ShouldCarrySavedViewActiveStateForServerScopedProjection()
+    {
+        var dto = CreateExplorerDto(
+            rows:
+            [
+                CreateRow(
+                    recordId: "ledger:test:cash",
+                    label: "Cash",
+                    cells:
+                    [
+                        new("accountName", "Cash"),
+                        new("balance", "$1,000.00", "1000", FinancialRecordExplorerTone.Success)
+                    ])
+            ]) with
+        {
+            SavedViews =
+            [
+                new("system-ledger", "Default", "Default view.", IsSystem: true, IsActive: false, Filters: []),
+                new("operator-cash", "Cash scoped", "Server-side cash filter.", IsSystem: false, IsActive: true, Filters: [new("accountName", "Account", "Cash")])
+            ],
+            SummaryItems =
+            [
+                new("Visible records", "1", "Showing 1 of 2 records after view operator-cash.", FinancialRecordExplorerTone.Info)
+            ]
+        };
+
+        var presentation = FinancialRecordExplorerViewModel.BuildPresentation(dto);
+
+        presentation.SavedViews.Should().ContainSingle(view => view.ViewId == "operator-cash" && view.IsActive);
+        presentation.SummaryItems.Should().ContainSingle(item => item.Label == "Visible records" && item.Value == "1");
+    }
+
+    [Fact]
+    public void FinancialRecordExplorerPage_ShouldExposeSavedViewApplyCommand()
+    {
+        var xaml = File.ReadAllText(Path.Combine(
+            FindRepoRoot(),
+            "src",
+            "Meridian.Wpf",
+            "Views",
+            "FinancialRecordExplorerPage.xaml"));
+
+        xaml.Should().Contain("FinancialRecordExplorerActiveSavedViewText");
+        xaml.Should().Contain("ApplySavedViewCommand");
+        xaml.Should().Contain("CommandParameter=\"{Binding ViewId}\"");
+    }
+
+    [Fact]
     public void BuildPresentation_BlockedExplorer_ShouldShowBlockedEmptyStateAndDisabledActions()
     {
         var dto = CreateExplorerDto(
@@ -261,5 +317,21 @@ public sealed class FinancialRecordExplorerViewModelTests
             FinancialRecordExplorerTone.Success,
             cells,
             detail);
+    }
+
+    private static string FindRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Meridian.sln")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new InvalidOperationException("Could not locate Meridian repository root.");
     }
 }

@@ -55,6 +55,12 @@
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                            AutomationProperties.AutomationId="FinancialRecordExplorerRouteScope" />
                             </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding ActiveSavedViewText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="FinancialRecordExplorerActiveSavedViewText" />
+                            </Border>
                         </WrapPanel>
                     </StackPanel>
 
@@ -323,6 +329,11 @@
                                 AutomationProperties.AutomationId="FinancialRecordExplorerSavedViews">
                             <StackPanel>
                                 <TextBlock Text="Saved Views" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding ActiveSavedViewText}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,6,0,0"
+                                           AutomationProperties.AutomationId="FinancialRecordExplorerSavedViewsActiveText" />
                                 <ItemsControl ItemsSource="{Binding SavedViews}" Margin="0,10,0,0">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -333,6 +344,16 @@
                                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                                TextWrapping="Wrap"
                                                                Margin="0,4,0,0" />
+                                                    <Button Content="Apply view"
+                                                            Command="{Binding DataContext.ApplySavedViewCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                            CommandParameter="{Binding ViewId}"
+                                                            ToolTip="Reload this explorer through the shared server-side saved-view query."
+                                                            ToolTipService.ShowOnDisabled="True"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            HorizontalAlignment="Left"
+                                                            MinWidth="104"
+                                                            Margin="0,8,0,0"
+                                                            AutomationProperties.AutomationId="{Binding ViewId}" />
                                                 </StackPanel>
                                             </Border>
                                         </DataTemplate>

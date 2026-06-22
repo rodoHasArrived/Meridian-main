@@ -28,17 +28,22 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
     private FinancialRecordExplorerRowModel? _selectedRecord;
     private InspectorPanelModel _selectedRecordInspector = BuildEmptyInspector("No financial record selected", "Select a source-backed row to inspect fields, proof actions, and relationships.");
     private WorkstationTableModel<FinancialRecordExplorerRowModel> _recordsTable = BuildEmptyTable();
+    private string _activeSavedViewId = string.Empty;
+    private string _activeSavedViewText = "System default view";
 
     public FinancialRecordExplorerViewModel(ApiClientService apiClient)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsRefreshing);
+        ApplySavedViewCommand = new AsyncRelayCommand<string>(ApplySavedViewAsync, CanApplySavedView);
         OpenProofActionCommand = new RelayCommand<FinancialRecordExplorerActionModel>(
             OpenProofAction,
             static action => action?.IsEnabled == true);
     }
 
     public IAsyncRelayCommand RefreshCommand { get; }
+
+    public IAsyncRelayCommand<string> ApplySavedViewCommand { get; }
 
     public IRelayCommand<FinancialRecordExplorerActionModel> OpenProofActionCommand { get; }
 
@@ -111,6 +116,7 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
             {
                 OnPropertyChanged(nameof(RefreshTooltip));
                 RefreshCommand.NotifyCanExecuteChanged();
+                ApplySavedViewCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -161,6 +167,18 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         ? "Financial record explorer refresh is already running."
         : $"Refresh the source-backed {Title}.";
 
+    public string ActiveSavedViewId
+    {
+        get => _activeSavedViewId;
+        private set => SetProperty(ref _activeSavedViewId, value);
+    }
+
+    public string ActiveSavedViewText
+    {
+        get => _activeSavedViewText;
+        private set => SetProperty(ref _activeSavedViewText, value);
+    }
+
     public void ApplyPageTag(string pageTag)
     {
         var canonicalPageTag = string.IsNullOrWhiteSpace(pageTag)
@@ -176,6 +194,8 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
 
         PageTag = canonicalPageTag;
         ExplorerId = explorerId;
+        ActiveSavedViewId = string.Empty;
+        ActiveSavedViewText = "System default view";
         _hasLoaded = false;
 
         if (!_isDisposed)
@@ -221,7 +241,7 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         IsRefreshing = true;
         try
         {
-            var route = UiApiRoutes.WithParam(UiApiRoutes.WorkstationFinancialRecordExplorer, "explorerId", ExplorerId);
+            var route = BuildExplorerRoute(ExplorerId, ActiveSavedViewId);
             var dto = await _apiClient.GetAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true);
             ApplyExplorer(dto ?? CreateUnavailableExplorer(ExplorerId, Title));
             _hasLoaded = true;
@@ -230,6 +250,14 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         {
             IsRefreshing = false;
         }
+    }
+
+    internal static string BuildExplorerRoute(string explorerId, string? viewId = null)
+    {
+        var route = UiApiRoutes.WithParam(UiApiRoutes.WorkstationFinancialRecordExplorer, "explorerId", explorerId);
+        return string.IsNullOrWhiteSpace(viewId)
+            ? route
+            : $"{route}?viewId={Uri.EscapeDataString(viewId.Trim())}";
     }
 
     internal void ApplyExplorer(FinancialRecordExplorerDto explorer)
@@ -253,11 +281,46 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         Replace(FilterItems, presentation.FilterItems);
         Replace(SavedViews, presentation.SavedViews);
         Replace(ExplorerActions, presentation.ExplorerActions);
+        ApplyActiveSavedView(presentation.SavedViews);
 
         SelectedRecord = presentation.SelectedRecord
             ?? Records.FirstOrDefault();
 
         RaiseRecordStateChanged();
+    }
+
+    private async Task ApplySavedViewAsync(string? viewId, CancellationToken ct = default)
+    {
+        if (!CanApplySavedView(viewId))
+        {
+            return;
+        }
+
+        IsRefreshing = true;
+        try
+        {
+            var route = BuildExplorerRoute(ExplorerId, viewId);
+            var dto = await _apiClient.GetAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true);
+            ApplyExplorer(dto ?? CreateUnavailableExplorer(ExplorerId, Title));
+            _hasLoaded = true;
+        }
+        finally
+        {
+            IsRefreshing = false;
+        }
+    }
+
+    private bool CanApplySavedView(string? viewId)
+        => !IsRefreshing && !string.IsNullOrWhiteSpace(viewId);
+
+    private void ApplyActiveSavedView(IReadOnlyList<FinancialRecordExplorerSavedViewModel> savedViews)
+    {
+        var active = savedViews.FirstOrDefault(static view => view.IsActive)
+                     ?? savedViews.FirstOrDefault();
+        ActiveSavedViewId = active?.ViewId ?? string.Empty;
+        ActiveSavedViewText = active is null
+            ? "No saved view is active."
+            : $"{active.Label}{(active.IsSystem ? " (system)" : " (operator)")}";
     }
 
     internal static string ResolveExplorerId(string? pageTag)

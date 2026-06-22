@@ -110,6 +110,9 @@ workspaces; the page maps shared columns and rows into `WorkstationTableInspecto
 projects selected-record proof actions, `Used In`, and `Impacts` relationships into the inspector.
 Empty or blocked source DTOs remain visible as disabled action states with server-provided reasons
 rather than desktop-local placeholder balances.
+Saved-view cards on the WPF explorer apply the shared Financial Record Explorer `viewId` query and
+reload the source DTO from the workstation endpoint, so desktop ledger/report-line review uses the
+same server-scoped rows, selected record, summary counts, and proof graph as the browser workstation.
 Proof actions that carry shared Financial Record Explorer API hrefs map back to `LedgerExplorer`,
 `PortfolioExplorer`, `SecurityInstrumentExplorer`, or `ReportLineProvenanceExplorer` page tags so
 report-line drill-throughs stay route-compatible with the browser workstation. Report-line
