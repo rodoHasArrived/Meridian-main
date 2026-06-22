@@ -22,21 +22,27 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         var uri = ParseUri(source.Location);
         using var client = CreateClient(source, uri);
         client.Connect();
-        var pattern = string.IsNullOrWhiteSpace(source.FilePattern) ? ".csv" : source.FilePattern!;
-        var files = client.ListDirectory(uri.AbsolutePath)
-            .Where(f => !f.IsDirectory && !f.IsSymbolicLink)
-            .Where(f => Matches(f.Name, pattern))
-            .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
-            .Select(f => new EtlRemoteFile
-            {
-                Path = f.FullName,
-                Name = f.Name,
-                SizeBytes = f.Length,
-                LastModifiedUtc = f.LastWriteTimeUtc
-            })
-            .ToList();
-        client.Disconnect();
-        return Task.FromResult<IReadOnlyList<EtlRemoteFile>>(files);
+        try
+        {
+            var pattern = string.IsNullOrWhiteSpace(source.FilePattern) ? ".csv" : source.FilePattern!;
+            var files = client.ListDirectory(uri.AbsolutePath)
+                .Where(f => !f.IsDirectory && !f.IsSymbolicLink)
+                .Where(f => Matches(f.Name, pattern))
+                .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(f => new EtlRemoteFile
+                {
+                    Path = f.FullName,
+                    Name = f.Name,
+                    SizeBytes = f.Length,
+                    LastModifiedUtc = f.LastWriteTimeUtc
+                })
+                .ToList();
+            return Task.FromResult<IReadOnlyList<EtlRemoteFile>>(files);
+        }
+        finally
+        {
+            client.Disconnect();
+        }
     }
 
     public async Task<EtlStagedFile> StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default)
@@ -44,19 +50,32 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         var uri = ParseUri(source.Location);
         using var client = CreateClient(source, uri);
         client.Connect();
-        await using var ms = new MemoryStream();
-        client.DownloadFile(file.Path, ms);
-        ms.Position = 0;
-        var staged = await _stagingStore.StageAsync(jobId, file, ms, ct).ConfigureAwait(false);
-        client.Disconnect();
-        return staged;
+        var tempPath = Path.Combine(Path.GetTempPath(), "meridian-sftp-" + Guid.NewGuid().ToString("N") + ".tmp");
+        try
+        {
+            await using (var temp = new FileStream(tempPath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.DeleteOnClose))
+            {
+                client.DownloadFile(file.Path, temp);
+                temp.Position = 0;
+                return await _stagingStore.StageAsync(jobId, file, temp, ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            client.Disconnect();
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
     }
 
     private ISftpClient CreateClient(EtlSourceDefinition source, Uri uri)
     {
-        var password = source.SecretRef ?? throw new InvalidOperationException("SFTP secretRef must contain the password in v1.");
-        var username = source.Username ?? throw new InvalidOperationException("SFTP username is required.");
-        return _clientFactory.Create(uri.Host, uri.Port > 0 ? uri.Port : 22, username, password);
+        return _clientFactory.Create(SftpConnectionOptions.Create(
+            uri.Host,
+            uri.Port > 0 ? uri.Port : 22,
+            source.Username ?? string.Empty,
+            source.SecretRef ?? string.Empty,
+            source.HostKeySha256Fingerprint));
     }
 
     private static Uri ParseUri(string location)

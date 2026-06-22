@@ -17,30 +17,39 @@ public sealed class SftpFilePublisher : ISftpFilePublisher
         var uri = new Uri(destination.Location!.StartsWith("sftp://", StringComparison.OrdinalIgnoreCase)
             ? destination.Location
             : $"sftp://{destination.Location!.TrimStart('/')}");
-        var client = _clientFactory.Create(uri.Host, uri.Port > 0 ? uri.Port : 22,
-            destination.Username ?? throw new InvalidOperationException("SFTP username is required."),
-            destination.SecretRef ?? throw new InvalidOperationException("SFTP secretRef must contain the password in v1."));
+        var client = _clientFactory.Create(SftpConnectionOptions.Create(
+            uri.Host,
+            uri.Port > 0 ? uri.Port : 22,
+            destination.Username ?? string.Empty,
+            destination.SecretRef ?? string.Empty,
+            destination.HostKeySha256Fingerprint));
         using (client)
         {
             client.Connect();
-            if (Directory.Exists(localPath))
+            try
             {
-                foreach (var file in Directory.EnumerateFiles(localPath, "*", SearchOption.AllDirectories))
+                if (Directory.Exists(localPath))
                 {
-                    var relative = Path.GetRelativePath(localPath, file).Replace('\\', '/');
-                    var remotePath = CombineRemote(uri.AbsolutePath, relative);
-                    EnsureRemoteDirectory(client, Path.GetDirectoryName(remotePath)!.Replace('\\', '/'));
-                    using var fs = File.OpenRead(file);
-                    client.UploadFile(fs, remotePath, true);
+                    foreach (var file in Directory.EnumerateFiles(localPath, "*", SearchOption.AllDirectories))
+                    {
+                        var relative = Path.GetRelativePath(localPath, file).Replace('\\', '/');
+                        var remotePath = CombineRemote(uri.AbsolutePath, relative);
+                        EnsureRemoteDirectory(client, Path.GetDirectoryName(remotePath)!.Replace('\\', '/'));
+                        using var fs = File.OpenRead(file);
+                        client.UploadFile(fs, remotePath, true);
+                    }
+                }
+                else
+                {
+                    EnsureRemoteDirectory(client, uri.AbsolutePath);
+                    using var fs = File.OpenRead(localPath);
+                    client.UploadFile(fs, CombineRemote(uri.AbsolutePath, Path.GetFileName(localPath)), destination.OverwriteIfExists);
                 }
             }
-            else
+            finally
             {
-                EnsureRemoteDirectory(client, uri.AbsolutePath);
-                using var fs = File.OpenRead(localPath);
-                client.UploadFile(fs, CombineRemote(uri.AbsolutePath, Path.GetFileName(localPath)), destination.OverwriteIfExists);
+                client.Disconnect();
             }
-            client.Disconnect();
         }
 
         return Task.CompletedTask;

@@ -73,6 +73,7 @@ internal sealed class EtlCommands : ICliCommand
                 FilePattern = CliArguments.GetValue(args, "--etl-file-pattern") ?? "*.csv",
                 Username = CliArguments.GetValue(args, "--etl-source-username"),
                 SecretRef = CliArguments.GetValue(args, "--etl-source-secret-ref"),
+                HostKeySha256Fingerprint = CliArguments.GetValue(args, "--etl-source-host-key-sha256"),
                 DeleteAfterSuccess = CliArguments.HasFlag(args, "--etl-delete-source")
             },
             Destination = new EtlDestinationDefinition
@@ -81,6 +82,7 @@ internal sealed class EtlCommands : ICliCommand
                 Location = CliArguments.GetValue(args, "--etl-destination-path"),
                 Username = CliArguments.GetValue(args, "--etl-destination-username"),
                 SecretRef = CliArguments.GetValue(args, "--etl-destination-secret-ref"),
+                HostKeySha256Fingerprint = CliArguments.GetValue(args, "--etl-destination-host-key-sha256"),
                 TransferMode = EtlTransferMode.BatchExchange,
                 OverwriteIfExists = CliArguments.HasFlag(args, "--etl-overwrite")
             },

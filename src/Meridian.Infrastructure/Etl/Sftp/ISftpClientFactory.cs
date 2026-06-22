@@ -34,14 +34,32 @@ public interface ISftpClient : IDisposable
 /// </summary>
 public interface ISftpClientFactory
 {
-    ISftpClient Create(string host, int port, string username, string password);
+    ISftpClient Create(SftpConnectionOptions options);
 }
 
 #if SFTP
 public sealed class SftpClientFactory : ISftpClientFactory
 {
-    public ISftpClient Create(string host, int port, string username, string password)
-        => new SshNetSftpClient(new Renci.SshNet.SftpClient(host, port, username, password));
+    public ISftpClient Create(SftpConnectionOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        var connectionInfo = new Renci.SshNet.ConnectionInfo(
+            options.Host,
+            options.Port,
+            options.Username,
+            new Renci.SshNet.PasswordAuthenticationMethod(options.Username, options.Password));
+
+        var client = new Renci.SshNet.SftpClient(connectionInfo);
+        client.HostKeyReceived += (_, args) =>
+        {
+            var actual = Convert.ToHexString(args.FingerPrintSHA256);
+            args.CanTrust = System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+                Convert.FromHexString(options.HostKeySha256Fingerprint),
+                Convert.FromHexString(actual));
+        };
+
+        return new SshNetSftpClient(client);
+    }
 }
 
 internal sealed class SshNetSftpClient(Renci.SshNet.SftpClient inner) : ISftpClient
@@ -74,7 +92,7 @@ internal sealed class SshNetSftpClient(Renci.SshNet.SftpClient inner) : ISftpCli
 /// </summary>
 public sealed class SftpClientFactory : ISftpClientFactory
 {
-    public ISftpClient Create(string host, int port, string username, string password)
+    public ISftpClient Create(SftpConnectionOptions options)
         => throw new NotSupportedException(
             "SFTP support is disabled. Build with /p:EnableSftp=true and ensure " +
             "Renci.SshNet >= 2024.2.0 is available in the NuGet feed.");
