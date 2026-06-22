@@ -139,7 +139,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var packageDimensions = BuildReportPackageDimensions(request, fundProfileId, ledgerBookId);
         var dimensionScope = BuildReportDimensionScope(packageDimensions, fundProfileId, ledgerBookId);
         validationIssues.AddRange(BuildReportDimensionScopeIssues(request, fundProfileId, ledgerBookId, packageDimensions));
-        validationIssues.AddRange(BuildReportCertificationEvidenceIssues(periodId, evidenceLinks));
+        validationIssues.AddRange(BuildReportCertificationEvidenceIssues(periodId, ledgerBookId, evidenceLinks));
         validationIssues.AddRange(BuildRestatementCertificationIssues(
             request,
             fundProfileId,
@@ -1009,6 +1009,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportCertificationEvidenceIssues(
         string periodId,
+        Guid? ledgerBookId,
         IReadOnlyList<string> evidenceLinks)
     {
         var requiredEvidence = new (string Code, string Label, string[] Tokens)[]
@@ -1021,18 +1022,32 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         foreach (var requirement in requiredEvidence)
         {
-            if (evidenceLinks.Any(link => requirement.Tokens.Any(token =>
-                    link.Contains(token, StringComparison.OrdinalIgnoreCase))))
+            var matchingEvidence = evidenceLinks
+                .Where(link => requirement.Tokens.Any(token =>
+                    link.Contains(token, StringComparison.OrdinalIgnoreCase)))
+                .ToArray();
+            if (matchingEvidence.Length == 0)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    requirement.Code,
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Accounting report package for period '{periodId}' is missing retained {requirement.Label} evidence.",
+                    periodId,
+                    "Attach ledger, reconciliation, rendered report, and NAV support evidence before report certification."));
+                continue;
+            }
+
+            if (ledgerBookId is null || matchingEvidence.Any(link => EvidenceReferencesLedgerBook(link, ledgerBookId.Value)))
             {
                 continue;
             }
 
             issues.Add(new AccountingConfigurationValidationIssueDto(
-                requirement.Code,
+                $"{requirement.Code}LedgerBookScope",
                 AccountingConfigurationValidationSeverityDto.Critical,
-                $"Accounting report package for period '{periodId}' is missing retained {requirement.Label} evidence.",
+                $"Accounting report package for period '{periodId}' has retained {requirement.Label} evidence, but no link names ledger book '{ledgerBookId.Value:D}'.",
                 periodId,
-                "Attach ledger, reconciliation, rendered report, and NAV support evidence before report certification."));
+                "Attach ledger-book-scoped ledger, reconciliation, rendered report, and NAV support evidence before report certification."));
         }
 
         return issues;

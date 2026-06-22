@@ -1176,13 +1176,14 @@ public sealed partial class WorkstationEndpointsTests
             issue.Code == "ReportNavEvidenceMissing" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 
-        using var completeResponse = await client.PostAsJsonAsync(
+        var ledgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        using var unscopedEvidenceResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerReportsAccountingPackage,
             new AccountingReportPackageRequestDto(
                 FundProfileId: "fund-evidence",
                 PeriodId: "2026-11",
                 Actor: "browser-user",
-                LedgerBookId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                LedgerBookId: ledgerBookId,
                 BeginningCapital: 150_000m,
                 Contributions: 20_000m,
                 Distributions: 5_000m,
@@ -1194,6 +1195,44 @@ public sealed partial class WorkstationEndpointsTests
                     "evidence:reconciliation:gl-tie-out:2026-11",
                     "evidence:report-render:financial-statements:2026-11",
                     "evidence:nav:support-package:2026-11"
+                ]),
+            ServerJsonOptions);
+
+        unscopedEvidenceResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var unscopedEvidence = await unscopedEvidenceResponse.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        unscopedEvidence.Should().NotBeNull();
+        unscopedEvidence!.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        unscopedEvidence.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportLedgerEvidenceMissingLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        unscopedEvidence.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportReconciliationEvidenceMissingLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        unscopedEvidence.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportRenderEvidenceMissingLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        unscopedEvidence.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportNavEvidenceMissingLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+
+        using var completeResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-evidence",
+                PeriodId: "2026-12",
+                Actor: "browser-user",
+                LedgerBookId: ledgerBookId,
+                BeginningCapital: 150_000m,
+                Contributions: 20_000m,
+                Distributions: 5_000m,
+                RealizedGainLoss: 4_000m,
+                Nav: 169_000m,
+                EvidenceLinks:
+                [
+                    $"evidence:ledger:trial-balance:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:reconciliation:gl-tie-out:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:report-render:financial-statements:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:nav:support-package:2026-12:book:{ledgerBookId:D}"
                 ]),
             ServerJsonOptions);
 
@@ -1229,10 +1268,10 @@ public sealed partial class WorkstationEndpointsTests
                 Nav: 217_000m,
                 EvidenceLinks:
                 [
-                    "evidence:ledger:trial-balance:2026-12",
-                    "evidence:reconciliation:gl-tie-out:2026-12",
-                    "evidence:report-render:financial-statements:2026-12",
-                    "evidence:nav:support-package:2026-12"
+                    $"evidence:ledger:trial-balance:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:reconciliation:gl-tie-out:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:report-render:financial-statements:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:nav:support-package:2026-12:book:{ledgerBookId:D}"
                 ]),
             ServerJsonOptions);
         buildResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -1441,10 +1480,10 @@ public sealed partial class WorkstationEndpointsTests
                 Nav: 217_000m,
                 EvidenceLinks:
                 [
-                    "evidence:ledger:trial-balance:2027-02",
-                    "evidence:reconciliation:gl-tie-out:2027-02",
-                    "evidence:report-render:financial-statements:2027-02",
-                    "evidence:nav:support-package:2027-02"
+                    $"evidence:ledger:trial-balance:2027-02:book:{ledgerBookId:D}",
+                    $"evidence:reconciliation:gl-tie-out:2027-02:book:{ledgerBookId:D}",
+                    $"evidence:report-render:financial-statements:2027-02:book:{ledgerBookId:D}",
+                    $"evidence:nav:support-package:2027-02:book:{ledgerBookId:D}"
                 ]),
             ServerJsonOptions);
         buildResponse.StatusCode.Should().Be(HttpStatusCode.OK);

@@ -213,9 +213,10 @@ distinct ledger books for the same fund period while still blocking same-book or
 fund-level duplicates. Close-backed accounting report packages inherit the close plan
 book when the request omits one, block explicit ledger-book mismatches during package assembly, and
 revalidate the current close-plan book before certification so certified exports cannot drift across
-books. Close-backed report packages with ledger-book scope also require retained ledger,
-reconciliation, rendered-report, and NAV support evidence links that name the same ledger book before
-the package can reach ready-for-review certification. When `StorageOptions`
+books. Report packages with ledger-book scope require retained ledger, reconciliation,
+rendered-report, and NAV support evidence links that name the same ledger book before the package
+can reach ready-for-review certification; close-backed packages also recheck that evidence against
+the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
 Task sign-off decisions retain authenticated actor, role, notes, and evidence, reject duplicate
