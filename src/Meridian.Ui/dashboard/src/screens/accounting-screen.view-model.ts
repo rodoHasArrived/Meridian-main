@@ -3590,7 +3590,12 @@ export function useAccountingConfigurationViewModel(
     }
 
     const correlationId = `browser-accounting-tenant-admin-${Date.now()}`;
-    const evidenceReferences = splitAccountingTenantAdministrationEvidence(tenantAdministrationDraft.evidenceText);
+    const evidenceReferences = withLedgerBookTenantAdministrationEvidence(
+      splitAccountingTenantAdministrationEvidence(tenantAdministrationDraft.evidenceText),
+      tenantAdministrationProfile,
+      workspace?.ledgerBookId ?? null,
+      tenantAdministrationDraft.ledgerBookAdministrationStudioConfigured
+    );
     const nextProfile: AccountingTenantAdministrationProfile = {
       ...tenantAdministrationProfile,
       tenantScopeConfigured: tenantAdministrationDraft.tenantScopeConfigured,
@@ -3640,7 +3645,7 @@ export function useAccountingConfigurationViewModel(
     } finally {
       setTenantAdministrationProfileSaveBusy(false);
     }
-  }, [refresh, services, tenantAdministrationDraft, tenantAdministrationProfile, tenantAdministrationProfileSaveBusy]);
+  }, [refresh, services, tenantAdministrationDraft, tenantAdministrationProfile, tenantAdministrationProfileSaveBusy, workspace?.ledgerBookId]);
 
   const previewFirstTemplate = useCallback(async () => {
     const template = workspace?.journalTemplates.find((item) => !item.isArchived) ?? null;
@@ -5741,6 +5746,31 @@ function buildAccountingTenantAdministrationProfileFromReadiness(
 
 function splitAccountingTenantAdministrationEvidence(value: string): string[] {
   return splitAccountingEvidenceReferences(value);
+}
+
+function withLedgerBookTenantAdministrationEvidence(
+  evidenceReferences: string[],
+  profile: AccountingTenantAdministrationProfile | null,
+  ledgerBookId: string | null | undefined,
+  ledgerBookAdministrationStudioConfigured: boolean
+): string[] {
+  const normalizedBookId = ledgerBookId?.trim();
+  if (!ledgerBookAdministrationStudioConfigured || !profile || !normalizedBookId) {
+    return evidenceReferences;
+  }
+
+  const hasBookEvidence = evidenceReferences.some((reference) =>
+    reference.toLowerCase().includes(normalizedBookId.toLowerCase()) &&
+    reference.toLowerCase().includes("ledger-book")
+  );
+  if (hasBookEvidence) {
+    return evidenceReferences;
+  }
+
+  return [
+    ...evidenceReferences,
+    `evidence://tenant-admin/${profile.tenantId || "tenant"}/${profile.companyId || "company"}/ledger-book-administration/ledgerBookId=${normalizedBookId}`
+  ];
 }
 
 function splitAccountingEvidenceReferences(value: string): string[] {

@@ -415,13 +415,21 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                 Dimensions: new LedgerDimensionSetDto(
                     FundId: "alpha-fund",
                     EntityId: "entity-alpha",
+                    SleeveId: "sleeve-credit",
+                    StrategyId: "strategy-income",
+                    InvestorId: "investor-lp",
+                    CapitalAccountId: "capital-account-alpha",
+                    InstrumentId: Guid.Parse("0f92e649-013f-4e7f-99bf-2b14396701e8"),
+                    TaxLotId: "tax-lot-alpha",
                     BookId: "7e0be005-49e1-46eb-9d4f-89d75e2328bd",
                     CostCenterId: "fund-accounting",
                     CounterpartyId: "administrator",
                     ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
                         ["Department"] = "FundAccounting"
-                    })),
+                    }),
+                TenantId: "alpha-fund",
+                CompanyId: "Alpha Fund LP"),
             "controller",
             CorrelationId: "wpf-dimensional-backfill-alpha-fund",
             EvidenceLinks: ["approval:dimensional-backfill:alpha-fund"]));
@@ -436,8 +444,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ScopedAccessPoliciesConfigured = true;
         harness.ViewModel.ReportingGroupsConfigured = true;
         harness.ViewModel.AccountingAdminSurfaceConfigured = true;
+        harness.ViewModel.LedgerBookAdministrationStudioConfigured = true;
         harness.ViewModel.TenantAdministrationEvidenceText =
-            "evidence://tenant-admin/setup\nEVIDENCE://tenant-admin/setup\nevidence://tenant-admin/operator-surface";
+            "evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup\nEVIDENCE://tenant-admin/alpha-fund/Alpha Fund LP/setup\nevidence://tenant-admin/alpha-fund/Alpha Fund LP/operator-surface";
 
         await harness.ViewModel.SaveTenantAdministrationProfileAsync();
 
@@ -452,21 +461,23 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         retained.WpfAccountingAdminSurfaceConfigured.Should().BeTrue();
         retained.UpdatedBy.Should().Be("desktop-controller");
         retained.CorrelationId.Should().StartWith("wpf-accounting-tenant-admin-");
-        retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/setup");
-        retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/operator-surface");
+        retained.LedgerBookAdministrationStudioConfigured.Should().BeTrue();
+        retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup");
+        retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/operator-surface");
+        retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/ledger-book-administration/ledgerBookId=7e0be005-49e1-46eb-9d4f-89d75e2328bd");
         retained.EvidenceReferences.Should().Contain(item =>
             item.StartsWith("correlation:wpf-accounting-tenant-admin-", StringComparison.OrdinalIgnoreCase));
         retained.EvidenceReferences.Count(item =>
-                string.Equals(item, "evidence://tenant-admin/setup", StringComparison.OrdinalIgnoreCase))
+                string.Equals(item, "evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup", StringComparison.OrdinalIgnoreCase))
             .Should()
             .Be(1);
 
         harness.ViewModel.TenantAdministrationProfileStatusText.Should()
             .Contain("Tenant administration setup profile saved");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
-            .Contain("2/23 tenant admin control");
+            .Contain("4/23 tenant admin control");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
-            .Contain("3 retained evidence link");
+            .Contain("4 retained evidence link");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
             row.Name == "Tenant config" && row.Status == "Configured");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>

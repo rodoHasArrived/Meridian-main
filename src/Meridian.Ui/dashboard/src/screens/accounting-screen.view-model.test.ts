@@ -3443,7 +3443,8 @@ describe("accounting-screen view model", () => {
           "evidence://tenant-admin/posting-rule-authoring",
           "evidence://tenant-admin/approval-queue",
           "evidence://tenant-admin/dimension-mapping",
-          "evidence://tenant-admin/implementation-sandbox"
+          "evidence://tenant-admin/implementation-sandbox",
+          "evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration/ledgerBookId=book-primary"
         ]
       }),
       evidenceLinks: [
@@ -3460,7 +3461,8 @@ describe("accounting-screen view model", () => {
         "evidence://tenant-admin/posting-rule-authoring",
         "evidence://tenant-admin/approval-queue",
         "evidence://tenant-admin/dimension-mapping",
-        "evidence://tenant-admin/implementation-sandbox"
+        "evidence://tenant-admin/implementation-sandbox",
+        "evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration/ledgerBookId=book-primary"
       ]
     }));
     expect(result.current.tenantAdministrationProfile.statusText).toBe("Tenant administration setup profile saved; production readiness refreshed from retained controls.");

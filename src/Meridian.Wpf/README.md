@@ -82,7 +82,8 @@ shared ledger-book setup candidate guidance, loads the active open ledger period
 manual journal draft validation, and can create the ledger book through the shared ledger-book service when book-scoped
 configuration targets a missing registered book, renders a shared-workspace ledger-book
 administration grid with selected/available books, fund-structure scope, basis, currency, policy,
-description, and update timestamps, offers type-specific
+description, and update timestamps, and adds selected-`ledgerBookId` tenant-admin evidence when
+desktop operators save book-administration setup controls without already naming that book, and offers type-specific
 draft presets for accrued
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management

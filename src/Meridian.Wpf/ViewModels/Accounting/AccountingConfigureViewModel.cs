@@ -1186,7 +1186,14 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             return;
         }
 
-        var evidence = NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText);
+        var tenantId = ResolveTenantAdministrationTenantId();
+        var companyId = ResolveTenantAdministrationCompanyId();
+        var evidence = WithLedgerBookTenantAdministrationEvidence(
+            NormalizeTenantAdministrationEvidence(TenantAdministrationEvidenceText),
+            tenantId,
+            companyId,
+            _configuration?.LedgerBookId,
+            LedgerBookAdministrationStudioConfigured);
         if (evidence.Count == 0)
         {
             TenantAdministrationProfileStatusText = "Retained setup evidence is required before saving tenant administration controls.";
@@ -1199,8 +1206,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         {
             var correlationId = $"wpf-accounting-tenant-admin-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
             var profile = new AccountingTenantAdministrationProfileDto(
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
+                tenantId,
+                companyId,
                 TenantScopeConfigured,
                 AdminRoleProfileConfigured,
                 ScopedAccessPoliciesConfigured,
@@ -3745,6 +3752,32 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 .Where(static item => !string.IsNullOrWhiteSpace(item))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+
+    private static IReadOnlyList<string> WithLedgerBookTenantAdministrationEvidence(
+        IReadOnlyList<string> evidence,
+        string tenantId,
+        string companyId,
+        Guid? ledgerBookId,
+        bool ledgerBookAdministrationStudioConfigured)
+    {
+        if (!ledgerBookAdministrationStudioConfigured || ledgerBookId is not { } bookId)
+        {
+            return evidence;
+        }
+
+        var bookText = bookId.ToString("D", CultureInfo.InvariantCulture);
+        if (evidence.Any(reference =>
+                reference.Contains(bookText, StringComparison.OrdinalIgnoreCase) &&
+                reference.Contains("ledger-book", StringComparison.OrdinalIgnoreCase)))
+        {
+            return evidence;
+        }
+
+        return evidence
+            .Append($"evidence://tenant-admin/{tenantId}/{companyId}/ledger-book-administration/ledgerBookId={bookText}")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
 }
 
 public sealed record AccountingWorkbenchRow(
