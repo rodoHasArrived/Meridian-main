@@ -493,8 +493,14 @@ Use this checklist when changing any AI-related asset:
 - [ ] Use [`working-memory.md`](working-memory.md) for concurrent implementation state so active
       claims, inspected files, assumptions, validation reuse, and codebase drift remain explicit.
 - [ ] Use [`codex/memory-system.md`](codex/memory-system.md) and `.codex/memory/index.yml` only for
-      Codex repo-local memory. Do not read or write user/global memory tiers without explicit future
-      opt-in.
+      Codex repo-local memory. For memory-aware Codex tasks, inspect the index before loading
+      durable memory; use `.codex/memory/tasks/<task-id>.yml` descriptors for named scopes; use
+      `.codex/memory/goals/<goal-id>.yml` inventories for long-running goals; load only entries
+      selected by descriptor, intent, skill, path, branch, or explicit tags; emit compact receipts
+      for selected IDs, match reasons, stale warnings, goal progress, and scope skips; prefer
+      canonical docs, source, tests, scripts, scoped `AGENTS.md`, and selected skills over memory;
+      and run `python build/scripts/docs/check-codex-memory.py --summary` after memory changes. Do
+      not read or write user/global memory tiers without explicit future opt-in.
 - [ ] Update [`tooling/README.md`](tooling/README.md) when AI script discovery, validation lanes,
       or safe-usage guidance changes.
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and

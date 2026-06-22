@@ -23,11 +23,13 @@ still lives in `../assistant-workflow-contract.md`.
    `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`,
    `docs/engineering/README.md`, `docs/start/README.md`,
    `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
-   For memory-aware tasks, inspect `.codex/memory/index.yml`; when the work has a named scope, use
-   a `.codex/memory/tasks/<task-id>.yml` descriptor and load only entries selected by the descriptor,
-   current intent, skill, changed paths, branch, or explicit tags. For very long goals, also use a
-   `.codex/memory/goals/<goal-id>.yml` progress inventory. Include a compact memory receipt for
-   selected IDs, match reasons, stale warnings, goal progress, and task/branch scope skips.
+   For memory-aware tasks, inspect `.codex/memory/index.yml` before loading durable memory; when
+   the work has a named scope, use a `.codex/memory/tasks/<task-id>.yml` descriptor and load only
+   entries selected by the descriptor, current intent, skill, changed paths, branch, or explicit
+   tags. For very long goals, also use a `.codex/memory/goals/<goal-id>.yml` progress inventory.
+   Include a compact memory receipt for selected IDs, match reasons, stale warnings, goal progress,
+   and task/branch scope skips. Prefer canonical docs, source, tests, scripts, scoped `AGENTS.md`,
+   and selected `SKILL.md` files when memory disagrees.
 5. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
 6. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
 7. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, and the relevant pack in `../context/README.md`.
@@ -99,7 +101,10 @@ do not paste raw file contents or broad command output unless the user asks for 
 | WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
 | Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests; Codex Browser plugin for unauthenticated rendered-route inspection when the task is visual or interactive | WPF validation unless shared contracts changed; signed-in browser flows or secret entry |
 
-AI-doc proof lane defaults: `python3 build/scripts/docs/check-codex-memory.py --summary`,
+AI-doc proof lane defaults: `python build/scripts/docs/check-codex-memory.py --summary`,
+`python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary`,
+`python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary`,
+`python -m unittest build.scripts.docs.tests.test_check_codex_memory`,
 `python3 build/scripts/docs/check-ai-inventory.py --summary`,
 `python3 build/scripts/docs/check-codex-skills.py --summary`,
 `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`,
@@ -139,13 +144,42 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 - Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
 - Working memory: use `../working-memory.md` to track task-local active claims, inspected files,
   assumptions, codebase drift, merge order, and validation reuse during concurrent changes.
-- Codex memory: use `.codex/memory/index.yml` only as a selective repo-local memory catalog; use
-  task descriptors plus `--explain` for scoped memory routing; use goal inventories for long-running
-  progress tracking; follow `memory-system.md` for promotion, staleness, and disabled user/global
+- Codex memory: inspect `.codex/memory/index.yml` only as a selective repo-local memory catalog;
+  use task descriptors plus `--receipt` for scoped memory routing; use goal inventories for
+  long-running progress tracking; load only selected entries; follow `memory-system.md` for
+  promotion, staleness, disabled user/global tiers, and canonical-doc precedence over memory
   tiers.
+- Receipt example:
+
+  ```text
+  $ python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+  Codex memory status: pass; 5 entrie(s), 2 selected, 0 error(s), 0 warning(s).
+  selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md
+  selected: repo:validation -> .codex/memory/repo/validation.md
+
+  Memory receipt:
+  task_descriptor_path: .codex/memory/tasks/example.yml
+  task: codex-memory-routing-example
+  selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+  selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+  selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+  skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+  ```
+
+  ```text
+  $ python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+  Memory receipt:
+  task_descriptor_path: .codex/memory/tasks/example.yml
+  goal_inventory_path: .codex/memory/goals/example.yml
+  goal: codex-memory-long-goal-example
+  task: codex-memory-routing-example
+  selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+  selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; ...)
+  skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+  ```
 - Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
 - Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
-- Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
+- Validation procedures: `python build/scripts/docs/check-codex-memory.py --summary`, scoped Codex memory receipt checks when memory changes, `python -m unittest build.scripts.docs.tests.test_check_codex_memory`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
 - Documentation ownership: `../../documentation-ownership.md`, `../assistant-workflow-contract.md`
 
 ## Task-To-Proof Matrix

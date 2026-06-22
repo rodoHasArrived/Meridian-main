@@ -46,7 +46,6 @@ The memory system must not:
 
 | Tier | Scope | Lifetime | Default Loading | Write Rule |
 | --- | --- | --- | --- | --- |
-| `ephemeral` | Current reasoning turn only | Minutes | Active context only | Never written under `.codex/memory/`. |
 | `session` | Current Codex session | Until session end, compaction, or promotion | Loaded only by the current session or explicit session ID | May store temporary observations, inspected files, assumptions, and validation notes. |
 | `branch` | Current Git branch | Until branch merges, is abandoned, or review expires | Loaded only when branch scope matches | Must include branch invalidation triggers. |
 | `task` | Named work item, issue, plan, or prompt family | Until task closes or review expires | Loaded only when task descriptor matches | Must stay narrower than repo memory. |
@@ -55,8 +54,10 @@ The memory system must not:
 | `user` | Explicit operator profile outside repo | Durable outside repo | Disabled | Not read or written by repo-local tooling without explicit future opt-in. |
 | `global` | Cross-user or organization baseline outside repo | Durable outside repo | Disabled | Not read or written by repo-local tooling without explicit future opt-in. |
 
-The active repo-local tiers are `session`, `branch`, `task`, `repo`, and `archive`. `user` and
-`global` are schema-known so validators can reject accidental writes unless a later explicit opt-in
+The active repo-local tiers are only `session`, `branch`, `task`, `repo`, and `archive`.
+Per-turn reasoning notes are ephemeral context, not memory-system tiers, and must not be written under
+`.codex/memory/` unless they pass the promotion workflow. `user` and `global` are disabled tiers:
+they are schema-known only so validators can reject accidental writes unless a later explicit opt-in
 design enables them.
 
 ## Storage Layout
@@ -99,6 +100,8 @@ Storage rules:
 - Use `repo/` only for stable, sourced facts. Put uncertain or temporary findings in `sessions/`,
   `tasks/`, or `branches/`.
 - Use `archive/` for retired entries that should remain auditable but should not guide active work.
+Indexed files must live in the folder that matches their tier: `repo/`, `tasks/`, `branches/`,
+`sessions/`, or `archive/`.
 
 ## Index Schema
 
@@ -120,6 +123,24 @@ Each `entries` item in `.codex/memory/index.yml` must contain:
 | `invalidates_when` | non-empty string array | Yes | Concrete conditions that make the memory unsafe until reviewed. |
 | `retired_because` | string | Archive only | Required for `archive` entries; explains why the memory was retired. |
 | `replaced_by` | string array | Archive only | Required for `archive` entries; lists replacement entry IDs, docs, or an explicit no-replacement marker. |
+
+Tier-specific validation rules:
+
+- `repo` entries must include at least one stable, existing repo-local `source_refs` path. External
+  URLs or fragment notes can supplement evidence, but they cannot be the only support for durable
+  repo guidance.
+- `task` entries must be bound to a task descriptor by `scope: task:<id>` or by
+  `load_when.task.ids`. Task memory must stay narrower than repo memory.
+- `branch` entries must include branch invalidation rules, such as merge, abandonment, deletion,
+  review expiry, or branch-scope change.
+- `session` entries must not be indexed as durable guidance unless they are promoted. Validators
+  allow only explicit task/session binding and require invalidation on session end, compaction, or
+  promotion; broad skill, path, intent, branch, tag, work-mode, task-intent, or task-path selectors
+  fail validation.
+- `archive` entries must not load as active guidance. Their `load_when` selectors must remain empty
+  so archived entries are retained only for auditability.
+- `user` and `global` entries fail validation. They remain disabled until a future explicit opt-in
+  design defines storage, consent, privacy, and loading behavior.
 
 `load_when.task` is required on every indexed entry and supports:
 
@@ -249,9 +270,31 @@ The command creates or updates one `progress_inventory` item, refreshes `updated
 result before writing, and prints a compact `Memory update` notice. Add `--next-action` or
 `--open-question` only when the checkpoint changes those lists.
 
-## Loading Rules
+## Routing Algorithm
 
-Memory loading must be selective and explainable.
+Memory loading must be selective and explainable. Use this routing algorithm for every memory-aware
+Codex task:
+
+1. Establish higher-precedence instructions and evidence first: direct user/system/developer
+   instructions, applicable `AGENTS.md`, source, tests, scripts, docs, and selected skill guidance.
+2. Identify the active branch and classify the task intent, selected skill, work mode, planned paths,
+   and explicit memory tags. Prefer a `.codex/memory/tasks/<task-id>.yml` descriptor for recurring
+   or multi-step work.
+3. If a goal inventory is active, resolve its `active_task_descriptor` before evaluating entries.
+4. Collect candidate entries whose `load_when` selectors match at least one relevant task, intent,
+   skill, path, branch, or explicit tag.
+5. Reject entries with disabled tiers, scope mismatches, missing files, invalid metadata, expired
+   trust without verification, or any matching `exclude_when` selector.
+6. Order remaining entries from narrowest to broadest scope: matching `session`, then `branch`,
+   then `task`, then `repo`. `archive` entries are not active guidance and load only for audit or
+   explicit maintenance.
+7. Read only the selected memory entries needed for the task and produce a receipt listing
+   referenced entries, dereferenced entries, match reasons, stale warnings, and skipped task or
+   branch scopes.
+8. If memory conflicts with higher-precedence sources, ignore the memory for guidance and mark it
+   for invalidation or review.
+
+### Routing Inputs
 
 By goal inventory:
 
@@ -283,6 +326,8 @@ By intent:
   `ai-guidance`, or `ai-tooling`.
 - Load entries whose `load_when.intents` match the detected intent.
 - Load stale entries only as warnings or verification prompts, not as current instructions.
+- Do not load `archive` entries as active instructions; keep them dereferenced unless a human is
+  auditing historical memory.
 
 By skill:
 
@@ -327,42 +372,104 @@ Negative guards:
 Memory receipt:
 
 - At startup or route changes, report selected memory IDs, the reason they matched, stale warnings,
-  and task/branch entries skipped because their scope did not match.
+  skipped memory IDs, skip reasons, task descriptor path, goal inventory path, and the branch or
+  path selectors used for routing.
 - Use `--receipt` to print the same reference/dereference summary the JSON payload exposes as
   `memory_receipt`.
-- Treat `referenced` entries as eligible context to read; treat `dereferenced` entries as explicitly
-  skipped for the current task, branch, goal, path, or tag route.
+- Treat `selected_memory` entries as eligible context to read; treat `skipped_memory` entries as
+  explicitly skipped for the current task, branch, goal, path, or tag route. The JSON payload keeps
+  `referenced` and `dereferenced` aliases for older consumers.
 - Keep the receipt compact and inside the existing Codex workflow disclosure shape; it is context
   provenance, not a separate audit log.
 
+Example task-scoped receipt:
+
+```text
+$ python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+Codex memory status: pass; 5 entrie(s), 2 selected, 0 error(s), 0 warning(s).
+selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md
+selected: repo:validation -> .codex/memory/repo/validation.md
+
+Memory receipt:
+task_descriptor_path: .codex/memory/tasks/example.yml
+task: codex-memory-routing-example
+selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+skipped: repo:accounting-workflows -> .codex/memory/repo/accounting-workflows.md (excluded by intent ai-tooling)
+skipped: repo:financial-record-explorers -> .codex/memory/repo/financial-record-explorers.md (excluded by intent ai-tooling)
+```
+
+Example goal-scoped receipt:
+
+```text
+$ python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+Codex memory status: pass; 5 entrie(s), 2 selected, 0 error(s), 0 warning(s).
+goal: codex-memory-long-goal-example (active); 2/3 progress item(s) completed; active task .codex/memory/tasks/example.yml
+selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md
+selected: repo:validation -> .codex/memory/repo/validation.md
+
+Memory receipt:
+task_descriptor_path: .codex/memory/tasks/example.yml
+goal_inventory_path: .codex/memory/goals/example.yml
+goal: codex-memory-long-goal-example
+task: codex-memory-routing-example
+selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+skipped: repo:accounting-workflows -> .codex/memory/repo/accounting-workflows.md (excluded by intent ai-tooling)
+skipped: repo:financial-record-explorers -> .codex/memory/repo/financial-record-explorers.md (excluded by intent ai-tooling)
+```
+
 ## Promotion And Compaction
 
-Promotion is a review step, not an automatic dump.
+Promotion is a review step, not an automatic dump. Compaction may create short-lived session notes,
+but it must not promote them automatically.
 
 During work, Codex may keep temporary session notes. At task end, reusable observations should be
-classified as `discard`, `session only`, `branch`, `task`, or `repo`.
+classified as `discard`, `session only`, `branch`, `task`, `repo`, or `archive`. Promotion is only
+allowed through the paths below:
 
-Promote session memory to task memory when:
+| Promotion | Allowed When | Notes |
+| --- | --- | --- |
+| `session` to `task` | The observation belongs to a named task, issue, roadmap item, or accepted plan and will likely help a later session on the same task. | Keep `scope` and `load_when.task.ids` tied to that task. |
+| `session` to `branch` | The observation is tied to the current Git branch, such as temporary migration state, integration order, branch-only failures, or compatibility decisions. | Include branch selectors and branch invalidation triggers. |
+| `task` to `repo` | A task-scoped observation has become a stable repository convention, durable environment limit, repeatable validation rule, or accepted workflow. | Remove task-only selectors and prove current repo relevance with canonical source references. |
+| `branch` to `repo` | A branch-scoped observation remains true after branch integration or review and now describes durable repository behavior. | Remove branch-only selectors unless they are routing hints for active branches. |
+| active entry to `archive` | The entry is superseded, expired, contradicted by current sources, or no longer useful as active guidance but retains audit value. | The archive entry must name the archival reason or replacement guidance. |
 
-- It belongs to a named task, issue, roadmap item, or accepted plan.
-- It will likely be useful in a later session for the same task.
-- It is supported by source references or validation output.
-- It is too specific for branch or repo memory.
+Do not promote directly from `session` to `repo`. First stabilize the observation in a task or
+branch entry, then promote that reviewed task or branch entry to `repo` if it proves durable. Do not
+promote `archive` entries back to active tiers without creating a new reviewed active entry.
 
-Promote session memory to branch memory when:
+Every promotion review must record this evidence before the index and Markdown entry are updated:
 
-- It is tied to the current Git branch rather than long-term repository behavior.
-- It describes temporary migration state, integration order, branch-only failures, or compatibility
-  decisions.
-- It should expire on branch merge, deletion, abandonment, or scope change.
+- Source references: exact repo paths, canonical docs, source files, scripts, tests, or validation
+  evidence that currently support the claim. Repo-tier entries require at least one current
+  repo-local source reference outside `.codex/memory/tasks/`, `.codex/memory/branches/`, and
+  `.codex/memory/sessions/`.
+- Confidence value: `low`, `medium`, or `high`, matching the indexed `confidence` field.
+- Freshness value: `fresh`, `review-soon`, `stale`, or `unknown`, matching the indexed `freshness`
+  field. New active promotions should normally be `fresh`; use `review-soon` when evidence is
+  current but expected to age quickly.
+- Review date: the `review_after` date that tells future agents when to re-check the memory.
+- Invalidation triggers: concrete `invalidates_when` conditions that make the memory unsafe until
+  reviewed.
+- Reason for broader persistence: why the memory belongs in the broader target tier instead of
+  staying in the source tier or being discarded.
+- Conflicting memory entries reviewed: IDs of related or potentially conflicting memory entries, or
+  an explicit `none found` note after checking the index.
 
-Promote session memory to repo memory only when:
+Promotion target rules:
 
-- It describes a stable convention, durable environment limit, repeatable validation rule, or
-  accepted repository workflow.
-- It is supported by canonical docs, source files, scripts, or repeated validation evidence.
-- It has no narrower task or branch owner.
-- It does not duplicate or contradict existing canonical guidance.
+- Use `task` for claims whose truth depends on one task descriptor, plan, issue, or prompt family.
+- Use `branch` for claims whose truth depends on one Git branch lifecycle.
+- Use `repo` only when the claim is stable beyond one task or branch and can be supported by current
+  source references. A repo entry must not encode task-only claims with `load_when.task.ids`,
+  task-specific scopes, or source evidence that only lives under task/session/branch memory.
+- Use `archive` when an active entry should no longer guide routing or implementation.
 
 Promotion hygiene:
 
@@ -371,16 +478,19 @@ Promotion hygiene:
   guidance.
 - Include exact non-empty `source_refs`, a future `review_after`, and concrete non-empty `invalidates_when` triggers.
 - Prefer concise entries and link to canonical docs instead of restating long instructions.
-- Record `promotion_candidates` in session or task notes only as reviewed candidates with target
-  tier, source evidence, and reason; keep promotion explicit through `--promote-session`.
+- Record `promotion_candidates` in session, task, or goal notes only as reviewed candidates with
+  target tier, source evidence, reason for broader persistence, and conflicting entries reviewed;
+  keep promotion explicit through `--promote-session` or a direct reviewed index/entry update.
 - In a goal inventory, use `promotion_candidates` only as a queue of candidate observations to
   review later; do not treat it as a write instruction.
-- Repo-level promotion requires source references. User/global promotion requires explicit user
-  approval and a future opt-in mechanism.
+- Repo-level promotion requires stable repo-local source references. User/global promotion is
+  disabled and must fail validation until explicit user approval and a future opt-in mechanism are
+  designed and implemented.
 
-## Staleness, Invalidation, And Conflict Rules
+## Invalidation
 
-Before using a memory entry as guidance, check:
+Invalidation is the workflow for retiring, narrowing, or refreshing memory that is no longer safe
+to use. Before using a memory entry as guidance, check:
 
 - `freshness`: `fresh` is normal; `review-soon` is cautionary; `stale` and `unknown` require
   verification.
@@ -389,18 +499,57 @@ Before using a memory entry as guidance, check:
 - `invalidates_when`: every indexed entry must name at least one invalidation trigger; if any condition is true, do not rely on the entry until updated.
 - `archive` retirement metadata: archived entries must explain why they were retired and list replacement guidance or an explicit no-replacement marker.
 
-Source precedence:
+Authoritative source precedence:
 
-1. Direct user instruction for the current turn.
-2. System and developer instructions.
-3. Applicable `AGENTS.md` instructions by directory scope.
-4. Canonical repository docs, source files, tests, scripts, and selected skill instructions.
-5. Fresh, high-confidence memory at the narrowest applicable scope.
-6. Broader or lower-confidence memory.
+1. Direct user, system, and developer instructions for the current turn.
+2. Applicable `AGENTS.md` instructions by directory scope.
+3. Source files.
+4. Tests.
+5. Scripts and maintained command implementations.
+6. Canonical docs and generated documentation sources.
+7. Selected skill `SKILL.md` files and their required shared context.
+8. Fresh, high-confidence memory at the narrowest applicable scope.
+9. Broader, lower-confidence, stale, or archived memory, which is advisory only.
 
 If memory conflicts with a higher-precedence source, use the higher-precedence source and mark the
-memory for review. Narrow an overbroad memory entry instead of deleting useful historical context
-when the entry still has audit value.
+memory for review. The invalidation workflow is:
+
+1. Identify the invalidating source, missing path, expired review date, scope mismatch, or true
+   `invalidates_when` condition.
+2. Stop using the entry as guidance for the current task; stale or conflicting entries may be read
+   only as warnings or audit history.
+3. Choose the smallest corrective action: refresh metadata and source refs, narrow `load_when`, add
+   `exclude_when`, demote to task or branch scope, move to `archive`, or delete only if there is no
+   audit value.
+4. Preserve an audit trail by naming the replacement guidance or archival reason when moving an
+   entry to `archive`.
+5. Re-run the memory checker and include the stale/conflict outcome in the task receipt or final
+   validation summary.
+
+Narrow an overbroad memory entry instead of deleting useful historical context when the entry still
+has audit value.
+
+
+## Security And Privacy Restrictions
+
+Memory is repo-local guidance, not a secret store or personal profile. Apply these restrictions to
+every tier, descriptor, goal inventory, receipt, and promotion candidate:
+
+- Do not store credentials, API keys, tokens, passwords, private keys, cookies, session IDs,
+  credential-store paths that expose a person, or recovery material.
+- Do not store personal data, customer data, investor data, account numbers, trade records tied to
+  real people, raw telemetry containing identifiers, or unredacted logs.
+- Do not store proprietary external content, licensed documentation, copied vendor text, or private
+  repository material from outside Meridian unless the user explicitly provides it for this repo and
+  it is safe to commit.
+- Do not store user preferences, user-profile facts, or cross-repository habits in repo-local memory.
+  The `user` and `global` tiers are disabled until an explicit opt-in design exists.
+- Keep receipts compact: report IDs, match reasons, stale warnings, and skipped scopes; do not paste
+  raw logs, secrets, or long source excerpts into receipts.
+- Redact sensitive values before adding validation evidence, source refs, progress summaries, or
+  promotion candidates. Prefer repo-relative paths and command names over machine-specific paths.
+- If sensitive material is discovered in memory, stop using the entry, remove or redact it in the
+  same change when safe, validate the index, and report the cleanup without repeating the secret.
 
 ## Meridian Seed Examples
 
@@ -444,12 +593,21 @@ The checker validates that:
 - Goal inventories used with `--goal` live under `.codex/memory/goals/`, contain progress inventory
   metadata, and point to an existing active task descriptor.
 - IDs are unique.
-- `source_refs` is non-empty, and missing repo-local source paths are emitted as warnings.
+- `source_refs` for repo-local source paths exist.
+- Repo-tier entries have at least one current repo-local source reference outside scoped memory.
+- Repo-tier entries do not carry task-only routing such as `load_when.task.ids` or task descriptor
+  path selectors.
+- `promotion_candidates` include source references, confidence, freshness, review date, invalidation
+  triggers, reason for broader persistence, and conflicting entries reviewed.
 - `review_after` values are valid ISO dates.
-- Entries whose `review_after` date has passed are visible as stale warnings and route through `--stale-only`.
-- `invalidates_when` is non-empty for every indexed entry.
-- Archive entries include `retired_because` and `replaced_by` retirement metadata.
-- Unknown active tiers, disabled tiers, and invalid scopes are rejected.
+- Expired entries are visible as stale warnings.
+- Unknown tiers, disabled `user`/`global` tiers, invalid scopes, and tier/file folder mismatches are
+  rejected.
+- `repo` entries have stable existing repo-local source references.
+- `task` entries have task descriptor or task-scope binding.
+- `branch` entries have branch invalidation rules.
+- `session` entries do not carry durable broad routing selectors unless promoted.
+- `archive` entries have no active `load_when` selectors and are dereferenced for active guidance.
 - Non-README memory files are indexed.
 - Task descriptor YAML files under `.codex/memory/tasks/` are exempt from entry indexing.
 - Goal inventory YAML files under `.codex/memory/goals/` are exempt from entry indexing.

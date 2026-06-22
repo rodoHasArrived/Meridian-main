@@ -321,10 +321,13 @@ task-stop evidence checks.
 - Keep the startup context receipt and tool/context change notice in the Codex execution contract
   and quickstart so users can see the active lane, loaded context, next evidence, and reason for
   meaningful tool or context expansion.
-- Use `.codex/memory/index.yml` selectively when a task descriptor, current intent, selected skill,
-  changed paths, branch, or explicit tags match a memory entry. Use `--receipt` for user-visible
-  reference/dereference notices, add `--explain` when scope sensitivity needs full routing detail,
-  and keep canonical docs and selected skills authoritative when memory disagrees.
+- Inspect `.codex/memory/index.yml` for memory-aware tasks before loading durable memory. Use
+  `.codex/memory/tasks/<task-id>.yml` descriptors for named scopes, issues, prompt families, or
+  planned-path boundaries, and load only entries selected by the descriptor, current intent,
+  selected skill, changed paths, branch, or explicit tags. Use `--receipt` for compact
+  user-visible reference/dereference notices, add `--explain` when scope sensitivity needs full
+  routing detail, and keep canonical docs, source, tests, scripts, scoped `AGENTS.md`, and selected
+  skills authoritative when memory disagrees.
 - Use `.codex/memory/goals/*.yml` inventories for very long Codex goals that need progress,
   evidence, next actions, and active task descriptor state across compaction or continuation. Update
   them through `--record-goal-progress` so the checker validates the write and prints a memory
@@ -378,8 +381,8 @@ Use the Codex skill checker for fast local drift detection:
 
 ```bash
 python3 build/scripts/docs/check-codex-memory.py --summary
-python3 build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary
-python3 build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --explain --summary
+python3 build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+python3 build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-codex-skills.py --json-output docs/generated/codex-skills-check.json
 python3 build/scripts/docs/validate-roadmap-registry.py --summary

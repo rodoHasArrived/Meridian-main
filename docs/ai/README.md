@@ -19,7 +19,13 @@ For every AI/systems task in this repository, use this canonical order:
 5. `docs/engineering/README.md` or `docs/product/README.md` / `docs/operators/README.md` as applicable
 6. `docs/documentation-ownership.md` for archive/generation ownership
 7. `docs/documentation-inventory.md` to update migration state and phase notes
-8. Targeted validation command set (`check-*` and structure checks)
+8. For memory-aware Codex tasks, inspect `.codex/memory/index.yml`; route named scopes through
+   `.codex/memory/tasks/<task-id>.yml`; route long-running work through
+   `.codex/memory/goals/<goal-id>.yml`; load only selected entries; emit compact receipts; and keep
+   canonical docs, source, tests, scripts, scoped `AGENTS.md`, and selected skills authoritative
+   over memory.
+9. Targeted validation command set (`check-*` and structure checks), including
+   `python build/scripts/docs/check-codex-memory.py --summary` after Codex memory changes
 
 Classify AI/doc changes in this rebuild model:
 
@@ -116,7 +122,10 @@ Before changing any AI/helping-agent guidance:
 Validate AI catalog consistency with:
 
 ```bash
-python3 build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+python -m unittest build.scripts.docs.tests.test_check_codex_memory
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
