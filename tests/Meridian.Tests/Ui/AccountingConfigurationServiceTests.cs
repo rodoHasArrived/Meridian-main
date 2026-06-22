@@ -1013,6 +1013,61 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntryLifecycle_RequiresTenantCompanyScopedEvidenceForTenantDrafts()
+    {
+        var configuration = CreateService();
+        await SeedManualJournalTenantConfigurationAsync(configuration, "tenant-alpha", "company-shared");
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry(),
+            "ops-user",
+            TenantId: "tenant-alpha",
+            CompanyId: "company-shared"));
+        var submitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version,
+            LedgerBookId: saved.LedgerBookId,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-shared"));
+
+        var bookScopedOnly = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntryId,
+            submitted.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.Version,
+            Notes: "Approved tenant-scoped manual journal.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted)],
+            LedgerBookId: submitted.LedgerBookId,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-shared"));
+        await bookScopedOnly.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+
+        var tenantScopedEvidence =
+            $"/api/workstation/evidence/subjects/accounting-record/approval/tenant/tenant-alpha/company/company-shared/ledger-book/{submitted.LedgerBookId:D}/{submitted.PeriodId}";
+        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntryId,
+            submitted.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.Version,
+            Notes: "Approved tenant-scoped manual journal.",
+            EvidenceLinks: [tenantScopedEvidence],
+            LedgerBookId: submitted.LedgerBookId,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-shared"));
+
+        approved.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Approved);
+        approved.JournalEntry.TenantId.Should().Be("tenant-alpha");
+        approved.JournalEntry.CompanyId.Should().Be("company-shared");
+        approved.Transition.EvidenceLinks.Should().Contain(tenantScopedEvidence);
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntryWorkbench_IsolatesPostedPrivateCapitalActivityByTenantAndCompanyScope()
     {
         var configuration = CreateService();

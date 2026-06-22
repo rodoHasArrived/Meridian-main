@@ -4566,7 +4566,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(link =>
             HasManualJournalEntryOrPeriodProvenance(journalEntry, link) &&
-            HasManualJournalLedgerBookProvenance(journalEntry, link));
+            HasManualJournalLedgerBookProvenance(journalEntry, link) &&
+            HasManualJournalTenantCompanyProvenance(journalEntry, link));
 
     private static bool HasManualJournalEntryOrPeriodProvenance(
         ManualJournalEntryDraftDto journalEntry,
@@ -4587,6 +4588,31 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         return evidenceLink.Contains(ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
                evidenceLink.Contains(ledgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasManualJournalTenantCompanyProvenance(
+        ManualJournalEntryDraftDto journalEntry,
+        string evidenceLink)
+        => ReferencesOptionalScope(evidenceLink, "tenant", "tenantId", journalEntry.TenantId) &&
+           ReferencesOptionalScope(evidenceLink, "company", "companyId", journalEntry.CompanyId);
+
+    private static bool ReferencesOptionalScope(
+        string evidenceLink,
+        string pathToken,
+        string queryToken,
+        string? scopeValue)
+    {
+        var normalized = NormalizeOptional(scopeValue);
+        if (normalized is null)
+        {
+            return true;
+        }
+
+        return evidenceLink.Contains($"{pathToken}:{normalized}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"{pathToken}/{normalized}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"{queryToken}={normalized}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"{queryToken}:{normalized}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"{queryToken}/{normalized}", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool HasManualJournalCorrectionEvidence(IReadOnlyList<string> evidenceLinks)
