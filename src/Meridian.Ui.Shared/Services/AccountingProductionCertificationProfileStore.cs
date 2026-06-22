@@ -228,6 +228,11 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             throw new ArgumentException("Accounting production certification evidence is required.");
         }
 
+        if (!profile.LedgerBookId.HasValue)
+        {
+            throw new ArgumentException("Accounting production certification profile ledger book is required.");
+        }
+
         if (!evidenceReferences.Any(reference =>
                 ReferencesScope(reference, tenantId) &&
                 ReferencesScope(reference, companyId) &&
@@ -235,6 +240,12 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
                 ReferencesLedgerBook(reference, profile.LedgerBookId)))
         {
             throw new ArgumentException("Accounting production certification evidence must identify the selected tenant, company, fund profile, and ledger book.");
+        }
+
+        if (DeclaresDimensionalReportingCertification(profile) &&
+            !evidenceReferences.Any(ReferencesDimensionScope))
+        {
+            throw new ArgumentException("Accounting production certification evidence must identify the certified dimension scope.");
         }
     }
 
@@ -254,9 +265,25 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
            profile.TrialBalanceDimensionFiltersCertified ||
            profile.ReportPackageDimensionProvenanceCertified;
 
+    private static bool DeclaresDimensionalReportingCertification(AccountingProductionCertificationProfileDto profile)
+        => profile.PeriodReportDimensionQueriesCertified ||
+           profile.CrossPeriodReportDimensionQueriesCertified ||
+           profile.JournalQueryDimensionFiltersCertified ||
+           profile.ExternalExportDimensionMappingCertified ||
+           profile.LedgerLineDimensionsPersistedCertified ||
+           profile.TrialBalanceDimensionFiltersCertified ||
+           profile.ReportPackageDimensionProvenanceCertified;
+
     private static bool ReferencesScope(string? reference, string value)
         => !string.IsNullOrWhiteSpace(reference) &&
            reference.Contains(value, StringComparison.OrdinalIgnoreCase);
+
+    private static bool ReferencesDimensionScope(string? reference)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           (reference.Contains("dimension-scope:", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("dimension-scope/", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("ledger-dimension-set:", StringComparison.OrdinalIgnoreCase) ||
+            reference.Contains("ledger-dimension-set/", StringComparison.OrdinalIgnoreCase));
 
     private static bool ReferencesLedgerBook(string? reference, Guid? ledgerBookId)
     {

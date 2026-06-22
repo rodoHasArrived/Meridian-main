@@ -4023,6 +4023,84 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksMissingLedgerBookScope()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    null,
+                    PostingRulesLedgerBookNativeCertified: true,
+                    JournalLifecycleLedgerBookNativeCertified: true,
+                    CloseReportingLedgerBookNativeCertified: true,
+                    ExternalGlLedgerBookNativeCertified: true,
+                    PeriodReportDimensionQueriesCertified: false,
+                    CrossPeriodReportDimensionQueriesCertified: false,
+                    JournalQueryDimensionFiltersCertified: false,
+                    ExternalExportDimensionMappingCertified: false,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences: ["evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/production-certification/full"],
+                    ReconciliationLedgerBookNativeCertified: true,
+                    DirectLendingLedgerBookNativeCertified: true,
+                    StrategyLedgerReadLedgerBookNativeCertified: true),
+                "spoofed-browser-user",
+                CorrelationId: "production-certification-missing-ledger-book")));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
+        problem.Errors.Should().ContainKey("request");
+        problem.Errors["request"].Should().Contain(error =>
+            error.Contains("ledger book is required", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksDimensionCertificationWithoutDimensionScopeEvidence()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    ExternalGlLedgerBookId,
+                    PostingRulesLedgerBookNativeCertified: true,
+                    JournalLifecycleLedgerBookNativeCertified: true,
+                    CloseReportingLedgerBookNativeCertified: true,
+                    ExternalGlLedgerBookNativeCertified: true,
+                    PeriodReportDimensionQueriesCertified: true,
+                    CrossPeriodReportDimensionQueriesCertified: true,
+                    JournalQueryDimensionFiltersCertified: true,
+                    ExternalExportDimensionMappingCertified: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences:
+                    [
+                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full"
+                    ],
+                    ReconciliationLedgerBookNativeCertified: true,
+                    DirectLendingLedgerBookNativeCertified: true,
+                    StrategyLedgerReadLedgerBookNativeCertified: true,
+                    LedgerLineDimensionsPersistedCertified: true,
+                    TrialBalanceDimensionFiltersCertified: true,
+                    ReportPackageDimensionProvenanceCertified: true),
+                "spoofed-browser-user",
+                CorrelationId: "production-certification-missing-dimension-scope")));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
+        problem.Errors.Should().ContainKey("request");
+        problem.Errors["request"].Should().Contain(error =>
+            error.Contains("certified dimension scope", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task AccountingSystemGovernedSetupEndpoints_RejectAssistantOriginMutations()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);

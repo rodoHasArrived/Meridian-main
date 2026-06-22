@@ -142,8 +142,9 @@ enterprise setup controls must retain evidence naming the selected tenant and co
 browser or WPF clients can save the profile.
 Production certification profile persistence fails closed with the same scope posture: profiles that
 certify ledger-book-native workflows or dimensional reporting controls must retain evidence naming
-the selected tenant, company, fund profile, and ledger book before browser or WPF clients can save
-the certification.
+the selected tenant, company, fund profile, and ledger book, and dimensional certification evidence
+must also identify the explicit dimension scope, before browser or WPF clients can save the
+certification.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained
