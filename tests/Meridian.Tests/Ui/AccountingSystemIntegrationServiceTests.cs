@@ -1968,6 +1968,15 @@ public sealed class AccountingSystemIntegrationServiceTests
             line.Debit == 248_750m).Subject;
         cashExportLine.ExternalDimensions.Should().NotBeNull();
         cashExportLine.ExternalDimensions!.ExternalGlDimensions["Class"].Should().Be("DefaultFund");
+        cashExportLine.MeridianDimensions.Should().NotBeNull();
+        cashExportLine.MeridianDimensions!.BookId.Should().Be(ExternalGlLedgerBookId.ToString("D"));
+        cashExportLine.MeridianDimensions.OrganizationId.Should().Be("org-meridian");
+        cashExportLine.MeridianDimensions.PortfolioId.Should().Be("portfolio-default-fund");
+        cashExportLine.MeridianDimensions.AccountId.Should().Be("account-operating-cash");
+        cashExportLine.MeridianDimensions.InstrumentId.Should().Be(ExternalGlDimensionInstrumentId);
+        cashExportLine.ExternalDimensions.BookId.Should().Be($"Book:{ExternalGlLedgerBookId:D}");
+        cashExportLine.ExternalDimensions.OrganizationId.Should().Be("quickbooks-fixture:Organization:Meridian");
+        cashExportLine.ExternalDimensions.AccountId.Should().Be("Account:qbo-1000");
         package.GeneratedLines.Should().OnlyContain(line => line.EvidenceLinks.Any(link => link.StartsWith("ledger-entry:", StringComparison.OrdinalIgnoreCase)));
     }
 
@@ -3238,43 +3247,51 @@ public sealed class AccountingSystemIntegrationServiceTests
     [Fact]
     public async Task CreateExportPackageAsync_DoesNotGenerateLinesWithoutCertifiedCompleteDimensionMapping()
     {
-        var service = CreateService();
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
         var profile = CertifiedQuickBooksMappingProfile() with
         {
-            ProfileId = "qbo-default-fund-uncertified-dimension-lines",
+            ProfileId = "qbo-default-fund-sparse-certified-dimension-lines",
             DimensionMappings =
             [
                 new DimensionMappingProfileDto(
-                    "qbo-default-fund-uncertified-dimension-lines",
-                    "Uncertified dimensions",
+                    "qbo-default-fund-sparse-certified-dimension-lines",
+                    "Sparse certified dimensions",
                     "quickbooks-fixture",
-                    new LedgerDimensionSetDto(FundId: "default-fund"),
-                    new LedgerDimensionSetDto(FundId: "Class:DefaultFund"),
-                    AccountingCertificationStateDto.ReadyForReview)
+                    new LedgerDimensionSetDto(FundId: "default-fund", EntityId: "fund-entity-main"),
+                    new LedgerDimensionSetDto(
+                        FundId: "Class:DefaultFund",
+                        EntityId: "Location:Main",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Class"] = "DefaultFund",
+                            ["Location"] = "Main"
+                        }),
+                    AccountingCertificationStateDto.Certified)
             ]
         };
         await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
             profile,
             "accounting-ops",
             FundProfileId: "default-fund",
-            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-uncertified-dimension-lines"]));
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-sparse-certified-dimension-lines"]));
 
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
             FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
             PeriodStart: new DateOnly(2026, 1, 1),
             PeriodEnd: new DateOnly(2026, 1, 31),
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
-            EvidenceLinks: ["approval:export-package:qbo-dimension-lines"]));
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
 
         package.GeneratedLines.Should().BeEmpty();
         package.Certification.Should().NotBeNull();
         package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
-        package.ValidationIssues.Should().Contain(issue =>
-            issue.Code == "UncertifiedExternalGlDimensionMapping" &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "UncertifiedExternalGlDimensionMapping");
         package.ValidationIssues.Should().Contain(issue =>
             issue.Code == "IncompleteExternalGlDimensionMapping" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
@@ -4436,6 +4453,55 @@ public sealed class AccountingSystemIntegrationServiceTests
             },
             BookId: ledgerBookId.ToString("D"));
 
+    private static readonly Guid ExternalGlDimensionInstrumentId = Guid.Parse("22222222-3333-4444-5555-666666666666");
+
+    private static LedgerDimensionSetDto CertifiedExternalGlMeridianDimensions(Guid ledgerBookId)
+        => new(
+            FundId: "default-fund",
+            EntityId: "fund-entity-main",
+            SleeveId: "sleeve-opportunistic-credit",
+            StrategyId: "strategy-income",
+            InvestorId: "investor-lp-alpha",
+            CapitalAccountId: "capital-account-lp-alpha",
+            InstrumentId: ExternalGlDimensionInstrumentId,
+            TaxLotId: "tax-lot-2026-001",
+            CostCenterId: "ops",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Class"] = "DefaultFund",
+                ["Location"] = "Main",
+                ["Department"] = "FundAccounting"
+            },
+            OrganizationId: "org-meridian",
+            PortfolioId: "portfolio-default-fund",
+            BookId: ledgerBookId.ToString("D"),
+            AccountId: "account-operating-cash");
+
+    private static LedgerDimensionSetDto CertifiedExternalGlProviderDimensions(
+        Guid ledgerBookId,
+        string providerId,
+        string fundDimension,
+        string entityDimension,
+        string accountDimension,
+        IReadOnlyDictionary<string, string> externalGlDimensions)
+        => new(
+            FundId: fundDimension,
+            EntityId: entityDimension,
+            SleeveId: $"{providerId}:Sleeve:OpportunisticCredit",
+            StrategyId: $"{providerId}:Strategy:Income",
+            InvestorId: $"{providerId}:Investor:LPAlpha",
+            CapitalAccountId: $"{providerId}:CapitalAccount:LPAlpha",
+            InstrumentId: ExternalGlDimensionInstrumentId,
+            TaxLotId: $"{providerId}:TaxLot:2026-001",
+            CostCenterId: $"{providerId}:CostCenter:Ops",
+            CounterpartyId: $"{providerId}:Counterparty:Administrator",
+            ExternalGlDimensions: externalGlDimensions,
+            OrganizationId: $"{providerId}:Organization:Meridian",
+            PortfolioId: $"{providerId}:Portfolio:DefaultFund",
+            BookId: $"Book:{ledgerBookId:D}",
+            AccountId: accountDimension);
+
     private sealed class PostingCapableAccountingSystemProvider : IAccountingSystemProvider
     {
         public string ProviderId => "posting-provider";
@@ -4709,14 +4775,18 @@ public sealed class AccountingSystemIntegrationServiceTests
                     "qbo-default-fund-dimensions",
                     "Default fund dimensions",
                     "quickbooks-fixture",
-                    new LedgerDimensionSetDto(FundId: "default-fund", EntityId: "fund-entity-main"),
-                    new LedgerDimensionSetDto(
-                        FundId: "Class:DefaultFund",
-                        EntityId: "Location:Main",
-                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    CertifiedExternalGlMeridianDimensions(ExternalGlLedgerBookId),
+                    CertifiedExternalGlProviderDimensions(
+                        ExternalGlLedgerBookId,
+                        "quickbooks-fixture",
+                        "Class:DefaultFund",
+                        "Location:Main",
+                        "Account:qbo-1000",
+                        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                         {
                             ["Class"] = "DefaultFund",
-                            ["Location"] = "Main"
+                            ["Location"] = "Main",
+                            ["Department"] = "FundAccounting"
                         }),
                     AccountingCertificationStateDto.Certified)
             ],
@@ -4761,14 +4831,18 @@ public sealed class AccountingSystemIntegrationServiceTests
                     $"{profileId}-dimensions",
                     "Default fund dimensions",
                     providerId,
-                    new LedgerDimensionSetDto(FundId: "default-fund", EntityId: "fund-entity-main"),
-                    new LedgerDimensionSetDto(
-                        FundId: $"{externalDimensionPrefix}:DefaultFund",
-                        EntityId: $"{externalDimensionPrefix}:Main",
-                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    CertifiedExternalGlMeridianDimensions(ExternalGlLedgerBookId),
+                    CertifiedExternalGlProviderDimensions(
+                        ExternalGlLedgerBookId,
+                        providerId,
+                        $"{externalDimensionPrefix}:DefaultFund",
+                        $"{externalDimensionPrefix}:Main",
+                        $"{externalDimensionPrefix}:OperatingCash",
+                        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                         {
                             ["Fund"] = "DefaultFund",
-                            ["Entity"] = "Main"
+                            ["Entity"] = "Main",
+                            ["Department"] = "FundAccounting"
                         }),
                     AccountingCertificationStateDto.Certified)
             ],

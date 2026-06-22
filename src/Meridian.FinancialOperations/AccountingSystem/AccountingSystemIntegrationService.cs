@@ -738,7 +738,7 @@ public sealed class AccountingSystemIntegrationService
                     AccountingConfigurationValidationSeverityDto.Critical,
                     $"External GL mapping profile '{mappingProfile.Profile.ProfileId}' has no dimension mappings.",
                     mappingProfile.Profile.ProfileId,
-                    "Map Meridian fund/entity/dimensional scopes to external GL dimensions before export certification."));
+                    "Map Meridian canonical accounting dimensions to external GL dimensions before export certification."));
             }
             else
             {
@@ -753,15 +753,15 @@ public sealed class AccountingSystemIntegrationService
                 }
 
                 foreach (var mapping in dimensionMappings.Where(static mapping =>
-                    !HasRequiredDimensionScope(mapping.MeridianDimensions) ||
-                    !HasRequiredDimensionScope(mapping.ExternalDimensions)))
+                    !HasRequiredExternalGlDimensionScope(mapping.MeridianDimensions) ||
+                    !HasRequiredExternalGlDimensionScope(mapping.ExternalDimensions)))
                 {
                     issues.Add(new AccountingConfigurationValidationIssueDto(
                         "IncompleteExternalGlDimensionMapping",
                         AccountingConfigurationValidationSeverityDto.Critical,
-                        $"External GL dimension mapping '{mapping.ProfileId}' is missing fund or entity scope.",
+                        $"External GL dimension mapping '{mapping.ProfileId}' is missing canonical accounting or external GL dimensional scope.",
                         mapping.ProfileId,
-                        "Map both fund and entity dimensions on the Meridian and external GL sides before export certification."));
+                        "Map fund, entity, ledger book, operating/investment dimensions, and external GL dimensions on both sides before export certification."));
                 }
             }
         }
@@ -885,9 +885,26 @@ public sealed class AccountingSystemIntegrationService
             : ExternalGlExportReconciliationSafeguardStateDto.Ready;
     }
 
-    private static bool HasRequiredDimensionScope(LedgerDimensionSetDto? dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions?.FundId) &&
-           !string.IsNullOrWhiteSpace(dimensions.EntityId);
+    private static bool HasRequiredExternalGlDimensionScope(LedgerDimensionSetDto? dimensions)
+        => dimensions is not null &&
+           !string.IsNullOrWhiteSpace(dimensions.FundId) &&
+           !string.IsNullOrWhiteSpace(dimensions.EntityId) &&
+           !string.IsNullOrWhiteSpace(dimensions.SleeveId) &&
+           !string.IsNullOrWhiteSpace(dimensions.StrategyId) &&
+           !string.IsNullOrWhiteSpace(dimensions.InvestorId) &&
+           !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) &&
+           dimensions.InstrumentId.HasValue &&
+           !string.IsNullOrWhiteSpace(dimensions.TaxLotId) &&
+           !string.IsNullOrWhiteSpace(dimensions.CostCenterId) &&
+           !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) &&
+           !string.IsNullOrWhiteSpace(dimensions.OrganizationId) &&
+           !string.IsNullOrWhiteSpace(dimensions.PortfolioId) &&
+           !string.IsNullOrWhiteSpace(dimensions.BookId) &&
+           !string.IsNullOrWhiteSpace(dimensions.AccountId) &&
+           dimensions.ExternalGlDimensions.Count > 0 &&
+           dimensions.ExternalGlDimensions.All(static pair =>
+               !string.IsNullOrWhiteSpace(pair.Key) &&
+               !string.IsNullOrWhiteSpace(pair.Value));
 
     private static IReadOnlyList<ExternalGlExportLineDto> BuildGeneratedExportLines(
         ScopedExternalGlMappingProfile? mappingProfile,
@@ -937,8 +954,8 @@ public sealed class AccountingSystemIntegrationService
         if (dimensionMappings.Count == 0 ||
             dimensionMappings.Any(static mapping =>
                 mapping.CertificationState != AccountingCertificationStateDto.Certified ||
-                !HasRequiredDimensionScope(mapping.MeridianDimensions) ||
-                !HasRequiredDimensionScope(mapping.ExternalDimensions)))
+                !HasRequiredExternalGlDimensionScope(mapping.MeridianDimensions) ||
+                !HasRequiredExternalGlDimensionScope(mapping.ExternalDimensions)))
         {
             return null;
         }
