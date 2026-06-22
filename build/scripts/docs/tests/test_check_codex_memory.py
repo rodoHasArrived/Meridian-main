@@ -321,7 +321,11 @@ class CheckCodexMemoryTests(unittest.TestCase):
             findings, _ = check_codex_memory.collect_findings(root)
 
             self.assertTrue(
-                any("source_refs must include at least one source reference" in finding.message for finding in findings)
+                any(
+                    "source_refs must include at least one source reference" in finding.message
+                    or "source_refs must contain at least one entry" in finding.message
+                    for finding in findings
+                )
             )
 
     def test_front_matter_invalid_confidence_freshness_and_review_date_fail(self) -> None:
@@ -390,6 +394,23 @@ class CheckCodexMemoryTests(unittest.TestCase):
             findings, _ = check_codex_memory.collect_findings(root)
 
             self.assertTrue(any("not listed" in finding.message for finding in findings))
+
+
+    def test_base_summary_reports_full_index_audit_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                status = check_codex_memory.main(["--root", str(root), "--summary"])
+
+            self.assertEqual(0, status)
+            output = stdout.getvalue()
+            self.assertIn("1 audited", output)
+            self.assertIn("audited: repo:validation", output)
+            self.assertNotIn("1 selected", output)
+            self.assertNotIn("selected: repo:validation", output)
 
     def test_paths_and_tags_select_routed_entries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -562,10 +583,12 @@ entries:
             output = stdout.getvalue()
             self.assertIn("task_descriptor_path: .codex/memory/tasks/task-a.yml", output)
             self.assertIn("selectors: branches=['feature/task-a']", output)
+            self.assertIn("1 selected", output)
             self.assertIn("selected: repo:validation", output)
             self.assertIn("skipped: repo:generic-tag", output)
             payload = json.loads(json_path.read_text(encoding="utf-8"))
             receipt = payload["memory_receipt"]
+            self.assertFalse(payload["audit_mode"])
             self.assertEqual(".codex/memory/tasks/task-a.yml", receipt["task_descriptor_path"])
             self.assertEqual(["feature/task-a"], receipt["selectors"]["branches"])
             self.assertEqual(1, receipt["selected_count"])
@@ -618,6 +641,11 @@ entries:
             archive_entry = archive_entry.replace("tier: repo", "tier: archive", 1)
             archive_entry = archive_entry.replace("scope: repo", "scope: archive", 1)
             archive_entry = archive_entry.replace("file: .codex/memory/repo/validation.md", "file: .codex/memory/archive/validation.md", 1)
+            archive_entry = archive_entry.replace("  skills:\n    - meridian-docs", "  skills: []", 1)
+            archive_entry = archive_entry.replace("  paths:\n    - docs/**", "  paths: []", 1)
+            archive_entry = archive_entry.replace("  intents:\n    - validation", "  intents: []", 1)
+            archive_entry = archive_entry.replace("  tags:\n    - validation", "  tags: []", 1)
+            archive_entry = archive_entry.rstrip() + "\nretired_because: Superseded by active validation memory.\nreplaced_by:\n  - repo-validation\n"
             write(root / ".codex" / "memory" / "index.yml", valid_index() + index_entry(archive_entry))
             write(root / ".codex" / "memory" / "archive" / "validation.md", memory_file_from_entry(archive_entry, "Archived"))
 
