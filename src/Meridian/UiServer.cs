@@ -24,7 +24,6 @@ using Meridian.QuantScript;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using Meridian.Ui.Services.Services.Reconciliation;
 using Meridian.Ui.Services.Services.Integrations;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
@@ -124,7 +123,6 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
         builder.Services.AddWorkstationSharedServices();
         builder.Services.AddOmsIntegrationApiHandlers();
-        builder.Services.AddSingleton<IReconciliationApiService, ReconciliationApiService>();
 
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
         {

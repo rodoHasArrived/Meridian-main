@@ -53,6 +53,12 @@ execution resolves to paper gateways unless live execution is explicitly enabled
 promotion claims must be tied to execution-governance audit or manual-override evidence before they
 are presented as readiness evidence.
 
+`UiServer` delegates workstation accounting and reconciliation adapter registration to
+`AddWorkstationSharedServices`. Statement reconciliation endpoints therefore use the shared
+Financial Operations-backed `IReconciliationApiService` adapter instead of a host-local override,
+so browser and desktop composition resolve the same statement-run, break, case, and queue-status
+projection path.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

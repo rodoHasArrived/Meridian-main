@@ -4,7 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
-using Meridian.Ui.Services.Services.Reconciliation;
+using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Ui;

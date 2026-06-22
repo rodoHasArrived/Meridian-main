@@ -1384,6 +1384,10 @@ statement-run intake and reconcile commands. Client-supplied `ImportedBy` or rec
 are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the
 reconciliation API service persists durable cases, comments, attachments, SLA metadata, and audit
 events.
+The shared workstation service graph registers that reconciliation API adapter over the Financial
+Operations statement-run workflow, so browser, host-served workstation, and desktop composition can
+resolve the same source-backed statement-run list, detail, break, case, and queue-status
+projections without a host-specific adapter override.
 
 Fund-structure endpoints expose `/api/fund-structure/ledger-mapping-view` as the shared accounting
 control surface for account ledger mappings. The endpoint returns server-derived assignment source,

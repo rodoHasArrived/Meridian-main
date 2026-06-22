@@ -371,6 +371,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<SecurityMasterExceptionCaseworkService>>()));
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService, ReconciliationApiService>();
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
