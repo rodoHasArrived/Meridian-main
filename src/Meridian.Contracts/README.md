@@ -220,8 +220,9 @@ evidence instead of relying on account or run names.
 external GL, reconciliation, direct-lending, and strategy-ledger-read controls as complete only when the certification flag is paired with retained
 ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
 certification packet. Ledger-book evidence must use an explicit `ledger-book:<id>`,
-`ledger-book/<id>`, or `book:<id>` marker; incidental bare GUID references and generic evidence
-links do not certify every workflow lane by implication.
+`ledger-book/<id>`, `book:<id>`, or `ledgerBookId=<id>` marker, with `ledgerBookId:<id>` and
+`ledgerBookId/<id>` accepted for route-shaped evidence; incidental bare GUID references and generic
+evidence links do not certify every workflow lane by implication.
 `AccountingDimensionalReportingReadinessDto` separately certifies posted ledger-line dimension
 persistence, trial-balance dimension filters, period reports, cross-period reports, journal
 dimension filters, report-package provenance, and external-export dimension mappings with retained
