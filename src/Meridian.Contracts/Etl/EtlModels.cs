@@ -318,7 +318,11 @@ public interface IPartnerFileParser
 {
     string SchemaId { get; }
     bool CanParse(EtlStagedFile file);
-    IAsyncEnumerable<PartnerRecordEnvelope> ParseAsync(EtlStagedFile file, EtlCheckpointToken? checkpoint, CancellationToken ct = default);
+    IAsyncEnumerable<PartnerRecordEnvelope> ParseAsync(
+        EtlStagedFile file,
+        EtlCheckpointToken? checkpoint,
+        string? schemaId = null,
+        CancellationToken ct = default);
 }
 
 /// <summary>Resolves CSV column schemas by partner schema ID.</summary>

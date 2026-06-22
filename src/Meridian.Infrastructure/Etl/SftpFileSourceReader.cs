@@ -22,10 +22,10 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         var uri = ParseUri(source.Location);
         using var client = CreateClient(source, uri);
         client.Connect();
-        var pattern = string.IsNullOrWhiteSpace(source.FilePattern) ? ".csv" : source.FilePattern!;
+        var pattern = string.IsNullOrWhiteSpace(source.FilePattern) ? "*.csv;*.xlsx" : source.FilePattern!;
         var files = client.ListDirectory(uri.AbsolutePath)
             .Where(f => !f.IsDirectory && !f.IsSymbolicLink)
-            .Where(f => Matches(f.Name, pattern))
+            .Where(f => MatchesAny(f.Name, pattern))
             .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
             .Select(f => new EtlRemoteFile
             {
@@ -63,6 +63,11 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         => new(location.StartsWith("sftp://", StringComparison.OrdinalIgnoreCase)
             ? location
             : throw new InvalidOperationException("SFTP source paths must be full sftp:// URIs in v1."));
+
+    private static bool MatchesAny(string fileName, string pattern)
+        => pattern
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(part => Matches(fileName, part));
 
     private static bool Matches(string fileName, string pattern)
         => pattern.StartsWith("*.", StringComparison.Ordinal)

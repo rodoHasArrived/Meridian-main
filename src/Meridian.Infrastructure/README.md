@@ -77,7 +77,9 @@ complete.
 
 ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts-owned
 `ISftpFilePublisher` port. Data Integration owns export behavior and composes the port; this layer
-only owns transport connection, directory creation, and upload mechanics.
+only owns transport connection, directory creation, and upload mechanics. Local and SFTP ETL source
+readers discover both CSV and XLSX partner files by default, with semicolon-delimited file patterns
+for scoped exchanges.
 
 Broker statement imports hash the source file bytes and persist the resulting content hash with a
 deterministic duplicate key derived from fund account, statement period, and source hash. Source

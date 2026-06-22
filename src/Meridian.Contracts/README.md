@@ -1182,6 +1182,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `TODO-SRC-CONTRACTS-001` | Complete W5 accounting record evidence-chain contract coverage | done | high |
 <!-- source-todos:end -->
 
+## API and contract notes
+
+`IPartnerFileParser.ParseAsync` accepts an optional partner schema id so ETL orchestrators can route CSV and Excel workbook rows through the persisted mapping schema while retaining checkpoint-aware streaming envelopes.
+
 ## Validation
 
 ```bash

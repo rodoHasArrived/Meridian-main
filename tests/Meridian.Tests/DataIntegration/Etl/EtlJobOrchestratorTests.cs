@@ -52,7 +52,7 @@ public sealed class EtlJobOrchestratorTests : IDisposable
             FlowDirection = EtlFlowDirection.Import,
             PartnerSchemaId = "partner.trades.csv.v1",
             LogicalSourceName = "partner-a",
-            Source = new EtlSourceDefinition { Kind = EtlSourceKind.Local, Location = inputDir, FilePattern = "*.csv" },
+            Source = new EtlSourceDefinition { Kind = EtlSourceKind.Local, Location = inputDir, FilePattern = "*.csv;*.xlsx" },
             Destination = new EtlDestinationDefinition { Kind = EtlDestinationKind.StorageCatalog },
             ContinueOnRecordError = true
         });
