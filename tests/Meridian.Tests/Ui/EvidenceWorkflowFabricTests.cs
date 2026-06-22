@@ -734,6 +734,25 @@ public sealed class EvidenceWorkflowFabricTests
         manualJournalService.PrivateCapitalActivityLedgerBookRequests.Should().OnlyContain(item => item == ledgerBookId);
 
         manualJournalService.PrivateCapitalActivityLedgerBookRequests.Clear();
+        var queryScopedFundEventSubjectId = $"{fundEventSubject.SubjectId}?ledgerBookId={ledgerBookId:D}";
+        var queryScopedPaymentSubjectId = $"payment:fund-alpha:capital-call:20260630?ledgerBookId={ledgerBookId:D}";
+
+        var queryScopedFundEventPacket = await graph.GetPacketAsync(
+            EvidenceSubjectResolver.PrivateCapitalFundEventKind,
+            queryScopedFundEventSubjectId);
+        var queryScopedPaymentPacket = await graph.GetPacketAsync(
+            EvidenceSubjectResolver.PaymentIntentKind,
+            queryScopedPaymentSubjectId);
+
+        queryScopedFundEventPacket.Should().NotBeNull();
+        queryScopedPaymentPacket.Should().NotBeNull();
+        queryScopedFundEventPacket!.Subject.SubjectId.Should().Be(fundEventSubject.SubjectId);
+        queryScopedPaymentPacket!.Subject.SubjectId.Should().Be("payment:fund-alpha:capital-call:20260630");
+        queryScopedFundEventPacket.Subject.LedgerBookId.Should().Be(ledgerBookId);
+        queryScopedPaymentPacket.Subject.LedgerBookId.Should().Be(ledgerBookId);
+        manualJournalService.PrivateCapitalActivityLedgerBookRequests.Should().OnlyContain(item => item == ledgerBookId);
+
+        manualJournalService.PrivateCapitalActivityLedgerBookRequests.Clear();
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-book-scope", Guid.NewGuid().ToString("N"));
         await using var app = await CreateEvidenceAppAsync(root, manualJournalService: manualJournalService);
         var client = app.GetTestClient();

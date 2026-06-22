@@ -339,11 +339,12 @@ public sealed class EvidenceSubjectResolver
             return null;
         }
 
-        var fundProfileId = TryResolveFundProfileIdFromFundEventId(subjectId);
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        var fundProfileId = TryResolveFundProfileIdFromFundEventId(canonicalSubjectId);
         ledgerBookId ??= TryResolveLedgerBookId(subjectId);
         var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var record = activity.FundEventRecords.FirstOrDefault(item =>
-            string.Equals(item.FundEventId, subjectId, StringComparison.OrdinalIgnoreCase));
+            string.Equals(item.FundEventId, canonicalSubjectId, StringComparison.OrdinalIgnoreCase));
         if (record is null)
         {
             return null;
@@ -367,12 +368,14 @@ public sealed class EvidenceSubjectResolver
             return null;
         }
 
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
         if (ledgerBookId.HasValue)
         {
-            var fundProfileId = TryResolveFundProfileIdFromPaymentIntentId(subjectId);
+            var fundProfileId = TryResolveFundProfileIdFromPaymentIntentId(canonicalSubjectId);
             var scopedActivity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
             var scopedWorkflow = scopedActivity.PaymentIntents
-                .FirstOrDefault(item => string.Equals(item.PaymentIntentId, subjectId, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(item => string.Equals(item.PaymentIntentId, canonicalSubjectId, StringComparison.OrdinalIgnoreCase));
             if (scopedWorkflow is not null)
             {
                 return new EvidenceSubjectDto(
@@ -393,7 +396,7 @@ public sealed class EvidenceSubjectResolver
                 service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, ct))).ConfigureAwait(false);
         var workflow = activities
             .SelectMany(static activity => activity.PaymentIntents)
-            .FirstOrDefault(item => string.Equals(item.PaymentIntentId, subjectId, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(item => string.Equals(item.PaymentIntentId, canonicalSubjectId, StringComparison.OrdinalIgnoreCase));
         if (workflow is null)
         {
             return null;
@@ -422,6 +425,14 @@ public sealed class EvidenceSubjectResolver
         }
 
         return $"/accounting/journal-entries?{string.Join("&", query)}";
+    }
+
+    private static string StripQueryScope(string subjectId)
+    {
+        var queryStart = subjectId.IndexOf('?', StringComparison.Ordinal);
+        return queryStart < 0
+            ? subjectId.Trim()
+            : subjectId[..queryStart].Trim();
     }
 
     private static Guid? TryResolveLedgerBookId(string subjectId)

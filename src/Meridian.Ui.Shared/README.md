@@ -471,7 +471,11 @@ retained artifact, not just the journal entry or accounting period. Manual journ
 `/api/ledger/journal-entry-workbench/evidence`; it requires the current draft version, validates
 line-scoped attachments, writes `manual-je.attach-evidence` audit, and refuses posted, reversed,
 rebooked, or close-locked entries so evidence changes happen before posting or through correction
-drafts. The same workbench service now enforces request-level period-lock posture across save,
+drafts. Evidence subject resolution also normalizes `ledgerBookId` query scope carried on
+private-capital fund-event and payment-intent subject ids before matching retained records, then
+returns the canonical subject id with the resolved book scope so evidence packets do not fall back
+to fund-level activity when callers pass encoded book-scoped subject links. The same workbench
+service now enforces request-level period-lock posture across save,
 submit, evidence attachment, and lifecycle mutations; validation remains read-only and returns a
 critical `manual-je.period-locked` issue for locked periods. When a manual journal uses a
 GUID-backed ledger period id and the ledger journal store is registered, validation also verifies
