@@ -865,9 +865,13 @@ public sealed class FundLedgerViewModelTests
                 ["Department"] = "InvestmentOps",
                 ["Class"] = "PrivateCredit"
             },
+            OrganizationId: "org-alpha",
             PortfolioId: "portfolio-credit",
             BookId: "book-gaap",
-            AccountId: "acct-operating");
+            AccountId: "acct-operating",
+            CustomerId: "customer-alpha",
+            VendorId: "vendor-admin",
+            ProjectId: "project-close");
         var trialBalanceLine = new FundTrialBalanceLine(
             AccountName: "Receivable",
             AccountType: "Asset",
@@ -882,7 +886,14 @@ public sealed class FundLedgerViewModelTests
         trialInspector.Facts.Should().Contain(fact => fact.Label == "Fund" && fact.Value == "fund-alpha");
         trialInspector.Facts.Should().Contain(fact => fact.Label == "Entity" && fact.Value == "entity-master");
         trialInspector.Facts.Should().Contain(fact => fact.Label == "Sleeve" && fact.Value == "sleeve-credit");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Strategy" && fact.Value == "strategy-income");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Cost center" && fact.Value == "cost-center-ops");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Counterparty" && fact.Value == "counterparty-bank");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Organization" && fact.Value == "org-alpha");
         trialInspector.Facts.Should().Contain(fact => fact.Label == "Account scope" && fact.Value == "acct-operating");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Customer" && fact.Value == "customer-alpha");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Vendor" && fact.Value == "vendor-admin");
+        trialInspector.Facts.Should().Contain(fact => fact.Label == "Project" && fact.Value == "project-close");
         trialInspector.Facts.Should().Contain(fact =>
             fact.Label == "External GL" &&
             fact.Value.Contains("Class: PrivateCredit", StringComparison.Ordinal) &&
@@ -907,7 +918,14 @@ public sealed class FundLedgerViewModelTests
 
         journalInspector.Facts.Should().Contain(fact => fact.Label == "Fund" && fact.Value == "fund-alpha");
         journalInspector.Facts.Should().Contain(fact => fact.Label == "Entity" && fact.Value == "entity-master");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Strategy" && fact.Value == "strategy-income");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Cost center" && fact.Value == "cost-center-ops");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Counterparty" && fact.Value == "counterparty-bank");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Organization" && fact.Value == "org-alpha");
         journalInspector.Facts.Should().Contain(fact => fact.Label == "Account scope" && fact.Value == "acct-operating");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Customer" && fact.Value == "customer-alpha");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Vendor" && fact.Value == "vendor-admin");
+        journalInspector.Facts.Should().Contain(fact => fact.Label == "Project" && fact.Value == "project-close");
         journalInspector.Facts.Should().Contain(fact => fact.Label == "External GL" && fact.Value.Contains("PrivateCredit", StringComparison.Ordinal));
     }
 
@@ -1810,6 +1828,14 @@ public sealed class FundLedgerViewModelTests
                 viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
                     column.Header == "Sleeve" && column.BindingPath == "Dimensions.SleeveId");
                 viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Strategy" && column.BindingPath == "Dimensions.StrategyId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Cost Center" && column.BindingPath == "Dimensions.CostCenterId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Counterparty" && column.BindingPath == "Dimensions.CounterpartyId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Book" && column.BindingPath == "Dimensions.BookId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
                     column.Header == "Account Scope" && column.BindingPath == "Dimensions.AccountId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Fund" && column.BindingPath == "Dimensions.FundId");
@@ -1817,6 +1843,14 @@ public sealed class FundLedgerViewModelTests
                     column.Header == "Entity" && column.BindingPath == "Dimensions.EntityId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Sleeve" && column.BindingPath == "Dimensions.SleeveId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Strategy" && column.BindingPath == "Dimensions.StrategyId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Cost Center" && column.BindingPath == "Dimensions.CostCenterId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Counterparty" && column.BindingPath == "Dimensions.CounterpartyId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Book" && column.BindingPath == "Dimensions.BookId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Account Scope" && column.BindingPath == "Dimensions.AccountId");
                 var entityView = viewModel.LedgerDimensions.Single(view => view.Key == "entity-linked");
