@@ -1745,31 +1745,46 @@ public sealed class AccountingProductionReadinessService
                 issues,
                 AccountingMigrationRunKindDto.LedgerBookScope,
                 request.LedgerBookMigrationCertified,
-                "Certify ledger-book scoping and historical fund-level compatibility paths before production cutover."),
+                "Certify ledger-book scoping and historical fund-level compatibility paths before production cutover.",
+                1,
+                []),
             BuildMigrationRolloutPlanItem(
                 request,
                 issues,
                 AccountingMigrationRunKindDto.HistoricalJournalBackfill,
                 request.HistoricalJournalBackfillCertified,
-                "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting."),
+                "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
+                2,
+                [AccountingMigrationRunKindDto.LedgerBookScope]),
             BuildMigrationRolloutPlanItem(
                 request,
                 issues,
                 AccountingMigrationRunKindDto.DimensionalBackfill,
                 request.DimensionalBackfillCertified,
-                "Backfill and verify canonical dimensions across retained journal lines and report inputs."),
+                "Backfill and verify canonical dimensions across retained journal lines and report inputs.",
+                3,
+                [AccountingMigrationRunKindDto.LedgerBookScope, AccountingMigrationRunKindDto.HistoricalJournalBackfill]),
             BuildMigrationRolloutPlanItem(
                 request,
                 issues,
                 AccountingMigrationRunKindDto.AccountingConfigurationPromotion,
                 request.AccountingConfigurationPromotionCertified,
-                "Retain promotion evidence for chart, rule, policy, and approval-state migration before rollout."),
+                "Retain promotion evidence for chart, rule, policy, and approval-state migration before rollout.",
+                4,
+                [AccountingMigrationRunKindDto.LedgerBookScope, AccountingMigrationRunKindDto.DimensionalBackfill]),
             BuildMigrationRolloutPlanItem(
                 request,
                 issues,
                 AccountingMigrationRunKindDto.CloseReportingEvidence,
                 request.CloseReportingEvidenceMigrationCertified,
-                "Retain close checklist, report package, certification, and restatement evidence migration proof before production close.")
+                "Retain close checklist, report package, certification, and restatement evidence migration proof before production close.",
+                5,
+                [
+                    AccountingMigrationRunKindDto.LedgerBookScope,
+                    AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                    AccountingMigrationRunKindDto.DimensionalBackfill,
+                    AccountingMigrationRunKindDto.AccountingConfigurationPromotion
+                ])
         ];
     }
 
@@ -1778,9 +1793,18 @@ public sealed class AccountingProductionReadinessService
         IReadOnlyList<AccountingProductionReadinessIssueDto> issues,
         AccountingMigrationRunKindDto kind,
         bool certified,
-        string defaultRequiredAction)
+        string defaultRequiredAction,
+        int sequence,
+        IReadOnlyList<AccountingMigrationRunKindDto> dependencies)
     {
         var kindCode = MigrationKindCode(kind);
+        var dependencyCodes = dependencies
+            .Select(MigrationKindCode)
+            .ToArray();
+        var dependencyBlockingIssueCodes = dependencies
+            .Where(dependency => !IsMigrationDependencyReady(request, issues, dependency))
+            .Select(dependency => $"migration.dependency-{MigrationKindCode(dependency)}-not-ready")
+            .ToArray();
         var scopedArtifacts = request.MigrationRunArtifacts
             .Where(artifact => artifact.Kind == kind && IsMigrationArtifactInScope(request, artifact))
             .OrderByDescending(static artifact => artifact.StartedAtUtc)
@@ -1799,12 +1823,15 @@ public sealed class AccountingProductionReadinessService
                 issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
                 issue.Code.Contains(kindCode, StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        var status = blockingIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+        var status = blockingIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical) ||
+                     dependencyBlockingIssueCodes.Length > 0
             ? AccountingProductionReadinessStatusDto.Blocked
             : blockingIssues.Length > 0 || !certified
                 ? AccountingProductionReadinessStatusDto.ReviewRequired
                 : AccountingProductionReadinessStatusDto.Ready;
-        var requiredAction = blockingIssues
+        var requiredAction = dependencyBlockingIssueCodes.Length > 0
+            ? $"Complete dependent migration controls first: {string.Join(", ", dependencyCodes)}."
+            : blockingIssues
             .OrderByDescending(static issue => issue.Severity)
             .Select(static issue => issue.SuggestedAction)
             .FirstOrDefault(static action => !string.IsNullOrWhiteSpace(action)) ?? defaultRequiredAction;
@@ -1822,7 +1849,51 @@ public sealed class AccountingProductionReadinessService
             scopedArtifacts.Sum(static artifact => artifact.MigratedRecordCount),
             scopedArtifacts.Sum(static artifact => artifact.IssueCount),
             evidenceReferences,
-            blockingIssues.Select(static issue => issue.Code).Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+            blockingIssues
+                .Select(static issue => issue.Code)
+                .Concat(dependencyBlockingIssueCodes)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            sequence,
+            dependencyCodes,
+            BuildMigrationRolloutActionRoute(request));
+    }
+
+    private static bool IsMigrationKindCertified(
+        AccountingProductionReadinessRequestDto request,
+        AccountingMigrationRunKindDto kind)
+        => kind switch
+        {
+            AccountingMigrationRunKindDto.LedgerBookScope => request.LedgerBookMigrationCertified,
+            AccountingMigrationRunKindDto.HistoricalJournalBackfill => request.HistoricalJournalBackfillCertified,
+            AccountingMigrationRunKindDto.DimensionalBackfill => request.DimensionalBackfillCertified,
+            AccountingMigrationRunKindDto.AccountingConfigurationPromotion => request.AccountingConfigurationPromotionCertified,
+            AccountingMigrationRunKindDto.CloseReportingEvidence => request.CloseReportingEvidenceMigrationCertified,
+            _ => false
+        };
+
+    private static bool IsMigrationDependencyReady(
+        AccountingProductionReadinessRequestDto request,
+        IReadOnlyList<AccountingProductionReadinessIssueDto> issues,
+        AccountingMigrationRunKindDto dependency)
+    {
+        var dependencyCode = MigrationKindCode(dependency);
+        return IsMigrationKindCertified(request, dependency) &&
+               !issues.Any(issue =>
+                   issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
+                   issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+                   issue.Code.Contains(dependencyCode, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string BuildMigrationRolloutActionRoute(AccountingProductionReadinessRequestDto request)
+    {
+        var route = $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId={Uri.EscapeDataString(NormalizeFundProfileId(request.FundProfileId))}";
+        if (request.LedgerBookId is Guid ledgerBookId)
+        {
+            route += $"&ledgerBookId={ledgerBookId:D}";
+        }
+
+        return route;
     }
 
     private static string BuildMigrationRolloutScopeLabel(AccountingProductionReadinessRequestDto request)

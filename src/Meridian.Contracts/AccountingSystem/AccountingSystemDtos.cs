@@ -661,13 +661,19 @@ public sealed record AccountingMigrationRolloutPlanItemDto(
     int MigratedRecordCount = 0,
     int IssueCount = 0,
     IReadOnlyList<string>? EvidenceReferences = null,
-    IReadOnlyList<string>? BlockingIssueCodes = null)
+    IReadOnlyList<string>? BlockingIssueCodes = null,
+    int Sequence = 0,
+    IReadOnlyList<string>? DependencyCodes = null,
+    string? ActionRoute = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
 
     public IReadOnlyList<string> BlockingIssueCodes { get; init; } =
         BlockingIssueCodes ?? [];
+
+    public IReadOnlyList<string> DependencyCodes { get; init; } =
+        DependencyCodes ?? [];
 }
 
 public sealed record AccountingProductionGapDto(

@@ -137,6 +137,18 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
             component.Summary.Contains("migration control", StringComparison.OrdinalIgnoreCase));
+        readiness.MigrationRolloutPlan.Should().HaveCount(5);
+        readiness.MigrationRolloutPlan.Should().Contain(row =>
+            row.Kind == AccountingMigrationRunKindDto.LedgerBookScope &&
+            row.Sequence == 1 &&
+            row.DependencyCodes.Count == 0 &&
+            row.ActionRoute == $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId=default-fund&ledgerBookId={ledgerBookId:D}");
+        readiness.MigrationRolloutPlan.Should().Contain(row =>
+            row.Kind == AccountingMigrationRunKindDto.DimensionalBackfill &&
+            row.Sequence == 3 &&
+            row.DependencyCodes.SequenceEqual(new[] { "ledger-book-scope", "historical-journal-backfill" }) &&
+            row.BlockingIssueCodes.Contains("migration.dependency-ledger-book-scope-not-ready") &&
+            row.BlockingIssueCodes.Contains("migration.dependency-historical-journal-backfill-not-ready"));
         readiness.ProductionGaps.Should().HaveCount(5);
         readiness.ProductionGaps.Should().Contain(gap =>
             gap.Code == "multi-ledger-native-workflows" &&
@@ -1123,19 +1135,27 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.MigrationRolloutPlan.Should().HaveCount(5);
         readiness.MigrationRolloutPlan.Should().Contain(row =>
             row.Kind == AccountingMigrationRunKindDto.LedgerBookScope &&
+            row.Sequence == 1 &&
+            row.DependencyCodes.Count == 0 &&
+            row.ActionRoute == $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId=default-fund" &&
             row.Status == AccountingProductionReadinessStatusDto.Ready &&
             row.LatestRunId == "migration-run-ledger-book-scope-default-fund" &&
             row.MigratedRecordCount == 24 &&
             row.EvidenceReferences.Contains("evidence://migration/ledger-book-scope/default-fund"));
         readiness.MigrationRolloutPlan.Should().Contain(row =>
             row.Kind == AccountingMigrationRunKindDto.HistoricalJournalBackfill &&
+            row.Sequence == 2 &&
+            row.DependencyCodes.SequenceEqual(new[] { "ledger-book-scope" }) &&
             row.Status == AccountingProductionReadinessStatusDto.Blocked &&
             row.BlockingIssueCodes.Contains("migration.historical-journal-backfill-certified-run-missing"));
         readiness.MigrationRolloutPlan.Should().Contain(row =>
             row.Kind == AccountingMigrationRunKindDto.DimensionalBackfill &&
+            row.Sequence == 3 &&
+            row.DependencyCodes.SequenceEqual(new[] { "ledger-book-scope", "historical-journal-backfill" }) &&
             row.Status == AccountingProductionReadinessStatusDto.Blocked &&
             row.LatestRunStatus == AccountingMigrationRunStatusDto.Failed &&
-            row.BlockingIssueCodes.Contains("migration.dimensional-backfill-run-failed"));
+            row.BlockingIssueCodes.Contains("migration.dimensional-backfill-run-failed") &&
+            row.BlockingIssueCodes.Contains("migration.dependency-historical-journal-backfill-not-ready"));
         readiness.Issues.Should().Contain(issue =>
             issue.Code == "migration.historical-journal-backfill-certified-run-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
