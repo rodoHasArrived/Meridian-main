@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -170,7 +171,7 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        return request.Artifact with
+        var artifact = request.Artifact with
         {
             RunId = request.Artifact.RunId.Trim(),
             Actor = string.IsNullOrWhiteSpace(request.Artifact.Actor) ? request.Actor.Trim() : request.Artifact.Actor.Trim(),
@@ -180,6 +181,8 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
             Summary = string.IsNullOrWhiteSpace(request.Artifact.Summary) ? null : request.Artifact.Summary.Trim(),
             EvidenceReferences = evidence
         };
+        EnsureCertifiedArtifactScope(artifact);
+        return artifact;
     }
 
     private async Task<AccountingMigrationRunArtifactSnapshot> ReadSnapshotAsync(CancellationToken ct)
@@ -242,6 +245,145 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
         if (actionOrigin != OperationsActionOriginDto.HumanOperator)
         {
             throw new ArgumentException("Only a human operator can retain accounting migration run artifacts.", nameof(actionOrigin));
+        }
+    }
+
+    private static void EnsureCertifiedArtifactScope(AccountingMigrationRunArtifactDto artifact)
+    {
+        if (artifact.Status != AccountingMigrationRunStatusDto.Certified)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(artifact.TenantId))
+        {
+            throw new ArgumentException("Certified migration run artifacts require tenant scope.", nameof(artifact));
+        }
+
+        if (string.IsNullOrWhiteSpace(artifact.CompanyId))
+        {
+            throw new ArgumentException("Certified migration run artifacts require company scope.", nameof(artifact));
+        }
+
+        if (string.IsNullOrWhiteSpace(artifact.FundProfileId))
+        {
+            throw new ArgumentException("Certified migration run artifacts require fund profile scope.", nameof(artifact));
+        }
+
+        if (!artifact.LedgerBookId.HasValue)
+        {
+            throw new ArgumentException("Certified migration run artifacts require ledger book scope.", nameof(artifact));
+        }
+
+        if (artifact.CompletedAtUtc is null)
+        {
+            throw new ArgumentException("Certified migration run artifacts require retained completion evidence.", nameof(artifact));
+        }
+
+        if (artifact.IssueCount > 0)
+        {
+            throw new ArgumentException("Certified migration run artifacts cannot retain unresolved issue counts.", nameof(artifact));
+        }
+
+        if (artifact.EvidenceReferences.Count == 0)
+        {
+            throw new ArgumentException("Certified migration run artifacts require retained evidence references.", nameof(artifact));
+        }
+
+        if (artifact.Kind == AccountingMigrationRunKindDto.DimensionalBackfill)
+        {
+            EnsureCertifiedDimensionalBackfillScope(artifact);
+        }
+    }
+
+    private static void EnsureCertifiedDimensionalBackfillScope(AccountingMigrationRunArtifactDto artifact)
+    {
+        if (artifact.Dimensions is null)
+        {
+            throw new ArgumentException("Certified dimensional backfill artifacts require retained ledger dimensions.", nameof(artifact));
+        }
+
+        var ledgerBookId = artifact.LedgerBookId?.ToString("D");
+        if (!string.Equals(artifact.Dimensions.FundId, artifact.FundProfileId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(artifact.Dimensions.BookId, ledgerBookId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Certified dimensional backfill artifacts require dimensions matching the retained fund and ledger book scope.", nameof(artifact));
+        }
+
+        var missingCanonicalDimensions = MissingCanonicalProductionDimensions(artifact.Dimensions)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static dimension => dimension, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (missingCanonicalDimensions.Length > 0)
+        {
+            throw new ArgumentException(
+                $"Certified dimensional backfill artifacts are missing canonical production dimension coverage: {string.Join(", ", missingCanonicalDimensions)}.",
+                nameof(artifact));
+        }
+    }
+
+    private static IEnumerable<string> MissingCanonicalProductionDimensions(LedgerDimensionSetDto dimensions)
+    {
+        if (string.IsNullOrWhiteSpace(dimensions.FundId))
+        {
+            yield return "fund";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.BookId))
+        {
+            yield return "ledger book";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.EntityId))
+        {
+            yield return "entity";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.SleeveId))
+        {
+            yield return "sleeve";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.StrategyId))
+        {
+            yield return "strategy";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.InvestorId))
+        {
+            yield return "investor";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CapitalAccountId))
+        {
+            yield return "capital account";
+        }
+
+        if (!dimensions.InstrumentId.HasValue)
+        {
+            yield return "instrument";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.TaxLotId))
+        {
+            yield return "tax lot";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CostCenterId))
+        {
+            yield return "cost center";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CounterpartyId))
+        {
+            yield return "counterparty";
+        }
+
+        if (dimensions.ExternalGlDimensions.Count == 0 ||
+            dimensions.ExternalGlDimensions.Any(static pair =>
+                string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value)))
+        {
+            yield return "external GL";
         }
     }
 

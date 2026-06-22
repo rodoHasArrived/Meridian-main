@@ -295,7 +295,13 @@ import external GL data, post journals, certify exports, or close periods.
 Certified migration run artifacts also stay blocked when they lack retained completion evidence or
 carry a nonzero issue count, so incomplete or unresolved ledger-book, historical journal,
 dimensional, configuration-promotion, or close/reporting evidence migrations cannot serve as
-production rollout proof.
+production rollout proof. The shared migration artifact store rejects certified artifacts before
+persistence unless they carry tenant, company, fund, ledger-book, completion, clean issue-count, and
+retained evidence scope. Certified dimensional-backfill artifacts must additionally retain
+canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
+tax-lot, cost-center, counterparty, and external-GL dimensions matching the certified book. Planned,
+running, completed, and failed artifacts can still be retained as operator evidence without being
+treated as certified rollout proof.
 Dimensional accounting readiness also fails closed until period report filters, cross-period
 report filters, journal dimension filters, posted ledger-line dimensions, trial-balance filters,
 report-package provenance, and external-export dimension mappings are certified

@@ -1277,7 +1277,9 @@ public sealed class AccountingSystemIntegrationServiceTests
                 EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/certified"],
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
-                Summary: "Ledger-book migration scope certified."),
+                Summary: "Ledger-book migration scope certified.",
+                TenantId: "company-alpha",
+                CompanyId: "company-alpha"),
             "controller",
             CorrelationId: "migration-ledger-book-scope-default-fund"));
 
@@ -1355,13 +1357,13 @@ public sealed class AccountingSystemIntegrationServiceTests
             new AccountingMigrationRunArtifactDto(
                 "migration-run-ledger-book-scope-unscoped",
                 AccountingMigrationRunKindDto.LedgerBookScope,
-                AccountingMigrationRunStatusDto.Certified,
+                AccountingMigrationRunStatusDto.Completed,
                 DateTimeOffset.Parse("2026-02-02T00:00:00Z"),
                 CompletedAtUtc: DateTimeOffset.Parse("2026-02-02T00:05:00Z"),
                 MigratedRecordCount: 42,
-                EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/unscoped-certified"],
+                EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/unscoped-completed"],
                 FundProfileId: "default-fund",
-                Summary: "Fund-level ledger-book migration was certified before book-specific rollout."),
+                Summary: "Fund-level ledger-book migration completed before book-specific certification."),
             "controller",
             CorrelationId: "migration-ledger-book-scope-unscoped"));
 
@@ -3697,7 +3699,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 new AccountingMigrationRunArtifactDto(
                     "migration-run-dimensional-backfill-unscoped",
                     AccountingMigrationRunKindDto.DimensionalBackfill,
-                    AccountingMigrationRunStatusDto.Certified,
+                    AccountingMigrationRunStatusDto.Completed,
                     DateTimeOffset.Parse("2026-03-01T01:00:00Z"),
                     CompletedAtUtc: DateTimeOffset.Parse("2026-03-01T01:15:00Z"),
                     MigratedRecordCount: 800,
@@ -3740,6 +3742,106 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
             component.EvidenceReferences.Contains("approval:dimensional-backfill:default-fund"));
+    }
+
+    [Fact]
+    public async Task AccountingSystemMigrationRunArtifactEndpoints_BlockCertifiedRunWithoutLedgerBookScope()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRunArtifacts,
+            JsonContent(new AccountingMigrationRunArtifactUpsertRequestDto(
+                new AccountingMigrationRunArtifactDto(
+                    "migration-run-ledger-book-scope-missing-book",
+                    AccountingMigrationRunKindDto.LedgerBookScope,
+                    AccountingMigrationRunStatusDto.Certified,
+                    DateTimeOffset.Parse("2026-03-02T00:00:00Z"),
+                    CompletedAtUtc: DateTimeOffset.Parse("2026-03-02T00:15:00Z"),
+                    MigratedRecordCount: 275,
+                    IssueCount: 0,
+                    EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/certified"],
+                    FundProfileId: "default-fund",
+                    Summary: "Certified ledger-book migration missing book scope."),
+                "spoofed-browser-user",
+                CorrelationId: "ledger-book-scope-missing-book")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("ledger book scope");
+    }
+
+    [Fact]
+    public async Task AccountingSystemMigrationRunArtifactEndpoints_BlockCertifiedRunWithRetainedIssues()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var response = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRunArtifacts,
+            JsonContent(new AccountingMigrationRunArtifactUpsertRequestDto(
+                new AccountingMigrationRunArtifactDto(
+                    "migration-run-historical-backfill-with-issues",
+                    AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                    AccountingMigrationRunStatusDto.Certified,
+                    DateTimeOffset.Parse("2026-03-02T00:00:00Z"),
+                    CompletedAtUtc: DateTimeOffset.Parse("2026-03-02T00:15:00Z"),
+                    MigratedRecordCount: 275,
+                    IssueCount: 2,
+                    EvidenceReferences: ["evidence://migration/historical-journal-backfill/default-fund/certified-with-issues"],
+                    FundProfileId: "default-fund",
+                    LedgerBookId: ledgerBookId,
+                    Summary: "Certified historical journal backfill retained unresolved issues."),
+                "spoofed-browser-user",
+                CorrelationId: "historical-backfill-with-issues")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("unresolved issue");
+    }
+
+    [Fact]
+    public async Task AccountingSystemMigrationRunArtifactEndpoints_BlockCertifiedDimensionalBackfillWithoutCanonicalDimensions()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var response = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRunArtifacts,
+            JsonContent(new AccountingMigrationRunArtifactUpsertRequestDto(
+                new AccountingMigrationRunArtifactDto(
+                    "migration-run-dimensional-backfill-sparse",
+                    AccountingMigrationRunKindDto.DimensionalBackfill,
+                    AccountingMigrationRunStatusDto.Certified,
+                    DateTimeOffset.Parse("2026-03-02T00:00:00Z"),
+                    CompletedAtUtc: DateTimeOffset.Parse("2026-03-02T00:15:00Z"),
+                    MigratedRecordCount: 275,
+                    IssueCount: 0,
+                    EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/sparse"],
+                    FundProfileId: "default-fund",
+                    LedgerBookId: ledgerBookId,
+                    Summary: "Certified dimensional backfill retained sparse dimensions.",
+                    Dimensions: new LedgerDimensionSetDto(
+                        FundId: "default-fund",
+                        BookId: ledgerBookId.ToString("D"),
+                        EntityId: "entity-alpha",
+                        CostCenterId: "ops",
+                        CounterpartyId: "administrator",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["department"] = "fund-accounting"
+                        })),
+                "spoofed-browser-user",
+                CorrelationId: "dimensional-backfill-sparse")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("canonical production dimension coverage");
+        body.Should().Contain("capital account");
+        body.Should().Contain("tax lot");
     }
 
     [Fact]
