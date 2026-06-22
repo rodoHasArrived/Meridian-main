@@ -118,6 +118,20 @@ public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaste
         => NotConfigured<SecurityAliasDto>();
 }
 
+
+public sealed class NullCorporateActionCommandService : ICorporateActionCommandService
+{
+    public Task<CorporateActionAppendResult> AppendAsync(
+        Guid securityId,
+        CorporateActionDto action,
+        string? actor,
+        string source,
+        CancellationToken ct = default)
+        => Task.FromException<CorporateActionAppendResult>(new InvalidOperationException(
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Conflict service — returns empty lists (no conflicts to show when not configured)
 // ──────────────────────────────────────────────────────────────────────────────

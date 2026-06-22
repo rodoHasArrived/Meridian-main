@@ -191,6 +191,30 @@ public sealed class FinancialRecordExplorerViewModelTests
         actions.Select(static action => action.TargetPageTag).Should().Contain(["SecurityMaster", "FundAuditTrail"]);
     }
 
+
+    [Fact]
+    public void BuildPresentation_SecurityInstrumentExplorer_ShouldPreserveSharedDtoParityFields()
+    {
+        var dto = CreateSecurityInstrumentExplorerDto();
+
+        var presentation = FinancialRecordExplorerViewModel.BuildPresentation(dto);
+        var inspector = FinancialRecordExplorerViewModel.BuildRecordInspector(dto.SelectedRecord!);
+        var actions = dto.SelectedRecord!.ProofActions
+            .Select(FinancialRecordExplorerViewModel.FinancialRecordExplorerActionModel.FromDto)
+            .ToArray();
+
+        presentation.Rows.Should().ContainSingle(row =>
+            row.Cells["security"] == "Apple Inc." &&
+            row.Cells["identifierConfidence"] == "96%" &&
+            row.Cells["operations"] == "Ready" &&
+            row.Cells["ledger"] == "1 projection");
+        presentation.Table.Columns.Select(static column => column.BindingPath).Should().Contain(
+            ["Cells[security]", "Cells[identifierConfidence]", "Cells[operations]", "Cells[cashFlow]", "Cells[ledger]"]);
+        inspector.Facts.Select(static fact => fact.Label).Should().Contain(
+            ["Instrument Identity", "Provider Evidence", "AssetOperations Readiness", "Ledger Impact", "Report Usage"]);
+        actions.Select(static action => action.TargetPageTag).Should().Contain(["SecurityMaster", "FundAuditTrail", "ReportLineProvenanceExplorer"]);
+    }
+
     [Theory]
     [InlineData("LedgerExplorer", "ledger")]
     [InlineData("PortfolioExplorer", "portfolio")]
@@ -241,6 +265,92 @@ public sealed class FinancialRecordExplorerViewModelTests
         action.IsEnabled.Should().BeTrue();
         action.TargetPageTag.Should().Be(expectedPageTag);
         action.DisabledReason.Should().BeEmpty();
+    }
+
+
+    private static FinancialRecordExplorerDto CreateSecurityInstrumentExplorerDto()
+    {
+        const string securityHref = "/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111";
+        const string passportHref = "/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111/passport";
+        const string operationsHref = "/api/workstation/assets/11111111-1111-1111-1111-111111111111/operations";
+        const string reportHref = "/api/workstation/financial-record-explorers/report-line-provenance?lineKey=holdings.aapl.market-value&sourceId=AAPL";
+        var detail = new FinancialRecordExplorerSelectedRecordDto(
+            "security:11111111-1111-1111-1111-111111111111",
+            "security-instrument",
+            "Apple Inc.",
+            "AAPL · USD · Equity",
+            "Security Master identity with provider, operations, ledger, and report proof.",
+            FinancialRecordExplorerTone.Success,
+            Fields:
+            [
+                new("Instrument Identity", "Apple Inc. / AAPL", "SecurityId 11111111-1111-1111-1111-111111111111.", FinancialRecordExplorerTone.Success),
+                new("Provider Evidence", "Polygon primary · 96%", passportHref, FinancialRecordExplorerTone.Success),
+                new("AssetOperations Readiness", "Ready", operationsHref, FinancialRecordExplorerTone.Success),
+                new("Ledger Impact", "1 projection", "Ledger projection retained for the instrument.", FinancialRecordExplorerTone.Info),
+                new("Report Usage", "1 report line", reportHref, FinancialRecordExplorerTone.Info)
+            ],
+            ProofActions:
+            [
+                new("open-security-master", "Open Security Master", "Open Security Master detail.", securityHref, Tone: FinancialRecordExplorerTone.Success),
+                new("open-instrument-passport", "Open instrument passport", "Open provider evidence.", passportHref, Tone: FinancialRecordExplorerTone.Success),
+                new("open-asset-operations", "Open AssetOperations", "Open operations readiness.", operationsHref, Tone: FinancialRecordExplorerTone.Info),
+                new("open-report-line-provenance", "Open report-line provenance", "Open report usage.", reportHref, Tone: FinancialRecordExplorerTone.Info)
+            ],
+            UsedIn:
+            [
+                new("portfolio", "Portfolio position", "Portfolio uses Apple Inc.", "/api/workstation/financial-record-explorers/portfolio", FinancialRecordExplorerTone.Info),
+                new("ledger", "Ledger trial balance", "Ledger projection uses Apple Inc.", "/api/workstation/financial-record-explorers/ledger", FinancialRecordExplorerTone.Info),
+                new("report", "Report-line provenance", "Board pack reports Apple Inc.", reportHref, FinancialRecordExplorerTone.Info)
+            ],
+            Impacts:
+            [
+                new("passport", "Instrument passport", "Provider confidence and identity evidence.", passportHref, FinancialRecordExplorerTone.Success),
+                new("operations", "AssetOperations readiness", "Cash-flow and reconciliation readiness.", operationsHref, FinancialRecordExplorerTone.Success),
+                new("ledger", "Ledger projection", "Ledger impact is retained.", "/api/workstation/runs/run-1/ledger/journal", FinancialRecordExplorerTone.Info)
+            ],
+            FullRecordHref: securityHref);
+
+        return new FinancialRecordExplorerDto(
+            "security-instrument",
+            "Security & Instrument Explorer",
+            "Explore Security Master references used by retained accounting and portfolio records.",
+            "Source-backed Security Master references from run run-1.",
+            IsBlocked: false,
+            BlockedReason: string.Empty,
+            ScopeItems: [new("Run", "run-1")],
+            SavedViews: [new("system-security-instrument-default", "Security references", "Default security view.", IsSystem: true, IsActive: true, Filters: [])],
+            SummaryItems: [new("Securities", "1", "Distinct resolved instruments.")],
+            Filters: [new("coverage", "Coverage", "Resolved")],
+            Columns:
+            [
+                new("security", "Security", Width: 220),
+                new("identifierConfidence", "Identifier Confidence", Width: 170),
+                new("operations", "Operations", Width: 140),
+                new("cashFlow", "Cash Flow", Width: 120),
+                new("ledger", "Ledger", Width: 120)
+            ],
+            Rows:
+            [
+                new(
+                    "security:11111111-1111-1111-1111-111111111111",
+                    "security-instrument",
+                    "Apple Inc.",
+                    "AAPL",
+                    "Resolved",
+                    FinancialRecordExplorerTone.Success,
+                    Cells:
+                    [
+                        new("security", "Apple Inc.", "Apple Inc.", FinancialRecordExplorerTone.Success, securityHref),
+                        new("identifierConfidence", "96%", "0.96", FinancialRecordExplorerTone.Success, passportHref),
+                        new("operations", "Ready", "Ready", FinancialRecordExplorerTone.Success, operationsHref),
+                        new("cashFlow", "1 projected", "1", FinancialRecordExplorerTone.Info, operationsHref),
+                        new("ledger", "1 projection", "1", FinancialRecordExplorerTone.Info, "/api/workstation/runs/run-1/ledger/journal")
+                    ],
+                    detail)
+            ],
+            SelectedRecord: detail,
+            ProofActions: [],
+            RecordGraph: new FinancialRecordExplorerRecordGraphDto([], []));
     }
 
     private static FinancialRecordExplorerDto CreateExplorerDto(
