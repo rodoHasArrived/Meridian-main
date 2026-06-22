@@ -107,6 +107,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
                 sp.GetService<ILedgerJournalStore>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
+        services.TryAddSingleton<IAccountingMigrationRunArtifactStore>(sp =>
+            new FileAccountingMigrationRunArtifactStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "migration-run-artifacts.json"),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingMigrationRunArtifactStore>>()));
         services.TryAddSingleton<IAccountingTenantAdministrationProfileStore>(sp =>
             new FileAccountingTenantAdministrationProfileStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "tenant-administration-profiles.json"),

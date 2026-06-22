@@ -99,8 +99,9 @@ treasury ledger context expected by the approval service, including effective da
 fund-event, capital-account, investor, payment, and settlement references.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
-and manual journal drafts in `workstation/accounting/manual-journal-drafts.json` under the
-configured workstation data root.
+manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration
+run evidence in `workstation/accounting/migration-run-artifacts.json` under the configured
+workstation data root.
 
 `FinancialRecordExplorerPage` is the generic WPF consumer for the shared Financial Record Explorer
 DTO. `LedgerExplorer`, `PortfolioExplorer`, `SecurityInstrumentExplorer`, and
