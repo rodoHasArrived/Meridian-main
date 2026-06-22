@@ -188,6 +188,7 @@ vi.mock("@/lib/api", async () => {
     getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
     getLatestAccountingSystemReconciliation: vi.fn().mockResolvedValue(null),
     getAccountingSystemMappingProfiles: vi.fn().mockResolvedValue([]),
+    listAccountingSystemExportPackages: vi.fn().mockResolvedValue([]),
     getAccountingMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "default-fund", ledgerBookId: null, artifacts: [] }),
     createAccountingSystemExportPackage: vi.fn(),
     getAccountingSystemExportPackageManifest: vi.fn(),
@@ -2574,6 +2575,25 @@ describe("AccountingScreen", () => {
         ]
       }
     };
+    const retainedHistoryPackage: ExternalGlExportPackage = {
+      ...exportPackage,
+      exportPackageId: "external-gl-export-quickbooks-fixture-default-fund-20251231",
+      periodStart: "2025-12-01",
+      periodEnd: "2025-12-31",
+      createdAtUtc: "2026-01-02T00:10:00Z",
+      certification: {
+        certificationId: "external-gl-export-cert-qbo-fixture-20251231",
+        state: "Certified",
+        actor: "browser-accounting-controller",
+        recordedAtUtc: "2026-01-02T00:15:00Z",
+        summary: "Prior retained guarded external GL export package was certified.",
+        evidenceLinks: [
+          "external-gl-reconciliation:gl-recon-qbo-fixture-20251231",
+          "external-gl-export-certification:external-gl-export-quickbooks-fixture-default-fund-20251231"
+        ]
+      },
+      validationIssues: []
+    };
     const exportManifest: ExternalGlExportPackageManifest = {
       exportPackageId: exportPackage.exportPackageId,
       providerId: exportPackage.providerId,
@@ -2604,6 +2624,7 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getLatestAccountingSystemImport).mockResolvedValueOnce(importDetail);
     vi.mocked(api.getLatestAccountingSystemReconciliation).mockResolvedValueOnce(reconciliation);
     vi.mocked(api.getAccountingSystemMappingProfiles).mockResolvedValueOnce(mappingProfiles);
+    vi.mocked(api.listAccountingSystemExportPackages).mockResolvedValueOnce([retainedHistoryPackage]);
     vi.mocked(api.createAccountingSystemExportPackage).mockResolvedValueOnce(exportPackage);
     vi.mocked(api.getAccountingSystemExportPackageManifest)
       .mockResolvedValueOnce(exportManifest)
@@ -2643,6 +2664,18 @@ describe("AccountingScreen", () => {
     expect(safeguards).toHaveTextContent("Not loaded");
     expect(safeguards).toHaveTextContent("Live external posting gate");
     expect(safeguards).toHaveTextContent("Disabled");
+    expect(api.listAccountingSystemExportPackages).toHaveBeenCalledWith(expect.objectContaining({
+      providerId: "quickbooks-fixture",
+      fundProfileId: "default-fund",
+      ledgerBookId: null
+    }));
+
+    const packageHistory = await screen.findByLabelText("External GL export package history");
+    expect(packageHistory).toHaveTextContent("1 retained package");
+    expect(packageHistory).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20251231");
+    expect(packageHistory).toHaveTextContent("Certified");
+    expect(packageHistory).toHaveTextContent("Posting");
+    expect(packageHistory).toHaveTextContent("Disabled");
 
     await userEvent.click(screen.getByRole("button", { name: "Create export package" }));
 
@@ -2658,6 +2691,8 @@ describe("AccountingScreen", () => {
     expect(safeguards).toHaveTextContent("0123456789ab");
     expect(safeguards).toHaveTextContent("0 generated mapped export line(s) retained for review.");
     expect(safeguards).toHaveTextContent("1 package validation issue(s) retained; none are critical.");
+    expect(packageHistory).toHaveTextContent("2 retained packages");
+    expect(packageHistory).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20260131");
     expect(api.createAccountingSystemExportPackage).toHaveBeenCalledWith(expect.objectContaining({
       actor: "browser-accounting-operator",
       providerId: "quickbooks-fixture",

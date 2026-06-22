@@ -148,7 +148,10 @@ certify it. The browser also renders export
 safeguards for balanced reconciliation, certified mapping coverage, critical package blockers,
 manifest hash/line retention, and disabled live-posting posture while shared policy remains
 authoritative. Live external GL posting remains disabled by shared policy and is not inferred in
-React.
+React. The same panel queries retained guarded export package history for the selected provider,
+fund, and ledger book, then renders certification state, evidence count, validation issue count,
+period, created timestamp, and disabled-posting posture so operators can review prior export
+artifacts without re-entering package ids.
 The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
 so the browser renders the Books Before Broker preview entry point without crashing while endpoint
 request wiring remains a follow-on workflow.

@@ -25,6 +25,7 @@ import {
   getFinancialRecordExplorer,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
+  listAccountingSystemExportPackages,
   previewAccountingSystemImport,
   rejectOperationsContinuityWorkflow,
   saveFinancialRecordExplorerView
@@ -503,6 +504,7 @@ function AccountingSystemReconciliationPanel({
   mappingProfiles,
   exportPackage,
   exportManifest,
+  exportPackages,
   exportBusy,
   certifyBusy,
   actionMessage,
@@ -519,6 +521,7 @@ function AccountingSystemReconciliationPanel({
   mappingProfiles: ExternalGlMappingProfile[];
   exportPackage: ExternalGlExportPackage | null;
   exportManifest: ExternalGlExportPackageManifest | null;
+  exportPackages: ExternalGlExportPackage[];
   exportBusy: boolean;
   certifyBusy: boolean;
   actionMessage: string | null;
@@ -548,6 +551,7 @@ function AccountingSystemReconciliationPanel({
   const exportSafeguards = reconciliation
     ? buildExternalGlExportSafeguards(reconciliation, selectedMappingProfile, exportPackage, exportManifest)
     : [];
+  const retainedExportPackages = exportPackages.slice(0, 5);
   const exportDisabledReason = !reconciliation
     ? "Load external GL reconciliation before creating an export package."
     : !selectedMappingProfile
@@ -829,6 +833,45 @@ function AccountingSystemReconciliationPanel({
                   </div>
                 </div>
               ) : null}
+              <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2" aria-label="External GL export package history">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Retained package history</div>
+                    <div className="mt-1 text-[11px] text-muted-foreground">
+                      {exportPackages.length} retained package{exportPackages.length === 1 ? "" : "s"} for the selected provider, fund, and ledger book.
+                    </div>
+                  </div>
+                  <Badge variant={exportPackages.length > 0 ? "success" : "outline"}>{exportPackages.length}</Badge>
+                </div>
+                {retainedExportPackages.length > 0 ? (
+                  <div className="mt-2 space-y-2">
+                    {retainedExportPackages.map((packageRow) => (
+                      <div key={packageRow.exportPackageId} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="truncate font-semibold text-foreground">{packageRow.exportPackageId}</div>
+                            <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                              {packageRow.periodStart}{" -> "}{packageRow.periodEnd} | {formatApprovalDate(packageRow.createdAtUtc)}
+                            </div>
+                          </div>
+                          <Badge variant={packageRow.certification?.state === "Certified" ? "success" : packageRow.certification?.state === "ReadyForReview" ? "warning" : "outline"}>
+                            {packageRow.certification?.state ?? "Uncertified"}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 grid gap-1 sm:grid-cols-3">
+                          <AccountingValue label="Evidence" value={String(packageRow.evidenceLinks.length)} />
+                          <AccountingValue label="Issues" value={String(packageRow.validationIssues.length)} />
+                          <AccountingValue label="Posting" value={packageRow.postingEnabled ? "Enabled" : "Disabled"} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    No retained guarded export packages have been loaded for this scope.
+                  </p>
+                )}
+              </div>
               {evidencePackages.length > 0 ? (
                 <div className="mt-3 space-y-2" aria-label="External GL evidence packages">
                   {evidencePackages.map((evidencePackage) => (
@@ -948,6 +991,14 @@ function formatGlAmount(value: number, currency: string): string {
     currency: currency || "USD",
     maximumFractionDigits: 2
   }).format(value);
+}
+
+function mergeExternalGlExportPackage(
+  packages: ExternalGlExportPackage[],
+  nextPackage: ExternalGlExportPackage
+): ExternalGlExportPackage[] {
+  const remaining = packages.filter((packageRow) => packageRow.exportPackageId !== nextPackage.exportPackageId);
+  return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
 function AccountingApprovalsWorkstream() {
@@ -1440,6 +1491,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [accountingSystemMappingProfiles, setAccountingSystemMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
   const [accountingSystemExportPackage, setAccountingSystemExportPackage] = useState<ExternalGlExportPackage | null>(null);
   const [accountingSystemExportManifest, setAccountingSystemExportManifest] = useState<ExternalGlExportPackageManifest | null>(null);
+  const [accountingSystemExportPackages, setAccountingSystemExportPackages] = useState<ExternalGlExportPackage[]>([]);
   const [accountingSystemExportBusy, setAccountingSystemExportBusy] = useState(false);
   const [accountingSystemCertifyBusy, setAccountingSystemCertifyBusy] = useState(false);
   const [accountingSystemActionMessage, setAccountingSystemActionMessage] = useState<string | null>(null);
@@ -1604,10 +1656,18 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           : getLatestAccountingSystemImport(),
         getLatestAccountingSystemReconciliation()
       ]);
+      const exportPackages = reconciliationDetail
+        ? await listAccountingSystemExportPackages({
+          providerId: reconciliationDetail.providerId,
+          fundProfileId: reconciliationDetail.fundProfileId,
+          ledgerBookId: importDetail?.summary.ledgerBookId ?? null
+        })
+        : [];
       setAccountingSystemProviders(providers);
       setAccountingSystemMappingProfiles(mappingProfiles);
       setAccountingSystemImport(importDetail);
       setAccountingSystemReconciliation(reconciliationDetail);
+      setAccountingSystemExportPackages(exportPackages);
       setAccountingSystemExportManifest(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to load external GL reconciliation.";
@@ -1664,6 +1724,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       const exportPackage = await createAccountingSystemExportPackage(request);
       const manifest = await getAccountingSystemExportPackageManifest(exportPackage.exportPackageId);
       setAccountingSystemExportPackage(exportPackage);
+      setAccountingSystemExportPackages((packages) => mergeExternalGlExportPackage(packages, exportPackage));
       setAccountingSystemExportManifest(manifest);
       setAccountingSystemActionMessage(`Export package ${exportPackage.exportPackageId} created as a guarded artifact.`);
       setAccountingSystemActionTone(exportPackage.validationIssues.length > 0 ? "warning" : "success");
@@ -1700,6 +1761,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       });
       const manifest = await getAccountingSystemExportPackageManifest(certified.exportPackageId);
       setAccountingSystemExportPackage(certified);
+      setAccountingSystemExportPackages((packages) => mergeExternalGlExportPackage(packages, certified));
       setAccountingSystemExportManifest(manifest);
       setAccountingSystemActionMessage(`Certified external GL export package ${certified.exportPackageId}.`);
       setAccountingSystemActionTone("success");
@@ -1972,6 +2034,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         mappingProfiles={accountingSystemMappingProfiles}
         exportPackage={accountingSystemExportPackage}
         exportManifest={accountingSystemExportManifest}
+        exportPackages={accountingSystemExportPackages}
         exportBusy={accountingSystemExportBusy}
         certifyBusy={accountingSystemCertifyBusy}
         actionMessage={accountingSystemActionMessage}

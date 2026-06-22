@@ -6233,7 +6233,7 @@ const fixtures = {
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest]: fixtureAccountingSystemReconciliation,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles]: fixtureAccountingSystemMappingProfiles,
-  [ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages]: fixtureAccountingSystemExportPackage,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages]: [fixtureAccountingSystemExportPackage],
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts]: {
     fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
     ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId,
