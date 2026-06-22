@@ -67,6 +67,7 @@ ALLOWED_CONFIDENCE = {"low", "medium", "high"}
 ALLOWED_FRESHNESS = {"fresh", "review-soon", "stale", "unknown"}
 ALLOWED_GOAL_STATUS = {"active", "blocked", "complete", "abandoned"}
 ALLOWED_PROGRESS_STATUS = {"pending", "in_progress", "completed", "blocked", "deferred"}
+ARCHIVE_REQUIRED_FIELDS = {"retired_because", "replaced_by"}
 TIER_PRECEDENCE = {"task": 1, "branch": 2, "repo": 3, "session": 4, "archive": 5}
 
 
@@ -235,6 +236,16 @@ def validate_string_list(value: Any, field: str, path: str) -> list[Finding]:
     return []
 
 
+def validate_non_empty_string_list(value: Any, field: str, path: str) -> list[Finding]:
+    findings = validate_string_list(value, field, path)
+    if findings:
+        return findings
+    assert isinstance(value, list)
+    if not value:
+        return [Finding("error", path, f"{field} must contain at least one entry.")]
+    return []
+
+
 def validate_optional_string_list(value: Any, field: str, path: str) -> list[Finding]:
     if value is None:
         return []
@@ -300,7 +311,7 @@ def validate_iso_timestamp(value: Any, field: str, path: str) -> list[Finding]:
 def validate_source_refs(root: Path, entry: dict[str, Any], path: str) -> list[Finding]:
     findings: list[Finding] = []
     source_refs = entry.get("source_refs")
-    findings.extend(validate_string_list(source_refs, "source_refs", path))
+    findings.extend(validate_non_empty_string_list(source_refs, "source_refs", path))
     if findings:
         return findings
     assert isinstance(source_refs, list)
@@ -311,7 +322,23 @@ def validate_source_refs(root: Path, entry: dict[str, Any], path: str) -> list[F
         source_path, path_findings = safe_repo_relative_path(root, source_ref, path)
         findings.extend(path_findings)
         if source_path is not None and not source_path.exists():
-            findings.append(Finding("error", path, f"source_ref does not exist: {source_ref}"))
+            findings.append(Finding("warning", path, f"source_ref does not exist: {source_ref}"))
+    return findings
+
+
+def validate_archive_metadata(entry: dict[str, Any], path: str) -> list[Finding]:
+    if entry.get("tier") != "archive":
+        return []
+    findings: list[Finding] = []
+    missing = sorted(ARCHIVE_REQUIRED_FIELDS - set(entry))
+    for field in missing:
+        findings.append(Finding("error", path, f"Archive memory entry is missing {field}."))
+    retired_because = entry.get("retired_because")
+    if "retired_because" in entry and (not isinstance(retired_because, str) or not retired_because.strip()):
+        findings.append(Finding("error", path, "retired_because must explain why the archive entry was retired."))
+    replaced_by = entry.get("replaced_by")
+    if "replaced_by" in entry:
+        findings.extend(validate_string_list(replaced_by, "replaced_by", path))
     return findings
 
 
@@ -401,7 +428,8 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
 
     findings.extend(validate_scope(entry, finding_path))
     findings.extend(validate_string_list(entry.get("tags"), "tags", finding_path))
-    findings.extend(validate_string_list(entry.get("invalidates_when"), "invalidates_when", finding_path))
+    findings.extend(validate_non_empty_string_list(entry.get("invalidates_when"), "invalidates_when", finding_path))
+    findings.extend(validate_archive_metadata(entry, finding_path))
     findings.extend(validate_load_when(entry, finding_path))
     findings.extend(validate_exclude_when(entry, finding_path))
     findings.extend(validate_source_refs(root, entry, finding_path))
@@ -419,7 +447,10 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
         findings.append(Finding("error", finding_path, "file must be a string."))
         return entry, findings
 
-    memory_file, file_findings = safe_memory_path(root, raw_file, finding_path)
+    if tier == "archive":
+        memory_file, file_findings = safe_repo_relative_path(root, raw_file, finding_path)
+    else:
+        memory_file, file_findings = safe_memory_path(root, raw_file, finding_path)
     findings.extend(file_findings)
     if memory_file is None:
         return entry, findings
@@ -434,7 +465,10 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     if front_findings:
         return entry, findings
 
-    for field in REQUIRED_FIELDS:
+    required_front_fields = set(REQUIRED_FIELDS)
+    if tier == "archive":
+        required_front_fields.update(ARCHIVE_REQUIRED_FIELDS)
+    for field in required_front_fields:
         if field not in front_matter:
             findings.append(Finding("error", rel(root, memory_file), f"Memory front matter is missing {field}."))
     for field in ("id", "tier", "scope", "file", "confidence", "freshness", "review_after"):
@@ -1281,7 +1315,8 @@ def validate_entry_shape_for_stub(root: Path, entry: dict[str, Any], seen_ids: s
         findings.append(Finding("error", path, f"Invalid stub tier: {entry['tier']}"))
     findings.extend(validate_scope(entry, path))
     findings.extend(validate_string_list(entry.get("tags"), "tags", path))
-    findings.extend(validate_string_list(entry.get("invalidates_when"), "invalidates_when", path))
+    findings.extend(validate_non_empty_string_list(entry.get("invalidates_when"), "invalidates_when", path))
+    findings.extend(validate_archive_metadata(entry, path))
     findings.extend(validate_load_when(entry, path))
     findings.extend(validate_exclude_when(entry, path))
     findings.extend(validate_source_refs(root, entry, path))
@@ -1528,6 +1563,8 @@ def archive_entry_for(root: Path, data: dict[str, Any], source_path: Path, promo
             "Archived source no longer has audit value.",
             "Replacement guidance changes materially.",
         ],
+        "retired_because": "Source session memory was promoted and retired to preserve an audit trail.",
+        "replaced_by": [str(promoted_entry.get("id", ""))],
     }
 
 

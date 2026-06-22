@@ -115,9 +115,11 @@ Each `entries` item in `.codex/memory/index.yml` must contain:
 | `exclude_when` | object | No | Negative selectors for `skills`, `paths`, `intents`, `branches`, `tags`, and `task_ids`; any match prevents loading. |
 | `confidence` | string | Yes | `low`, `medium`, or `high`. |
 | `freshness` | string | Yes | `fresh`, `review-soon`, `stale`, or `unknown`. |
-| `source_refs` | string array | Yes | Repo files or other explicit evidence supporting the memory. Repo-tier entries require existing repo paths. |
-| `review_after` | ISO date | Yes | Date after which the memory must be reviewed before being trusted as current guidance. |
-| `invalidates_when` | string array | Yes | Conditions that make the memory unsafe until reviewed. |
+| `source_refs` | non-empty string array | Yes | Repo files, URLs, or other explicit evidence supporting the memory. Missing repo-local paths are warnings that require review. |
+| `review_after` | ISO date | Yes | Date after which the memory is treated as stale until reviewed against its source references. |
+| `invalidates_when` | non-empty string array | Yes | Concrete conditions that make the memory unsafe until reviewed. |
+| `retired_because` | string | Archive only | Required for `archive` entries; explains why the memory was retired. |
+| `replaced_by` | string array | Archive only | Required for `archive` entries; lists replacement entry IDs, docs, or an explicit no-replacement marker. |
 
 `load_when.task` is required on every indexed entry and supports:
 
@@ -367,7 +369,7 @@ Promotion hygiene:
 - Do not promote secrets, personal data, copied proprietary text, raw logs, or private preferences.
 - Deduplicate before promotion. Update an existing entry when the new observation refines the same
   guidance.
-- Include exact `source_refs`, `review_after`, and concrete `invalidates_when` triggers.
+- Include exact non-empty `source_refs`, a future `review_after`, and concrete non-empty `invalidates_when` triggers.
 - Prefer concise entries and link to canonical docs instead of restating long instructions.
 - Record `promotion_candidates` in session or task notes only as reviewed candidates with target
   tier, source evidence, and reason; keep promotion explicit through `--promote-session`.
@@ -382,9 +384,10 @@ Before using a memory entry as guidance, check:
 
 - `freshness`: `fresh` is normal; `review-soon` is cautionary; `stale` and `unknown` require
   verification.
-- `review_after`: if the date has passed, verify against source references before relying on it.
-- `source_refs`: if referenced paths no longer exist or materially changed, review the memory.
-- `invalidates_when`: if any condition is true, do not rely on the entry until updated.
+- `review_after`: if the date has passed, the checker marks the entry stale; verify against source references before relying on it.
+- `source_refs`: every indexed entry must name at least one source; if referenced repo-local paths no longer exist or materially changed, review the memory.
+- `invalidates_when`: every indexed entry must name at least one invalidation trigger; if any condition is true, do not rely on the entry until updated.
+- `archive` retirement metadata: archived entries must explain why they were retired and list replacement guidance or an explicit no-replacement marker.
 
 Source precedence:
 
@@ -432,7 +435,7 @@ python build/scripts/docs/check-codex-memory.py --summary
 The checker validates that:
 
 - `index.yml` exists and is pure YAML data.
-- Linked memory files exist under `.codex/memory/`.
+- Active linked memory files exist under `.codex/memory/`; active entries that point outside that tree are rejected.
 - Required metadata fields exist in the index and Markdown front matter.
 - `load_when.task` selector metadata is present and well-formed.
 - Optional `exclude_when` selectors are well-formed.
@@ -441,9 +444,11 @@ The checker validates that:
 - Goal inventories used with `--goal` live under `.codex/memory/goals/`, contain progress inventory
   metadata, and point to an existing active task descriptor.
 - IDs are unique.
-- `source_refs` for repo-local source paths exist.
+- `source_refs` is non-empty, and missing repo-local source paths are emitted as warnings.
 - `review_after` values are valid ISO dates.
-- Expired entries are visible as stale warnings.
+- Entries whose `review_after` date has passed are visible as stale warnings and route through `--stale-only`.
+- `invalidates_when` is non-empty for every indexed entry.
+- Archive entries include `retired_because` and `replaced_by` retirement metadata.
 - Unknown active tiers, disabled tiers, and invalid scopes are rejected.
 - Non-README memory files are indexed.
 - Task descriptor YAML files under `.codex/memory/tasks/` are exempt from entry indexing.
