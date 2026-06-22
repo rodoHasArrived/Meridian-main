@@ -1297,8 +1297,14 @@ public sealed partial class WorkstationEndpointsTests
         historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var history = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
         history.Should().ContainSingle(row => row.FinancialStatements.PackageId == alpha!.FinancialStatements.PackageId);
-        history![0].FinancialStatements.Dimensions.EntityId.Should().Be("entity-alpha");
-        history[0].FinancialStatements.Dimensions.ExternalGlDimensions.Should().Contain("Department", "Investments");
+        var dimensionedHistory = history![0];
+        dimensionedHistory.FinancialStatements.Dimensions.EntityId.Should().Be("entity-alpha");
+        dimensionedHistory.FinancialStatements.Dimensions.ExternalGlDimensions.Should().Contain("Department", "Investments");
+        dimensionedHistory.DimensionScope.Should().NotBeNull();
+        var dimensionScope = dimensionedHistory.DimensionScope!;
+        dimensionScope.HasExplicitScope.Should().BeTrue();
+        dimensionScope.ScopedDimensionKeys.Should().Contain(["bookId", "capitalAccountId", "entityId", "externalGl.Department", "fundId"]);
+        dimensionScope.CertificationEvidenceToken.Should().Be($"dimension-scope:{dimensionScope.ScopeHash}");
 
         AccountingReportPackageRequestDto BuildDimensionedPackageRequest(
             string capitalAccountId,

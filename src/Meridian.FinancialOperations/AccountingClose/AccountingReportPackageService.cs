@@ -137,6 +137,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         }
 
         var packageDimensions = BuildReportPackageDimensions(request, fundProfileId, ledgerBookId);
+        var dimensionScope = BuildReportDimensionScope(packageDimensions, fundProfileId, ledgerBookId);
         validationIssues.AddRange(BuildReportDimensionScopeIssues(request, fundProfileId, ledgerBookId, packageDimensions));
         validationIssues.AddRange(BuildReportCertificationEvidenceIssues(periodId, evidenceLinks));
         validationIssues.AddRange(BuildRestatementCertificationIssues(request, fundProfileId, periodId, evidenceLinks, ReadPackages()));
@@ -223,7 +224,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             state,
             certification.RecordedAtUtc,
             evidenceLinks,
-            restatement);
+            restatement,
+            dimensionScope);
         var closeReadinessItems = BuildCloseReadinessItems(
             closePlan,
             financialStatements,
@@ -243,7 +245,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             request.CloseWorkflowId,
             tenantId,
             companyId,
-            closeReadinessItems);
+            closeReadinessItems,
+            dimensionScope);
         await SavePackageAsync(bundle, ct).ConfigureAwait(false);
         return bundle;
     }
@@ -1195,7 +1198,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         AccountingCertificationStateDto certificationState,
         DateTimeOffset generatedAtUtc,
         IReadOnlyList<string> evidenceLinks,
-        RestatementWorkflowDto? restatement)
+        RestatementWorkflowDto? restatement,
+        ReportDimensionScopeDto dimensionScope)
     {
         var packageId = financialStatements.PackageId;
         var rows = new List<ReportExportArtifactDto>
@@ -1211,7 +1215,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 evidenceLinks,
                 financialStatements.PackageId,
                 financialStatements.LedgerBookId,
-                financialStatements.Dimensions),
+                financialStatements.Dimensions,
+                dimensionScope),
             BuildReportExportArtifact(
                 packageId,
                 "financial-statements-workbook",
@@ -1223,7 +1228,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 evidenceLinks,
                 financialStatements.PackageId,
                 financialStatements.LedgerBookId,
-                financialStatements.Dimensions),
+                financialStatements.Dimensions,
+                dimensionScope),
             BuildReportExportArtifact(
                 packageId,
                 "realized-gain-loss",
@@ -1235,7 +1241,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 realizedGainLoss.EvidenceLinks,
                 realizedGainLoss.ReportId,
                 realizedGainLoss.LedgerBookId,
-                realizedGainLoss.Dimensions),
+                realizedGainLoss.Dimensions,
+                dimensionScope),
             BuildReportExportArtifact(
                 packageId,
                 "nav-package",
@@ -1247,7 +1254,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 navPackage.EvidenceLinks,
                 navPackage.PackageId,
                 navPackage.LedgerBookId,
-                navPackage.Dimensions),
+                navPackage.Dimensions,
+                dimensionScope),
             BuildReportExportArtifact(
                 packageId,
                 "report-line-provenance",
@@ -1259,7 +1267,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 financialStatements.LineProvenance.SelectMany(static row => row.EvidenceLinks).ToArray(),
                 $"{financialStatements.PackageId}:line-provenance",
                 financialStatements.LedgerBookId,
-                financialStatements.Dimensions)
+                financialStatements.Dimensions,
+                dimensionScope)
         };
 
         rows.AddRange(investorCapitalStatements.Select(statement => BuildReportExportArtifact(
@@ -1273,7 +1282,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             statement.EvidenceLinks,
             statement.StatementId,
             statement.LedgerBookId,
-            statement.Dimensions)));
+            statement.Dimensions,
+            dimensionScope)));
 
         if (restatement is not null)
         {
@@ -1288,7 +1298,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 restatement.EvidenceLinks,
                 restatement.RestatementId,
                 financialStatements.LedgerBookId,
-                financialStatements.Dimensions));
+                financialStatements.Dimensions,
+                dimensionScope));
         }
 
         return rows
@@ -1308,7 +1319,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         IReadOnlyList<string> evidenceLinks,
         string? sourceStatementId,
         Guid? ledgerBookId,
-        LedgerDimensionSetDto dimensions)
+        LedgerDimensionSetDto dimensions,
+        ReportDimensionScopeDto dimensionScope)
     {
         var artifactId = $"report-export-{Sanitize(packageId)}-{Sanitize(artifactKind)}-{Sanitize(sourceStatementId ?? "aggregate")}";
         var normalizedEvidence = NormalizeEvidenceLinks(evidenceLinks);
@@ -1337,7 +1349,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             normalizedEvidence,
             sourceStatementId,
             ledgerBookId,
-            dimensions);
+            dimensions,
+            dimensionScope);
     }
 
     private static ReportExportArtifactDto CertifyExportArtifact(
@@ -1427,6 +1440,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 artifact.CertificationState,
                 artifact.ContentHash,
                 artifact.SourceStatementId,
+                artifact.DimensionScope,
                 certificationId = package.Certification.CertificationId,
                 package.Certification.Actor,
                 package.Certification.RecordedAtUtc,
@@ -1450,7 +1464,24 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             artifact.EvidenceLinks,
             artifact.SourceStatementId,
             artifact.LedgerBookId,
-            artifact.Dimensions);
+            artifact.Dimensions,
+            artifact.DimensionScope);
+    }
+
+    private static ReportDimensionScopeDto BuildReportDimensionScope(
+        LedgerDimensionSetDto dimensions,
+        string fundProfileId,
+        Guid? ledgerBookId)
+    {
+        var hasExplicitScope = HasExplicitDimensionScope(dimensions, fundProfileId, ledgerBookId);
+        var scopeHash = BuildDimensionScopeHash(dimensions);
+        return new ReportDimensionScopeDto(
+            ledgerBookId,
+            dimensions,
+            hasExplicitScope,
+            scopeHash,
+            $"dimension-scope:{scopeHash}",
+            BuildScopedDimensionKeys(dimensions));
     }
 
     private static LedgerDimensionSetDto BuildReportPackageDimensions(
@@ -1786,6 +1817,48 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
            || dimensions.VendorId is not null
            || dimensions.ProjectId is not null
            || dimensions.ExternalGlDimensions.Count > 0;
+
+    private static IReadOnlyList<string> BuildScopedDimensionKeys(LedgerDimensionSetDto dimensions)
+    {
+        var keys = new List<string>();
+        AddDimensionKey(keys, "fundId", dimensions.FundId);
+        AddDimensionKey(keys, "entityId", dimensions.EntityId);
+        AddDimensionKey(keys, "sleeveId", dimensions.SleeveId);
+        AddDimensionKey(keys, "strategyId", dimensions.StrategyId);
+        AddDimensionKey(keys, "investorId", dimensions.InvestorId);
+        AddDimensionKey(keys, "capitalAccountId", dimensions.CapitalAccountId);
+        if (dimensions.InstrumentId.HasValue)
+        {
+            keys.Add("instrumentId");
+        }
+
+        AddDimensionKey(keys, "taxLotId", dimensions.TaxLotId);
+        AddDimensionKey(keys, "costCenterId", dimensions.CostCenterId);
+        AddDimensionKey(keys, "counterpartyId", dimensions.CounterpartyId);
+        AddDimensionKey(keys, "organizationId", dimensions.OrganizationId);
+        AddDimensionKey(keys, "portfolioId", dimensions.PortfolioId);
+        AddDimensionKey(keys, "bookId", dimensions.BookId);
+        AddDimensionKey(keys, "accountId", dimensions.AccountId);
+        AddDimensionKey(keys, "customerId", dimensions.CustomerId);
+        AddDimensionKey(keys, "vendorId", dimensions.VendorId);
+        AddDimensionKey(keys, "projectId", dimensions.ProjectId);
+        keys.AddRange(dimensions.ExternalGlDimensions
+            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            .Select(static pair => $"externalGl.{pair.Key.Trim()}")
+            .Order(StringComparer.OrdinalIgnoreCase));
+        return keys
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static void AddDimensionKey(List<string> keys, string key, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            keys.Add(key);
+        }
+    }
 
     private static string BuildDimensionScopeHash(LedgerDimensionSetDto dimensions)
     {

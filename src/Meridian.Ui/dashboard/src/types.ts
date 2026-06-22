@@ -2884,6 +2884,7 @@ export interface ReportCertification {
     contentHash: string;
     evidenceLinks: string[];
     sourceStatementId?: string | null;
+    dimensionScope?: ReportDimensionScope | null;
   }
 
   export interface ReportExportArtifactManifest {
@@ -2902,6 +2903,16 @@ export interface ReportCertification {
     payload: string;
     evidenceLinks: string[];
     sourceStatementId?: string | null;
+    dimensionScope?: ReportDimensionScope | null;
+  }
+
+  export interface ReportDimensionScope {
+    ledgerBookId?: string | null;
+    dimensions: LedgerDimensionSet;
+    hasExplicitScope: boolean;
+    scopeHash: string;
+    certificationEvidenceToken: string;
+    scopedDimensionKeys: string[];
   }
 
   export interface FinancialStatementPackage {
@@ -3002,7 +3013,7 @@ export interface AccountingCloseReadinessItem {
   dimensions?: LedgerDimensionSet | null;
 }
 
-export interface AccountingReportPackageBundle {
+  export interface AccountingReportPackageBundle {
   financialStatements: FinancialStatementPackage;
   investorCapitalStatements: InvestorCapitalStatement[];
   realizedGainLoss: RealizedGainLossReport;
@@ -3012,6 +3023,7 @@ export interface AccountingReportPackageBundle {
   exportArtifacts?: ReportExportArtifact[] | null;
   closeWorkflowId?: string | null;
   closeReadinessItems?: AccountingCloseReadinessItem[] | null;
+  dimensionScope?: ReportDimensionScope | null;
 }
 
 export interface AccountingSystemProvider {

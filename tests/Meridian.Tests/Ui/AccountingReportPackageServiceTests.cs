@@ -1,5 +1,4 @@
 using FluentAssertions;
-using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -648,12 +647,30 @@ public sealed class AccountingReportPackageServiceTests
         alpha.FinancialStatements.Dimensions.EntityId.Should().Be("entity-alpha");
         alpha.FinancialStatements.Dimensions.StrategyId.Should().Be("strategy-credit");
         alpha.FinancialStatements.Dimensions.ExternalGlDimensions.Should().Contain("Department", "Investments");
+        alpha.DimensionScope.Should().NotBeNull();
+        alpha.DimensionScope!.HasExplicitScope.Should().BeTrue();
+        alpha.DimensionScope.LedgerBookId.Should().Be(DefaultLedgerBookId);
+        alpha.DimensionScope.ScopeHash.Should().HaveLength(12);
+        alpha.DimensionScope.CertificationEvidenceToken.Should().Be($"dimension-scope:{alpha.DimensionScope.ScopeHash}");
+        alpha.DimensionScope.ScopedDimensionKeys.Should().Contain(["bookId", "capitalAccountId", "entityId", "externalGl.Department", "fundId", "strategyId"]);
         alpha.FinancialStatements.LineProvenance.Should().OnlyContain(row =>
             row.Dimensions.EntityId == "entity-alpha" &&
             row.Dimensions.ExternalGlDimensions["Department"] == "Investments");
         alpha.ExportArtifacts.Should().OnlyContain(artifact =>
             artifact.Dimensions.EntityId == "entity-alpha" &&
-            artifact.Dimensions.ExternalGlDimensions["Department"] == "Investments");
+            artifact.Dimensions.ExternalGlDimensions["Department"] == "Investments" &&
+            artifact.DimensionScope != null &&
+            artifact.DimensionScope.ScopeHash == alpha.DimensionScope.ScopeHash);
+        var alphaArtifact = alpha.ExportArtifacts.Should().Contain(artifact =>
+            artifact.ArtifactKind == "financial-statements").Subject;
+        var alphaManifest = await service.GetExportArtifactManifestAsync(
+            alpha.FinancialStatements.PackageId,
+            alphaArtifact.ArtifactId);
+        alphaManifest.Should().NotBeNull();
+        alphaManifest!.DimensionScope.Should().NotBeNull();
+        alphaManifest.DimensionScope!.ScopeHash.Should().Be(alpha.DimensionScope.ScopeHash);
+        alphaManifest.DimensionScope.CertificationEvidenceToken.Should().Be(alpha.DimensionScope.CertificationEvidenceToken);
+        alphaManifest.Payload.Should().Contain(alpha.DimensionScope.CertificationEvidenceToken);
 
         var all = await service.ListPackagesAsync("fund-alpha", "2027-07", DefaultLedgerBookId);
         var alphaOnly = await service.ListPackagesAsync(
@@ -674,6 +691,8 @@ public sealed class AccountingReportPackageServiceTests
 
         all.Should().HaveCount(2);
         alphaOnly.Should().ContainSingle(row => row.FinancialStatements.PackageId == alpha.FinancialStatements.PackageId);
+        alphaOnly[0].DimensionScope.Should().NotBeNull();
+        alphaOnly[0].DimensionScope!.ScopeHash.Should().Be(alpha.DimensionScope.ScopeHash);
         betaOnly.Should().ContainSingle(row => row.FinancialStatements.PackageId == beta.FinancialStatements.PackageId);
     }
 
@@ -793,7 +812,7 @@ public sealed class AccountingReportPackageServiceTests
             ? $":book:{ledgerBookId:D}"
             : string.Empty;
         var dimensionScope = HasExplicitDimensionScope(package.FinancialStatements)
-            ? $":dimension-scope:{BuildDimensionScopeHash(package.FinancialStatements.Dimensions)}"
+            ? $":{package.DimensionScope!.CertificationEvidenceToken}"
             : string.Empty;
         return $"evidence:report-certification:{approvalLabel}:{package.FinancialStatements.PackageId}:{package.Certification.CertificationId}{ledgerBookScope}{dimensionScope}:{package.FinancialStatements.PeriodId}";
     }
@@ -815,33 +834,6 @@ public sealed class AccountingReportPackageServiceTests
            package.Dimensions.VendorId is not null ||
            package.Dimensions.ProjectId is not null ||
            package.Dimensions.ExternalGlDimensions.Count > 0;
-
-    private static string BuildDimensionScopeHash(LedgerDimensionSetDto dimensions)
-    {
-        var payload = string.Join(
-            "|",
-            dimensions.FundId ?? string.Empty,
-            dimensions.EntityId ?? string.Empty,
-            dimensions.SleeveId ?? string.Empty,
-            dimensions.StrategyId ?? string.Empty,
-            dimensions.InvestorId ?? string.Empty,
-            dimensions.CapitalAccountId ?? string.Empty,
-            dimensions.InstrumentId?.ToString("D") ?? string.Empty,
-            dimensions.TaxLotId ?? string.Empty,
-            dimensions.CostCenterId ?? string.Empty,
-            dimensions.CounterpartyId ?? string.Empty,
-            dimensions.OrganizationId ?? string.Empty,
-            dimensions.PortfolioId ?? string.Empty,
-            dimensions.BookId ?? string.Empty,
-            dimensions.AccountId ?? string.Empty,
-            dimensions.CustomerId ?? string.Empty,
-            dimensions.VendorId ?? string.Empty,
-            dimensions.ProjectId ?? string.Empty,
-            string.Join(";", dimensions.ExternalGlDimensions
-                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(static pair => $"{pair.Key}={pair.Value}")));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)))[..12].ToLowerInvariant();
-    }
 
     private static ClosePeriodPlanDto BuildSignedOffClosePlan(
         Guid workflowId,

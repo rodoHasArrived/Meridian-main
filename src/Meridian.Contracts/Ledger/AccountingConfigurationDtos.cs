@@ -2029,7 +2029,8 @@ public sealed record ReportExportArtifactDto(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? SourceStatementId = null,
     Guid? LedgerBookId = null,
-    LedgerDimensionSetDto? Dimensions = null)
+    LedgerDimensionSetDto? Dimensions = null,
+    ReportDimensionScopeDto? DimensionScope = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -2055,13 +2056,26 @@ public sealed record ReportExportArtifactManifestDto(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? SourceStatementId = null,
     Guid? LedgerBookId = null,
-    LedgerDimensionSetDto? Dimensions = null)
+    LedgerDimensionSetDto? Dimensions = null,
+    ReportDimensionScopeDto? DimensionScope = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
 
     public LedgerDimensionSetDto Dimensions { get; init; } =
         Dimensions ?? new LedgerDimensionSetDto(BookId: LedgerBookId?.ToString("D"));
+}
+
+public sealed record ReportDimensionScopeDto(
+    Guid? LedgerBookId,
+    LedgerDimensionSetDto Dimensions,
+    bool HasExplicitScope,
+    string ScopeHash,
+    string CertificationEvidenceToken,
+    IReadOnlyList<string>? ScopedDimensionKeys = null)
+{
+    public IReadOnlyList<string> ScopedDimensionKeys { get; init; } =
+        ScopedDimensionKeys ?? [];
 }
 
 public sealed record FinancialStatementPackageDto(
@@ -2199,7 +2213,8 @@ public sealed record AccountingReportPackageBundleDto(
     Guid? CloseWorkflowId = null,
     string? TenantId = null,
     string? CompanyId = null,
-    IReadOnlyList<AccountingCloseReadinessItemDto>? CloseReadinessItems = null)
+    IReadOnlyList<AccountingCloseReadinessItemDto>? CloseReadinessItems = null,
+    ReportDimensionScopeDto? DimensionScope = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
