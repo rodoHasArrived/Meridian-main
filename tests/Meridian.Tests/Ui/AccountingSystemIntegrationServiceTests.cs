@@ -1982,6 +1982,60 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task CreateExportPackageAsync_BlocksReviewWhenProviderSupportsLivePosting()
+    {
+        var provider = new PostingCapableAccountingSystemProvider();
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore(), provider);
+        var profile = CertifiedPostingProviderMappingProfile(provider.ProviderId);
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            ProviderId: provider.ProviderId,
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: [$"approval:external-gl-mapping:{profile.ProfileId}"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: provider.ProviderId,
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId, provider.ProviderId)]));
+
+        package.PostingEnabled.Should().BeFalse();
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Blocked);
+        package.ReconciliationSafeguardIssueCodes.Should().Contain("LiveExternalPostingProviderEnabled");
+        package.GeneratedLines.Should().HaveCount(3);
+        package.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == "LiveExternalPostingProviderEnabled" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == "LiveExternalPostingDisabled" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
+
+        RetainExportPackage(service, package with
+        {
+            Certification = package.Certification with { State = AccountingCertificationStateDto.ReadyForReview },
+            ValidationIssues = [],
+            ReconciliationSafeguardIssueCodes = []
+        });
+        var act = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Controller attempted to certify after live posting capability was exposed.",
+            [ExportCertificationEvidence(package)]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*LiveExternalPostingProviderEnabled*");
+    }
+
+    [Fact]
     public async Task MappingProfiles_RejectAssistantOriginCertificationAndExportPackageRetention()
     {
         var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
@@ -4274,6 +4328,42 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksMismatchedControlEvidence()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    ExternalGlLedgerBookId,
+                    PostingRulesLedgerBookNativeCertified: true,
+                    JournalLifecycleLedgerBookNativeCertified: true,
+                    CloseReportingLedgerBookNativeCertified: false,
+                    ExternalGlLedgerBookNativeCertified: false,
+                    PeriodReportDimensionQueriesCertified: false,
+                    CrossPeriodReportDimensionQueriesCertified: false,
+                    JournalQueryDimensionFiltersCertified: false,
+                    ExternalExportDimensionMappingCertified: false,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences:
+                    [
+                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/posting-candidate/certification"
+                    ]),
+                "spoofed-browser-user",
+                CorrelationId: "production-certification-mismatched-control-evidence")));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
+        problem.Errors.Should().ContainKey("request");
+        problem.Errors["request"].Should().Contain(error =>
+            error.Contains("journal-entry lifecycle workflow evidence", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksDimensionCertificationWithoutDimensionScopeEvidence()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
@@ -4509,6 +4599,8 @@ public sealed class AccountingSystemIntegrationServiceTests
 
     private sealed class PostingCapableAccountingSystemProvider : IAccountingSystemProvider
     {
+        private readonly QuickBooksFixtureAccountingProvider _fixture = new();
+
         public string ProviderId => "posting-provider";
 
         public string DisplayName => "Posting Provider";
@@ -4523,7 +4615,49 @@ public sealed class AccountingSystemIntegrationServiceTests
         public Task<AccountingSystemImportDetailDto> ImportAsync(
             AccountingSystemImportRequestDto request,
             CancellationToken ct = default)
-            => throw new NotSupportedException("The test provider exists only to expose live posting capability metadata.");
+            => ImportFixtureAsync(request, ct);
+
+        private async Task<AccountingSystemImportDetailDto> ImportFixtureAsync(
+            AccountingSystemImportRequestDto request,
+            CancellationToken ct)
+        {
+            var detail = await _fixture.ImportAsync(request, ct).ConfigureAwait(false);
+            return detail with
+            {
+                Summary = detail.Summary with
+                {
+                    ProviderId = ProviderId,
+                    ProviderDisplayName = DisplayName,
+                    EvidenceReferences = detail.Summary.EvidenceReferences
+                        .Select(reference => reference.Replace(QuickBooksFixtureAccountingProvider.Id, ProviderId, StringComparison.OrdinalIgnoreCase))
+                        .ToArray()
+                },
+                ChartAccounts = detail.ChartAccounts
+                    .Select(account => account with
+                    {
+                        EvidenceRef = account.EvidenceRef?.Replace(QuickBooksFixtureAccountingProvider.Id, ProviderId, StringComparison.OrdinalIgnoreCase)
+                    })
+                    .ToArray(),
+                JournalEntries = detail.JournalEntries
+                    .Select(entry => entry with
+                    {
+                        EvidenceRef = entry.EvidenceRef.Replace(QuickBooksFixtureAccountingProvider.Id, ProviderId, StringComparison.OrdinalIgnoreCase),
+                        Lines = entry.Lines
+                            .Select(line => line with
+                            {
+                                EvidenceRef = line.EvidenceRef.Replace(QuickBooksFixtureAccountingProvider.Id, ProviderId, StringComparison.OrdinalIgnoreCase)
+                            })
+                            .ToArray()
+                    })
+                    .ToArray(),
+                TrialBalance = detail.TrialBalance
+                    .Select(line => line with
+                    {
+                        EvidenceRef = line.EvidenceRef.Replace(QuickBooksFixtureAccountingProvider.Id, ProviderId, StringComparison.OrdinalIgnoreCase)
+                    })
+                    .ToArray()
+            };
+        }
     }
 
     private static ILedgerJournalStore CreateMatchedQuickBooksFixtureLedgerStore(Guid? ledgerBookIdOverride = null)
@@ -4803,6 +4937,37 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ["Expenses:Trading"] = "qbo-6100"
             },
             AccountingCertificationStateDto.Certified);
+
+    private static ExternalGlMappingProfileDto CertifiedPostingProviderMappingProfile(string providerId)
+    {
+        var profile = CertifiedQuickBooksMappingProfile();
+        return profile with
+        {
+            ProfileId = $"{providerId}-default-fund-certified",
+            ProviderId = providerId,
+            DisplayName = "Posting provider mapping",
+            DimensionMappings =
+            [
+                profile.DimensionMappings[0] with
+                {
+                    ProfileId = $"{providerId}-default-fund-dimensions",
+                    ProviderId = providerId,
+                    ExternalDimensions = CertifiedExternalGlProviderDimensions(
+                        ExternalGlLedgerBookId,
+                        providerId,
+                        "Class:DefaultFund",
+                        "Location:Main",
+                        "Account:qbo-1000",
+                        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Class"] = "DefaultFund",
+                            ["Location"] = "Main",
+                            ["Department"] = "FundAccounting"
+                        })
+                }
+            ]
+        };
+    }
 
     private static ExternalGlMappingProfileDto CertifiedFixtureMappingProfile(string providerId, string profileId)
     {

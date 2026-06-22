@@ -247,6 +247,8 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         {
             throw new ArgumentException("Accounting production certification evidence must identify the certified dimension scope.");
         }
+
+        EnsureDeclaredControlEvidence(profile, evidenceReferences);
     }
 
     private static bool DeclaresProductionCertification(AccountingProductionCertificationProfileDto profile)
@@ -273,6 +275,175 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
            profile.LedgerLineDimensionsPersistedCertified ||
            profile.TrialBalanceDimensionFiltersCertified ||
            profile.ReportPackageDimensionProvenanceCertified;
+
+    private static void EnsureDeclaredControlEvidence(
+        AccountingProductionCertificationProfileDto profile,
+        IReadOnlyList<string> evidenceReferences)
+    {
+        EnsureControlEvidence(
+            profile.PostingRulesLedgerBookNativeCertified,
+            evidenceReferences,
+            "posting-rule workflow",
+            "posting-rules",
+            "posting-rule",
+            "rules-studio",
+            "posting-candidate");
+        EnsureControlEvidence(
+            profile.JournalLifecycleLedgerBookNativeCertified,
+            evidenceReferences,
+            "journal-entry lifecycle workflow",
+            "journal-lifecycle",
+            "journal-entry",
+            "je-lifecycle",
+            "manual-journal");
+        EnsureControlEvidence(
+            profile.CloseReportingLedgerBookNativeCertified,
+            evidenceReferences,
+            "close and reporting workflow",
+            "close-reporting",
+            "close-management",
+            "report-package",
+            "restatement");
+        EnsureControlEvidence(
+            profile.ExternalGlLedgerBookNativeCertified,
+            evidenceReferences,
+            "external-GL workflow",
+            "external-gl",
+            "external-ledger",
+            "gl-export",
+            "gl-import");
+        EnsureControlEvidence(
+            profile.ReconciliationLedgerBookNativeCertified,
+            evidenceReferences,
+            "reconciliation workflow",
+            "reconciliation",
+            "break-queue",
+            "statement-reconciliation",
+            "reconciliation-case");
+        EnsureControlEvidence(
+            profile.DirectLendingLedgerBookNativeCertified,
+            evidenceReferences,
+            "direct-lending workflow",
+            "direct-lending",
+            "loan-account",
+            "borrower",
+            "direct-lending-projection");
+        EnsureControlEvidence(
+            profile.StrategyLedgerReadLedgerBookNativeCertified,
+            evidenceReferences,
+            "strategy ledger-read workflow",
+            "strategy-ledger",
+            "strategy-run",
+            "run-ledger",
+            "strategy-ledger-read");
+        EnsureDimensionControlEvidence(
+            profile.PeriodReportDimensionQueriesCertified,
+            evidenceReferences,
+            "period-report dimension query",
+            "period-report",
+            "period-reports",
+            "trial-balance",
+            "financial-statement",
+            "nav",
+            "investor-package");
+        EnsureDimensionControlEvidence(
+            profile.CrossPeriodReportDimensionQueriesCertified,
+            evidenceReferences,
+            "cross-period dimension query",
+            "cross-period",
+            "comparative",
+            "roll-forward");
+        EnsureDimensionControlEvidence(
+            profile.JournalQueryDimensionFiltersCertified,
+            evidenceReferences,
+            "journal dimension filter",
+            "journal-query",
+            "journal-filter",
+            "journal-dimension",
+            "ledger-journal");
+        EnsureDimensionControlEvidence(
+            profile.ExternalExportDimensionMappingCertified,
+            evidenceReferences,
+            "external export dimension mapping",
+            "external-export",
+            "export-dimension",
+            "external-gl-mapping",
+            "gl-export");
+        EnsureDimensionControlEvidence(
+            profile.LedgerLineDimensionsPersistedCertified,
+            evidenceReferences,
+            "ledger-line dimension persistence",
+            "ledger-line",
+            "line-dimension",
+            "posted-ledger-line",
+            "journal-line-dimension");
+        EnsureDimensionControlEvidence(
+            profile.TrialBalanceDimensionFiltersCertified,
+            evidenceReferences,
+            "trial-balance dimension filter",
+            "trial-balance-filter",
+            "trial-balance-dimension",
+            "ledger-report-filter");
+        EnsureDimensionControlEvidence(
+            profile.ReportPackageDimensionProvenanceCertified,
+            evidenceReferences,
+            "report-package dimension provenance",
+            "report-package-provenance",
+            "report-line-provenance",
+            "package-dimension",
+            "nav-package");
+    }
+
+    private static void EnsureControlEvidence(
+        bool certified,
+        IReadOnlyList<string> evidenceReferences,
+        string label,
+        params string[] aliases)
+    {
+        if (!certified || HasProductionFullEvidence(evidenceReferences) || HasWorkflowFullEvidence(evidenceReferences))
+        {
+            return;
+        }
+
+        if (!evidenceReferences.Any(reference => aliases.Any(alias => ReferencesAlias(reference, alias))))
+        {
+            throw new ArgumentException($"Accounting production certification evidence must include retained {label} evidence.");
+        }
+    }
+
+    private static void EnsureDimensionControlEvidence(
+        bool certified,
+        IReadOnlyList<string> evidenceReferences,
+        string label,
+        params string[] aliases)
+    {
+        if (!certified || HasProductionFullEvidence(evidenceReferences) || HasDimensionFullEvidence(evidenceReferences))
+        {
+            return;
+        }
+
+        if (!evidenceReferences.Any(reference => aliases.Any(alias => ReferencesAlias(reference, alias))))
+        {
+            throw new ArgumentException($"Accounting production certification evidence must include retained {label} evidence.");
+        }
+    }
+
+    private static bool HasProductionFullEvidence(IReadOnlyList<string> evidenceReferences)
+        => evidenceReferences.Any(reference =>
+            ReferencesAlias(reference, "production-certification/full"));
+
+    private static bool HasWorkflowFullEvidence(IReadOnlyList<string> evidenceReferences)
+        => evidenceReferences.Any(reference =>
+            ReferencesAlias(reference, "workflow-certification/full"));
+
+    private static bool HasDimensionFullEvidence(IReadOnlyList<string> evidenceReferences)
+        => evidenceReferences.Any(reference =>
+            ReferencesAlias(reference, "dimensions/full") ||
+            ReferencesAlias(reference, "dimensions/report-query-certification/full"));
+
+    private static bool ReferencesAlias(string? reference, string alias)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           reference.Contains(alias, StringComparison.OrdinalIgnoreCase);
 
     private static bool ReferencesScope(string? reference, string value)
         => !string.IsNullOrWhiteSpace(reference) &&

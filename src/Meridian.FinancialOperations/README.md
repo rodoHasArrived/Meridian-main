@@ -180,6 +180,9 @@ through another company's session.
 Guarded export validation also fails closed when the selected mapping profile targets a different
 ledger book than the export package, and generated export lines are suppressed until the mapping
 profile is certified for that selected book.
+It also fails closed when a registered provider advertises live external-GL posting capability, so
+the guarded export lane remains import-first and review-only even if an adapter exposes posting in
+its capability metadata.
 
 External GL export certification evidence must carry certification intent plus retained export
 package id, certification id, export ledger book, and exact-period scope on the same evidence artifact; split support
@@ -348,6 +351,12 @@ event)` return the existing journal, while the same economic event may still pro
 cash, tax, statutory, or primary postings because each basis uses its own ledger-book aggregate.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
+Production certification profiles also fail closed before persistence when a retained profile marks
+posting rules, journal lifecycle, close/reporting, external GL, reconciliation, direct lending,
+strategy ledger reads, or dimensional reporting controls as certified without evidence that names
+the selected tenant, company, fund, ledger book, and the specific certified control family. A full
+production-certification evidence artifact can certify the full profile, but category-specific
+evidence cannot be reused to bless unrelated controls.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid

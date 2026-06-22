@@ -48,6 +48,7 @@ public sealed class AccountingSystemIntegrationService
         "ExternalGlReconciliationPeriodMismatch",
         "ExternalGlReconciliationSnapshotChanged",
         "UnresolvedExternalGlBreaks",
+        "LiveExternalPostingProviderEnabled",
         "MissingGeneratedExternalGlExportLines"
     ];
 
@@ -180,6 +181,7 @@ public sealed class AccountingSystemIntegrationService
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var tenantId = NormalizeOptional(request.TenantId);
         var companyId = NormalizeOptional(request.CompanyId);
+        var providerSupportsPosting = ProviderSupportsPosting(providerId);
         var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId, tenantId, companyId);
         var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
         var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
@@ -190,6 +192,7 @@ public sealed class AccountingSystemIntegrationService
         var validationIssues = BuildExportValidationIssues(
             providerId,
             fundProfileId,
+            providerSupportsPosting,
             request.LedgerBookId,
             mappingProfile,
             reconciliation,
@@ -614,6 +617,7 @@ public sealed class AccountingSystemIntegrationService
         return BuildExportValidationIssues(
             package.ProviderId,
             package.FundProfileId,
+            ProviderSupportsPosting(package.ProviderId),
             package.LedgerBookId,
             mappingProfile,
             reconciliation,
@@ -630,6 +634,7 @@ public sealed class AccountingSystemIntegrationService
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
         string providerId,
         string fundProfileId,
+        bool providerSupportsPosting,
         Guid? exportLedgerBookId,
         ScopedExternalGlMappingProfile? mappingProfile,
         AccountingSystemReconciliationSummaryDto? reconciliation,
@@ -645,6 +650,16 @@ public sealed class AccountingSystemIntegrationService
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var mappingProfileLedgerBookMatchesExport = exportLedgerBookId is null ||
             (mappingProfile is not null && mappingProfile.LedgerBookId == exportLedgerBookId);
+        if (providerSupportsPosting)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "LiveExternalPostingProviderEnabled",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "External GL provider advertises live posting capability, so guarded export review cannot proceed under the import-first policy.",
+                providerId,
+                "Disable live posting capability or register a read-only import/reconciliation provider before creating or certifying guarded export packages."));
+        }
+
         if (exportLedgerBookId is null)
         {
             issues.Add(new AccountingConfigurationValidationIssueDto(
@@ -862,6 +877,11 @@ public sealed class AccountingSystemIntegrationService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+
+    private bool ProviderSupportsPosting(string providerId)
+        => _providers.Any(provider =>
+            string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase) &&
+            provider.Capabilities.SupportsPosting);
 
     private static ExternalGlExportReconciliationSafeguardStateDto ResolveReconciliationSafeguardState(
         string? reconciliationId,
