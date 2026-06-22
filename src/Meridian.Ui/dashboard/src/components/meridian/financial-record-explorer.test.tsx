@@ -102,6 +102,27 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("textbox", { name: "Search Ledger Explorer" })).toHaveValue("aapl");
   });
 
+  it("renders Security & Instrument Explorer DTO fields used by WPF parity proof", async () => {
+    const user = userEvent.setup();
+    renderExplorer(undefined, createSecurityInstrumentExplorerDto());
+
+    expect(screen.getByRole("heading", { name: "Security & Instrument Explorer" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "96%" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Ready" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "1 projection" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("row", { name: /apple inc.*96%.*ready.*1 projection/i }));
+
+    const detail = screen.getByLabelText("Apple Inc. proof detail");
+    expect(within(detail).getByText("Instrument Identity")).toBeInTheDocument();
+    expect(within(detail).getByText("Provider Evidence")).toBeInTheDocument();
+    expect(within(detail).getByText("AssetOperations Readiness")).toBeInTheDocument();
+    expect(within(detail).getByText("Ledger Impact")).toBeInTheDocument();
+    expect(within(detail).getByText("Report Usage")).toBeInTheDocument();
+    expect(within(detail).getByRole("link", { name: "Open instrument passport" })).toHaveAttribute("href", "/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111/passport");
+  });
+
   it("shows blocked source state with disabled actions instead of synthetic rows", () => {
     renderExplorer(undefined, {
       ...createExplorerDto(),
@@ -148,6 +169,84 @@ function renderExplorer(
       <div>Fallback static content</div>
     </FinancialRecordExplorerShell>
   );
+}
+
+function createSecurityInstrumentExplorerDto(): FinancialRecordExplorerDto {
+  const securityHref = "/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111";
+  const passportHref = `${securityHref}/passport`;
+  const operationsHref = "/api/workstation/assets/11111111-1111-1111-1111-111111111111/operations";
+  const reportHref = "/api/workstation/financial-record-explorers/report-line-provenance?lineKey=holdings.aapl.market-value&sourceId=AAPL";
+  const detail = {
+    recordId: "security:11111111-1111-1111-1111-111111111111",
+    recordType: "security-instrument",
+    title: "Apple Inc.",
+    subtitle: "AAPL · USD · Equity",
+    description: "Security Master identity with provider, operations, ledger, and report proof.",
+    tone: "Success" as const,
+    fields: [
+      { label: "Instrument Identity", value: "Apple Inc. / AAPL", detail: "SecurityId 11111111-1111-1111-1111-111111111111.", tone: "Success" as const },
+      { label: "Provider Evidence", value: "Polygon primary · 96%", detail: passportHref, tone: "Success" as const },
+      { label: "AssetOperations Readiness", value: "Ready", detail: operationsHref, tone: "Success" as const },
+      { label: "Ledger Impact", value: "1 projection", detail: "Ledger projection retained for the instrument.", tone: "Info" as const },
+      { label: "Report Usage", value: "1 report line", detail: reportHref, tone: "Info" as const }
+    ],
+    proofActions: [
+      { actionId: "open-security-master", label: "Open Security Master", description: "Open Security Master detail.", href: securityHref, isEnabled: true, disabledReason: "", tone: "Success" as const },
+      { actionId: "open-instrument-passport", label: "Open instrument passport", description: "Open provider evidence.", href: passportHref, isEnabled: true, disabledReason: "", tone: "Success" as const },
+      { actionId: "open-asset-operations", label: "Open AssetOperations", description: "Open operations readiness.", href: operationsHref, isEnabled: true, disabledReason: "", tone: "Info" as const },
+      { actionId: "open-report-line-provenance", label: "Open report-line provenance", description: "Open report usage.", href: reportHref, isEnabled: true, disabledReason: "", tone: "Info" as const }
+    ],
+    usedIn: [
+      { relationshipId: "portfolio", label: "Portfolio position", description: "Portfolio uses Apple Inc.", href: "/api/workstation/financial-record-explorers/portfolio", tone: "Info" as const },
+      { relationshipId: "ledger", label: "Ledger trial balance", description: "Ledger projection uses Apple Inc.", href: "/api/workstation/financial-record-explorers/ledger", tone: "Info" as const },
+      { relationshipId: "report", label: "Report-line provenance", description: "Board pack reports Apple Inc.", href: reportHref, tone: "Info" as const }
+    ],
+    impacts: [
+      { relationshipId: "passport", label: "Instrument passport", description: "Provider confidence and identity evidence.", href: passportHref, tone: "Success" as const },
+      { relationshipId: "operations", label: "AssetOperations readiness", description: "Cash-flow and reconciliation readiness.", href: operationsHref, tone: "Success" as const },
+      { relationshipId: "ledger", label: "Ledger projection", description: "Ledger impact is retained.", href: "/api/workstation/runs/run-1/ledger/journal", tone: "Info" as const }
+    ],
+    fullRecordHref: securityHref
+  };
+
+  return {
+    explorerId: "security-instrument",
+    title: "Security & Instrument Explorer",
+    description: "Explore Security Master references used by retained accounting and portfolio records.",
+    sourceState: "Source-backed Security Master references from run run-1.",
+    isBlocked: false,
+    blockedReason: "",
+    scopeItems: [{ label: "Run", value: "run-1", tone: "Info" }],
+    savedViews: [{ viewId: "system-security-instrument-default", label: "Security references", description: "Default security view.", isSystem: true, isActive: true, filters: [], searchText: "" }],
+    summaryItems: [{ label: "Securities", value: "1", detail: "Distinct resolved instruments.", tone: "Default" }],
+    filters: [{ filterId: "coverage", label: "Coverage", value: "Resolved", operator: "equals", tone: "Info" }],
+    columns: [
+      { columnId: "security", header: "Security", cellKind: "text", width: 220, isRightAligned: false },
+      { columnId: "identifierConfidence", header: "Identifier Confidence", cellKind: "text", width: 170, isRightAligned: false },
+      { columnId: "operations", header: "Operations", cellKind: "text", width: 140, isRightAligned: false },
+      { columnId: "cashFlow", header: "Cash Flow", cellKind: "text", width: 120, isRightAligned: false },
+      { columnId: "ledger", header: "Ledger", cellKind: "text", width: 120, isRightAligned: false }
+    ],
+    rows: [{
+      recordId: "security:11111111-1111-1111-1111-111111111111",
+      recordType: "security-instrument",
+      label: "Apple Inc.",
+      source: "AAPL",
+      status: "Resolved",
+      tone: "Success",
+      cells: [
+        { columnId: "security", displayValue: "Apple Inc.", rawValue: "Apple Inc.", tone: "Success", linkHref: securityHref },
+        { columnId: "identifierConfidence", displayValue: "96%", rawValue: "0.96", tone: "Success", linkHref: passportHref },
+        { columnId: "operations", displayValue: "Ready", rawValue: "Ready", tone: "Success", linkHref: operationsHref },
+        { columnId: "cashFlow", displayValue: "1 projected", rawValue: "1", tone: "Info", linkHref: operationsHref },
+        { columnId: "ledger", displayValue: "1 projection", rawValue: "1", tone: "Info", linkHref: "/api/workstation/runs/run-1/ledger/journal" }
+      ],
+      detail
+    }],
+    selectedRecord: detail,
+    proofActions: [],
+    recordGraph: { nodes: [], edges: [] }
+  };
 }
 
 function createExplorerDto(overrides: Partial<FinancialRecordExplorerDto> = {}): FinancialRecordExplorerDto {

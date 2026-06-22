@@ -83,6 +83,13 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+The Security & Instrument Explorer remains productized as a thin shared-read-model surface: it uses
+`SecurityMasterWorkbenchQueryService`, `IAssetOperationsQueryService`, and report-line provenance
+from `FinancialRecordExplorerReadService` for instrument identity, provider evidence,
+AssetOperations readiness, ledger impact, and report usage instead of asking browser or WPF clients
+to rebuild those relationships locally. Corporate-action mutations posted through shared Security
+Master endpoints delegate validation and append auditing to the application-owned
+`ICorporateActionCommandService`.
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
 portfolio, book, account, investor, capital-account, instrument, tax-lot, cost-center,
