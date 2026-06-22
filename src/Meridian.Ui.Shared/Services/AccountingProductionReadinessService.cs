@@ -240,7 +240,7 @@ public sealed class AccountingProductionReadinessService
             request.DirectLendingLedgerBookNativeCertified,
             request.StrategyLedgerReadLedgerBookNativeCertified,
             workflowEvidence);
-        var workflowIssues = BuildLedgerBookWorkflowIssues(workflowReadiness);
+        var workflowIssues = BuildLedgerBookWorkflowIssues(workflowReadiness, request, fundProfileId);
         var service = _services.GetService<ILedgerBookService>();
         if (service is null)
         {
@@ -297,7 +297,9 @@ public sealed class AccountingProductionReadinessService
     }
 
     private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildLedgerBookWorkflowIssues(
-        AccountingLedgerBookWorkflowReadinessDto readiness)
+        AccountingLedgerBookWorkflowReadinessDto readiness,
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
         if (!readiness.HasLedgerBookScope)
@@ -327,6 +329,19 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Ledger-book-native workflow certification evidence does not identify the selected ledger book.",
                 "Retain workflow certification evidence that names the selected ledgerBookId before production rollout.",
+                readiness.EvidenceReferences));
+        }
+        else if (readiness.HasLedgerBookScope &&
+                 readiness.HasLedgerBookScopedEvidence &&
+                 HasRolloutScope(request, fundProfileId) &&
+                 !HasRolloutScopedEvidence(readiness.EvidenceReferences, request, fundProfileId, readiness.LedgerBookId))
+        {
+            issues.Add(Issue(
+                "ledger-books.workflow-evidence-rollout-scope-mismatch",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Ledger-book-native workflow certification evidence does not identify the selected tenant, company, fund, and ledger book.",
+                "Retain workflow certification evidence that names the authenticated tenant, company, fund profile, and selected ledgerBookId before production rollout.",
                 readiness.EvidenceReferences));
         }
 
@@ -556,7 +571,7 @@ public sealed class AccountingProductionReadinessService
         AddPostingRulesWorkflowIssues(workflowReadiness, postingRuleIssues);
 
         var dimensionalIssues = BuildDimensionalIssues(workspace);
-        dimensionalIssues.AddRange(BuildDimensionalReportingIssues(dimensionalReportingReadiness));
+        dimensionalIssues.AddRange(BuildDimensionalReportingIssues(dimensionalReportingReadiness, request, fundProfileId));
         components.Add(Component(
             AccountingProductionReadinessAreaDto.RulesStudio,
             "Rules Studio",
@@ -690,7 +705,9 @@ public sealed class AccountingProductionReadinessService
     }
 
     private static IReadOnlyList<AccountingProductionReadinessIssueDto> BuildDimensionalReportingIssues(
-        AccountingDimensionalReportingReadinessDto readiness)
+        AccountingDimensionalReportingReadinessDto readiness,
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
         if (!readiness.HasLedgerBookScope)
@@ -720,6 +737,19 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Dimensional reporting certification evidence does not identify the selected ledger book.",
                 "Retain dimensional reporting evidence that names the selected ledgerBookId before production rollout.",
+                readiness.EvidenceReferences));
+        }
+        else if (readiness.HasLedgerBookScope &&
+                 readiness.HasLedgerBookScopedEvidence &&
+                 HasRolloutScope(request, fundProfileId) &&
+                 !HasRolloutScopedEvidence(readiness.EvidenceReferences, request, fundProfileId, readiness.LedgerBookId))
+        {
+            issues.Add(Issue(
+                "dimensions.reporting-evidence-rollout-scope-mismatch",
+                AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Dimensional reporting certification evidence does not identify the selected tenant, company, fund, and ledger book.",
+                "Retain dimensional reporting evidence that names the authenticated tenant, company, fund profile, and selected ledgerBookId before production reporting rollout.",
                 readiness.EvidenceReferences));
         }
 
@@ -2341,6 +2371,47 @@ public sealed class AccountingProductionReadinessService
             ? evidenceReferences
             : route is null ? Array.Empty<string>() : [route];
         return new(area, label, status, Math.Clamp(score, 0, 100), summary, issues, evidence, route);
+    }
+
+    private static bool HasRolloutScope(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId)
+        => !string.IsNullOrWhiteSpace(request.TenantId) &&
+           !string.IsNullOrWhiteSpace(request.CompanyId) &&
+           !string.IsNullOrWhiteSpace(fundProfileId) &&
+           request.LedgerBookId.HasValue;
+
+    private static bool HasRolloutScopedEvidence(
+        IEnumerable<string> evidenceReferences,
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        Guid? ledgerBookId)
+    {
+        if (string.IsNullOrWhiteSpace(request.TenantId) ||
+            string.IsNullOrWhiteSpace(request.CompanyId) ||
+            string.IsNullOrWhiteSpace(fundProfileId) ||
+            !ledgerBookId.HasValue)
+        {
+            return false;
+        }
+
+        return evidenceReferences.Any(reference =>
+            !string.IsNullOrWhiteSpace(reference) &&
+            reference.Contains(request.TenantId, StringComparison.OrdinalIgnoreCase) &&
+            reference.Contains(request.CompanyId, StringComparison.OrdinalIgnoreCase) &&
+            reference.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+            ReferencesLedgerBookEvidence(reference, ledgerBookId.Value));
+    }
+
+    private static bool ReferencesLedgerBookEvidence(string reference, Guid ledgerBookId)
+    {
+        var ledgerBookText = ledgerBookId.ToString("D");
+        return reference.Contains(ledgerBookText, StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId={ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId/{ledgerBookText}", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IReadOnlyList<AccountingProductionGapDto> BuildProductionGaps(

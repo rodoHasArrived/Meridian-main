@@ -328,7 +328,9 @@ and dimensional reporting certification controls in the same shared store. Reads
 access, writes require `AdminMaintenance`, endpoint saves resolve tenant/company scope from the
 workstation session, and production readiness merges retained evidence only for the active tenant,
 company, fund, and ledger-book scope before evaluating ledger-book-native workflow and dimensional
-reporting blockers.
+reporting blockers. Retained certification evidence must also name the selected tenant, company,
+fund profile, and ledger book; a generic or mismatched production-certification packet remains
+attached for audit review but no longer clears workflow or dimensional reporting rollout blockers.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers

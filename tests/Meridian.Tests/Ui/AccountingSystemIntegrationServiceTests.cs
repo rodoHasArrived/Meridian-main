@@ -1015,7 +1015,10 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ExternalExportDimensionMappingCertified: true,
                 UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                 UpdatedBy: "controller",
-                EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production"],
+                EvidenceReferences:
+                [
+                    $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production"
+                ],
                 TenantId: "tenant-alpha",
                 CompanyId: "company-alpha",
                 ReconciliationLedgerBookNativeCertified: true,
@@ -1026,7 +1029,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ReportPackageDimensionProvenanceCertified: true),
             "controller",
             CorrelationId: "production-certification-default-fund",
-            EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"]));
+            EvidenceLinks: [$"approval:tenant:tenant-alpha:company:company-alpha:fund:default-fund:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"]));
 
         var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
@@ -1049,10 +1052,10 @@ public sealed class AccountingSystemIntegrationServiceTests
              issue.Code.EndsWith("-not-certified", StringComparison.OrdinalIgnoreCase)));
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
-            component.EvidenceReferences.Contains($"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"));
+            component.EvidenceReferences.Contains($"approval:tenant:tenant-alpha:company:company-alpha:fund:default-fund:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"));
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
-            component.EvidenceReferences.Contains($"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"));
+            component.EvidenceReferences.Contains($"approval:tenant:tenant-alpha:company:company-alpha:fund:default-fund:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"));
     }
 
     [Fact]
@@ -3704,7 +3707,10 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ReportPackageDimensionProvenanceCertified: true),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-default-fund",
-                EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"])));
+                EvidenceLinks:
+                [
+                    $"approval:tenant:company-alpha:company:company-alpha:fund:default-fund:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"
+                ])));
 
         upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var upserted = await ReadAsync<AccountingProductionCertificationProfileDto>(upsertResponse);
@@ -3713,7 +3719,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         upserted.TenantId.Should().Be("company-alpha");
         upserted.CompanyId.Should().Be("company-alpha");
         upserted.UpdatedBy.Should().Be("controller.admin");
-        upserted.EvidenceReferences.Should().Contain($"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification");
+        upserted.EvidenceReferences.Should().Contain($"approval:tenant:company-alpha:company:company-alpha:fund:default-fund:ledger-book:{ExternalGlLedgerBookId:D}:production-certification");
 
         var getResponse = await client.GetAsync(
             $"{UiApiRoutes.AccountingSystemProductionCertificationProfile}?fundProfileId=default-fund&ledgerBookId={ExternalGlLedgerBookId:D}");
@@ -3738,6 +3744,59 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.Issues.Should().NotContain(issue =>
             issue.Code == "ledger-books.workflow-evidence-missing" ||
             issue.Code == "dimensions.reporting-evidence-missing");
+    }
+
+    [Fact]
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksMismatchedRolloutEvidence()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    ExternalGlLedgerBookId,
+                    PostingRulesLedgerBookNativeCertified: true,
+                    JournalLifecycleLedgerBookNativeCertified: true,
+                    CloseReportingLedgerBookNativeCertified: true,
+                    ExternalGlLedgerBookNativeCertified: true,
+                    PeriodReportDimensionQueriesCertified: true,
+                    CrossPeriodReportDimensionQueriesCertified: true,
+                    JournalQueryDimensionFiltersCertified: true,
+                    ExternalExportDimensionMappingCertified: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences:
+                    [
+                        $"evidence://tenant/company-beta/company/company-beta/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production"
+                    ],
+                    ReconciliationLedgerBookNativeCertified: true,
+                    DirectLendingLedgerBookNativeCertified: true,
+                    StrategyLedgerReadLedgerBookNativeCertified: true,
+                    LedgerLineDimensionsPersistedCertified: true,
+                    TrialBalanceDimensionFiltersCertified: true,
+                    ReportPackageDimensionProvenanceCertified: true),
+                "spoofed-browser-user",
+                CorrelationId: "production-certification-mismatched-rollout")));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var readinessResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionReadiness,
+            JsonContent(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId)));
+
+        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-evidence-rollout-scope-mismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.reporting-evidence-rollout-scope-mismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
     }
 
     [Fact]
