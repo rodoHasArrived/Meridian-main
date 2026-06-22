@@ -72,6 +72,9 @@ because those payloads expose Financial Operations evidence, blockers, assignmen
 posture. The workflow list route accepts `ledgerBookId` beside fund-account, period, and status
 filters, and returned summaries carry the retained workflow book scope so browser and WPF close
 surfaces do not select a newer workflow from another accounting book.
+Operations approval and accounting-record evidence subjects also carry the workflow ledger-book
+scope into their subject DTOs and routes, and book-scoped subject lookups fail closed when the
+requested `ledgerBookId` does not match the retained workflow.
 `FundOperationsWorkspaceReadService` passes Operations Continuity reviewed-automation posture through
 the shared governance lifecycle projection so browser and WPF report-pack handoff surfaces render
 the same automation guardrails and retained review evidence.

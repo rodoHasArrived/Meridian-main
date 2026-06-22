@@ -268,8 +268,8 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "5e2f3ecafe4e55f8b5d0c9218fa7949b43ad72c6dd72714011fe322b24bc5b8e",
-      "source_hash": "2465325c67093c5990f7a492bc4028f6560a56316fcb25006bf412de3807e312"
+      "readme_hash": "f6900eb6f35d0974b4d52de722718d4e1468892b82dfdb5a08217c184138ca82",
+      "source_hash": "42adc9f188bb2f007c875520c8f712f1996ada8db84d0fea2bebfd8e145c3634"
     },
     {
       "id": "SRC-WPF",

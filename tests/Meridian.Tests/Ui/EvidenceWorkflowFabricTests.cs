@@ -488,13 +488,16 @@ public sealed class EvidenceWorkflowFabricTests
     [Fact]
     public async Task EvidenceGraphService_DuringOperationsApprovalReview_ProjectsApprovedWorkflowEvidence()
     {
-        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved);
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved, ledgerBookId: ledgerBookId);
         var service = CreateOperationsApprovalGraphService(new StubOperationsContinuityWorkflowService([workflow]));
 
         var packet = await service.GetPacketAsync(EvidenceSubjectResolver.ApprovalKind, workflow.WorkflowId.ToString("D"));
 
         packet.Should().NotBeNull();
         packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.ApprovalKind);
+        packet.Subject.LedgerBookId.Should().Be(ledgerBookId);
+        packet.Subject.Route.Should().Contain($"ledgerBookId={ledgerBookId:D}");
         packet.Nodes.Should().Contain(node =>
             node.Kind == "approval" &&
             node.Status == EvidenceStatusDto.Ready &&
@@ -514,12 +517,25 @@ public sealed class EvidenceWorkflowFabricTests
             node.Summary.Contains("restatement lineage", StringComparison.OrdinalIgnoreCase));
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
         packet.Completeness.BlockingWorkItemIds.Should().BeEmpty();
+
+        var queryScopedPacket = await service.GetPacketAsync(
+            EvidenceSubjectResolver.ApprovalKind,
+            $"{workflow.WorkflowId:D}?ledgerBookId={ledgerBookId:D}");
+        var mismatchedBookPacket = await service.GetPacketAsync(
+            EvidenceSubjectResolver.ApprovalKind,
+            $"{workflow.WorkflowId:D}?ledgerBookId={Guid.Parse("cccccccc-cccc-4ccc-8ccc-cccccccccccc"):D}");
+
+        queryScopedPacket.Should().NotBeNull();
+        queryScopedPacket!.Subject.SubjectId.Should().Be(workflow.WorkflowId.ToString("D"));
+        queryScopedPacket.Subject.LedgerBookId.Should().Be(ledgerBookId);
+        mismatchedBookPacket.Should().BeNull();
     }
 
     [Fact]
     public async Task EvidenceGraphService_DuringAccountingRecordReview_ProjectsAccountingRecordAsFirstClassSubject()
     {
-        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved);
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved, ledgerBookId: ledgerBookId);
         var service = CreateOperationsApprovalGraphService(new StubOperationsContinuityWorkflowService([workflow]));
 
         var packet = await service.GetPacketAsync(EvidenceSubjectResolver.AccountingRecordKind, workflow.WorkflowId.ToString("D"));
@@ -527,6 +543,8 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Should().NotBeNull();
         packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.AccountingRecordKind);
         packet.Subject.Label.Should().Contain("Accounting record");
+        packet.Subject.LedgerBookId.Should().Be(ledgerBookId);
+        packet.Subject.Route.Should().Contain($"ledgerBookId={ledgerBookId:D}");
         packet.Nodes.Should().Contain(node =>
             node.Kind == "accounting-record" &&
             node.Status == EvidenceStatusDto.Ready);
@@ -540,12 +558,21 @@ public sealed class EvidenceWorkflowFabricTests
             "accounting-record-category-freshness"
         ]);
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+
+        var queryScopedPacket = await service.GetPacketAsync(
+            EvidenceSubjectResolver.AccountingRecordKind,
+            $"{workflow.WorkflowId:D}?ledgerBookId={ledgerBookId:D}");
+
+        queryScopedPacket.Should().NotBeNull();
+        queryScopedPacket!.Subject.SubjectId.Should().Be(workflow.WorkflowId.ToString("D"));
+        queryScopedPacket.Subject.LedgerBookId.Should().Be(ledgerBookId);
     }
 
     [Fact]
     public async Task EvidenceSubjectResolver_DuringOperationsEvidenceReview_ListsAccountingRecordSubjects()
     {
-        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved);
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+        var workflow = CreateOperationsWorkflow(OperationsApprovalStateDto.Approved, ledgerBookId: ledgerBookId);
         var services = new ServiceCollection()
             .AddSingleton<IOperationsContinuityWorkflowService>(new StubOperationsContinuityWorkflowService([workflow]))
             .BuildServiceProvider();
@@ -560,7 +587,16 @@ public sealed class EvidenceWorkflowFabricTests
         subjects.Should().Contain(subject =>
             subject.SubjectKind == EvidenceSubjectResolver.AccountingRecordKind &&
             subject.SubjectId == workflow.WorkflowId.ToString("D") &&
-            subject.Label.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase));
+            subject.Label.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase) &&
+            subject.LedgerBookId == ledgerBookId &&
+            subject.Route != null &&
+            subject.Route.Contains($"ledgerBookId={ledgerBookId:D}", StringComparison.OrdinalIgnoreCase));
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.ApprovalKind &&
+            subject.SubjectId == workflow.WorkflowId.ToString("D") &&
+            subject.LedgerBookId == ledgerBookId &&
+            subject.Route != null &&
+            subject.Route.Contains($"ledgerBookId={ledgerBookId:D}", StringComparison.OrdinalIgnoreCase));
         resolver.IsSupportedKind(EvidenceSubjectResolver.AccountingRecordKind).Should().BeTrue();
     }
 
@@ -2378,7 +2414,8 @@ public sealed class EvidenceWorkflowFabricTests
     private static OperationsContinuityWorkflowDto CreateOperationsWorkflow(
         OperationsApprovalStateDto approvalState,
         DateTimeOffset? updatedAtUtc = null,
-        bool accountingRecordAuditReady = true)
+        bool accountingRecordAuditReady = true,
+        Guid? ledgerBookId = null)
     {
         var workflowId = Guid.NewGuid();
         var fundAccountId = Guid.NewGuid();
@@ -2515,7 +2552,8 @@ public sealed class EvidenceWorkflowFabricTests
             Blockers: [],
             NextActions: [],
             CloseReadiness: null,
-            AccountingRecordSummary: BuildAccountingRecordSummary(workflowId, now, accountingRecordAuditReady));
+            AccountingRecordSummary: BuildAccountingRecordSummary(workflowId, now, accountingRecordAuditReady),
+            LedgerBookId: ledgerBookId);
     }
 
     private static PrivateCapitalActivityProjectionDto PrivateCapitalActivityProjection(Guid? ledgerBookId = null)

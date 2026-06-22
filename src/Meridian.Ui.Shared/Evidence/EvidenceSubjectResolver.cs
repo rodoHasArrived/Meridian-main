@@ -134,15 +134,17 @@ public sealed class EvidenceSubjectResolver
                         SubjectKind: ApprovalKind,
                         Label: $"Operations approval {workflow.PeriodId}",
                         Workspace: "Accounting",
-                        Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                        PageTag: "OperationsContinuity"),
+                        Route: BuildOperationsContinuityRoute(workflow.WorkflowId, workflow.LedgerBookId),
+                        PageTag: "OperationsContinuity",
+                        LedgerBookId: workflow.LedgerBookId),
                     new EvidenceSubjectDto(
                         SubjectId: workflow.WorkflowId.ToString("D"),
                         SubjectKind: AccountingRecordKind,
                         Label: $"Accounting record {workflow.PeriodId}",
                         Workspace: "Accounting",
-                        Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                        PageTag: "OperationsContinuity")
+                        Route: BuildOperationsContinuityRoute(workflow.WorkflowId, workflow.LedgerBookId),
+                        PageTag: "OperationsContinuity",
+                        LedgerBookId: workflow.LedgerBookId)
                 }));
         }
 
@@ -302,8 +304,8 @@ public sealed class EvidenceSubjectResolver
                 Workspace: "Data",
                 Route: "/data/security-master?view=conflicts",
                 PageTag: "SecurityMaster"),
-            ApprovalKind => await ResolveApprovalSubjectAsync(subjectId, ct).ConfigureAwait(false),
-            AccountingRecordKind => await ResolveAccountingRecordSubjectAsync(subjectId, ct).ConfigureAwait(false),
+            ApprovalKind => await ResolveApprovalSubjectAsync(subjectId, ledgerBookId, ct).ConfigureAwait(false),
+            AccountingRecordKind => await ResolveAccountingRecordSubjectAsync(subjectId, ledgerBookId, ct).ConfigureAwait(false),
             EvidenceVaultKind => new EvidenceSubjectDto(
                 SubjectId: subjectId,
                 SubjectKind: EvidenceVaultKind,
@@ -427,6 +429,21 @@ public sealed class EvidenceSubjectResolver
         return $"/accounting/journal-entries?{string.Join("&", query)}";
     }
 
+    private static string BuildOperationsContinuityRoute(Guid workflowId, Guid? ledgerBookId)
+    {
+        var query = new List<string>
+        {
+            $"workflowId={workflowId:D}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        return $"/accounting?{string.Join("&", query)}";
+    }
+
     private static string StripQueryScope(string subjectId)
     {
         var queryStart = subjectId.IndexOf('?', StringComparison.Ordinal);
@@ -458,13 +475,20 @@ public sealed class EvidenceSubjectResolver
         return null;
     }
 
-    private async Task<EvidenceSubjectDto?> ResolveApprovalSubjectAsync(string subjectId, CancellationToken ct)
+    private async Task<EvidenceSubjectDto?> ResolveApprovalSubjectAsync(string subjectId, Guid? ledgerBookId, CancellationToken ct)
     {
         var service = _services.GetService<IOperationsContinuityWorkflowService>();
-        if (service is not null && Guid.TryParse(subjectId, out var workflowId))
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        if (service is not null && Guid.TryParse(canonicalSubjectId, out var workflowId))
         {
             var workflow = await service.GetAsync(workflowId, ct).ConfigureAwait(false);
             if (workflow is null)
+            {
+                return null;
+            }
+
+            if (ledgerBookId.HasValue && workflow.LedgerBookId != ledgerBookId.Value)
             {
                 return null;
             }
@@ -474,8 +498,9 @@ public sealed class EvidenceSubjectResolver
                 SubjectKind: ApprovalKind,
                 Label: $"Operations approval {workflow.PeriodId}",
                 Workspace: "Accounting",
-                Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                PageTag: "OperationsContinuity");
+                Route: BuildOperationsContinuityRoute(workflow.WorkflowId, workflow.LedgerBookId),
+                PageTag: "OperationsContinuity",
+                LedgerBookId: workflow.LedgerBookId);
         }
 
         return new EvidenceSubjectDto(
@@ -489,13 +514,20 @@ public sealed class EvidenceSubjectResolver
             PageTag: "OperationsContinuity");
     }
 
-    private async Task<EvidenceSubjectDto?> ResolveAccountingRecordSubjectAsync(string subjectId, CancellationToken ct)
+    private async Task<EvidenceSubjectDto?> ResolveAccountingRecordSubjectAsync(string subjectId, Guid? ledgerBookId, CancellationToken ct)
     {
         var service = _services.GetService<IOperationsContinuityWorkflowService>();
-        if (service is not null && Guid.TryParse(subjectId, out var workflowId))
+        ledgerBookId ??= TryResolveLedgerBookId(subjectId);
+        var canonicalSubjectId = StripQueryScope(subjectId);
+        if (service is not null && Guid.TryParse(canonicalSubjectId, out var workflowId))
         {
             var workflow = await service.GetAsync(workflowId, ct).ConfigureAwait(false);
             if (workflow is null)
+            {
+                return null;
+            }
+
+            if (ledgerBookId.HasValue && workflow.LedgerBookId != ledgerBookId.Value)
             {
                 return null;
             }
@@ -505,8 +537,9 @@ public sealed class EvidenceSubjectResolver
                 SubjectKind: AccountingRecordKind,
                 Label: $"Accounting record {workflow.PeriodId}",
                 Workspace: "Accounting",
-                Route: $"/accounting?workflowId={workflow.WorkflowId:D}",
-                PageTag: "OperationsContinuity");
+                Route: BuildOperationsContinuityRoute(workflow.WorkflowId, workflow.LedgerBookId),
+                PageTag: "OperationsContinuity",
+                LedgerBookId: workflow.LedgerBookId);
         }
 
         return new EvidenceSubjectDto(
