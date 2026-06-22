@@ -3844,10 +3844,10 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ImplementationSandboxConfigured: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "spoofed-profile-updater",
-                    EvidenceReferences: ["evidence://tenant-admin/tenant-spoof/setup-certified"]),
+                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/setup-certified"]),
                 "spoofed-browser-user",
-                CorrelationId: "tenant-admin-spoof",
-                EvidenceLinks: ["approval:tenant-admin:tenant-spoof"])));
+                CorrelationId: "tenant-admin-company-alpha",
+                EvidenceLinks: ["approval:tenant-admin:company-alpha"])));
 
         upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var upserted = await ReadAsync<AccountingTenantAdministrationProfileDto>(upsertResponse);
@@ -3862,7 +3862,52 @@ public sealed class AccountingSystemIntegrationServiceTests
         var retained = await ReadAsync<AccountingTenantAdministrationProfileDto>(getResponse);
         retained.TenantId.Should().Be("company-alpha");
         retained.CompanyId.Should().Be("company-alpha");
-        retained.EvidenceReferences.Should().Contain("correlation:tenant-admin-spoof");
+        retained.EvidenceReferences.Should().Contain("correlation:tenant-admin-company-alpha");
+    }
+
+    [Fact]
+    public async Task AccountingSystemTenantAdministrationProfileEndpoint_RejectsMismatchedTenantEvidence()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemTenantAdministrationProfile,
+            JsonContent(new AccountingTenantAdministrationProfileUpsertRequestDto(
+                new AccountingTenantAdministrationProfileDto(
+                    "tenant-spoof",
+                    "company-spoof",
+                    TenantScopeConfigured: true,
+                    AdminRoleProfileConfigured: true,
+                    ScopedAccessPoliciesConfigured: true,
+                    ReportingGroupsConfigured: true,
+                    AccountingAdminSurfaceConfigured: true,
+                    BrowserAccountingAdminSurfaceConfigured: true,
+                    WpfAccountingAdminSurfaceConfigured: true,
+                    ChartAdministrationStudioConfigured: true,
+                    RuleTestPromotionStudioConfigured: true,
+                    CloseSetupStudioConfigured: true,
+                    ProviderMappingStudioConfigured: true,
+                    TenantCompanyReportGroupSetupStudioConfigured: true,
+                    AuditReviewToolingConfigured: true,
+                    BulkImportExportSafeguardsConfigured: true,
+                    PerformanceValidationConfigured: true,
+                    DisasterRecoveryRunbookConfigured: true,
+                    LedgerBookAdministrationStudioConfigured: true,
+                    PostingRuleAuthoringStudioConfigured: true,
+                    ApprovalQueueStudioConfigured: true,
+                    DimensionMappingStudioConfigured: true,
+                    ImplementationSandboxConfigured: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "spoofed-profile-updater",
+                    EvidenceReferences: ["evidence://tenant-admin/tenant-spoof/setup-certified"]),
+                "spoofed-browser-user",
+                CorrelationId: "tenant-admin-spoof",
+                EvidenceLinks: ["approval:tenant-admin:tenant-spoof"])));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await upsertResponse.Content.ReadAsStringAsync();
+        body.Should().Contain("selected tenant and company");
     }
 
     [Fact]

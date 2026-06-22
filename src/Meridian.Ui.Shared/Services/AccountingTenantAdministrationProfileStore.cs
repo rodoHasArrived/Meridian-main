@@ -133,6 +133,7 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
             .Select(static item => item!.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        EnsureTenantCompanyScopedEvidence(request.Profile, tenantId, companyId, evidence);
 
         return request.Profile with
         {
@@ -204,6 +205,57 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
             throw new ArgumentException("Only a human operator can certify accounting tenant administration profiles.", nameof(actionOrigin));
         }
     }
+
+    private static void EnsureTenantCompanyScopedEvidence(
+        AccountingTenantAdministrationProfileDto profile,
+        string tenantId,
+        string companyId,
+        IReadOnlyList<string> evidenceReferences)
+    {
+        if (!DeclaresTenantAdministrationCertification(profile))
+        {
+            return;
+        }
+
+        if (evidenceReferences.Count == 0)
+        {
+            throw new ArgumentException("Accounting tenant administration evidence is required.");
+        }
+
+        if (!evidenceReferences.Any(reference =>
+                ReferencesScope(reference, tenantId) &&
+                ReferencesScope(reference, companyId)))
+        {
+            throw new ArgumentException("Accounting tenant administration evidence must identify the selected tenant and company.");
+        }
+    }
+
+    private static bool DeclaresTenantAdministrationCertification(AccountingTenantAdministrationProfileDto profile)
+        => profile.TenantScopeConfigured ||
+           profile.AdminRoleProfileConfigured ||
+           profile.ScopedAccessPoliciesConfigured ||
+           profile.ReportingGroupsConfigured ||
+           profile.AccountingAdminSurfaceConfigured ||
+           profile.BrowserAccountingAdminSurfaceConfigured ||
+           profile.WpfAccountingAdminSurfaceConfigured ||
+           profile.ChartAdministrationStudioConfigured ||
+           profile.RuleTestPromotionStudioConfigured ||
+           profile.CloseSetupStudioConfigured ||
+           profile.ProviderMappingStudioConfigured ||
+           profile.TenantCompanyReportGroupSetupStudioConfigured ||
+           profile.AuditReviewToolingConfigured ||
+           profile.BulkImportExportSafeguardsConfigured ||
+           profile.PerformanceValidationConfigured ||
+           profile.DisasterRecoveryRunbookConfigured ||
+           profile.LedgerBookAdministrationStudioConfigured ||
+           profile.PostingRuleAuthoringStudioConfigured ||
+           profile.ApprovalQueueStudioConfigured ||
+           profile.DimensionMappingStudioConfigured ||
+           profile.ImplementationSandboxConfigured;
+
+    private static bool ReferencesScope(string? reference, string value)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           reference.Contains(value, StringComparison.OrdinalIgnoreCase);
 
     private sealed record AccountingTenantAdministrationProfileSnapshot(
         IReadOnlyList<AccountingTenantAdministrationProfileDto> Profiles);
