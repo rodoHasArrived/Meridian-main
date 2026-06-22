@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
-using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -42,7 +41,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ISecurityMasterQueryService _queryService;
-    private readonly ISecurityMasterEventStore _eventStore;
+    private readonly ISecurityMasterCorporateActionCommandService _corporateActionCommandService;
     private readonly RateLimiter _rateLimiter;
     private readonly IConfiguration _configuration;
     private readonly ILogger<PolygonCorporateActionFetcher> _logger;
@@ -54,14 +53,14 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
     public PolygonCorporateActionFetcher(
         IHttpClientFactory httpClientFactory,
         ISecurityMasterQueryService queryService,
-        ISecurityMasterEventStore eventStore,
+        ISecurityMasterCorporateActionCommandService corporateActionCommandService,
         RateLimiter rateLimiter,
         IConfiguration configuration,
         ILogger<PolygonCorporateActionFetcher> logger)
     {
         _httpClientFactory = httpClientFactory;
         _queryService = queryService;
-        _eventStore = eventStore;
+        _corporateActionCommandService = corporateActionCommandService;
         _rateLimiter = rateLimiter;
         _configuration = configuration;
         _logger = logger;
@@ -247,7 +246,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
                     continue;
 
                 await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-                await _eventStore.AppendCorporateActionAsync(dto, ct).ConfigureAwait(false);
+                await AppendCorporateActionAsync(ticker, securityId, dto, ct).ConfigureAwait(false);
                 dividendCount++;
             }
             catch (Exception ex)
@@ -291,7 +290,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
                     continue;
 
                 await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-                await _eventStore.AppendCorporateActionAsync(dto, ct).ConfigureAwait(false);
+                await AppendCorporateActionAsync(ticker, securityId, dto, ct).ConfigureAwait(false);
                 splitCount++;
             }
             catch (Exception ex)
@@ -302,6 +301,21 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
 
         _logger.LogInformation("Persisted {Count} splits for {Ticker}", splitCount, ticker);
     }
+
+    private Task AppendCorporateActionAsync(
+        string ticker,
+        Guid securityId,
+        CorporateActionDto dto,
+        CancellationToken ct)
+        => _corporateActionCommandService.AppendAsync(
+            new SecurityMasterCorporateActionAppendRequestDto(
+                securityId,
+                dto,
+                SourceSystem: "Polygon",
+                Actor: "polygon-corporate-action-fetcher",
+                SourceRecordId: ticker,
+                Reason: $"Provider corporate action backfill for {ticker}."),
+            ct);
 
     private bool ParseDividend(JsonElement item, Guid securityId, out CorporateActionDto dto)
     {

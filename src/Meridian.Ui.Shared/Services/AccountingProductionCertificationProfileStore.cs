@@ -302,9 +302,15 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         return reference.Contains($"ledger-book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"ledger-book/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId={ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"ledger-book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"ledger-book/{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase);
+               reference.Contains($"book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId={compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId/{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase);
     }
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)

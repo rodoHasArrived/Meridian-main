@@ -609,21 +609,32 @@ public static class SecurityMasterEndpoints
             Guid securityId,
             CorporateActionDto dto,
             HttpContext context,
-            [FromServices] AppSecurityMaster.ICorporateActionCommandService corporateActionService,
+            [FromServices] ISecurityMasterCorporateActionCommandService commandService,
             CancellationToken ct) =>
         {
-            var actor = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
-            var result = await corporateActionService
-                .AppendAsync(securityId, dto, actor, "http", ct)
-                .ConfigureAwait(false);
-
-            return result.Succeeded
-                ? Results.Ok()
-                : Results.BadRequest(result.ValidationError);
+            try
+            {
+                var actor = ResolveActor(context);
+                var result = await commandService.AppendAsync(
+                    new SecurityMasterCorporateActionAppendRequestDto(
+                        securityId,
+                        dto,
+                        SourceSystem: "workstation-http",
+                        Actor: actor,
+                        SourceRecordId: null,
+                        Reason: "HTTP corporate action append",
+                        CorrelationId: context.TraceIdentifier),
+                    ct).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
         })
         .WithName("AppendSecurityMasterCorporateAction")
         .Accepts<CorporateActionDto>("application/json")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<SecurityMasterCorporateActionAppendResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status429TooManyRequests)

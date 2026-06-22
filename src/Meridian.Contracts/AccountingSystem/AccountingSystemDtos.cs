@@ -751,9 +751,15 @@ internal static class AccountingProductionReadinessEvidenceScope
         return reference.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"ledger-book/{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId={ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId/{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"ledger-book:{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
                reference.Contains($"ledger-book/{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"book:{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase);
+               reference.Contains($"book:{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId={compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId:{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledgerBookId/{compactLedgerBookIdText}", StringComparison.OrdinalIgnoreCase);
     }
 }
 

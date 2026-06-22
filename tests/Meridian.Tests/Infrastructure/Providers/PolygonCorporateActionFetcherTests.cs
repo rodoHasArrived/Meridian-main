@@ -2,7 +2,6 @@ using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -32,7 +31,7 @@ public sealed class PolygonCorporateActionFetcherTests : IDisposable
         var fetcher = new PolygonCorporateActionFetcher(
             new StubHttpClientFactory(),
             new StubSecurityMasterQueryService(),
-            new StubSecurityMasterEventStore(),
+            new StubSecurityMasterCorporateActionCommandService(),
             new RateLimiter(1, TimeSpan.FromSeconds(1)),
             configuration,
             NullLogger<PolygonCorporateActionFetcher>.Instance);
@@ -69,13 +68,23 @@ public sealed class PolygonCorporateActionFetcherTests : IDisposable
         public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default) => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 
-    private sealed class StubSecurityMasterEventStore : ISecurityMasterEventStore
+    private sealed class StubSecurityMasterCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
     {
-        public Task AppendAsync(Guid securityId, long expectedVersion, IReadOnlyList<SecurityMasterEventEnvelope> events, CancellationToken ct = default) => Task.CompletedTask;
-        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadAsync(Guid securityId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(Array.Empty<SecurityMasterEventEnvelope>());
-        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadSinceSequenceAsync(long sequenceExclusive, int take, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>(Array.Empty<SecurityMasterEventEnvelope>());
-        public Task<long> GetLatestSequenceAsync(CancellationToken ct = default) => Task.FromResult(0L);
-        public Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default) => Task.CompletedTask;
-        public Task<IReadOnlyList<CorporateActionDto>> LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+        public Task<SecurityMasterCorporateActionAppendResultDto> AppendAsync(
+            SecurityMasterCorporateActionAppendRequestDto request,
+            CancellationToken ct = default)
+            => Task.FromResult(new SecurityMasterCorporateActionAppendResultDto(
+                request.CorporateAction,
+                new SecurityMasterCorporateActionAuditDto(
+                    "test-audit",
+                    request.SecurityId,
+                    request.CorporateAction.CorpActId,
+                    request.CorporateAction.EventType,
+                    request.SourceSystem,
+                    request.Actor,
+                    DateTimeOffset.UtcNow,
+                    request.SourceRecordId,
+                    request.Reason,
+                    request.CorrelationId)));
     }
 }

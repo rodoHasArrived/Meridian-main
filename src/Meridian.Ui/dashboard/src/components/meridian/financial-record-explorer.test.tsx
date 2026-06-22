@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -147,6 +149,30 @@ describe("FinancialRecordExplorerShell", () => {
 
     expect(screen.getByRole("status")).toHaveTextContent("Strategy run read service is not registered.");
     expect(screen.getByRole("button", { name: "Source unavailable" })).toBeDisabled();
+  });
+
+  it("renders the shared Security & Instrument Explorer parity DTO", () => {
+    renderExplorer(undefined, loadSecurityInstrumentParityFixture());
+
+    expect(screen.getByRole("heading", { name: "Security & Instrument Explorer" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Explorer summary")).toHaveTextContent("Provider Evidence");
+    expect(screen.getByRole("cell", { name: "AAPL - Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "96% trusted" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Ready" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "1 projection" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Board pack holdings.aapl.market-value" })).toBeInTheDocument();
+
+    const detail = screen.getByLabelText("AAPL - Apple Inc. proof detail");
+    expect(within(detail).getByText("Instrument Identity")).toBeInTheDocument();
+    expect(within(detail).getByText("AAPL / US0378331005")).toBeInTheDocument();
+    expect(within(detail).getByText("Provider Evidence")).toBeInTheDocument();
+    expect(within(detail).getByText("AssetOperations Readiness")).toBeInTheDocument();
+    expect(within(detail).getByText("Ledger Impact")).toBeInTheDocument();
+    expect(within(detail).getByText("Report Usage")).toBeInTheDocument();
+    expect(within(detail).getByText("Portfolio position")).toBeInTheDocument();
+    expect(within(detail).getByText("AssetOperations reconciliation")).toBeInTheDocument();
+    expect(within(detail).getAllByText("Report usage")).toHaveLength(2);
+    expect(screen.getByLabelText("Record graph")).toHaveTextContent("AssetOperations ready");
   });
 });
 
@@ -387,4 +413,9 @@ function createExplorerDto(overrides: Partial<FinancialRecordExplorerDto> = {}):
     },
     ...overrides
   };
+}
+
+function loadSecurityInstrumentParityFixture(): FinancialRecordExplorerDto {
+  const fixturePath = resolve(process.cwd(), "../../../tests/fixtures/security-instrument-explorer-parity.json");
+  return JSON.parse(readFileSync(fixturePath, "utf8")) as FinancialRecordExplorerDto;
 }

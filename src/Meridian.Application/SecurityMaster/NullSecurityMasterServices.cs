@@ -118,7 +118,6 @@ public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaste
         => NotConfigured<SecurityAliasDto>();
 }
 
-
 public sealed class NullCorporateActionCommandService : ICorporateActionCommandService
 {
     public Task<CorporateActionAppendResult> AppendAsync(
@@ -130,6 +129,16 @@ public sealed class NullCorporateActionCommandService : ICorporateActionCommandS
         => Task.FromException<CorporateActionAppendResult>(new InvalidOperationException(
             "Security Master is not configured. " +
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
+}
+
+public sealed class NullSecurityMasterCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
+{
+    public Task<SecurityMasterCorporateActionAppendResultDto> AppendAsync(
+        SecurityMasterCorporateActionAppendRequestDto request,
+        CancellationToken ct = default)
+        => Task.FromException<SecurityMasterCorporateActionAppendResultDto>(new InvalidOperationException(
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable corporate action appends."));
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
