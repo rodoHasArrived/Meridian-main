@@ -307,11 +307,12 @@ registers the policy/projection services and the CLI command invokes the text-jo
 but Application no longer owns accounting policy resolution, ledger write projection metadata, or
 text-journal parser/report semantics.
 `AccountingJournalDraftService` accepts shared ledger-book scope and treasury ledger context, fails
-closed before governed write projection when a draft is missing ledger-book scope, and stamps the
-resulting journal metadata with effective date, idempotency, fund-event, capital-account, investor,
-payment-intent, and settlement references before a governed ledger write is projected. Keep this
-behavior in Financial Operations so private-capital and payment-linked drafts are validated once
-before browser, WPF, storage, or reporting surfaces inspect them.
+closed before governed write projection when a draft is missing ledger-book scope or a retained
+line-level book dimension conflicts with the draft ledger book, and stamps the resulting journal
+metadata with effective date, idempotency, fund-event, capital-account, investor, payment-intent,
+and settlement references before a governed ledger write is projected. Keep this behavior in
+Financial Operations so private-capital and payment-linked drafts are validated once before browser,
+WPF, storage, or reporting surfaces inspect them.
 Operations Continuity ledger-posting candidates preserve `LedgerDimensionSetDto` on each candidate
 line and map that scope into immutable ledger line dimensions before appending the governed journal
 write, so close, reconciliation, report, and external-GL consumers do not have to infer line scope

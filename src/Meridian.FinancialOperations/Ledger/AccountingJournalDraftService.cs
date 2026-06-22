@@ -344,6 +344,11 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 continue;
             }
 
+            if (!ValidateLineDimensionLedgerBook(request, line, index, issues))
+            {
+                continue;
+            }
+
             totalDebits += line.Debit;
             totalCredits += line.Credit;
             var lineEntryId = Guid.NewGuid();
@@ -387,6 +392,34 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 "Correct the draft line metadata before submitting.");
             return (null, totalDebits, totalCredits);
         }
+    }
+
+    private static bool ValidateLineDimensionLedgerBook(
+        AccountingJournalDraftRequest request,
+        AccountingJournalDraftLineRequest line,
+        int index,
+        List<AccountingConfigurationValidationIssueDto> issues)
+    {
+        var lineBookId = NormalizeOptional(line.Dimensions?.BookId);
+        if (lineBookId is null || !request.LedgerBookId.HasValue || request.LedgerBookId.Value == Guid.Empty)
+        {
+            return true;
+        }
+
+        var draftBookId = request.LedgerBookId.Value.ToString("D");
+        if (string.Equals(lineBookId, draftBookId, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        AddIssue(
+            issues,
+            "JOURNAL_DRAFT_LINE_LEDGER_BOOK_MISMATCH",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            $"Journal line dimension book '{lineBookId}' does not match draft ledger book '{draftBookId}'.",
+            $"lines[{index}].dimensions.bookId",
+            "Use one ledger book across draft header and line dimensions before submitting or posting.");
+        return false;
     }
 
     private static JournalEntryMetadata BuildJournalEntryMetadata(
