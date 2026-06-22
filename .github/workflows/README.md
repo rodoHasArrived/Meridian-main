@@ -29,7 +29,7 @@ scope.
 | Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. Path filters include the WPF project-reference closure so shared service, reporting, storage, workflow, and related dependency changes trigger the lane. | WPF TRX results and desktop smoke publish output |
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | WPF, WPF dependency, desktop workflow script, or manual changes | Runs `scripts/dev/validate-wpf-dev.ps1` with the desktop workflow script-test default or a manual filter override. | WPF dev-loop evidence |
 | WPF Route Validation | `wpf-route-validation.yml` | WPF, shared route dependency, route script, or manual changes | Runs position-blotter and operator-inbox route validation scripts on Windows. | Route validation evidence |
-| Documentation Automation | `documentation.yml` | Documentation, docs-script, workflow, WPF navigation, diagram changes, or manual | Runs docs automation checks, regenerates tracked documentation outputs, refreshes Mermaid/UML/UI diagrams using root `npm install`, excludes version-specific UML render binaries from the final freshness diff, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
+| Documentation Automation | `documentation.yml` | Documentation, Codex memory, docs-script, workflow, WPF navigation, diagram changes, or manual | Runs docs automation checks, validates AI inventory, Codex memory summary/receipt commands and focused memory-checker tests, regenerates tracked documentation outputs, refreshes Mermaid/UML/UI diagrams using root `npm install`, excludes version-specific UML render binaries from the final freshness diff, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
 | Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes or manual | Enforces PR phase scope for roadmap/source-doc changes, validates roadmap and source registries, renders generated outputs, and checks for drift. | None |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks, validates tooling metadata, validates workflow syntax with `actionlint`, and checks AI contract/navigation drift. | None |
 | Provider Validation | `provider-validation.yml` | Weekly or manual | Runs the Wave 1 provider validation evidence bundle and DK1 sign-off packet generation. | Provider validation evidence |
@@ -118,6 +118,10 @@ python build/scripts/ci/check-workflow-hygiene.py
 Documentation automation:
 
 ```powershell
+python build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+python -m unittest build.scripts.docs.tests.test_check_codex_memory
 python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json
 python3 build/scripts/docs/render-roadmap-diagrams.py --summary
 python3 build/scripts/docs/render-source-diagrams.py --summary

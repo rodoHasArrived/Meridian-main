@@ -139,7 +139,11 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         prefix = " " * indent
         if isinstance(data, dict):
             for key, value in data.items():
-                if isinstance(value, (dict, list)):
+                if value == []:
+                    lines.append(f"{prefix}{key}: []")
+                elif value == {}:
+                    lines.append(f"{prefix}{key}: {{}}")
+                elif isinstance(value, (dict, list)):
                     lines.append(f"{prefix}{key}:")
                     lines.append(dump_yaml(value, indent + 2).rstrip())
                 else:
@@ -147,8 +151,14 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         elif isinstance(data, list):
             for item in data:
                 if isinstance(item, (dict, list)):
-                    lines.append(f"{prefix}-")
-                    lines.append(dump_yaml(item, indent + 2).rstrip())
+                    if isinstance(item, dict) and item:
+                        nested_lines = dump_yaml(item, indent + 2).rstrip().splitlines()
+                        first_line = nested_lines[0].lstrip()
+                        lines.append(f"{prefix}- {first_line}")
+                        lines.extend(nested_lines[1:])
+                    else:
+                        lines.append(f"{prefix}-")
+                        lines.append(dump_yaml(item, indent + 2).rstrip())
                 else:
                     lines.append(f"{prefix}- {format_scalar(item)}")
         else:

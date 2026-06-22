@@ -140,6 +140,7 @@ python build/scripts/docs/check-codex-skills.py --summary
 python build/scripts/docs/check-codex-memory.py --summary
 python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
 python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+python -m unittest build.scripts.docs.tests.test_check_codex_memory
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/validate-skill-packages.py
 python build/scripts/docs/validate-roadmap-registry.py --summary
