@@ -2137,6 +2137,10 @@ public static partial class WorkstationEndpoints
             string? taxLotId,
             string? costCenterId,
             string? counterpartyId,
+            string? organizationId,
+            string? customerId,
+            string? vendorId,
+            string? projectId,
             HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -2173,6 +2177,10 @@ public static partial class WorkstationEndpoints
                     taxLotId,
                     costCenterId,
                     counterpartyId,
+                    organizationId,
+                    customerId,
+                    vendorId,
+                    projectId,
                     externalGlDimensions))
                 .ToArray();
             return Results.Json(lines, jsonOptions);
@@ -2199,6 +2207,10 @@ public static partial class WorkstationEndpoints
             string? taxLotId,
             string? costCenterId,
             string? counterpartyId,
+            string? organizationId,
+            string? customerId,
+            string? vendorId,
+            string? projectId,
             HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -2240,6 +2252,10 @@ public static partial class WorkstationEndpoints
                 taxLotId,
                 costCenterId,
                 counterpartyId,
+                organizationId,
+                customerId,
+                vendorId,
+                projectId,
                 externalGlDimensions));
 
             return Results.Json(entries.ToArray(), jsonOptions);
@@ -4119,6 +4135,10 @@ public static partial class WorkstationEndpoints
         string? taxLotId,
         string? costCenterId,
         string? counterpartyId,
+        string? organizationId,
+        string? customerId,
+        string? vendorId,
+        string? projectId,
         IReadOnlyDictionary<string, string>? externalGlDimensions = null)
         => MatchesDimensionValue(fundId, dimensions?.FundId)
            && MatchesDimensionValue(entityId, dimensions?.EntityId)
@@ -4133,6 +4153,10 @@ public static partial class WorkstationEndpoints
            && MatchesDimensionValue(taxLotId, dimensions?.TaxLotId)
            && MatchesDimensionValue(costCenterId, dimensions?.CostCenterId)
            && MatchesDimensionValue(counterpartyId, dimensions?.CounterpartyId)
+           && MatchesDimensionValue(organizationId, dimensions?.OrganizationId)
+           && MatchesDimensionValue(customerId, dimensions?.CustomerId)
+           && MatchesDimensionValue(vendorId, dimensions?.VendorId)
+           && MatchesDimensionValue(projectId, dimensions?.ProjectId)
            && MatchesExternalGlDimensions(externalGlDimensions, dimensions?.ExternalGlDimensions);
 
     private static bool MatchesDimensionValue(string? requested, string? actual)

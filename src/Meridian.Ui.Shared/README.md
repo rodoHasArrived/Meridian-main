@@ -142,7 +142,8 @@ actions, plus structured generated report-writer grid metadata when a run retain
 generated no-code grid evidence source-backed across browser and desktop clients.
 Strategy-run ledger trial-balance and journal endpoints accept canonical accounting dimension
 filters for fund, entity, sleeve, strategy, portfolio, book, account, investor, capital account,
-instrument, tax lot, cost center, counterparty, and external GL scope, including
+instrument, tax lot, cost center, counterparty, organization, customer, vendor, project, and
+external GL scope, including
 `bookId`/`ledgerBookId`, `externalGl.<name>`, and
 `externalGlDimensionKey`/`externalGlDimensionValue` query forms. They return the shared
 `LedgerDimensionSetDto` on rows where the source run provides that scope. Filters for unavailable

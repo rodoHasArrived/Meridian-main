@@ -7854,13 +7854,17 @@ public sealed partial class WorkstationEndpointsTests
                 ["entityScopeId"] = "entity-book",
                 ["ledgerBookId"] = "book-gaap",
                 ["sleeveScopeId"] = "sleeve-alpha",
+                ["organizationId"] = "org-ops",
+                ["customerId"] = "customer-investor-services",
+                ["vendorId"] = "vendor-custodian",
+                ["projectId"] = "project-close-automation",
                 ["externalGl.Department"] = "InvestmentOps"
             }
         });
 
         var client = app.GetTestClient();
         var response = await client.GetAsync(
-            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?fundId=fund-core&entityId=entity-book&ledgerBookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGl.Department=InvestmentOps");
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?fundId=fund-core&entityId=entity-book&ledgerBookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&organizationId=org-ops&customerId=customer-investor-services&vendorId=vendor-custodian&projectId=project-close-automation&externalGl.Department=InvestmentOps");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -7875,6 +7879,10 @@ public sealed partial class WorkstationEndpointsTests
             dimensions.GetProperty("strategyId").GetString().Should().Be("recon-strategy");
             dimensions.GetProperty("portfolioId").GetString().Should().Be("recon-portfolio");
             dimensions.GetProperty("accountId").GetString().Should().Be("acct-ops");
+            dimensions.GetProperty("organizationId").GetString().Should().Be("org-ops");
+            dimensions.GetProperty("customerId").GetString().Should().Be("customer-investor-services");
+            dimensions.GetProperty("vendorId").GetString().Should().Be("vendor-custodian");
+            dimensions.GetProperty("projectId").GetString().Should().Be("project-close-automation");
             dimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
         }
 
@@ -7891,6 +7899,13 @@ public sealed partial class WorkstationEndpointsTests
         bookMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
         using var bookMismatchDoc = await JsonDocument.ParseAsync(await bookMismatch.Content.ReadAsStreamAsync());
         bookMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+
+        var projectMismatch = await client.GetAsync(
+            "/api/workstation/runs/drilltb-dim/ledger/trial-balance?projectId=project-tax-close");
+
+        projectMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var projectMismatchDoc = await JsonDocument.ParseAsync(await projectMismatch.Content.ReadAsStreamAsync());
+        projectMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
 
         var externalGlMismatch = await client.GetAsync(
             "/api/workstation/runs/drilltb-dim/ledger/trial-balance?externalGl.Department=FundAccounting");
@@ -7929,13 +7944,17 @@ public sealed partial class WorkstationEndpointsTests
                 ["entityScopeId"] = "entity-book",
                 ["bookId"] = "book-gaap",
                 ["sleeveScopeId"] = "sleeve-alpha",
+                ["organizationId"] = "org-ops",
+                ["customerId"] = "customer-investor-services",
+                ["vendorId"] = "vendor-custodian",
+                ["projectId"] = "project-close-automation",
                 ["externalGl.Department"] = "InvestmentOps"
             }
         });
 
         var client = app.GetTestClient();
         var response = await client.GetAsync(
-            "/api/workstation/runs/drillj-dim/ledger/journal?fundId=fund-core&entityId=entity-book&bookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps");
+            "/api/workstation/runs/drillj-dim/ledger/journal?fundId=fund-core&entityId=entity-book&bookId=book-gaap&sleeveId=sleeve-alpha&strategyId=recon-strategy&portfolioId=recon-portfolio&accountId=acct-ops&organizationId=org-ops&customerId=customer-investor-services&vendorId=vendor-custodian&projectId=project-close-automation&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -7950,6 +7969,10 @@ public sealed partial class WorkstationEndpointsTests
             dimensions.GetProperty("strategyId").GetString().Should().Be("recon-strategy");
             dimensions.GetProperty("portfolioId").GetString().Should().Be("recon-portfolio");
             dimensions.GetProperty("accountId").GetString().Should().Be("acct-ops");
+            dimensions.GetProperty("organizationId").GetString().Should().Be("org-ops");
+            dimensions.GetProperty("customerId").GetString().Should().Be("customer-investor-services");
+            dimensions.GetProperty("vendorId").GetString().Should().Be("vendor-custodian");
+            dimensions.GetProperty("projectId").GetString().Should().Be("project-close-automation");
             dimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
         }
 
@@ -7966,6 +7989,13 @@ public sealed partial class WorkstationEndpointsTests
         bookMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
         using var bookMismatchDoc = await JsonDocument.ParseAsync(await bookMismatch.Content.ReadAsStreamAsync());
         bookMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
+
+        var vendorMismatch = await client.GetAsync(
+            "/api/workstation/runs/drillj-dim/ledger/journal?vendorId=vendor-admin");
+
+        vendorMismatch.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var vendorMismatchDoc = await JsonDocument.ParseAsync(await vendorMismatch.Content.ReadAsStreamAsync());
+        vendorMismatchDoc.RootElement.GetArrayLength().Should().Be(0);
 
         var externalGlMismatch = await client.GetAsync(
             "/api/workstation/runs/drillj-dim/ledger/journal?externalGlDimensionKey=Department&externalGlDimensionValue=FundAccounting");
