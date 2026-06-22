@@ -522,14 +522,18 @@ export function useSecurityMasterViewModel(
   }, [searchDelayMs, services]);
 
   const selectSecurity = useCallback(async (securityId: string) => {
+    const isReselect = securityId === selectedSecurityId;
     setSelectedSecurityId(securityId);
     setIdentity(null);
     setIdentityError(null);
     setIdentityLoading(true);
-    setCorporateActions(null);
-    setCorporateActionsError(null);
-    setTradingParameters(null);
-    setTradingParametersError(null);
+
+    if (!isReselect) {
+      setCorporateActions(null);
+      setCorporateActionsError(null);
+      setTradingParameters(null);
+      setTradingParametersError(null);
+    }
 
     try {
       const detail = await services.getIdentity(securityId);
@@ -539,7 +543,7 @@ export function useSecurityMasterViewModel(
     } finally {
       setIdentityLoading(false);
     }
-  }, [services]);
+  }, [selectedSecurityId, services]);
 
   const resolveConflict = useCallback(async (
     conflictId: string,
