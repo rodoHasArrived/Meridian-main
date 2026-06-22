@@ -6,6 +6,7 @@ using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.FundAccounts;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -135,7 +136,7 @@ public sealed partial class WorkstationEndpointsTests
             await using var app = await CreateAppAsync(services =>
             {
                 services.AddSingleton<IFundAccountService>(accountService);
-            });
+            }, currentUserPermissions: UserPermission.ManageDirectLending);
             var client = app.GetTestClient();
             using var content = BuildBankStatementImportContent(
                 account.AccountId,
@@ -182,6 +183,31 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_BankStatementImport_ShouldRejectSecurityMasterOnlyUser()
+    {
+        var accountService = new InMemoryFundAccountService();
+        var account = await accountService.CreateAccountAsync(CreateBankImportAccountRequest());
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IFundAccountService>(accountService);
+        }, currentUserPermissions: UserPermission.ModifySecurityMaster);
+        var client = app.GetTestClient();
+        using var content = BuildBankStatementImportContent(
+            account.AccountId,
+            "JPMorgan",
+            """
+            transaction_date,value_date,amount,currency,transaction_type,description,reference,closing_balance
+            2026-06-01,2026-06-03,500.00,USD,Deposit,Unauthorized source row,REF-1,1000.00
+            """);
+
+        var response = await client.PostAsync(UiApiRoutes.WorkstationBankStatementImport, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var stored = await accountService.GetBankStatementLinesAsync(account.AccountId);
+        stored.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_BankStatementImport_ShouldRejectInvalidRowsWithoutApplyingEvidence()
     {
         var accountService = new InMemoryFundAccountService();
@@ -189,7 +215,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton<IFundAccountService>(accountService);
-        });
+        }, currentUserPermissions: UserPermission.ManageDirectLending);
         var client = app.GetTestClient();
         using var content = BuildBankStatementImportContent(
             account.AccountId,

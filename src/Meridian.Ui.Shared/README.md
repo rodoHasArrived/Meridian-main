@@ -66,7 +66,9 @@ Data upload intake endpoints are registered under `/api/workstation/data/uploads
 route serves the contract-owned catalog, and the preview route accepts bounded CSV uploads,
 retains the source file under the resolved workstation upload root, and returns schema issues plus
 preview rows without mutating trades, transactions, Security Master assets, entity structure, or
-ledger/accounting records.
+ledger/accounting records. Bank statement import is the fund-account evidence mutation in this
+endpoint family; keep it limited to `AdminMaintenance` or `ManageDirectLending` so Security Master
+maintainers cannot alter retained bank evidence or reconciliation lines.
 Plaid endpoints are registered as their own shared endpoint group from `UiApiRoutes`, with read
 and mutation access resolved from the workstation session. The shared Plaid workstation service
 keeps link-token creation, public-token exchange, item sync, webhook retention, and sandbox
