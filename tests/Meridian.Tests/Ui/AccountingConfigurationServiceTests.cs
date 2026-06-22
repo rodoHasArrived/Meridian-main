@@ -12,6 +12,9 @@ namespace Meridian.Tests.Ui;
 
 public sealed class AccountingConfigurationServiceTests
 {
+    private static readonly Guid ManualJournalLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid ManualJournalPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
     [Fact]
     public async Task AccountingConfigurationService_IsolatesWorkspacesByTenantAndCompanyScope()
     {
@@ -962,7 +965,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             saved.Version,
             Notes: "Submit through lifecycle action.",
-            CorrelationId: "manual-je-submit-idempotent"));
+            CorrelationId: "manual-je-submit-idempotent",
+            LedgerBookId: saved.LedgerBookId));
         var replayedSubmit = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             saved.JournalEntryId,
             saved.FundProfileId,
@@ -970,7 +974,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             saved.Version,
             Notes: "Submit through lifecycle action.",
-            CorrelationId: "manual-je-submit-idempotent"));
+            CorrelationId: "manual-je-submit-idempotent",
+            LedgerBookId: saved.LedgerBookId));
 
         replayedSubmit.Transition.TransitionId.Should().Be(submitted.Transition.TransitionId);
         replayedSubmit.JournalEntry.Version.Should().Be(submitted.JournalEntry.Version);
@@ -986,7 +991,8 @@ public sealed class AccountingConfigurationServiceTests
             submitted.JournalEntry.Version,
             Notes: "Controller approved with retained evidence.",
             CorrelationId: "manual-je-approve-idempotent",
-            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)]));
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)],
+            LedgerBookId: submitted.JournalEntry.LedgerBookId));
         var replayedApprove = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             submitted.JournalEntry.JournalEntryId,
             submitted.JournalEntry.FundProfileId,
@@ -995,7 +1001,8 @@ public sealed class AccountingConfigurationServiceTests
             submitted.JournalEntry.Version,
             Notes: "Controller approved with retained evidence.",
             CorrelationId: "manual-je-approve-idempotent",
-            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)]));
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)],
+            LedgerBookId: submitted.JournalEntry.LedgerBookId));
 
         replayedApprove.Transition.TransitionId.Should().Be(approved.Transition.TransitionId);
         replayedApprove.JournalEntry.Version.Should().Be(approved.JournalEntry.Version);
@@ -1011,7 +1018,8 @@ public sealed class AccountingConfigurationServiceTests
             approved.JournalEntry.Version,
             Notes: "Post after approval evidence.",
             CorrelationId: "manual-je-post-idempotent",
-            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
         var replayedPost = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             approved.JournalEntry.JournalEntryId,
             approved.JournalEntry.FundProfileId,
@@ -1020,7 +1028,8 @@ public sealed class AccountingConfigurationServiceTests
             approved.JournalEntry.Version,
             Notes: "Post after approval evidence.",
             CorrelationId: "manual-je-post-idempotent",
-            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)]));
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
 
         replayedPost.Transition.TransitionId.Should().Be(posted.Transition.TransitionId);
         replayedPost.JournalEntry.Version.Should().Be(posted.JournalEntry.Version);
@@ -1038,6 +1047,114 @@ public sealed class AccountingConfigurationServiceTests
         workbench.AuditTrail.Should().ContainSingle(item =>
             item.Action == "manual-je.post" &&
             item.CorrelationId == "manual-je-post-idempotent");
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntryLifecycle_PostAppendsDurableLedgerWrite()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var journalStore = WritableManualJournalLedgerJournalStore.Default();
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore);
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
+        var submitted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            JournalEntryLifecycleActionDto.Submit,
+            "controller",
+            saved.Version,
+            Notes: "Submit manual journal for review.",
+            EvidenceLinks: ["evidence://accounting/manual-je/submit"],
+            LedgerBookId: saved.LedgerBookId));
+        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntry.JournalEntryId,
+            submitted.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.JournalEntry.Version,
+            Notes: "Controller approved with retained evidence.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)],
+            LedgerBookId: submitted.JournalEntry.LedgerBookId));
+        var correlationId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+
+        var posted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Controller posted after approval evidence.",
+            CorrelationId: correlationId.ToString("D"),
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
+
+        posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        posted.PostedJournal.Should().NotBeNull();
+        posted.PostedJournal!.JournalEntryId.Should().Be(saved.JournalEntryId);
+        posted.PostedJournal.LedgerBookId.Should().Be(ManualJournalLedgerBookId);
+        posted.PostedJournal.PeriodId.Should().Be(ManualJournalPeriodId);
+        posted.PostedJournal.AggregateId.Should().Be(ManualJournalLedgerBookId);
+        posted.PostedJournal.SourceEventId.Should().Be(saved.JournalEntryId);
+        posted.PostedJournal.CorrelationId.Should().Be(correlationId);
+
+        var write = journalStore.Appended.Should().ContainSingle().Subject;
+        write.AggregateId.Should().Be(ManualJournalLedgerBookId);
+        write.LedgerBookId.Should().Be(ManualJournalLedgerBookId);
+        write.PeriodId.Should().Be(ManualJournalPeriodId);
+        write.SourceEventId.Should().Be(saved.JournalEntryId);
+        write.AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
+        write.AccountingPolicyId.Should().Be("gaap-close-v1");
+        write.PostingCommand.Should().NotBeNull();
+        write.PostingCommand!.AggregateId.Should().Be(ManualJournalLedgerBookId);
+        write.PostingCommand.PeriodId.Should().Be(ManualJournalPeriodId);
+        write.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Approved);
+        write.PostingCommand.ActionOrigin.Should().Be(OperationsActionOriginDto.HumanOperator);
+        write.PostingCommand.Evidence.Should().Contain(item => item.Kind == AccountingPostingEvidenceKindDto.Approval);
+        write.PostingCommand.Evidence.Should().Contain(item => item.Kind == AccountingPostingEvidenceKindDto.AuditSupport);
+        write.Entry.IsBalanced.Should().BeTrue();
+        write.Entry.Lines.Sum(line => line.Debit).Should().Be(100m);
+        write.Entry.Lines.Sum(line => line.Credit).Should().Be(100m);
+        write.Entry.Metadata.IdempotencyKey.Should().Be($"manual-je:{ManualJournalLedgerBookId:N}:{saved.JournalEntryId:N}");
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntryLifecycle_PostWithoutLedgerStoreFailsClosed()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration, includeDefaultJournalStore: false);
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
+        var submitted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            JournalEntryLifecycleActionDto.Submit,
+            "controller",
+            saved.Version,
+            Notes: "Submit manual journal for review.",
+            EvidenceLinks: ["evidence://accounting/manual-je/submit"],
+            LedgerBookId: saved.LedgerBookId));
+        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntry.JournalEntryId,
+            submitted.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.JournalEntry.Version,
+            Notes: "Controller approved with retained evidence.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)],
+            LedgerBookId: submitted.JournalEntry.LedgerBookId));
+
+        var post = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Controller posted after approval evidence.",
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
+
+        await post.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*no ledger journal store is configured*");
     }
 
     [Fact]
@@ -1507,6 +1624,45 @@ public sealed class AccountingConfigurationServiceTests
             draft,
             "ops-user",
             LedgerBookId: savedLedgerBookId));
+
+        var unscopedSave = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            saved with { Memo = "Unscoped retained draft edit" },
+            "ops-user"));
+        await unscopedSave.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', but the request was not scoped to a ledger book*");
+
+        var unscopedSubmit = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version));
+        await unscopedSubmit.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', but the request was not scoped to a ledger book*");
+
+        var unscopedAttach = async () => await service.AttachEvidenceAsync(new AttachManualJournalEntryEvidenceRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version,
+            new ManualJournalEntryEvidenceAttachmentDto(
+                "unscoped-book-evidence",
+                "Unscoped book evidence",
+                "SourceDocument",
+                "/api/workstation/evidence/subjects/accounting-record/unscoped-book",
+                "EvidenceVault",
+                DateTimeOffset.UtcNow,
+                "controller")));
+        await unscopedAttach.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', but the request was not scoped to a ledger book*");
+
+        var unscopedLifecycle = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            JournalEntryLifecycleActionDto.Validate,
+            "controller",
+            saved.Version));
+        await unscopedLifecycle.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', but the request was not scoped to a ledger book*");
 
         var submit = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,
@@ -6480,8 +6636,13 @@ public sealed class AccountingConfigurationServiceTests
         IAccountingConfigurationService configurationService,
         ILedgerJournalStore? journalStore = null,
         ReportPackWorkflowService? reportPackWorkflowService = null,
-        IBankTransactionSource? bankTransactionSource = null)
+        IBankTransactionSource? bankTransactionSource = null,
+        bool includeDefaultJournalStore = true)
     {
+        journalStore ??= includeDefaultJournalStore
+            ? WritableManualJournalLedgerJournalStore.Default()
+            : null;
+
         return new ManualJournalEntryWorkbenchService(
             new InMemoryManualJournalEntryDraftStore(),
             configurationService,
@@ -6511,6 +6672,138 @@ public sealed class AccountingConfigurationServiceTests
                 ? transactions.Where(transaction => transaction.EntityId == entityId.Value).ToArray()
                 : transactions);
         }
+    }
+
+    private sealed class WritableManualJournalLedgerJournalStore(
+        LedgerBookRecord book,
+        LedgerAccountingPeriod period) : ILedgerJournalStore
+    {
+        private readonly List<LedgerJournalEntryWrite> _writes = [];
+        private readonly List<LedgerJournalEntryRecord> _records = [];
+
+        public IReadOnlyList<LedgerJournalEntryWrite> Appended => _writes;
+
+        public static WritableManualJournalLedgerJournalStore Default()
+        {
+            var now = DateTimeOffset.UtcNow;
+            var book = new LedgerBookRecord(
+                ManualJournalLedgerBookId,
+                "fund-alpha",
+                Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                FundStructureNodeKindDto.Fund,
+                "GAAP close book",
+                "USD",
+                now,
+                now,
+                AccountingBasis: AccountingBasisKindDto.Gaap,
+                AccountingPolicyId: "gaap-close-v1",
+                AccountingPolicyVersion: "v1");
+            var period = new LedgerAccountingPeriod(
+                ManualJournalPeriodId,
+                ManualJournalLedgerBookId,
+                2026,
+                6,
+                "2026-06",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30),
+                "Open",
+                now,
+                null,
+                1);
+            return new WritableManualJournalLedgerJournalStore(book, period);
+        }
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
+            LedgerPeriodPostingGuard.Validate(entry, period);
+            _writes.Add(entry);
+            _records.Add(new LedgerJournalEntryRecord(
+                entry.Entry,
+                entry.AggregateId,
+                entry.PeriodId,
+                entry.CommandId,
+                entry.CorrelationId,
+                _records.Count + 1,
+                DateTimeOffset.UtcNow,
+                entry.AccountingBasis,
+                entry.AccountingPolicyId,
+                entry.AccountingPolicyVersion,
+                entry.RuleId,
+                entry.RuleVersion,
+                entry.SourceEventId,
+                entry.SourceJournalEntryId,
+                entry.PostingKind,
+                entry.AdjustmentApproval));
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                _records.Where(record => record.PeriodId == periodId).ToArray());
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                _records.Where(record => record.AggregateId == aggregateId).ToArray());
+        }
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerAccountingPeriod?>(periodId == period.PeriodId ? period : null);
+        }
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (!ledgerBookId.HasValue || period.LedgerBookId == ledgerBookId.Value) &&
+                (string.IsNullOrWhiteSpace(status) || string.Equals(period.Status, status, StringComparison.Ordinal)) &&
+                (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || book.FundStructureNodeId == fundStructureNodeId.Value);
+            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(matches ? [period] : []);
+        }
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default) =>
+            Task.FromResult(period);
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerBookRecord?>(ledgerBookId == book.LedgerBookId ? book : null);
+        }
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || book.FundStructureNodeId == fundStructureNodeId.Value) &&
+                (!fundStructureNodeKind.HasValue || book.FundStructureNodeKind == fundStructureNodeKind.Value);
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>(matches ? [book] : []);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) =>
+            Task.FromResult(book);
     }
 
     private sealed class PostedPrivateCapitalLedgerJournalStore(
@@ -6737,10 +7030,10 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryId: Guid.NewGuid(),
             Status: ManualJournalEntryStatusDto.Draft,
             FundProfileId: "fund-alpha",
-            LedgerBookId: Guid.NewGuid(),
+            LedgerBookId: ManualJournalLedgerBookId,
             AccountingBasis: AccountingBasisKindDto.Gaap,
             AccountingDate: new DateOnly(2026, 6, 30),
-            PeriodId: "2026-06",
+            PeriodId: ManualJournalPeriodId.ToString("D"),
             EntityId: "entity-master",
             FundNodeId: "fund-alpha",
             Currency: "USD",

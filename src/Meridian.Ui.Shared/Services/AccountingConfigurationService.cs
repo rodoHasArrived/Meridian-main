@@ -3418,9 +3418,13 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsurePeriodUnlocked(request.PeriodIsLocked, "save manual journal entry drafts");
-        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, request.Draft);
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft, allowIncomplete: true, ct).ConfigureAwait(false);
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
         var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct).ConfigureAwait(false);
+        if (existing is not null)
+        {
+            EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing, requireScopeForBookScopedDraft: true);
+        }
         if (existing is not null && existing.Version != request.Draft.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
@@ -3494,7 +3498,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
-        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
         if (FindIdempotentLifecycleTransition(
                 draft,
                 JournalEntryLifecycleActionDto.Submit,
@@ -3557,7 +3561,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
-        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
         if (draft.Version != request.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
@@ -3618,7 +3622,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
-        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
         var idempotent = await TryBuildIdempotentLifecycleResultAsync(fundProfileId, draft, request, ct).ConfigureAwait(false);
         if (idempotent is not null)
         {
@@ -3671,14 +3675,13 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 "manual-je.reject",
                 now,
                 ct).ConfigureAwait(false),
-            JournalEntryLifecycleActionDto.Post => await ApplyStatusTransitionAsync(
+            JournalEntryLifecycleActionDto.Post => await PostApprovedManualJournalEntryAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Approved, request.Action),
-                RequirePostingLifecycleEvidence(RequirePostingLifecycleNotes(request), validated),
-                ManualJournalEntryStatusDto.Posted,
-                "manual-je.post",
+                RequirePostingLifecycleEvidence(
+                    RequirePostingLifecycleNotes(request),
+                    validated),
                 now,
-                ct,
-                item => item with { PostedAtUtc = now, PostedBy = RequireText(request.Actor, nameof(request.Actor)) }).ConfigureAwait(false),
+                ct).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.LockAfterClose => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Posted, request.Action),
                 RequireCloseLockLifecycleEvidence(RequirePostingLifecycleNotes(request), validated),
@@ -3760,6 +3763,373 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
         await AppendAuditAsync(next, auditAction, request.Actor, request.CorrelationId, next.EvidenceLinks, ct).ConfigureAwait(false);
         return new JournalEntryLifecycleActionResultDto(next, transition);
+    }
+
+    private async Task<JournalEntryLifecycleActionResultDto> PostApprovedManualJournalEntryAsync(
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionRequestDto request,
+        DateTimeOffset recordedAtUtc,
+        CancellationToken ct)
+    {
+        var journalStore = _journalStore
+            ?? throw new InvalidOperationException("Manual journal entries cannot be posted because no ledger journal store is configured.");
+        if (draft.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
+        {
+            throw new InvalidOperationException("Manual journal entry lifecycle action is blocked while critical validation issues remain.");
+        }
+
+        EnsureLifecycleActorIndependentFromPreparer(draft, request);
+        var ledgerBookId = draft.LedgerBookId
+            ?? throw new InvalidOperationException("Manual journal entry posting requires a ledger book id.");
+        if (string.IsNullOrWhiteSpace(draft.PeriodId) ||
+            !Guid.TryParse(draft.PeriodId, out var periodId) ||
+            periodId == Guid.Empty)
+        {
+            throw new InvalidOperationException("Manual journal entry posting requires a durable ledger period id.");
+        }
+
+        var ledgerBook = await journalStore.GetLedgerBookAsync(ledgerBookId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Ledger book '{ledgerBookId:D}' was not found.");
+        if (ledgerBook.AccountingBasis != draft.AccountingBasis)
+        {
+            throw new InvalidOperationException(
+                $"Manual journal entry basis '{draft.AccountingBasis}' does not match ledger book '{ledgerBook.LedgerBookId:D}' basis '{ledgerBook.AccountingBasis}'.");
+        }
+
+        var mergedEvidence = MergeEvidenceLinks(draft.EvidenceLinks, request.EvidenceLinks);
+        var postingCommand = BuildManualPostingCommand(draft, request, ledgerBookId, periodId, mergedEvidence, recordedAtUtc);
+        var write = await BuildManualJournalEntryWriteAsync(
+                draft,
+                ledgerBook,
+                periodId,
+                postingCommand,
+                mergedEvidence,
+                recordedAtUtc,
+                ct)
+            .ConfigureAwait(false);
+
+        await journalStore.AppendAsync(write, ct).ConfigureAwait(false);
+
+        var transition = BuildTransition(draft.Status, ManualJournalEntryStatusDto.Posted, request, recordedAtUtc);
+        var next = draft with
+        {
+            Status = ManualJournalEntryStatusDto.Posted,
+            UpdatedAtUtc = recordedAtUtc,
+            Version = draft.Version + 1,
+            EvidenceLinks = mergedEvidence,
+            LifecycleTransitions = draft.LifecycleTransitions.Append(transition).ToArray(),
+            PostedAtUtc = recordedAtUtc,
+            PostedBy = RequireText(request.Actor, nameof(request.Actor))
+        };
+
+        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
+        await AppendAuditAsync(next, "manual-je.post", request.Actor, request.CorrelationId, next.EvidenceLinks, ct).ConfigureAwait(false);
+        return new JournalEntryLifecycleActionResultDto(
+            next,
+            transition,
+            PostedJournal: new PostedLedgerJournalEntryResultDto(
+                write.Entry.JournalEntryId,
+                ledgerBookId,
+                write.AccountingBasis,
+                periodId,
+                write.AggregateId,
+                write.CommandId,
+                write.SourceEventId,
+                write.CorrelationId,
+                PostedAtUtc: recordedAtUtc,
+                IdempotencyKey: postingCommand.IdempotencyKey));
+    }
+
+    private async Task<LedgerJournalEntryWrite> BuildManualJournalEntryWriteAsync(
+        ManualJournalEntryDraftDto draft,
+        LedgerBookRecord ledgerBook,
+        Guid periodId,
+        AccountingPostingCommandDto postingCommand,
+        IReadOnlyList<string> evidenceLinks,
+        DateTimeOffset recordedAtUtc,
+        CancellationToken ct)
+    {
+        var configuration = await _configurationService
+            .GetWorkspaceAsync(draft.FundProfileId, draft.LedgerBookId, ct)
+            .ConfigureAwait(false);
+        var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
+        var timestamp = ToAccountingTimestamp(draft.AccountingDate);
+        var description = NormalizeOptional(draft.Memo) ?? $"Manual journal entry {draft.JournalEntryId:D}";
+        var lines = new List<LedgerEntry>(draft.Lines.Count);
+
+        foreach (var line in draft.Lines)
+        {
+            if (!chartByPath.TryGetValue(line.AccountPath, out var account) || account.IsArchived)
+            {
+                throw new InvalidOperationException($"Manual journal entry line '{line.LineId}' references unavailable GL account '{line.AccountPath}'.");
+            }
+
+            if (!TryMapLedgerAccountType(account.AccountType, out var accountType))
+            {
+                throw new InvalidOperationException(
+                    $"Manual journal entry line '{line.LineId}' references GL account '{account.Path}' with unsupported account type '{account.AccountType}'.");
+            }
+
+            var amount = Math.Abs(line.Amount);
+            lines.Add(new LedgerEntry(
+                CreateDeterministicGuid("manual-je-line", draft.JournalEntryId.ToString("D"), line.LineId, line.Side.ToString()),
+                draft.JournalEntryId,
+                timestamp,
+                new LedgerAccount(account.AccountName, accountType),
+                line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
+                line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m,
+                description,
+                ToLedgerLineDimensions(line.Dimensions)));
+        }
+
+        var entry = new JournalEntry(
+            draft.JournalEntryId,
+            timestamp,
+            description,
+            lines,
+            BuildManualJournalEntryMetadata(draft, postingCommand, evidenceLinks, recordedAtUtc));
+
+        return new LedgerJournalEntryWrite(
+            entry,
+            postingCommand.AggregateId,
+            periodId,
+            postingCommand.CommandId,
+            postingCommand.CorrelationId,
+            draft.AccountingBasis,
+            ledgerBook.AccountingPolicyId,
+            ledgerBook.AccountingPolicyVersion,
+            "manual-journal-entry",
+            "v1",
+            postingCommand.SourceEventId,
+            postingCommand.SourceJournalEntryId,
+            BuildManualPostingKind(draft),
+            PostingCommand: postingCommand,
+            LedgerBookId: ledgerBook.LedgerBookId);
+    }
+
+    private static AccountingPostingCommandDto BuildManualPostingCommand(
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionRequestDto request,
+        Guid ledgerBookId,
+        Guid periodId,
+        IReadOnlyList<string> evidenceLinks,
+        DateTimeOffset recordedAtUtc)
+    {
+        var treasuryContext = NormalizeTreasuryContext(draft.TreasuryContext, draft.AccountingDate);
+        var sourceJournalEntryId = draft.ReversalOfJournalEntryId ?? draft.RebookedFromJournalEntryId;
+        var idempotencyKey = NormalizeOptional(treasuryContext?.IdempotencyKey)
+                             ?? $"manual-je:{ledgerBookId:N}:{draft.JournalEntryId:N}";
+        var commandId = CreateDeterministicGuid(
+            "manual-je-posting-command",
+            ledgerBookId.ToString("D"),
+            periodId.ToString("D"),
+            draft.JournalEntryId.ToString("D"),
+            idempotencyKey);
+
+        var sourceEventType = NormalizeOptional(treasuryContext?.FundEventType) is not null
+            ? $"ManualJournalEntry:{treasuryContext.FundEventType}"
+            : null;
+
+        return new AccountingPostingCommandDto(
+            commandId,
+            ledgerBookId,
+            periodId,
+            draft.AccountingDate,
+            recordedAtUtc,
+            idempotencyKey,
+            BuildManualPostingIntent(draft),
+            SourceEventId: draft.JournalEntryId,
+            CorrelationId: TryParseGuid(request.CorrelationId),
+            CausationId: draft.JournalEntryId,
+            SourceJournalEntryId: sourceJournalEntryId,
+            SourceEventType: sourceEventType,
+            TreasuryContext: treasuryContext,
+            ApprovalState: AccountingPostingApprovalStateDto.Approved,
+            ApprovalId: NormalizeOptional(draft.ApprovalId),
+            OperatorRationale: NormalizeOptional(request.Notes),
+            Evidence: evidenceLinks.Select(link => new AccountingPostingEvidenceReferenceDto(
+                EvidenceId: link,
+                Uri: link,
+                Kind: ClassifyManualPostingEvidence(link),
+                SourceSystem: "ManualJournalEntryWorkbench",
+                RetainedAtUtc: recordedAtUtc,
+                RetainedBy: RequireText(request.Actor, nameof(request.Actor)),
+                SubjectId: draft.JournalEntryId.ToString("D"))).ToArray(),
+            ActionOrigin: request.ActionOrigin,
+            LedgerBookId: ledgerBookId);
+    }
+
+    private static JournalEntryMetadata BuildManualJournalEntryMetadata(
+        ManualJournalEntryDraftDto draft,
+        AccountingPostingCommandDto postingCommand,
+        IReadOnlyList<string> evidenceLinks,
+        DateTimeOffset recordedAtUtc)
+    {
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
+        AddMetadataTag(tags, "manualJournalEntryStatus", draft.Status.ToString());
+        AddMetadataTag(tags, "manualJournalEntryType", draft.EntryType.ToString());
+        AddMetadataTag(tags, "accountingBasis", draft.AccountingBasis.ToString());
+        AddMetadataTag(tags, "ledgerBookId", draft.LedgerBookId?.ToString("D"));
+        AddMetadataTag(tags, "periodId", draft.PeriodId);
+        AddMetadataTag(tags, "sourceEventId", postingCommand.SourceEventId?.ToString("D"));
+        AddMetadataTag(tags, "sourceJournalEntryId", postingCommand.SourceJournalEntryId?.ToString("D"));
+        if (evidenceLinks.Count > 0)
+        {
+            tags["evidenceLinks"] = string.Join("|", evidenceLinks);
+        }
+
+        return new JournalEntryMetadata(
+            ActivityType: "ManualJournalEntry",
+            ProjectId: NormalizeOptional(draft.FundProfileId),
+            LedgerBook: draft.LedgerBookId?.ToString("D"),
+            EffectiveDate: postingCommand.TreasuryContext?.EffectiveDate ?? draft.AccountingDate,
+            IdempotencyKey: postingCommand.IdempotencyKey,
+            FundEventId: NormalizeOptional(postingCommand.TreasuryContext?.FundEventId),
+            FundEventType: NormalizeOptional(postingCommand.TreasuryContext?.FundEventType),
+            CapitalAccountId: NormalizeOptional(postingCommand.TreasuryContext?.CapitalAccountId),
+            InvestorId: NormalizeOptional(postingCommand.TreasuryContext?.InvestorId),
+            PaymentIntentId: NormalizeOptional(postingCommand.TreasuryContext?.PaymentIntentId),
+            SettlementReference: NormalizeOptional(postingCommand.TreasuryContext?.SettlementReference),
+            Tags: tags,
+            EvidenceReferences: evidenceLinks.Select(link => new JournalEvidenceReference(
+                EvidenceId: link,
+                Uri: link,
+                Kind: ClassifyManualPostingEvidence(link).ToString(),
+                SourceSystem: "ManualJournalEntryWorkbench",
+                RetainedAtUtc: recordedAtUtc,
+                RetainedBy: NormalizeOptional(draft.PostedBy) ?? "manual-journal-entry-workbench",
+                SubjectId: draft.JournalEntryId.ToString("D"))).ToArray());
+    }
+
+    private static AccountingPostingIntentDto BuildManualPostingIntent(ManualJournalEntryDraftDto draft)
+    {
+        if (draft.ReversalOfJournalEntryId.HasValue)
+        {
+            return AccountingPostingIntentDto.Reversal;
+        }
+
+        if (draft.RebookedFromJournalEntryId.HasValue)
+        {
+            return AccountingPostingIntentDto.Rebook;
+        }
+
+        return AccountingPostingIntentDto.Originating;
+    }
+
+    private static LedgerPostingKindDto BuildManualPostingKind(ManualJournalEntryDraftDto draft)
+        => draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
+            ? LedgerPostingKindDto.Adjustment
+            : LedgerPostingKindDto.Originating;
+
+    private static AccountingPostingEvidenceKindDto ClassifyManualPostingEvidence(string evidenceLink)
+    {
+        if (evidenceLink.Contains("approval", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountingPostingEvidenceKindDto.Approval;
+        }
+
+        if (evidenceLink.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) ||
+            evidenceLink.Contains("reconcile", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountingPostingEvidenceKindDto.Reconciliation;
+        }
+
+        if (evidenceLink.Contains("posting", StringComparison.OrdinalIgnoreCase) ||
+            evidenceLink.Contains("audit", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountingPostingEvidenceKindDto.AuditSupport;
+        }
+
+        if (evidenceLink.Contains("correction", StringComparison.OrdinalIgnoreCase) ||
+            evidenceLink.Contains("reversal", StringComparison.OrdinalIgnoreCase) ||
+            evidenceLink.Contains("rebook", StringComparison.OrdinalIgnoreCase))
+        {
+            return AccountingPostingEvidenceKindDto.Correction;
+        }
+
+        return AccountingPostingEvidenceKindDto.Source;
+    }
+
+    private static LedgerLineDimensionSet? ToLedgerLineDimensions(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return null;
+        }
+
+        return new LedgerLineDimensionSet(
+            FundId: NormalizeOptional(dimensions.FundId),
+            EntityId: NormalizeOptional(dimensions.EntityId),
+            SleeveId: NormalizeOptional(dimensions.SleeveId),
+            StrategyId: NormalizeOptional(dimensions.StrategyId),
+            InvestorId: NormalizeOptional(dimensions.InvestorId),
+            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
+            InstrumentId: dimensions.InstrumentId,
+            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
+            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
+            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
+            ExternalGlDimensions: dimensions.ExternalGlDimensions
+                .Where(static item => !string.IsNullOrWhiteSpace(item.Key) && !string.IsNullOrWhiteSpace(item.Value))
+                .OrderBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(static item => item.Key.Trim(), static item => item.Value.Trim(), StringComparer.OrdinalIgnoreCase),
+            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
+            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
+            BookId: NormalizeOptional(dimensions.BookId),
+            AccountId: NormalizeOptional(dimensions.AccountId),
+            CustomerId: NormalizeOptional(dimensions.CustomerId),
+            VendorId: NormalizeOptional(dimensions.VendorId),
+            ProjectId: NormalizeOptional(dimensions.ProjectId));
+    }
+
+    private static bool TryMapLedgerAccountType(string? value, out LedgerAccountType accountType)
+    {
+        switch (value?.Trim().Replace(" ", string.Empty, StringComparison.Ordinal).Replace("-", string.Empty, StringComparison.Ordinal).ToUpperInvariant())
+        {
+            case "ASSET":
+            case "CONTRAASSET":
+                accountType = LedgerAccountType.Asset;
+                return true;
+            case "LIABILITY":
+            case "CONTRALIABILITY":
+                accountType = LedgerAccountType.Liability;
+                return true;
+            case "EQUITY":
+                accountType = LedgerAccountType.Equity;
+                return true;
+            case "REVENUE":
+            case "INCOME":
+                accountType = LedgerAccountType.Revenue;
+                return true;
+            case "EXPENSE":
+                accountType = LedgerAccountType.Expense;
+                return true;
+            default:
+                accountType = default;
+                return false;
+        }
+    }
+
+    private static DateTimeOffset ToAccountingTimestamp(DateOnly accountingDate)
+        => new(accountingDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+    private static Guid? TryParseGuid(string? value)
+        => Guid.TryParse(value, out var parsed) && parsed != Guid.Empty ? parsed : null;
+
+    private static Guid CreateDeterministicGuid(params string?[] parts)
+    {
+        var input = string.Join("|", parts.Select(NormalizeOptional));
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return new Guid(hash[..16]);
+    }
+
+    private static void AddMetadataTag(Dictionary<string, string> tags, string key, string? value)
+    {
+        var normalized = NormalizeOptional(value);
+        if (normalized is not null)
+        {
+            tags[key] = normalized;
+        }
     }
 
     private async Task<JournalEntryLifecycleActionResultDto> CreateCorrectionDraftAsync(
@@ -4221,10 +4591,17 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
     private static void EnsureRequestedLedgerBookMatchesDraft(
         Guid? requestedLedgerBookId,
-        ManualJournalEntryDraftDto draft)
+        ManualJournalEntryDraftDto draft,
+        bool requireScopeForBookScopedDraft = false)
     {
         if (!requestedLedgerBookId.HasValue)
         {
+            if (requireScopeForBookScopedDraft && draft.LedgerBookId.HasValue)
+            {
+                throw new InvalidOperationException(
+                    $"Manual journal entry '{draft.JournalEntryId:D}' belongs to ledger book '{draft.LedgerBookId.Value:D}', but the request was not scoped to a ledger book.");
+            }
+
             return;
         }
 

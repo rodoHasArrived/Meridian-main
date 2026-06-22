@@ -422,7 +422,10 @@ services instead of keeping process-local accounting configuration, treasury-con
 draft state. Manual journal save, validation, submission, evidence attachment, and lifecycle
 requests can carry the selected `LedgerBookId`; the shared service rejects a requested book that
 does not match the retained draft before normalizing, saving, approving, attaching evidence, or
-applying correction transitions. Approval, rejection, posting, close-lock, reversal, and rebook
+applying correction transitions. Once a book-scoped manual journal draft is retained, later save,
+submission, evidence-attachment, and lifecycle mutation requests must explicitly carry that same
+ledger book; unscoped requests fail closed instead of mutating retained book-specific accounting
+state. Approval, rejection, posting, close-lock, reversal, and rebook
 lifecycle evidence for book-scoped manual journals must also identify the same ledger book on the
 retained artifact, not just the journal entry or accounting period. Manual journal evidence attachment is exposed through
 `/api/ledger/journal-entry-workbench/evidence`; it requires the current draft version, validates
