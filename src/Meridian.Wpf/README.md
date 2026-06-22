@@ -57,7 +57,10 @@ balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management
 fees, builds governed posting-rule journal draft candidate previews through the shared posting
 candidate service without posting to the ledger, exposes approve, post, reverse, rebook, and
-close-lock lifecycle buttons over the shared journal-entry lifecycle service, shows read-only
+close-lock lifecycle buttons over the shared journal-entry lifecycle service only for authenticated
+operators with `AdminMaintenance`, passes the desktop session actor into those lifecycle requests,
+and forwards retained draft evidence without generating WPF-local approval, posting, correction, or
+close-lock evidence links, shows read-only
 external GL evidence and retained package readiness, projects
 close/evidence/reconciliation posture from shared operations continuity when available, and creates
 fund-scoped accounting-basis policy records through the Financial Operations policy service.

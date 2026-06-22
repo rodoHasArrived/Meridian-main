@@ -5,6 +5,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -449,7 +450,14 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             VehicleIds: ["vehicle-master"],
             IsDefault: true));
         await fundContext.SelectFundProfileAsync(profile.FundProfileId);
-        var harness = CreateHarness(fundContext);
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD_HASH", null)
+            .Set("MDC_AUTH_MODE", null);
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
+        var harness = CreateHarness(fundContext, session);
 
         await harness.ViewModel.LoadAsync();
         await harness.ViewModel.SeedBaselineConfigurationAsync();
@@ -457,6 +465,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.DraftAmount = 275m;
         await harness.ViewModel.SaveManualJournalDraftAsync();
         await harness.ViewModel.SubmitManualJournalDraftAsync();
+        await RetainLifecycleEvidenceAsync(harness, profile.FundProfileId);
 
         await harness.ViewModel.ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve);
         harness.ViewModel.ManualJournalLifecycleStatusText.Should().Contain("Approve");
@@ -490,6 +499,42 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             draft.EntryType == ManualJournalEntryTypeDto.Reversal
             && draft.ReversalOfJournalEntryId == reversed.JournalEntryId
             && draft.Status == ManualJournalEntryStatusDto.Draft);
+    }
+
+
+    [Fact]
+    public async Task ManualJournalLifecycleCommands_WithoutAdminMaintenance_FailClosedBeforeSharedService()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            SleeveIds: ["sleeve-credit"],
+            VehicleIds: ["vehicle-master"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(fundContext);
+
+        await harness.ViewModel.LoadAsync();
+        await harness.ViewModel.SeedBaselineConfigurationAsync();
+        harness.ViewModel.SelectedEntryType = ManualJournalEntryTypeDto.CapitalCall;
+        harness.ViewModel.DraftAmount = 275m;
+        await harness.ViewModel.SaveManualJournalDraftAsync();
+        await harness.ViewModel.SubmitManualJournalDraftAsync();
+
+        await harness.ViewModel.ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve);
+
+        harness.ViewModel.ManualJournalLifecycleStatusText.Should().Contain("AdminMaintenance permission is required");
+        var reloadedDraftStore = new FileManualJournalEntryDraftStore(harness.DraftsPath);
+        var retainedDrafts = await reloadedDraftStore.ListAsync(profile.FundProfileId);
+        retainedDrafts.Should().ContainSingle(draft => draft.Status == ManualJournalEntryStatusDto.Submitted);
     }
 
     [Fact]
@@ -590,7 +635,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         }
     }
 
-    private AccountingConfigureHarness CreateHarness(FundContextService fundContext)
+    private AccountingConfigureHarness CreateHarness(FundContextService fundContext, DesktopAuthenticationSession? authenticationSession = null)
     {
         var configurationPath = Path.Combine(_root, "accounting-configuration.json");
         var draftsPath = Path.Combine(_root, "manual-journal-drafts.json");
@@ -617,9 +662,40 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             fundOperationsWorkspaceReadService: null,
             policyService,
             capitalAccountWorkbenchService,
-            postingCandidateService);
+            postingCandidateService,
+            authenticationSession: authenticationSession);
 
         return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath, postingCandidateService);
+    }
+
+
+    private static async Task RetainLifecycleEvidenceAsync(
+        AccountingConfigureHarness harness,
+        string fundProfileId)
+    {
+        var draftStore = new FileManualJournalEntryDraftStore(harness.DraftsPath);
+        var draft = (await draftStore.ListAsync(fundProfileId))
+            .Single(item => item.Status == ManualJournalEntryStatusDto.Submitted);
+        var journalId = draft.JournalEntryId.ToString("D");
+        var retainedEvidence = draft.EvidenceLinks
+            .Concat([
+                $"evidence://manual-je/{journalId}/retained-review-approval",
+                $"evidence://manual-je/{journalId}/retained-ledger-posting-review",
+                $"evidence://manual-je/{journalId}/retained-reversal-correction-review",
+                $"evidence://manual-je/{journalId}/retained-period-lock-close-certification"
+            ])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var retained = draft with
+        {
+            EvidenceLinks = retainedEvidence,
+            Version = draft.Version + 1
+        };
+
+        await draftStore.SaveAsync(retained);
+        typeof(AccountingConfigureViewModel)
+            .GetField("_selectedDraft", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(harness.ViewModel, retained);
     }
 
     private sealed record AccountingConfigureHarness(

@@ -7,6 +7,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -152,6 +153,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly IAccountingPolicyService? _accountingPolicyService;
     private readonly IAccountingPostingCandidateService? _accountingPostingCandidateService;
     private readonly IManualJournalEntryLifecycleService? _manualJournalEntryLifecycleService;
+    private readonly DesktopAuthenticationSession? _authenticationSession;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
@@ -196,7 +198,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IAccountingPolicyService? accountingPolicyService = null,
         ICapitalAccountWorkbenchService? capitalAccountWorkbenchService = null,
         IAccountingPostingCandidateService? accountingPostingCandidateService = null,
-        IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null)
+        IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -210,6 +213,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         _accountingPostingCandidateService = accountingPostingCandidateService;
         _manualJournalEntryLifecycleService = manualJournalEntryLifecycleService
             ?? manualJournalEntryWorkbenchService as IManualJournalEntryLifecycleService;
+        _authenticationSession = authenticationSession;
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
         SeedBaselineConfigurationCommand = new AsyncRelayCommand(() => SeedBaselineConfigurationAsync());
@@ -777,9 +781,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             return;
         }
 
+        if (!TryAuthorizeManualJournalLifecycleAction(action, out var actor, out var authorizationMessage))
+        {
+            ManualJournalLifecycleStatusText = authorizationMessage;
+            return;
+        }
+
         try
         {
-            var request = BuildManualJournalLifecycleRequest(_selectedDraft, action);
+            var request = BuildManualJournalLifecycleRequest(_selectedDraft, action, actor);
             var result = await _manualJournalEntryLifecycleService
                 .ApplyLifecycleActionAsync(request, ct)
                 .ConfigureAwait(false);
@@ -1141,7 +1151,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private JournalEntryLifecycleActionRequestDto BuildManualJournalLifecycleRequest(
         ManualJournalEntryDraftDto draft,
-        JournalEntryLifecycleActionDto action)
+        JournalEntryLifecycleActionDto action,
+        string actor)
     {
         var notes = action switch
         {
@@ -1156,43 +1167,60 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             draft.JournalEntryId,
             draft.FundProfileId,
             action,
-            DefaultActor,
+            actor,
             draft.Version,
             notes,
             CorrelationId: $"wpf-manual-je-{action.ToString().ToLowerInvariant()}",
-            EvidenceLinks: BuildManualJournalLifecycleEvidenceLinks(draft, action),
+            EvidenceLinks: BuildManualJournalLifecycleEvidenceLinks(draft),
             RebookLines: action == JournalEntryLifecycleActionDto.Rebook
                 ? BuildManualJournalRebookLines(draft)
                 : []);
     }
 
-    private static IReadOnlyList<string> BuildManualJournalLifecycleEvidenceLinks(
-        ManualJournalEntryDraftDto draft,
-        JournalEntryLifecycleActionDto action)
+    private bool TryAuthorizeManualJournalLifecycleAction(
+        JournalEntryLifecycleActionDto action,
+        out string actor,
+        out string message)
     {
-        var journalId = draft.JournalEntryId.ToString("D");
-        var period = string.IsNullOrWhiteSpace(draft.PeriodId)
-            ? draft.AccountingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-            : draft.PeriodId;
-        var actionToken = action.ToString().ToLowerInvariant();
-        var required = action switch
-        {
-            JournalEntryLifecycleActionDto.Approve => $"approval://manual-je/{journalId}/review-approval/{period}",
-            JournalEntryLifecycleActionDto.Post => $"posting://manual-je/{journalId}/ledger-posting-review/{period}",
-            JournalEntryLifecycleActionDto.Reverse => $"correction://manual-je/{journalId}/reversal-review/{period}",
-            JournalEntryLifecycleActionDto.Rebook => $"correction://manual-je/{journalId}/rebook-review/{period}",
-            JournalEntryLifecycleActionDto.LockAfterClose => $"close://manual-je/{journalId}/period-lock-close-certification/{period}",
-            JournalEntryLifecycleActionDto.Reject => $"rejection://manual-je/{journalId}/review-rejection/{period}",
-            _ => $"review://manual-je/{journalId}/{actionToken}/{period}"
-        };
+        actor = string.Empty;
+        message = string.Empty;
 
-        return draft.EvidenceLinks
-            .Append(required)
+        if (action == JournalEntryLifecycleActionDto.Validate)
+        {
+            actor = ResolveDesktopActor();
+            return true;
+        }
+
+        if (_authenticationSession?.CurrentPermissions is not UserPermission permissions ||
+            (permissions & UserPermission.AdminMaintenance) != UserPermission.AdminMaintenance)
+        {
+            message = "Manual journal lifecycle action is blocked: AdminMaintenance permission is required for approval, posting, correction, and close-lock actions.";
+            return false;
+        }
+
+        actor = ResolveDesktopActor();
+        if (string.IsNullOrWhiteSpace(actor))
+        {
+            message = "Manual journal lifecycle action is blocked: authenticated desktop actor could not be resolved.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private string ResolveDesktopActor()
+    {
+        var actor = _authenticationSession?.CurrentActor;
+        return string.IsNullOrWhiteSpace(actor) ? DefaultActor : actor.Trim();
+    }
+
+    private static IReadOnlyList<string> BuildManualJournalLifecycleEvidenceLinks(
+        ManualJournalEntryDraftDto draft)
+        => draft.EvidenceLinks
             .Where(static link => !string.IsNullOrWhiteSpace(link))
             .Select(static link => link.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-    }
 
     private static IReadOnlyList<ManualJournalEntryLineDto> BuildManualJournalRebookLines(ManualJournalEntryDraftDto draft)
         => draft.Lines
