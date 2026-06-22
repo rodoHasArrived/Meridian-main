@@ -3480,7 +3480,11 @@ export function useAccountingConfigurationViewModel(
     }
 
     const correlationId = `browser-accounting-production-certification-${Date.now()}`;
-    const evidenceReferences = splitAccountingEvidenceReferences(productionCertificationDraft.evidenceText);
+    const evidenceReferences = withProductionCertificationControlEvidence(
+      splitAccountingEvidenceReferences(productionCertificationDraft.evidenceText),
+      productionCertificationProfile,
+      productionCertificationDraft
+    );
     const nextProfile: AccountingProductionCertificationProfile = {
       ...productionCertificationProfile,
       postingRulesLedgerBookNativeCertified: productionCertificationDraft.postingRulesLedgerBookNativeCertified,
@@ -5507,6 +5511,59 @@ function buildAccountingProductionCertificationProfileFromReadiness(
     evidenceReferences,
     correlationId: null
   };
+}
+
+function withProductionCertificationControlEvidence(
+  evidenceReferences: string[],
+  profile: AccountingProductionCertificationProfile | null,
+  draft: AccountingProductionCertificationProfileDraft | null
+): string[] {
+  const ledgerBookId = profile?.ledgerBookId?.trim();
+  if (!profile || !draft || !ledgerBookId) {
+    return evidenceReferences;
+  }
+
+  if (evidenceReferences.some((reference) => reference.toLowerCase().includes("production-certification/full"))) {
+    return evidenceReferences;
+  }
+
+  const tenantId = profile.tenantId?.trim() || "tenant";
+  const companyId = profile.companyId?.trim() || "company";
+  const fundProfileId = profile.fundProfileId?.trim() || "fund";
+  const scopePrefix = `evidence://tenant/${tenantId}/company/${companyId}/fund/${fundProfileId}/ledger-book/${ledgerBookId}/production-certification`;
+  const generated: string[] = [];
+  const addWorkflowEvidence = (certified: boolean, marker: string) => {
+    if (!certified) {
+      return;
+    }
+
+    generated.push(`${scopePrefix}/${marker}`);
+  };
+  const addDimensionEvidence = (certified: boolean, marker: string) => {
+    if (!certified) {
+      return;
+    }
+
+    generated.push(`${scopePrefix}/dimensions/${marker}/dimension-scope/canonical-production`);
+  };
+
+  addWorkflowEvidence(draft.postingRulesLedgerBookNativeCertified, "posting-candidate");
+  addWorkflowEvidence(draft.journalLifecycleLedgerBookNativeCertified, "journal-lifecycle");
+  addWorkflowEvidence(draft.closeReportingLedgerBookNativeCertified, "close-reporting");
+  addWorkflowEvidence(draft.externalGlLedgerBookNativeCertified, "external-gl");
+  addWorkflowEvidence(draft.reconciliationLedgerBookNativeCertified, "reconciliation");
+  addWorkflowEvidence(draft.directLendingLedgerBookNativeCertified, "direct-lending");
+  addWorkflowEvidence(draft.strategyLedgerReadLedgerBookNativeCertified, "strategy-ledger");
+  addDimensionEvidence(draft.periodReportDimensionQueriesCertified, "period-report");
+  addDimensionEvidence(draft.crossPeriodReportDimensionQueriesCertified, "cross-period");
+  addDimensionEvidence(draft.journalQueryDimensionFiltersCertified, "journal-query");
+  addDimensionEvidence(draft.externalExportDimensionMappingCertified, "external-export");
+  addDimensionEvidence(draft.ledgerLineDimensionsPersistedCertified, "ledger-line");
+  addDimensionEvidence(draft.trialBalanceDimensionFiltersCertified, "trial-balance-filter");
+  addDimensionEvidence(draft.reportPackageDimensionProvenanceCertified, "report-package-provenance");
+
+  return [...evidenceReferences, ...generated]
+    .filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
 }
 
 function buildAccountingTenantAdministrationProfileEditorViewModel(

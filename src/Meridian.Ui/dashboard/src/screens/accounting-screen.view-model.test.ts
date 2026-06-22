@@ -3049,6 +3049,8 @@ describe("accounting-screen view model", () => {
     let retainedProductionCertificationProfile = {
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
       postingRulesLedgerBookNativeCertified: true,
       journalLifecycleLedgerBookNativeCertified: true,
       closeReportingLedgerBookNativeCertified: false,
@@ -3326,7 +3328,7 @@ describe("accounting-screen view model", () => {
         tone: "warning"
       })
     ]);
-    expect(result.current.productionCertificationProfile.scopeLabel).toBe("Tenant context | company context | fund fund-alpha | ledger book book-primary");
+    expect(result.current.productionCertificationProfile.scopeLabel).toBe("Tenant tenant-alpha | company company-alpha | fund fund-alpha | ledger book book-primary");
     expect(result.current.productionCertificationProfile.controls).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "posting-rules-book", checked: true }),
       expect.objectContaining({ id: "close-reporting-book", checked: false }),
@@ -3357,15 +3359,27 @@ describe("accounting-screen view model", () => {
         ledgerBookId: "book-primary",
         closeReportingLedgerBookNativeCertified: true,
         crossPeriodReportDimensionQueriesCertified: true,
-        evidenceReferences: [
+        evidenceReferences: expect.arrayContaining([
           "evidence://ledger-book/book-primary/workflow-certification",
-          "evidence://ledger-book/book-primary/close-reporting"
-        ]
+          "evidence://ledger-book/book-primary/close-reporting",
+          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/posting-candidate",
+          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/journal-lifecycle",
+          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-reporting",
+          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/period-report/dimension-scope/canonical-production",
+          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/cross-period/dimension-scope/canonical-production",
+          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/journal-query/dimension-scope/canonical-production"
+        ])
       }),
-      evidenceLinks: [
+      evidenceLinks: expect.arrayContaining([
         "evidence://ledger-book/book-primary/workflow-certification",
-        "evidence://ledger-book/book-primary/close-reporting"
-      ]
+        "evidence://ledger-book/book-primary/close-reporting",
+        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/posting-candidate",
+        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/journal-lifecycle",
+        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-reporting",
+        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/period-report/dimension-scope/canonical-production",
+        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/cross-period/dimension-scope/canonical-production",
+        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/journal-query/dimension-scope/canonical-production"
+      ])
     }));
     expect(result.current.productionCertificationProfile.statusText).toBe("Production certification profile saved; readiness refreshed from retained book and dimension controls.");
     expect(result.current.tenantAdministrationProfile.scopeLabel).toBe("Tenant tenant-alpha | company company-alpha");

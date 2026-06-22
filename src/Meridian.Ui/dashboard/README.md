@@ -248,7 +248,10 @@ workflow controls, including reconciliation, direct-lending, and strategy-ledger
 certification, plus dimensional ledger-line, trial-balance, reporting, provenance, and export
 controls, preserving tenant/company/fund/book
 scope plus retained evidence through the shared Accounting System store rather than request-only
-flags. It also lists retained migration run artifacts from
+flags. When checked controls are saved, the browser augments the operator's retained evidence with
+scoped per-control markers for posting candidates, journal lifecycle, close/reporting, external GL,
+reconciliation, direct lending, strategy ledger reads, and dimensional query/export coverage so the
+shared store can enforce category-specific certification evidence. It also lists retained migration run artifacts from
 `/api/accounting-system/migration-run-artifacts`, including run kind, certification status,
 fund/book scope, migrated-record and issue counts, and evidence reference counts, so operators can
 inspect migration proof retained in the shared Accounting System store rather than re-entering
