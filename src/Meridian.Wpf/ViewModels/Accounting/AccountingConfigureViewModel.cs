@@ -2555,6 +2555,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var blockerText = gap.BlockingIssueCodes.Count > 0
                 ? string.Join(", ", gap.BlockingIssueCodes)
                 : "No blocking issue codes";
+            var issueText = gap.Issues.Count > 0
+                ? string.Join(" | ", gap.Issues.Select(static issue => $"{issue.Code}: {issue.Message} -> {issue.SuggestedAction}"))
+                : blockerText;
             var routeText = gap.Routes.Count > 0
                 ? string.Join(", ", gap.Routes)
                 : "No route";
@@ -2563,7 +2566,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 gap.Label,
                 $"{gap.Status} | {gap.HighestSeverity}",
                 $"{gap.Summary} Areas: {areaText}.",
-                $"{gap.RequiredAction} | {blockerText}",
+                $"{gap.RequiredAction} | {issueText}",
                 $"{gap.Code} | {routeText}");
         }
     }

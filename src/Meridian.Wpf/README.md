@@ -78,7 +78,8 @@ retained migration-run evidence plus generated migration rollout plan rows with 
 latest retained run, blocking issue codes, required actions, and canonical dimensions from the shared
 production-readiness payload, renders the shared production-gap checklist for configurable
 multi-ledger accounting, enterprise configuration studio coverage, guarded external GL integration,
-dimensional ledger and reporting coverage, and production-control hardening, surfaces
+dimensional ledger and reporting coverage, and production-control hardening with service-owned issue
+messages beside stable blocker codes, surfaces
 shared ledger-book setup candidate guidance, loads the active open ledger period through the shared ledger-book service for
 manual journal draft validation, and can create the ledger book through the shared ledger-book service when book-scoped
 configuration targets a missing registered book, renders a shared-workspace ledger-book
@@ -175,6 +176,10 @@ Desktop backtest services register the Backtesting-owned `IBacktestPreflightServ
 and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
 replay-coverage, execution-model, and optional Security Master preflight checks as shared
 Backtesting flows.
+Fund Ledger trial-balance and journal grids project the canonical ledger dimension envelope from
+shared DTOs, including fund, entity, sleeve, strategy, investor, capital-account, instrument,
+tax-lot, cost-center, counterparty, organization, portfolio, book, account, customer, vendor, and
+project scope, while detail inspectors continue to show external-GL dimensions for selected rows.
 Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
 queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary

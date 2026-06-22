@@ -2527,6 +2527,8 @@ public sealed class AccountingProductionReadinessService
         var issues = selected
             .SelectMany(static component => component.Issues)
             .Where(static issue => issue.Severity is AccountingConfigurationValidationSeverityDto.Critical or AccountingConfigurationValidationSeverityDto.Warning)
+            .OrderByDescending(static issue => IssueSeverityRank(issue.Severity))
+            .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var status = selected.Length == 0
             ? AccountingProductionReadinessStatusDto.Unavailable
@@ -2559,8 +2561,18 @@ public sealed class AccountingProductionReadinessService
             requiredAction,
             areas,
             blockingIssueCodes,
-            routes);
+            routes,
+            issues);
     }
+
+    private static int IssueSeverityRank(AccountingConfigurationValidationSeverityDto severity) =>
+        severity switch
+        {
+            AccountingConfigurationValidationSeverityDto.Critical => 3,
+            AccountingConfigurationValidationSeverityDto.Warning => 2,
+            AccountingConfigurationValidationSeverityDto.Info => 1,
+            _ => 0
+        };
 
     private static AccountingProductionReadinessIssueDto Issue(
         string code,

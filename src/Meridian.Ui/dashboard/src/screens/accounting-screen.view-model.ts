@@ -382,6 +382,7 @@ export interface AccountingProductionGapViewModel {
   requiredAction: string;
   areaLabel: string;
   blockingIssueLabel: string;
+  issueDetailLabel: string;
   routeLabel: string;
   tone: "default" | "success" | "warning" | "danger";
 }
@@ -5278,6 +5279,9 @@ function buildAccountingProductionReadinessViewModel(
     blockingIssueLabel: gap.blockingIssueCodes.length > 0
       ? gap.blockingIssueCodes.join(", ")
       : "No blocking issue codes",
+    issueDetailLabel: (gap.issues ?? []).length > 0
+      ? (gap.issues ?? []).map((issue) => `${issue.code}: ${issue.message} -> ${issue.suggestedAction}`).join(" | ")
+      : "No blocking issue details",
     routeLabel: gap.routes.length > 0
       ? gap.routes.join(", ")
       : "No routes",

@@ -340,9 +340,9 @@ before the tenant/company rollout is considered ready.
 The readiness payload also emits `ProductionGaps`, a stable five-row checklist for configurable
 multi-ledger workflows, enterprise accounting configuration studio coverage, guarded external-GL
 integration, dimensional ledger/reporting, and production controls hardening. Each gap row carries
-status, highest severity, component areas, blocking issue codes, routes, summary, and required
-action so browser, WPF, and admin setup surfaces can show exactly what remains without parsing
-component prose.
+status, highest severity, component areas, blocking issue codes, issue messages, suggested actions,
+routes, summary, and required action so browser, WPF, and admin setup surfaces can show exactly what
+remains without parsing component prose.
 External GL guarded-export package endpoints stamp export creation, certification, and manifest
 lookup with the authenticated workstation tenant/company scope, so browser and WPF callers cannot
 retrieve or certify another company's retained export artifact by submitting tenant or company

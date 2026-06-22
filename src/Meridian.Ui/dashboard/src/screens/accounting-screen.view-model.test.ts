@@ -2895,6 +2895,16 @@ describe("accounting-screen view model", () => {
           requiredAction: "Retain ledger-book-native workflow evidence for posting, JE lifecycle, reconciliation, close, and reporting.",
           areas: ["LedgerBooks", "PostingRules", "JournalLifecycle", "CloseReporting"],
           blockingIssueCodes: ["workflow.evidence.missing", "journal.lifecycle.missing"],
+          issues: [
+            {
+              code: "workflow.evidence.missing",
+              area: "LedgerBooks",
+              severity: "Warning",
+              message: "Ledger-book workflow evidence is missing for the selected book.",
+              suggestedAction: "Retain selected-book workflow evidence before production rollout.",
+              evidenceReferences: []
+            }
+          ],
           routes: ["/accounting/configure", "/accounting/journal-entries"]
         },
         {
@@ -3255,6 +3265,7 @@ describe("accounting-screen view model", () => {
         severityLabel: "Warning",
         areaLabel: "Ledger Books, Posting Rules, Journal Lifecycle, Close Reporting",
         blockingIssueLabel: "workflow.evidence.missing, journal.lifecycle.missing",
+        issueDetailLabel: "workflow.evidence.missing: Ledger-book workflow evidence is missing for the selected book. -> Retain selected-book workflow evidence before production rollout.",
         routeLabel: "/accounting/configure, /accounting/journal-entries",
         tone: "warning"
       }),

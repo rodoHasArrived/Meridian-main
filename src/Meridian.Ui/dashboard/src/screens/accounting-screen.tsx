@@ -6739,6 +6739,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                   <div className="mt-2 text-[11px] text-muted-foreground">{gap.severityLabel} | {gap.areaLabel}</div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{gap.summary}</p>
                   <p className="mt-2 text-xs leading-5 text-foreground">{gap.requiredAction}</p>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{gap.issueDetailLabel}</p>
                   <div className="mt-2 font-mono text-[11px] text-muted-foreground">{gap.blockingIssueLabel}</div>
                   <div className="mt-1 font-mono text-[11px] text-muted-foreground">{gap.routeLabel}</div>
                 </div>

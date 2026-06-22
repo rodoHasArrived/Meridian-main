@@ -1830,13 +1830,31 @@ public sealed class FundLedgerViewModelTests
                 viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
                     column.Header == "Strategy" && column.BindingPath == "Dimensions.StrategyId");
                 viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Investor" && column.BindingPath == "Dimensions.InvestorId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Capital Account" && column.BindingPath == "Dimensions.CapitalAccountId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Instrument" && column.BindingPath == "Dimensions.InstrumentId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Tax Lot" && column.BindingPath == "Dimensions.TaxLotId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
                     column.Header == "Cost Center" && column.BindingPath == "Dimensions.CostCenterId");
                 viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
                     column.Header == "Counterparty" && column.BindingPath == "Dimensions.CounterpartyId");
                 viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Organization" && column.BindingPath == "Dimensions.OrganizationId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Portfolio" && column.BindingPath == "Dimensions.PortfolioId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
                     column.Header == "Book" && column.BindingPath == "Dimensions.BookId");
                 viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
                     column.Header == "Account Scope" && column.BindingPath == "Dimensions.AccountId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Customer" && column.BindingPath == "Dimensions.CustomerId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Vendor" && column.BindingPath == "Dimensions.VendorId");
+                viewModel.TrialBalanceTable.Columns.Should().Contain(column =>
+                    column.Header == "Project" && column.BindingPath == "Dimensions.ProjectId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Fund" && column.BindingPath == "Dimensions.FundId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
@@ -1846,13 +1864,31 @@ public sealed class FundLedgerViewModelTests
                 viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Strategy" && column.BindingPath == "Dimensions.StrategyId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Investor" && column.BindingPath == "Dimensions.InvestorId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Capital Account" && column.BindingPath == "Dimensions.CapitalAccountId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Instrument" && column.BindingPath == "Dimensions.InstrumentId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Tax Lot" && column.BindingPath == "Dimensions.TaxLotId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Cost Center" && column.BindingPath == "Dimensions.CostCenterId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Counterparty" && column.BindingPath == "Dimensions.CounterpartyId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Organization" && column.BindingPath == "Dimensions.OrganizationId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Portfolio" && column.BindingPath == "Dimensions.PortfolioId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Book" && column.BindingPath == "Dimensions.BookId");
                 viewModel.JournalTable.Columns.Should().Contain(column =>
                     column.Header == "Account Scope" && column.BindingPath == "Dimensions.AccountId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Customer" && column.BindingPath == "Dimensions.CustomerId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Vendor" && column.BindingPath == "Dimensions.VendorId");
+                viewModel.JournalTable.Columns.Should().Contain(column =>
+                    column.Header == "Project" && column.BindingPath == "Dimensions.ProjectId");
                 var entityView = viewModel.LedgerDimensions.Single(view => view.Key == "entity-linked");
                 entityView.LinkedAccountCount.Should().Be(1);
                 entityView.TrialBalanceLineCount.Should().Be(3);

@@ -3716,6 +3716,16 @@ const fixtureAccountingProductionReadiness: AccountingProductionReadiness = {
       requiredAction: "Retain ledger-book-native workflow evidence for posting, JE lifecycle, reconciliation, close/reporting, direct lending, and strategy ledger reads.",
       areas: ["LedgerBooks", "PostingRules", "JournalLifecycle", "CloseReporting"],
       blockingIssueCodes: ["workflow.ledger-book-scope-missing", "workflow.close-reporting-not-certified"],
+      issues: [
+        {
+          code: "workflow.ledger-book-scope-missing",
+          area: "LedgerBooks",
+          severity: "Warning",
+          message: "Ledger-book workflow certification still needs retained selected-book evidence.",
+          suggestedAction: "Attach selected-book workflow evidence before production rollout.",
+          evidenceReferences: []
+        }
+      ],
       routes: ["/accounting/configure", "/accounting/journal-entries", "/accounting/close"]
     },
     {

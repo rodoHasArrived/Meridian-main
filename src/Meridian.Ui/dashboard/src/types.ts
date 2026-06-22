@@ -5744,6 +5744,7 @@ export interface AccountingProductionGap {
   areas: AccountingProductionReadinessArea[];
   blockingIssueCodes: string[];
   routes: string[];
+  issues?: AccountingProductionReadinessIssue[];
 }
 
 export interface AccountingTenantAdministrationReadiness {

@@ -201,6 +201,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "Configurable multi-ledger accounting"
             && row.Status.Contains("Blocked", StringComparison.OrdinalIgnoreCase)
             && row.Detail.Contains("Ledger Books", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("Ledger-book-native workflow certification has no retained evidence links", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("Retain ledger-book-native workflow evidence", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("multi-ledger-native-workflows", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ProductionReadinessGapRows.Should().Contain(row =>
             row.Name == "Enterprise accounting configuration studio"

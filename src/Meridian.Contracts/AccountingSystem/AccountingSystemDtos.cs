@@ -685,7 +685,8 @@ public sealed record AccountingProductionGapDto(
     string RequiredAction,
     IReadOnlyList<AccountingProductionReadinessAreaDto>? Areas = null,
     IReadOnlyList<string>? BlockingIssueCodes = null,
-    IReadOnlyList<string>? Routes = null)
+    IReadOnlyList<string>? Routes = null,
+    IReadOnlyList<AccountingProductionReadinessIssueDto>? Issues = null)
 {
     public IReadOnlyList<AccountingProductionReadinessAreaDto> Areas { get; init; } =
         Areas ?? [];
@@ -695,6 +696,9 @@ public sealed record AccountingProductionGapDto(
 
     public IReadOnlyList<string> Routes { get; init; } =
         Routes ?? [];
+
+    public IReadOnlyList<AccountingProductionReadinessIssueDto> Issues { get; init; } =
+        Issues ?? [];
 }
 
 public sealed record AccountingProductionReadinessDto(

@@ -158,17 +158,24 @@ public sealed class AccountingSystemIntegrationServiceTests
             gap.Areas.Contains(AccountingProductionReadinessAreaDto.LedgerBooks) &&
             gap.Areas.Contains(AccountingProductionReadinessAreaDto.JournalLifecycle) &&
             gap.BlockingIssueCodes.Contains("ledger-books.workflow-evidence-missing") &&
+            gap.Issues.Any(issue =>
+                issue.Code == "ledger-books.workflow-evidence-missing" &&
+                issue.Message.Contains("no retained evidence links", StringComparison.OrdinalIgnoreCase)) &&
             gap.Routes.Contains(UiApiRoutes.LedgerBookRolloutAssessment));
         readiness.ProductionGaps.Should().Contain(gap =>
             gap.Code == "enterprise-accounting-configuration-studio" &&
             gap.Status == AccountingProductionReadinessStatusDto.Blocked &&
             gap.BlockingIssueCodes.Contains("tenant-admin.browser-admin-studio-required") &&
+            gap.Issues.Any(issue => issue.Code == "tenant-admin.browser-admin-studio-required") &&
             gap.BlockingIssueCodes.Contains("tenant-admin.wpf-admin-studio-required") &&
             gap.Routes.Contains(UiApiRoutes.LedgerAccountingConfiguration));
         readiness.ProductionGaps.Should().Contain(gap =>
             gap.Code == "external-gl-guarded-integration" &&
             gap.Status == AccountingProductionReadinessStatusDto.Blocked &&
             gap.BlockingIssueCodes.Contains("external-gl.certified-mapping-missing") &&
+            gap.Issues.Any(issue =>
+                issue.Code == "external-gl.certified-mapping-missing" &&
+                issue.Severity == AccountingConfigurationValidationSeverityDto.Critical) &&
             gap.BlockingIssueCodes.Contains("external-gl.ledger-book-native-not-certified"));
         readiness.ProductionGaps.Should().Contain(gap =>
             gap.Code == "dimensional-ledger-reporting" &&

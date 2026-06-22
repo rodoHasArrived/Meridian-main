@@ -265,7 +265,8 @@ codes, and required actions for each lane.
 It also renders the shared production-gap checklist so configurable multi-ledger accounting,
 enterprise configuration studio coverage, guarded external GL integration, dimensional ledger and
 reporting coverage, and production-control hardening remain service-owned review items in the
-browser Accounting Configure surface.
+browser Accounting Configure surface, including the issue messages supplied by the shared
+production-readiness service rather than only stable blocker codes.
 After a dry run selects a rule, operators can build a governed journal draft candidate through the
 shared posting-rule candidate endpoint. The browser carries the selected event, amount, dimensions,
 policy, counterparty, source evidence, tenant/company context, and browser correlation metadata to

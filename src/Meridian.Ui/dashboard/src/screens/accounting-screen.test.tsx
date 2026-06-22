@@ -1972,6 +1972,16 @@ describe("AccountingScreen", () => {
           requiredAction: "Retain ledger-book-native workflow evidence for posting, JE lifecycle, reconciliation, close, and reporting.",
           areas: ["LedgerBooks", "PostingRules", "JournalLifecycle", "CloseReporting"],
           blockingIssueCodes: ["workflow.evidence.missing", "journal.lifecycle.missing"],
+          issues: [
+            {
+              code: "workflow.evidence.missing",
+              area: "LedgerBooks",
+              severity: "Warning",
+              message: "Ledger-book workflow evidence is missing for the selected book.",
+              suggestedAction: "Retain selected-book workflow evidence before production rollout.",
+              evidenceReferences: []
+            }
+          ],
           routes: ["/accounting/configure", "/accounting/journal-entries"]
         },
         {
@@ -2206,6 +2216,7 @@ describe("AccountingScreen", () => {
     expect(within(productionGapChecklist).getByText("Production controls and rollout hardening")).toBeInTheDocument();
     expect(within(productionGapChecklist).getByText("multi-ledger-native-workflows")).toBeInTheDocument();
     expect(within(productionGapChecklist).getByText("workflow.evidence.missing, journal.lifecycle.missing")).toBeInTheDocument();
+    expect(within(productionGapChecklist).getByText("workflow.evidence.missing: Ledger-book workflow evidence is missing for the selected book. -> Retain selected-book workflow evidence before production rollout.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
     expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Operator surface").length).toBeGreaterThan(0);
