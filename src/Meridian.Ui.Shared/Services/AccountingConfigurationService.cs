@@ -3081,13 +3081,19 @@ public sealed class InMemoryManualJournalEntryDraftStore : IManualJournalEntryDr
     public Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var drafts = _drafts.Values
             .Where(item => string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
+            .Where(item => normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => normalizedCompanyId is null || string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(item => item.UpdatedAtUtc)
             .ThenBy(item => item.JournalEntryId)
             .ToArray();
@@ -3098,10 +3104,19 @@ public sealed class InMemoryManualJournalEntryDraftStore : IManualJournalEntryDr
     public Task<ManualJournalEntryDraftDto?> GetAsync(
         string fundProfileId,
         Guid journalEntryId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
-        _drafts.TryGetValue(Key(NormalizeFundProfileId(fundProfileId), journalEntryId), out var draft);
+        var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        var draft = _drafts.Values.FirstOrDefault(item =>
+            item.JournalEntryId == journalEntryId &&
+            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) &&
+            (normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase)) &&
+            (normalizedCompanyId is null || string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase)));
         return Task.FromResult(draft);
     }
 
@@ -3109,15 +3124,18 @@ public sealed class InMemoryManualJournalEntryDraftStore : IManualJournalEntryDr
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(draft);
-        _drafts[Key(NormalizeFundProfileId(draft.FundProfileId), draft.JournalEntryId)] = draft;
+        _drafts[Key(NormalizeFundProfileId(draft.FundProfileId), draft.JournalEntryId, draft.TenantId, draft.CompanyId)] = draft;
         return Task.CompletedTask;
     }
 
-    private static string Key(string fundProfileId, Guid journalEntryId)
-        => $"{NormalizeFundProfileId(fundProfileId)}|{journalEntryId:D}";
+    private static string Key(string fundProfileId, Guid journalEntryId, string? tenantId, string? companyId)
+        => $"{NormalizeFundProfileId(fundProfileId)}|{NormalizeOptional(tenantId) ?? "tenant:any"}|{NormalizeOptional(companyId) ?? "company:any"}|{journalEntryId:D}";
 
     private static string NormalizeFundProfileId(string value)
         => string.IsNullOrWhiteSpace(value) ? "default-fund" : value.Trim();
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftStore
@@ -3150,13 +3168,19 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
     public async Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
         return snapshot.Drafts
             .Where(item => string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
+            .Where(item => normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => normalizedCompanyId is null || string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(item => item.UpdatedAtUtc)
             .ThenBy(item => item.JournalEntryId)
             .ToArray();
@@ -3165,13 +3189,19 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
     public async Task<ManualJournalEntryDraftDto?> GetAsync(
         string fundProfileId,
         Guid journalEntryId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
         return snapshot.Drafts.FirstOrDefault(item =>
             item.JournalEntryId == journalEntryId &&
-            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase));
+            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) &&
+            (normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase)) &&
+            (normalizedCompanyId is null || string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase)));
     }
 
     public async Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default)
@@ -3182,10 +3212,19 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
         {
             var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
             var normalizedFundProfileId = NormalizeFundProfileId(draft.FundProfileId);
+            var normalizedTenantId = NormalizeOptional(draft.TenantId);
+            var normalizedCompanyId = NormalizeOptional(draft.CompanyId);
             var drafts = snapshot.Drafts
                 .Where(item => item.JournalEntryId != draft.JournalEntryId ||
-                               !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
-                .Append(draft with { FundProfileId = normalizedFundProfileId })
+                               !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) ||
+                               !string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase) ||
+                               !string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
+                .Append(draft with
+                {
+                    FundProfileId = normalizedFundProfileId,
+                    TenantId = normalizedTenantId,
+                    CompanyId = normalizedCompanyId
+                })
                 .OrderByDescending(item => item.UpdatedAtUtc)
                 .ThenBy(item => item.JournalEntryId)
                 .ToArray();
@@ -3229,6 +3268,9 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
 
     private static string NormalizeFundProfileId(string value)
         => string.IsNullOrWhiteSpace(value) ? "default-fund" : value.Trim();
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ManualJournalEntryDraftSnapshot(IReadOnlyList<ManualJournalEntryDraftDto> Drafts);
 }
@@ -3300,13 +3342,17 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     public async Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
-        var configuration = await _configurationService.GetWorkspaceAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        var drafts = await _draftStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        var configuration = await _configurationService.GetWorkspaceAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
+        var drafts = await _draftStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
+        var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
         var bankTransactions = await ListBankTransactionsAsync(ct).ConfigureAwait(false);
         var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var reportPackWorkflowRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
@@ -3334,12 +3380,16 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     public async Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
-        var drafts = await _draftStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        var drafts = await _draftStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
+        var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct, normalizedTenantId, normalizedCompanyId).ConfigureAwait(false);
         var bankTransactions = await ListBankTransactionsAsync(ct).ConfigureAwait(false);
         var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var reportPackWorkflowRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
@@ -3426,9 +3476,13 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsurePeriodUnlocked(request.PeriodIsLocked, "save manual journal entry drafts");
-        var normalizedDraft = await NormalizeAndValidateAsync(request.Draft, allowIncomplete: true, ct).ConfigureAwait(false);
+        var normalizedDraft = await NormalizeAndValidateAsync(request.Draft with
+        {
+            TenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId),
+            CompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId)
+        }, allowIncomplete: true, ct).ConfigureAwait(false);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
-        var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct).ConfigureAwait(false);
+        var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct, normalizedDraft.TenantId, normalizedDraft.CompanyId).ConfigureAwait(false);
         if (existing is not null)
         {
             EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing, requireScopeForBookScopedDraft: true);
@@ -3459,7 +3513,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         saved = ClearManualJournalReviewMetadataForEditableDraft(saved);
 
         await _draftStore.SaveAsync(saved, ct).ConfigureAwait(false);
-        await AppendAuditAsync(saved, "manual-je.save-draft", request.Actor, request.CorrelationId, saved.EvidenceLinks, ct).ConfigureAwait(false);
+        await AppendAuditAsync(saved, "manual-je.save-draft", request.Actor, request.CorrelationId, saved.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         return saved;
     }
 
@@ -3492,7 +3546,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, request.Draft);
-        return NormalizeAndValidateAsync(request.Draft, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked);
+        return NormalizeAndValidateAsync(request.Draft with
+        {
+            TenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId),
+            CompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId)
+        }, allowIncomplete: false, ct, periodIsLocked: request.PeriodIsLocked);
     }
 
     public async Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
@@ -3504,7 +3562,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         EnsureHumanOrigin(request.ActionOrigin, "submit manual journal entries for approval");
         EnsurePeriodUnlocked(request.PeriodIsLocked, "submit manual journal entries for approval");
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
-        var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
+        var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
         if (FindIdempotentLifecycleTransition(
@@ -3552,7 +3610,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         };
 
         await _draftStore.SaveAsync(submitted, ct).ConfigureAwait(false);
-        await AppendAuditAsync(submitted, "manual-je.submit-approval", request.Actor, request.CorrelationId, submitted.EvidenceLinks, ct).ConfigureAwait(false);
+        await AppendAuditAsync(submitted, "manual-je.submit-approval", request.Actor, request.CorrelationId, submitted.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         return submitted;
     }
 
@@ -3567,7 +3625,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         EnsurePeriodUnlocked(request.PeriodIsLocked, "attach evidence to manual journal entries");
 
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
-        var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
+        var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
         if (draft.Version != request.Version)
@@ -3616,7 +3674,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         };
 
         await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, "manual-je.attach-evidence", request.Actor, request.CorrelationId, evidenceLinks, ct).ConfigureAwait(false);
+        await AppendAuditAsync(next, "manual-je.attach-evidence", request.Actor, request.CorrelationId, evidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         return next;
     }
 
@@ -3628,7 +3686,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, $"apply journal entry lifecycle action '{request.Action}'");
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
-        var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
+        var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
         var idempotent = await TryBuildIdempotentLifecycleResultAsync(fundProfileId, draft, request, ct).ConfigureAwait(false);
@@ -3720,17 +3778,20 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         JournalEntryLifecycleActionRequestDto request,
         CancellationToken ct)
     {
-        var submitted = await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
-            request.JournalEntryId,
-            request.FundProfileId,
-            request.Actor,
-            request.Version,
-            request.Notes,
-            request.CorrelationId,
-            request.EvidenceLinks,
-            request.ActionOrigin,
-            request.PeriodIsLocked,
-            request.LedgerBookId), ct).ConfigureAwait(false);
+            var submitted = await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+                request.JournalEntryId,
+                request.FundProfileId,
+                request.Actor,
+                request.Version,
+                request.Notes,
+                request.CorrelationId,
+                request.EvidenceLinks,
+                request.ActionOrigin,
+                request.PeriodIsLocked,
+                request.LedgerBookId,
+                request.TenantId,
+                request.CompanyId,
+                request.ReportGroupPrincipalIds), ct).ConfigureAwait(false);
         var transition = submitted.LifecycleTransitions.Last(static item =>
             item.Action == JournalEntryLifecycleActionDto.Submit &&
             item.ToStatus == ManualJournalEntryStatusDto.Submitted);
@@ -3769,7 +3830,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         }
 
         await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, auditAction, request.Actor, request.CorrelationId, next.EvidenceLinks, ct).ConfigureAwait(false);
+        await AppendAuditAsync(next, auditAction, request.Actor, request.CorrelationId, next.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         return new JournalEntryLifecycleActionResultDto(next, transition);
     }
 
@@ -3831,7 +3892,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         };
 
         await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
-        await AppendAuditAsync(next, "manual-je.post", request.Actor, request.CorrelationId, next.EvidenceLinks, ct).ConfigureAwait(false);
+        await AppendAuditAsync(next, "manual-je.post", request.Actor, request.CorrelationId, next.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         return new JournalEntryLifecycleActionResultDto(
             next,
             transition,
@@ -3858,7 +3919,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         CancellationToken ct)
     {
         var configuration = await _configurationService
-            .GetWorkspaceAsync(draft.FundProfileId, draft.LedgerBookId, ct)
+            .GetWorkspaceAsync(draft.FundProfileId, draft.LedgerBookId, ct, draft.TenantId, draft.CompanyId)
             .ConfigureAwait(false);
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var timestamp = ToAccountingTimestamp(draft.AccountingDate);
@@ -4244,8 +4305,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         await _draftStore.SaveAsync(corrected, ct).ConfigureAwait(false);
         await _draftStore.SaveAsync(correction, ct).ConfigureAwait(false);
-        await AppendAuditAsync(corrected, reverseSides ? "manual-je.reverse" : "manual-je.rebook", request.Actor, request.CorrelationId, corrected.EvidenceLinks, ct).ConfigureAwait(false);
-        await AppendAuditAsync(correction, auditAction, request.Actor, request.CorrelationId, correction.EvidenceLinks, ct).ConfigureAwait(false);
+        await AppendAuditAsync(corrected, reverseSides ? "manual-je.reverse" : "manual-je.rebook", request.Actor, request.CorrelationId, corrected.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
+        await AppendAuditAsync(correction, auditAction, request.Actor, request.CorrelationId, correction.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         return new JournalEntryLifecycleActionResultDto(corrected, transition, [correction]);
     }
 
@@ -4336,7 +4397,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             return [];
         }
 
-        var correction = await _draftStore.GetAsync(fundProfileId, correctionId.Value, ct).ConfigureAwait(false);
+        var correction = await _draftStore.GetAsync(fundProfileId, correctionId.Value, ct, draft.TenantId, draft.CompanyId).ConfigureAwait(false);
         return correction is null ? [] : [correction];
     }
 
@@ -4639,7 +4700,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     {
         ArgumentNullException.ThrowIfNull(draft);
         var fundProfileId = NormalizeFundProfileId(draft.FundProfileId);
-        var configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, draft.LedgerBookId, ct).ConfigureAwait(false);
+        var configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, draft.LedgerBookId, ct, draft.TenantId, draft.CompanyId).ConfigureAwait(false);
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
@@ -4858,6 +4919,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         string actor,
         string? correlationId,
         IReadOnlyList<string> evidenceLinks,
+        IReadOnlyList<string>? reportGroupPrincipalIds,
         CancellationToken ct)
     {
         var hash = Hash(draft);
@@ -4873,7 +4935,10 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 hash,
                 hash,
                 draft.ValidationIssues,
-                evidenceLinks),
+                evidenceLinks,
+                draft.CompanyId,
+                NormalizePrincipalIds(reportGroupPrincipalIds),
+                draft.TenantId),
             ct).ConfigureAwait(false);
     }
 
@@ -5149,4 +5214,13 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static IReadOnlyList<string> NormalizePrincipalIds(IReadOnlyList<string>? values)
+        => values?
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray()
+        ?? [];
 }

@@ -3140,7 +3140,9 @@ public sealed class EvidenceWorkflowFabricTests
         public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
             string? fundProfileId = null,
             Guid? ledgerBookId = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
             => Task.FromResult(new ManualJournalEntryWorkbenchDto(
                 _activity.FundProfileId,
                 _activity.LedgerBookId,
@@ -3154,7 +3156,9 @@ public sealed class EvidenceWorkflowFabricTests
         public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(
             string? fundProfileId = null,
             Guid? ledgerBookId = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
         {
             PrivateCapitalActivityLedgerBookRequests.Add(ledgerBookId);
             if (RequiredLedgerBookId.HasValue && ledgerBookId != RequiredLedgerBookId)

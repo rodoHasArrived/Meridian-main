@@ -438,7 +438,10 @@ does not match the retained draft before normalizing, saving, approving, attachi
 applying correction transitions. Once a book-scoped manual journal draft is retained, later save,
 submission, evidence-attachment, and lifecycle mutation requests must explicitly carry that same
 ledger book; unscoped requests fail closed instead of mutating retained book-specific accounting
-state. Approval, rejection, posting, close-lock, reversal, and rebook
+state. Shared ledger endpoints now stamp the authenticated tenant/company scope onto manual journal
+workbench reads and mutations; draft storage, chart validation, posting chart resolution, and
+`manual-je.*` audit rows use that retained scope so same-company accounting workflows do not blend
+across tenants. Approval, rejection, posting, close-lock, reversal, and rebook
 lifecycle evidence for book-scoped manual journals must also identify the same ledger book on the
 retained artifact, not just the journal entry or accounting period. Manual journal evidence attachment is exposed through
 `/api/ledger/journal-entry-workbench/evidence`; it requires the current draft version, validates

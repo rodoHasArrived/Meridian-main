@@ -956,6 +956,63 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntryWorkbench_IsolatesDraftsAndAuditByTenantAndCompanyScope()
+    {
+        var configuration = CreateService();
+        await SeedManualJournalTenantConfigurationAsync(configuration, "tenant-alpha", "company-shared");
+        await SeedManualJournalTenantConfigurationAsync(configuration, "tenant-beta", "company-shared");
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+
+        var alpha = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry() with
+            {
+                Memo = "Tenant alpha adjustment"
+            },
+            "alpha-controller",
+            CorrelationId: "manual-je-alpha",
+            TenantId: "tenant-alpha",
+            CompanyId: "company-shared",
+            ReportGroupPrincipalIds: ["accounting-alpha"]));
+        var beta = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry() with
+            {
+                Memo = "Tenant beta adjustment"
+            },
+            "beta-controller",
+            CorrelationId: "manual-je-beta",
+            TenantId: "tenant-beta",
+            CompanyId: "company-shared",
+            ReportGroupPrincipalIds: ["accounting-beta"]));
+
+        var alphaWorkbench = await service.GetWorkbenchAsync("fund-alpha", ManualJournalLedgerBookId, tenantId: "tenant-alpha", companyId: "company-shared");
+        var betaWorkbench = await service.GetWorkbenchAsync("fund-alpha", ManualJournalLedgerBookId, tenantId: "tenant-beta", companyId: "company-shared");
+        var companyWorkbench = await service.GetWorkbenchAsync("fund-alpha", ManualJournalLedgerBookId, companyId: "company-shared");
+
+        alpha.TenantId.Should().Be("tenant-alpha");
+        alpha.CompanyId.Should().Be("company-shared");
+        beta.TenantId.Should().Be("tenant-beta");
+        beta.CompanyId.Should().Be("company-shared");
+        alphaWorkbench.Drafts.Should().ContainSingle(item => item.JournalEntryId == alpha.JournalEntryId && item.TenantId == "tenant-alpha");
+        alphaWorkbench.Drafts.Should().NotContain(item => item.TenantId == "tenant-beta");
+        betaWorkbench.Drafts.Should().ContainSingle(item => item.JournalEntryId == beta.JournalEntryId && item.TenantId == "tenant-beta");
+        betaWorkbench.Drafts.Should().NotContain(item => item.TenantId == "tenant-alpha");
+        companyWorkbench.Drafts.Where(item => item.CompanyId == "company-shared").Should().HaveCount(2);
+        alphaWorkbench.AuditTrail.Should().ContainSingle(item =>
+            item.Action == "manual-je.save-draft" &&
+            item.TenantId == "tenant-alpha" &&
+            item.CompanyId == "company-shared" &&
+            item.ReportGroupPrincipalIds != null &&
+            item.ReportGroupPrincipalIds.Contains("accounting-alpha"));
+        alphaWorkbench.AuditTrail.Should().NotContain(item => item.TenantId == "tenant-beta");
+        betaWorkbench.AuditTrail.Should().ContainSingle(item =>
+            item.Action == "manual-je.save-draft" &&
+            item.TenantId == "tenant-beta" &&
+            item.CompanyId == "company-shared" &&
+            item.ReportGroupPrincipalIds != null &&
+            item.ReportGroupPrincipalIds.Contains("accounting-beta"));
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntryLifecycle_SubmitActionRetainsTransition()
     {
         var configuration = CreateService();
@@ -7018,6 +7075,27 @@ public sealed class AccountingConfigurationServiceTests
             FundProfileId: "fund-alpha",
             Node: new ChartOfAccountsNodeDto("distributions", "Equity:Distributions", "Distributions", "Equity"),
             Actor: "ops-user"));
+    }
+
+    private static async Task SeedManualJournalTenantConfigurationAsync(
+        AccountingConfigurationService service,
+        string tenantId,
+        string companyId)
+    {
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto($"cash-{tenantId}", "Assets:Cash", "Cash", "Asset"),
+            Actor: "ops-user",
+            LedgerBookId: ManualJournalLedgerBookId,
+            CompanyId: companyId,
+            TenantId: tenantId));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto($"interest-income-{tenantId}", "Income:Interest", "Interest Income", "Revenue"),
+            Actor: "ops-user",
+            LedgerBookId: ManualJournalLedgerBookId,
+            CompanyId: companyId,
+            TenantId: tenantId));
     }
 
     private static async Task SeedBookScopedRuleAsync(

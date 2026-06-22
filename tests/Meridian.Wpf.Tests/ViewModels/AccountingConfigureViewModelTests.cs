@@ -1830,7 +1830,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
             string? fundProfileId = null,
             Guid? ledgerBookId = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
             var projection = privateCapitalActivity with
@@ -1853,7 +1855,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(
             string? fundProfileId = null,
             Guid? ledgerBookId = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(privateCapitalActivity with

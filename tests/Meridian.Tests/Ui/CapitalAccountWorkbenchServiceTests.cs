@@ -405,10 +405,10 @@ public sealed class CapitalAccountWorkbenchServiceTests
         public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<string>>(["fund-alpha"]);
 
-        public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default)
+        public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
             => Task.FromResult(new ManualJournalEntryWorkbenchDto("fund-alpha", ledgerBookId, DateTimeOffset.UtcNow, [], [], [], [], _activity));
 
-        public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default)
+        public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
             => Task.FromResult(_activity);
 
         public Task<ManualJournalEntryDraftDto> SaveDraftAsync(SaveManualJournalEntryDraftRequest request, CancellationToken ct = default)

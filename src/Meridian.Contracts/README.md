@@ -882,6 +882,10 @@ distributions, subscriptions, redemptions, LP transfers, and management fees. `T
 is the shared audit context for those drafts and carries effective date, idempotency key, fund
 event, capital account, investor, payment intent, and settlement references so browser, WPF,
 Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary. `AccountingPostingCommandDto` is the shared event-accounting posting envelope for source-backed journal impact; it carries command, aggregate, period, ledger-book scope, source/correlation/causation, idempotency, reviewer state, treasury context, correction lineage, action origin, and typed evidence references so posting services and durable storage validate the same intent.
+Manual journal drafts, workbench reads, lifecycle requests, and evidence-attachment requests also
+carry optional tenant/company scope so shared endpoints can stamp the authenticated accounting
+context, resolve the tenant-scoped chart, and retain scoped lifecycle audit rows without trusting
+browser- or WPF-supplied organization fields.
 Accounting configuration contracts also carry the productized rules-studio vocabulary:
 effective-dated posting rules, flat conditions, grouped `All`/`Any` condition sets, formulas,
 allocation metadata, priority, dimensional scope through `LedgerDimensionSetDto`, generated posting lines, dry-run results,

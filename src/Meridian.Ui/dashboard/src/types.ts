@@ -6438,6 +6438,8 @@ export interface ManualJournalEntryDraft {
   closeLockedBy?: string | null;
   reversal?: JournalEntryReversal | null;
   rebook?: JournalEntryRebook | null;
+  tenantId?: string | null;
+  companyId?: string | null;
 }
 
 export interface JournalEntryLifecycleTransition {
@@ -6465,6 +6467,9 @@ export interface JournalEntryLifecycleActionRequest {
   periodIsLocked?: boolean;
   rebookLines?: ManualJournalEntryLine[] | null;
   ledgerBookId?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
+  reportGroupPrincipalIds?: string[] | null;
 }
 
 export interface AttachManualJournalEntryEvidenceRequest {
@@ -6478,6 +6483,9 @@ export interface AttachManualJournalEntryEvidenceRequest {
   actionOrigin?: OperationsActionOrigin | null;
   periodIsLocked?: boolean;
   ledgerBookId?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
+  reportGroupPrincipalIds?: string[] | null;
 }
 
 export interface JournalEntryLifecycleActionResult {
@@ -7147,6 +7155,7 @@ export interface SaveManualJournalEntryDraftRequest {
   actor: string;
   correlationId?: string | null;
   evidenceLinks?: string[] | null;
+  tenantId?: string | null;
   companyId?: string | null;
   reportGroupPrincipalIds?: string[] | null;
   periodIsLocked?: boolean;
@@ -7159,6 +7168,8 @@ export interface ValidateManualJournalEntryDraftRequest {
   correlationId?: string | null;
   periodIsLocked?: boolean;
   ledgerBookId?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
 }
 
 export interface SubmitManualJournalEntryApprovalRequest {
@@ -7172,6 +7183,9 @@ export interface SubmitManualJournalEntryApprovalRequest {
   actionOrigin?: OperationsActionOrigin | null;
   periodIsLocked?: boolean;
   ledgerBookId?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
+  reportGroupPrincipalIds?: string[] | null;
 }
 
 export interface PreviewJournalTemplateRequest {

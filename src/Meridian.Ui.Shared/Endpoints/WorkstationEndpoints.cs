@@ -5139,9 +5139,10 @@ public static partial class WorkstationEndpoints
         var query = context.Request.Query;
         var fundProfileId = query["fundProfileId"].FirstOrDefault();
         var ledgerBookId = ParseOptionalGuid(query["ledgerBookId"].FirstOrDefault());
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
 
         return await service
-            .GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted)
+            .GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
             .ConfigureAwait(false);
     }
 

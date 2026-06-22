@@ -1359,10 +1359,10 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
         public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<string>>([FundProfileId]);
 
-        public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default)
+        public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
             => Task.FromResult(new ManualJournalEntryWorkbenchDto(FundProfileId, ledgerBookId, DateTimeOffset.UtcNow, [], [], [], [], _activity));
 
-        public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default)
+        public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(_activity);

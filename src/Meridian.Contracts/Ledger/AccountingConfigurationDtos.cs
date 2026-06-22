@@ -781,7 +781,9 @@ public sealed record ManualJournalEntryDraftDto(
     DateTimeOffset? ClosedLockedAtUtc = null,
     string? CloseLockedBy = null,
     JournalEntryReversalDto? Reversal = null,
-    JournalEntryRebookDto? Rebook = null)
+    JournalEntryRebookDto? Rebook = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];
@@ -1050,7 +1052,10 @@ public sealed record JournalEntryLifecycleActionRequestDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     bool PeriodIsLocked = false,
     IReadOnlyList<ManualJournalEntryLineDto>? RebookLines = null,
-    Guid? LedgerBookId = null)
+    Guid? LedgerBookId = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -2243,14 +2248,19 @@ public sealed record SaveManualJournalEntryDraftRequest(
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     bool PeriodIsLocked = false,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
 public sealed record ValidateManualJournalEntryDraftRequest(
     ManualJournalEntryDraftDto Draft,
     string Actor,
     string? CorrelationId = null,
     bool PeriodIsLocked = false,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    string? TenantId = null,
+    string? CompanyId = null);
 
 public sealed record SubmitManualJournalEntryApprovalRequest(
     Guid JournalEntryId,
@@ -2262,7 +2272,10 @@ public sealed record SubmitManualJournalEntryApprovalRequest(
     IReadOnlyList<string>? EvidenceLinks = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     bool PeriodIsLocked = false,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
 public sealed record AttachManualJournalEntryEvidenceRequest(
     Guid JournalEntryId,
@@ -2274,7 +2287,10 @@ public sealed record AttachManualJournalEntryEvidenceRequest(
     IReadOnlyList<string>? EvidenceLinks = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     bool PeriodIsLocked = false,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
 public sealed record ActivateAccountingConfigurationRequest(
     string FundProfileId,
@@ -2354,12 +2370,16 @@ public interface IManualJournalEntryWorkbenchService
     Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 
     Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 
     Task<ManualJournalEntryDraftDto> SaveDraftAsync(
         SaveManualJournalEntryDraftRequest request,
@@ -2410,12 +2430,16 @@ public interface IManualJournalEntryDraftStore
     Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 
     Task<ManualJournalEntryDraftDto?> GetAsync(
         string fundProfileId,
         Guid journalEntryId,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 
     Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);
 }

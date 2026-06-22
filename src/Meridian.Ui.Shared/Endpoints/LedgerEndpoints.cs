@@ -1353,7 +1353,8 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var workbench = await service.GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var workbench = await service.GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId).ConfigureAwait(false);
             return Results.Json(workbench, jsonOptions);
         })
         .WithName("GetManualJournalEntryWorkbench")
@@ -1381,7 +1382,8 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId).ConfigureAwait(false);
             return Results.Json(
                 FilterPrivateCapitalActivity(activity, fundEventId, capitalAccountId, investorId, paymentIntentId),
                 jsonOptions);
@@ -1414,7 +1416,8 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId).ConfigureAwait(false);
             var record = FilterPrivateCapitalActivity(activity, normalizedFundEventId, null, null, null)
                 .FundEventRecords
                 .FirstOrDefault(item => string.Equals(item.FundEventId, normalizedFundEventId, StringComparison.OrdinalIgnoreCase));
@@ -1499,7 +1502,8 @@ public static class LedgerEndpoints
 
             var normalizedInvestorId = NormalizeOptional(investorId);
             var normalizedCurrency = NormalizeOptional(currency);
-            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId).ConfigureAwait(false);
             var filtered = FilterPrivateCapitalActivity(activity, null, normalizedCapitalAccountId, normalizedInvestorId, null);
             var subledgers = filtered.CapitalAccountSubledgers
                 .Where(item =>
@@ -1564,7 +1568,8 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId).ConfigureAwait(false);
             var filtered = FilterPrivateCapitalActivity(activity, normalizedFundEventId, normalizedCapitalAccountId, normalizedInvestorId, null);
             var reportOutputs = filtered.ReportOutputs
                 .Where(item =>
@@ -1661,7 +1666,13 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.SaveDraftAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.SaveDraftAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId ?? request.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -1696,7 +1707,13 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.ValidateDraftAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.ValidateDraftAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId ?? request.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -1725,7 +1742,13 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.SubmitApprovalAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.SubmitApprovalAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId ?? request.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -1760,7 +1783,13 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.AttachEvidenceAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.AttachEvidenceAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId ?? request.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -1795,8 +1824,14 @@ public static class LedgerEndpoints
 
             try
             {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var result = await service
-                    .ApplyLifecycleActionAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted)
+                    .ApplyLifecycleActionAsync(request with
+                    {
+                        Actor = ResolveMutationActor(context, request.Actor),
+                        TenantId = tenantContext.TenantId ?? request.TenantId,
+                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
