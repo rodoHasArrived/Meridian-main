@@ -295,36 +295,63 @@ public sealed class TrialBalanceProjectionService
         var openingRows = opening.ToArray();
         var activityRows = activity.ToArray();
         var fxRows = fx.ToArray();
-        var accountCodes = openingRows.Select(static row => row.AccountCode)
-            .Concat(activityRows.Select(static row => row.AccountCode))
-            .Concat(fxRows.Select(static row => row.AccountCode))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase);
+        var buckets = openingRows
+            .Select(static row => (row.AccountCode, row.Dimensions))
+            .Concat(activityRows.Select(static row => (row.AccountCode, row.Dimensions)))
+            .Concat(fxRows.Select(static row => (row.AccountCode, Dimensions: (LedgerDimensionSetDto?)null)))
+            .GroupBy(static row => BuildBucketKey(row.AccountCode, row.Dimensions), StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => BuildDimensionSignature(row.Dimensions), StringComparer.OrdinalIgnoreCase);
 
-        return accountCodes.Select(accountCode =>
+        return buckets.Select(bucket =>
         {
-            var openingBalance = openingRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase)).Sum(static row => row.Net);
-            var activityBalance = activityRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase)).Sum(static row => row.Net);
-            var adjustment = fxRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase)).Sum(static row => row.AdjustmentAmount);
-            var sourceEventIds = activityRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase))
+            var openingBalance = openingRows
+                .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                .Sum(static row => row.Net);
+            var activityBalance = activityRows
+                .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                .Sum(static row => row.Net);
+            var adjustment = bucket.Dimensions is null
+                ? fxRows.Where(row => string.Equals(row.AccountCode, bucket.AccountCode, StringComparison.OrdinalIgnoreCase)).Sum(static row => row.AdjustmentAmount)
+                : 0m;
+            var sourceEventIds = activityRows.Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
                 .SelectMany(static row => row.SourceEventIds.IsDefault ? ImmutableArray<string>.Empty : row.SourceEventIds)
-                .Concat(fxRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase)).Select(static row => row.SourceEventId))
+                .Concat(bucket.Dimensions is null
+                    ? fxRows.Where(row => string.Equals(row.AccountCode, bucket.AccountCode, StringComparison.OrdinalIgnoreCase)).Select(static row => row.SourceEventId)
+                    : [])
                 .Where(static value => !string.IsNullOrWhiteSpace(value))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToImmutableArray();
-            var approvalIds = activityRows.Where(row => string.Equals(row.AccountCode, accountCode, StringComparison.OrdinalIgnoreCase))
+            var approvalIds = activityRows.Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
                 .SelectMany(static row => row.ApprovalIds.IsDefault ? ImmutableArray<string>.Empty : row.ApprovalIds)
                 .Where(static value => !string.IsNullOrWhiteSpace(value))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToImmutableArray();
-            return new RollForwardLine(accountCode, openingBalance, activityBalance, adjustment, openingBalance + activityBalance + adjustment, sourceEventIds, approvalIds);
+            return new RollForwardLine(
+                bucket.AccountCode,
+                openingBalance,
+                activityBalance,
+                adjustment,
+                openingBalance + activityBalance + adjustment,
+                sourceEventIds,
+                approvalIds,
+                bucket.Dimensions);
         }).ToImmutableArray();
     }
 
     private static string BuildBucketKey(string accountCode, LedgerDimensionSetDto? dimensions)
         => string.Concat(NormalizeToken(accountCode), "|", BuildDimensionSignature(dimensions));
+
+    private static bool SameAccountAndDimensions(
+        string leftAccountCode,
+        LedgerDimensionSetDto? leftDimensions,
+        string rightAccountCode,
+        LedgerDimensionSetDto? rightDimensions)
+        => string.Equals(leftAccountCode, rightAccountCode, StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(BuildDimensionSignature(leftDimensions), BuildDimensionSignature(rightDimensions), StringComparison.OrdinalIgnoreCase);
 
     private static bool MatchesDimensions(LedgerDimensionSetDto? expected, LedgerDimensionSetDto? actual)
     {

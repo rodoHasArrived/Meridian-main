@@ -107,7 +107,8 @@ public sealed record RollForwardLine(
     decimal TranslationAdjustment,
     decimal ClosingBalance,
     ImmutableArray<string> SourceEventIds = default,
-    ImmutableArray<string> ApprovalIds = default);
+    ImmutableArray<string> ApprovalIds = default,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record SourceLinkedAuditLine(
     Guid JournalEntryId,

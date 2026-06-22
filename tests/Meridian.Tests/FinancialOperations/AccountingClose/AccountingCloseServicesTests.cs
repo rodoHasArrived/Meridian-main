@@ -125,6 +125,66 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public void Scenario_MonthEndRollForward_PreservesDimensionScopedRows()
+    {
+        var projection = new TrialBalanceProjectionService();
+        var entityAlpha = new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-alpha", CostCenterId: "investment-ops");
+        var entityBeta = new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-beta", CostCenterId: "fund-admin");
+        var opening = ImmutableArray.Create(
+            new TrialBalanceLine(
+                "Cash",
+                500m,
+                0m,
+                500m,
+                SourceEventIds: ImmutableArray.Create("opening-alpha"),
+                ApprovalIds: ImmutableArray.Create("approval-opening-alpha"),
+                Dimensions: entityAlpha),
+            new TrialBalanceLine(
+                "Cash",
+                250m,
+                0m,
+                250m,
+                SourceEventIds: ImmutableArray.Create("opening-beta"),
+                ApprovalIds: ImmutableArray.Create("approval-opening-beta"),
+                Dimensions: entityBeta));
+        var activity = ImmutableArray.Create(
+            new TrialBalanceLine(
+                "Cash",
+                75m,
+                0m,
+                75m,
+                SourceEventIds: ImmutableArray.Create("activity-alpha"),
+                ApprovalIds: ImmutableArray.Create("approval-activity-alpha"),
+                Dimensions: entityAlpha),
+            new TrialBalanceLine(
+                "Cash",
+                25m,
+                0m,
+                25m,
+                SourceEventIds: ImmutableArray.Create("activity-beta"),
+                ApprovalIds: ImmutableArray.Create("approval-activity-beta"),
+                Dimensions: entityBeta));
+
+        var rollForward = projection.BuildRollForward(opening, activity, []);
+
+        rollForward.Should().HaveCount(2);
+        var alpha = rollForward.Single(line => line.Dimensions?.EntityId == "entity-alpha");
+        alpha.OpeningBalance.Should().Be(500m);
+        alpha.Activity.Should().Be(75m);
+        alpha.ClosingBalance.Should().Be(575m);
+        alpha.Dimensions!.CostCenterId.Should().Be("investment-ops");
+        alpha.SourceEventIds.Should().BeEquivalentTo(["activity-alpha"]);
+        alpha.ApprovalIds.Should().BeEquivalentTo(["approval-activity-alpha"]);
+        var beta = rollForward.Single(line => line.Dimensions?.EntityId == "entity-beta");
+        beta.OpeningBalance.Should().Be(250m);
+        beta.Activity.Should().Be(25m);
+        beta.ClosingBalance.Should().Be(275m);
+        beta.Dimensions!.CostCenterId.Should().Be("fund-admin");
+        beta.SourceEventIds.Should().BeEquivalentTo(["activity-beta"]);
+        beta.ApprovalIds.Should().BeEquivalentTo(["approval-activity-beta"]);
+    }
+
+    [Fact]
     public void Scenario_MonthEndPosting_OutOfBalanceJournalIsRejectedBeforeReplay()
     {
         var posting = new AccountingPostingService();
