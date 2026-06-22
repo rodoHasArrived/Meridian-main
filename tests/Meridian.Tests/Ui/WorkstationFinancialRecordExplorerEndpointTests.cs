@@ -362,7 +362,7 @@ public sealed partial class WorkstationEndpointsTests
         explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain(
             ["Apple Inc.", "Position / transaction", "Reconciliation", "Journal", "Report line", "Evidence", "Audit event"]);
         explorer.RecordGraph.Edges.Select(static edge => edge.Label).Should().Contain(
-            ["feeds", "reconciles", "posts", "reports", "retains evidence", "audits"]);
+            ["referenced by", "reconciles", "posts", "reports", "retains evidence", "audits"]);
     }
 
     [Fact]
