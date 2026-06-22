@@ -682,6 +682,7 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     if entry.get("freshness") in {"stale", "unknown"}:
         findings.append(Finding("warning", finding_path, f"Memory freshness is {entry.get('freshness')}."))
 
+    tier = entry.get("tier")
     raw_file = entry.get("file")
     if not isinstance(raw_file, str):
         findings.append(Finding("error", finding_path, "file must be a string."))
@@ -700,6 +701,7 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
         findings.append(Finding("error", finding_path, f"Memory file does not exist: {raw_file}"))
         return entry, findings
 
+    memory_display_path = rel(root, memory_file)
     front_matter, front_findings = parse_front_matter(memory_file)
     findings.extend(front_findings)
     if front_findings:
@@ -1289,13 +1291,6 @@ def select_entries(
 ) -> list[dict[str, Any]]:
     context = build_routing_context(paths, tags, task_descriptor, skills, intents, branches)
     selected, _ = route_entries(entries, context, stale_only)
-    return selected
-    for entry in entries:
-        if stale_only and not entry_is_stale(entry):
-            continue
-        if has_filters and not (matches_paths(entry, paths) or matches_tags(entry, tags)):
-            continue
-        selected.append(entry)
     return selected
 
 
