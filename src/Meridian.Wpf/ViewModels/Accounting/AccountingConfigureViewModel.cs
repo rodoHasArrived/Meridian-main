@@ -1268,19 +1268,21 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             return;
         }
 
-        var evidence = WithProductionCertificationControlEvidence(
-            NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText),
-            ResolveTenantAdministrationTenantId(),
-            ResolveTenantAdministrationCompanyId(),
-            _activeFundProfile.FundProfileId,
-            _configuration?.LedgerBookId);
-        if (evidence.Count == 0)
+        var retainedEvidence = NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText);
+        if (retainedEvidence.Count == 0)
         {
             ProductionCertificationProfileStatusText = "Retained evidence is required before saving production certification controls.";
             StatusText = ProductionCertificationProfileStatusText;
             RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
             return;
         }
+
+        var evidence = WithProductionCertificationControlEvidence(
+            retainedEvidence,
+            ResolveTenantAdministrationTenantId(),
+            ResolveTenantAdministrationCompanyId(),
+            _activeFundProfile.FundProfileId,
+            _configuration?.LedgerBookId);
 
         try
         {

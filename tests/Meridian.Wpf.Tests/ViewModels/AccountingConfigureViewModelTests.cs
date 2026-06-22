@@ -455,6 +455,44 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ProductionCertificationProfile_SaveRequiresOperatorEvidenceBeforeGeneratedMarkers()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(fundContext);
+
+        await harness.ViewModel.LoadAsync();
+        await harness.ViewModel.SeedBaselineConfigurationAsync();
+
+        harness.ViewModel.ProductionCertificationEvidenceText = "   ";
+        harness.ViewModel.PostingRulesLedgerBookNativeCertified = true;
+        harness.ViewModel.JournalLifecycleLedgerBookNativeCertified = true;
+        harness.ViewModel.PeriodReportDimensionQueriesCertified = true;
+
+        await harness.ViewModel.SaveProductionCertificationProfileAsync();
+
+        harness.ViewModel.ProductionCertificationProfileStatusText.Should()
+            .Be("Retained evidence is required before saving production certification controls.");
+        var retained = await harness.ProductionCertificationProfileStore.GetAsync(
+            "alpha-fund",
+            "Alpha Fund LP",
+            "alpha-fund",
+            harness.LedgerBookService.Book.LedgerBookId);
+        retained.Should().BeNull("generated certification markers cannot stand in for retained operator evidence");
+    }
+
+    [Fact]
     public async Task TenantAdministrationProfile_SaveRetainsSharedControlsAndRefreshesProductionReadiness()
     {
         Directory.CreateDirectory(_root);
