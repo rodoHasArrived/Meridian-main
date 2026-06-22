@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 0.20
+# Meridian Design Document — Version 0.21
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-20
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail.
+**Reviewed:** 2026-06-22
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI.
 
 ## 1. Product Vision
 
@@ -26,6 +26,43 @@ The current product scope is deliberately narrower than the full long-term domai
 Meridian should not merely show an operational number. It should prove the number by preserving the
 chain from source evidence through normalization, validation, reconciliation, ledger impact,
 capital-account impact, report usage, delivery evidence, and audit history.
+
+### Version 0.21 Positioning Addendum: Evidence-Native Financial Operating Layer
+
+Meridian's sharper product position is an evidence-native operating layer for private funds,
+family offices, and adjacent investment organizations. A useful internal working label is
+`LedgerGraph OS`, but the naming is less important than the operating principle: Meridian should
+not be another portfolio dashboard. It should be the governed financial system underneath the
+dashboard, connecting every entity, asset, liability, obligation, document, approval, ledger impact,
+and report value so users can ask any question and verify every answer.
+
+This addendum is planned product direction, not an implementation-complete claim. It narrows the
+near-term market entry wedge to a **Close, Data and Evidence Control Tower** that can sit above
+existing spreadsheets, general ledgers, portfolio systems, banks, custodians, GP portals, and
+document stores before Meridian becomes the customer's native accounting system.
+
+Differentiation should emphasize five themes:
+
+1. **Verifiable financial data**: provenance, evidence retention, reconciliation state, approvals,
+   and report-line lineage are first-class user-visible product objects.
+2. **Whole-balance-sheet modeling**: assets, liabilities, commitments, guarantees, collateral, tax
+   obligations, intercompany balances, and contingent exposures are modeled as equal citizens.
+3. **Lower-risk implementation**: shadow-mode onboarding produces read-only parallel views,
+   opening-balance reconciliations, evidence-backed consolidation reports, and close-readiness
+   scores before a customer migrates official books.
+4. **Contract-driven extensibility**: new asset and liability coverage should arrive through
+   governed packs that define schemas, lifecycle events, valuation methods, accounting rules,
+   validations, and reporting taxonomy without redesigning the core ledger.
+5. **Collaborative distribution**: external auditor, tax, attorney, investment-manager, valuation,
+   banking, investor, family-member, and advisor roles should be inexpensive or free enough that
+   evidence review, document requests, approvals, and report delivery expose the platform to the
+   customer's professional network.
+
+The concise product promise is:
+
+> Meridian is the evidence-native financial operating system for private funds and family wealth.
+> It connects every entity, asset, liability, document, and approval so finance teams can close
+> faster, model anything, and verify every number.
 
 ### Core User Objective
 
@@ -2921,7 +2958,107 @@ or supported to complete.
 
 ---
 
-## 26. Foundational Product Slice
+## 26. LedgerGraph OS Target Architecture and Product Wedge
+
+Version 0.21 translates the evidence-native operating-layer concept into Meridian delivery terms.
+The durable architecture remains a common financial core with vertical packages for fund
+administration and family-office workflows. Approximately 70% of the technology should stay common
+across the platform: multi-book ledger records, positions, valuations, documents, workflows,
+reconciliations, reporting, source evidence, connectors, permissions, and audit history. The
+remaining package-specific layer should adapt terminology, workflows, and templates for fund
+administration or family-office operations.
+
+### Product Structure
+
+| Common Platform | Fund Administration Package | Family Office Package |
+| --- | --- | --- |
+| Multi-book ledger, positions, valuations, source vault, documents, workflows, reconciliations, reporting, data connections, evidence graph, and governed permissions. | Commitments, closings, allocations, equalization, waterfalls, carry, fees, partner capital accounts, NAV workflows, investor onboarding, statements, notices, and administrator service operations. | Entity accounting, consolidations, eliminations, trusts, household views, intercompany activity, liquidity planning, liabilities, guarantees, advisor coordination, principal/family portal views, and succession or concentration analysis. |
+
+### Architecture Pattern
+
+Use a modular monolith for the accounting and transaction core. Ledger posting, position changes,
+allocations, consolidations, official locks, and close controls require strong transactional
+consistency and should not be fragmented into premature microservices. Separate services remain
+appropriate for connector execution, document processing, workflow orchestration, search,
+analytics, notifications, and AI workloads.
+
+The authoritative ledger remains the financial source of truth. Object storage preserves raw
+payloads and documents. An event bus distributes normalized business events. A columnar warehouse
+serves analytics and reporting. A graph projection supports ownership, relationship, and evidence
+navigation. A search index supports document, transaction, entity, and commentary discovery. The
+graph and warehouse are projections, not competing books of record.
+
+### Contract Packs for Assets and Liabilities
+
+Meridian should model assets and liabilities as economic contracts rather than hard-coded product
+categories. The common financial-object spine should define stable identity, ownership, entity,
+book, evidence, lifecycle, valuation, accounting, reconciliation, permission, and reporting hooks.
+Versioned packs then define contract schema, lifecycle events, valuation methods, accounting rules,
+validation rules, and reporting taxonomy.
+
+Launch should prefer wide capture and narrow automation: cash, bank accounts, public equities,
+ETFs, fixed income, private funds, partnerships, private loans, credit, real estate, basic
+derivatives, FX, mortgages, credit facilities, intercompany loans, unfunded commitments, guarantees,
+and a controlled other-asset pack can be recorded early, while deeper lifecycle automation is added
+according to customer demand and roadmap acceptance.
+
+### Number Passport
+
+A Number Passport is the signature evidence object for every balance, performance figure, capital
+account value, report total, dashboard metric, close variance, or liquidity forecast. It should show
+amount, currency, book, accounting basis, effective date, update date, underlying positions, journal
+entries, original source records, source documents, extracted fields, transformation or allocation
+rules, valuation methodology, reconciliation state, preparer/reviewer/approval history, period-over-
+period change, confidence, and freshness.
+
+The user-facing principle is:
+
+> Ask any question. Verify every answer.
+
+### Ingestion Tiers and Connector Contract
+
+The platform should not depend on perfect APIs. Every connector should follow a common lifecycle:
+authenticate, retrieve, retain the original payload, detect duplicates, normalize, map identities,
+validate, reconcile, publish business events, and monitor freshness or failures. Ingestion should
+cover direct APIs and webhooks, structured files and financial messages, documents/email/portal
+collection, and governed manual input. Use external standards selectively as interoperability
+vocabulary rather than transaction-database shape: FIBO terminology for financial meaning and
+relationships, FIGI/ISIN/CUSIP/provider IDs for instruments, ISO 20022 concepts for cash and
+payment messaging, and ILPA-compatible private-market reports and notices.
+
+### Responsible AI Boundary
+
+AI should operate above deterministic financial services. It may extract terms, propose entity or
+ownership relationships, suggest mappings, match transactions, explain reconciliation differences,
+draft commentary, identify missing documents, answer questions with evidence links, and propose
+structured policies. It should not post official journal entries, calculate authoritative waterfalls
+from free-form language, release payments, change ownership records, replace deterministic tax,
+accounting, or performance calculations, or answer without exposing sources and calculation basis.
+
+A future Policy Compiler should convert plain-language policy into proposed structured rules, sample
+calculations, edge cases, historical comparisons, user approval, and versioned production rules.
+
+### Market-Entry Wedge and Staged Roadmap
+
+The first packaged product should be the **Close, Data and Evidence Control Tower**. It should work
+above existing spreadsheets, accounting systems, and portfolio systems with entity and ownership
+graphs, an asset/liability registry, document and source-data vault, CSV/Excel/email/SFTP ingestion,
+high-priority bank and custodian connectors, opening-balance and position reconciliations, close
+checklists, reviewer workflows, exception management, consolidated balance-sheet and performance
+reports, Number Passports, audit-ready close binders, and read-only client/advisor portal views.
+
+Subsequent product stages are to establish trust through the control tower, become the accounting
+system with native multi-book ledger and private-capital accounting workflows, and then create the
+ecosystem through connector SDKs, certified asset packs, policy/report template marketplace,
+scenario modeling, tax-package integrations, opt-in benchmarks, white-label administration support,
+and controlled AI agents.
+
+The primary north-star product metric should be **Verified Coverage**: the percentage of reported
+assets and liabilities that are current, reconciled, approved, and linked to supporting evidence.
+
+---
+
+## 27. Foundational Product Slice
 
 The foundational product slice remains:
 
