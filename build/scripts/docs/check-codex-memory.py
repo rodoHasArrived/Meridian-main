@@ -695,6 +695,7 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     findings.extend(file_findings)
     if memory_file is None:
         return entry, findings
+    memory_display_path = rel(root, memory_file)
     if memory_file.name.lower() == "readme.md":
         findings.append(Finding("error", finding_path, "Folder README files are guidance and must not be indexed."))
     if not memory_file.exists():
@@ -1416,8 +1417,10 @@ def build_payload(
 ) -> dict[str, Any]:
     errors = [finding for finding in findings if finding.severity == "error"]
     warnings = [finding for finding in findings if finding.severity == "warning"]
+    audit_mode = not context_has_routing_filters(context or RoutingContext())
     return {
         "status": "pass" if not errors else "fail",
+        "audit_mode": audit_mode,
         "summary": {
             "entry_count": len(entries),
             "selected_count": len(selected),
@@ -1461,7 +1464,7 @@ def print_summary(payload: dict[str, Any], explain: bool = False) -> None:
     print(
         "Codex memory status: "
         f"{payload['status']}; {summary['entry_count']} entrie(s), "
-        f"{summary['selected_count']} selected, "
+        f"{summary['selected_count']} {('audited' if payload.get('audit_mode') else 'selected')}, "
         f"{summary['error_count']} error(s), {summary['warning_count']} warning(s)."
     )
     goal = payload.get("goal_inventory")
@@ -1472,8 +1475,9 @@ def print_summary(payload: dict[str, Any], explain: bool = False) -> None:
             f"{goal['completed_count']}/{goal['progress_count']} progress item(s) completed; "
             f"active task {goal['active_task_descriptor']}"
         )
+    entry_label = "audited" if payload.get("audit_mode") else "selected"
     for entry in payload["selected_entries"]:
-        print(f"selected: {entry['id']} -> {entry['file']}")
+        print(f"{entry_label}: {entry['id']} -> {entry['file']}")
     if explain:
         for decision in payload.get("routing_decisions", []):
             outcome = "selected" if decision["selected"] else "skipped"
