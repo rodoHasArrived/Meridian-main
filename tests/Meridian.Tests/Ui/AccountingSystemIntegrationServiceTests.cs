@@ -1797,6 +1797,32 @@ public sealed class AccountingSystemIntegrationServiceTests
         betaReconciliation.PeriodEnd.Should().Be(betaLatest.Summary.PeriodEnd);
     }
 
+    [Fact]
+    public async Task LatestImport_DoesNotReuseImportsWhenTenantOrCompanyIdsSanitizeToSamePackageScope()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+
+        var alphaImport = await service.ImportAsync(new AccountingSystemImportRequestDto(
+            "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 2, 1),
+            PeriodEnd: new DateOnly(2026, 2, 28),
+            TenantId: "tenant-a",
+            CompanyId: "company_1"));
+        var betaLatest = await service.GetLatestImportAsync(
+            "quickbooks-fixture",
+            "default-fund",
+            ExternalGlLedgerBookId,
+            tenantId: "tenant_a",
+            companyId: "company-1");
+
+        betaLatest.Summary.TenantId.Should().Be("tenant_a");
+        betaLatest.Summary.CompanyId.Should().Be("company-1");
+        betaLatest.Summary.PeriodEnd.Should().Be(new DateOnly(2026, 1, 31));
+        betaLatest.Summary.ImportId.Should().NotBe(alphaImport.Summary.ImportId);
+    }
+
 
     [Theory]
     [InlineData("xero-fixture", "xero-default-fund-certified", "090", "xero-bank-001", 179_050)]

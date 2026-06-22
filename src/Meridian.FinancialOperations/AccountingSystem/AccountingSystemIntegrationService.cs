@@ -1424,7 +1424,7 @@ public sealed class AccountingSystemIntegrationService
         Guid? ledgerBookId,
         string? tenantId = null,
         string? companyId = null)
-        => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}|{BuildTenantPackageScope(tenantId, companyId)}";
+        => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}|{BuildTenantCacheScope(tenantId, companyId)}";
 
     private static string MappingProfileKey(
         string providerId,
@@ -1492,6 +1492,24 @@ public sealed class AccountingSystemIntegrationService
         }
 
         return $"tenant-{SanitizeId(normalizedTenantId ?? "default")}-company-{SanitizeId(normalizedCompanyId ?? "default")}";
+    }
+
+    private static string BuildTenantCacheScope(string? tenantId, string? companyId)
+    {
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        if (normalizedTenantId is null && normalizedCompanyId is null)
+        {
+            return string.Empty;
+        }
+
+        return $"tenant:{LengthPrefixedCacheSegment(normalizedTenantId)}|company:{LengthPrefixedCacheSegment(normalizedCompanyId)}";
+    }
+
+    private static string LengthPrefixedCacheSegment(string? value)
+    {
+        var segment = value ?? "default";
+        return $"{segment.Length}:{segment}";
     }
 
     private static DateOnly CurrentMonthStart()
