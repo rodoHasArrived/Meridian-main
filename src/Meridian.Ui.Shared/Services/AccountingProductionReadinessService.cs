@@ -52,6 +52,7 @@ public sealed class AccountingProductionReadinessService
             .ToArray();
         var status = ResolveStatus(components);
         var score = components.Count == 0 ? 0 : (int)Math.Round(components.Average(static component => component.Score));
+        var productionGaps = BuildProductionGaps(components);
 
         return new AccountingProductionReadinessDto(
             DateTimeOffset.UtcNow,
@@ -70,7 +71,8 @@ public sealed class AccountingProductionReadinessService
             externalGlCounts.LivePostingEnabled,
             migrationRunArtifacts,
             migrationRolloutPlan,
-            tenantAdministration);
+            tenantAdministration,
+            productionGaps);
     }
 
     private async Task<IReadOnlyList<AccountingMigrationRunArtifactDto>> LoadMigrationRunArtifactsAsync(
@@ -2217,6 +2219,113 @@ public sealed class AccountingProductionReadinessService
             ? evidenceReferences
             : route is null ? Array.Empty<string>() : [route];
         return new(area, label, status, Math.Clamp(score, 0, 100), summary, issues, evidence, route);
+    }
+
+    private static IReadOnlyList<AccountingProductionGapDto> BuildProductionGaps(
+        IReadOnlyCollection<AccountingProductionReadinessComponentDto> components)
+        =>
+        [
+            BuildProductionGap(
+                "multi-ledger-native-workflows",
+                "Configurable multi-ledger accounting",
+                components,
+                [
+                    AccountingProductionReadinessAreaDto.LedgerBooks,
+                    AccountingProductionReadinessAreaDto.PostingRules,
+                    AccountingProductionReadinessAreaDto.JournalLifecycle,
+                    AccountingProductionReadinessAreaDto.CloseReporting,
+                    AccountingProductionReadinessAreaDto.ExternalGl
+                ],
+                "Every posting, journal lifecycle, close/reporting, reconciliation, external-GL, direct-lending, and strategy-ledger workflow must be certified ledger-book-native with retained selected-book evidence.",
+                "Finish ledger-book-scoped workflow evidence and certification across posting rules, JE lifecycle, close/reporting, external GL, reconciliation, direct-lending projections, and strategy-ledger reads."),
+            BuildProductionGap(
+                "enterprise-accounting-configuration-studio",
+                "Enterprise accounting configuration studio",
+                components,
+                [
+                    AccountingProductionReadinessAreaDto.TenantAdministration,
+                    AccountingProductionReadinessAreaDto.RulesStudio,
+                    AccountingProductionReadinessAreaDto.PostingRules
+                ],
+                "Browser/WPF setup must expose shared tenant/company setup, chart administration, Rules Studio authoring, regression tests, promotion approvals, approval queues, and implementation sandbox controls.",
+                "Bind browser and WPF accounting setup surfaces to the shared readiness, tenant-administration, production-certification, and Rules Studio contracts with retained setup evidence."),
+            BuildProductionGap(
+                "external-gl-guarded-integration",
+                "External GL guarded integration",
+                components,
+                [AccountingProductionReadinessAreaDto.ExternalGl],
+                "External accounting remains import-first and guarded-export-only until provider imports, mappings, reconciliation snapshots, certification, and export package controls are complete for the selected ledger book.",
+                "Keep live external posting disabled, certify provider mappings and ledger-book-native evidence, and complete guarded export reconciliation safeguards before any later live-posting release gate."),
+            BuildProductionGap(
+                "dimensional-ledger-reporting",
+                "Dimensional ledger and reporting",
+                components,
+                [
+                    AccountingProductionReadinessAreaDto.DimensionalAccounting,
+                    AccountingProductionReadinessAreaDto.CloseReporting
+                ],
+                "Canonical dimensions must persist through posted ledger lines, trial-balance filters, journal queries, period/cross-period reports, report packages, provenance, and external-export mappings.",
+                "Certify ledger-line dimension persistence, trial-balance filters, report/query provenance, and external-export dimension mappings with retained ledger-book and dimension-scope evidence."),
+            BuildProductionGap(
+                "production-controls-hardening",
+                "Production controls and rollout hardening",
+                components,
+                [
+                    AccountingProductionReadinessAreaDto.TenantAdministration,
+                    AccountingProductionReadinessAreaDto.MigrationRollout,
+                    AccountingProductionReadinessAreaDto.CloseReporting
+                ],
+                "Production rollout needs tenant/company administration, migration artifacts, operational runbooks, audit review, bulk import/export safeguards, performance evidence, period-close controls, and retained approvals.",
+                "Complete tenant/company setup evidence, certified clean migration artifacts, operational hardening controls, close controls, and retained approval/evidence packages before production rollout.")
+        ];
+
+    private static AccountingProductionGapDto BuildProductionGap(
+        string code,
+        string label,
+        IReadOnlyCollection<AccountingProductionReadinessComponentDto> components,
+        IReadOnlyList<AccountingProductionReadinessAreaDto> areas,
+        string readySummary,
+        string requiredAction)
+    {
+        var selected = components
+            .Where(component => areas.Contains(component.Area))
+            .ToArray();
+        var issues = selected
+            .SelectMany(static component => component.Issues)
+            .Where(static issue => issue.Severity is AccountingConfigurationValidationSeverityDto.Critical or AccountingConfigurationValidationSeverityDto.Warning)
+            .ToArray();
+        var status = selected.Length == 0
+            ? AccountingProductionReadinessStatusDto.Unavailable
+            : ResolveStatus(selected);
+        var highestSeverity = issues.Length == 0
+            ? AccountingConfigurationValidationSeverityDto.Info
+            : issues.Max(static issue => issue.Severity);
+        var blockingIssueCodes = issues
+            .Select(static issue => issue.Code)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static code => code, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var routes = selected
+            .Select(static component => component.Route)
+            .Where(static route => !string.IsNullOrWhiteSpace(route))
+            .Select(static route => route!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static route => route, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var summary = status == AccountingProductionReadinessStatusDto.Ready
+            ? readySummary
+            : $"{blockingIssueCodes.Length} blocking production-readiness issue(s) remain across {selected.Length} shared control-plane component(s).";
+
+        return new AccountingProductionGapDto(
+            code,
+            label,
+            status,
+            highestSeverity,
+            summary,
+            requiredAction,
+            areas,
+            blockingIssueCodes,
+            routes);
     }
 
     private static AccountingProductionReadinessIssueDto Issue(

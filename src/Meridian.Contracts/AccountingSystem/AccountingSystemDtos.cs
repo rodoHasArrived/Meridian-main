@@ -667,6 +667,27 @@ public sealed record AccountingMigrationRolloutPlanItemDto(
         BlockingIssueCodes ?? [];
 }
 
+public sealed record AccountingProductionGapDto(
+    string Code,
+    string Label,
+    AccountingProductionReadinessStatusDto Status,
+    AccountingConfigurationValidationSeverityDto HighestSeverity,
+    string Summary,
+    string RequiredAction,
+    IReadOnlyList<AccountingProductionReadinessAreaDto>? Areas = null,
+    IReadOnlyList<string>? BlockingIssueCodes = null,
+    IReadOnlyList<string>? Routes = null)
+{
+    public IReadOnlyList<AccountingProductionReadinessAreaDto> Areas { get; init; } =
+        Areas ?? [];
+
+    public IReadOnlyList<string> BlockingIssueCodes { get; init; } =
+        BlockingIssueCodes ?? [];
+
+    public IReadOnlyList<string> Routes { get; init; } =
+        Routes ?? [];
+}
+
 public sealed record AccountingProductionReadinessDto(
     DateTimeOffset GeneratedAtUtc,
     string FundProfileId,
@@ -684,7 +705,8 @@ public sealed record AccountingProductionReadinessDto(
     bool ExternalGlLivePostingEnabled = false,
     IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null,
     IReadOnlyList<AccountingMigrationRolloutPlanItemDto>? MigrationRolloutPlan = null,
-    AccountingTenantAdministrationReadinessDto? TenantAdministration = null)
+    AccountingTenantAdministrationReadinessDto? TenantAdministration = null,
+    IReadOnlyList<AccountingProductionGapDto>? ProductionGaps = null)
 {
     public IReadOnlyList<AccountingProductionReadinessComponentDto> Components { get; init; } =
         Components ?? [];
@@ -697,6 +719,9 @@ public sealed record AccountingProductionReadinessDto(
 
     public IReadOnlyList<AccountingMigrationRolloutPlanItemDto> MigrationRolloutPlan { get; init; } =
         MigrationRolloutPlan ?? [];
+
+    public IReadOnlyList<AccountingProductionGapDto> ProductionGaps { get; init; } =
+        ProductionGaps ?? [];
 
     public int CriticalIssueCount => Issues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 

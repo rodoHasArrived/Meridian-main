@@ -137,6 +137,34 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
             component.Summary.Contains("migration control", StringComparison.OrdinalIgnoreCase));
+        readiness.ProductionGaps.Should().HaveCount(5);
+        readiness.ProductionGaps.Should().Contain(gap =>
+            gap.Code == "multi-ledger-native-workflows" &&
+            gap.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            gap.Areas.Contains(AccountingProductionReadinessAreaDto.LedgerBooks) &&
+            gap.Areas.Contains(AccountingProductionReadinessAreaDto.JournalLifecycle) &&
+            gap.BlockingIssueCodes.Contains("ledger-books.workflow-evidence-missing") &&
+            gap.Routes.Contains(UiApiRoutes.LedgerBookRolloutAssessment));
+        readiness.ProductionGaps.Should().Contain(gap =>
+            gap.Code == "enterprise-accounting-configuration-studio" &&
+            gap.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            gap.BlockingIssueCodes.Contains("tenant-admin.browser-admin-studio-required") &&
+            gap.BlockingIssueCodes.Contains("tenant-admin.wpf-admin-studio-required") &&
+            gap.Routes.Contains(UiApiRoutes.LedgerAccountingConfiguration));
+        readiness.ProductionGaps.Should().Contain(gap =>
+            gap.Code == "external-gl-guarded-integration" &&
+            gap.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            gap.BlockingIssueCodes.Contains("external-gl.certified-mapping-missing") &&
+            gap.BlockingIssueCodes.Contains("external-gl.ledger-book-native-not-certified"));
+        readiness.ProductionGaps.Should().Contain(gap =>
+            gap.Code == "dimensional-ledger-reporting" &&
+            gap.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            gap.BlockingIssueCodes.Contains("dimensions.reporting-evidence-missing"));
+        readiness.ProductionGaps.Should().Contain(gap =>
+            gap.Code == "production-controls-hardening" &&
+            gap.Status == AccountingProductionReadinessStatusDto.Blocked &&
+            gap.BlockingIssueCodes.Contains("migration.historical-journal-backfill-not-certified") &&
+            gap.BlockingIssueCodes.Contains("tenant-admin.performance-validation-required"));
         readiness.MigrationRunArtifacts.Should().BeEmpty();
         readiness.ExternalGlProviderCount.Should().BeGreaterThan(0);
         readiness.CertifiedExternalGlMappingProfileCount.Should().Be(0);

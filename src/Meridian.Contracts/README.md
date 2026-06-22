@@ -250,6 +250,13 @@ profile for ledger-book-native workflow controls and dimensional ledger/query/re
 production readiness can load approved evidence from the shared Accounting System store only for the
 active tenant, company, fund, and ledger-book scope instead of trusting request-time certification
 flags alone.
+`AccountingProductionGapDto` adds a stable, shared production-gap checklist to the readiness
+payload for the five current productization lanes: configurable multi-ledger workflows,
+enterprise accounting configuration studio, guarded external-GL integration, dimensional
+ledger/reporting, and production controls hardening. Each row carries status, highest severity,
+component areas, blocking issue codes, routes, summary, and required action so browser, WPF, and
+admin setup surfaces can show the same remaining-work checklist without reverse-engineering it from
+component labels or local heuristics.
 Certified migration run artifacts must also be operationally clean: a retained certified run needs a
 completion timestamp and zero retained issue count before the migration rollout plan can mark that
 lane ready. This keeps ledger-book, historical journal, dimensional, configuration-promotion, and
