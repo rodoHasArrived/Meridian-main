@@ -72,7 +72,8 @@ workflow evidence for posting rules, JE lifecycle, close/reporting, external GL,
 direct-lending projections, and strategy ledger reads, renders
 dimensional ledger/query/report/export control counts with retained ledger-book-scoped evidence, renders
 and saves retained tenant/company/fund/book-scoped production-certification controls through the
-shared Accounting System profile store,
+shared Accounting System profile store, adding scoped retained evidence markers for checked
+book-native workflow and dimensional controls before persistence,
 retained migration-run evidence plus generated migration rollout plan rows with ledger-book scope,
 latest retained run, blocking issue codes, required actions, and canonical dimensions from the shared
 production-readiness payload, renders the shared production-gap checklist for configurable

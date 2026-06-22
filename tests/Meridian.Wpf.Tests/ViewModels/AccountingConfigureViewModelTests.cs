@@ -383,6 +383,78 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task ProductionCertificationProfile_SaveAddsScopedControlEvidence()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(fundContext);
+
+        await harness.ViewModel.LoadAsync();
+        await harness.ViewModel.SeedBaselineConfigurationAsync();
+
+        harness.ViewModel.ProductionCertificationEvidenceText =
+            "evidence://controller-review/alpha-fund/production-certification-kickoff";
+        harness.ViewModel.PostingRulesLedgerBookNativeCertified = true;
+        harness.ViewModel.JournalLifecycleLedgerBookNativeCertified = true;
+        harness.ViewModel.CloseReportingLedgerBookNativeCertified = true;
+        harness.ViewModel.ExternalGlLedgerBookNativeCertified = true;
+        harness.ViewModel.ReconciliationLedgerBookNativeCertified = true;
+        harness.ViewModel.DirectLendingLedgerBookNativeCertified = true;
+        harness.ViewModel.StrategyLedgerReadLedgerBookNativeCertified = true;
+        harness.ViewModel.PeriodReportDimensionQueriesCertified = true;
+        harness.ViewModel.CrossPeriodReportDimensionQueriesCertified = true;
+        harness.ViewModel.JournalQueryDimensionFiltersCertified = true;
+        harness.ViewModel.ExternalExportDimensionMappingCertified = true;
+        harness.ViewModel.LedgerLineDimensionsPersistedCertified = true;
+        harness.ViewModel.TrialBalanceDimensionFiltersCertified = true;
+        harness.ViewModel.ReportPackageDimensionProvenanceCertified = true;
+
+        await harness.ViewModel.SaveProductionCertificationProfileAsync();
+
+        var retained = await harness.ProductionCertificationProfileStore.GetAsync(
+            "alpha-fund",
+            "Alpha Fund LP",
+            "alpha-fund",
+            harness.LedgerBookService.Book.LedgerBookId);
+        retained.Should().NotBeNull();
+        retained!.EvidenceReferences.Should().Contain("evidence://controller-review/alpha-fund/production-certification-kickoff");
+        retained.EvidenceReferences.Should().Contain("correlation:" + retained.CorrelationId);
+
+        var scopePrefix =
+            $"evidence://tenant/alpha-fund/company/Alpha Fund LP/fund/alpha-fund/ledger-book/{harness.LedgerBookService.Book.LedgerBookId:D}/production-certification";
+        retained.EvidenceReferences.Should().Contain([
+            $"{scopePrefix}/posting-candidate",
+            $"{scopePrefix}/journal-lifecycle",
+            $"{scopePrefix}/close-reporting",
+            $"{scopePrefix}/external-gl",
+            $"{scopePrefix}/reconciliation",
+            $"{scopePrefix}/direct-lending",
+            $"{scopePrefix}/strategy-ledger",
+            $"{scopePrefix}/dimensions/period-report/dimension-scope/canonical-production",
+            $"{scopePrefix}/dimensions/cross-period/dimension-scope/canonical-production",
+            $"{scopePrefix}/dimensions/journal-query/dimension-scope/canonical-production",
+            $"{scopePrefix}/dimensions/external-export/dimension-scope/canonical-production",
+            $"{scopePrefix}/dimensions/ledger-line/dimension-scope/canonical-production",
+            $"{scopePrefix}/dimensions/trial-balance-filter/dimension-scope/canonical-production",
+            $"{scopePrefix}/dimensions/report-package-provenance/dimension-scope/canonical-production"
+        ]);
+        retained.PostingRulesLedgerBookNativeCertified.Should().BeTrue();
+        retained.ReportPackageDimensionProvenanceCertified.Should().BeTrue();
+        harness.ViewModel.ProductionCertificationProfileStatusText.Should().Contain("saved");
+    }
+
+    [Fact]
     public async Task TenantAdministrationProfile_SaveRetainsSharedControlsAndRefreshesProductionReadiness()
     {
         Directory.CreateDirectory(_root);
@@ -1097,6 +1169,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             [new QuickBooksFixtureAccountingProvider()]);
         var policyService = new AccountingPolicyService();
         var postingCandidateService = new TestAccountingPostingCandidateService();
+        var productionCertificationProfileStore = new InMemoryAccountingProductionCertificationProfileStore();
         var tenantAdministrationProfileStore = new InMemoryAccountingTenantAdministrationProfileStore();
         var migrationRunArtifactStore = new InMemoryAccountingMigrationRunArtifactStore();
         var services = new ServiceCollection();
@@ -1106,6 +1179,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         services.AddSingleton<IManualJournalEntryLifecycleService>(manualJournalService);
         services.AddSingleton<ILedgerJournalStore>(ledgerJournalStore);
         services.AddSingleton(accountingSystemIntegrationService);
+        services.AddSingleton<IAccountingProductionCertificationProfileStore>(productionCertificationProfileStore);
         services.AddSingleton<IAccountingTenantAdministrationProfileStore>(tenantAdministrationProfileStore);
         services.AddSingleton<IAccountingMigrationRunArtifactStore>(migrationRunArtifactStore);
         var productionReadinessService = new AccountingProductionReadinessService(services.BuildServiceProvider());
@@ -1122,6 +1196,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             postingCandidateService,
             ledgerBookService: ledgerBookService,
             accountingProductionReadinessService: productionReadinessService,
+            productionCertificationProfileStore: productionCertificationProfileStore,
             tenantAdministrationProfileStore: tenantAdministrationProfileStore);
 
         return new AccountingConfigureHarness(
@@ -1130,6 +1205,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             draftsPath,
             configurationService,
             postingCandidateService,
+            productionCertificationProfileStore,
             tenantAdministrationProfileStore,
             migrationRunArtifactStore,
             ledgerBookService);
@@ -1141,6 +1217,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         string DraftsPath,
         AccountingConfigurationService ConfigurationService,
         TestAccountingPostingCandidateService PostingCandidateService,
+        IAccountingProductionCertificationProfileStore ProductionCertificationProfileStore,
         IAccountingTenantAdministrationProfileStore TenantAdministrationProfileStore,
         IAccountingMigrationRunArtifactStore MigrationRunArtifactStore,
         TestLedgerBookService LedgerBookService);

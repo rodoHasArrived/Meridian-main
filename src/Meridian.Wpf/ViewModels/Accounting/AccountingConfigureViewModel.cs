@@ -1268,7 +1268,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             return;
         }
 
-        var evidence = NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText);
+        var evidence = WithProductionCertificationControlEvidence(
+            NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText),
+            ResolveTenantAdministrationTenantId(),
+            ResolveTenantAdministrationCompanyId(),
+            _activeFundProfile.FundProfileId,
+            _configuration?.LedgerBookId);
         if (evidence.Count == 0)
         {
             ProductionCertificationProfileStatusText = "Retained evidence is required before saving production certification controls.";
@@ -3777,6 +3782,60 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             .Append($"evidence://tenant-admin/{tenantId}/{companyId}/ledger-book-administration/ledgerBookId={bookText}")
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    private IReadOnlyList<string> WithProductionCertificationControlEvidence(
+        IReadOnlyList<string> evidence,
+        string tenantId,
+        string companyId,
+        string fundProfileId,
+        Guid? ledgerBookId)
+    {
+        if (ledgerBookId is not { } bookId ||
+            evidence.Any(static reference => reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase)))
+        {
+            return evidence;
+        }
+
+        var scopePrefix = $"evidence://tenant/{tenantId}/company/{companyId}/fund/{fundProfileId}/ledger-book/{bookId:D}/production-certification";
+        var generated = new List<string>();
+
+        AddWorkflowEvidence(PostingRulesLedgerBookNativeCertified, "posting-candidate");
+        AddWorkflowEvidence(JournalLifecycleLedgerBookNativeCertified, "journal-lifecycle");
+        AddWorkflowEvidence(CloseReportingLedgerBookNativeCertified, "close-reporting");
+        AddWorkflowEvidence(ExternalGlLedgerBookNativeCertified, "external-gl");
+        AddWorkflowEvidence(ReconciliationLedgerBookNativeCertified, "reconciliation");
+        AddWorkflowEvidence(DirectLendingLedgerBookNativeCertified, "direct-lending");
+        AddWorkflowEvidence(StrategyLedgerReadLedgerBookNativeCertified, "strategy-ledger");
+        AddDimensionEvidence(PeriodReportDimensionQueriesCertified, "period-report");
+        AddDimensionEvidence(CrossPeriodReportDimensionQueriesCertified, "cross-period");
+        AddDimensionEvidence(JournalQueryDimensionFiltersCertified, "journal-query");
+        AddDimensionEvidence(ExternalExportDimensionMappingCertified, "external-export");
+        AddDimensionEvidence(LedgerLineDimensionsPersistedCertified, "ledger-line");
+        AddDimensionEvidence(TrialBalanceDimensionFiltersCertified, "trial-balance-filter");
+        AddDimensionEvidence(ReportPackageDimensionProvenanceCertified, "report-package-provenance");
+
+        return evidence
+            .Concat(generated)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        void AddWorkflowEvidence(bool certified, string marker)
+        {
+            if (certified)
+            {
+                generated.Add($"{scopePrefix}/{marker}");
+            }
+        }
+
+        void AddDimensionEvidence(bool certified, string marker)
+        {
+            if (certified)
+            {
+                generated.Add($"{scopePrefix}/dimensions/{marker}/dimension-scope/canonical-production");
+            }
+        }
     }
 }
 
