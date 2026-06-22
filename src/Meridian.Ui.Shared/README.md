@@ -158,8 +158,10 @@ before browser or WPF clients can save the profile.
 Production certification profile persistence fails closed with the same scope posture: profiles that
 certify ledger-book-native workflows or dimensional reporting controls must retain evidence naming
 the selected tenant, company, fund profile, and ledger book, including route/query markers such as
-`ledgerBookId=<id>` on retained certification evidence, and dimensional certification evidence must
-also identify the explicit dimension scope, before browser or WPF clients can save the certification.
+`ledgerBookId=<id>` on retained certification evidence, and each certified workflow lane must have
+its lane marker on that same scoped artifact. Dimensional certification evidence must also identify
+the explicit dimension scope on the same scoped artifact before browser or WPF clients can save the
+certification.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained

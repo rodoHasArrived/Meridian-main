@@ -4251,7 +4251,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
         var certificationEvidence =
-            $"evidence://production-certification/full/dimension-scope/canonical-production?ledgerBookId={ExternalGlLedgerBookId:D}";
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production";
         var approvalEvidence =
             $"approval:tenant:company-alpha:company:company-alpha:fund:default-fund:ledgerBookId={ExternalGlLedgerBookId:D}:production-certification";
 
@@ -4431,6 +4431,44 @@ public sealed class AccountingSystemIntegrationServiceTests
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
             error.Contains("journal-entry lifecycle workflow evidence", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksSplitWorkflowControlEvidence()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    ExternalGlLedgerBookId,
+                    PostingRulesLedgerBookNativeCertified: false,
+                    JournalLifecycleLedgerBookNativeCertified: false,
+                    CloseReportingLedgerBookNativeCertified: false,
+                    ExternalGlLedgerBookNativeCertified: true,
+                    PeriodReportDimensionQueriesCertified: false,
+                    CrossPeriodReportDimensionQueriesCertified: false,
+                    JournalQueryDimensionFiltersCertified: false,
+                    ExternalExportDimensionMappingCertified: false,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences:
+                    [
+                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/rollout",
+                        "evidence://external-gl/workflow-certification/unscoped"
+                    ]),
+                "spoofed-browser-user",
+                CorrelationId: "production-certification-split-workflow-evidence")));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
+        problem.Errors.Should().ContainKey("request");
+        problem.Errors["request"].Should().Contain(error =>
+            error.Contains("external-GL workflow evidence", StringComparison.OrdinalIgnoreCase) &&
+            error.Contains("same tenant, company, fund, and ledger-book artifact", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

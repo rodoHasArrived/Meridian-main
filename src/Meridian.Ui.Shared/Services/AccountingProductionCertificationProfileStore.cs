@@ -253,7 +253,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             throw new ArgumentException("Accounting production certification evidence must identify the selected tenant, company, fund profile, ledger book, and certified dimension scope on the same retained artifact.");
         }
 
-        EnsureDeclaredControlEvidence(profile, evidenceReferences);
+        EnsureDeclaredControlEvidence(profile, evidenceReferences, tenantId, companyId, fundProfileId, profile.LedgerBookId);
     }
 
     private static bool DeclaresProductionCertification(AccountingProductionCertificationProfileDto profile)
@@ -283,11 +283,19 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
 
     private static void EnsureDeclaredControlEvidence(
         AccountingProductionCertificationProfileDto profile,
-        IReadOnlyList<string> evidenceReferences)
+        IReadOnlyList<string> evidenceReferences,
+        string tenantId,
+        string companyId,
+        string fundProfileId,
+        Guid? ledgerBookId)
     {
         EnsureControlEvidence(
             profile.PostingRulesLedgerBookNativeCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "posting-rule workflow",
             "posting-rules",
             "posting-rule",
@@ -296,6 +304,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureControlEvidence(
             profile.JournalLifecycleLedgerBookNativeCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "journal-entry lifecycle workflow",
             "journal-lifecycle",
             "journal-entry",
@@ -304,6 +316,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureControlEvidence(
             profile.CloseReportingLedgerBookNativeCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "close and reporting workflow",
             "close-reporting",
             "close-management",
@@ -312,6 +328,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureControlEvidence(
             profile.ExternalGlLedgerBookNativeCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "external-GL workflow",
             "external-gl",
             "external-ledger",
@@ -320,6 +340,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureControlEvidence(
             profile.ReconciliationLedgerBookNativeCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "reconciliation workflow",
             "reconciliation",
             "break-queue",
@@ -328,6 +352,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureControlEvidence(
             profile.DirectLendingLedgerBookNativeCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "direct-lending workflow",
             "direct-lending",
             "loan-account",
@@ -336,6 +364,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureControlEvidence(
             profile.StrategyLedgerReadLedgerBookNativeCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "strategy ledger-read workflow",
             "strategy-ledger",
             "strategy-run",
@@ -344,6 +376,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureDimensionControlEvidence(
             profile.PeriodReportDimensionQueriesCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "period-report dimension query",
             "period-report",
             "period-reports",
@@ -354,6 +390,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureDimensionControlEvidence(
             profile.CrossPeriodReportDimensionQueriesCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "cross-period dimension query",
             "cross-period",
             "comparative",
@@ -361,6 +401,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureDimensionControlEvidence(
             profile.JournalQueryDimensionFiltersCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "journal dimension filter",
             "journal-query",
             "journal-filter",
@@ -369,6 +413,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureDimensionControlEvidence(
             profile.ExternalExportDimensionMappingCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "external export dimension mapping",
             "external-export",
             "export-dimension",
@@ -377,6 +425,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureDimensionControlEvidence(
             profile.LedgerLineDimensionsPersistedCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "ledger-line dimension persistence",
             "ledger-line",
             "line-dimension",
@@ -385,6 +437,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureDimensionControlEvidence(
             profile.TrialBalanceDimensionFiltersCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "trial-balance dimension filter",
             "trial-balance-filter",
             "trial-balance-dimension",
@@ -392,6 +448,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         EnsureDimensionControlEvidence(
             profile.ReportPackageDimensionProvenanceCertified,
             evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
             "report-package dimension provenance",
             "report-package-provenance",
             "report-line-provenance",
@@ -402,53 +462,69 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
     private static void EnsureControlEvidence(
         bool certified,
         IReadOnlyList<string> evidenceReferences,
+        string tenantId,
+        string companyId,
+        string fundProfileId,
+        Guid? ledgerBookId,
         string label,
         params string[] aliases)
     {
-        if (!certified || HasProductionFullEvidence(evidenceReferences) || HasWorkflowFullEvidence(evidenceReferences))
+        if (!certified)
         {
             return;
         }
 
-        if (!evidenceReferences.Any(reference => aliases.Any(alias => ReferencesAlias(reference, alias))))
+        if (!evidenceReferences.Any(reference =>
+                ReferencesRolloutScope(reference, tenantId, companyId, fundProfileId, ledgerBookId) &&
+                (ReferencesAlias(reference, "production-certification/full") ||
+                 ReferencesAlias(reference, "workflow-certification/full") ||
+                 aliases.Any(alias => ReferencesAlias(reference, alias)))))
         {
-            throw new ArgumentException($"Accounting production certification evidence must include retained {label} evidence.");
+            throw new ArgumentException($"Accounting production certification evidence must include retained {label} evidence on the same tenant, company, fund, and ledger-book artifact.");
         }
     }
 
     private static void EnsureDimensionControlEvidence(
         bool certified,
         IReadOnlyList<string> evidenceReferences,
+        string tenantId,
+        string companyId,
+        string fundProfileId,
+        Guid? ledgerBookId,
         string label,
         params string[] aliases)
     {
-        if (!certified || HasProductionFullEvidence(evidenceReferences) || HasDimensionFullEvidence(evidenceReferences))
+        if (!certified)
         {
             return;
         }
 
-        if (!evidenceReferences.Any(reference => aliases.Any(alias => ReferencesAlias(reference, alias))))
+        if (!evidenceReferences.Any(reference =>
+                ReferencesRolloutScope(reference, tenantId, companyId, fundProfileId, ledgerBookId) &&
+                ReferencesDimensionScope(reference) &&
+                (ReferencesAlias(reference, "production-certification/full") ||
+                 ReferencesAlias(reference, "dimensions/full") ||
+                 ReferencesAlias(reference, "dimensions/report-query-certification/full") ||
+                 aliases.Any(alias => ReferencesAlias(reference, alias)))))
         {
-            throw new ArgumentException($"Accounting production certification evidence must include retained {label} evidence.");
+            throw new ArgumentException($"Accounting production certification evidence must include retained {label} evidence on the same tenant, company, fund, ledger-book, and dimension-scope artifact.");
         }
     }
-
-    private static bool HasProductionFullEvidence(IReadOnlyList<string> evidenceReferences)
-        => evidenceReferences.Any(reference =>
-            ReferencesAlias(reference, "production-certification/full"));
-
-    private static bool HasWorkflowFullEvidence(IReadOnlyList<string> evidenceReferences)
-        => evidenceReferences.Any(reference =>
-            ReferencesAlias(reference, "workflow-certification/full"));
-
-    private static bool HasDimensionFullEvidence(IReadOnlyList<string> evidenceReferences)
-        => evidenceReferences.Any(reference =>
-            ReferencesAlias(reference, "dimensions/full") ||
-            ReferencesAlias(reference, "dimensions/report-query-certification/full"));
 
     private static bool ReferencesAlias(string? reference, string alias)
         => !string.IsNullOrWhiteSpace(reference) &&
            reference.Contains(alias, StringComparison.OrdinalIgnoreCase);
+
+    private static bool ReferencesRolloutScope(
+        string? reference,
+        string tenantId,
+        string companyId,
+        string fundProfileId,
+        Guid? ledgerBookId)
+        => ReferencesScope(reference, tenantId) &&
+           ReferencesScope(reference, companyId) &&
+           ReferencesScope(reference, fundProfileId) &&
+           ReferencesLedgerBook(reference, ledgerBookId);
 
     private static bool ReferencesScope(string? reference, string value)
         => !string.IsNullOrWhiteSpace(reference) &&
