@@ -2852,7 +2852,7 @@ describe("AccountingScreen", () => {
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
 
-    await renderAccountingScreen(data, "/accounting/journal-entries");
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal entry workbench");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
@@ -2956,7 +2956,10 @@ describe("AccountingScreen", () => {
     expect(screen.getAllByText("Security").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
-    expect(api.getManualJournalEntryWorkbench).toHaveBeenCalled();
+    expect(api.getManualJournalEntryWorkbench).toHaveBeenCalledWith({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha"
+    });
   });
 
   it("applies manual journal lifecycle transitions through the shared endpoint and renders audit evidence", async () => {

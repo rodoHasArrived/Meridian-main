@@ -1787,8 +1787,29 @@ export function createLedgerBook(
   return postJson<import("@/types").LedgerBook>(WORKSTATION_API_ENDPOINTS.ledgerBooks, request, options);
 }
 
-export function getManualJournalEntryWorkbench(options: ApiRequestOptions = {}) {
-  return getJson<ManualJournalEntryWorkbench>(WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench, options);
+export interface ManualJournalEntryWorkbenchQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+}
+
+export function getManualJournalEntryWorkbench(
+  query: ManualJournalEntryWorkbenchQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  return getJson<ManualJournalEntryWorkbench>(
+    `${WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench}${suffix ? `?${suffix}` : ""}`,
+    options
+  );
 }
 
 export interface PrivateCapitalActivityQuery {

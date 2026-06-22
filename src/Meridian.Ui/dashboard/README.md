@@ -814,7 +814,11 @@ evidence attachments, treasury-context readiness, save draft, validate, attach-e
 and submit approval commands
 from the shared DTOs while versioning, validation, persistence, private-capital fund-event context,
 evidence gating, dimensional accounting normalization, period-lock enforcement, selected
-ledger-book mutation checks, authenticated tenant/company scoping, and approval handoff remain server-owned. The same workstream renders the shared
+ledger-book mutation checks, authenticated tenant/company scoping, and approval handoff remain
+server-owned. Browser route `fundProfileId` and `ledgerBookId` values now flow into the shared
+manual journal workbench query and are preserved on save, validate, submit, evidence attachment,
+and lifecycle transition requests so scoped Accounting work cannot silently fall back to fund-level
+manual JE drafts. The same workstream renders the shared
 private-capital activity projection as fund-event rows, capital-account aggregates, signed net
 activity, ordered capital-account subledger movements with running net activity, posted fund-event
 counts, ledger-impact readiness, published report-output counts, report-output readiness

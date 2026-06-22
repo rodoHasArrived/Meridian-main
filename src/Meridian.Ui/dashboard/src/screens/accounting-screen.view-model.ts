@@ -53,6 +53,7 @@ import {
   validateManualJournalEntryDraft,
   type AccountingReportPackageHistoryQuery,
   type CapitalAccountWorkbenchQuery,
+  type ManualJournalEntryWorkbenchQuery,
   type ReferenceDataEndpointProbeStatus,
   type ReferenceDataEndpointProbeResult,
   type ReferenceDataWorkbenchCoverage
@@ -1320,7 +1321,7 @@ export interface ReconciliationQueuePanelViewState {
 }
 
 export interface ManualJournalEntryWorkbenchServices {
-  getWorkbench: () => Promise<ManualJournalEntryWorkbench>;
+  getWorkbench: (query?: ManualJournalEntryWorkbenchQuery) => Promise<ManualJournalEntryWorkbench>;
   searchSecurities: (query: string) => Promise<SecurityMasterEntry[]>;
   saveDraft: (request: SaveManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
   validateDraft: (request: ValidateManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
@@ -2543,7 +2544,7 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
 };
 
 const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchServices = {
-  getWorkbench: () => getManualJournalEntryWorkbench(),
+  getWorkbench: (query) => getManualJournalEntryWorkbench(query),
   searchSecurities: (query) => searchSecurities(query, 8, true),
   saveDraft: (request) => saveManualJournalEntryDraft(request),
   validateDraft: (request) => validateManualJournalEntryDraft(request),
@@ -7255,7 +7256,8 @@ export function useSecurityMasterViewModel(
 
 export function useManualJournalEntryWorkbenchViewModel(
   active: boolean,
-  services: ManualJournalEntryWorkbenchServices = defaultManualJournalEntryWorkbenchServices
+  services: ManualJournalEntryWorkbenchServices = defaultManualJournalEntryWorkbenchServices,
+  search = ""
 ): ManualJournalEntryWorkbenchViewModel {
   const [workbench, setWorkbench] = useState<ManualJournalEntryWorkbench | null>(null);
   const [draft, setDraft] = useState<ManualJournalEntryDraft>(() => createManualJournalEntryDraft());
@@ -7275,14 +7277,19 @@ export function useManualJournalEntryWorkbenchViewModel(
   const [lifecycleBusyAction, setLifecycleBusyAction] = useState<JournalEntryLifecycleAction | null>(null);
   const [lifecycleStatusText, setLifecycleStatusText] = useState<string | null>(null);
   const [lifecycleCorrectionDrafts, setLifecycleCorrectionDrafts] = useState<ManualJournalEntryDraft[]>([]);
+  const query = useMemo(() => parseManualJournalEntryWorkbenchQuery(search), [search]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const next = await services.getWorkbench();
+      const next = await services.getWorkbench(query);
       setWorkbench(next);
-      const selected = next.drafts[0] ?? createManualJournalEntryDraft(next.fundProfileId, next.ledgerBookId ?? null);
+      const selected = ensureManualJournalDraftScope(
+        next.drafts[0] ?? createManualJournalEntryDraft(next.fundProfileId || query.fundProfileId || "default-fund", next.ledgerBookId ?? query.ledgerBookId ?? null),
+        next,
+        query
+      );
       setDraft(selected);
       setSelectedLineId(selected.lines[0]?.lineId ?? "line-1");
     } catch (err) {
@@ -7290,7 +7297,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     } finally {
       setLoading(false);
     }
-  }, [services]);
+  }, [query, services]);
 
   useEffect(() => {
     if (!active) {
@@ -7448,7 +7455,7 @@ export function useManualJournalEntryWorkbenchViewModel(
         evidenceLinks: [uri],
         actionOrigin: "HumanOperator",
         periodIsLocked: draftForAttachment.status === "CloseLocked",
-        ledgerBookId: draftForAttachment.ledgerBookId ?? null
+        ledgerBookId: draftForAttachment.ledgerBookId ?? query.ledgerBookId ?? null
       }));
       setAttachmentDraft(createManualJournalAttachmentDraft());
       setAttachEvidenceStatusText(`Evidence attached: ${displayName}.`);
@@ -7459,7 +7466,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     } finally {
       setAttachEvidenceBusy(false);
     }
-  }, [applyServerDraft, attachmentDraft, draft, services]);
+  }, [applyServerDraft, attachmentDraft, draft, query.ledgerBookId, services]);
 
   const removeAttachment = useCallback<ManualJournalEntryWorkbenchViewModel["removeAttachment"]>((attachmentId) => {
     setDraft((current) => {
@@ -7492,14 +7499,14 @@ export function useManualJournalEntryWorkbenchViewModel(
         draft: draftForValidation,
         actor: "browser-user",
         correlationId: "manual-je-validate",
-        ledgerBookId: draftForValidation.ledgerBookId ?? null
+        ledgerBookId: draftForValidation.ledgerBookId ?? query.ledgerBookId ?? null
       }));
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry validation failed."));
     } finally {
       setValidateBusy(false);
     }
-  }, [applyServerDraft, draft, services]);
+  }, [applyServerDraft, draft, query.ledgerBookId, services]);
 
   const save = useCallback(async () => {
     setSaveBusy(true);
@@ -7510,14 +7517,14 @@ export function useManualJournalEntryWorkbenchViewModel(
         draft: draftForSave,
         actor: "browser-user",
         correlationId: "manual-je-save",
-        ledgerBookId: draftForSave.ledgerBookId ?? null
+        ledgerBookId: draftForSave.ledgerBookId ?? query.ledgerBookId ?? null
       }));
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry draft could not be saved."));
     } finally {
       setSaveBusy(false);
     }
-  }, [applyServerDraft, draft, services]);
+  }, [applyServerDraft, draft, query.ledgerBookId, services]);
 
   const submit = useCallback(async () => {
     setSubmitBusy(true);
@@ -7530,14 +7537,14 @@ export function useManualJournalEntryWorkbenchViewModel(
         actor: "browser-user",
         version: draftForSubmit.version,
         correlationId: "manual-je-submit",
-        ledgerBookId: draftForSubmit.ledgerBookId ?? null
+        ledgerBookId: draftForSubmit.ledgerBookId ?? query.ledgerBookId ?? null
       }));
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry could not be submitted for approval."));
     } finally {
       setSubmitBusy(false);
     }
-  }, [applyServerDraft, draft, services]);
+  }, [applyServerDraft, draft, query.ledgerBookId, services]);
 
   const applyLifecycleAction = useCallback<ManualJournalEntryWorkbenchViewModel["applyLifecycleAction"]>(async (action) => {
     if (lifecycleBusyAction) {
@@ -7561,7 +7568,7 @@ export function useManualJournalEntryWorkbenchViewModel(
         actionOrigin: "HumanOperator",
         periodIsLocked: action === "LockAfterClose",
         rebookLines: action === "Rebook" ? draftForAction.lines : [],
-        ledgerBookId: draftForAction.ledgerBookId ?? null
+        ledgerBookId: draftForAction.ledgerBookId ?? query.ledgerBookId ?? null
       }));
     } catch (err) {
       const errorDisplay = describeApiError(err, `Manual journal entry lifecycle action ${action} failed.`);
@@ -7570,7 +7577,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     } finally {
       setLifecycleBusyAction(null);
     }
-  }, [applyLifecycleResult, draft, lifecycleBusyAction, services]);
+  }, [applyLifecycleResult, draft, lifecycleBusyAction, query.ledgerBookId, services]);
 
   const validationIssues = draft.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
     id: `${issue.code}-${index}`,
@@ -7732,6 +7739,32 @@ export function useCapitalAccountWorkbenchViewModel(
     errorText: error?.summary ?? null,
     refresh
   }), [error?.summary, loading, refresh, workbench]);
+}
+
+function parseManualJournalEntryWorkbenchQuery(search: string): ManualJournalEntryWorkbenchQuery {
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  return {
+    fundProfileId: normalizeQueryValue(params.get("fundProfileId")),
+    ledgerBookId: normalizeQueryValue(params.get("ledgerBookId"))
+  };
+}
+
+function ensureManualJournalDraftScope(
+  draft: ManualJournalEntryDraft,
+  workbench: ManualJournalEntryWorkbench,
+  query: ManualJournalEntryWorkbenchQuery
+): ManualJournalEntryDraft {
+  const fundProfileId = draft.fundProfileId || workbench.fundProfileId || query.fundProfileId || "default-fund";
+  const ledgerBookId = draft.ledgerBookId ?? workbench.ledgerBookId ?? query.ledgerBookId ?? null;
+  if (fundProfileId === draft.fundProfileId && ledgerBookId === draft.ledgerBookId) {
+    return draft;
+  }
+
+  return {
+    ...draft,
+    fundProfileId,
+    ledgerBookId
+  };
 }
 
 function parseCapitalAccountWorkbenchQuery(search: string): CapitalAccountWorkbenchQuery {

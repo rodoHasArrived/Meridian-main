@@ -1482,7 +1482,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel();
-  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries");
+  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);

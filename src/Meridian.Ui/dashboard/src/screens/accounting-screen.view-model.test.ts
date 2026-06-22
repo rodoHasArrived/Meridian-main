@@ -4770,6 +4770,126 @@ describe("accounting-screen view model", () => {
     ]));
   });
 
+  it("loads manual journal entries with route ledger-book scope and preserves scope on mutations", async () => {
+    const scopedWorkbench: ManualJournalEntryWorkbench = {
+      ...manualJournalWorkbench,
+      fundProfileId: "fund-route",
+      ledgerBookId: null,
+      drafts: []
+    };
+    const services: ManualJournalEntryWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(scopedWorkbench),
+      searchSecurities: vi.fn().mockResolvedValue([]),
+      saveDraft: vi.fn((request) => Promise.resolve(request.draft)),
+      validateDraft: vi.fn((request) => Promise.resolve(request.draft)),
+      submitApproval: vi.fn((request) => Promise.resolve({
+        ...manualJournalDraft,
+        journalEntryId: request.journalEntryId,
+        fundProfileId: request.fundProfileId,
+        ledgerBookId: request.ledgerBookId ?? null,
+        status: "Submitted" as const,
+        version: request.version + 1
+      })),
+      attachEvidence: vi.fn((request) => Promise.resolve({
+        ...manualJournalDraft,
+        journalEntryId: request.journalEntryId,
+        fundProfileId: request.fundProfileId,
+        ledgerBookId: request.ledgerBookId ?? null,
+        version: request.version + 1,
+        evidenceLinks: request.evidenceLinks,
+        evidenceAttachments: [request.attachment]
+      })),
+      applyLifecycleAction: vi.fn((request) => Promise.resolve({
+        journalEntry: {
+          ...manualJournalDraft,
+          journalEntryId: request.journalEntryId,
+          fundProfileId: request.fundProfileId,
+          ledgerBookId: request.ledgerBookId ?? null,
+          status: "Approved" as const,
+          version: request.version + 1
+        },
+        transition: {
+          transitionId: "transition-approve",
+          fromStatus: "Submitted" as const,
+          toStatus: "Approved" as const,
+          action: request.action,
+          actor: request.actor,
+          recordedAtUtc: "2026-06-30T02:00:00Z",
+          notes: request.notes,
+          correlationId: request.correlationId,
+          evidenceLinks: request.evidenceLinks
+        },
+        generatedJournalEntries: []
+      }))
+    };
+
+    const { result } = renderHook(() =>
+      useManualJournalEntryWorkbenchViewModel(
+        true,
+        services,
+        "?fundProfileId=fund-route&ledgerBookId=book-route"
+      )
+    );
+
+    await waitFor(() => expect(result.current.draft.fundProfileId).toBe("fund-route"));
+    expect(result.current.draft.ledgerBookId).toBe("book-route");
+    expect(services.getWorkbench).toHaveBeenCalledWith({
+      fundProfileId: "fund-route",
+      ledgerBookId: "book-route"
+    });
+
+    await act(async () => {
+      await result.current.save();
+    });
+    await act(async () => {
+      await result.current.validate();
+    });
+    await act(async () => {
+      await result.current.submit();
+    });
+    act(() => {
+      result.current.updateAttachmentDraft({
+        displayName: "Book scoped support",
+        uri: "evidence://manual-je/book-route/support",
+        lineId: "line-1"
+      });
+    });
+    await act(async () => {
+      await result.current.addAttachment();
+    });
+    await act(async () => {
+      await result.current.applyLifecycleAction("Approve");
+    });
+
+    expect(services.saveDraft).toHaveBeenCalledWith(expect.objectContaining({
+      ledgerBookId: "book-route",
+      draft: expect.objectContaining({
+        fundProfileId: "fund-route",
+        ledgerBookId: "book-route"
+      })
+    }));
+    expect(services.validateDraft).toHaveBeenCalledWith(expect.objectContaining({
+      ledgerBookId: "book-route",
+      draft: expect.objectContaining({
+        fundProfileId: "fund-route",
+        ledgerBookId: "book-route"
+      })
+    }));
+    expect(services.submitApproval).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-route",
+      ledgerBookId: "book-route"
+    }));
+    expect(services.attachEvidence).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-route",
+      ledgerBookId: "book-route"
+    }));
+    expect(services.applyLifecycleAction).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-route",
+      ledgerBookId: "book-route",
+      action: "Approve"
+    }));
+  });
+
   it("derives a blocked controller close command center from workflow and provider signals", () => {
     const state = buildCloseCommandCenterViewState({
       data: accountingWorkspace,
