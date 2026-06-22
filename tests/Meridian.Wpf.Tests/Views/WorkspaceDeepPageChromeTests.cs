@@ -238,6 +238,7 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().Contain("ClusterStatusActionStrip");
         xaml.Should().Contain("ClusterStatusPostureCard");
         xaml.Should().Contain("ClusterStatusWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
         xaml.Should().Contain("ClusterStatusNodesGrid");
         xaml.Should().Contain("ClusterStatusSummaryInspector");
         xaml.Should().Contain("ClusterStatusSelectionInspector");
@@ -399,6 +400,7 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().NotContain("<DataGrid");
         xaml.Should().Contain("AccountPortfolioActionStrip");
         xaml.Should().Contain("AccountPortfolioWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
         xaml.Should().Contain("AccountPortfolioPositionsGrid");
         xaml.Should().Contain("AccountPortfolioSelectionInspector");
         xaml.Should().Contain("AccountPortfolioActionInspector");
@@ -415,9 +417,48 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().NotContain("<DataGrid");
         xaml.Should().Contain("AggregatePortfolioActionStrip");
         xaml.Should().Contain("AggregatePortfolioWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
         xaml.Should().Contain("AggregatePortfolioPositionsGrid");
         xaml.Should().Contain("AggregatePortfolioSelectionInspector");
         xaml.Should().Contain("AggregatePortfolioActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void FundAccountsPage_ShouldUseCompactDenseTableAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundAccountsPage.xaml");
+        var codePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundAccountsPage.xaml.cs");
+        var xaml = File.ReadAllText(absolutePath);
+        var code = File.ReadAllText(codePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<ListBox");
+        xaml.Should().Contain("FundAccountsActionStrip");
+        xaml.Should().Contain("FundAccountsWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("FundAccountsQueueGrid");
+        xaml.Should().Contain("FundAccountsSelectionInspector");
+        xaml.Should().Contain("FundAccountsRoutingReadinessCard");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        code.Should().NotContain("AccountSelectionChanged");
+    }
+
+    [Fact]
+    public void FundLedgerPage_ShouldUseCompactActionAndAccountWorkbenchChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("FundLedgerActionStrip");
+        xaml.Should().Contain("FundLedgerActionStripState");
+        xaml.Should().Contain("FundLedgerAccountWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("FundLedgerAccountQueueGrid");
+        xaml.Should().Contain("FundLedgerAccountSelectionInspector");
+        xaml.Should().Contain("FundLedgerAccountActionInspector");
+        xaml.Should().Contain("FundLedgerOpenAccountPortfolioButton");
         xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
     }
 
@@ -435,6 +476,28 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().Contain("RunLedgerSelectionInspector");
         xaml.Should().Contain("RunLedgerActionInspector");
         xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void FinancialRecordExplorerPage_ShouldUseCompactDenseTableInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FinancialRecordExplorerPage.xaml");
+        var codePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FinancialRecordExplorerPage.xaml.cs");
+        var xaml = File.ReadAllText(absolutePath);
+        var code = File.ReadAllText(codePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("FinancialRecordExplorerActionStrip");
+        xaml.Should().Contain("FinancialRecordExplorerSummaryStrip");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("FinancialRecordExplorerGrid");
+        xaml.Should().Contain("FinancialRecordExplorerSelectionInspector");
+        xaml.Should().Contain("FinancialRecordExplorerProofActionsCard");
+        xaml.Should().Contain("FinancialRecordExplorerUsedInRelationships");
+        xaml.Should().Contain("FinancialRecordExplorerImpactRelationships");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        code.Should().Contain("IWorkspaceShellPageContextAware");
     }
 
     [Fact]

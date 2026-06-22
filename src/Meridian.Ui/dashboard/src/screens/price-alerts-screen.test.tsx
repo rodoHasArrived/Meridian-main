@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import type { StorageLike } from "@/lib/price-alerts/storage";
-import { PRICE_ALERT_STORAGE_KEY, type PriceAlert, type PriceAlertStorageState, type PriceAlertTrigger } from "@/lib/price-alerts/types";
+import { PRICE_ALERT_STORAGE_KEY, type PriceAlert, type PriceAlertStorageState, type PriceAlertTrigger } from "@/lib/price-alerts";
 import { renderWithRouter } from "@/test/render";
 import { PriceAlertsScreen } from "./price-alerts-screen";
 

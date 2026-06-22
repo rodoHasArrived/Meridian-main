@@ -121,115 +121,81 @@
                 </Border>
             </UniformGrid>
 
-            <Grid Grid.Row="2"
-                  AutomationProperties.AutomationId="AggregatePortfolioWorkbench"
-                  AutomationProperties.Name="Aggregate Portfolio Workbench">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.35*" />
-                    <ColumnDefinition Width="18" />
-                    <ColumnDefinition Width="0.95*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                            <TextBlock Text="Netted Positions"
-                                       Style="{StaticResource CardHeaderStyle}"
-                                       Margin="0,0,0,4" />
-                            <TextBlock Text="Cross-strategy position rows aggregated by symbol."
-                                       Style="{StaticResource CardDescriptionStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
-
-                        <ItemsControl Grid.Row="1"
-                                      Margin="0,0,0,12"
-                                      ItemsSource="{Binding Top5Concentrations}"
-                                      AutomationProperties.AutomationId="AggregatePortfolioConcentrationStrip">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="0,0,6,6"
-                                            Padding="8,3"
-                                            Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
-                                            CornerRadius="4"
-                                            BorderThickness="1"
-                                            BorderBrush="{DynamicResource InfoColorBrush}">
-                                        <TextBlock Text="{Binding}"
-                                                   FontSize="11"
-                                                   Foreground="{DynamicResource PrimaryTextBrush}" />
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <workstation:DenseDataGridControl Grid.Row="2"
+            <workstation:WorkstationTableInspectorControl Grid.Row="2"
                                                           Table="{Binding PositionsTable}"
                                                           SelectedItem="{Binding SelectedPosition, Mode=TwoWay}"
-                                                          Height="420"
+                                                          Inspector="{Binding SelectedPositionInspector}"
+                                                          HeaderText="Netted Positions"
+                                                          DetailText="Cross-strategy position rows aggregated by symbol."
                                                           GridAutomationId="AggregatePortfolioPositionsGrid"
                                                           EmptyAutomationId="AggregatePortfolioPositionsTableEmptyState"
-                                                          Visibility="{Binding IsPositionsGridVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                          AutomationProperties.Name="Aggregate portfolio positions table" />
+                                                          InspectorAutomationId="AggregatePortfolioSelectionInspector"
+                                                          ControlAutomationId="AggregatePortfolioWorkbench">
+                <workstation:WorkstationTableInspectorControl.TableHeaderContent>
+                    <ItemsControl ItemsSource="{Binding Top5Concentrations}"
+                                  AutomationProperties.AutomationId="AggregatePortfolioConcentrationStrip">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,6,6"
+                                        Padding="8,3"
+                                        Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
+                                        CornerRadius="4"
+                                        BorderThickness="1"
+                                        BorderBrush="{DynamicResource InfoColorBrush}">
+                                    <TextBlock Text="{Binding}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource PrimaryTextBrush}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </workstation:WorkstationTableInspectorControl.TableHeaderContent>
 
-                        <Border x:Name="AggregatePositionsEmptyStatePanel"
-                                Grid.Row="2"
-                                MinHeight="300"
-                                Padding="28"
-                                Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Visibility="{Binding IsPositionsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                AutomationProperties.AutomationId="AggregatePositionsEmptyStatePanel"
-                                AutomationProperties.Name="{Binding PositionsEmptyStateTitle}">
-                            <StackPanel HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        MaxWidth="480">
-                                <TextBlock x:Name="AggregatePositionsEmptyStateTitle"
-                                           Text="{Binding PositionsEmptyStateTitle}"
-                                           FontSize="16"
-                                           FontWeight="SemiBold"
-                                           TextAlignment="Center"
-                                           TextWrapping="Wrap"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                           AutomationProperties.AutomationId="AggregatePositionsEmptyStateTitle" />
-                                <TextBlock x:Name="AggregatePositionsEmptyStateDetail"
-                                           Margin="0,8,0,16"
-                                           Text="{Binding PositionsEmptyStateDetail}"
-                                           TextWrapping="Wrap"
-                                           TextAlignment="Center"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           AutomationProperties.AutomationId="AggregatePositionsEmptyStateDetail" />
-                                <Button x:Name="AggregatePositionsEmptyStateRefreshButton"
-                                        Content="Refresh Portfolio"
-                                        Command="{Binding RefreshCommand}"
-                                        ToolTip="{Binding RefreshTooltip}"
-                                        ToolTipService.ShowOnDisabled="True"
-                                        HorizontalAlignment="Center"
-                                        MinWidth="140"
-                                        AutomationProperties.AutomationId="AggregatePositionsEmptyStateRefreshButton" />
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </Border>
+                <workstation:WorkstationTableInspectorControl.EmptyContent>
+                    <Border MinHeight="300"
+                            Padding="28"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Visibility="{Binding IsPositionsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="AggregatePositionsEmptyStatePanel"
+                            AutomationProperties.Name="{Binding PositionsEmptyStateTitle}">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    MaxWidth="480">
+                            <TextBlock Text="{Binding PositionsEmptyStateTitle}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="AggregatePositionsEmptyStateTitle" />
+                            <TextBlock Margin="0,8,0,16"
+                                       Text="{Binding PositionsEmptyStateDetail}"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       AutomationProperties.AutomationId="AggregatePositionsEmptyStateDetail" />
+                            <Button Content="Refresh Portfolio"
+                                    Command="{Binding RefreshCommand}"
+                                    ToolTip="{Binding RefreshTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    HorizontalAlignment="Center"
+                                    MinWidth="140"
+                                    AutomationProperties.AutomationId="AggregatePositionsEmptyStateRefreshButton" />
+                        </StackPanel>
+                    </Border>
+                </workstation:WorkstationTableInspectorControl.EmptyContent>
 
-                <StackPanel Grid.Column="2">
-                    <workstation:InspectorPanelControl Panel="{Binding SelectedPositionInspector}"
-                                                       AutomationProperties.AutomationId="AggregatePortfolioSelectionInspector" />
-
+                <workstation:WorkstationTableInspectorControl.InspectorContent>
                     <Border Style="{StaticResource CardStyle}"
                             Padding="16"
-                            Margin="0,12,0,0"
                             AutomationProperties.AutomationId="AggregatePortfolioActionInspector"
                             AutomationProperties.Name="Aggregate Portfolio Actions">
                         <StackPanel>
@@ -258,8 +224,8 @@
                             </WrapPanel>
                         </StackPanel>
                     </Border>
-                </StackPanel>
-            </Grid>
+                </workstation:WorkstationTableInspectorControl.InspectorContent>
+            </workstation:WorkstationTableInspectorControl>
         </Grid>
     </ScrollViewer>
 </Page>

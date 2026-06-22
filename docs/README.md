@@ -17,6 +17,7 @@ Current local project path: `D:\Meridian-main`.
 | Operators | [Operators](operators/README.md) | Provider setup, workstation launch, runbooks, deployment, troubleshooting, and support artifacts. |
 | First-time contributors | [Start](start/README.md) | Fast local orientation, setup, launch, and first safe validation commands. |
 | AI assistants | [AI](ai/README.md) | Agent workflow contracts, repo navigation, Codex/Claude/Copilot guidance, prompts, skills, and inventory checks. |
+| Domain modelers | [Domain Dictionary](domain/README.md) | Business nouns, relationships, rules, examples, and expansion notes for AI-assisted development. |
 
 ## Canonical Sources
 
@@ -30,6 +31,7 @@ Current local project path: `D:\Meridian-main`.
 | Roadmap registry | [Roadmap Registry](roadmap/README.md) and `docs/roadmap/data/*.yml` |
 | Source module registry | [Source Documentation Mesh](source/README.md) and `docs/source/data/*.yml` |
 | Architecture and module boundaries | [Engineering](engineering/README.md), [Project Structure](architecture/project-structure.md), and [Module Map](architecture/module-map.md) |
+| Domain dictionary | [Domain](domain/README.md) and [Meridian Domain Model](architecture/meridian-domain-model.md) |
 | Build, test, and run commands | [Engineering](engineering/README.md), [Start](start/README.md), and [HELP](HELP.md) |
 | Generated documentation policy | [Generated Documentation](generated/README.md) |
 | AI workflow policy | [Provider-Agnostic AI Development Contract](ai/assistant-workflow-contract.md) |
@@ -41,10 +43,11 @@ Current local project path: `D:\Meridian-main`.
 - `engineering/` is the developer and coding-agent lane.
 - `operators/` is the runbook, setup, troubleshooting, and support lane.
 - `reference/` remains the lookup lane for API, environment, schema, and glossary material.
+- `domain/` is the business dictionary lane for durable Meridian nouns, relationships, and rules.
 - `ai/`, `roadmap/`, `source/`, and `generated/` remain specialized controlled documentation systems.
 - `archive/docs/` is the destination for superseded plans, stale audits, old status snapshots, historical experiments, and one-off brainstorms.
 
-The older folders (`developer/`, `development/`, `plans/`, `status/`, `operations/`, `evaluations/`, `audits/`, and related areas) are active only where linked from the canonical sources above. During the rebuild, they should be treated as migration inputs, not as the desired final information architecture.
+Legacy folders that still exist under `docs/` are active only where linked from the canonical sources above. Removed legacy lanes such as `developer/`, `providers/`, `api/`, `design/`, `ui/`, `evaluations/`, and `audits/` now route through canonical docs and `archive/docs/`.
 
 ## Generated And Registry-Owned Content
 
@@ -63,7 +66,7 @@ Archive rather than delete when a document has historical value, stale evidence,
 
 ## Migration Status
 
-- `docs/audits/` and `docs/evaluations/` are now source-material indexes. Use them for historical context and extraction work, not as canonical destinations for new guidance.
+- Historical audit and evaluation material now lives in `archive/docs/assessments/`. Use it for context and extraction work, not as canonical guidance.
 - `docs/plans/` and `docs/status/` are now controlled migration indexes. Use `docs/product/` for stakeholder interpretation, `docs/roadmap/data/*.yml` for durable roadmap truth, and generated views for rendered registry output.
 - `archive/docs/assessments/`, `archive/docs/plans/`, `archive/docs/status/`, `archive/docs/summaries/`, `archive/docs/migrations/`, and `archive/docs/workflows/` have bucket indexes for staged archive batches.
 - High-traffic archived material should keep a short redirect stub at the old path until all active links move to the replacement.

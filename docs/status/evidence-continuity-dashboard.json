@@ -1,0 +1,189 @@
+{
+  "dashboard": "evidence-continuity",
+  "title": "Evidence Continuity Dashboard",
+  "description": "Tracks whether DK1 and shared-contract evidence remain packet-bound, date-scoped, test-covered, and connected to current readiness dashboards.",
+  "generated_at": "1970-01-01T00:00:00+00:00",
+  "root": "Meridian-main",
+  "score_percent": 85.7,
+  "passed_weight": 12,
+  "total_weight": 14,
+  "summary": {
+    "check_count": 6,
+    "passed_checks": 5,
+    "gap_checks": 1,
+    "missing_source_count": 0,
+    "missing_term_count": 3
+  },
+  "checks": [
+    {
+      "id": "dk1-run-evidence",
+      "category": "DK1 Evidence",
+      "label": "DK1 runbook requires fresh date-stamped evidence artifacts",
+      "status": "pass",
+      "weight": 3,
+      "score": 3,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/evidence/dk1-pilot-parity-runbook.md"
+      ],
+      "matched_paths": [
+        "docs/status/evidence/dk1-pilot-parity-runbook.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "generated run evidence",
+        "run date",
+        "packetReview"
+      ],
+      "found_terms": [
+        "generated run evidence",
+        "run date",
+        "packetReview"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Refresh the DK1 runbook so current evidence cannot be confused with stale artifacts."
+    },
+    {
+      "id": "kernel-evidence-link",
+      "category": "DK1 Evidence",
+      "label": "Kernel dashboard links the active DK1 packet and sign-off evidence",
+      "status": "gap",
+      "weight": 2,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/kernel-readiness-dashboard.md"
+      ],
+      "matched_paths": [
+        "docs/status/kernel-readiness-dashboard.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "artifacts/provider-validation/_automation/2026-04-27",
+        "dk1-pilot-parity-packet.json",
+        "dk1-operator-signoff.json"
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "artifacts/provider-validation/_automation/2026-04-27",
+        "dk1-pilot-parity-packet.json",
+        "dk1-operator-signoff.json"
+      ],
+      "detail": "",
+      "remediation": "Update the readiness dashboard when the current DK1 evidence packet changes."
+    },
+    {
+      "id": "packet-generator",
+      "category": "Automation",
+      "label": "DK1 packet generator and sign-off preparer are present",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "scripts/dev/generate-dk1-pilot-parity-packet.ps1",
+        "scripts/dev/prepare-dk1-operator-signoff.ps1"
+      ],
+      "matched_paths": [
+        "scripts/dev/generate-dk1-pilot-parity-packet.ps1",
+        "scripts/dev/prepare-dk1-operator-signoff.ps1"
+      ],
+      "missing_patterns": [],
+      "terms": [],
+      "found_terms": [],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Restore the packet-generation scripts or remove stale workflow claims."
+    },
+    {
+      "id": "packet-tests",
+      "category": "Automation",
+      "label": "DK1 evidence packet tests guard packet identity and sign-off validation",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "tests/scripts/test_generate_dk1_pilot_parity_packet.py",
+        "tests/scripts/test_prepare_dk1_operator_signoff.py"
+      ],
+      "matched_paths": [
+        "tests/scripts/test_generate_dk1_pilot_parity_packet.py",
+        "tests/scripts/test_prepare_dk1_operator_signoff.py"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "packet",
+        "signoff"
+      ],
+      "found_terms": [
+        "packet",
+        "signoff"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Add focused tests for packet identity, packet binding, and sign-off validation."
+    },
+    {
+      "id": "contract-packet",
+      "category": "Shared Contracts",
+      "label": "Shared-contract review packet has a repeatable generator and owner-decision trail",
+      "status": "pass",
+      "weight": 3,
+      "score": 3,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/contract-compatibility-matrix.md",
+        "scripts/generate_contract_review_packet.py"
+      ],
+      "matched_paths": [
+        "docs/status/contract-compatibility-matrix.md",
+        "scripts/generate_contract_review_packet.py"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "contract-review-packet",
+        "readyForCadenceReview",
+        "Owner decision"
+      ],
+      "found_terms": [
+        "contract-review-packet",
+        "readyForCadenceReview",
+        "Owner decision"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Keep contract packets and owner decisions attached to shared-interop cadence reviews."
+    },
+    {
+      "id": "contract-packet-tests",
+      "category": "Shared Contracts",
+      "label": "Contract packet and compatibility gate scripts have regression tests",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "tests/scripts/test_generate_contract_review_packet.py",
+        "tests/scripts/test_check_contract_compatibility_gate.py"
+      ],
+      "matched_paths": [
+        "tests/scripts/test_generate_contract_review_packet.py",
+        "tests/scripts/test_check_contract_compatibility_gate.py"
+      ],
+      "missing_patterns": [],
+      "terms": [],
+      "found_terms": [],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Restore Python tests for the contract packet and compatibility gate scripts."
+    }
+  ]
+}

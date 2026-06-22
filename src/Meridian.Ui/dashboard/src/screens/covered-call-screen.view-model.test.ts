@@ -27,7 +27,7 @@ import type {
   CoveredCallRunResult,
   CoveredCallRunStatus,
   CoveredCallTrade
-} from "@/types/covered-call";
+} from "@/lib/covered-call";
 
 describe("validateForm", () => {
   it("returns empty when form is valid", () => {

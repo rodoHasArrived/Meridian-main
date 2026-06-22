@@ -1,4 +1,6 @@
 using System.IO;
+using System.Text.Json;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Tests.Views;
 
@@ -50,6 +52,50 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void DesktopScreenshotCatalog_ShouldIncludeEveryRegisteredShellPage()
+    {
+        var workflowCatalog = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\desktop-workflows.json"));
+        using var document = JsonDocument.Parse(workflowCatalog);
+
+        var screenshotWorkflow = document.RootElement
+            .GetProperty("workflows")
+            .EnumerateArray()
+            .Single(workflow =>
+                string.Equals(
+                    workflow.GetProperty("name").GetString(),
+                    "screenshot-catalog",
+                    StringComparison.Ordinal));
+
+        var screenshotSteps = screenshotWorkflow
+            .GetProperty("steps")
+            .EnumerateArray()
+            .Select(step => new
+            {
+                PageTag = step.GetProperty("pageTag").GetString() ?? string.Empty,
+                CaptureName = step.GetProperty("captureName").GetString() ?? string.Empty
+            })
+            .ToArray();
+
+        var registeredPageTags = ShellNavigationCatalog.Pages
+            .Select(page => page.PageTag)
+            .OrderBy(pageTag => pageTag, StringComparer.Ordinal)
+            .ToArray();
+        var catalogPageTags = screenshotSteps
+            .Select(step => step.PageTag)
+            .OrderBy(pageTag => pageTag, StringComparer.Ordinal)
+            .ToArray();
+
+        catalogPageTags.Should().Equal(registeredPageTags);
+
+        screenshotSteps
+            .GroupBy(step => step.CaptureName, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .Should()
+            .BeEmpty("each registered WPF screen needs a distinct committed screenshot file");
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldRestoreAndBuildWithMatchingIsolationArguments()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
@@ -57,7 +103,8 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("$buildIsolationKey = if ($SkipBuild) { '' } else { New-MeridianBuildIsolationKey");
         script.Should().Contain("$desktopRestoreArgs = @(");
         script.Should().Contain("$desktopBuildArgs = @(");
-        script.Should().Contain("-AdditionalProperties @(\"Configuration=$resolvedConfiguration\")");
+        script.Should().Contain("-AdditionalProperties @(\"Configuration=$resolvedConfiguration\", 'UseSharedCompilation=false')");
+        script.Should().Contain("-MaxCpuCount 1");
         script.Should().Contain("& dotnet restore $resolvedProjectPath --verbosity minimal @desktopRestoreArgs");
         script.Should().Contain("& dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @desktopBuildArgs");
 
@@ -121,7 +168,9 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("$workflowName = if ([string]::IsNullOrWhiteSpace($Profile)) { 'screenshot-catalog' } else { $Profile }");
         script.Should().Contain("'-Workflow', $workflowName");
         script.Should().Contain("'-Profile', $workflowName");
-        script.Should().Contain("'-OutputRoot', 'artifacts/desktop-workflows'");
+        script.Should().Contain("capture-{0}-{1}");
+        script.Should().Contain("'-OutputRoot', $workflowArtifactRoot");
+        script.Should().NotContain("'-OutputRoot', 'artifacts/desktop-workflows'");
         script.Should().Contain("'-ScreenshotDirectory', $screenshotDirectory");
         script.Should().Contain("if ($PSBoundParameters.ContainsKey('ProjectPath'))");
         script.Should().Contain("if ($PSBoundParameters.ContainsKey('Configuration'))");
@@ -155,6 +204,12 @@ public sealed class DesktopWorkflowScriptTests
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
 
+        script.Should().Contain("function Save-InProcessWindowCapture");
+        script.Should().Contain("--screenshot=$resolvedPath");
+        script.Should().Contain("function Test-ImageFileHasVisualContent");
+        script.Should().Contain("[System.Drawing.Bitmap]::new($stream)");
+        script.Should().Contain("In-process desktop screenshot capture failed; falling back to native window capture");
+        script.Should().Contain("Desktop screenshot capture remained blank after PrintWindow and screen fallback.");
         script.Should().Contain("MeridianDesktopCaptureNative");
         script.Should().Contain("[MeridianDesktopCaptureNative]::PrintWindow");
         script.Should().NotContain("CopyFromScreen(");
@@ -168,6 +223,8 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("function Ensure-EnteredOperatingContext");
         script.Should().Contain("EnterWorkstationButton");
         script.Should().Contain("Seed Sample Contexts");
+        script.Should().Contain("StartupContinueWithoutCredentialsButton");
+        script.Should().Contain("continue without credentials");
         script.Should().Contain("$manifest.run.operatingContextConfirmed = $operatingContextConfirmed");
         script.Should().Contain("Operating context was not confirmed; screenshot workflow cannot continue before shell readiness.");
         script.Should().Contain("Operating context confirmed.");
@@ -177,6 +234,40 @@ public sealed class DesktopWorkflowScriptTests
 
         contextIndex.Should().BeGreaterThan(0);
         startupIndex.Should().BeGreaterThan(contextIndex);
+    }
+
+    [Fact]
+    public void RunDesktopWorkflowScript_ShouldUseDevelopmentFixtureEnvironmentForScreenshotCapture()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
+
+        script.Should().Contain("DOTNET_ENVIRONMENT', 'Development'");
+        script.Should().Contain("ASPNETCORE_ENVIRONMENT', 'Development'");
+        script.Should().Contain("MERIDIAN_USE_INMEMORY_GOVERNANCE', 'true'");
+        script.Should().Contain("MDC_WPF_SOFTWARE_RENDERING', '1'");
+        script.Should().Contain("$originalWorkflowEnv");
+    }
+
+    [Fact]
+    public void WpfApp_ShouldExposeSoftwareRenderingAutomationOverride()
+    {
+        var app = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\App.xaml.cs"));
+
+        app.Should().Contain("MDC_WPF_SOFTWARE_RENDERING");
+        app.Should().Contain("RenderOptions.ProcessRenderMode");
+        app.Should().Contain("RenderMode.SoftwareOnly");
+    }
+
+    [Fact]
+    public void MainWindow_ShouldExposeInProcessScreenshotCaptureForAutomation()
+    {
+        var mainWindow = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\MainWindow.xaml.cs"));
+
+        mainWindow.Should().Contain("CaptureMainWindowScreenshotAsync");
+        mainWindow.Should().Contain("SaveMainWindowScreenshot");
+        mainWindow.Should().Contain("RenderTargetBitmap");
+        mainWindow.Should().Contain("PngBitmapEncoder");
+        mainWindow.Should().Contain("request.HasScreenshotRequest");
     }
 
     [Fact]

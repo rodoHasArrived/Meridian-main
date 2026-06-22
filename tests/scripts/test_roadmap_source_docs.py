@@ -190,6 +190,70 @@ modules:
         self.assertIn("SRC-HOST", module_ids)
         self.assertIn("SRC-UI-DASHBOARD", module_ids)
 
+    def test_doc_hash_manifest_narrow_write_preserves_unselected_modules(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "docs/source/data").mkdir(parents=True)
+            (root / "docs/source/generated").mkdir(parents=True)
+            (root / "src/ExampleA").mkdir(parents=True)
+            (root / "src/ExampleB").mkdir(parents=True)
+            (root / "src/ExampleA/ExampleA.cs").write_text("namespace ExampleA;\n", encoding="utf-8")
+            (root / "src/ExampleB/ExampleB.cs").write_text("namespace ExampleB;\n", encoding="utf-8")
+            (root / "src/ExampleA/README.md").write_text("# Example A\n", encoding="utf-8")
+            (root / "src/ExampleB/README.md").write_text("# Example B\n", encoding="utf-8")
+            (root / "docs/source/data/source-modules.yml").write_text(
+                """
+schema:
+  id: meridian.source-modules
+  version: "1.0.0"
+  minimum_renderer_version: "1.0.0"
+modules:
+  - id: SRC-EXAMPLE-A
+    path: src/ExampleA
+    name: Example A
+    layer: Example
+    status: active
+    owner_lane: Example Lane
+    purpose: Example module purpose.
+    readme: src/ExampleA/README.md
+    roadmap_items: []
+    validation: []
+    diagrams: []
+    last_reviewed: 2026-05-20
+  - id: SRC-EXAMPLE-B
+    path: src/ExampleB
+    name: Example B
+    layer: Example
+    status: active
+    owner_lane: Example Lane
+    purpose: Example module purpose.
+    readme: src/ExampleB/README.md
+    roadmap_items: []
+    validation: []
+    diagrams: []
+    last_reviewed: 2026-05-20
+""",
+                encoding="utf-8",
+            )
+            baseline = doc_hashes.build_manifest(root)
+            manifest_path = root / "docs/source/generated/source-hash-manifest.json"
+            manifest_path.write_text(common.json.dumps(baseline, indent=2, sort_keys=True), encoding="utf-8")
+
+            (root / "src/ExampleA/ExampleA.cs").write_text("namespace ExampleA;\npublic sealed class NewType {}\n", encoding="utf-8")
+            (root / "src/ExampleB/ExampleB.cs").write_text("namespace ExampleB;\npublic sealed class UnreviewedType {}\n", encoding="utf-8")
+            actual = doc_hashes.build_manifest(root)
+
+            changed, refreshed = doc_hashes.refresh_source_hash_manifest(root, actual, ["SRC-EXAMPLE-A"])
+            updated = common.json.loads(manifest_path.read_text(encoding="utf-8"))
+            updated_by_id = {entry["id"]: entry for entry in updated["modules"]}
+            baseline_by_id = {entry["id"]: entry for entry in baseline["modules"]}
+            actual_by_id = {entry["id"]: entry for entry in actual["modules"]}
+
+        self.assertTrue(changed)
+        self.assertEqual(1, refreshed)
+        self.assertEqual(actual_by_id["SRC-EXAMPLE-A"]["source_hash"], updated_by_id["SRC-EXAMPLE-A"]["source_hash"])
+        self.assertEqual(baseline_by_id["SRC-EXAMPLE-B"]["source_hash"], updated_by_id["SRC-EXAMPLE-B"]["source_hash"])
+
     def test_stale_doc_marker_reports_source_hash_drift(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

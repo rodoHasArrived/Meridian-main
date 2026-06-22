@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Meridian provider builder package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/provider_builder_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 3
+        }
+      },
+      "prompt": "Use $meridian-provider-builder to build a ProviderSdk-compliant adapter with cancellation, rate limiting, and focused tests."
+    },
+    {
+      "id": 2,
+      "description": "Provider guidance keeps configuration, cancellation, rate limiting, and reconnect controls visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/provider_builder_check.py",
+        "--scenario",
+        "resilience-config",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-provider-builder to preserve IOptionsMonitor, rate limiting, reconnect, and CancellationToken behavior."
+    },
+    {
+      "id": 3,
+      "description": "Wire-format scenario uses official docs, recorded fixtures, and source-generated json.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/provider_builder_check.py",
+        "--scenario",
+        "wire-format",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $meridian-provider-builder to validate provider wire format against official docs, recorded fixtures, and source-generated JSON."
+    }
+  ]
+}

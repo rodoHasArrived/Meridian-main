@@ -111,6 +111,7 @@
     <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
     <ProjectReference Include="..\Meridian.Identity\Meridian.Identity.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />
+    <ProjectReference Include="..\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
     <ProjectReference Include="..\Meridian.Reporting\Meridian.Reporting.csproj" />
     <ProjectReference Include="..\Meridian.Platform\Meridian.Platform.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />

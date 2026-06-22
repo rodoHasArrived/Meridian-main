@@ -17,11 +17,20 @@ public interface IBankingService : IBankTransactionSource
     /// <summary>Submit a payment for review. Returns the pending payment record.</summary>
     Task<PendingPaymentDto> InitiatePaymentAsync(Guid entityId, InitiatePaymentRequest request, CancellationToken ct = default);
 
-    /// <summary>Approve a pending payment. Records a bank transaction.</summary>
+    /// <summary>Approve a pending payment intent without recording bank execution.</summary>
     Task<PendingPaymentDto?> ApprovePaymentAsync(Guid pendingPaymentId, ApprovePaymentRequest request, CancellationToken ct = default);
 
-    /// <summary>Reject a pending payment without recording a bank transaction.</summary>
+    /// <summary>Reject a pending payment without recording bank evidence.</summary>
     Task<PendingPaymentDto?> RejectPaymentAsync(Guid pendingPaymentId, RejectPaymentRequest request, CancellationToken ct = default);
+
+    /// <summary>Get a payment approval record regardless of reviewed status.</summary>
+    Task<PendingPaymentDto?> GetPaymentAsync(Guid pendingPaymentId, CancellationToken ct = default);
+
+    /// <summary>Record retained bank confirmation, return, or reversal evidence for an approved payment.</summary>
+    Task<BankTransactionDto?> RecordPaymentBankEvidenceAsync(
+        Guid pendingPaymentId,
+        RecordPaymentBankEvidenceRequest request,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Get all pending payments. When <paramref name="entityId"/> is provided, results are

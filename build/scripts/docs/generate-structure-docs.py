@@ -7,7 +7,6 @@ This script intentionally has no third-party dependencies so it can run in CI.
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import fnmatch
 import os
 from pathlib import Path
@@ -50,10 +49,15 @@ EXCLUDED_FILE_SUFFIXES = {
 EXCLUDED_FILE_PATTERNS = (
     "*.backup-*",
 )
+EXCLUDED_ROOT_FILE_NAMES = {
+    "package-lock.json",
+}
+REPOSITORY_DISPLAY_NAME = "Meridian-main"
+STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    return STABLE_GENERATED_AT
 
 
 def is_excluded(path: Path, root: Path | None = None) -> bool:
@@ -70,6 +74,8 @@ def is_excluded(path: Path, root: Path | None = None) -> bool:
         except ValueError:
             relative_parts = parts
         if relative_parts and relative_parts[0] in EXCLUDED_ROOT_DIR_NAMES:
+            return True
+        if len(relative_parts) == 1 and relative_parts[0] in EXCLUDED_ROOT_FILE_NAMES:
             return True
 
     name = path.name
@@ -101,7 +107,7 @@ def render_tree(root: Path) -> str:
                 extension = "    " if index == len(entries) - 1 else "│   "
                 walk(entry, prefix + extension)
 
-    lines.append(root.name)
+    lines.append(REPOSITORY_DISPLAY_NAME)
     walk(root)
     return "\n".join(lines)
 
@@ -201,7 +207,7 @@ def generate_workflows_overview(root: Path) -> str:
     for workflow_file in workflow_files:
         name = extract_workflow_name(workflow_file)
         triggers = format_workflow_triggers(extract_workflow_triggers(workflow_file))
-        rel = workflow_file.relative_to(root)
+        rel = workflow_file.relative_to(root).as_posix()
         lines.append(f"| `{rel}` | {name} | {triggers} |")
 
     lines.append("")
@@ -232,7 +238,7 @@ def generate_provider_registry(root: Path) -> str:
 
     providers = sorted(
         providers,
-        key=lambda path: str(path).lower(),
+        key=lambda path: path.as_posix().lower(),
     )
 
     lines = [
@@ -245,7 +251,7 @@ def generate_provider_registry(root: Path) -> str:
     ]
 
     for provider in providers:
-        lines.append(f"| `{provider}` |")
+        lines.append(f"| `{provider.as_posix()}` |")
 
     if not providers:
         lines.append("| _No provider files discovered_ |")

@@ -13,6 +13,7 @@ public static class BrokerageConnectionEndpoints
     public static void MapBrokerageConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/brokerage-connections").WithTags("Brokerage Connections");
+        group.RequireWorkstationTenantScope();
 
         group.MapPost("/robinhood/connect", async (HttpContext context) =>
         {

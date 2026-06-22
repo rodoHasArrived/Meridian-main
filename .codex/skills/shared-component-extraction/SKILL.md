@@ -101,4 +101,5 @@ Non-trigger examples:
 
 - State what duplication was removed and what abstraction replaced it.
 - Name migrated call sites and tests.
+- Include rollback posture for each extraction so behavior drift can be reversed quickly.
 - Note any remaining duplicate patterns intentionally left for later.

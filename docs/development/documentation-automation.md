@@ -13,7 +13,7 @@ fastest way to inspect and review generated diffs before you commit them.
 
 | Feature | Description |
 | --------- | ------------- |
-| **UI Diagram Refresh** | Regenerates WPF UI implementation diagrams from live source files before rendering committed SVG artifacts |
+| **UI Diagram Refresh** | Regenerates WPF UI implementation diagrams and the WPF screen development tracker from live source files before rendering committed SVG artifacts |
 | **Structure Generation** | Auto-generates repository structure docs from the file tree |
 | **README Tree Sync** | Updates markdown tree markers in README and AI-facing docs when the tree sync tool is run locally |
 | **Provider Registry** | Extracts provider metadata from `[DataSource]` attributes |
@@ -31,7 +31,7 @@ fastest way to inspect and review generated diffs before you commit them.
 
 ## Diagram Automation
 
-WPF UI implementation diagrams are generated from source code without hand-maintained drift instead of being maintained by hand:
+WPF UI implementation diagrams and the WPF screen development tracker are generated from source code without hand-maintained drift instead of being maintained by hand:
 
 ```bash
 npm run generate-diagrams
@@ -40,7 +40,7 @@ npm run generate-diagrams
 `make generate-diagrams` delegates to the same package script. Keep docs and Makefile targets on
 that canonical entrypoint instead of calling the Node script path directly.
 
-That command updates `docs/diagrams/ui-navigation-map.dot` and `docs/diagrams/ui-implementation-flow.dot` from these inputs:
+That command updates `docs/diagrams/ui-navigation-map.dot`, `docs/diagrams/ui-implementation-flow.dot`, and `docs/status/wpf-screen-development-tracker.md` from these inputs:
 
 - `src/Meridian.Wpf/App.xaml.cs`
 - `src/Meridian.Wpf/MainWindow.xaml.cs`
@@ -48,9 +48,17 @@ That command updates `docs/diagrams/ui-navigation-map.dot` and `docs/diagrams/ui
 - `src/Meridian.Wpf/Views/MainPage.xaml`
 - `src/Meridian.Wpf/Views/MainPage.xaml.cs`
 - `src/Meridian.Wpf/Views/Pages.cs`
+- `docs/screenshots/desktop/README.md`
+- `tests/Meridian.Wpf.Tests/**/*.cs`
 
 Run the diagram generation command before committing diagram source changes so committed UI diagrams
 stay synchronized as the implementation evolves.
+
+Use the targeted shortcut when only the generated screen tracker needs a refresh:
+
+```bash
+npm run generate-wpf-screen-tracker
+```
 
 ## Running Documentation Automation
 
@@ -453,6 +461,8 @@ Documentation rules are defined in `build/rules/doc-rules.yaml`. See [Adding Cus
 | `docs/status/todo-issue-creation-summary.json` | create-todo-issues.py | Machine-readable issue creation summary with status counts and issue numbers |
 | `docs/status/doc-health-dashboard.md` | generate-health-dashboard.py | Health metrics rendered from canonical JSON |
 | `docs/status/doc-health-dashboard.json` | generate-health-dashboard.py | Canonical health dashboard payload |
+| `docs/status/wpf-screen-development-tracker.md` | npm run generate-wpf-screen-tracker | WPF screen Gantt chart and automated per-screen TODO checklist |
+| `docs/status/wpf-screen-development-tracker.json` | npm run generate-wpf-screen-tracker | Machine-readable WPF screen tracker payload |
 | `docs/status/link-repair-report.md` | repair-links.py | Broken link report |
 | `docs/status/example-validation.md` | validate-examples.py | Code example validation |
 | `docs/status/metrics-dashboard.md` | generate-metrics-dashboard.py | Build/test metrics rendered from canonical JSON |
@@ -553,6 +563,7 @@ Use this generated snapshot when validating docs automation and workflow drift.
 | `ibapi-smoke-build` | dotnet SDK with Windows targeting packs; PowerShell available | IBAPI smoke build script exists |
 | `wpf-route-validation-position-blotter` | dotnet SDK with Windows targeting packs; PowerShell available | position blotter route artifact directory exists |
 | `wpf-dev-loop-validation` | dotnet SDK with Windows targeting packs; PowerShell available | WPF dev-loop validation artifacts produced |
+| `targeted-test` | Branch pushed to GitHub; GitHub CLI authenticated or manual Actions UI access; Repo-relative .NET test project under tests/; Specific dotnet test filter for the failing class, method, or trait | Targeted Test workflow exists; Targeted Test requires project path and filter |
 | `robinhood-options-smoke` | dotnet SDK with Windows targeting packs; PowerShell available | Robinhood options smoke artifacts produced |
 | `web-screenshot-capture` | Node.js 24 available on PATH; npm dependencies installed for src/Meridian.Ui/dashboard | web screenshot output directory exists |
 

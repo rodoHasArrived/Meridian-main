@@ -38,7 +38,9 @@ public sealed class AccountingJournalDraftServiceTests
         var service = CreateService(policyService);
         var aggregateId = Guid.NewGuid();
         var periodId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
         var sourceEventId = Guid.NewGuid();
+        var instrumentId = Guid.NewGuid();
 
         var result = await service.BuildDraftAsync(new AccountingJournalDraftRequest(
             aggregateId,
@@ -49,20 +51,51 @@ public sealed class AccountingJournalDraftServiceTests
                 new AccountingJournalDraftLineRequest(
                     new LedgerAccount("Accrued Interest Receivable", LedgerAccountType.Asset),
                     Debit: 125.44m,
-                    Credit: 0m),
+                    Credit: 0m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        FundId: "fund-alpha",
+                        EntityId: "entity-master",
+                        InstrumentId: instrumentId,
+                        CostCenterId: "investment-ops",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Department"] = "InvestmentOps"
+                        })),
                 new AccountingJournalDraftLineRequest(
                     new LedgerAccount("Interest Income", LedgerAccountType.Revenue),
                     Debit: 0m,
-                    Credit: 125.44m)
+                    Credit: 125.44m,
+                    Dimensions: new LedgerDimensionSetDto(
+                        FundId: "fund-alpha",
+                        EntityId: "entity-master",
+                        InstrumentId: instrumentId,
+                        CostCenterId: "income-review",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Department"] = "FundAccounting"
+                        }))
             ],
             AccountingBasis: AccountingBasisKindDto.Gaap,
             EffectiveDate: new DateOnly(2026, 5, 31),
             SourceEventId: sourceEventId,
             FundProfileId: "fund-alpha",
+            LedgerBookId: ledgerBookId,
             PolicyId: "gaap-accrual-v1",
             TreatmentKind: AccountingTreatmentKindDto.Accrual,
             SourceEventType: "CustodianInterestAccrual",
-            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]));
+            TreasuryContext: new TreasuryLedgerContextDto(
+                EffectiveDate: new DateOnly(2026, 5, 31),
+                IdempotencyKey: "custodian-interest:fund-alpha:202605",
+                FundEventId: "fund-event:fund-alpha:interest-accrual:202605",
+                FundEventType: "InterestAccrual",
+                CapitalAccountId: "capital-account:fund-alpha:master",
+                InvestorId: "investor:fund-alpha:master",
+                PaymentIntentId: "payment:fund-alpha:interest-accrual:202605",
+                SettlementReference: "settlement:fund-alpha:interest-accrual:202605"),
+            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"],
+            PostingRuleId: "posting.interest-accrual",
+            PostingRuleVersion: "v1",
+            DryRunCorrelationId: "dry-run-correlation-001"));
 
         result.Policy.PolicyId.Should().Be("gaap-accrual-v1");
         result.Policy.RulePack!.Rules.Should().ContainSingle(rule => rule.RuleId == "accrual.interest-income");
@@ -74,11 +107,61 @@ public sealed class AccountingJournalDraftServiceTests
         result.Write.Should().NotBeNull();
         result.Write!.AggregateId.Should().Be(aggregateId);
         result.Write.PeriodId.Should().Be(periodId);
+        result.Write.LedgerBookId.Should().Be(ledgerBookId);
         result.Write.AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
         result.Write.AccountingPolicyId.Should().Be("gaap-accrual-v1");
         result.Write.RuleId.Should().Be("accrual.interest-income");
         result.Write.RuleVersion.Should().Be("v1");
         result.Write.SourceEventId.Should().Be(sourceEventId);
+        result.Write.Entry.Metadata.EffectiveDate.Should().Be(new DateOnly(2026, 5, 31));
+        result.Write.Entry.Metadata.LedgerBook.Should().Be(ledgerBookId.ToString("D"));
+        result.Write.Entry.Metadata.IdempotencyKey.Should().Be("custodian-interest:fund-alpha:202605");
+        result.Write.Entry.Metadata.FundEventId.Should().Be("fund-event:fund-alpha:interest-accrual:202605");
+        result.Write.Entry.Metadata.CapitalAccountId.Should().Be("capital-account:fund-alpha:master");
+        result.Write.Entry.Metadata.PaymentIntentId.Should().Be("payment:fund-alpha:interest-accrual:202605");
+        var debitLine = result.Write.Entry.Lines.Single(line => line.Debit == 125.44m);
+        var creditLine = result.Write.Entry.Lines.Single(line => line.Credit == 125.44m);
+        debitLine.Dimensions.Should().NotBeNull();
+        debitLine.Dimensions!.FundId.Should().Be("fund-alpha");
+        debitLine.Dimensions.EntityId.Should().Be("entity-master");
+        debitLine.Dimensions.InstrumentId.Should().Be(instrumentId);
+        debitLine.Dimensions.CostCenterId.Should().Be("investment-ops");
+        debitLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
+        creditLine.Dimensions.Should().NotBeNull();
+        creditLine.Dimensions!.CostCenterId.Should().Be("income-review");
+        creditLine.Dimensions.ExternalGlDimensions["Department"].Should().Be("FundAccounting");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{debitLine.EntryId:N}.costCenterId")
+            .WhoseValue.Should().Be("investment-ops");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{debitLine.EntryId:N}.externalGl.Department")
+            .WhoseValue.Should().Be("InvestmentOps");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{creditLine.EntryId:N}.costCenterId")
+            .WhoseValue.Should().Be("income-review");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey($"lineDimensions.{creditLine.EntryId:N}.externalGl.Department")
+            .WhoseValue.Should().Be("FundAccounting");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey("postingRuleId")
+            .WhoseValue.Should().Be("posting.interest-accrual");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey("postingRuleVersion")
+            .WhoseValue.Should().Be("v1");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey("dryRunCorrelationId")
+            .WhoseValue.Should().Be("dry-run-correlation-001");
+        result.Write.Entry.Metadata.Tags.Should().ContainKey("sourceEventId")
+            .WhoseValue.Should().Be(sourceEventId.ToString("D"));
+        result.Write.Entry.Metadata.Tags.Should().ContainKey("ledgerBookId")
+            .WhoseValue.Should().Be(ledgerBookId.ToString("D"));
+        result.Write.Entry.Metadata.EvidenceReferences.Should().ContainSingle(evidence =>
+            evidence.Uri == "provider://custodian/interest-accruals/2026-05" &&
+            evidence.Kind == AccountingPostingEvidenceKindDto.Source.ToString());
+        result.Write.PostingCommand.Should().NotBeNull();
+        result.Write.PostingCommand!.AggregateId.Should().Be(aggregateId);
+        result.Write.PostingCommand.PeriodId.Should().Be(periodId);
+        result.Write.PostingCommand.LedgerBookId.Should().Be(ledgerBookId);
+        result.Write.PostingCommand.SourceEventId.Should().Be(sourceEventId);
+        result.Write.PostingCommand.IdempotencyKey.Should().Be("custodian-interest:fund-alpha:202605");
+        result.Write.PostingCommand.EffectiveDate.Should().Be(new DateOnly(2026, 5, 31));
+        result.Write.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Pending);
+        result.Write.PostingCommand.Evidence.Should().ContainSingle(evidence =>
+            evidence.Uri == "provider://custodian/interest-accruals/2026-05" &&
+            evidence.Kind == AccountingPostingEvidenceKindDto.Source);
         result.ValidationIssues.Should().Contain(issue => issue.Code == "JOURNAL_DRAFT_APPROVAL_REQUIRED");
         result.EvidenceLinks.Should().ContainSingle("provider://custodian/interest-accruals/2026-05");
     }

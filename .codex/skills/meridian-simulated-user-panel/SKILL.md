@@ -158,6 +158,13 @@ Within `Confidence Notes`, always separate:
 
 The stable result shape is defined in `assets/eval-result.schema.json`.
 
+## Automation Scripts
+
+- `scripts/simulated_user_output_check.py` validates the expected receipt, review-contract
+  headings, owner-action buckets, and confidence-note evidence boundary.
+- `scripts/run_evals.py` runs deterministic dry-run eval fixtures for the skill package.
+- `scripts/score_eval.py` scores simulated-user outputs against a compact rubric.
+
 ## Output Standards
 
 - Use the review contract headings unless the user requests a shorter artifact.

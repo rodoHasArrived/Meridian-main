@@ -1,8 +1,10 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-06-04
+> Last verified: 2026-06-20
 > Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`,
-> `docs/product/meridian-design-document.md`, and `docs/architecture/project-structure.md`
+> `docs/product/meridian-design-document.md`,
+> `docs/architecture/meridian-development-intelligence-framework.md`, and
+> `docs/architecture/project-structure.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, current product
 direction, commands, and architecture when a Codex skill needs repository grounding without
@@ -10,18 +12,21 @@ repeating the same facts in every `SKILL.md`.
 
 ## Platform Snapshot
 
-- Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
+- Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery; fund management is a first-class specialization, not the root model for every workflow.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery focus is productization around the W1-W5 operational record baseline: data
-  confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset
-  operational coverage, and governed reports across `Trading`, `Portfolio`, `Accounting`,
-  `Reporting`, `Strategy`, `Data`, and `Settings`.
-- Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment
-  execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
-  client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work
-  directly strengthens that operational record workflow.
+- Current delivery direction is evidence-led: use current source, the roadmap registry, and the
+  design charter to decide whether a prior baseline, named productization target, or later expansion
+  lane is the right scope.
+- Treat prior baselines and named productization targets as roadmap/status evidence, not development
+  ceilings.
+- MDIF is the required context spine for broad generation, domain modeling, workflow design, and
+  architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
+  dictionary pages, and context packs before implementation.
+- Expansion lanes such as Backtesting Studio, live-readiness, treasury payment execution,
+  alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, and
+  no-code workflow design can proceed when current source, roadmap, or user direction supports them.
 - Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
 - `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
   workflows, launch automation, and desktop validation.
@@ -41,11 +46,27 @@ repeating the same facts in every `SKILL.md`.
 
 Use these together before changing AI guidance, routing, or workflow-oriented skills:
 
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.codex/AGENTS.md`
+- `.codex/skills/_shared/codex-execution-contract.md`
+- `docs/ai/codex/memory-system.md`
+- `.codex/memory/index.yml`
+- `.github/copilot-instructions.md`
+- `.github/agents/implementation-assurance-agent.md`
+- `.github/workflows/README.md`
+- `.claude/skills/_shared/project-context.md`
+- `.agents/skills/_shared/project-context.md`
 - `README.md`
 - `docs/README.md`
 - `docs/start/README.md`
 - `docs/product/README.md`
 - `docs/product/meridian-design-document.md`
+- `docs/architecture/meridian-development-intelligence-framework.md`
+- `docs/architecture/meridian-vision.md`
+- `docs/architecture/meridian-domain-model.md`
+- `docs/domain/README.md`
+- `docs/ai/context/README.md`
 - `docs/engineering/README.md`
 - `docs/operators/README.md`
 - `docs/documentation-ownership.md`
@@ -78,9 +99,9 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
   whose code or README hashes need documentation review, then use `--stale-only` source README
   sync/render commands when only outdated docs should be touched.
 - Use `python3 build/scripts/docs/validate-doc-hashes.py --summary` to detect code/docs drift for
-  registered modules. Refresh `docs/source/generated/source-hash-manifest.json` with
-  `python3 build/scripts/docs/validate-doc-hashes.py --write --summary` only after source README
-  and registry alignment is reviewed.
+  registered modules. Refresh reviewed stale module entries with
+  `python3 build/scripts/docs/validate-doc-hashes.py --write-module <MODULE_ID> --summary`;
+  reserve broad `--write --summary` for a full accepted-baseline review.
 - Source READMEs may include conditional sections for plans, end-user value, benchmarks and
   performance, operational evidence, security or credential handling, API/contract notes, and
   migration/archive notes when those sections add real module-specific context.
@@ -96,20 +117,29 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
-pwsh ./scripts/dev/test-wpf-dev.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
-make test
+gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
+GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
+nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
+
 Prefer the narrowest validation command that matches the files being changed.
+When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
+unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
+tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
+`tests/` plus `dotnet_filter` to keep the remote run scoped to the failing slice.
 
 For Codex skill, catalog, prompt, docs-automation, or AI workflow changes, prefer this deterministic
 validation stack before broad build or test runs:
 
 ```bash
-make ai-codex-skills-check
 python build/scripts/docs/check-codex-skills.py --summary
+python build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/validate-skill-packages.py
 python build/scripts/docs/validate-roadmap-registry.py --summary

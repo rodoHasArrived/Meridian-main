@@ -1,0 +1,164 @@
+name: Targeted Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: GitHub-hosted runner.
+        required: true
+        type: choice
+        default: ubuntu-latest
+        options:
+          - ubuntu-latest
+          - windows-latest
+      configuration:
+        description: .NET build configuration.
+        required: true
+        default: Release
+      dotnet_project:
+        description: Repo-relative .NET test project path under tests/.
+        required: true
+        default: tests/Meridian.Tests/Meridian.Tests.csproj
+      dotnet_filter:
+        description: dotnet test --filter expression for the exact failing slice.
+        required: true
+      enable_windows_targeting:
+        description: Pass EnableWindowsTargeting=true to dotnet.
+        required: true
+        type: boolean
+        default: true
+      enable_full_wpf_build:
+        description: Pass EnableFullWpfBuild=true to dotnet.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: targeted-test-${{ github.ref }}-${{ inputs.runner }}-${{ github.run_id }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  targeted:
+    name: targeted-dotnet on ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-targeted-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-targeted-
+            ${{ runner.os }}-nuget-
+
+      - name: Run targeted .NET tests
+        shell: pwsh
+        env:
+          DOTNET_PROJECT: ${{ inputs.dotnet_project }}
+          DOTNET_FILTER: ${{ inputs.dotnet_filter }}
+          DOTNET_CONFIGURATION: ${{ inputs.configuration }}
+          ENABLE_WINDOWS_TARGETING: ${{ inputs.enable_windows_targeting }}
+          ENABLE_FULL_WPF_BUILD: ${{ inputs.enable_full_wpf_build }}
+        run: |
+          $project = $env:DOTNET_PROJECT.Replace('\', '/').Trim()
+          $configuration = $env:DOTNET_CONFIGURATION.Trim()
+          $filter = $env:DOTNET_FILTER.Trim()
+
+          if ($project -notmatch '^tests/[A-Za-z0-9._/-]+\.(csproj|fsproj)$' -or $project.Contains('..')) {
+            throw "Unsupported dotnet_project '$project'. Use a repo-relative .NET test project under tests/, for example tests/Meridian.Tests/Meridian.Tests.csproj."
+          }
+          if (-not (Test-Path -LiteralPath $project)) {
+            throw "dotnet_project does not exist: $project"
+          }
+          if ($configuration -notmatch '^[A-Za-z0-9._-]+$') {
+            throw "Unsupported configuration '$configuration'."
+          }
+          if ($filter -eq '') {
+            throw "dotnet_filter is required so Targeted Test runs the exact failing slice instead of a broad test project."
+          }
+          if ($filter -notmatch '^[A-Za-z0-9_ .,:&|!<>=~()''"+\-\[\]\\/]+$') {
+            throw "Unsupported dotnet_filter '$filter'. Use a normal dotnet test filter expression for the failing slice."
+          }
+          $normalizedFilter = $filter -replace '\s+', ''
+          if ($normalizedFilter -in @('*', 'Category!=Integration', 'Category!=Performance', 'Category!=Integration&Category!=Performance')) {
+            throw "dotnet_filter '$filter' is too broad for Targeted Test. Provide a class, method, trait, or fully qualified name slice."
+          }
+          if ($normalizedFilter -notmatch '(?<![!<>])(?:=|~)') {
+            throw "dotnet_filter '$filter' must include a positive class, method, trait, or fully qualified name selector."
+          }
+
+          $props = @("/p:EnableWindowsTargeting=$env:ENABLE_WINDOWS_TARGETING")
+          if ($env:ENABLE_FULL_WPF_BUILD -eq 'true') {
+            $props += '/p:EnableFullWpfBuild=true'
+          }
+
+          & dotnet restore $project @props
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $testArgs = @(
+            'test',
+            $project,
+            '-c',
+            $configuration,
+            '--no-restore',
+            '--filter',
+            $filter,
+            '--logger',
+            'trx;LogFilePrefix=targeted',
+            '--results-directory',
+            'artifacts/test-results/targeted-dotnet',
+            '--blame-hang',
+            '--blame-hang-timeout',
+            '10m'
+          )
+
+          & dotnet @testArgs @props
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Write summary
+        if: always()
+        shell: pwsh
+        env:
+          SUMMARY_RUNNER: ${{ inputs.runner }}
+          SUMMARY_DOTNET_PROJECT: ${{ inputs.dotnet_project }}
+          SUMMARY_DOTNET_FILTER: ${{ inputs.dotnet_filter }}
+        run: |
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### Targeted test run"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Runner: $env:SUMMARY_RUNNER"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- .NET project: $env:SUMMARY_DOTNET_PROJECT"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- .NET filter: $env:SUMMARY_DOTNET_FILTER"
+
+      - name: Upload targeted test artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: targeted-test-dotnet-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            artifacts/test-results/targeted-dotnet/
+          if-no-files-found: ignore
+          retention-days: 14

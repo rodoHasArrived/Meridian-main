@@ -9,12 +9,12 @@ describe("command palette view model", () => {
   it("marks the current workspace and setup anchor from the active route", () => {
     const model = buildCommandPaletteViewModel("/settings#alpaca-provider-setup");
 
-    expect(model.itemCountLabel).toBe("7 workspaces - 17 quick routes");
-    expect(model.commandListLabel).toBe("24 workstation commands");
-    expect(model.filteredItemCountLabel).toBe("24 commands available");
+    expect(model.itemCountLabel).toBe("7 workspaces - 18 quick routes");
+    expect(model.commandListLabel).toBe("25 workstation commands");
+    expect(model.filteredItemCountLabel).toBe("25 commands available");
     expect(model.commandGroups.map((group) => `${group.label}:${group.countLabel}`)).toEqual([
       "Workspaces:7 workspaces",
-      "Quick routes:17 quick routes"
+      "Quick routes:18 quick routes"
     ]);
     expect(model.activeWorkspaceLabel).toBe("Current: Settings");
     expect(model.routeSummary).toBe("Route to common operator workflows and canonical workspaces. Current: Settings.");
@@ -41,13 +41,13 @@ describe("command palette view model", () => {
       commandLabel: "Stay on Alpaca provider setup",
       active: true
     });
-    expect(model.filteredItems).toHaveLength(24);
+    expect(model.filteredItems).toHaveLength(25);
   });
 
   it("filters commands by workspace, route, status, and description text", () => {
     const model = buildCommandPaletteViewModel("/settings", undefined, {}, "preview portfolio");
 
-    expect(model.filteredItemCountLabel).toBe("1 of 24 commands match");
+    expect(model.filteredItemCountLabel).toBe("1 of 25 commands match");
     expect(model.filteredItems.map((item) => item.id)).toEqual(["portfolio"]);
     expect(model.commandGroups).toEqual([
       expect.objectContaining({
@@ -86,15 +86,15 @@ describe("command palette view model", () => {
       ]
     });
 
-    expect(model.itemCountLabel).toBe("2 focus actions - 7 workspaces - 17 quick routes");
-    expect(model.commandListLabel).toBe("26 workstation commands");
+    expect(model.itemCountLabel).toBe("2 focus actions - 7 workspaces - 18 quick routes");
+    expect(model.commandListLabel).toBe("27 workstation commands");
     expect(model.routeSummary).toBe(
       "Route to common operator workflows and canonical workspaces. Current: Data. 2 ranked focus actions available."
     );
     expect(model.commandGroups.map((group) => `${group.label}:${group.countLabel}`)).toEqual([
       "Focus actions:2 focus actions",
       "Workspaces:7 workspaces",
-      "Quick routes:17 quick routes"
+      "Quick routes:18 quick routes"
     ]);
     expect(model.initialFocusItemId).toBe("focus:work-item:brokerage-sync");
     expect(model.items[0]).toMatchObject({
@@ -162,10 +162,10 @@ describe("command palette view model", () => {
   it("exposes a searchable empty state when commands do not match", () => {
     const model = buildCommandPaletteViewModel("/settings", undefined, {}, "not-a-command");
 
-    expect(model.items).toHaveLength(24);
+    expect(model.items).toHaveLength(25);
     expect(model.filteredItems).toEqual([]);
     expect(model.commandGroups).toEqual([]);
-    expect(model.filteredItemCountLabel).toBe("0 of 24 commands match");
+    expect(model.filteredItemCountLabel).toBe("0 of 25 commands match");
     expect(model.searchDescribedBy).toBe("command-palette-filter-count command-palette-empty-state-detail");
     expect(model.emptyState).toEqual({
       id: "command-palette-empty-state",
@@ -227,9 +227,9 @@ describe("command palette view model", () => {
   it("keeps quick routes available when workspace metadata is missing", () => {
     const model = buildCommandPaletteViewModel("/trading", []);
 
-    expect(model.items).toHaveLength(17);
-    expect(model.commandListLabel).toBe("17 workstation commands");
-    expect(model.itemCountLabel).toBe("0 workspaces - 17 quick routes");
+    expect(model.items).toHaveLength(18);
+    expect(model.commandListLabel).toBe("18 workstation commands");
+    expect(model.itemCountLabel).toBe("0 workspaces - 18 quick routes");
     expect(model.routeSummary).toBe("Route to common operator workflows and canonical workspaces. No active workspace.");
     expect(model.initialFocusItemId).toBe("route:trading-readiness");
     expect(model.emptyState).toBeNull();
@@ -238,6 +238,7 @@ describe("command palette view model", () => {
   it("exposes family-office, operations-record, covered-call, provider, and price-alert route commands", () => {
     const familyOfficeModel = buildCommandPaletteViewModel("/portfolio/family-office", undefined, {}, "family office");
     const operationsRecordModel = buildCommandPaletteViewModel("/reporting/operations-record", undefined, {}, "operations record");
+    const exportsModel = buildCommandPaletteViewModel("/reporting/exports", undefined, {}, "exports");
     const coveredCallModel = buildCommandPaletteViewModel("/strategy/covered-call", undefined, {}, "covered call");
     const providerModel = buildCommandPaletteViewModel("/data/providers", undefined, {}, "provider catalog");
     const priceAlertsModel = buildCommandPaletteViewModel("/data/alerts", undefined, {}, "price alerts");
@@ -259,6 +260,16 @@ describe("command palette view model", () => {
       route: "/reporting/operations-record",
       statusLabel: "Current",
       commandLabel: "Stay on Operations record",
+      active: true
+    });
+
+    expect(exportsModel.filteredItems.map((item) => item.id)).toContain("route:reporting-exports");
+    expect(exportsModel.items.find((item) => item.id === "route:reporting-exports")).toMatchObject({
+      kind: "route",
+      label: "Exports",
+      route: "/reporting/exports",
+      statusLabel: "Current",
+      commandLabel: "Stay on Exports",
       active: true
     });
 
@@ -518,8 +529,8 @@ describe("command palette view model", () => {
       }
     });
 
-    expect(model.itemCountLabel).toBe("7 workspaces - 17 quick routes - 1 preset - 3 workflow actions");
-    expect(model.commandListLabel).toBe("28 commands");
+    expect(model.itemCountLabel).toBe("7 workspaces - 18 quick routes - 1 preset - 3 workflow actions");
+    expect(model.commandListLabel).toBe("29 commands");
     expect(model.backendStatusLabel).toBe("3 workflow actions - 1 preset");
     expect(model.items.find((item) => item.id === "workflow:accounting-reconciliation-review:workflow.accounting.review-reconciliation-breaks")).toMatchObject({
       kind: "workflow",
@@ -1000,7 +1011,7 @@ describe("command palette view model", () => {
       workflowError: "Request failed for /api/workstation/workflows (503)"
     });
 
-    expect(model.items).toHaveLength(24);
+    expect(model.items).toHaveLength(25);
     expect(model.backendStatusLabel).toBe("Workflow library unavailable");
     expect(model.routeSummary).toBe(
       "Route through shared backend workflow commands. Current: Settings. Workflow library unavailable; local route commands remain available."

@@ -44,8 +44,9 @@ public partial class PaneHostViewModel : BindableBase
         }
 
         EnsurePaneCapacity(paneIndex + 1);
-        _assignedPageTags[paneIndex] = NormalizePageTagForStorage(pageTag);
-        SetActivePane(paneIndex);
+        var normalizedIndex = Math.Clamp(paneIndex, 0, SelectedLayout.PaneCount - 1);
+        _assignedPageTags[normalizedIndex] = NormalizePageTagForStorage(pageTag);
+        SetActivePane(normalizedIndex);
     }
 
     public string? GetAssignedPageTag(int paneIndex) =>

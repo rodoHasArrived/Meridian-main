@@ -45,12 +45,10 @@ docs/
 │   ├── copilot/                 # Copilot-specific guides
 │   └── ai-known-errors.md       # Recurring AI mistakes — check before every task
 ├── architecture/                # System architecture docs
-├── audits/                      # Code review and audit reports
 ├── development/                 # Developer guides
 ├── diagrams/                    # Architecture diagrams (DOT, PlantUML, PNG, SVG)
 │   └── uml/                     # PlantUML sequence/state/activity diagrams
 ├── docfx/                       # DocFX documentation generator config
-├── evaluations/                 # Feature and platform evaluations
 ├── examples/                    # Provider template examples
 ├── generated/                   # Auto-generated docs (do not edit by hand)
 │   ├── interfaces.md            # Extracted interface documentation
@@ -58,11 +56,9 @@ docs/
 │   ├── provider-registry.md     # Provider registry
 │   ├── repository-structure.md  # Repository structure
 │   └── workflows-overview.md    # GitHub Actions workflow overview
-├── getting-started/             # Getting-started index (README.md)
 ├── integrations/                # External integration docs
 ├── operations/                  # Operator runbooks
 ├── plans/                       # Implementation roadmaps and blueprints
-├── providers/                   # Data provider documentation
 ├── reference/                   # Reference material
 ├── security/                    # Security notes
 └── status/                      # Project status and planning
@@ -122,9 +118,9 @@ User-facing documentation for operating the system.
 **Files:**
 
 - `HELP.md` - Complete user guide with FAQ and troubleshooting
-- `getting-started/README.md` - Quick start guide for new users
-- `operations/operator-runbook.md` - Operations guide for production
-- `operations/deployment.md` - Deployment instructions
+- `start/README.md` - Quick start guide for new users
+- `operators/README.md` - Operations guide for production
+- `operators/deployment-packaging.md` - Deployment and packaging instructions
 - `development/provider-implementation.md` - How to implement new providers
 
 **When to Update:**
@@ -154,19 +150,19 @@ Technical documentation about system design.
 - Component interactions modified
 - Technology stack changes
 
-### 3. Providers (`docs/providers/`)
+### 3. Providers (`docs/operators/` and `docs/reference/`)
 
 Documentation for market data providers.
 
 **Files:**
 
-- `data-sources.md` - Available data sources with status
-- `interactive-brokers-setup.md` - IB TWS/Gateway configuration
-- `interactive-brokers-free-equity-reference.md` - IB API technical reference
-- `alpaca-setup.md` - Alpaca provider setup
-- `backfill-guide.md` - Historical data backfill guide
-- `provider-comparison.md` - Provider feature comparison
-- `stocksharp-connectors.md` - StockSharp connector guide
+- `docs/operators/provider-credentials.md` - provider credential and setup workflow
+- `docs/operators/provider-onboarding-interactive-brokers.md` - IB TWS/Gateway onboarding
+- `docs/operators/provider-onboarding-alpaca.md` - Alpaca onboarding
+- `docs/operators/provider-backfill-operations.md` - historical data backfill operations
+- `docs/reference/provider-capability-matrix.md` - provider feature comparison
+- `docs/reference/provider-integration-status.md` - current provider status
+- `archive/docs/providers/` - historical setup and comparison source material
 
 **When to Update:**
 
@@ -175,20 +171,18 @@ Documentation for market data providers.
 - Setup procedure modifications
 - Provider status changes
 
-### 4. Status (`docs/status/`)
+### 4. Status and Roadmap (`docs/status/`, `docs/roadmap/`, and `docs/product/`)
 
 Project status, roadmap, and planning.
 
 **Files:**
 
-- `production-status.md` - Production readiness assessment
-- `IMPROVEMENTS.md` - Implemented and planned improvements
-- `FEATURE_INVENTORY.md` - Feature inventory and roadmap
-- `ROADMAP.md` - Project roadmap
-- `ROADMAP_NOW_NEXT_LATER_2026_03_25.md` - Now/Next/Later roadmap snapshot
+- `docs/product/README.md` - stakeholder capability and evidence posture
+- `docs/roadmap/README.md` and `docs/roadmap/data/*.yml` - registry-owned roadmap truth
+- `docs/roadmap/generated/ROADMAP_SUMMARY.md` - generated roadmap summary
 - `CHANGELOG.md` - Version change summaries
 - `TODO.md` - Pending work items
-- `health-dashboard.md` - Auto-generated health dashboard
+- `doc-health-dashboard.md` - Auto-generated health dashboard
 - `metrics-dashboard.md` - Auto-generated metrics dashboard
 
 **When to Update:**
@@ -357,10 +351,10 @@ Maintain consistency across documentation:
 
 **Checklist:**
 
-- [ ] Update `docs/getting-started/README.md` if user-facing
+- [ ] Update `docs/start/README.md` if user-facing
 - [ ] Update `docs/HELP.md` if configurable or affects user workflow
 - [ ] Update `docs/architecture/overview.md` if architectural impact
-- [ ] Add to `docs/status/IMPROVEMENTS.md` as implemented
+- [ ] Update `docs/product/README.md` or the roadmap registry if capability posture changes
 - [ ] Update root `README.md` if significant feature
 - [ ] Add examples and code snippets
 - [ ] Update diagrams if component structure changed
@@ -393,9 +387,9 @@ Maintain consistency across documentation:
 
 **Checklist:**
 
-- [ ] Create or update setup guide in `docs/providers/`
-- [ ] Update `docs/providers/data-sources.md` with provider status
-- [ ] Update `docs/providers/provider-comparison.md`
+- [ ] Create or update setup guidance in `docs/operators/provider-*.md`
+- [ ] Update provider status in `docs/reference/provider-integration-status.md`
+- [ ] Update capability comparison in `docs/reference/provider-capability-matrix.md`
 - [ ] Document configuration options
 - [ ] Provide connection examples
 - [ ] Document data format and limitations
@@ -406,9 +400,9 @@ Maintain consistency across documentation:
 
 **Checklist:**
 
-- [ ] Update `docs/status/production-status.md` for readiness
-- [ ] Update `docs/status/IMPROVEMENTS.md` for implemented features
-- [ ] Update `docs/status/FEATURE_INVENTORY.md` for roadmap
+- [ ] Update `docs/product/README.md` for readiness posture
+- [ ] Update `docs/roadmap/data/*.yml` for durable roadmap changes
+- [ ] Regenerate roadmap/status views when registry data changes
 - [ ] Document known issues and workarounds
 - [ ] Update completion status of features
 
@@ -643,7 +637,7 @@ markdown-link-check docs/**/*.md
 
 **Files to Update:**
 
-1. `docs/providers/new-provider-setup.md` (create new)
+1. `docs/operators/provider-onboarding-new-provider.md` (create new)
 
    ````markdown
    # New Provider Setup Guide
@@ -677,15 +671,15 @@ markdown-link-check docs/**/*.md
    Common issues...
    ````
 
-2. `docs/providers/data-sources.md` - Add entry to provider table
-3. `docs/providers/provider-comparison.md` - Add comparison row
-4. `docs/configuration.md` - Add configuration section
+2. `docs/reference/provider-integration-status.md` - Add entry to provider status
+3. `docs/reference/provider-capability-matrix.md` - Add comparison row
+4. `docs/reference/environment-variables.md` or `docs/reference/appsettings-schema.md` - Add configuration section
 5. `docs/architecture/provider-management.md` - Document integration approach
 6. `docs/README.md` - Add to provider documentation list
 
 ### Example 2: Documenting a Configuration Option
 
-**In `docs/configuration.md`:**
+**In `docs/reference/appsettings-schema.md`:**
 
 ````markdown
 ### StorageBufferSize
@@ -795,5 +789,6 @@ Your documentation updates are successful when:
 
 - **2026-01-08:** Initial creation of documentation agent instructions
 - **2026-03-27:** Added navigation index, Trigger on, Standard Workflow, Plans section, `docs/generated/` directory, AI sub-guides table, Build & Validation Commands section, `make` targets, `ai-repo-updater` commands; renumbered Key Documentation Areas; updated status files list
+- **2026-06-20:** Updated provider, start, operator, reference, and roadmap routes after legacy docs folders were archived.
 
-**Last Updated:** 2026-03-27
+**Last Updated:** 2026-06-20

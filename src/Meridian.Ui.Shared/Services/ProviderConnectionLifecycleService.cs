@@ -19,6 +19,7 @@ public sealed class ProviderConnectionLifecycleService
     private readonly ConfigStore _configStore;
     private readonly IHttpClientFactory? _httpClientFactory;
     private readonly IReadOnlyList<IAccountingSystemProvider> _accountingSystemProviders;
+    private readonly IProviderSetupRegistry _setupRegistry;
     private readonly ILogger<ProviderConnectionLifecycleService> _logger;
 
     public ProviderConnectionLifecycleService(
@@ -26,13 +27,15 @@ public sealed class ProviderConnectionLifecycleService
         ConfigStore configStore,
         ILogger<ProviderConnectionLifecycleService> logger,
         IHttpClientFactory? httpClientFactory = null,
-        IEnumerable<IAccountingSystemProvider>? accountingSystemProviders = null)
+        IEnumerable<IAccountingSystemProvider>? accountingSystemProviders = null,
+        IProviderSetupRegistry? setupRegistry = null)
     {
         _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory;
         _accountingSystemProviders = accountingSystemProviders?.ToArray() ?? [];
+        _setupRegistry = setupRegistry ?? new ProviderSetupRegistry(DefaultProviderSetupHandlers.Create());
     }
 
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsAsync(CancellationToken ct = default)
@@ -57,7 +60,7 @@ public sealed class ProviderConnectionLifecycleService
     {
         ArgumentNullException.ThrowIfNull(request);
         var descriptor = RequireDescriptor(providerId);
-        var credentials = request.Credentials ?? new Dictionary<string, string?>();
+        var credentials = NormalizeCredentialFields(descriptor, request.Credentials ?? new Dictionary<string, string?>());
 
         await _credentialStore.SaveAsync(
             new ProviderCredentialSaveRequest(
@@ -240,7 +243,43 @@ public sealed class ProviderConnectionLifecycleService
         }
     }
 
-    private static ProviderConnectionRowDto BuildRow(
+    private static IReadOnlyDictionary<string, string?> NormalizeCredentialFields(
+        ProviderCredentialCatalogEntry descriptor,
+        IReadOnlyDictionary<string, string?> credentials)
+    {
+        var allowedFields = descriptor.RequiredFields.ToDictionary(
+            static field => field.Name,
+            static field => field.Name,
+            StringComparer.OrdinalIgnoreCase);
+        var normalized = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        var unknownFields = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (key, value) in credentials)
+        {
+            var trimmedKey = key?.Trim();
+            if (string.IsNullOrWhiteSpace(trimmedKey))
+            {
+                continue;
+            }
+
+            if (!allowedFields.TryGetValue(trimmedKey, out var canonicalName))
+            {
+                unknownFields.Add(trimmedKey);
+                continue;
+            }
+
+            normalized[canonicalName] = value;
+        }
+
+        if (unknownFields.Count > 0)
+        {
+            throw new ProviderCredentialValidationException(descriptor.ProviderId, unknownFields.ToArray());
+        }
+
+        return normalized;
+    }
+
+    private ProviderConnectionRowDto BuildRow(
         ProviderCredentialCatalogEntry descriptor,
         ProviderCredentialStoreStatus status,
         ProviderMetrics? metrics)
@@ -248,6 +287,8 @@ public sealed class ProviderConnectionLifecycleService
         var health = ResolveHealth(status, metrics);
         var lastSuccessfulAt = status.LastSuccessfulAt ?? (metrics?.IsConnected == true ? metrics.Timestamp : null);
         var lastFailureAt = status.LastFailureAt ?? (metrics is { IsConnected: false, ConnectionFailures: > 0 } ? metrics.Timestamp : null);
+
+        var setupDescriptor = ResolveSetupDescriptor(descriptor);
 
         return new ProviderConnectionRowDto(
             ProviderId: descriptor.ProviderId,
@@ -268,8 +309,8 @@ public sealed class ProviderConnectionLifecycleService
             AffectedWorkflows: descriptor.AffectedWorkflows ?? [],
             RecommendedAction: ResolveRecommendedAction(descriptor, status, health),
             ActionHref: descriptor.ResolvedActionHref,
-            CredentialFields: ProviderCredentialCatalog.BuildCredentialFields(descriptor),
-            EnvironmentOptions: ProviderCredentialCatalog.BuildEnvironmentOptions(descriptor));
+            CredentialFields: setupDescriptor.AcceptedCredentialFields,
+            EnvironmentOptions: setupDescriptor.EnvironmentOptions);
     }
 
     private static ProviderContinuityHealthDto ResolveHealth(
@@ -349,7 +390,8 @@ public sealed class ProviderConnectionLifecycleService
     {
         var warnings = new List<string>
         {
-            "Credentials were saved to the encrypted local Meridian store; user environment variables were not changed."
+            "Credentials were saved to the encrypted local Meridian store; user environment variables were not changed.",
+            "Rotation metadata was recorded; verify the provider before routing dependent workflows."
         };
         if (status.Environment?.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase) == true)
         {
@@ -377,6 +419,10 @@ public sealed class ProviderConnectionLifecycleService
     private static ProviderCredentialCatalogEntry RequireDescriptor(string providerId)
         => ProviderCredentialCatalog.Find(providerId)
            ?? throw new ArgumentException($"Provider '{providerId}' is not in the provider credential catalog.", nameof(providerId));
+
+    private ProviderSetupDescriptor ResolveSetupDescriptor(ProviderCredentialCatalogEntry descriptor)
+        => _setupRegistry.Find(descriptor.ProviderId)?.Descriptor
+           ?? new GenericReadOnlyDataProviderSetupHandler(descriptor.ProviderId).Descriptor;
 
     private static string AlpacaTradingApiEndpoint(string environment)
         => environment.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)

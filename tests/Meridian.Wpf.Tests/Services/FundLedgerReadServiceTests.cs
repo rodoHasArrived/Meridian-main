@@ -131,7 +131,15 @@ public sealed class FundLedgerReadServiceTests
         entitySlice.LedgerGroupId.Should().Be(context.FirstEntityScopeId);
         entitySlice.Journal.Should().HaveCount(4);
         entitySlice.TrialBalance.Should().Contain(line =>
-            string.Equals(line.FinancialAccountId, context.FirstAccountId.ToString("D"), StringComparison.OrdinalIgnoreCase));
+            string.Equals(line.FinancialAccountId, context.FirstAccountId.ToString("D"), StringComparison.OrdinalIgnoreCase) &&
+            line.Dimensions != null &&
+            line.Dimensions.FundId == "alpha-fund" &&
+            line.Dimensions.EntityId == context.FirstEntityScopeId &&
+            line.Dimensions.AccountId == context.FirstAccountId.ToString("D"));
+        entitySlice.Journal.Should().Contain(line =>
+            line.Dimensions != null &&
+            line.Dimensions.FundId == "alpha-fund" &&
+            line.Dimensions.EntityId == context.FirstEntityScopeId);
         entitySlice.Metadata.Should().NotBeNull();
         entitySlice.Metadata!["ledgerKey"].Should().Be(entitySlice.LedgerKey);
 
@@ -167,6 +175,9 @@ public sealed class FundLedgerReadServiceTests
             line.AccountName == "Securities" &&
             line.Symbol == "AAPL" &&
             line.FinancialAccountId == context.FirstAccountId.ToString("D") &&
+            line.Dimensions != null &&
+            line.Dimensions.FundId == "alpha-fund" &&
+            line.Dimensions.AccountId == context.FirstAccountId.ToString("D") &&
             line.Balance == 200m);
         snapshot.Entities.Should().ContainSingle().Which.Key.Should().Be(context.FirstEntityScopeId);
         snapshot.Sleeves.Should().ContainSingle().Which.Key.Should().Be(context.FirstSleeveScopeId);

@@ -383,7 +383,8 @@ public sealed record LedgerSummary(
     [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
-    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 /// <summary>
 /// Shared trial-balance row for workstation ledger views.
@@ -403,7 +404,8 @@ public sealed record LedgerTrialBalanceLine(
     [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
-    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 /// <summary>
 /// Shared journal row for workstation audit surfaces.
@@ -422,7 +424,8 @@ public sealed record LedgerJournalLine(
     [property: JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null,
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
-    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null);
+    [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 /// <summary>
 /// Comparison row used when reviewing multiple runs side by side.

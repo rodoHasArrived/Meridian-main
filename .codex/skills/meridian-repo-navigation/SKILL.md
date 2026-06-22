@@ -93,5 +93,6 @@ Non-trigger examples:
 ## Output Standards
 
 - Name the subsystem, first files, first docs, likely tests, and recommended next skill.
+- Include owner files, first docs, narrowest lane, recommended skill, and handoff when the answer is a routing packet.
 - Keep orientation concise and avoid implementation plans unless the user asks for planning.
 - Distinguish verified routes from inferred routes when evidence is incomplete.

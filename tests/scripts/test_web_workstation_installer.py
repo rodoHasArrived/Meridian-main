@@ -515,6 +515,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertEqual(parse.returncode, 0, parse.stderr)
 
         smoke_script = SMOKE_SCRIPT_PATH.read_text(encoding="utf-8")
+        install_script = SCRIPT_PATH.read_text(encoding="utf-8")
         self.assertIn("install.ps1", smoke_script)
         self.assertIn('"WebWorkstation"', smoke_script)
         self.assertIn("-WebInstallRoot", smoke_script)
@@ -524,6 +525,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("Meridian.exe", smoke_script)
         self.assertIn("--mode workstation --http-port", smoke_script)
         self.assertIn("MDC_AUTH_MODE = \"optional\"", smoke_script)
+        self.assertIn("MDC_PACKAGED_BUILD = \"true\"", install_script)
         self.assertIn("MDC_USERS = $null", smoke_script)
         self.assertIn("-MaximumRedirection 0", smoke_script)
         self.assertIn("/healthz", smoke_script)

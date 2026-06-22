@@ -4,25 +4,29 @@
 > routing, runtime semantics, or key architecture guidance changes; mirrored Codex and GitHub AI
 > surfaces should follow from here.
 >
-> **Last verified:** 2026-06-04
+> **Last verified:** 2026-06-20
 > **Primary grounding docs:** `README.md`, `docs/roadmap/data/*.yml`,
-> `docs/roadmap/generated/ROADMAP_SUMMARY.md`, `docs/product/meridian-design-document.md`
+> `docs/roadmap/generated/ROADMAP_SUMMARY.md`, `docs/product/meridian-design-document.md`,
+> `docs/architecture/meridian-development-intelligence-framework.md`
 
 ---
 
 ## Platform Snapshot
 
-- Meridian is a .NET 10 fund-management and trading-platform codebase in active delivery.
+- Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery; fund management is a first-class specialization, not the root model for every workflow.
 - The repo already contains strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery focus is productization around the W1-W5 operational record baseline: data
-  confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset
-  operational coverage, and governed reports across `Trading`, `Portfolio`, `Accounting`,
-  `Reporting`, `Strategy`, `Data`, and `Settings`.
-- Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment
-  execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
-  client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work
-  directly strengthens that operational record workflow.
+- Current delivery direction is evidence-led: use current source, the roadmap registry, and the
+  design charter to decide whether a prior baseline, named productization target, or later expansion
+  lane is the right scope.
+- Treat prior baselines and named productization targets as roadmap/status evidence, not development
+  ceilings.
+- Expansion lanes such as Backtesting Studio, live-readiness, treasury payment execution,
+  alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, and
+  no-code workflow design can proceed when current source, roadmap, or user direction supports them.
+- MDIF is the required context spine for broad generation, domain modeling, workflow design, and
+  architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
+  dictionary pages, and context packs before implementation.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
 - `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
@@ -51,6 +55,11 @@ Read these before changing skills, agents, or workflow guidance:
 - `docs/roadmap/generated/ROADMAP_SUMMARY.md`
 - `docs/roadmap/generated/roadmap-register.md`
 - `docs/product/meridian-design-document.md`
+- `docs/architecture/meridian-development-intelligence-framework.md`
+- `docs/architecture/meridian-vision.md`
+- `docs/architecture/meridian-domain-model.md`
+- `docs/domain/README.md`
+- `docs/ai/context/README.md`
 - `docs/product/README.md`
 - `docs/status/README.md` for migration routing only
 
@@ -67,12 +76,19 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
-pwsh ./scripts/dev/test-wpf-dev.ps1
-make test
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
+gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
+GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
+nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
+
 Prefer the narrowest validation command that matches the touched files.
+When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
+unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
+tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
+`tests/` plus `dotnet_filter`.
 
 ---
 

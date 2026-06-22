@@ -76,8 +76,10 @@ public sealed class ExecutionSimulationOrchestrator(HistoricalDataQueryService q
             foreach (var record in ordered)
             {
                 var tod = TimeOnly.FromDateTime(record.Timestamp.UtcDateTime);
-                if (request.WindowStart.HasValue && tod < request.WindowStart.Value) continue;
-                if (request.WindowEnd.HasValue && tod > request.WindowEnd.Value) continue;
+                if (request.WindowStart.HasValue && tod < request.WindowStart.Value)
+                    continue;
+                if (request.WindowEnd.HasValue && tod > request.WindowEnd.Value)
+                    continue;
 
                 queueState = queueState.Advance(record);
                 if (queueState.IsL2Event)

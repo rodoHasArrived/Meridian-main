@@ -15,6 +15,9 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
+- **Dead-code cleanup inventory:** [Dead-Code Inventory](dead-code-inventory.md)
+- **Free development tools:** [Free Development Tools](free-development-tools.md)
+- **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
 ## Architecture and Module Boundaries
 
@@ -36,12 +39,41 @@ Canonical ownership rule:
 
 Prefer the narrowest proof lane for the files you change.
 
+For local .NET tests, prefer the contention-aware runner over raw `dotnet test`:
+
+```powershell
+python build/python/cli/buildctl.py validation-status --summary
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
+```
+
+The runner serializes local validation, detects active repo-owned build/test/compiler processes,
+builds before testing to avoid stale `--no-build` assemblies, uses isolated `artifacts/bin` and
+`artifacts/obj` roots by default, and writes run evidence under `.ai/validation-runs/`.
+
+For local pre-PR proof across the highest-value free tools, use:
+
+```powershell
+pwsh ./scripts/dev/run-local-quality.ps1
+pwsh ./scripts/dev/run-local-quality.ps1 -IncludePlaywrightSmoke
+```
+
+When local CPU, memory, disk, package restore, or MSBuild lock contention makes validation
+unreliable, push the branch and run the manual GitHub-hosted
+`Targeted Test` workflow before retrying broad local scripts. It accepts a repo-relative .NET test
+project under `tests/` plus a required positive class, method, trait, or fully qualified name filter.
+
+```powershell
+gh workflow run targeted-test.yml --ref <branch> `
+  -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj `
+  -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+```
+
 ### Most common default lanes
 
 ```powershell
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --queue
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
@@ -58,11 +90,14 @@ dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore /p:EnableWindows
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
-make desktop-test-dev
 dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter "Category!=Integration" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 ```
+
+If GNU Make is installed, `make desktop-test-dev` is a convenience wrapper for the WPF development
+validation script. In Windows shells where `where.exe make` finds nothing, use the `pwsh` command
+above directly.
 
 Use `-AllowConcurrentDotnet` only when the active repo-owned build/test processes have been
 inspected and intentional overlap is acceptable. The validation script serializes WPF builds by

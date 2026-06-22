@@ -1,0 +1,58 @@
+{
+  "skill_name": "meridian-codex-skill-builder",
+  "last_updated": "2026-06-17",
+  "evals": [
+    {
+      "id": 1,
+      "description": "Architecture skill package has required Codex surfaces",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/skill_package_audit.py",
+        "--skill",
+        "meridian-code-architecture",
+        "--json"
+      ],
+      "prompt": "Use $meridian-codex-skill-builder to audit the meridian-code-architecture package for scripts, evals, route coverage, and catalogs.",
+      "assertions": [
+        "Must require SKILL.md and OpenAI metadata",
+        "Must require eval fixtures and deterministic scripts",
+        "Must require Codex profile, config, catalogs, and route coverage"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "summary.skill_count": 1
+        }
+      }
+    },
+    {
+      "id": 2,
+      "description": "Contract governance skill package has required Codex surfaces",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/skill_package_audit.py",
+        "--skill",
+        "meridian-contract-governance",
+        "--json"
+      ],
+      "prompt": "Use $meridian-codex-skill-builder to audit the meridian-contract-governance package for scripts, evals, route coverage, and catalogs.",
+      "assertions": [
+        "Must require SKILL.md and OpenAI metadata",
+        "Must require eval fixtures and deterministic scripts",
+        "Must require Codex profile, config, catalogs, and route coverage"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "summary.skill_count": 1
+        }
+      }
+    }
+  ]
+}

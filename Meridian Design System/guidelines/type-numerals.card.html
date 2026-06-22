@@ -1,0 +1,25 @@
+<!-- @dsCard group="Type" viewport="700x150" name="Numerals" subtitle="Tabular nums, fixed decimals, signed deltas, UTC timestamps" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text-primary); font-family: var(--font-data); }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  th { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-muted); text-align: right; padding: 4px 14px 7px; border-bottom: 1px solid var(--border); }
+  th:first-child, td:first-child { text-align: left; padding-left: 0; }
+  td { text-align: right; padding: 5px 14px; }
+  .up { color: var(--green-dim); } .dn { color: var(--red-dim); }
+</style>
+</head>
+<body>
+  <table>
+    <thead><tr><th>Symbol</th><th>Last</th><th>Δ</th><th>Δ%</th><th>As of (UTC)</th></tr></thead>
+    <tbody>
+      <tr><td>AAPL</td><td>201.1200</td><td class="up">+3.6400</td><td class="up">+1.84%</td><td>2026-06-09 20:00:00Z</td></tr>
+      <tr><td>MSFT</td><td>404.8800</td><td class="dn">-6.1400</td><td class="dn">-1.49%</td><td>2026-06-09 20:00:00Z</td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

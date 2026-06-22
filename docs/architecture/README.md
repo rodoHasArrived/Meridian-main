@@ -35,6 +35,9 @@ This directory contains documentation about the system's design, architectural d
 | Document | Description |
 | -------- | ----------- |
 | [Overview](overview.md) | High-level system architecture |
+| [Meridian Development Intelligence Framework](meridian-development-intelligence-framework.md) | AI development intelligence framework for project constitution, domain dictionaries, context packs, templates, reviews, and context exports |
+| [Meridian Vision](meridian-vision.md) | Product scope boundaries and long-term module intent for AI-assisted development |
+| [Meridian Domain Model](meridian-domain-model.md) | Compact operational-record domain model and invariants for generated code, tests, UI, and reports |
 | [Project Structure](project-structure.md) | Maintained repository inventory and cleanup classification |
 | [Module Map](module-map.md) | Layer-oriented project map and dependency boundary quick reference |
 | [Design Document Adaptation](design-document-adaptation.md) | Executable adaptation contract for the design document's scope, contexts, modules, workspaces, screen inventory, and deferrals |
@@ -46,15 +49,18 @@ This directory contains documentation about the system's design, architectural d
 | [Desktop Layers](desktop-layers.md) | WPF desktop application architecture |
 | [Why This Architecture](why-this-architecture.md) | Design rationale and tradeoffs |
 | [Provider Management](provider-management.md) | Provider abstraction and failover |
+| [Provider Integration Manifest Runtime](provider-integration-manifest-runtime.md) | No-code provider integration manifests, generic connector runtime, raw payload retention, mapping, validation, quarantine, and certified trading boundary |
 | [Domain Boundaries](domains.md) | Domain model responsibilities |
 | [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |
 | [Crystallized Storage Format](crystallized-storage-format.md) | Storage format specification |
 | [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, Security Master expected accounting, and accounting architecture notes |
+| [Event Accounting Architecture](event-accounting-architecture.md) | Event-backed accounting posting commands, immutable journal facts, evidence references, and storage validation |
 | [Strategy Builder Integration](strategy-builder-integration.md) | Browser Strategy Builder contracts, JSONL draft storage, QuantScript proof execution, and prototype boundary |
 | [Strategy Engine Foundation](strategy-engine-foundation.md) | Shared Strategy Engine definitions, run validation, data dependency policy, evidence manifests, and workstation API surface |
 | [Environment Designer Runtime Projection and WPF Admin Surface](environment-designer-runtime-projection-and-wpf-admin-surface.md) | Draft/publish/rollback architecture for company umbrella environment design |
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
 | [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | WPF workstation shell UX pattern and guidance for WPF workspace shells |
+| [Core Extensibility Model](core-extensibility-model.md) | Stable financial operations core objects, configurable tenant layers, governed foundations, and current contract/service seams |
 | [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |
 | [Evidence Workflow Fabric](evidence-workflow-fabric.md) | Cross-workflow evidence packets, lineage, validation, and manifest-only export architecture |
 | [Stakeholder Product Charter](../product/meridian-design-document.md) | Product-facing strategy and capability model used for current direction framing |

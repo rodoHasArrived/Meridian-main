@@ -53,13 +53,22 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 
 ## First Help Commands
 
+Plain Windows/PowerShell path:
+
 ```powershell
-make help
 dotnet run --project src/Meridian/Meridian.csproj -- --help
 python build/python/cli/buildctl.py --help
 ```
 
-If `make` is unavailable, use the underlying `dotnet`, `npm`, or `python` command shown in [Engineering](../engineering/README.md).
+Optional Make wrapper path:
+
+```powershell
+where.exe make
+make help
+```
+
+If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `npm`, `pwsh`, or
+`python` command shown in [Engineering](../engineering/README.md).
 
 ## Choose A Launch Path
 
@@ -75,20 +84,39 @@ If `make` is unavailable, use the underlying `dotnet`, `npm`, or `python` comman
 | Headless collector | `dotnet run --project src/Meridian/Meridian.csproj -- --mode headless` | Use for non-UI collection scenarios. |
 
 The WPF desktop startup screen prompts for the environment-backed Meridian operator profile. Configure
-`MDC_USERS` for multi-user login, or use the legacy `MDC_USERNAME` / `MDC_PASSWORD` pair for a
-single local admin. Development launches can continue without configured credentials when auth mode
-is optional; production launches fail closed until a user profile is configured. After sign-in, the
-desktop shell header shows the active operator and its `Log out` command returns to the same startup
-credential prompt without persisting the password in WPF config files.
+`MDC_USERS` with `passwordHash` values for multi-user login, or use the legacy `MDC_USERNAME` /
+`MDC_PASSWORD_HASH` bootstrap pair for a single local admin. Development launches can continue
+without configured credentials when auth mode is optional; production, packaged, and customer builds
+fail closed until a user profile is configured. After sign-in, the desktop shell header shows the
+active operator and its `Log out` command returns to the same startup credential prompt without
+persisting the password in WPF config files.
 
 ## First Validation Paths
 
 Use the narrowest command that covers the surface you touched:
 
+For local .NET tests, use the contention-aware runner when another agent, desktop shell, or test
+lane may be active:
+
+```powershell
+python build/python/cli/buildctl.py validation-status --summary
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
+```
+
+If local machine limits make the relevant proof lane unreliable, push the branch and use the
+manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts. The .NET lane
+requires a repo-relative test project under `tests/` plus `dotnet_filter` so it runs the failing
+slice instead of a whole test project. Use a positive class, method, trait, or fully qualified name
+selector rather than a negative-only or broad CI filter:
+
+```powershell
+gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+```
+
 ```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
 dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --queue
 npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/check-ai-handoff.py --output docs/ai/generated/ai-handoff-checklist-report.md

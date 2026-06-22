@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Posting Controls"
+  short_description: "Review accounting posting gates"
+  default_prompt: "Use $meridian-accounting-posting-controls to review Meridian accounting posting controls, approval gates, period locks, idempotency, and reversal/rebook safeguards."

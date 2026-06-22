@@ -25,9 +25,12 @@ maintenance prompt belongs and how to avoid duplicate guidance.
   need the same context.
 - Keep `AGENTS.md` and `CLAUDE.md` short. Link to maintained docs instead of
   pasting generated repository trees.
-- Put developer workflow commands in `archive/docs/developer/`; point prompts there.
-- Put archive and cleanup rules in `docs/operations/cleanup-and-maintenance.md`;
-  point prompts there.
+- Put developer workflow commands in `docs/start/README.md` and
+  `docs/engineering/README.md`; use `archive/docs/developer/` only for
+  historical context.
+- Put archive and cleanup rules in `docs/documentation-ownership.md` and
+  `docs/documentation-inventory.md`; use `docs/operations/cleanup-and-maintenance.md`
+  only while it remains a migration input.
 - Put design guidance in `docs/engineering/README.md` under the UI and
   workstation design rules lane, and point prompts there instead of creating
   screen-specific design notes.

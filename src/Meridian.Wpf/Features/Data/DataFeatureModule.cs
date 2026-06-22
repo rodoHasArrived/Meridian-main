@@ -1,12 +1,21 @@
 using Meridian.Core.Config;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.DataQuality;
+using Meridian.Ui.Services.Services;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Copy;
-using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Shell.Services;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using DataWorkspaceShellPresentationService = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPresentationService;
+using DataWorkspaceShellPage = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPage;
+using DataWorkspaceShellSnapshotService = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellSnapshotService;
+using DataWorkspaceShellViewModel = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel;
+using IDataWorkspaceShellPresentationService = Meridian.Wpf.Features.Data.Shell.IDataWorkspaceShellPresentationService;
+using IDataWorkspaceShellSnapshotService = Meridian.Wpf.Features.Data.Shell.IDataWorkspaceShellSnapshotService;
 
 namespace Meridian.Wpf.Features.Data;
 
@@ -29,7 +38,7 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         ShellPageRegistryBuilder.Page<DataSourcesPage>("DataSources", "Data sources", "Review source connectivity and feed coverage.", "data", "Operations Queue", "\uEC05", 60, ShellNavigationVisibilityTier.Secondary, ["sources", "connectivity", "review"], ["Provider", "ProviderHealth"]),
         ShellPageRegistryBuilder.Page<ProviderHealthPage>("ProviderHealth", "Provider health", "Inspect provider reachability, degraded states, and recovery guidance.", "data", "Operations Queue", "\uEB51", 65, ShellNavigationVisibilityTier.Secondary, ["provider health", "reachability"], ["Provider", "DataSources", "CollectionSessions", "DataQuality"]),
         ShellPageRegistryBuilder.Page<DataQualityPage>("DataQuality", "Data quality", "Track validation signals, integrity issues, and remediation state.", "data", "Assurance", "\uE73E", 70, ShellNavigationVisibilityTier.Secondary, ["quality", "validation"], ["ProviderHealth", "ArchiveHealth", "Diagnostics"]),
-        ShellPageRegistryBuilder.Page<SecurityMasterPage>("SecurityMaster", "Security master", "Review reference data, listings, and security lifecycle readiness.", "data", "Assurance", "\uE72E", 80, ShellNavigationVisibilityTier.Secondary, ["reference data", "security"], ["Symbols", "SymbolMapping", "DataQuality"]),
+        ShellPageRegistryBuilder.Page<SecurityMasterPage>("SecurityMaster", "Security master", "Review reference data, listings, and security lifecycle readiness.", "data", "Assurance", "\uE72E", 80, ShellNavigationVisibilityTier.Secondary, ["reference data", "security"], ["SecurityInstrumentExplorer", "Symbols", "SymbolMapping", "DataQuality"]),
         ShellPageRegistryBuilder.Page<SymbolMappingPage>("SymbolMapping", "Symbol mapping", "Reconcile vendor symbols with Meridian identifiers.", "data", "Catalog", "\uE8AB", 90, ShellNavigationVisibilityTier.Secondary, ["mapping", "vendor", "reconcile"], ["Symbols", "SecurityMaster"]),
         ShellPageRegistryBuilder.Page<SymbolStoragePage>("SymbolStorage", "Symbol storage", "Review symbol persistence and storage layout.", "data", "Catalog", "\uEE94", 100, ShellNavigationVisibilityTier.Secondary, ["symbol storage", "persistence", "review"], ["Symbols", "Storage"]),
         ShellPageRegistryBuilder.Page<ScheduleManagerPage>("Schedules", "Schedules", "Configure collection and maintenance schedules.", "data", "Platform", "\uE916", 110, ShellNavigationVisibilityTier.Secondary, ["schedule", "jobs", "configure"], ["Backfill", "CollectionSessions"]),
@@ -55,6 +64,33 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddWorkspaceScoped<IDataWorkspaceShellPresentationService, DataWorkspaceShellPresentationService>();
         services.AddTransient<DataWorkspaceShellViewModel>();
         services.AddTransient<DataWorkspaceShellPage>();
+        services.AddTransient<DataCalendarService>();
+        services.AddTransient<SecurityMasterViewModel>();
+        services.AddTransient<QualityArchivePage>();
+        services.AddTransient<ClusterStatusPage>();
+        services.AddSingleton<BackfillProviderConfigService>(_ => BackfillProviderConfigService.Instance);
+        services.AddSingleton<IBackfillProviderConfigAuditReader>(sp => sp.GetRequiredService<BackfillProviderConfigService>());
+        services.AddSingleton<BackfillCheckpointService>(_ => BackfillCheckpointService.Instance);
+        services.AddSingleton<BackfillApiService>();
+        services.AddSingleton<CollectionSessionService>(_ => CollectionSessionService.Instance);
+        services.AddSingleton<ScheduleManagerService>(_ => ScheduleManagerService.Instance);
+        services.AddSingleton<Meridian.Wpf.Services.StorageService>(_ => Meridian.Wpf.Services.StorageService.Instance);
+        services.AddSingleton<WorkspaceStateTokenStore>();
+        services.AddSingleton<BatchExportSchedulerService>();
+        services.AddSingleton<ActivityFeedService>(_ => ActivityFeedService.Instance);
+        services.AddSingleton<CommandPaletteService>(_ => CommandPaletteService.Instance);
+        services.AddSingleton<SymbolManagementService>(_ => SymbolManagementService.Instance);
+        services.AddSingleton<BackfillService>(_ => BackfillService.Instance);
+        services.AddSingleton<IDataQualityApiClient, DataQualityApiClient>();
+        services.AddSingleton<IDataQualityPresentationService, DataQualityPresentationService>();
+        services.AddTransient<IDataQualityRefreshService, DataQualityRefreshService>();
+        services.AddTransient<BackfillViewModel>();
+        services.AddTransient<ProviderViewModel>();
+        services.AddTransient<DataQualityViewModel>();
+        services.AddTransient<CollectionSessionViewModel>();
+        services.AddTransient<WatchlistViewModel>();
+        services.AddSingleton<IQualityArchiveStore, QualityArchiveStore>();
+        services.AddTransient<QualityArchiveViewModel>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;

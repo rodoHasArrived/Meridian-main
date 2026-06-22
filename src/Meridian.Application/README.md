@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.Application
@@ -42,6 +42,73 @@ and UI presentation concerns in their owning layers.
   export service now lives in `Meridian.DataIntegration.Etl`. The ETL job-definition store and
   SFTP publisher port contracts live in `Meridian.Contracts.Etl`, and the local JSON-backed
   job-definition store implementation lives in `Meridian.Storage.Etl`.
+- `Integrations/` - provider integration template catalog, setup persistence, dry-run
+  orchestration, and activation readiness. The catalog seeds the first no-code template pack for
+  manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.
+  The setup service saves draft manifests and connection instances through the Storage-owned
+  integration manifest store, preserving tenant partitioning and returning readiness blockers before
+  dry runs or activation. The OpenAPI import service parses OpenAPI/Swagger JSON into tenant-scoped
+  draft `OpenApiRest` manifests, imports endpoint definitions, response record paths, query
+  parameters, and schema-backed mapping suggestions, and keeps trading actions blocked behind
+  certified-adapter activation readiness. The manual CSV dry-run service consumes contract-owned manifests and the
+  Storage-owned integration manifest store, parses operator-uploaded samples, applies configured
+  field mappings and safe transforms, writes raw payload evidence, stages accepted records,
+  quarantines rejected records, and saves sync-run summaries without promoting directly into
+  Portfolio, Security Master, or Ledger stores. Staged record lineage prefers an explicit
+  `sourceRecordId` when configured, then falls back to capability-specific canonical identifiers
+  such as provider transaction id, provider account id, CUSIP/ISIN/security identifiers, and
+  account-security-as-of composites before using row ordinals. The dry-run and quarantine-replay
+  staging paths fail closed on duplicate dedupe keys inside the same run, quarantining later
+  duplicate records instead of letting repeated provider identities enter reconciliation staging.
+  They also quarantine mapped money values that have an amount without a currency, or an invalid
+  three-letter currency code, so financial values cannot reach reconciliation staging with
+  ambiguous denomination. Position and holding records that carry quantity, price, and market
+  value are also checked before staging; if `quantity * price.amount` differs from
+  `marketValue.amount` by more than one cent, the record stays in quarantine for operator review.
+  When a workstation endpoint supplies tenant context,
+  setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
+  provider-integration store before reading or writing manifests, connections, and retained
+  evidence. The schema-drift service compares retained raw payloads against configured records
+  paths, required response paths, and required mapping source paths, returning a pause
+  recommendation when critical provider-shape drift would make the capability unsafe to sync. The
+  sync-planning service reads the manifest schedule plus retained sync-run history and returns
+  per-capability due, not-due, manual-only, unsupported, or activation-blocked planning state
+  without starting provider calls. The sync-orchestration service composes that plan with the REST
+  dry-run runtime, skips blocked/manual/not-due capabilities, and starts due read-only REST,
+  OpenAPI REST, or hybrid capabilities while retaining raw payloads and writing only staging or
+  quarantine evidence. For endpoint chains such as accounts before positions, orchestration can run
+  or reuse the dependency endpoint, read the dependency output path from retained raw payload
+  evidence, and fan out child endpoint calls with the resolved path parameter. The REST dry-run
+  service executes a configured read-only endpoint through an injectable transport, resolves
+  path/query parameters, follows cursor pagination, retains raw responses before mapping, and uses
+  the same staging and quarantine boundary for accepted and rejected records. The default
+  `HttpClient` transport supplies the concrete HTTP execution path while tests can still inject
+  deterministic transports. The monitoring service composes
+  connection-level monitor and sync-run history read models from durable sync-run summaries,
+  integration staging counts, quarantine counts, and retained validation issues so workstation
+  surfaces can show dry-run evidence without reading storage internals. The staging review service
+  returns accepted records, reconciliation-ready counts, validation warning groups, and capability
+  summaries from durable staging records without promoting them to canonical stores. The identity
+  resolution preview service inspects those staged records, extracts provider account and security
+  identifiers, resolves active Security Master matches when the query service is registered, and
+  returns account/security review blockers before any canonical promotion. The promotion-readiness
+  service composes that identity posture into a read-only reconciliation staging preview, labeling
+  accepted rows as ready, review-required, or blocked without writing Portfolio, Security Master,
+  Ledger, or Accounting records. The reconciliation handoff service rechecks that readiness,
+  persists only operator-approved ready rows with approval evidence, actor, timestamp, and
+  account/security identity, and still leaves Portfolio, Security Master, Ledger, and Accounting
+  mutation to later reconciliation-owned promotion. Handoff requests are idempotent by staging
+  record, so retrying a row that already has handoff evidence is blocked and surfaced as a
+  retained-history review issue. The quarantine
+  review service groups rejected records by operator-safe issue code and records durable review decisions
+  without mutating the retained raw rejected records. The quarantine replay service remaps reviewed
+  rejected records after mapping changes, writes a replay raw payload, stages accepted records, and
+  re-quarantines records that still fail validation. The activation-readiness service evaluates
+  those manifests before enablement, blocking unresolved required mappings, missing approval
+  evidence, and order-preview/place/cancel capabilities unless they use a certified provider
+  adapter with production-write activation policy. The activation service
+  persists manifest and connection `Active` state only after readiness passes with retained
+  approval evidence, leaving failed activation attempts in draft state for operator review.
 - Canonicalization composition consumes `Meridian.DataIntegration.Canonicalization` contracts,
   provider condition-code mapping, venue normalization, parity metrics, the default
   `EventCanonicalizer`, and the Data Integration-owned `CanonicalizingPublisher` decorator.
@@ -66,7 +133,10 @@ and UI presentation concerns in their owning layers.
   `DirectLendingSecurityMasterReferenceDto`; the projector re-resolves that reference through the
   authoritative Security Master query service and then stamps server-derived Security Master id,
   symbol, approval, provenance, active status, and direct-lending ledger-mapping evidence on central
-  ledger writes before the posting guard accepts direct-lending instrument lines.
+  ledger writes before the posting guard accepts direct-lending instrument lines. The outbox
+  dispatcher bounds environment-driven batch size and poll interval values before polling the
+  database-backed outbox, so an invalid override cannot disable the worker or turn it into a
+  zero-delay retry loop.
 - Financial Operations integration - application composition registers the
   `Meridian.FinancialOperations.OperationsContinuity` services that now own account-period
   continuity workflows, including the aggregate, command workflow service, status derivation,
@@ -98,14 +168,18 @@ and UI presentation concerns in their owning layers.
   `Meridian.FinancialOperations.Banking`; Application composition wires the module service but does
   not own the banking workflow state. Financial Operations ledger policy/projection services now
   own accounting-basis policy lookup and ledger write metadata stamping; application commands and
-  composition consume those services. Ledger posting commands also enforce line-level Security Master symbol, identity,
+  composition consume those services. Direct-lending event projections also attach deterministic idempotency, typed source evidence, ledger-book scope from the resolved posting period, and an accounting posting command before handing loan journal impact to durable storage. Ledger posting commands also enforce line-level Security Master symbol, identity,
   explicit approval reference, provenance, and ledger-mapping evidence for every instrument-bearing
   journal line before the durable journal can be appended, including securities-style account lines
   that omit symbol metadata. Candidate and line-level provenance must reference the resolved
   Security Master id carried by the journal metadata or instrument line, line status must be
   re-read from the server-side Security Master and still be active, and instrument line symbols
   must match the journal-level Security Master symbol before posting. Ledger-mapping references must also identify the same resolved symbol or Security Master
-  id instead of using a generic account mapping token.
+  id instead of using a generic account mapping token. Direct-lending journal projection now stamps
+  every generated ledger line with the resolved ledger book, borrower legal-entity/counterparty,
+  Security Master instrument, and loan account dimensions before durable storage receives the
+  posting candidate, so downstream trial balance, journal, close, and reporting filters do not have
+  to infer direct-lending scope from journal-level tags.
 - Operations Continuity workflow DTO projection also derives the shared accounting-record summary
   from server-owned workflow state. The summary covers retained source records, normalized
   activity, reconciliation history, ledger evidence, approvals, report-pack lineage, export

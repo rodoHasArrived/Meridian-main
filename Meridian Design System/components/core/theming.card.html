@@ -1,0 +1,84 @@
+<!-- @dsCard group="Components" viewport="1000x600" name="Theming Layer" subtitle="White-label customization: accent colors, density (compact/cozy/spacious), brand colors, fonts" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theming Layer</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #ECEFF3); font-family: var(--font-body);">
+  <div style="max-width: 1000px; margin: 0 auto;">
+    <h2 style="margin: 0 0 24px 0; font-size: 22px; color: var(--text-primary, #22272E);">Theming Layer</h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+      <div>
+        <h3 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: var(--text-muted, #6E7781); text-transform: uppercase; letter-spacing: 0.03em;">Brand Accent</h3>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button onclick="document.documentElement.removeAttribute('data-brand')" style={{ padding: "8px 14px", background: "var(--theme-accent)", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Default (Teal)</button>
+          <button onclick="document.documentElement.setAttribute('data-brand', 'indigo')" style={{ padding: "8px 14px", background: "#4F46E5", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Indigo</button>
+          <button onclick="document.documentElement.setAttribute('data-brand', 'emerald')" style={{ padding: "8px 14px", background: "#10B981", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Emerald</button>
+          <button onclick="document.documentElement.setAttribute('data-brand', 'rose')" style={{ padding: "8px 14px", background: "#E11D48", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Rose</button>
+          <button onclick="document.documentElement.setAttribute('data-brand', 'cyan')" style={{ padding: "8px 14px", background: "#06B6D4", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Cyan</button>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: var(--text-muted, #6E7781); text-transform: uppercase; letter-spacing: 0.03em;">Density</h3>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="document.body.removeAttribute('data-theme-density')" style={{ padding: "8px 14px", background: "var(--bg-active)", color: "var(--accent)", border: "1px solid var(--accent)", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Cozy (default)</button>
+          <button onclick="document.body.setAttribute('data-theme-density', 'compact')" style={{ padding: "8px 14px", background: "white", color: "var(--text-primary)", border: "1px solid var(--border)", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Compact</button>
+          <button onclick="document.body.setAttribute('data-theme-density', 'spacious')" style={{ padding: "8px 14px", background: "white", color: "var(--text-primary)", border: "1px solid var(--border)", borderRadius: 6, cursor: "pointer", fontSize: 12, fontWeight: 600 }}>Spacious</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="preview"></div>
+  </div>
+
+  <script type="text/babel">
+    const { Button, Badge, Input } = window.MeridianDesignSystem_4f61be;
+
+    function Preview() {
+      return (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <div style={{ background: "white", border: "1px solid var(--border)", borderRadius: 8, padding: 16 }}>
+            <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Button Styles</h4>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Button>Ghost</Button>
+              <Button variant="primary">Primary</Button>
+              <Button variant="link">Link</Button>
+            </div>
+          </div>
+
+          <div style={{ background: "white", border: "1px solid var(--border)", borderRadius: 8, padding: 16 }}>
+            <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Badge Variants</h4>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <Badge variant="default">Default</Badge>
+              <Badge variant="success">Success</Badge>
+              <Badge variant="warning">Warning</Badge>
+              <Badge variant="error">Error</Badge>
+            </div>
+          </div>
+
+          <div style={{ background: "white", border: "1px solid var(--border)", borderRadius: 8, padding: 16 }}>
+            <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Input Field</h4>
+            <Input placeholder="Type something…" />
+          </div>
+
+          <div style={{ background: "white", border: "1px solid var(--border)", borderRadius: 8, padding: 16 }}>
+            <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Color Palette</h4>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+              <div style={{ height: 40, background: "var(--theme-accent)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 11, fontWeight: 600 }}>Accent</div>
+              <div style={{ height: 40, background: "var(--green)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 11, fontWeight: 600 }}>Green</div>
+              <div style={{ height: 40, background: "var(--red)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 11, fontWeight: 600 }}>Red</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("preview")).render(<Preview />);
+  </script>
+</body>
+</html>

@@ -28,6 +28,7 @@ public sealed class AccountingPolicyServiceTests
         var projectionService = new AccountingBasisProjectionService(policyService);
         var periodId = Guid.NewGuid();
         var aggregateId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
         var sourceEventId = Guid.NewGuid();
         var sourceJournalEntryId = Guid.NewGuid();
 
@@ -39,6 +40,7 @@ public sealed class AccountingPolicyServiceTests
             EffectiveDate: new DateOnly(2026, 5, 13),
             SourceEventId: sourceEventId,
             SourceJournalEntryId: sourceJournalEntryId,
+            LedgerBookId: ledgerBookId,
             RuleId: "direct-lending.daily-accrual",
             RuleVersion: "rule-v2"));
 
@@ -52,6 +54,7 @@ public sealed class AccountingPolicyServiceTests
         result.Write.RuleVersion.Should().Be("rule-v2");
         result.Write.SourceEventId.Should().Be(sourceEventId);
         result.Write.SourceJournalEntryId.Should().Be(sourceJournalEntryId);
+        result.Write.LedgerBookId.Should().Be(ledgerBookId);
         result.Write.PostingKind.Should().Be(LedgerPostingKindDto.Originating);
     }
 

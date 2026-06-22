@@ -1,8 +1,360 @@
 {
+  "dry_run": false,
+  "profile": "core",
+  "selected_scripts": [
+    "scan-todos",
+    "validate-docs-structure",
+    "generate-structure-docs",
+    "generate-health-dashboard",
+    "validate-examples",
+    "check-ai-inventory",
+    "check-ai-handoff-strict",
+    "check-ai-contract-drift",
+    "prompt-route-linter",
+    "handoff-packet-generator",
+    "check-handoff-packet-schema",
+    "check-ai-routing-parity",
+    "check-mode-escalation",
+    "generate-coverage",
+    "generate-pilot-readiness-dashboard",
+    "generate-paper-replay-reliability-dashboard",
+    "generate-evidence-continuity-dashboard",
+    "generate-governance-readiness-dashboard",
+    "generate-api-contract-coverage-dashboard",
+    "generate-workflow-manifest"
+  ],
   "results": [
-    {"name":"prompt-route-linter","status":"success"},
-    {"name":"handoff-packet-generator","status":"success"},
-    {"name":"check-handoff-packet-schema","status":"success"},
-    {"name":"check-ai-handoff-strict","status":"success"}
+    {
+      "name": "scan-todos",
+      "command": [
+        "python3",
+        "build/scripts/docs/scan-todos.py",
+        "--output",
+        "docs/status/TODO.md",
+        "--json-output",
+        "docs/status/todo-scan-results.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/TODO.md",
+      "error": null
+    },
+    {
+      "name": "validate-docs-structure",
+      "command": [
+        "python3",
+        "build/scripts/docs/validate-docs-structure.py",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "generate-structure-docs",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-structure-docs.py",
+        "--output",
+        "docs/generated/repository-structure.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/generated/repository-structure.md",
+      "error": null
+    },
+    {
+      "name": "generate-health-dashboard",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-health-dashboard.py",
+        "--output",
+        "docs/status/doc-health-dashboard.md",
+        "--json-output",
+        "docs/status/doc-health-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/doc-health-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "validate-examples",
+      "command": [
+        "python3",
+        "build/scripts/docs/validate-examples.py",
+        "--output",
+        "docs/status/example-validation.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/example-validation.md",
+      "error": null
+    },
+    {
+      "name": "check-ai-inventory",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-ai-inventory.py",
+        "--output",
+        "docs/status/ai-inventory-report.md",
+        "--json-output",
+        "docs/status/ai-inventory-report.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/ai-inventory-report.md",
+      "error": null
+    },
+    {
+      "name": "check-ai-handoff-strict",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-ai-handoff.py",
+        "--strict",
+        "--output",
+        "docs/status/ai-handoff-checklist-report.md",
+        "--json-output",
+        "docs/status/ai-handoff-checklist-report.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/ai-handoff-checklist-report.md",
+      "error": null
+    },
+    {
+      "name": "check-ai-contract-drift",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-ai-contract-drift.py",
+        "--canonical",
+        "docs/ai/contract-policy.json",
+        "--mirror",
+        "docs/ai/copilot/contract-policy.mirror.json",
+        "--mirror",
+        "docs/ai/claude/contract-policy.mirror.json",
+        "--routing-rules",
+        "docs/ai/codex/prompt-route-rules.json",
+        "--routing-host-doc",
+        "docs/ai/codex/README.md",
+        "--routing-host-doc",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "prompt-route-linter",
+      "command": [
+        "python3",
+        "build/scripts/docs/prompt-route-linter.py",
+        "--summary",
+        "--prompt",
+        "provider adapter integration",
+        "--json-output",
+        "docs/status/prompt-route-lint-report.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/prompt-route-lint-report.json",
+      "error": null
+    },
+    {
+      "name": "handoff-packet-generator",
+      "command": [
+        "python3",
+        "build/scripts/docs/handoff-packet-generator.py",
+        "--route-json",
+        "docs/status/prompt-route-lint-report.json",
+        "--scope",
+        "Docs automation generated handoff packet",
+        "--next-lane",
+        "implementation-assurance",
+        "--allow-incomplete",
+        "--suppress-changed-files",
+        "--model",
+        "docs-automation-profile",
+        "--input-tokens",
+        "1",
+        "--output-tokens",
+        "1",
+        "--estimated-cost-usd",
+        "0",
+        "--latency-ms",
+        "1",
+        "--validation",
+        "python build/scripts/docs/prompt-route-linter.py --summary::pass",
+        "--output",
+        "docs/status/ai-handoff-packet.md",
+        "--json-output",
+        "docs/status/ai-handoff-packet.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/ai-handoff-packet.json",
+      "error": null
+    },
+    {
+      "name": "check-handoff-packet-schema",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-handoff-packet-schema.py",
+        "--packet-json",
+        "docs/status/ai-handoff-packet.json",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-ai-routing-parity",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-ai-routing-parity.py",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-mode-escalation",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-mode-escalation.py",
+        "--route-json",
+        "docs/status/prompt-route-lint-report.json",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "generate-coverage",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-coverage.py",
+        "--output",
+        "docs/status/coverage-report.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/coverage-report.md",
+      "error": null
+    },
+    {
+      "name": "generate-pilot-readiness-dashboard",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-pilot-readiness-dashboard.py",
+        "--output",
+        "docs/status/pilot-readiness-dashboard.md",
+        "--json-output",
+        "docs/status/pilot-readiness-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/pilot-readiness-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-paper-replay-reliability-dashboard",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-paper-replay-reliability-dashboard.py",
+        "--output",
+        "docs/status/paper-replay-reliability-dashboard.md",
+        "--json-output",
+        "docs/status/paper-replay-reliability-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/paper-replay-reliability-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-evidence-continuity-dashboard",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-evidence-continuity-dashboard.py",
+        "--output",
+        "docs/status/evidence-continuity-dashboard.md",
+        "--json-output",
+        "docs/status/evidence-continuity-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/evidence-continuity-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-governance-readiness-dashboard",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-governance-readiness-dashboard.py",
+        "--output",
+        "docs/status/governance-readiness-dashboard.md",
+        "--json-output",
+        "docs/status/governance-readiness-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/governance-readiness-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-api-contract-coverage-dashboard",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-api-contract-coverage-dashboard.py",
+        "--output",
+        "docs/status/api-contract-coverage-dashboard.md",
+        "--json-output",
+        "docs/status/api-contract-coverage-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/api-contract-coverage-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-workflow-manifest",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-workflow-manifest.py"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/workflow-validation-summary.json",
+      "error": null
+    }
   ]
 }

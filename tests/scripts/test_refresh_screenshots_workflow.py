@@ -8,6 +8,7 @@ WEB_SCREENSHOT_CAPTURE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "web-scr
 DESKTOP_SCREENSHOT_CAPTURE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "desktop-screenshot-capture.yml"
 DESKTOP_WORKFLOW_RUNNER_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "desktop-workflow-runner.yml"
 RUN_DESKTOP_WORKFLOW_SCRIPT = REPO_ROOT / "scripts" / "dev" / "run-desktop-workflow.ps1"
+CAPTURE_DESKTOP_SCREENSHOTS_SCRIPT = REPO_ROOT / "scripts" / "dev" / "capture-desktop-screenshots.ps1"
 WEB_SCREENSHOT_ROUTES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-routes.json"
 WEB_SCREENSHOT_FIXTURES = REPO_ROOT / "scripts" / "dev" / "web-screenshot-fixtures.json"
 DESKTOP_WORKFLOWS = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
@@ -20,6 +21,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         cls.desktop_screenshot_workflow = DESKTOP_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
         cls.desktop_workflow_runner = DESKTOP_WORKFLOW_RUNNER_WORKFLOW.read_text(encoding="utf-8")
         cls.run_desktop_workflow_script = RUN_DESKTOP_WORKFLOW_SCRIPT.read_text(encoding="utf-8")
+        cls.capture_desktop_screenshots_script = CAPTURE_DESKTOP_SCREENSHOTS_SCRIPT.read_text(encoding="utf-8")
         cls.web_screenshot_routes = json.loads(WEB_SCREENSHOT_ROUTES.read_text(encoding="utf-8"))
         cls.web_screenshot_fixtures = json.loads(WEB_SCREENSHOT_FIXTURES.read_text(encoding="utf-8"))
         cls.desktop_workflows = json.loads(DESKTOP_WORKFLOWS.read_text(encoding="utf-8"))
@@ -50,6 +52,12 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertNotIn("continue-on-error: true", self.desktop_screenshot_workflow)
         self.assertIn("if: ${{ success() && inputs.commit == true }}", self.desktop_screenshot_workflow)
         self.assertIn("name: desktop-screenshots-${{ github.run_number }}", self.desktop_screenshot_workflow)
+
+    def test_desktop_screenshot_wrapper_uses_fresh_artifact_root_by_default(self) -> None:
+        self.assertIn("[string]$OutputRoot", self.capture_desktop_screenshots_script)
+        self.assertIn("capture-{0}-{1}", self.capture_desktop_screenshots_script)
+        self.assertIn("'-OutputRoot', $workflowArtifactRoot", self.capture_desktop_screenshots_script)
+        self.assertNotIn("'-OutputRoot', 'artifacts/desktop-workflows'", self.capture_desktop_screenshots_script)
 
     def test_desktop_workflow_runner_exposes_manual_capture_workflows(self) -> None:
         self.assertIn("manual-data", self.desktop_workflow_runner)

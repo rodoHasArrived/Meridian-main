@@ -11,17 +11,23 @@ using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Etl;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Plaid;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
 using Meridian.Instruments.AssetOperations;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
@@ -34,6 +40,7 @@ using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Extensibility;
 using Meridian.Ui.Shared.Services.Acceptance;
 using Meridian.Ui.Shared.Services.CoveredCall;
 using Meridian.Ui.Shared.Workflows;
@@ -68,8 +75,11 @@ public static class WorkstationServiceCollectionExtensions
         });
 
         services.AddHttpClient();
+        services.AddHttpContextAccessor();
         services.AddMemoryCache();
+        services.TryAddScoped<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
+        services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
         {
             services.TryAddSingleton(new ScopedAccessStoreOptions
@@ -133,6 +143,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<StrategyRunComparisonService>();
         services.TryAddSingleton<AuditTrailExplorerService>();
+        services.TryAddSingleton<IFinancialRecordExplorerSavedViewStore>(sp =>
+            new FileFinancialRecordExplorerSavedViewStore(
+                ResolveWorkstationDataDirectory(sp),
+                sp.GetRequiredService<ILogger<FileFinancialRecordExplorerSavedViewStore>>()));
+        services.TryAddSingleton<FinancialRecordExplorerReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
@@ -140,13 +155,33 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
+        foreach (var handler in DefaultProviderSetupHandlers.Create())
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IProviderSetupHandler), handler));
+        }
+        services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton<ProviderReadinessService>();
         services.TryAddSingleton<IQuickBooksOnlineConnectionStore, QuickBooksOnlineProviderCredentialConnectionStore>();
         services.AddHttpClient<IQuickBooksOnlineClient, QuickBooksOnlineHttpClient>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksOnlineAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
+        services.TryAddSingleton<IAccountingMigrationRunArtifactStore>(sp =>
+            new FileAccountingMigrationRunArtifactStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "migration-run-artifacts.json"),
+                sp.GetRequiredService<ILogger<FileAccountingMigrationRunArtifactStore>>()));
+        services.TryAddSingleton<IAccountingTenantAdministrationProfileStore>(sp =>
+            new FileAccountingTenantAdministrationProfileStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "tenant-administration-profiles.json"),
+                sp.GetRequiredService<ILogger<FileAccountingTenantAdministrationProfileStore>>()));
+        services.TryAddSingleton<IAccountingProductionCertificationProfileStore>(sp =>
+            new FileAccountingProductionCertificationProfileStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "production-certification-profiles.json"),
+                sp.GetRequiredService<ILogger<FileAccountingProductionCertificationProfileStore>>()));
+        services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
             new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp)));
@@ -155,6 +190,10 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<PlaidWorkstationService>();
         services.TryAddSingleton<IPlaidIngestionService>(sp => sp.GetRequiredService<PlaidWorkstationService>());
         services.TryAddSingleton<IPlaidTransferService>(sp => sp.GetRequiredService<PlaidWorkstationService>());
+        services.TryAddSingleton(sp => new BankFeedTransportService(
+            sp.GetRequiredService<IFundAccountService>(),
+            sp.GetServices<IEtlSourceReader>(),
+            sp.GetService<IPlaidIngestionService>()));
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
@@ -175,7 +214,6 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
-        services.TryAddSingleton<IReportingTemplateCatalog, DefaultReportingTemplateCatalog>();
         services.TryAddSingleton<ReportingRunStoreOptions>(sp =>
             new ReportingRunStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "runs")));
         services.TryAddSingleton<IReportingRunStore>(sp =>
@@ -201,8 +239,17 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportTemplateGovernanceStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
         services.TryAddSingleton<ReportTemplateRegistryService>();
+        services.TryAddSingleton<DefaultReportingTemplateCatalog>();
+        services.TryAddSingleton(sp =>
+            new GovernedReportingTemplateCatalog(
+                sp.GetRequiredService<DefaultReportingTemplateCatalog>(),
+                sp.GetRequiredService<ReportTemplateRegistryService>()));
+        services.TryAddSingleton<IReportingTemplateCatalog>(sp =>
+            sp.GetRequiredService<GovernedReportingTemplateCatalog>());
         services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<ReportPackDeliveryService>();
+        services.TryAddSingleton<ReportWriterDatasetSourceService>();
+        services.TryAddSingleton<ReportWriterGridArtifactService>();
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
             new ReportingOrchestrationService(
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
@@ -216,7 +263,13 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportingScheduleStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportingScheduleStore>>()));
         services.TryAddSingleton<ReportingRunCommandService>();
-        services.TryAddSingleton<ReportingScheduleService>();
+        services.TryAddSingleton(sp =>
+            new ReportingScheduleService(
+                sp.GetRequiredService<IReportingOrchestrationService>(),
+                sp.GetService<IReportingScheduleStore>(),
+                sp.GetService<ReportPackDeliveryService>(),
+                sp.GetService<GovernedReportingTemplateCatalog>(),
+                sp.GetService<ReportWriterDatasetSourceService>()));
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
@@ -254,6 +307,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
+        services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
+        services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
@@ -273,6 +328,13 @@ public static class WorkstationServiceCollectionExtensions
                 ? auditStore
                 : sp.GetRequiredService<FileAccountingConfigurationStore>());
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
+        services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
+            new AccountingPostingCandidatePostService(
+                sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
+                sp.GetService<ILedgerJournalStore>()));
+        services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
@@ -281,7 +343,23 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IManualJournalEntryDraftStore>(),
                 sp.GetRequiredService<IAccountingConfigurationService>(),
                 sp.GetRequiredService<IAccountingActionAuditStore>(),
-                sp.GetService<ContractSecurityMasterQueryService>()));
+                sp.GetService<ContractSecurityMasterQueryService>(),
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<ReportPackWorkflowService>(),
+                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>()));
+        services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
+            (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
+            new CapitalAccountWorkbenchService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetService<ReportPackWorkflowService>()));
+        services.TryAddSingleton<IPrivateCapitalFundEventCommandCenterService>(sp =>
+            new PrivateCapitalFundEventCommandCenterService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>()));
+        services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
+            new PrivateCapitalCloseCockpitService(
+                sp.GetService<IManualJournalEntryWorkbenchService>(),
+                sp.GetService<IOperationsContinuityWorkflowService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
@@ -293,14 +371,21 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<SecurityMasterExceptionCaseworkService>>()));
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService, ReconciliationApiService>();
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReconciliationRunService>()));
+                sp.GetService<IReconciliationRunService>(),
+                sp.GetService<IReconciliationBreakQueueRepository>()));
         services.TryAddSingleton<CollateralIngestionBuffer>();
         services.TryAddSingleton<CollateralExposureService>();
 
         services.AddWorkflowLibrary();
+        services.TryAddSingleton<IExtensibilityConfigurationStore>(sp =>
+            new FileExtensibilityConfigurationStore(
+                ResolveWorkstationDataDirectory(sp),
+                sp.GetRequiredService<ILogger<FileExtensibilityConfigurationStore>>()));
+        services.AddExtensibilityCatalog();
         services.AddEvidenceWorkflowFabric();
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();
         services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Integrations.IOmsIntegrationApiHandler, OmsIntegrationService>();

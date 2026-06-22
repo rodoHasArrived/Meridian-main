@@ -4,8 +4,13 @@ using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -26,6 +31,7 @@ public sealed class MainShellViewModelTests
         WorkstationOperatingContextService? operatingContextService = null,
         WorkspaceShellContextService? workspaceShellContextService = null,
         SettingsConfigurationService? settingsConfigurationService = null,
+        WorkstationWorkflowSummaryService? workflowSummaryService = null,
         IWorkstationOperatorInboxApiClient? operatorInboxClient = null)
     {
         var navigationService = NavigationService.Instance;
@@ -44,6 +50,7 @@ public sealed class MainShellViewModelTests
             fundContextService,
             operatingContextService,
             workspaceShellContextService,
+            workflowSummaryService,
             operatorInboxApiClient: operatorInboxClient,
             settingsConfigurationService: settingsConfigurationService);
     }
@@ -95,7 +102,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToStrategyWorkspace()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToHomeWorkspace()
     {
         WpfTestThread.Run(() =>
         {
@@ -103,8 +110,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("StrategyShell");
-            vm.CurrentPageTitle.Should().Be("Strategy Workspace");
+            vm.CurrentPageTag.Should().Be("HomeWorkspace");
+            vm.CurrentPageTitle.Should().Be("Home");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -571,9 +578,9 @@ public sealed class MainShellViewModelTests
     public void AuthenticatedSession_WhenSignedIn_ShouldExposeOperatorBannerState()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
-            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", null);
 
         var session = DesktopAuthenticationSessionTests.CreateSession("Production");
@@ -595,9 +602,9 @@ public sealed class MainShellViewModelTests
     public void LogoutCommand_WhenSignedIn_ShouldClearSessionAndRaiseLogoutRequest()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
-            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", null);
 
         var session = DesktopAuthenticationSessionTests.CreateSession("Production");
@@ -936,6 +943,60 @@ public sealed class MainShellViewModelTests
             vm.SecondaryWorkflowSummaries.Should().HaveCount(expectedSecondaryCount);
             vm.SecondaryWorkflowSummaries.Select(summary => summary.WorkspaceId).Should().NotContain("trading");
             vm.PrimaryWorkflowTargetText.Should().NotBe("Target page: -");
+        });
+    }
+
+    [Fact]
+    public void WorkflowSummaryPresentation_RequestsActiveAccountScopedFinancialOperations()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var accountId = Guid.Parse("6c8e1e09-2fa2-43e7-bdd2-c22c5d4c121a");
+            var gate = new object();
+            var fundAccountCalls = new List<Guid?>();
+            var operationsWorkflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+            operationsWorkflowService
+                .ListAsync(
+                    Arg.Any<Guid?>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<OperationsWorkflowStatusDto?>(),
+                    Arg.Any<CancellationToken>())
+                .Returns(callInfo =>
+                {
+                    lock (gate)
+                    {
+                        fundAccountCalls.Add(callInfo.ArgAt<Guid?>(0));
+                    }
+
+                    return Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>>(
+                        Array.Empty<OperationsContinuityWorkflowSummaryDto>());
+                });
+            using var vm = CreateMainPageViewModel(
+                workflowSummaryService: CreateWorkflowSummaryService(operationsWorkflowService));
+
+            vm.SelectedOperatingContext = new WorkstationOperatingContext
+            {
+                ScopeKind = OperatingContextScopeKind.Account,
+                ScopeId = accountId.ToString("D"),
+                AccountId = accountId.ToString("D"),
+                DisplayName = "Northwind Income Account",
+                DefaultWorkspaceId = "accounting",
+                DefaultLandingPageTag = "AccountingShell"
+            };
+            vm.RefreshPageCommand.Execute(null);
+
+            await WaitForConditionAsync(() =>
+            {
+                lock (gate)
+                {
+                    return fundAccountCalls.Contains(accountId);
+                }
+            });
+
+            lock (gate)
+            {
+                fundAccountCalls.Should().Contain(accountId);
+            }
         });
     }
 
@@ -1339,6 +1400,20 @@ public sealed class MainShellViewModelTests
         return service;
     }
 
+    private static WorkstationWorkflowSummaryService CreateWorkflowSummaryService(
+        IOperationsContinuityWorkflowService operationsWorkflowService)
+    {
+        var readService = new StrategyRunReadService(
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        return new WorkstationWorkflowSummaryService(
+            readService,
+            actionCatalog: WorkflowRegistry.CreateDefault(),
+            operationsContinuityWorkflowService: operationsWorkflowService);
+    }
+
     private static async Task WaitForConditionAsync(Func<bool> predicate, int timeoutMs = 5000)
     {
         var start = DateTime.UtcNow;
@@ -1395,5 +1470,77 @@ public sealed class MainShellViewModelTests
 
             return Task.FromResult(_inbox);
         }
+    }
+}
+
+public sealed class DemoTourServiceTests
+{
+    [Fact]
+    public void StartTour_EnablesFixtureModeAndNavigatesOrderedDemoWorkflow()
+    {
+        var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
+        navigationService.Initialize(new Frame());
+        var detector = FixtureModeDetector.Instance;
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        var service = new DemoTourService(detector, navigationService);
+
+        service.StartTour();
+
+        detector.IsFixtureMode.Should().BeTrue();
+        service.CurrentStepText.Should().Contain("1 of 6");
+        service.CurrentStep!.PageTag.Should().Be("DataShell");
+        navigationService.GetBreadcrumbs().First().PageTag.Should().Be("DataShell");
+
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("PortfolioShell");
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("FundReconciliation");
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("FundAuditTrail");
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("ReportingShell");
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("SettingsShell");
+        service.CanMoveNext.Should().BeFalse();
+    }
+
+    [Fact]
+    public void MainWindowStartDemoTourCommand_ShowsTourBannerAndSampleModeCopy()
+    {
+        var vm = MainShellViewModelTestsCreate.CreateMainWindowViewModelForDemoTour();
+
+        vm.StartDemoTourCommand.Execute(null);
+
+        vm.DemoTourVisibility.Should().Be(Visibility.Visible);
+        vm.DemoTourStepText.Should().Contain("Data/provider status");
+        vm.FixtureModeBannerVisibility.Should().Be(Visibility.Visible);
+        FixtureModeDetector.Instance.ModeLabel.Should().Contain("Demo data mode");
+    }
+}
+
+internal static class MainShellViewModelTestsCreate
+{
+    public static MainWindowViewModel CreateMainWindowViewModelForDemoTour()
+    {
+        var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
+        navigationService.Initialize(new Frame());
+        var detector = FixtureModeDetector.Instance;
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        var demoTour = new DemoTourService(detector, navigationService);
+        return new MainWindowViewModel(
+            ConnectionService.Instance,
+            navigationService,
+            NotificationService.Instance,
+            MessagingService.Instance,
+            ThemeService.Instance,
+            WatchlistService.Instance,
+            detector,
+            DesktopAuthenticationSessionTests.CreateSession("Development"),
+            Substitute.For<IStatusService>(),
+            demoTour);
     }
 }

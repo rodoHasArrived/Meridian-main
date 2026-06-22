@@ -1,4 +1,4 @@
 interface:
-  display_name: "Desktop Test Generation"
+  display_name: "Generate Desktop Tests"
   short_description: "Generate WPF view model and workflow tests"
   default_prompt: "Use $desktop-test-generation to add focused Meridian WPF tests for view models, commands, services, bindings, and workflow states."

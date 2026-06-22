@@ -11,6 +11,11 @@ public interface IWorkstationSecurityMasterApiClient
         string? fundProfileId,
         CancellationToken ct = default);
 
+    Task<InstrumentPassportDto?> GetInstrumentPassportAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct = default);
+
     Task<ApiResponse<BulkResolveSecurityMasterConflictsResult>> BulkResolveConflictsAsync(
         BulkResolveSecurityMasterConflictsRequest request,
         CancellationToken ct = default);
@@ -37,6 +42,20 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
         }
 
         return _apiClient.GetAsync<SecurityMasterTrustSnapshotDto>(endpoint, ct);
+    }
+
+    public Task<InstrumentPassportDto?> GetInstrumentPassportAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct = default)
+    {
+        var endpoint = $"/api/workstation/security-master/securities/{securityId}/passport";
+        if (!string.IsNullOrWhiteSpace(fundProfileId))
+        {
+            endpoint += $"?fundProfileId={Uri.EscapeDataString(fundProfileId.Trim())}";
+        }
+
+        return _apiClient.GetAsync<InstrumentPassportDto>(endpoint, ct);
     }
 
     public Task<ApiResponse<BulkResolveSecurityMasterConflictsResult>> BulkResolveConflictsAsync(

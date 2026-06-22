@@ -56,44 +56,79 @@
     </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="28,20,28,32" MaxWidth="1320">
-            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,20">
+            <Border Style="{StaticResource WorkspaceContextStripStyle}"
+                    Margin="0,0,0,16"
+                    AutomationProperties.AutomationId="FundLedgerActionStrip"
+                    AutomationProperties.Name="Fund Ledger Action Strip">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="460" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0" Margin="0,0,20,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <StackPanel Orientation="Horizontal">
-                            <Border Width="44" Height="44" CornerRadius="14"
-                                    Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
-                                    BorderBrush="{StaticResource WarningColorBrush}" BorderThickness="1" Margin="0,0,12,0">
-                                <TextBlock Text="&#xEE94;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="24" Foreground="{StaticResource WarningColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <StackPanel Grid.Column="0" Margin="0,0,18,0">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        <TextBlock Text="{Binding StatusText}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,10,0,0">
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding CurrentWorkbenchModeText}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                             </Border>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleStyle}" />
-                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
-                            </StackPanel>
-                        </StackPanel>
-                        <Border Grid.Row="1"
-                                Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="14"
-                                Margin="0,16,0,0">
-                            <StackPanel>
-                                <TextBlock Text="Operator Brief" Style="{StaticResource CardHeaderStyle}" />
-                                <TextBlock Text="{Binding OverviewStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
-                                <TextBlock Text="{Binding SecurityCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,10,0,0" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Border>
-                        <WrapPanel Grid.Row="2" Margin="0,16,0,0">
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding CurrentWorkbenchTitleText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="AccountingWorkbenchTitleText" />
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding SecurityCoverageText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                            </Border>
+                        </WrapPanel>
+                        <TextBlock Text="{Binding OverviewStatusText}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,8,0,0"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="FundLedgerActionStripState" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" MinWidth="520">
+                        <UniformGrid Columns="4" Margin="0,0,0,10">
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="Ledger As Of" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding AsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="Workspace" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding WorkspaceAsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="Open Breaks" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding OpenBreaksText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Recon Runs" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding ReconciliationRunsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                        <WrapPanel HorizontalAlignment="Right">
                             <Button Content="Accounting Home" Command="{Binding OpenAccountingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Accounts" Command="{Binding OpenAccountsCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Banking" Command="{Binding OpenBankingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
@@ -103,61 +138,9 @@
                             <Button Content="Switch Fund" Command="{Binding SwitchFundCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8" />
                             <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,0,8" />
                         </WrapPanel>
-                    </Grid>
-                    <Grid Grid.Column="1">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <UniformGrid Columns="2" Margin="0,0,0,12">
-                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,12">
-                                <StackPanel>
-                                    <TextBlock Text="Ledger As Of" Style="{StaticResource MetricLabelStyle}" />
-                                    <TextBlock Text="{Binding AsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="Workspace As Of" Style="{StaticResource MetricLabelStyle}" />
-                                    <TextBlock Text="{Binding WorkspaceAsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Open Breaks" Style="{StaticResource MetricLabelStyle}" />
-                                    <TextBlock Text="{Binding OpenBreaksText}" Style="{StaticResource MetricValueMonoStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkbenchMetricCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="Reconciliation Runs" Style="{StaticResource MetricLabelStyle}" />
-                                    <TextBlock Text="{Binding ReconciliationRunsText}" Style="{StaticResource MetricValueMonoStyle}" />
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
-                        <Border Grid.Row="1"
-                                Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
-                                BorderBrush="{StaticResource BorderSubtleBrush}"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="14">
-                            <StackPanel>
-                                <TextBlock Text="{Binding CurrentWorkbenchModeText}" Style="{StaticResource MetricLabelStyle}" />
-                                <TextBlock x:Name="AccountingWorkbenchTitleText"
-                                           Text="{Binding CurrentWorkbenchTitleText}"
-                                           Style="{StaticResource CardHeaderStyle}"
-                                           Margin="0,6,0,0"
-                                           AutomationProperties.AutomationId="AccountingWorkbenchTitleText" />
-                                <TextBlock Text="{Binding CurrentWorkbenchSubtitleText}"
-                                           Style="{StaticResource CardDescriptionStyle}"
-                                           Margin="0,6,0,0"
-                                           TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Border>
-                    </Grid>
+                    </StackPanel>
                 </Grid>
             </Border>
-
             <Border Margin="0,0,0,16"
                     Padding="14"
                     CornerRadius="12"
@@ -340,65 +323,74 @@
                 </TabItem>
 
                 <TabItem Header="Accounts">
-                    <StackPanel Margin="0,16,0,0">
-                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
-                            <DockPanel LastChildFill="False">
-                                <StackPanel DockPanel.Dock="Left">
-                                    <TextBlock Text="Account-first drill-throughs for banking, portfolio, and ledger review." Style="{StaticResource CardDescriptionStyle}" />
-                                    <UniformGrid Columns="4" Margin="0,14,0,0">
-                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Total Accounts" Style="{StaticResource MetricLabelStyle}" />
-                                                <TextBlock Text="{Binding TotalAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Bank" Style="{StaticResource MetricLabelStyle}" />
-                                                <TextBlock Text="{Binding BankAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
-                                            <StackPanel>
-                                                <TextBlock Text="Brokerage" Style="{StaticResource MetricLabelStyle}" />
-                                                <TextBlock Text="{Binding BrokerageAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
-                                            <StackPanel>
-                                                <TextBlock Text="Custody" Style="{StaticResource MetricLabelStyle}" />
-                                                <TextBlock Text="{Binding CustodyAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
-                                            </StackPanel>
-                                        </Border>
-                                    </UniformGrid>
+                    <workstationControls:WorkstationTableInspectorControl Margin="0,16,0,0"
+                                                                           Table="{Binding AccountQueueTable}"
+                                                                           SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
+                                                                           Inspector="{Binding SelectedAccountInspector}"
+                                                                           HeaderText="Account Workbench"
+                                                                           DetailText="{Binding AccountQueueStatusText}"
+                                                                           ScopeText="{Binding CurrentWorkbenchTitleText}"
+                                                                           GridAutomationId="FundLedgerAccountQueueGrid"
+                                                                           EmptyAutomationId="FundLedgerAccountQueueEmptyState"
+                                                                           InspectorAutomationId="FundLedgerAccountSelectionInspector"
+                                                                           ControlAutomationId="FundLedgerAccountWorkbench">
+                        <workstationControls:WorkstationTableInspectorControl.TableHeaderContent>
+                            <UniformGrid Columns="4">
+                                <Border Style="{StaticResource WorkstationFilterChipStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Total Accounts" Style="{StaticResource MetricLabelStyle}" />
+                                        <TextBlock Text="{Binding TotalAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkstationFilterChipStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Bank" Style="{StaticResource MetricLabelStyle}" />
+                                        <TextBlock Text="{Binding BankAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkstationFilterChipStyle}" Margin="0,0,8,0">
+                                    <StackPanel>
+                                        <TextBlock Text="Brokerage" Style="{StaticResource MetricLabelStyle}" />
+                                        <TextBlock Text="{Binding BrokerageAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Custody" Style="{StaticResource MetricLabelStyle}" />
+                                        <TextBlock Text="{Binding CustodyAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                    </StackPanel>
+                                </Border>
+                            </UniformGrid>
+                        </workstationControls:WorkstationTableInspectorControl.TableHeaderContent>
+                        <workstationControls:WorkstationTableInspectorControl.EmptyContent>
+                            <StackPanel AutomationProperties.AutomationId="FundLedgerAccountQueueFailClosedState">
+                                <TextBlock Text="No account evidence loaded" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Select a fund profile or load retained fund account records before opening account-level portfolio review."
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </workstationControls:WorkstationTableInspectorControl.EmptyContent>
+                        <workstationControls:WorkstationTableInspectorControl.InspectorContent>
+                            <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}"
+                                    AutomationProperties.AutomationId="FundLedgerAccountActionInspector">
+                                <StackPanel>
+                                    <TextBlock Text="Account Action" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding SelectedAccountPortfolioTooltip}"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,8,0,0" />
+                                    <Button Content="Open Account Portfolio"
+                                            Command="{Binding OpenSelectedAccountPortfolioCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            ToolTip="{Binding SelectedAccountPortfolioTooltip}"
+                                            ToolTipService.ShowOnDisabled="True"
+                                            AutomationProperties.AutomationId="FundLedgerOpenAccountPortfolioButton"
+                                            Margin="0,12,0,0" />
                                 </StackPanel>
-                                <Button DockPanel.Dock="Right" Content="Open Account Portfolio"
-                                        Command="{Binding OpenSelectedAccountPortfolioCommand}"
-                                        Style="{StaticResource SecondaryButtonStyle}"
-                                        Margin="16,0,0,0" />
-                            </DockPanel>
-                        </Border>
-                        <DataGrid ItemsSource="{Binding Accounts}"
-                                  SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
-                                  Style="{StaticResource WorkbenchDataGridStyle}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  FrozenColumnCount="3">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="*" />
-                                <DataGridTextColumn Header="Code" Binding="{Binding AccountCode}" Width="130" />
-                                <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="120" />
-                                <DataGridTextColumn Header="Institution" Binding="{Binding Institution}" Width="170" />
-                                <DataGridTextColumn Header="Structure" Binding="{Binding StructureLabel}" Width="220" />
-                                <DataGridTextColumn Header="Workflow" Binding="{Binding WorkflowLabel}" Width="240" />
-                                <DataGridTextColumn Header="Cash" Binding="{Binding CashBalance, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="Securities" Binding="{Binding SecuritiesMarketValue, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="NAV" Binding="{Binding NetAssetValue, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="Last Snapshot" Binding="{Binding LastSnapshotDate}" Width="110" />
-                                <DataGridTextColumn Header="Open Breaks" Binding="{Binding OpenBreaks}" Width="90" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </StackPanel>
+                            </Border>
+                        </workstationControls:WorkstationTableInspectorControl.InspectorContent>
+                    </workstationControls:WorkstationTableInspectorControl>
                 </TabItem>
 
                 <TabItem Header="Banking">
@@ -723,19 +715,24 @@
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
-                        <DataGrid ItemsSource="{Binding VisibleJournal}"
-                                  Style="{StaticResource WorkbenchDataGridStyle}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  FrozenColumnCount="2">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat={}{0:g}}" Width="150" />
-                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
-                                <DataGridTextColumn Header="Debits" Binding="{Binding TotalDebits, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="Credits" Binding="{Binding TotalCredits, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="Lines" Binding="{Binding LineCount}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Grid MinHeight="380">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.35*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="0.85*" />
+                            </Grid.ColumnDefinitions>
+                            <workstationControls:DenseDataGridControl Grid.Column="0"
+                                                                       Table="{Binding JournalTable}"
+                                                                       SelectedItem="{Binding SelectedJournalEntry, Mode=TwoWay}"
+                                                                       Height="380"
+                                                                       GridAutomationId="FundLedgerJournalGrid"
+                                                                       EmptyAutomationId="FundLedgerJournalEmptyState"
+                                                                       AutomationProperties.Name="Fund ledger journal table" />
+                            <workstationControls:InspectorPanelControl Grid.Column="2"
+                                                                       Panel="{Binding SelectedJournalInspector}"
+                                                                       AutomationProperties.AutomationId="FundLedgerJournalInspector"
+                                                                       AutomationProperties.Name="Selected journal entry detail" />
+                        </Grid>
                     </StackPanel>
                 </TabItem>
 
@@ -797,20 +794,24 @@
                                 <TextBlock Text="{Binding SelectedLedgerDimensionStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
-                        <DataGrid ItemsSource="{Binding VisibleTrialBalance}"
-                                  Style="{StaticResource WorkbenchDataGridStyle}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  FrozenColumnCount="2">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
-                                <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="110" />
-                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="110" />
-                                <DataGridTextColumn Header="Financial Account" Binding="{Binding FinancialAccountId}" Width="180" />
-                                <DataGridTextColumn Header="Balance" Binding="{Binding Balance, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                                <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="80" ElementStyle="{StaticResource RightAlignedCellStyle}" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <Grid MinHeight="380">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.35*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="0.85*" />
+                            </Grid.ColumnDefinitions>
+                            <workstationControls:DenseDataGridControl Grid.Column="0"
+                                                                       Table="{Binding TrialBalanceTable}"
+                                                                       SelectedItem="{Binding SelectedTrialBalanceLine, Mode=TwoWay}"
+                                                                       Height="380"
+                                                                       GridAutomationId="FundLedgerTrialBalanceGrid"
+                                                                       EmptyAutomationId="FundLedgerTrialBalanceEmptyState"
+                                                                       AutomationProperties.Name="Fund ledger trial balance table" />
+                            <workstationControls:InspectorPanelControl Grid.Column="2"
+                                                                       Panel="{Binding SelectedTrialBalanceInspector}"
+                                                                       AutomationProperties.AutomationId="FundLedgerTrialBalanceInspector"
+                                                                       AutomationProperties.Name="Selected trial-balance detail" />
+                        </Grid>
                     </StackPanel>
                 </TabItem>
 
@@ -967,7 +968,7 @@
                                 </Border>
 
                                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16" AutomationProperties.AutomationId="StatementReconciliationWorkbench">
-                                    <Grid>
+                                    <Grid AutomationProperties.AutomationId="FundReconciliationStatementLedgerComparison">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -986,7 +987,8 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Text="Statement Run Evidence" Style="{StaticResource CardHeaderStyle}" />
+                                                    <TextBlock Text="Cash Reconciliation - Broker Statement vs. Ledger" Style="{StaticResource CardHeaderStyle}" />
+                                                    <TextBlock Text="Statement Run Evidence" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,0" />
                                                     <TextBlock Text="{Binding StatementStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                                 </StackPanel>
                                                 <Button Grid.Column="1"
@@ -1052,6 +1054,7 @@
                                                         <DataGridTextColumn Header="Break" Binding="{Binding BreakId}" Width="150" />
                                                         <DataGridTextColumn Header="Type" Binding="{Binding BreakTypeLabel}" Width="150" />
                                                         <DataGridTextColumn Header="Owner" Binding="{Binding OwnerLabel}" Width="110" />
+                                                        <DataGridTextColumn Header="SLA" Binding="{Binding SlaLabel}" Width="145" />
                                                         <DataGridTextColumn Header="Delta" Binding="{Binding DeltaText}" Width="90" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                                         <DataGridTextColumn Header="Recommended Action" Binding="{Binding RecommendedAction}" Width="*" />
                                                     </DataGrid.Columns>
@@ -1391,8 +1394,11 @@
                                                 SelectedIndex="{Binding SelectedReconciliationDetailTabIndex, Mode=TwoWay}"
                                                 TabIndex="30">
                                         <TabItem Header="Match Items">
-                                            <Grid Margin="0,8,0,0">
+                                            <Grid Margin="0,8,0,0"
+                                                  AutomationProperties.AutomationId="ReconciliationMatchItemsWorkbench"
+                                                  AutomationProperties.Name="Cash reconciliation source data versus ledger workbench">
                                                 <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="*" />
                                                     <RowDefinition Height="Auto" />
@@ -1403,21 +1409,77 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
 
-                                                <TextBlock Grid.Row="0"
+                                                <Border Grid.Row="0"
+                                                        Grid.ColumnSpan="3"
+                                                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="12"
+                                                        Margin="0,0,0,12"
+                                                        Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                        AutomationProperties.Name="Broker statement versus ledger reconciliation summary">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Text="CASH RECONCILIATION - SOURCE DATA VS. LEDGER"
+                                                                       Style="{StaticResource CardHeaderStyle}" />
+                                                            <TextBlock Text="{Binding ReconciliationDetailStatusText}"
+                                                                       Style="{StaticResource CardDescriptionStyle}"
+                                                                       Margin="0,4,0,0"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <WrapPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                            <Border BorderBrush="{StaticResource SuccessColorBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6"
+                                                                    Padding="10,6"
+                                                                    Margin="0,0,8,0">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Matched" FontSize="10" Foreground="{StaticResource SuccessColorBrush}" />
+                                                                    <TextBlock Text="{Binding ReconciliationDetailMatchedText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SuccessColorBrush}" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <Border BorderBrush="{StaticResource WarningColorBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6"
+                                                                    Padding="10,6"
+                                                                    Margin="0,0,8,0">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Open" FontSize="10" Foreground="{StaticResource WarningColorBrush}" />
+                                                                    <TextBlock Text="{Binding ReconciliationDetailBreaksText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <Border BorderBrush="{StaticResource WarningColorBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6"
+                                                                    Padding="10,6">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Out By" FontSize="10" Foreground="{StaticResource WarningColorBrush}" />
+                                                                    <TextBlock Text="{Binding ReconciliationDetailBreakAmountText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                </Border>
+
+                                                <TextBlock Grid.Row="1"
                                                            Grid.Column="0"
-                                                           Text="Ledger Entries"
+                                                           Text="Statement"
                                                            Style="{StaticResource CardHeaderStyle}"
                                                            Margin="0,0,0,8" />
-                                                <TextBlock Grid.Row="0"
+                                                <TextBlock Grid.Row="1"
                                                            Grid.Column="2"
-                                                           Text="Source Data"
+                                                           Text="Ledger"
                                                            Style="{StaticResource CardHeaderStyle}"
                                                            Margin="0,0,0,8" />
 
-                                                <DataGrid x:Name="ReconciliationEntryMatchGrid"
-                                                          Grid.Row="1"
+                                                <DataGrid x:Name="ReconciliationSourceMatchGrid"
+                                                          Grid.Row="2"
                                                           Grid.Column="0"
-                                                          ItemsSource="{Binding ReconciliationEntryRows}"
+                                                          ItemsSource="{Binding ReconciliationSourceDataRows}"
                                                           AutoGenerateColumns="False"
                                                           CanUserAddRows="False"
                                                           HeadersVisibility="Column"
@@ -1427,19 +1489,19 @@
                                                           TabIndex="31">
                                                     <DataGrid.Columns>
                                                         <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="44" />
-                                                        <DataGridTextColumn Header="Entry" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="Source Row" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="Source" Binding="{Binding SourceLabel}" Width="110" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="Amount" Binding="{Binding AmountText}" Width="105" ElementStyle="{StaticResource RightAlignedCellStyle}" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="As Of" Binding="{Binding AsOfText}" Width="130" IsReadOnly="True" />
                                                     </DataGrid.Columns>
                                                 </DataGrid>
 
-                                                <GridSplitter Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource BorderSubtleBrush}" />
+                                                <GridSplitter Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource BorderSubtleBrush}" />
 
-                                                <DataGrid x:Name="ReconciliationSourceMatchGrid"
-                                                          Grid.Row="1"
+                                                <DataGrid x:Name="ReconciliationEntryMatchGrid"
+                                                          Grid.Row="2"
                                                           Grid.Column="2"
-                                                          ItemsSource="{Binding ReconciliationSourceDataRows}"
+                                                          ItemsSource="{Binding ReconciliationEntryRows}"
                                                           AutoGenerateColumns="False"
                                                           CanUserAddRows="False"
                                                           HeadersVisibility="Column"
@@ -1449,14 +1511,14 @@
                                                           TabIndex="32">
                                                     <DataGrid.Columns>
                                                         <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="44" />
-                                                        <DataGridTextColumn Header="Source Row" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="Entry" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="Source" Binding="{Binding SourceLabel}" Width="110" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="Amount" Binding="{Binding AmountText}" Width="105" ElementStyle="{StaticResource RightAlignedCellStyle}" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="As Of" Binding="{Binding AsOfText}" Width="130" IsReadOnly="True" />
                                                     </DataGrid.Columns>
                                                 </DataGrid>
 
-                                                <DockPanel Grid.Row="2" Grid.ColumnSpan="3" Margin="0,12,0,0">
+                                                <DockPanel Grid.Row="3" Grid.ColumnSpan="3" Margin="0,12,0,0">
                                                     <Button DockPanel.Dock="Right"
                                                             Content="Match As Reconciled"
                                                             Click="OnMatchSelectedReconciliationItemsClick"
@@ -1465,10 +1527,24 @@
                                                             Margin="12,0,0,0"
                                                             TabIndex="33"
                                                             AutomationProperties.AutomationId="ReconciliationMatchSelectedItemsButton" />
-                                                    <TextBlock Text="{Binding ReconciliationMatchSelectionText}"
-                                                               Style="{StaticResource CardDescriptionStyle}"
-                                                               VerticalAlignment="Center"
-                                                               TextWrapping="Wrap" />
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
+                                                            <StackPanel>
+                                                                <TextBlock Text="Statement Balance" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                                <TextBlock Text="Selected source rows" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
+                                                            <StackPanel>
+                                                                <TextBlock Text="Ledger Balance" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                                <TextBlock Text="Selected ledger entries" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <TextBlock Text="{Binding ReconciliationMatchSelectionText}"
+                                                                   Style="{StaticResource CardDescriptionStyle}"
+                                                                   VerticalAlignment="Center"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
                                                 </DockPanel>
                                             </Grid>
                                         </TabItem>
@@ -1679,11 +1755,66 @@
                                         </Border>
                                         <Border Style="{StaticResource WorkbenchMetricCardStyle}">
                                             <StackPanel>
-                                                <TextBlock Text="Evidence" Style="{StaticResource MetricLabelStyle}" />
+                                                 <TextBlock Text="Evidence" Style="{StaticResource MetricLabelStyle}" />
                                                 <TextBlock Text="{Binding AccountingRecordEvidenceText}" Style="{StaticResource MetricValueMonoStyle}" />
                                             </StackPanel>
                                         </Border>
                                     </UniformGrid>
+                                    <workstationControls:WorkstationStatePanelControl
+                                        State="{Binding ReviewedAutomationState}"
+                                        Margin="0,0,0,14"
+                                        AutomationProperties.AutomationId="FundReviewedAutomationSignifier" />
+                                    <TextBlock Text="Financial Operations Operator Queue"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,0,0,6" />
+                                    <TextBlock Text="{Binding FinancialOperationsQueueSummaryText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,0,0,12"
+                                               TextWrapping="Wrap" />
+                                    <DataGrid ItemsSource="{Binding FinancialOperationsQueueItems}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              BorderThickness="0"
+                                              MaxHeight="220"
+                                              EnableRowVirtualization="True"
+                                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                              AutomationProperties.AutomationId="FundFinancialOperationsOperatorQueueGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Kind" Binding="{Binding KindLabel}" Width="132" />
+                                            <DataGridTextColumn Header="Work Item" Binding="{Binding Label}" Width="180" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="116" />
+                                            <DataGridTextColumn Header="Owner" Binding="{Binding OwnerLabel}" Width="130" />
+                                            <DataGridTextColumn Header="Due / Scope" Binding="{Binding TimingLabel}" Width="170" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="130" />
+                                            <DataGridTextColumn Header="Action" Binding="{Binding ActionLabel}" Width="240" />
+                                            <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="128" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Reconciliation Lane Coverage"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,16,0,12" />
+                                    <DataGrid ItemsSource="{Binding OperationsReconciliationLanes}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              BorderThickness="0"
+                                              MaxHeight="190"
+                                              EnableRowVirtualization="True"
+                                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                              AutomationProperties.AutomationId="FundOperationsReconciliationLaneGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Lane" Binding="{Binding Label}" Width="150" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                            <DataGridTextColumn Header="Breaks" Binding="{Binding BreaksLabel}" Width="110" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                            <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
+                                            <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Evidence Categories"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,16,0,12" />
                                     <DataGrid ItemsSource="{Binding AccountingRecordEvidenceCategories}"
                                               AutoGenerateColumns="False"
                                               IsReadOnly="True"
@@ -1700,6 +1831,149 @@
                                             <DataGridTextColumn Header="Subject" Binding="{Binding EvidenceSubject}" Width="180" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Evidence Packages"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,16,0,12" />
+                                    <DataGrid ItemsSource="{Binding OperationsEvidencePackages}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              BorderThickness="0"
+                                              MaxHeight="190"
+                                              EnableRowVirtualization="True"
+                                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                              AutomationProperties.AutomationId="FundOperationsEvidencePackageGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Package" Binding="{Binding Label}" Width="160" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                            <DataGridTextColumn Header="Categories" Binding="{Binding CategoryLabel}" Width="150" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                            <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
+                                            <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SectionCardStyle}"
+                                    Margin="0,0,0,16"
+                                    AutomationProperties.AutomationId="FundPrivateCapitalCloseCockpitPanel"
+                                    AutomationProperties.Name="Private Capital Close Cockpit">
+                                <StackPanel>
+                                    <TextBlock Text="Private-Capital Close Cockpit" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding PrivateCapitalCloseSummaryText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap" />
+                                    <workstationControls:WorkstationStatePanelControl
+                                        State="{Binding PrivateCapitalCloseReadinessState}"
+                                        Margin="0,14,0,14"
+                                        AutomationProperties.AutomationId="FundPrivateCapitalCloseReadinessSignifier" />
+                                    <UniformGrid Columns="2" Margin="0,0,0,12">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Close Status" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding PrivateCapitalCloseStatusText}" Style="{StaticResource MetricValueStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Evidence" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding PrivateCapitalCloseEvidenceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                    <Border Padding="10"
+                                            CornerRadius="10"
+                                            Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding PrivateCapitalCloseBlockerText}"
+                                                   Style="{StaticResource CardDescriptionStyle}"
+                                                   TextWrapping="Wrap" />
+                                    </Border>
+                                    <TabControl Margin="0,12,0,0"
+                                                AutomationProperties.AutomationId="FundPrivateCapitalCloseCockpitTabs">
+                                        <TabItem Header="Lanes">
+                                            <DataGrid ItemsSource="{Binding PrivateCapitalCloseLanes}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      MaxHeight="190"
+                                                      EnableRowVirtualization="True"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      AutomationProperties.AutomationId="FundPrivateCapitalCloseLaneGrid">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Lane" Binding="{Binding Label}" Width="150" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                                    <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="Evidence Packages">
+                                            <DataGrid ItemsSource="{Binding PrivateCapitalEvidencePackages}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      MaxHeight="190"
+                                                      EnableRowVirtualization="True"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      AutomationProperties.AutomationId="FundPrivateCapitalEvidencePackageGrid">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Package" Binding="{Binding Label}" Width="170" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                                    <DataGridTextColumn Header="Categories" Binding="{Binding CategoryLabel}" Width="150" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                                    <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="NAV Support">
+                                            <DataGrid ItemsSource="{Binding PrivateCapitalNavSupportPackages}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      MaxHeight="190"
+                                                      EnableRowVirtualization="True"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      AutomationProperties.AutomationId="FundPrivateCapitalNavSupportGrid">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Package" Binding="{Binding Label}" Width="150" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                                    <DataGridTextColumn Header="Shadow NAV" Binding="{Binding ShadowNavLabel}" Width="120" />
+                                                    <DataGridTextColumn Header="Components" Binding="{Binding ComponentLabel}" Width="220" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="Approvals">
+                                            <DataGrid ItemsSource="{Binding PrivateCapitalCloseApprovals}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      MaxHeight="190"
+                                                      EnableRowVirtualization="True"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      AutomationProperties.AutomationId="FundPrivateCapitalCloseApprovalGrid">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Approval" Binding="{Binding ApprovalId}" Width="170" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="100" />
+                                                    <DataGridTextColumn Header="Reviewer" Binding="{Binding ReviewerLabel}" Width="125" />
+                                                    <DataGridTextColumn Header="Operator" Binding="{Binding OperatorLabel}" Width="125" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="125" />
+                                                    <DataGridTextColumn Header="Decision" Binding="{Binding DecidedAtLabel}" Width="130" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                    </TabControl>
                                 </StackPanel>
                             </Border>
 

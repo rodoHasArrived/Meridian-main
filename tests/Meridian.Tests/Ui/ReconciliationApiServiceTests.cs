@@ -4,7 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
-using Meridian.Ui.Services.Services.Reconciliation;
+using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Ui;
@@ -16,6 +16,7 @@ public sealed class ReconciliationApiServiceTests
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-reconciliation-api-{Guid.NewGuid():N}");
         var statementPath = Path.Combine(root, "custodian-statement.csv");
+        var fundAccountId = Guid.NewGuid();
         Directory.CreateDirectory(root);
         await File.WriteAllLinesAsync(statementPath,
         [
@@ -46,7 +47,7 @@ public sealed class ReconciliationApiServiceTests
             new StatementRunCreateDto(
                 Broker: "custodian",
                 SourceInstitution: "Sample Custodian",
-                FundAccountId: "fund-account-1",
+                FundAccountId: fundAccountId.ToString("D"),
                 ExternalAccountId: "external-account-1",
                 StatementPeriodStart: new DateOnly(2026, 5, 1),
                 StatementPeriodEnd: new DateOnly(2026, 5, 31),
@@ -100,6 +101,39 @@ public sealed class ReconciliationApiServiceTests
         exceptions.Should().HaveCount(2);
         exceptions.Should().OnlyContain(item => item.ImportId == created.ImportId);
 
+        var summaries = await service.ListStatementRunsAsync(CancellationToken.None);
+        var summary = summaries.Should().ContainSingle(item => item.RunId == created.RunId).Subject;
+        summary.Status.Should().Be(StatementRunStatus.ReviewRequired);
+        summary.OpenExceptionCount.Should().Be(2);
+        summary.PositionMatches.Should().Be(1);
+        summary.CompletedAtUtc.Should().BeNull();
+
+        var queueStatuses = await service.ListQueueStatusAsync(CancellationToken.None);
+        var queueStatus = queueStatuses.Should().ContainSingle(item => item.AccountId == fundAccountId).Subject;
+        queueStatus.AccountCode.Should().Be(fundAccountId.ToString("D"));
+        queueStatus.QueueState.Should().Be("Blocked");
+        queueStatus.UnresolvedBreakCount.Should().Be(2);
+        queueStatus.SignOffReady.Should().BeFalse();
+        queueStatus.BlockerReason.Should().Be("Tolerance-breached breaks remain unresolved.");
+        queueStatus.EvidenceLinks.Should().OnlyContain(link =>
+            link.StartsWith("/api/workstation/reconciliation/break-queue/", StringComparison.OrdinalIgnoreCase));
+
+        const string caseAction = "Assign the case, compare the external statement row to retained ledger and position evidence, then attach support before disposition.";
+        var openBreaks = await service.ListOpenStatementBreaksAsync(CancellationToken.None);
+        openBreaks.Should().HaveCount(2);
+        openBreaks.Should().OnlyContain(item =>
+            item.Owner == "fund-ops" &&
+            item.SlaDueAtUtc.HasValue &&
+            item.SlaWarningAtUtc.HasValue &&
+            item.SlaState == "OnTrack" &&
+            item.EscalationLabel == "Assigned" &&
+            item.EscalationReason!.Contains("fund-ops", StringComparison.OrdinalIgnoreCase) &&
+            item.RecommendedAction == caseAction &&
+            item.EvidenceLink!.StartsWith("/api/workstation/reconciliation/statement-runs/", StringComparison.OrdinalIgnoreCase) &&
+            item.LastObservedAtUtc.HasValue &&
+            item.CreatedAtUtc.HasValue &&
+            item.LastObservedAtUtc.Value >= item.CreatedAtUtc.Value);
+
         var reloaded = await service.GetStatementRunAsync(created.RunId!, CancellationToken.None);
         reloaded.Should().NotBeNull();
         reloaded!.Cases.Should().HaveCount(2);
@@ -109,8 +143,89 @@ public sealed class ReconciliationApiServiceTests
             item.CommentThreads != null &&
             item.CommentThreads.Count > 0 &&
             item.BreakExplanation != null &&
-            item.AuditEvents != null &&
-            item.AuditEvents.Count > 0);
+                item.AuditEvents != null &&
+                item.AuditEvents.Count > 0);
         reloaded.Breaks.Should().HaveCount(2);
+        reloaded.Breaks.Should().OnlyContain(item =>
+            item.Owner == "fund-ops" &&
+            item.SlaState == "OnTrack" &&
+            item.EscalationLabel == "Assigned");
+    }
+
+    [Fact]
+    public async Task ListOpenStatementBreaksAsync_WithBreachedRetainedCase_ProjectsEscalationPosture()
+    {
+        var detectedAt = new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero);
+        var dueAt = detectedAt.AddHours(8);
+        var breachedAt = dueAt.AddMinutes(30);
+        var breakRecord = new ReconciliationBreakRecord(
+            BreakId: "break-cash-1",
+            RunId: "statement-run-1",
+            ImportId: "statement-run-1",
+            SourceReference: "statement-row:1",
+            BreakCode: "cash-tolerance-breach",
+            Category: "Cash",
+            Delta: 2500.25m,
+            Tolerance: 10m,
+            ToleranceBreached: true,
+            CreatedAtUtc: detectedAt,
+            Status: "Open");
+        var retainedCase = new ReconciliationCase(
+            CaseId: "case:break-cash-1",
+            ImportId: "statement-run-1",
+            Status: "Open",
+            Reason: "Cash break past SLA",
+            Confidence: 0.35m,
+            Rationale: "Custodian cash variance still needs close support.",
+            CreatedAtUtc: detectedAt,
+            History: [])
+        {
+            Owner = "fund-ops",
+            Priority = "High",
+            DueAtUtc = dueAt,
+            SlaBreachedAtUtc = breachedAt,
+            LastUpdatedAtUtc = breachedAt,
+            EvidenceReferences = ["/api/workstation/reconciliation/statement-runs/statement-run-1"]
+        };
+        var service = new ReconciliationApiService(
+            new StubStatementRunWorkflowService(
+                Breaks: [breakRecord],
+                Cases: [retainedCase]));
+
+        var breaks = await service.ListOpenStatementBreaksAsync(CancellationToken.None);
+
+        var projected = breaks.Should().ContainSingle().Subject;
+        projected.Owner.Should().Be("fund-ops");
+        projected.SlaDueAtUtc.Should().Be(dueAt);
+        projected.SlaWarningAtUtc.Should().Be(dueAt.AddHours(-12));
+        projected.SlaBreachedAtUtc.Should().Be(breachedAt);
+        projected.SlaState.Should().Be("Breached");
+        projected.EscalationLabel.Should().Be("Escalate");
+        projected.EscalationReason.Should().Contain("breached SLA");
+        projected.EvidenceLink.Should().Be("/api/workstation/reconciliation/statement-runs/statement-run-1");
+    }
+
+    private sealed class StubStatementRunWorkflowService(
+        IReadOnlyList<ReconciliationBreakRecord>? Breaks = null,
+        IReadOnlyList<ReconciliationCase>? Cases = null) : IStatementRunWorkflowService
+    {
+        public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<CanonicalStatementImport>>([]);
+
+        public Task<StatementRunWorkflowResult> CreateAsync(
+            StatementRunRequest request,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public Task<StatementRunWorkflowResult?> GetAsync(
+            string runId,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenBreaksAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<ReconciliationBreakRecord>>(Breaks ?? []);
+
+        public Task<IReadOnlyList<ReconciliationCase>> ListCasesAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<ReconciliationCase>>(Cases ?? []);
     }
 }

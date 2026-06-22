@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -73,6 +74,32 @@ public sealed class ReportingOrchestrationServiceTests
 
         manifest.AttemptCount.Should().Be(2);
         sut.GetAudit(manifest.RunId).Select(a => a.Action).Should().ContainInOrder("RunRetry", "RunGenerated");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_PreservesReportAccessPolicyOnManifest()
+    {
+        var sut = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        var policy = new ReportAccessPolicyDto(
+            ReportAccessModeDto.Restricted,
+            Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "investor-relations")]);
+        var contract = new ReportingJobContract(
+            "restricted-run",
+            "investor-monthly-statement",
+            new DateOnly(2026, 5, 1),
+            ReportingRunTrigger.AdHoc,
+            0,
+            "alice",
+            FixedNow,
+            AccessPolicy: policy);
+
+        var manifest = await sut.ExecuteAsync(contract, CancellationToken.None);
+
+        manifest.AccessPolicy.Should().NotBeNull();
+        manifest.AccessPolicy!.Mode.Should().Be(ReportAccessModeDto.Restricted);
+        manifest.AccessPolicy.Principals.Should().ContainSingle(principal =>
+            principal.Kind == ReportAccessPrincipalKindDto.Group &&
+            principal.PrincipalId == "investor-relations");
     }
 
     [Fact]

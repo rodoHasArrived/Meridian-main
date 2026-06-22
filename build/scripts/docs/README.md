@@ -88,10 +88,12 @@ python3 build/scripts/docs/scan-source-todos.py --summary
 Validates hash alignment for generated roadmap/source manifests and registered source modules. The
 hash manifest records source-tree hashes plus README hashes for each registered module, so code
 changes can intentionally fail the check until documentation has been reviewed and the manifest is
-refreshed.
+refreshed. Use `--write-module` when only specific stale modules have been reviewed; reserve the
+broad `--write` refresh for a full accepted-baseline review.
 
 ```bash
 python3 build/scripts/docs/validate-doc-hashes.py --summary
+python3 build/scripts/docs/validate-doc-hashes.py --write-module SRC-HOST --summary
 python3 build/scripts/docs/validate-doc-hashes.py --write --summary
 ```
 

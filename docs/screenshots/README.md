@@ -30,3 +30,5 @@ or different run cannot satisfy the evidence gate by reusing the expected filena
 The maintained desktop WPF coverage index lives at
 [`docs/screenshots/desktop/README.md`](desktop/README.md). It maps active registered WPF page
 tags to committed screenshot paths, fixture/data mode, refresh dates, and TBI coverage gaps.
+The generated WPF development tracker consumes that index at
+[`docs/status/wpf-screen-development-tracker.md`](../status/wpf-screen-development-tracker.md).

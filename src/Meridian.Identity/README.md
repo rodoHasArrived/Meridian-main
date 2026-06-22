@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-IDENTITY
 path: src/Meridian.Identity
 status: active
 owner_lane: Identity and Access
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-09
 ---
 
 # src/Meridian.Identity
@@ -33,6 +33,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `FundStructure/FundAccountTraversalQueryService.cs` - cached Fund -> Owns ->
   Account traversal query used by scoped-access and fund-account endpoint consumers.
 - `Infrastructure/RolePermissionProfileStore.cs` - file-backed custom role-profile catalog and audit-event persistence.
+- `Infrastructure/UserAccountStore.cs` - file-backed user account persistence, audit-event persistence, hash policy, and company-scoped account metadata.
 - `Infrastructure/ScopedAccessAssignmentStore.cs` - file and PostgreSQL scoped-access assignment stores.
 
 ## Important workflows
@@ -70,8 +71,18 @@ dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter Fu
 
 Identity contracts publish role/profile, permission, and scoped-access DTOs through
 `Meridian.Identity.Auth`. `LoginSessionService`, `UserProfileRegistry`, and
-`FileRolePermissionProfileStore` own session state, environment-backed user profiles, and custom
-role-profile permission persistence. `FundStructureAccessScopeLineageProvider` is Identity-owned
+`FileRolePermissionProfileStore`, and `FileUserAccountStore` own session state, hash-backed user
+profiles, governed account administration, account/session audit evidence, company ids for
+company-scoped access policies, and custom role-profile permission persistence. `UserAccountDto`,
+`UserAccountUpsertRequestDto`, and `UserAccountAuditEventDto` carry `CompanyId`, while
+`UserProfileRegistry` preserves the same company id on authenticated profiles.
+Scoped-access assignment DTOs carry role, permission, scope, effective-date, approval-limit,
+segregation-of-duties rule, version, revocation, and audit-event metadata so authority governance
+stays explicit across browser, desktop, endpoint, and policy consumers. Grant and revoke request
+DTOs also carry explicit action-origin metadata; `ScopedAccessService` rejects assistant or
+automation-origin grants and revocations before assignment persistence or version mutation so
+reviewed automation can draft authority changes but cannot alter production authority.
+`FundStructureAccessScopeLineageProvider` is Identity-owned
 and consumes the shared `Meridian.Contracts.Services.IFundStructureService` contract supplied by
 Application composition, so scoped authorization can resolve ancestry without depending on
 Application-only identity adapters. `FundAccountTraversalQueryService` also lives here under the
@@ -81,8 +92,9 @@ keeping the implementation in Application. Cross-module endpoint, F#, browser, a
 should reference Identity rather than reintroducing auth DTOs or identity state under
 `Meridian.Contracts` or `Meridian.Ui.Shared`. The WPF desktop startup flow now consumes
 `UserProfileRegistry` and `LoginSessionService` through `DesktopAuthenticationSession`, so desktop
-operator login uses the same `MDC_USERS` and legacy `MDC_USERNAME` / `MDC_PASSWORD` profile source as
-the browser workstation without moving credential storage into WPF.
+operator login uses the same governed account store, `MDC_USERS` password hashes, and legacy
+`MDC_USERNAME` / `MDC_PASSWORD_HASH` bootstrap source as the browser workstation without moving
+credential storage into WPF.
 
 ### Migration and archive notes
 

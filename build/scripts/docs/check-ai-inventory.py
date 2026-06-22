@@ -14,12 +14,13 @@ import json
 import re
 from collections import Counter
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Sequence
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+STABLE_GENERATED_AT_UTC = "1970-01-01T00:00:00+00:00"
+REPOSITORY_DISPLAY_NAME = "Meridian-main"
 
 DOC_AI_README = "docs/ai/README.md"
 AI_CONTRACT = "docs/ai/assistant-workflow-contract.md"
@@ -110,7 +111,7 @@ SYSTEM_CHECKS = (
     ),
     (
         "codex",
-        (".codex/config.toml", ".codex/skills"),
+        (".codex/config.toml", ".codex/skills", ".codex/memory/index.yml"),
         AI_CONTRACT,
         (
             "Codex",
@@ -267,6 +268,20 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                     name=path.name,
                     path=repo_relative(root, path),
                     expected_docs=(AI_CONTRACT,),
+                )
+            )
+
+    for rel_path in (".codex/memory/index.yml",):
+        path = root / rel_path
+        if path.is_file():
+            items.append(
+                InventoryItem(
+                    surface="codex",
+                    kind="memory-index",
+                    name=path.name,
+                    path=repo_relative(root, path),
+                    expected_docs=(AI_CONTRACT, CODEX_GUIDE),
+                    alternate_markers=(".codex/memory/",),
                 )
             )
 
@@ -844,9 +859,9 @@ def build_payload(root: Path, inventory: Sequence[InventoryItem], findings: Sequ
     by_kind = Counter(item.kind for item in inventory)
     by_severity = Counter(finding.severity for finding in findings)
     return {
-        "generatedAtUtc": datetime.now(timezone.utc).isoformat(),
+        "generatedAtUtc": STABLE_GENERATED_AT_UTC,
         "repositoryRoot": ".",
-        "repositoryName": root.name,
+        "repositoryName": REPOSITORY_DISPLAY_NAME,
         "status": "pass" if not findings else "drift",
         "summary": {
             "inventoryCount": len(inventory),

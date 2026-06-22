@@ -128,7 +128,7 @@ internal static class AccountingWorkspacePresentationService
                     WorkspaceTone.Warning,
                     "SwitchContext"),
                 CreateFinancialOperationsWorkflowStep("match-records", "Match Records", "Record matching waits for the active fund scope.", WorkflowStepStatus.Pending, "Pending", WorkspaceTone.Neutral, "FundLedger"),
-                CreateFinancialOperationsWorkflowStep("resolve-exceptions", "Resolve Exceptions", "Exception review opens after source activity is matched.", WorkflowStepStatus.Pending, "Pending", WorkspaceTone.Neutral, "FundReconciliation"),
+                CreateFinancialOperationsWorkflowStep("resolve-exceptions", "Resolve Review Items", "Review opens after source activity is matched.", WorkflowStepStatus.Pending, "Pending", WorkspaceTone.Neutral, "FundReconciliation"),
                 CreateFinancialOperationsWorkflowStep("approve-results", "Approve Results", "Approval release waits for reconciled accounting evidence.", WorkflowStepStatus.Pending, "Pending", WorkspaceTone.Neutral, "AccountingApprovals"),
                 CreateFinancialOperationsWorkflowStep("produce-evidence", "Produce Evidence", "Evidence package production waits for approved results.", WorkflowStepStatus.Pending, "Pending", WorkspaceTone.Neutral, "FundAuditTrail")
             ];
@@ -169,10 +169,10 @@ internal static class AccountingWorkspacePresentationService
                 "FundReconciliation"),
             CreateFinancialOperationsWorkflowStep(
                 "resolve-exceptions",
-                "Resolve Exceptions",
+                "Resolve Review Items",
                 hasOpenExceptions
-                    ? $"{reconciliation.OpenBreakCount} break(s) and {reconciliation.SecurityCoverageIssueCount} security coverage issue(s) require exception review."
-                    : "No open reconciliation exceptions are blocking the Accounting lane.",
+                    ? $"{reconciliation.OpenBreakCount} break(s) and {reconciliation.SecurityCoverageIssueCount} security coverage issue(s) require review."
+                    : "No open reconciliation review items are blocking the Accounting lane.",
                 hasOpenExceptions ? WorkflowStepStatus.Current : hasMatches ? WorkflowStepStatus.Complete : WorkflowStepStatus.Pending,
                 hasOpenExceptions ? "In review" : hasMatches ? "Resolved" : "Pending",
                 hasOpenExceptions ? WorkspaceTone.Warning : hasMatches ? WorkspaceTone.Success : WorkspaceTone.Neutral,
@@ -198,6 +198,34 @@ internal static class AccountingWorkspacePresentationService
                 hasProducedEvidence ? WorkspaceTone.Success : hasOpenExceptions ? WorkspaceTone.Neutral : WorkspaceTone.Info,
                 "FundAuditTrail")
         ];
+    }
+
+    internal static FinancialOperationsWorkflowStep ResolveCurrentFinancialOperationsWorkflowStep(
+        IReadOnlyList<FinancialOperationsWorkflowStep> steps)
+    {
+        if (steps.Count == 0)
+        {
+            return CreateFinancialOperationsWorkflowStep(
+                "receive-activity",
+                "Receive Activity",
+                "Choose a fund-linked operating context before accounting activity can be loaded.",
+                WorkflowStepStatus.Current,
+                "Context required",
+                WorkspaceTone.Warning,
+                "SwitchContext");
+        }
+
+        return steps.FirstOrDefault(step => string.Equals(step.Status, WorkflowStepStatus.Current, StringComparison.Ordinal))
+            ?? steps.FirstOrDefault(step => string.Equals(step.Status, WorkflowStepStatus.Pending, StringComparison.Ordinal))
+            ?? steps.LastOrDefault()
+            ?? CreateFinancialOperationsWorkflowStep(
+                "receive-activity",
+                "Receive Activity",
+                "Choose a fund-linked operating context before accounting activity can be loaded.",
+                WorkflowStepStatus.Current,
+                "Context required",
+                WorkspaceTone.Warning,
+                "SwitchContext");
     }
 
     internal static AccountingLaneSummaries BuildLaneSummaries(

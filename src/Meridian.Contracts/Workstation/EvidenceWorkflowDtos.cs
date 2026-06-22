@@ -19,14 +19,15 @@ public sealed record EvidenceSubjectDto(
     string Label,
     string Workspace,
     string? Route,
-    string PageTag);
+    string PageTag,
+    Guid? LedgerBookId = null);
 
 public sealed record EvidenceFreshnessDto(
     DateTimeOffset? AsOf,
     bool IsStale,
     string? Reason);
 
-public sealed record EvidenceArtifactRefDto(
+public sealed partial record EvidenceArtifactRefDto(
     string ArtifactId,
     string Kind,
     string? Path,
@@ -37,7 +38,32 @@ public sealed record EvidenceArtifactRefDto(
     string? CanonicalSubjectKind = null,
     string? CanonicalSubjectId = null);
 
-public sealed record EvidenceNodeDto(
+public sealed record EvidenceArtifactCaptureDto(
+    string CaptureChannel,
+    string? SourceSystem,
+    DateTimeOffset? ReceivedAt,
+    string? ReceivedBy,
+    string? SourceReference,
+    string? ReceiptHash);
+
+public sealed record EvidenceArtifactExtractionFieldDto(
+    string FieldName,
+    string? ExtractedValue,
+    string? ExpectedValue,
+    decimal? ConfidenceScore,
+    string ReviewState,
+    EvidenceStatusDto ValidationStatus,
+    string? ValidationMessage,
+    string? LinkedRecordKind,
+    string? LinkedRecordId);
+
+public sealed partial record EvidenceArtifactRefDto
+{
+    public EvidenceArtifactCaptureDto? Capture { get; init; }
+    public IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields { get; init; } = [];
+}
+
+public sealed partial record EvidenceNodeDto(
     string EvidenceId,
     EvidenceSubjectDto Subject,
     string Kind,
@@ -47,6 +73,11 @@ public sealed record EvidenceNodeDto(
     string Summary,
     IReadOnlyList<EvidenceArtifactRefDto> ArtifactRefs,
     IReadOnlyList<string> RelatedWorkItemIds);
+
+public sealed partial record EvidenceNodeDto
+{
+    public IReadOnlyDictionary<string, string> Metadata { get; init; } = new Dictionary<string, string>();
+}
 
 public sealed record EvidenceEdgeDto(
     string FromId,
@@ -104,6 +135,51 @@ public sealed record MeridianAssuranceScoreDto(
     IReadOnlyList<EvidenceAssuranceComponentDto> Components,
     IReadOnlyList<EvidenceSlaAssessmentDto> SlaAssessments);
 
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceProofChainLayerKindDto>))]
+public enum EvidenceProofChainLayerKindDto
+{
+    Unknown = 0,
+    Source = 1,
+    Normalization = 2,
+    Reconciliation = 3,
+    Ledger = 4,
+    CapitalAccounts = 5,
+    Close = 6,
+    Reporting = 7,
+    Delivery = 8,
+    Audit = 9
+}
+
+public sealed record EvidenceProofChainLayerDto(
+    EvidenceProofChainLayerKindDto Layer,
+    string Label,
+    EvidenceStatusDto Status,
+    int CoveragePercent,
+    IReadOnlyList<string> RequiredEvidenceIds,
+    IReadOnlyList<string> EvidenceIds,
+    IReadOnlyList<string> ReadyEvidenceIds,
+    IReadOnlyList<string> ReviewEvidenceIds,
+    IReadOnlyList<string> MissingEvidenceIds,
+    IReadOnlyList<string> EvidenceKinds,
+    string Summary);
+
+public sealed record EvidenceProofChainDto(
+    int CoveragePercent,
+    EvidenceStatusDto Status,
+    int CoveredLayerCount,
+    int TotalLayerCount,
+    IReadOnlyList<EvidenceProofChainLayerDto> Layers,
+    string Summary)
+{
+    public static EvidenceProofChainDto Empty { get; } = new(
+        CoveragePercent: 0,
+        Status: EvidenceStatusDto.Unknown,
+        CoveredLayerCount: 0,
+        TotalLayerCount: 0,
+        Layers: [],
+        Summary: "Proof-chain coverage was not evaluated.");
+}
+
 public sealed record EvidenceVaultIdentityDto(
     string VaultId,
     string SubjectKind,
@@ -116,6 +192,8 @@ public sealed record EvidenceVaultIdentityDto(
     string StorageKind)
 {
     public IReadOnlyList<EvidenceVaultArtifactDto> Artifacts { get; init; } = [];
+    public IReadOnlyList<EvidenceRequestListDto> RequestLists { get; init; } = [];
+    public IReadOnlyList<EvidenceSupportRequestDto> SupportRequests { get; init; } = [];
 }
 
 public sealed record EvidenceVaultArtifactDto(
@@ -128,7 +206,94 @@ public sealed record EvidenceVaultArtifactDto(
     string? SourcePath,
     string? SourceRoute,
     string? CanonicalSubjectKind,
-    string? CanonicalSubjectId);
+    string? CanonicalSubjectId)
+{
+    public EvidenceArtifactCaptureDto? Capture { get; init; }
+    public IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields { get; init; } = [];
+}
+
+public sealed record EvidenceSupportRequestDto(
+    string RequestId,
+    string RequestKind,
+    string EvidenceId,
+    string? EvidenceKind,
+    EvidenceValidationSeverityDto Severity,
+    string Status,
+    string Summary,
+    string? SourceSystem,
+    string? WorkItemId,
+    string? BlockedOutput);
+
+public sealed record EvidenceRequestListDto(
+    string RequestListId,
+    string RequestListKind,
+    string TargetKind,
+    string TargetId,
+    EvidenceValidationSeverityDto HighestSeverity,
+    string Status,
+    int RequestCount,
+    IReadOnlyList<string> RequestIds,
+    IReadOnlyList<string> EvidenceKinds,
+    IReadOnlyList<string> BlockedOutputs,
+    string Summary);
+
+public sealed record EvidenceVaultRequestListQueryDto(
+    string? RequestListKind = null,
+    string? TargetKind = null,
+    string? TargetId = null,
+    string? Status = null,
+    string? SubjectKind = null,
+    string? SubjectId = null,
+    int? MaxResults = null);
+
+public sealed record EvidenceVaultRequestListEntryDto(
+    string RequestListId,
+    string RequestListKind,
+    string TargetKind,
+    string TargetId,
+    EvidenceValidationSeverityDto HighestSeverity,
+    string Status,
+    int RequestCount,
+    int OpenRequestCount,
+    IReadOnlyList<string> RequestIds,
+    IReadOnlyList<string> EvidenceKinds,
+    IReadOnlyList<string> BlockedOutputs,
+    string Summary,
+    string VaultId,
+    string SubjectKind,
+    string SubjectId,
+    string ManifestRoute,
+    DateTimeOffset RetainedAt,
+    IReadOnlyList<EvidenceSupportRequestDto> SupportRequests);
+
+public sealed record EvidenceVaultIntakeRequestDto(
+    string SubjectKind,
+    string SubjectId,
+    string IntakeChannel,
+    string FileName,
+    string ContentBase64,
+    string? ContentType = null,
+    string? SourceSystem = null,
+    string? SourceReference = null,
+    string? ReceivedBy = null,
+    string? ExpectedContentHashSha256 = null,
+    IReadOnlyList<EvidenceArtifactExtractionFieldDto>? ExtractedFields = null,
+    EvidenceSubjectLinkageDto? Linkage = null,
+    EvidenceLifecycleMetadataDto? Lifecycle = null);
+
+public sealed record EvidenceVaultIntakeResponseDto(
+    string IntakeId,
+    string SubjectKind,
+    string SubjectId,
+    string IntakeChannel,
+    string FileName,
+    string RelativePath,
+    string ContentHashSha256,
+    long SizeBytes,
+    DateTimeOffset CapturedAt,
+    EvidenceArtifactCaptureDto Capture,
+    IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields,
+    EvidenceVaultIdentityDto VaultIdentity);
 
 public sealed record EvidenceLifecycleMetadataDto(
     DateTimeOffset? RetainUntil,
@@ -142,7 +307,9 @@ public sealed record EvidenceSubjectLinkageDto(
     string? PeriodId,
     string? ReportPackId,
     string? ReconciliationCaseId,
-    string? AccountingRecordId = null);
+    string? AccountingRecordId = null,
+    string? ReportPackDeliveryAttemptId = null,
+    string? ReportPackDeliveryPackageId = null);
 
 public sealed record EvidenceVaultLookupRequestDto(
     string? EvidenceSubject,
@@ -150,7 +317,9 @@ public sealed record EvidenceVaultLookupRequestDto(
     string? PeriodId,
     string? ReportPackId,
     string? ReconciliationCaseId,
-    string? AccountingRecordId = null);
+    string? AccountingRecordId = null,
+    string? ReportPackDeliveryAttemptId = null,
+    string? ReportPackDeliveryPackageId = null);
 
 public sealed record EvidenceEndpointErrorDto(
     string Code,
@@ -189,14 +358,20 @@ public sealed record EvidencePacketDto(
     IReadOnlyList<EvidenceEdgeDto> Edges,
     EvidenceCompletenessDto Completeness,
     IReadOnlyList<WorkflowActionDto> Actions,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
+}
 
 public sealed record EvidenceGraphDto(
     EvidenceSubjectDto Subject,
     DateTimeOffset GeneratedAt,
     IReadOnlyList<EvidenceNodeDto> Nodes,
     IReadOnlyList<EvidenceEdgeDto> Edges,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
+}
 
 public sealed record EvidenceTemplateExportSettingsDto(
     int SchemaVersion,

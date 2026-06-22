@@ -8,6 +8,7 @@
     "preview": "vite preview --host 127.0.0.1 --outDir ../wwwroot/workstation",
     "build": "tsc --noEmit && vite build",
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
+    "smoke:workstation": "node scripts/smoke-workstation.mjs",
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
     "test:vitest": "vitest run",
     "test:watch": "vitest",

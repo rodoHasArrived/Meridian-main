@@ -1,0 +1,36 @@
+<!-- @dsCard group="Colors" viewport="700x160" name="Environment modes" subtitle="Always-visible: Live / Paper / Fixture" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); font-family: var(--font-body); display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; gap: 10px; }
+  .mode { flex: 1; border: 1px solid var(--border); border-left-width: 3px; border-radius: 6px; background: var(--card-surface); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow-card); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .desc { font-size: 12px; color: var(--text-secondary); }
+  .v { font-family: var(--font-data); font-size: 9px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="mode" style="border-left-color: var(--mode-live);">
+      <span class="badge" style="color: var(--red-dim);"><span class="dot" style="background: var(--mode-live);"></span>Live</span>
+      <span class="desc">Real money. Orders hit the broker.</span>
+      <span class="v">#BA3F55</span>
+    </div>
+    <div class="mode" style="border-left-color: var(--mode-paper);">
+      <span class="badge" style="color: var(--accent);"><span class="dot" style="background: var(--mode-paper);"></span>Paper</span>
+      <span class="desc">Simulated fills, live data.</span>
+      <span class="v">#2F6F8F</span>
+    </div>
+    <div class="mode" style="border-left-color: var(--mode-fixture);">
+      <span class="badge" style="color: var(--orange-dim);"><span class="dot" style="background: var(--mode-fixture);"></span>Fixture</span>
+      <span class="desc">Replay / recorded fixture data.</span>
+      <span class="v">#B7791F</span>
+    </div>
+  </div>
+</body>
+</html>

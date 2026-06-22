@@ -103,5 +103,4 @@ Backfill operations entering support/handover should include:
 
 ## Source and archive
 
-- Legacy source: [docs/providers/backfill-guide.md](../providers/backfill-guide.md)
-- Archive copy: [archive/docs/providers/backfill-guide.md](../../archive/docs/providers/backfill-guide.md)
+- Legacy source archived at [archive/docs/providers/backfill-guide.md](../../archive/docs/providers/backfill-guide.md)

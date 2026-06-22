@@ -82,6 +82,30 @@ public sealed class EvidenceTemplateRegistry
             ExportSettings: ManifestOnlyV1),
 
         new EvidenceTemplateDto(
+            WorkflowId: "report-pack-delivery-review",
+            RequiredEvidenceKinds:
+            [
+                "delivery-record",
+                "delivery-recipient",
+                "delivery-request-history",
+                "delivery-package",
+                "delivery-artifact",
+                "delivery-evidence-packet",
+                "audit-history"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "publication-manifest",
+                "report-line-provenance",
+                "approval-chain",
+                "branding-theme",
+                "restatement-lineage",
+                "reporting-run-source"
+            ],
+            NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
             WorkflowId: "security-master-conflict-review",
             RequiredEvidenceKinds:
             [
@@ -108,6 +132,67 @@ public sealed class EvidenceTemplateRegistry
                 "approval-policy",
                 "close-checklist",
                 "report-pack"
+            ],
+            NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
+            WorkflowId: "accounting-records-evidence-review",
+            RequiredEvidenceKinds:
+            [
+                "accounting-record",
+                "accounting-record-category"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "approval",
+                "approval-audit",
+                "close-checklist",
+                "report-pack"
+            ],
+            NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
+            WorkflowId: "private-capital-fund-event-review",
+            RequiredEvidenceKinds:
+            [
+                "private-capital-fund-event",
+                "retained-evidence",
+                "approval-state",
+                "capital-account-subledger",
+                "ledger-impact",
+                "report-output"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "payment-intent",
+                "settlement-state",
+                "report-pack"
+            ],
+            NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
+            WorkflowId: "payment-intent-cash-evidence-review",
+            RequiredEvidenceKinds:
+            [
+                "payment-intent",
+                "payment-requester",
+                "approval-chain",
+                "expected-cash-movement",
+                "bank-cash-evidence",
+                "reconciliation-linkage",
+                "audit-history",
+                "execution-deferred"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "private-capital-fund-event",
+                "capital-account-subledger",
+                "ledger-impact",
+                "report-output",
+                "evidence-vault-manifest"
             ],
             NoOrphanRule: true,
             ExportSettings: ManifestOnlyV1),

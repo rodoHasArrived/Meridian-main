@@ -119,7 +119,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                 QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? "Awaiting fund-linked scope";
                 QueueSummaryText.Text = "Accounting queues unlock after a fund-linked operating context is selected.";
                 var workflow = await workflowSummaryTask.ConfigureAwait(true);
-                FinancialOperationsWorkflowStepsList.ItemsSource = AccountingWorkspacePresentationService.BuildFinancialOperationsWorkflowSteps(
+                ApplyFinancialOperationsWorkflowCheckpoint(
                     profile: null,
                     workspace: null,
                     workflow,
@@ -186,7 +186,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                 BuildReconciliationQueue(reconciliation, ledger),
                 BuildReportingQueue(profile, workspace),
                 BuildAuditQueue(reconciliation, notifications, unreadAlerts));
-            FinancialOperationsWorkflowStepsList.ItemsSource = AccountingWorkspacePresentationService.BuildFinancialOperationsWorkflowSteps(
+            ApplyFinancialOperationsWorkflowCheckpoint(
                 profile,
                 workspace,
                 accountingWorkflow,
@@ -225,6 +225,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                     hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
                     operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
                     fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
+                    fundAccountId: WorkstationOperatingContextScopeResolver.ResolveFundAccountIdString(_operatingContextService?.CurrentContext),
                     fundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName)
                 .ConfigureAwait(true);
 
@@ -349,6 +350,27 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         IReadOnlyList<NotificationHistoryItem> notifications,
         int unreadAlerts)
         => AccountingWorkspacePresentationService.BuildAuditQueue(reconciliation, notifications, unreadAlerts);
+
+    private void ApplyFinancialOperationsWorkflowCheckpoint(
+        FundProfileDetail? profile,
+        FundOperationsWorkspaceDto? workspace,
+        WorkspaceWorkflowSummary? workflow,
+        IReadOnlyList<NotificationHistoryItem> notifications,
+        int unreadAlerts)
+    {
+        var steps = AccountingWorkspacePresentationService.BuildFinancialOperationsWorkflowSteps(
+            profile,
+            workspace,
+            workflow,
+            notifications,
+            unreadAlerts);
+        FinancialOperationsWorkflowCheckpoint.DataContext =
+            AccountingWorkspacePresentationService.ResolveCurrentFinancialOperationsWorkflowStep(steps);
+        FinancialOperationsEvidenceBadgesList.ItemsSource = workflow?.Evidence ?? Array.Empty<WorkflowEvidenceBadge>();
+        FinancialOperationsPrimaryBlockerText.Text = workflow is null
+            ? "No source-backed Financial Operations workflow summary is loaded for this context."
+            : $"{workflow.PrimaryBlocker.Label}: {workflow.PrimaryBlocker.Detail}";
+    }
 
     private void ApplyAccountingLaneSummaries(
         FundProfileDetail? profile,

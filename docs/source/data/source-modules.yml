@@ -33,7 +33,7 @@ modules:
     layer: Application
     status: active
     owner_lane: Runtime Host
-    purpose: Application use cases, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, and provider calibration helpers, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
+    purpose: Application use cases, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
     readme: src/Meridian.Application/README.md
     roadmap_items:
       - W2-TRD-001
@@ -58,7 +58,7 @@ modules:
     layer: Contracts
     status: active
     owner_lane: Contract Compatibility
-    purpose: Shared DTOs, pipeline statistics DTOs, monitoring webhook sink contracts, backfill run-result and per-symbol completeness payloads, coordination lease/leadership/ownership contracts, acceptance evidence payloads, fund-structure service contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
+    purpose: Shared DTOs, pipeline statistics DTOs, monitoring webhook sink contracts, backfill run-result and per-symbol completeness payloads, coordination lease/leadership/ownership contracts, acceptance evidence payloads, provider integration template catalog/manifest/raw-payload/quarantine/staging contracts, fund-structure service contracts, accounting configuration and private-capital ledger payloads, report-pack/report-writer contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
     readme: src/Meridian.Contracts/README.md
     roadmap_items:
       - W1-DATA-001
@@ -90,7 +90,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-06-09
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -193,7 +193,7 @@ modules:
     layer: Storage
     status: active
     owner_lane: Accounting and Ledger
-    purpose: WAL-backed persistence, archival packaging, backfill status/checkpoint sidecar persistence, shared-storage coordination lease persistence, storage catalogs, replay, ledger storage, storage-option mapping from shared config, Core-flushable storage sinks, canonical symbol registry services, fund-structure state stores, ETL job-definition stores, and export support.
+    purpose: WAL-backed persistence, archival packaging, backfill status/checkpoint sidecar persistence, shared-storage coordination lease persistence, storage catalogs, replay, ledger storage, provider integration manifest/raw-payload/quarantine/staging stores, storage-option mapping from shared config, Core-flushable storage sinks, canonical symbol registry services, fund-structure state stores, ETL job-definition stores, and export support.
     readme: src/Meridian.Storage/README.md
     roadmap_items:
       - W1-DATA-001
@@ -358,20 +358,22 @@ modules:
     layer: Ledger
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Ledger and accounting domain support for books, reconciliation, and governed reporting.
+    purpose: Ledger and accounting domain support for books, reconciliation, governed reporting, private-capital fund-event ledger reconstruction, capital-account subledger impact, treasury ledger metadata, period reports, and locked-period report-pack handoff.
     readme: src/Meridian.Ledger/README.md
     roadmap_items:
       - W4-RECON-001
       - W4-RPT-001
+      - W5-ACCT-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
+      - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-09
 
   - id: SRC-FSHARP
     path: src/Meridian.FSharp
@@ -437,7 +439,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-09
 
   - id: SRC-FSHARP-TRADING
     path: src/Meridian.FSharp.Trading
@@ -539,7 +541,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Identity and Access
-    purpose: Physical bounded-context module project for identity auth contracts, scoped access, fund-structure scope lineage, fund-account traversal queries, role/profile, and session ownership conformance.
+    purpose: Physical bounded-context module project for identity auth contracts, scoped access, fund-structure scope lineage, fund-account traversal queries, role/profile, company-scoped user account/profile persistence, and session ownership conformance.
     readme: src/Meridian.Identity/README.md
     roadmap_items:
       - W5-ACCT-001
@@ -552,7 +554,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-06-09
 
   - id: SRC-DESIGN-ENTITIES
     path: src/Meridian.Entities
@@ -625,7 +627,7 @@ modules:
     readme: src/Meridian.ReferenceData/README.md
     roadmap_items:
       - W1-DATA-001
-      - W5-MULTIASSET-001
+      - W5-MASSET-001
     stage_gates:
       - DataConfidence
       - AccountingRecords
@@ -647,7 +649,7 @@ modules:
     readme: src/Meridian.Instruments/README.md
     roadmap_items:
       - W4-RECON-001
-      - W5-MULTIASSET-001
+      - W5-MASSET-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -673,7 +675,7 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W5-ACCT-001
-      - W5-MULTIASSET-001
+      - W5-MASSET-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -696,9 +698,11 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W5-ACCT-001
+      - W5X-FINOPS-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
+      - GovernedReportPack
     validation:
       - dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
@@ -714,7 +718,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-06-10
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -767,7 +771,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Physical bounded-context module project for report packs, governed exports, reporting run contracts, template catalogs, Security Master-enriched report generation, NAV attribution, orchestration, publication, restatement, distribution, and reporting ownership conformance.
+    purpose: Physical bounded-context module project for report packs, governed exports, reporting run contracts, template catalogs, Security Master-enriched report generation, NAV attribution, orchestration, publication, restatement, distribution, no-code report-writer grid rendering, saved filters, formulas, lineage, and reporting ownership conformance.
     readme: src/Meridian.Reporting/README.md
     roadmap_items:
       - W4-RPT-001
@@ -781,7 +785,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-05
+    last_reviewed: 2026-06-09
 
   - id: SRC-DESIGN-DOCUMENTS
     path: src/Meridian.Documents
@@ -842,7 +846,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-09
 
   - id: SRC-UI-SERVICES
     path: src/Meridian.Ui.Services
@@ -879,7 +883,7 @@ modules:
     layer: UI Shared
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Shared UI read models, endpoint adapters, Security Master workbench projections, acceptance filters, and compatibility shims for browser and desktop surfaces.
+    purpose: Shared UI read models, endpoint adapters, Security Master workbench projections, ledger/accounting configuration services, private-capital activity drill-through, report-pack delivery and readiness projections, identity/auth adapters, acceptance filters, and compatibility shims for browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
       - W2-TRD-001
@@ -898,7 +902,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-06-09
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -906,17 +910,21 @@ modules:
     layer: UI Surface
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Active browser operator workstation.
+    purpose: Active browser operator workstation for the canonical Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings roots, including W1-W5 accounting, reporting, private-capital, and multi-asset operational-record workflows over shared contracts.
     readme: src/Meridian.Ui/dashboard/README.md
     roadmap_items:
       - W2-TRD-001
       - W2-PROMO-001
       - W3-CONT-001
+      - W4-RPT-001
       - W5-ACCT-001
+      - W5-MASSET-001
     stage_gates:
       - PaperSession
       - PromotionReview
       - ResearchContinuity
+      - PortfolioLedgerReview
+      - GovernedReportPack
       - AccountingRecords
     validation:
       - npm --prefix src/Meridian.Ui/dashboard run test
@@ -927,7 +935,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-06-02
+    last_reviewed: 2026-06-09
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
@@ -935,12 +943,13 @@ modules:
     layer: UI Surface
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Active Windows desktop operator workstation sharing contracts and read models with the browser workstation.
+    purpose: Active Windows desktop operator workstation sharing contracts and read models with the browser workstation, including accounting configuration, private-capital ledger evidence, report-pack readiness, and multi-asset operational-record views.
     readme: src/Meridian.Wpf/README.md
     roadmap_items:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W5-MASSET-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -951,4 +960,4 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-06-09

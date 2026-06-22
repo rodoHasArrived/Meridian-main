@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
@@ -11,13 +11,22 @@ import type {
   OperationsCloseCalendar,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantineReview,
+  ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationStagingIdentityResolutionPreview,
+  ProviderIntegrationStagingReview,
+  ProviderIntegrationSyncPlan,
+  ProviderIntegrationSyncRunHistory,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
   RolePermissionCatalog,
   SecurityAssetProfileDefinition,
   SessionInfo,
-  SystemOverviewResponse
+  SystemOverviewResponse,
+  UserAccessAssignment
 } from "@/types";
 
 const apiMocks = vi.hoisted(() => ({
@@ -25,8 +34,11 @@ const apiMocks = vi.hoisted(() => ({
   assignLedgerMapping: vi.fn(),
   createSecurityMasterEntry: vi.fn(),
   createRolePermissionProfile: vi.fn(),
+  createScopedAccessAssignment: vi.fn(),
   draftSecurityAssetProfile: vi.fn(),
   getSecurityAssetProfileLineage: vi.fn(),
+  listScopedAccessAssignments: vi.fn(),
+  revokeScopedAccessAssignment: vi.fn(),
   rollbackSecurityAssetProfile: vi.fn(),
   upsertOperationsApprovalPolicyRule: vi.fn(),
   upsertOperationsCloseCalendarItem: vi.fn(),
@@ -34,8 +46,29 @@ const apiMocks = vi.hoisted(() => ({
   revokeAlpacaConnection: vi.fn(),
   testProviderConnection: vi.fn(),
   putProviderCredentials: vi.fn(),
+  activateProviderIntegration: vi.fn(),
+  checkProviderIntegrationSchemaDrift: vi.fn(),
+  createProviderIntegrationReconciliationHandoff: vi.fn(),
+  getProviderIntegrationReadiness: vi.fn(),
+  getProviderIntegrationTemplate: vi.fn(),
+  getProviderIntegrationTemplates: vi.fn(),
+  importProviderIntegrationOpenApi: vi.fn(),
+  replayProviderIntegrationQuarantineRecords: vi.fn(),
+  resolveProviderIntegrationQuarantineRecord: vi.fn(),
+  runDueProviderIntegrationSync: vi.fn(),
+  runManualCsvProviderIntegrationDryRun: vi.fn(),
+  runRestProviderIntegrationDryRun: vi.fn(),
+  saveProviderIntegrationSetup: vi.fn(),
   verifyProviderConnection: vi.fn(),
-  deleteProviderCredentials: vi.fn()
+  deleteProviderCredentials: vi.fn(),
+  getProviderIntegrationConnectionMonitor: vi.fn(),
+  getProviderIntegrationConnectionSyncPlan: vi.fn(),
+  getProviderIntegrationConnectionSyncRuns: vi.fn(),
+  getProviderIntegrationIdentityResolution: vi.fn(),
+  getProviderIntegrationPromotionReadiness: vi.fn(),
+  getProviderIntegrationQuarantineReview: vi.fn(),
+  getProviderIntegrationReconciliationHandoffHistory: vi.fn(),
+  getProviderIntegrationStagingReview: vi.fn()
 }));
 
 vi.mock("@/lib/api", async (importActual) => ({
@@ -44,8 +77,11 @@ vi.mock("@/lib/api", async (importActual) => ({
   assignLedgerMapping: apiMocks.assignLedgerMapping,
   createSecurityMasterEntry: apiMocks.createSecurityMasterEntry,
   createRolePermissionProfile: apiMocks.createRolePermissionProfile,
+  createScopedAccessAssignment: apiMocks.createScopedAccessAssignment,
   draftSecurityAssetProfile: apiMocks.draftSecurityAssetProfile,
   getSecurityAssetProfileLineage: apiMocks.getSecurityAssetProfileLineage,
+  listScopedAccessAssignments: apiMocks.listScopedAccessAssignments,
+  revokeScopedAccessAssignment: apiMocks.revokeScopedAccessAssignment,
   rollbackSecurityAssetProfile: apiMocks.rollbackSecurityAssetProfile,
   upsertOperationsApprovalPolicyRule: apiMocks.upsertOperationsApprovalPolicyRule,
   upsertOperationsCloseCalendarItem: apiMocks.upsertOperationsCloseCalendarItem,
@@ -53,8 +89,29 @@ vi.mock("@/lib/api", async (importActual) => ({
   revokeAlpacaConnection: apiMocks.revokeAlpacaConnection,
   testProviderConnection: apiMocks.testProviderConnection,
   putProviderCredentials: apiMocks.putProviderCredentials,
+  activateProviderIntegration: apiMocks.activateProviderIntegration,
+  checkProviderIntegrationSchemaDrift: apiMocks.checkProviderIntegrationSchemaDrift,
+  createProviderIntegrationReconciliationHandoff: apiMocks.createProviderIntegrationReconciliationHandoff,
+  getProviderIntegrationReadiness: apiMocks.getProviderIntegrationReadiness,
+  getProviderIntegrationTemplate: apiMocks.getProviderIntegrationTemplate,
+  getProviderIntegrationTemplates: apiMocks.getProviderIntegrationTemplates,
+  importProviderIntegrationOpenApi: apiMocks.importProviderIntegrationOpenApi,
+  replayProviderIntegrationQuarantineRecords: apiMocks.replayProviderIntegrationQuarantineRecords,
+  resolveProviderIntegrationQuarantineRecord: apiMocks.resolveProviderIntegrationQuarantineRecord,
+  runDueProviderIntegrationSync: apiMocks.runDueProviderIntegrationSync,
+  runManualCsvProviderIntegrationDryRun: apiMocks.runManualCsvProviderIntegrationDryRun,
+  runRestProviderIntegrationDryRun: apiMocks.runRestProviderIntegrationDryRun,
+  saveProviderIntegrationSetup: apiMocks.saveProviderIntegrationSetup,
   verifyProviderConnection: apiMocks.verifyProviderConnection,
-  deleteProviderCredentials: apiMocks.deleteProviderCredentials
+  deleteProviderCredentials: apiMocks.deleteProviderCredentials,
+  getProviderIntegrationConnectionMonitor: apiMocks.getProviderIntegrationConnectionMonitor,
+  getProviderIntegrationConnectionSyncPlan: apiMocks.getProviderIntegrationConnectionSyncPlan,
+  getProviderIntegrationConnectionSyncRuns: apiMocks.getProviderIntegrationConnectionSyncRuns,
+  getProviderIntegrationIdentityResolution: apiMocks.getProviderIntegrationIdentityResolution,
+  getProviderIntegrationPromotionReadiness: apiMocks.getProviderIntegrationPromotionReadiness,
+  getProviderIntegrationQuarantineReview: apiMocks.getProviderIntegrationQuarantineReview,
+  getProviderIntegrationReconciliationHandoffHistory: apiMocks.getProviderIntegrationReconciliationHandoffHistory,
+  getProviderIntegrationStagingReview: apiMocks.getProviderIntegrationStagingReview
 }));
 
 const session: SessionInfo = {
@@ -436,14 +493,31 @@ describe("SettingsScreen", () => {
     apiMocks.getSecurityAssetProfileLineage.mockReset();
     apiMocks.assignLedgerMapping.mockReset();
     apiMocks.createRolePermissionProfile.mockReset();
+    apiMocks.createScopedAccessAssignment.mockReset();
+    apiMocks.listScopedAccessAssignments.mockReset();
+    apiMocks.revokeScopedAccessAssignment.mockReset();
+    apiMocks.listScopedAccessAssignments.mockImplementation(() => new Promise(() => undefined));
     apiMocks.rollbackSecurityAssetProfile.mockReset();
     apiMocks.upsertOperationsApprovalPolicyRule.mockReset();
     apiMocks.upsertOperationsCloseCalendarItem.mockReset();
     apiMocks.revokeAlpacaConnection.mockReset();
     apiMocks.testProviderConnection.mockReset();
     apiMocks.putProviderCredentials.mockReset();
+    apiMocks.createProviderIntegrationReconciliationHandoff.mockReset();
+    apiMocks.importProviderIntegrationOpenApi.mockReset();
+    apiMocks.replayProviderIntegrationQuarantineRecords.mockReset();
+    apiMocks.resolveProviderIntegrationQuarantineRecord.mockReset();
+    apiMocks.runDueProviderIntegrationSync.mockReset();
     apiMocks.verifyProviderConnection.mockReset();
     apiMocks.deleteProviderCredentials.mockReset();
+    apiMocks.getProviderIntegrationConnectionMonitor.mockReset();
+    apiMocks.getProviderIntegrationConnectionSyncPlan.mockReset();
+    apiMocks.getProviderIntegrationConnectionSyncRuns.mockReset();
+    apiMocks.getProviderIntegrationIdentityResolution.mockReset();
+    apiMocks.getProviderIntegrationPromotionReadiness.mockReset();
+    apiMocks.getProviderIntegrationQuarantineReview.mockReset();
+    apiMocks.getProviderIntegrationReconciliationHandoffHistory.mockReset();
+    apiMocks.getProviderIntegrationStagingReview.mockReset();
   });
 
   it("renders recent events as accessible status evidence rows", () => {
@@ -743,6 +817,160 @@ describe("SettingsScreen", () => {
     expect(within(form).getByText("Audit role-audit-1")).toBeInTheDocument();
   });
 
+  it("grants and revokes scoped access assignments with audit evidence", async () => {
+    const user = userEvent.setup();
+    const assignment: UserAccessAssignment = {
+      assignmentId: "access-assignment-1",
+      principalId: "fund-controller",
+      principalKind: "User",
+      scopeKind: "Fund",
+      scopeId: "fund-2026",
+      role: "Accounting",
+      roleProfileName: "Close Reviewer",
+      permissionNames: ["ManageDirectLending"],
+      permissionMask: 2,
+      effectiveFrom: "2026-06-01T00:00:00Z",
+      effectiveTo: null,
+      grantedBy: "Ops Lead",
+      rationale: "Month-end close control",
+      correlationId: "access-correlation-1",
+      version: 3,
+      createdAtUtc: "2026-06-01T00:00:00Z",
+      updatedAtUtc: "2026-06-01T00:00:00Z",
+      revokedBy: null,
+      revokedAtUtc: null,
+      revocationReason: null,
+      lastAuditId: "access-audit-1",
+      approvalLimitAmount: 100000,
+      approvalLimitCurrency: "USD",
+      segregationOfDutiesRule: "Requester cannot approve own payment request."
+    };
+    const createdAssignment: UserAccessAssignment = {
+      ...assignment,
+      assignmentId: "access-assignment-2",
+      principalId: "fund-reviewer",
+      scopeId: "fund-review",
+      roleProfileName: null,
+      permissionNames: ["ViewTrades", "ManageDirectLending"],
+      permissionMask: 3,
+      rationale: "Grant fund close authority",
+      correlationId: "access-correlation-2",
+      version: 1,
+      lastAuditId: "access-audit-2",
+      approvalLimitAmount: 250000,
+      approvalLimitCurrency: "USD",
+      segregationOfDutiesRule: "Requester cannot approve own payment request."
+    };
+    const revokedAssignment: UserAccessAssignment = {
+      ...assignment,
+      version: 4,
+      revokedBy: "Ops Lead",
+      revokedAtUtc: "2026-06-02T00:00:00Z",
+      revocationReason: "Revoke scoped authority for fund-controller.",
+      lastAuditId: "access-audit-3"
+    };
+    apiMocks.listScopedAccessAssignments.mockResolvedValue([assignment]);
+    apiMocks.createScopedAccessAssignment.mockResolvedValue({
+      assignment: createdAssignment,
+      auditEvent: {
+        auditId: "access-audit-2",
+        eventType: "scoped-access-granted",
+        occurredAtUtc: "2026-06-02T00:00:00Z",
+        actor: "Ops Lead",
+        rationale: "Grant fund close authority",
+        correlationId: "access-correlation-2",
+        assignmentId: createdAssignment.assignmentId,
+        principalId: createdAssignment.principalId,
+        scopeKind: createdAssignment.scopeKind,
+        scopeId: createdAssignment.scopeId,
+        permissionNames: createdAssignment.permissionNames,
+        permissionMask: createdAssignment.permissionMask,
+        version: createdAssignment.version,
+        approvalLimitAmount: createdAssignment.approvalLimitAmount,
+        approvalLimitCurrency: createdAssignment.approvalLimitCurrency,
+        segregationOfDutiesRule: createdAssignment.segregationOfDutiesRule
+      }
+    });
+    apiMocks.revokeScopedAccessAssignment.mockResolvedValue({
+      assignment: revokedAssignment,
+      auditEvent: {
+        auditId: "access-audit-3",
+        eventType: "scoped-access-revoked",
+        occurredAtUtc: "2026-06-02T00:00:00Z",
+        actor: "Ops Lead",
+        rationale: "Revoke scoped authority for fund-controller.",
+        correlationId: "access-correlation-3",
+        assignmentId: revokedAssignment.assignmentId,
+        principalId: revokedAssignment.principalId,
+        scopeKind: revokedAssignment.scopeKind,
+        scopeId: revokedAssignment.scopeId,
+        permissionNames: revokedAssignment.permissionNames,
+        permissionMask: revokedAssignment.permissionMask,
+        version: revokedAssignment.version,
+        approvalLimitAmount: revokedAssignment.approvalLimitAmount,
+        approvalLimitCurrency: revokedAssignment.approvalLimitCurrency,
+        segregationOfDutiesRule: revokedAssignment.segregationOfDutiesRule
+      }
+    });
+    const onRefresh = vi.fn();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, role: "Accounting", displayName: "Ops Lead" }}
+        overview={overview}
+        rolePermissionCatalog={rolePermissionCatalog}
+        onRefresh={onRefresh}
+      />
+    );
+
+    const consoleRegion = await screen.findByRole("region", { name: "Scoped access assignment console" });
+    expect(within(consoleRegion).getByText("fund-controller")).toBeInTheDocument();
+    expect(within(consoleRegion).getByText("access-audit-1")).toBeInTheDocument();
+    expect(within(consoleRegion).getByText("USD 100,000")).toBeInTheDocument();
+    expect(within(consoleRegion).getByText("Requester cannot approve own payment request.")).toBeInTheDocument();
+
+    const form = screen.getByRole("form", { name: "Grant scoped access assignment" });
+    await waitFor(() => expect(within(form).getByLabelText("Role")).toHaveValue("Accounting"));
+    fireEvent.change(within(form).getByLabelText("Scoped access principal id"), { target: { value: "fund-reviewer" } });
+    fireEvent.change(within(form).getByLabelText("Scoped access scope id"), { target: { value: "fund-review" } });
+    fireEvent.change(within(form).getByLabelText("Scoped access approval limit amount"), { target: { value: "250000" } });
+    fireEvent.change(within(form).getByLabelText("Scoped access approval limit currency"), { target: { value: "usd" } });
+    fireEvent.change(within(form).getByLabelText("Scoped access segregation of duties rule"), {
+      target: { value: "Requester cannot approve own payment request." }
+    });
+    fireEvent.change(within(form).getByLabelText("Scoped access rationale"), { target: { value: "Grant fund close authority" } });
+    await user.click(within(form).getByRole("button", { name: /Grant access/i }));
+
+    expect(apiMocks.createScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
+      principalId: "fund-reviewer",
+      principalKind: "User",
+      scopeKind: "Fund",
+      scopeId: "fund-review",
+      role: "Accounting",
+      roleProfileName: null,
+      permissionNames: ["ViewTrades", "ManageDirectLending"],
+      requestedBy: "Ops Lead",
+      rationale: "Grant fund close authority",
+      approvalLimitAmount: 250000,
+      approvalLimitCurrency: "USD",
+      segregationOfDutiesRule: "Requester cannot approve own payment request."
+    }));
+    expect(await within(form).findByText("Scoped access granted for fund-reviewer.")).toBeInTheDocument();
+    expect(within(form).getByText("Audit access-audit-2")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Revoke scoped access for fund-controller" }));
+
+    expect(apiMocks.revokeScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
+      assignmentId: "access-assignment-1",
+      expectedVersion: 3,
+      requestedBy: "Ops Lead",
+      rationale: "Revoke scoped authority for fund-controller."
+    }));
+    expect(await within(form).findByText("Scoped access revoked for fund-controller.")).toBeInTheDocument();
+    expect(onRefresh).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText("fund-controller")).toBeNull();
+  });
+
   it("updates approval policy rules with reviewer and evidence controls", async () => {
     const user = userEvent.setup();
     apiMocks.upsertOperationsApprovalPolicyRule.mockResolvedValue({
@@ -781,17 +1009,12 @@ describe("SettingsScreen", () => {
     );
 
     const form = screen.getByRole("form", { name: "Configure approval policy rule" });
-    await user.clear(within(form).getByLabelText("Approval policy reviewer role"));
-    await user.type(within(form).getByLabelText("Approval policy reviewer role"), "Controller");
-    await user.clear(within(form).getByLabelText("Approval policy required distinct approvals"));
-    await user.type(within(form).getByLabelText("Approval policy required distinct approvals"), "3");
-    await user.clear(within(form).getByLabelText("Approval policy evidence requirement"));
-    await user.type(
-      within(form).getByLabelText("Approval policy evidence requirement"),
-      "Controller packet and checklist control evidence."
-    );
-    await user.clear(within(form).getByLabelText("Approval policy rationale"));
-    await user.type(within(form).getByLabelText("Approval policy rationale"), "Tighten close approval accounting");
+    fireEvent.change(within(form).getByLabelText("Approval policy reviewer role"), { target: { value: "Controller" } });
+    fireEvent.change(within(form).getByLabelText("Approval policy required distinct approvals"), { target: { value: "3" } });
+    fireEvent.change(within(form).getByLabelText("Approval policy evidence requirement"), {
+      target: { value: "Controller packet and checklist control evidence." }
+    });
+    fireEvent.change(within(form).getByLabelText("Approval policy rationale"), { target: { value: "Tighten close approval accounting" } });
     await user.click(within(form).getByRole("button", { name: /Save policy/i }));
 
     expect(apiMocks.upsertOperationsApprovalPolicyRule).toHaveBeenCalledWith(expect.objectContaining({
@@ -899,6 +1122,789 @@ describe("SettingsScreen", () => {
     expect(center).not.toHaveTextContent("vault:polygon/default");
   });
 
+  it("loads provider integration runtime evidence for a provider routing connection", async () => {
+    const user = userEvent.setup();
+    const syncRuns: ProviderIntegrationSyncRunHistory = {
+      connectionId: "provider-reference",
+      totalSyncRuns: 4,
+      returnedSyncRuns: 2,
+      latestStartedAt: "2026-06-16T12:30:00Z",
+      syncRuns: [
+        {
+          syncRunId: "sync-positions-2",
+          capability: "Positions",
+          endpointKey: "positions",
+          startedAt: "2026-06-16T12:30:00Z",
+          completedAt: "2026-06-16T12:31:00Z",
+          status: "Quarantined",
+          recordsReceived: 17,
+          recordsAccepted: 14,
+          recordsQuarantined: 3,
+          durableStagingRecordCount: 14,
+          durableQuarantinedRecordCount: 3,
+          criticalIssueCount: 1,
+          warningIssueCount: 1,
+          rawPayloadId: "raw-polygon-2",
+          issues: []
+        },
+        {
+          syncRunId: "sync-positions-1",
+          capability: "Positions",
+          endpointKey: "positions",
+          startedAt: "2026-06-16T11:00:00Z",
+          completedAt: "2026-06-16T11:01:00Z",
+          status: "Loaded",
+          recordsReceived: 12,
+          recordsAccepted: 12,
+          recordsQuarantined: 0,
+          durableStagingRecordCount: 12,
+          durableQuarantinedRecordCount: 0,
+          criticalIssueCount: 0,
+          warningIssueCount: 0,
+          rawPayloadId: "raw-polygon-1",
+          issues: []
+        }
+      ]
+    };
+    const monitor: ProviderIntegrationConnectionMonitor = {
+      connectionId: "provider-reference",
+      manifestId: "manifest-polygon",
+      providerId: "polygon",
+      displayName: "Polygon.io",
+      connectionName: "Reference data route",
+      environment: "paper",
+      state: "Active",
+      enabledCapabilities: ["Positions"],
+      lastSyncRun: syncRuns.syncRuns[0],
+      recentSyncRuns: syncRuns.syncRuns,
+      recentRecordsReceived: 17,
+      recentRecordsAccepted: 14,
+      recentRecordsQuarantined: 3,
+      durableStagingRecordCount: 14,
+      durableQuarantinedRecordCount: 3,
+      hasCriticalIssues: true
+    };
+    const quarantine: ProviderIntegrationQuarantineReview = {
+      connectionId: "provider-reference",
+      syncRunIds: ["sync-positions-2"],
+      records: [
+        {
+          quarantineRecordId: "quarantine-position-1",
+          syncRunId: "sync-positions-2",
+          connectionId: "provider-reference",
+          capability: "Positions",
+          rawRecord: { accountNumber: "acct-1", cusip: null },
+          mappedRecord: { providerAccountId: "acct-1" },
+          validationErrors: [
+            {
+              code: "SCHEMA_REQUIRED",
+              severity: "Critical",
+              message: "CUSIP is required before staging promotion.",
+              targetField: "cusip",
+              suggestedFix: "Add provider mapping."
+            }
+          ],
+          status: "Quarantined",
+          createdAt: "2026-06-16T12:31:00Z"
+        },
+        {
+          quarantineRecordId: "quarantine-position-2",
+          syncRunId: "sync-positions-2",
+          connectionId: "provider-reference",
+          capability: "Positions",
+          rawRecord: { accountNumber: "acct-1", cusip: null },
+          mappedRecord: { providerAccountId: "acct-1" },
+          validationErrors: [
+            {
+              code: "SCHEMA_REQUIRED",
+              severity: "Critical",
+              message: "CUSIP is required before staging promotion.",
+              targetField: "cusip",
+              suggestedFix: "Add provider mapping."
+            }
+          ],
+          status: "Quarantined",
+          createdAt: "2026-06-16T12:31:05Z"
+        },
+        {
+          quarantineRecordId: "quarantine-position-3",
+          syncRunId: "sync-positions-2",
+          connectionId: "provider-reference",
+          capability: "Positions",
+          rawRecord: { accountNumber: "acct-1", cusip: null },
+          mappedRecord: { providerAccountId: "acct-1" },
+          validationErrors: [
+            {
+              code: "SCHEMA_REQUIRED",
+              severity: "Critical",
+              message: "CUSIP is required before staging promotion.",
+              targetField: "cusip",
+              suggestedFix: "Add provider mapping."
+            }
+          ],
+          status: "Quarantined",
+          createdAt: "2026-06-16T12:31:10Z"
+        }
+      ],
+      decisions: [],
+      totalQuarantinedRecords: 3,
+      criticalIssueCount: 1,
+      warningIssueCount: 1,
+      pendingReviewRecordCount: 3,
+      decisionedRecordCount: 0,
+      replayRequestedRecordCount: 0,
+      ignoredRecordCount: 0,
+      cashPositionCandidateCount: 0,
+      issueGroups: [
+        {
+          issueCode: "SCHEMA_REQUIRED",
+          severity: "Critical",
+          targetField: "cusip",
+          message: "CUSIP is required before staging promotion.",
+          suggestedFix: "Add provider mapping.",
+          recordCount: 3
+        }
+      ]
+    };
+    const reviewOnlyDecision = {
+      decisionId: "quarantine-decision-review-1",
+      syncRunId: "sync-positions-2",
+      quarantineRecordId: "quarantine-position-1",
+      connectionId: "provider-reference",
+      action: "ReviewOnly" as const,
+      reviewedBy: "Andrew Rowden",
+      reviewedAt: "2026-06-16T12:42:00Z",
+      note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
+    };
+    const replayDecision = {
+      ...reviewOnlyDecision,
+      decisionId: "quarantine-decision-replay-1",
+      quarantineRecordId: "quarantine-position-2",
+      action: "ReplayAfterMappingChange" as const,
+      reviewedAt: "2026-06-16T12:43:00Z",
+      note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
+    };
+    const ignoreDecision = {
+      decisionId: "quarantine-decision-ignore-1",
+      syncRunId: "sync-positions-2",
+      quarantineRecordId: "quarantine-position-3",
+      connectionId: "provider-reference",
+      action: "IgnoreProviderRecord" as const,
+      reviewedBy: "Andrew Rowden",
+      reviewedAt: "2026-06-16T12:44:00Z",
+      note: "Ignored from the Settings Provider Connection Center after operator review."
+    };
+    const reviewedQuarantine = {
+      ...quarantine,
+      decisions: [reviewOnlyDecision],
+      decisionedRecordCount: 1,
+      pendingReviewRecordCount: 2
+    };
+    const replayQuarantine = {
+      ...quarantine,
+      decisions: [reviewOnlyDecision, replayDecision],
+      decisionedRecordCount: 2,
+      pendingReviewRecordCount: 1,
+      replayRequestedRecordCount: 1
+    };
+    const ignoredQuarantine = {
+      ...quarantine,
+      decisions: [reviewOnlyDecision, replayDecision, ignoreDecision],
+      decisionedRecordCount: 3,
+      pendingReviewRecordCount: 0,
+      replayRequestedRecordCount: 1,
+      ignoredRecordCount: 1
+    };
+    const syncPlan: ProviderIntegrationSyncPlan = {
+      connectionId: "provider-reference",
+      manifestId: "manifest-polygon",
+      providerId: "polygon",
+      connectionName: "Reference data route",
+      connectionState: "Active",
+      evaluatedAt: "2026-06-16T12:35:00Z",
+      dueCount: 1,
+      blockedCount: 0,
+      items: [
+        {
+          capability: "Positions",
+          endpointKey: "positions",
+          scheduleMode: "incremental",
+          frequency: "daily",
+          timezone: "America/New_York",
+          lastSuccessfulSyncAt: "2026-06-16T12:30:00Z",
+          nextEligibleSyncAt: "2026-06-17T12:30:00Z",
+          isDue: true,
+          isBlocked: false,
+          reason: "Daily provider position sync is due.",
+          issues: []
+        }
+      ]
+    };
+    const staging: ProviderIntegrationStagingReview = {
+      connectionId: "provider-reference",
+      syncRunIds: ["sync-positions-2"],
+      records: [
+        {
+          stagingRecordId: "stage-position-1",
+          syncRunId: "sync-positions-2",
+          connectionId: "provider-reference",
+          capability: "Positions",
+          rawPayloadId: "raw-polygon-2",
+          sourceRecordId: "provider-position-1",
+          dedupeKey: "Positions:provider-position-1",
+          mappedRecord: { providerAccountId: "acct-1", quantity: 10 },
+          validationWarnings: [],
+          status: "Validated",
+          createdAt: "2026-06-16T12:31:00Z"
+        }
+      ],
+      capabilitySummaries: [{ capability: "Positions", recordCount: 1, warningCount: 0 }],
+      warningGroups: [],
+      totalStagedRecords: 1,
+      readyForReconciliationCount: 1,
+      warningRecordCount: 0
+    };
+    const identity: ProviderIntegrationStagingIdentityResolutionPreview = {
+      connectionId: "provider-reference",
+      syncRunIds: ["sync-positions-2"],
+      rows: [],
+      totalRows: 1,
+      accountReviewRequiredCount: 0,
+      missingAccountIdentifierCount: 0,
+      securityResolvedCount: 1,
+      securityReviewRequiredCount: 1,
+      missingSecurityIdentifierCount: 0
+    };
+    const promotion: ProviderIntegrationPromotionReadinessPreview = {
+      connectionId: "provider-reference",
+      syncRunIds: ["sync-positions-2"],
+      totalRows: 1,
+      readyForReconciliationCount: 1,
+      reviewRequiredCount: 0,
+      blockedCount: 0,
+      rows: [
+        {
+          stagingRecordId: "stage-position-1",
+          syncRunId: "sync-positions-2",
+          capability: "Positions",
+          promotionTarget: "reconciliation-staging",
+          status: "ReadyForReconciliation",
+          providerAccountId: "acct-1",
+          internalAccountId: "internal-account-1",
+          internalSecurityId: "security-1",
+          securityDisplayName: "US Treasury 2031",
+          securityRoute: "/data/security-master/security-1",
+          issues: []
+        }
+      ]
+    };
+    const handoff: ProviderIntegrationReconciliationHandoffHistory = {
+      connectionId: "provider-reference",
+      totalRecords: 1,
+      handoffCount: 1,
+      lastRequestedAt: "2026-06-16T12:40:00Z",
+      records: [
+        {
+          handoffId: "handoff-1",
+          connectionId: "provider-reference",
+          syncRunId: "sync-positions-2",
+          stagingRecordId: "stage-position-1",
+          capability: "Positions",
+          promotionTarget: "reconciliation-staging",
+          requestedBy: "operations",
+          requestedAt: "2026-06-16T12:40:00Z",
+          approvalEvidenceId: "approval-1",
+          note: "Approved after identity review.",
+          providerAccountId: "acct-1",
+          internalAccountId: "internal-account-1",
+          internalSecurityId: "security-1",
+          securityRoute: "/data/security-master/security-1",
+          issues: []
+        }
+      ]
+    };
+    const emptyHandoff: ProviderIntegrationReconciliationHandoffHistory = {
+      connectionId: "provider-reference",
+      totalRecords: 0,
+      handoffCount: 0,
+      lastRequestedAt: null,
+      records: []
+    };
+    apiMocks.getProviderIntegrationConnectionMonitor.mockResolvedValue(monitor);
+    apiMocks.getProviderIntegrationConnectionSyncPlan.mockResolvedValue(syncPlan);
+    apiMocks.getProviderIntegrationConnectionSyncRuns.mockResolvedValue(syncRuns);
+    apiMocks.getProviderIntegrationIdentityResolution.mockResolvedValue(identity);
+    apiMocks.getProviderIntegrationPromotionReadiness.mockResolvedValue(promotion);
+    apiMocks.getProviderIntegrationQuarantineReview
+      .mockResolvedValue(quarantine)
+      .mockResolvedValueOnce(quarantine)
+      .mockResolvedValueOnce(quarantine)
+      .mockResolvedValueOnce(reviewedQuarantine)
+      .mockResolvedValueOnce(reviewedQuarantine)
+      .mockResolvedValueOnce(replayQuarantine)
+      .mockResolvedValueOnce(ignoredQuarantine);
+    apiMocks.getProviderIntegrationReconciliationHandoffHistory
+      .mockResolvedValue(handoff)
+      .mockResolvedValueOnce(emptyHandoff);
+    apiMocks.getProviderIntegrationStagingReview.mockResolvedValue(staging);
+    apiMocks.importProviderIntegrationOpenApi.mockResolvedValue({
+      imported: true,
+      manifest: {
+        manifestId: "draft-polygon-openapi-v1",
+        integrationType: "OpenApiRest",
+        endpoints: [{ endpointKey: "positions" }, { endpointKey: "accounts" }],
+        state: "Draft"
+      },
+      readiness: {
+        isReady: false,
+        requiredEvidence: ["endpoint-test-required"],
+        issues: []
+      },
+      issues: [],
+      message: "OpenAPI import draft manifest saved."
+    });
+    apiMocks.runDueProviderIntegrationSync.mockResolvedValue({
+      connectionId: "provider-reference",
+      requestedAt: "2026-06-16T12:45:00Z",
+      startedCount: 1,
+      skippedCount: 0,
+      items: [
+        {
+          capability: "Positions",
+          endpointKey: "positions",
+          started: true,
+          skipped: false,
+          reason: "due",
+          syncRunId: "run-due-positions-1",
+          dryRunResult: null,
+          issues: []
+        }
+      ]
+    });
+    apiMocks.createProviderIntegrationReconciliationHandoff.mockResolvedValue({
+      accepted: true,
+      handoffId: "handoff-settings-1",
+      connectionId: "provider-reference",
+      promotionTarget: "reconciliation-staging",
+      records: handoff.records,
+      acceptedRecordCount: 1,
+      rejectedRecordCount: 0,
+      duplicateRecordCount: 0,
+      issues: [],
+      message: "Reconciliation handoff created."
+    });
+    apiMocks.replayProviderIntegrationQuarantineRecords.mockResolvedValue({
+      replaySyncRunId: "provider-replay-provider-reference-20260616",
+      rawPayloadId: "raw-replay-1",
+      capability: "Positions",
+      recordsReplayed: 2,
+      recordsAccepted: 2,
+      recordsRequarantined: 0,
+      status: "Validated",
+      issues: []
+    });
+    apiMocks.resolveProviderIntegrationQuarantineRecord.mockResolvedValue({
+      resolved: true,
+      record: quarantine.records[0],
+      decision: {
+        decisionId: "quarantine-decision-1",
+        syncRunId: "sync-positions-2",
+        quarantineRecordId: "quarantine-position-1",
+        connectionId: "provider-reference",
+        action: "ReviewOnly",
+        reviewedBy: "Andrew Rowden",
+        reviewedAt: "2026-06-16T12:42:00Z",
+        note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
+      },
+      message: "Provider integration quarantine review decision recorded."
+    });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+        providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      />
+    );
+
+    const panel = screen.getByRole("region", { name: "Polygon.io provider integration runtime evidence" });
+    expect(within(panel).getByText("No runtime evidence loaded.")).toBeInTheDocument();
+    await user.click(within(panel).getByRole("button", { name: "Load provider integration runtime evidence for Polygon.io" }));
+
+    await waitFor(() => {
+      expect(apiMocks.getProviderIntegrationConnectionMonitor).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationConnectionSyncPlan).toHaveBeenCalledWith("provider-reference", expect.any(String));
+      expect(apiMocks.getProviderIntegrationConnectionSyncRuns).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationStagingReview).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationIdentityResolution).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationPromotionReadiness).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationReconciliationHandoffHistory).toHaveBeenCalledWith("provider-reference");
+      expect(apiMocks.getProviderIntegrationQuarantineReview).toHaveBeenCalledWith("provider-reference", 5);
+    });
+    expect(await within(panel).findByText("Provider integration runtime evidence loaded.")).toBeInTheDocument();
+    expect(within(panel).getByText("provider-reference")).toBeInTheDocument();
+    expect(within(panel).getByText("Jun 16, 12:30 UTC")).toBeInTheDocument();
+    expect(within(panel).getByText("2 / 4")).toBeInTheDocument();
+    expect(within(panel).getByText("14 / 3")).toBeInTheDocument();
+    expect(within(panel).getByText("1 critical / 1 warning")).toBeInTheDocument();
+    expect(within(panel).getByText("3 pending / 0 replay / 0 ignored / 0 cash")).toBeInTheDocument();
+    expect(within(panel).getByText("1 due / 0 blocked")).toBeInTheDocument();
+    expect(within(panel).getByText("1 rows")).toBeInTheDocument();
+    expect(within(panel).getByText("1 review required")).toBeInTheDocument();
+    expect(within(panel).getByText("1 ready / 0 blocked")).toBeInTheDocument();
+    expect(within(panel).getByText("0 handoffs")).toBeInTheDocument();
+    expect(within(panel).getByText("sync-positions-2")).toBeInTheDocument();
+    expect(within(panel).getByText("quarantine-position-1")).toBeInTheDocument();
+    expect(within(panel).getByText("quarantine-position-3")).toBeInTheDocument();
+    expect(within(panel).getByText("SCHEMA_REQUIRED")).toBeInTheDocument();
+    expect(within(panel).getAllByText("CUSIP is required before staging promotion.").length).toBeGreaterThanOrEqual(1);
+    expect(within(panel).getByText("Daily provider position sync is due.")).toBeInTheDocument();
+    expect(within(panel).getByText("stage-position-1")).toBeInTheDocument();
+    expect(within(panel).getByText(/US Treasury 2031/)).toBeInTheDocument();
+
+    const openApiForm = within(panel).getByRole("form", { name: "Polygon.io OpenAPI import draft" });
+    await user.click(within(openApiForm).getByRole("button", { name: "Import OpenAPI draft manifest for Polygon.io" }));
+
+    await waitFor(() => {
+      expect(apiMocks.importProviderIntegrationOpenApi).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: "draft-polygon-openapi-v1",
+        providerId: "polygon",
+        displayName: "Polygon.io OpenAPI",
+        environment: "paper",
+        authType: "OAuth2",
+        capabilities: ["Positions"],
+        importedBy: "Andrew Rowden",
+        importedAt: expect.any(String),
+        changeReason: "Imported from the Settings Provider Connection Center."
+      }));
+    });
+    expect(await within(openApiForm).findByText("OpenAPI import draft manifest saved.")).toBeInTheDocument();
+    expect(within(openApiForm).getByText("2 endpoints seeded.")).toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Create reconciliation handoff for 1 provider integration staging rows for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.createProviderIntegrationReconciliationHandoff).toHaveBeenCalledWith(expect.objectContaining({
+        connectionId: "provider-reference",
+        stagingRecordIds: ["stage-position-1"],
+        requestedBy: "Andrew Rowden",
+        requestedAt: expect.any(String),
+        approvalEvidenceId: expect.stringMatching(/^settings-provider-handoff-provider-reference-/),
+        note: "Approved from the Settings Provider Connection Center promotion readiness panel.",
+        recentRunLimit: 5
+      }));
+    });
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Review quarantine record quarantine-position-1 for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
+        connectionId: "provider-reference",
+        syncRunId: "sync-positions-2",
+        quarantineRecordId: "quarantine-position-1",
+        action: "ReviewOnly",
+        reviewedBy: "Andrew Rowden",
+        reviewedAt: expect.any(String),
+        note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
+      }));
+    });
+    expect(await within(panel).findByText("Decision: Review by Andrew Rowden · Jun 16, 12:42 UTC")).toBeInTheDocument();
+    expect(within(panel).getByText("Decision recorded")).toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Review quarantine record quarantine-position-1 for Polygon.io"
+    })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Mark quarantine record quarantine-position-1 for replay after mapping change for Polygon.io"
+    })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Ignore quarantine record quarantine-position-1 for Polygon.io"
+    })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Mark quarantine record quarantine-position-1 as cash position for Polygon.io"
+    })).not.toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Replay 2 quarantined provider integration records for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.replayProviderIntegrationQuarantineRecords).toHaveBeenCalledWith(expect.objectContaining({
+        sourceSyncRunId: "sync-positions-2",
+        manifestId: "manifest-polygon",
+        connectionId: "provider-reference",
+        capability: "Positions",
+        quarantineRecordIds: ["quarantine-position-2", "quarantine-position-3"],
+        requestedBy: "Andrew Rowden",
+        requestedAt: expect.any(String),
+        replaySyncRunId: expect.stringMatching(/^provider-replay-provider-reference-/)
+      }));
+    });
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Mark quarantine record quarantine-position-2 for replay after mapping change for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
+        connectionId: "provider-reference",
+        syncRunId: "sync-positions-2",
+        quarantineRecordId: "quarantine-position-2",
+        action: "ReplayAfterMappingChange",
+        reviewedBy: "Andrew Rowden",
+        reviewedAt: expect.any(String),
+        note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
+      }));
+    });
+    expect(await within(panel).findByText("Decision: Replay after mapping change by Andrew Rowden · Jun 16, 12:43 UTC")).toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Mark quarantine record quarantine-position-2 as cash position for Polygon.io"
+    })).not.toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Ignore quarantine record quarantine-position-3 for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
+        connectionId: "provider-reference",
+        syncRunId: "sync-positions-2",
+        quarantineRecordId: "quarantine-position-3",
+        action: "IgnoreProviderRecord",
+        reviewedBy: "Andrew Rowden",
+        reviewedAt: expect.any(String),
+        note: "Ignored from the Settings Provider Connection Center after operator review."
+      }));
+    });
+    expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 12:44 UTC")).toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", { name: "Run due provider integration sync for Polygon.io" }));
+
+    await waitFor(() => {
+      expect(apiMocks.runDueProviderIntegrationSync).toHaveBeenCalledWith("provider-reference", expect.objectContaining({
+        connectionId: "provider-reference",
+        requestedBy: "Andrew Rowden",
+        requestedAt: expect.any(String),
+        maxPages: 2,
+        pathParametersByCapability: {},
+        queryParametersByCapability: {}
+      }));
+    });
+  });
+
+  it("runs the guided provider integration workbench over shared setup and dry-run endpoints", async () => {
+    const user = userEvent.setup();
+    const manifest = {
+      manifestId: "template-polygon-data-v1",
+      manifestVersion: 1,
+      providerId: "polygon",
+      displayName: "Polygon positions REST",
+      integrationType: "OpenApiRest" as const,
+      environment: "paper",
+      auth: { type: "ApiKey" as const, tokenUrl: null, scopes: [], metadata: {} },
+      capabilities: [
+        {
+          capability: "Positions" as const,
+          enabled: true,
+          requiresCertifiedAdapter: false,
+          requiredCanonicalFields: ["accountId", "symbol", "quantity"]
+        }
+      ],
+      endpoints: [
+        {
+          endpointKey: "positions",
+          capability: "Positions" as const,
+          method: "Get" as const,
+          path: "/v3/reference/positions",
+          headers: {},
+          query: { limit: "100" },
+          requestBodyTemplate: null,
+          dependsOn: null,
+          pagination: { type: "None" as const, cursorPath: null, cursorParam: null, nextUrlPath: null, pageSize: null },
+          response: { recordsPath: "$.results", schemaFingerprint: "positions-v1", requiredPaths: ["accountId", "symbol", "quantity"] }
+        }
+      ],
+      fieldMappings: [
+        { capability: "Positions" as const, sourcePath: "$.accountId", targetField: "providerAccountId", transform: null, required: true, confidence: "High" as const, defaultValue: null, constantValue: null },
+        { capability: "Positions" as const, sourcePath: "$.symbol", targetField: "symbol", transform: null, required: true, confidence: "High" as const, defaultValue: null, constantValue: null }
+      ],
+      sync: { mode: "incremental", frequency: "daily", time: null, timezone: "America/New_York", cursorType: "Timestamp" as const, cursorField: "updatedAt", fullRefreshFrequency: null },
+      validationRules: [],
+      activation: {
+        requiresAuthenticationTest: true,
+        requiresEndpointTest: true,
+        requiresDryRun: true,
+        requiresApproval: true,
+        productionWriteCapabilitiesAllowed: false,
+        requiredIssueCodes: []
+      },
+      state: "Draft" as const,
+      createdBy: "operations",
+      createdAt: "2026-06-16T12:00:00Z",
+      approvedBy: null,
+      approvedAt: null,
+      changeReason: "Seed Polygon provider integration."
+    };
+    const reviewReadiness = {
+      isReady: false,
+      requiredEvidence: ["dry-run-result"],
+      issues: [
+        { code: "DRY_RUN_REQUIRED", severity: "Warning" as const, message: "Run dry-run before activation.", capability: "Positions" as const, suggestedFix: "Run a read-only dry-run." }
+      ]
+    };
+    const readyReadiness = { isReady: true, requiredEvidence: ["dry-run-result"], issues: [] };
+    apiMocks.getProviderIntegrationTemplates.mockResolvedValue([
+      {
+        manifestId: manifest.manifestId,
+        providerId: "polygon",
+        displayName: "Polygon positions REST",
+        integrationType: "OpenApiRest",
+        capabilities: ["Positions"],
+        summary: "Read-only position import for reconciliation staging.",
+        requiresCredentials: true
+      }
+    ]);
+    apiMocks.getProviderIntegrationTemplate.mockResolvedValue(manifest);
+    apiMocks.saveProviderIntegrationSetup.mockResolvedValue({
+      saved: true,
+      manifestId: manifest.manifestId,
+      connectionId: "provider-reference",
+      manifestState: "Draft",
+      connectionState: "Draft",
+      readiness: reviewReadiness,
+      approvalEvidenceId: null,
+      message: "Provider integration setup draft saved."
+    });
+    apiMocks.getProviderIntegrationReadiness.mockResolvedValue(readyReadiness);
+    apiMocks.runManualCsvProviderIntegrationDryRun.mockResolvedValue({
+      syncRunId: "settings-csv-provider-reference-20260616",
+      rawPayloadId: "raw-csv-1",
+      capability: "Positions",
+      recordsReceived: 1,
+      recordsAccepted: 1,
+      recordsQuarantined: 0,
+      status: "Validated",
+      issues: []
+    });
+    apiMocks.runRestProviderIntegrationDryRun.mockResolvedValue({
+      syncRunId: "settings-rest-provider-reference-20260616",
+      rawPayloadId: "raw-rest-1",
+      capability: "Positions",
+      recordsReceived: 2,
+      recordsAccepted: 2,
+      recordsQuarantined: 0,
+      status: "Validated",
+      issues: []
+    });
+    apiMocks.checkProviderIntegrationSchemaDrift.mockResolvedValue({
+      manifestId: manifest.manifestId,
+      connectionId: "provider-reference",
+      capability: "Positions",
+      endpointKey: "positions",
+      syncRunId: "settings-rest-provider-reference-20260616",
+      rawPayloadId: "raw-rest-1",
+      driftDetected: false,
+      shouldPauseCapability: false,
+      recordsInspected: 2,
+      issues: []
+    });
+    apiMocks.activateProviderIntegration.mockResolvedValue({
+      activated: true,
+      manifestId: manifest.manifestId,
+      connectionId: "provider-reference",
+      manifestState: "Active",
+      connectionState: "Active",
+      readiness: readyReadiness,
+      message: "Provider integration activated."
+    });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      />
+    );
+
+    const workbench = screen.getByRole("region", { name: "Polygon.io guided provider integration workbench" });
+    await user.click(within(workbench).getByRole("button", { name: "Load provider integration templates for Polygon.io" }));
+    expect(await within(workbench).findByText("1 provider integration templates loaded.")).toBeInTheDocument();
+    await user.click(within(workbench).getByRole("button", { name: "Use selected provider integration template for Polygon.io" }));
+    expect(await within(workbench).findByText("Template template-polygon-data-v1 loaded into draft setup editor.")).toBeInTheDocument();
+    expect(within(workbench).getAllByText(/\$\.accountId/).length).toBeGreaterThan(0);
+
+    await user.click(within(workbench).getByRole("button", { name: "Save provider integration setup draft for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.saveProviderIntegrationSetup).toHaveBeenCalledWith(expect.objectContaining({
+        manifest: expect.objectContaining({ manifestId: manifest.manifestId }),
+        connection: expect.objectContaining({ connectionId: "provider-reference", credentialSecretRef: expect.stringContaining("provider-credential:polygon") }),
+        savedBy: "Andrew Rowden",
+        savedAt: expect.any(String)
+      }));
+    });
+    expect(await within(workbench).findByText("Provider integration setup draft saved.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Check provider integration activation readiness for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.getProviderIntegrationReadiness).toHaveBeenCalledWith(manifest.manifestId, "provider-reference");
+    });
+    expect(await within(workbench).findByText("Activation readiness passed.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Run provider integration CSV dry-run for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.runManualCsvProviderIntegrationDryRun).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: manifest.manifestId,
+        connectionId: "provider-reference",
+        capability: "Positions",
+        requestedBy: "Andrew Rowden"
+      }));
+    });
+    expect(await within(workbench).findByText("CSV dry-run completed: 1 accepted / 0 quarantined.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Run provider integration REST dry-run for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.runRestProviderIntegrationDryRun).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: manifest.manifestId,
+        connectionId: "provider-reference",
+        endpointKey: "positions",
+        maxPages: 2
+      }));
+    });
+    expect(await within(workbench).findByText("REST dry-run completed: 2 accepted / 0 quarantined.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Check provider integration schema drift for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.checkProviderIntegrationSchemaDrift).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: manifest.manifestId,
+        connectionId: "provider-reference",
+        endpointKey: "positions",
+        rawPayloadId: "raw-rest-1",
+        checkedBy: "Andrew Rowden"
+      }));
+    });
+    expect(await within(workbench).findByText("Schema drift check passed.")).toBeInTheDocument();
+
+    await user.click(within(workbench).getByRole("button", { name: "Activate provider integration setup for Polygon.io" }));
+    await waitFor(() => {
+      expect(apiMocks.activateProviderIntegration).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: manifest.manifestId,
+        connectionId: "provider-reference",
+        approvedBy: "Andrew Rowden",
+        approvalEvidenceId: expect.stringMatching(/^settings-provider-activation-provider-reference-/)
+      }));
+    });
+    expect(await within(workbench).findByText("Provider integration activated.")).toBeInTheDocument();
+  });
   it("supports inline provider edit, test, save, verify, and clear actions", async () => {
     const user = userEvent.setup();
     const onRefresh = vi.fn();
@@ -1026,11 +2032,11 @@ describe("SettingsScreen", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Edit QuickBooks Online credentials" }));
-    await user.type(screen.getByLabelText("QuickBooks Online Client ID"), "qbo-client-id");
-    await user.type(screen.getByLabelText("QuickBooks Online Client secret"), "qbo-client-secret");
-    await user.type(screen.getByLabelText("QuickBooks Online Refresh token"), "qbo-refresh-token");
-    await user.type(screen.getByLabelText("QuickBooks Online Company realm ID"), "9130359087654321");
-    await user.type(screen.getByLabelText("QuickBooks Online Company name"), "Meridian-Dev");
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Client ID"), { target: { value: "qbo-client-id" } });
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Client secret"), { target: { value: "qbo-client-secret" } });
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Refresh token"), { target: { value: "qbo-refresh-token" } });
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Company realm ID"), { target: { value: "9130359087654321" } });
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Company name"), { target: { value: "Meridian-Dev" } });
     await user.click(screen.getByRole("button", { name: "Save QuickBooks Online credentials" }));
 
     expect(apiMocks.putProviderCredentials).toHaveBeenCalledWith(
@@ -1101,7 +2107,7 @@ describe("SettingsScreen", () => {
       />
     );
 
-    await user.type(screen.getByLabelText("Search providers in connection center"), "polygon");
+    fireEvent.change(screen.getByLabelText("Search providers in connection center"), { target: { value: "polygon" } });
     expect(screen.getByText("Polygon.io")).toBeInTheDocument();
     expect(screen.queryByText("Alpaca")).toBeNull();
 
@@ -1411,6 +2417,14 @@ describe("SettingsScreen", () => {
       "href",
       "/api/workstation/runs/history"
     );
+    expect(screen.getByRole("link", { name: "GET /api/ledger/private-capital/activity for Accounting Private-capital activity" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/activity"
+    );
+    expect(screen.getByRole("link", { name: "GET /api/ledger/private-capital/report-output for Accounting Report output" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/report-output"
+    );
     expect(screen.queryByRole("link", { name: "POST /api/workstation/reconciliation/runs for Accounting Run reconciliation" })).toBeNull();
     expect(screen.getByRole("group", {
       name: "Reference-only POST /api/workstation/reconciliation/runs for Accounting Run reconciliation"
@@ -1458,13 +2472,13 @@ describe("SettingsScreen", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Runtime feature capabilities" })).toBeInTheDocument();
-    const securityMasterToggle = screen.getByRole("checkbox", { name: "Enable Security master" });
-    expect(securityMasterToggle).not.toBeChecked();
+    const securityMasterToggle = screen.getByRole("switch", { name: "Enable Security master" });
+    expect(securityMasterToggle).toHaveAttribute("aria-checked", "false");
 
     await user.click(securityMasterToggle);
 
     expect(onFeatureCapabilityToggle).toHaveBeenCalledWith("desktop.data.security-master", true);
-    expect(screen.getByRole("checkbox", { name: "Disable Settings workspace" })).toBeDisabled();
+    expect(screen.getByRole("switch", { name: "Disable Settings workspace" })).toBeDisabled();
   });
 
   it("renders diagnostic endpoint failures as accessible endpoint cards", () => {

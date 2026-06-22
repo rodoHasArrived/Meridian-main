@@ -124,6 +124,14 @@ public sealed class FundAccountsViewModelTests
         xaml.Should().Contain("FundAccountsBriefingTitle");
         xaml.Should().Contain("Accounting Accounts");
         xaml.Should().NotContain("Governance Accounts");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<ListBox");
+        xaml.Should().NotContain("SelectionChanged=\"AccountSelectionChanged\"");
+        xaml.Should().Contain("FundAccountsActionStrip");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("FundAccountsWorkbench");
+        xaml.Should().Contain("FundAccountsQueueGrid");
+        xaml.Should().Contain("FundAccountsSelectionInspector");
         xaml.Should().Contain("FundAccountsBriefingDetail");
         xaml.Should().Contain("FundAccountsBriefingAction");
         xaml.Should().Contain("{Binding AccountBriefingTitle}");
@@ -136,6 +144,7 @@ public sealed class FundAccountsViewModelTests
         xaml.Should().Contain("{Binding BalanceEvidenceStatusText}");
         xaml.Should().Contain("{Binding BalanceEvidenceDetailText}");
         xaml.Should().Contain("{Binding BalanceEvidenceActionText}");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
     }
 
     [Fact]
@@ -150,6 +159,28 @@ public sealed class FundAccountsViewModelTests
         viewModel.AccountQueueStatusText.Should().Contain("accounting lanes");
         viewModel.AccountQueueStatusText.Should().NotContain("governance lanes");
         viewModel.SelectedAccountScopeText.Should().Be("No accounting scope selected.");
+    }
+
+    [Fact]
+    public void AccountQueueTableAndInspector_ShouldExposeDenseRowsAndSelectionFacts()
+    {
+        var viewModel = CreateViewModel();
+        var account = CreateBrokerageAccount(sharedDataAccess: CreateSharedDataAccess());
+
+        viewModel.Accounts.Add(account);
+
+        viewModel.AccountQueueTable.Rows.Should().ContainSingle().Which.Should().BeSameAs(account);
+        viewModel.AccountQueueTable.Columns.Select(column => column.Header)
+            .Should()
+            .ContainInOrder("Account", "Type", "Currency", "Institution", "Active", "Effective");
+        viewModel.SelectedAccountInspector.Title.Should().Be("No account selected");
+
+        viewModel.SelectedAccount = account;
+
+        viewModel.SelectedAccountInspector.Title.Should().Be(account.DisplayName);
+        viewModel.SelectedAccountInspector.Facts.Select(fact => fact.Label).Should().Contain("Currency");
+        viewModel.SelectedAccountInspector.Facts.Select(fact => fact.Label).Should().Contain("Accounting scope");
+        viewModel.SelectedAccountInspector.Facts.Select(fact => fact.Label).Should().Contain("Workflow links");
     }
 
     [Fact]

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-06-16
 
 This contract is the shared operating standard for AI-assisted development in Meridian. It applies
 to Codex, Claude, GitHub Copilot, MCP clients, reusable prompt templates, CI prompt generation, and
@@ -13,6 +13,7 @@ Canonical AI governance for this rebuild is:
 - `docs/ai/assistant-workflow-contract.md` (shared operating contract)
 - `docs/documentation-ownership.md` (lane authority and archive boundaries)
 - `docs/documentation-inventory.md` (migration classification)
+- `docs/architecture/meridian-development-intelligence-framework.md` (MDIF context spine for broad generation and architecture-sensitive work)
 - `.codex/skills/_shared/project-context.md` (Codex shared project context)
 - `AGENTS.md`, `CLAUDE.md` (compatibility shims)
 
@@ -28,7 +29,7 @@ The current repository evidence supports these AI surfaces:
 | System or surface | Repository assets | Primary role |
 | --- | --- | --- |
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
-| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/`, `tools/codex/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, validation checklists, and Codex PowerShell scanners/generators |
+| Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/`, `.codex/memory/`, `tools/codex/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, validation checklists, selective repo-local memory, and Codex PowerShell scanners/generators |
 | Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
 | Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/`, `.claude/plugins/` | Claude agent definitions, portable skill packages, checked-in plugin packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
@@ -62,7 +63,8 @@ Before behavior changes, run this sequence:
 1. Read `docs/ai/navigation/README.md`.
 2. Read the canonical generated navigation in `docs/ai/generated/repo-navigation.md`.
 3. Read the owning lane entrypoint (`start`, `engineering`, `product`, `operators`, or `reference`).
-4. Verify module/registry impact from `docs/source/data/source-modules.yml` and `docs/roadmap/data/*.yml`.
+4. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and the relevant pack in `docs/ai/context/README.md`.
+5. Verify module/registry impact from `docs/source/data/source-modules.yml` and `docs/roadmap/data/*.yml`.
 
 ### Generated-File Handling
 
@@ -70,9 +72,31 @@ Before behavior changes, run this sequence:
 - Update generator inputs and rerun generation commands.
 - Keep registry files (`docs/source/data/*.yml`, `docs/roadmap/data/*.yml`) as source-of-truth for generated views.
 
+### Human-in-the-loop Gates
+
+Pause and get explicit human confirmation before taking any provider-agnostic assistant action in
+these cases:
+
+- Applying migrations, deleting or archive-moving large sets of files, rewriting generated
+  inventories, or changing root AI policy.
+- Taking actions that could affect trading, portfolio accounting, approvals, credentials,
+  permissions, or audit evidence.
+- Proceeding after validation fails when the next step would change the implementation plan rather
+  than only rerun, narrow, or repair the failed check.
+- Continuing when repository instructions conflict with user instructions and the safer
+  interpretation is unclear.
+- Performing broad multi-surface edits across `.codex/`, `.agents/`, `.github/`, `CLAUDE.md`,
+  `AGENTS.md`, and `docs/ai/`.
+
+These pause-and-confirm rules apply to ordinary assistant sessions regardless of provider. Use the
+Chief of Staff approval path for multi-domain, approval-gated, or evidence-synthesis work that needs
+structured sign-off, trace retention, or operator-facing briefing.
+
 ### Agent Orchestration
 
 - Use `docs/ai/parallel-task-manifest-template.md` for parallel lanes.
+- Use `docs/ai/working-memory.md` as the task-local ledger for active claims, inspected files,
+  validated facts, assumptions, merge order, and validation reuse during concurrent work.
 - Use `agent-handoff-checklist.md` for explicit handoffs between specialist lanes.
 - Use `docs/ai/codex/route-cards.md` to anchor multi-system routing.
 - For Codex-owned orchestration, use `docs/ai/codex/prompt-route-rules.json` as the route source,
@@ -82,6 +106,120 @@ Before behavior changes, run this sequence:
   and escalation triggers so routing, handoff, and CI evidence remain connected.
 - Coordinators should assign one narrow concern and explicit file ownership per specialist lane, and
   specialists should load only the required context for that scoped lane before asking for more.
+- Coordinators own working memory updates; specialist lanes update their own claims, facts,
+  assumptions, and validation notes before handoff or integration.
+
+### Intent Verification
+
+Before acting on a request, classify the user's intent and choose the least intrusive gate that
+keeps the work safe and reviewable. Intent verification is a scope-control step; it does not
+override higher-priority system, developer, repository, or security instructions.
+
+| Intent state | Condition | Assistant behavior |
+| --- | --- | --- |
+| `clear-low-risk` | The desired outcome, target surface, and acceptance path are explicit, and the impact is narrow. | Proceed after a brief scope statement. |
+| `clear-medium-risk` | The desired outcome is clear, but the work touches shared workflow, validation policy, AI guidance, provider/workstation behavior, docs mirrors, or other review-sensitive surfaces. | State assumptions, intended paths or subsystems, and validation intent before continuing. |
+| `ambiguous-medium-risk` | The outcome is plausible but target surface, output type, acceptance criteria, or affected workflow is unclear. | Ask one concise clarification question with two or three concrete options. |
+| `high-risk-or-governed` | The task could affect trading, execution, accounting, approvals, reconciliation, audit evidence, credentials, permissions, destructive file operations, generated governance artifacts, or shared AI policy. | Pause for human confirmation before editing or executing irreversible actions. |
+
+Use this clarification format when intent is ambiguous or the requested scope needs confirmation:
+
+```md
+**Intent Check**
+I understand the goal as: <one-sentence outcome>.
+I plan to work in: <paths, docs, subsystems, or workflow surfaces>.
+Validation would be: <narrow checks or evidence>.
+
+Please confirm one:
+1. <recommended scope>
+2. <narrower scope>
+3. <broader or approval-gated scope>
+```
+
+Proceed without clarification only when the target surface, requested action, validation path, and
+risk level are clear; no destructive or generated-file action is involved; no instruction conflict is
+present; and no user-owned worktree change affects the files to edit.
+
+### AI User Notifications
+
+Use compact notifications to make AI state visible without turning routine work into a transcript.
+For medium- or high-risk tasks, shared-policy edits, scope changes, blockers, validation pivots, or
+long-running investigations, use this label-value format. Keep field values short and omit optional
+fields when they would only repeat the surrounding message.
+
+```md
+**AI Workflow Update**
+Phase: <orienting | inspecting | planning | editing | validating | blocked | handoff | complete>
+Intent: <one-sentence goal>
+Scope: <paths, subsystem, docs lane, or workflow surface>
+Evidence: <files, commands, docs, tests, or artifacts>
+Next: <what happens next>
+Gate: <none | confirm intent | approve scope | approve risk | resolve conflict | accept residual risk>
+Validation: <planned check or "not applicable: <reason>">
+```
+
+Emit a notification at startup or orientation for medium/high-risk tasks, before editing shared
+policy, before widening scope, when a blocker changes the plan, when validation failure requires a
+pivot, and before final validation for gated work. Skip the full format for tiny low-risk tasks, when
+a skill-specific receipt already provides equivalent fields, or when the final response will supply
+the same evidence. Do not paste broad command output, raw file dumps, or step-by-step transcripts
+unless the user explicitly asks for a trace.
+
+Use these smaller notices when the full workflow update would be too heavy but the user still needs
+to see context, validation, or scope boundaries:
+
+```md
+Workflow: <lane>; Skill: <skill-or-none>; Context loaded: <files/docs>; Next evidence: <next source>.
+```
+
+```md
+Context update: loading <source> because <reason>. <edit/scope status>.
+```
+
+```md
+Validation plan: <scope>; if this becomes implementation work, narrow checks would be <checks>.
+```
+
+```md
+Mode: advisory only; edits disabled by user request.
+```
+
+```md
+Context used: <files/docs>. Tools used: <commands/tools>. Files changed: <paths or none>.
+```
+
+### Human-in-the-Loop Escalation
+
+Human approval gates apply only to the named scope, paths, and risk level. If new surfaces, broader
+file ownership, or higher-risk actions appear later, stop and request a new confirmation before
+continuing.
+
+| Level | Name | Behavior |
+| --- | --- | --- |
+| 0 | No gate | Proceed after normal scope disclosure. |
+| 1 | Confirm intent | Ask a concise clarification question before choosing a scope. |
+| 2 | Approve scope | Ask the user to approve target files, subsystems, or docs surfaces before edits. |
+| 3 | Approve risk | Ask the user to approve governed or high-impact actions before edits or execution. |
+| 4 | Stop or handoff | Do not continue; produce a blocker report or handoff packet with the unresolved decision. |
+
+Require a human gate before broad shared-AI-policy updates; destructive deletes, archives, mass
+moves, or generated-doc rewrites; credential, permission, authentication, provider-secret, or
+security guidance changes; trading, execution, accounting, approvals, reconciliation, audit-evidence,
+or governed-reporting behavior changes; scope expansion after validation failure; direct edits to
+generated docs instead of generator inputs; or action under unresolved instruction conflicts.
+
+Use this prompt when approval is required:
+
+```md
+**Human Gate Required**
+- Trigger: <why approval is required>
+- Proposed action: <what would happen next>
+- Affected surfaces: <paths or subsystems>
+- Risk if wrong: <brief consequence>
+- Validation after approval: <planned checks>
+
+Please confirm whether to proceed.
+```
 
 ### Token and Context Management
 
@@ -89,6 +227,8 @@ Start from lane entrypoints and expand only after ownership boundaries are confi
 Keep each pass scoped to one active concern and one proof lane.
 For mixed, multi-system work, switch modes with `work-modes.md` before widening context.
 Use `tooling/README.md` when the next question is "which script or validator should prove this?"
+Use `working-memory.md` to keep compact task state instead of reloading broad logs or rediscovering
+files already inspected by another lane.
 
 #### Token/Context Budget Contract
 
@@ -107,6 +247,7 @@ Use `tooling/README.md` when the next question is "which script or validator sho
 Use this lane-specific order for AI-lane or cross-lane work:
 
 1. If the task touches navigation or agent inventories:
+   - `python build/scripts/docs/check-codex-memory.py --summary` when Codex memory is touched
    - `python build/scripts/docs/check-ai-inventory.py --summary`
    - `python build/scripts/docs/check-codex-skills.py --summary`
    - `python build/scripts/docs/validate-docs-structure.py --top-level ai --summary` (for narrow AI-doc lifecycle/structure checks)
@@ -138,6 +279,8 @@ When launching parallel AI work:
 
 - Create or update a shared manifest first:
   - `docs/ai/parallel-task-manifest-template.md`
+- Initialize working memory from:
+  - `docs/ai/working-memory.md`
 - Assign one coordinator artifact per lane (`assistant-workflow-contract`, `docs/ai/README`, one
   or two canonical lane READMEs).
 - Keep each lane scoped to one canonical source surface unless the manifest explicitly approves cross-lane coupling.
@@ -168,41 +311,55 @@ When launching parallel AI work:
 Every assistant and automation should use the same high-level flow:
 
 1. **Read the request literally.** Restate the desired outcome and identify acceptance criteria.
-2. **Orient before broad search.** Start with `docs/ai/navigation/README.md` and
+2. **Verify intent and classify risk.** Apply the intent verification states above, ask for
+   confirmation when scope is ambiguous or governed, and record any assumptions before proceeding.
+3. **Notify when the task warrants it.** Emit an AI workflow update for medium/high-risk tasks,
+   shared-policy edits, blockers, scope changes, and validation pivots so the user can see the
+   current phase, scope, evidence, next action, human-gate status, and validation intent.
+4. **Orient before broad search.** Start with `docs/ai/navigation/README.md` and
    `docs/ai/generated/repo-navigation.md`. If MCP is available, prefer the repo-navigation tools
    and resources before broad recursive search.
-3. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
+5. **Load the nearest specialist surface.** Use the relevant Codex skill, Claude skill or agent,
    Copilot agent, prompt template, path instruction, or MCP tool based on the routed subsystem.
    If the task crosses multiple subsystems, requires an approval gate or operator sign-off, or
    needs a structured briefing with trace/evidence retention, use the repository docs, skills,
    prompts, and scripts that currently own that workflow instead of inventing a new surface.
-4. **Use a shared handoff format.** For multi-agent or multi-phase work, use
+6. **Load MDIF when architecture drift is a risk.** For broad code generation, domain modeling,
+   workflow design, report generation, UI surface creation, service design, migrations, or
+   architecture-sensitive refactors, load the MDIF constitution, matching domain dictionary pages,
+   and relevant context packs before implementation.
+7. **Use a shared handoff format.** For multi-agent or multi-phase work, use
    [`agent-handoff-checklist.md`](agent-handoff-checklist.md) as the required compact handoff packet
    between specialist lanes.
-5. **Declare mode and parallel ownership up front.** Select a mode from [`work-modes.md`](work-modes.md)
+8. **Declare mode and parallel ownership up front.** Select a mode from [`work-modes.md`](work-modes.md)
    and, for parallel lanes, initialize [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md)
    before implementation so ownership and context boundaries stay explicit.
-6. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
+9. **Preserve architecture boundaries.** Follow the current shared-contract-first operator UI framing,
    keep visible navigation to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`,
    `Data`, and `Settings`, and treat legacy `Research`, `Data Operations`, and `Governance`
    WPF names as legacy workspace aliases rather than new root workspaces.
-   Keep new product work centered on the W1-W5 operational record baseline: data confidence,
-   retained source evidence, reconciliation, approvals, accounting records, multi-asset operational
-   coverage, and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first
-   governance, full payments, forecasting, enterprise risk, client portal, no-code workflow design,
-   mobile, and other expansion lanes unless they directly strengthen that workflow.
+   Keep new product work grounded in current source evidence, the roadmap registry, and the design
+   charter. Treat prior baselines and named productization targets as roadmap/status evidence, not
+   development ceilings; expansion lanes can proceed when current source, roadmap, or user direction
+   supports them.
    **No mobile development lane:** do not create mobile applications, mobile-specific product
    surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
    mobile-first workflows. Existing responsive browser checks may continue only as validation for
    the browser workstation.
-7. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
+10. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
    broad cleanup, and unrelated formatting churn.
-8. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
-   that covers the touched surface; expand only when the change risk justifies it.
-9. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
+11. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
+   that covers the touched surface; expand only when the change risk justifies it. For local .NET
+   tests, prefer `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
+   so validation uses a local lock, active-process checks, and isolated build outputs. When local
+   machine limits, dependency restore, or MSBuild contention still make local validation unreliable,
+   push the branch and use the manual GitHub-hosted `Targeted Test` workflow as the remote proof
+   lane before retrying broad local scripts. Its .NET lane requires a repo-relative test project
+   under `tests/` plus a non-empty filter.
+12. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
    update the nearest `docs/ai/*/README.md` index and any mirrored host surfaces that teach the
    same workflow.
-10. **Report evidence.** Summaries must include what changed, why, affected files, validation
+13. **Report evidence.** Summaries must include what changed, why, affected files, validation
    commands, and any residual risks.
 
 ## Rebuild-Native AI Requirements
@@ -212,9 +369,11 @@ This contract is the canonical source for AI work during the documentation rebui
 | Required area | Contracted behavior |
 | --- | --- |
 | Repo orientation | Use `docs/ai/navigation/README.md` and `docs/ai/generated/repo-navigation.md` before broad edits. |
+| MDIF grounding | Use `docs/architecture/meridian-development-intelligence-framework.md`, `docs/domain/README.md`, and `docs/ai/context/README.md` before broad generation or architecture-sensitive work. |
 | Edit rules | Keep source-of-truth updates in the shared contract and lane READMEs; treat old hand-authored docs as migration material unless explicitly canonical. |
 | Generated-file handling | Do not edit generated docs in place. Update generator inputs or source data and rerun the owning generator. |
 | Agent orchestration | Use `parallel-task-manifest-template.md` for multi-lane work and `agent-handoff-checklist.md` for ownership transitions. |
+| Working memory | Use `working-memory.md` to track task-local claims, inspected files, validated facts, assumptions, codebase drift, merge order, and validation reuse. |
 | Codex route evidence | Use `prompt-route-linter.py` to emit `docs/status/prompt-route-lint-report.json` with lane, skill, mode, `modelRouteId`, validation requirements, telemetry requirements, and escalation triggers. |
 | Handoff packet evidence | Use `handoff-packet-generator.py` to emit `docs/status/ai-handoff-packet.json` with scope, changed files, validation evidence, route outcome, telemetry, next lane, and context lists. |
 | Parallel workflow | One manifest per parallel batch. One-file-per-lane ownership and explicit merge order in the manifest. |
@@ -288,14 +447,17 @@ When editing `src/**`, assistants must:
 | --- | --- | --- |
 | Documentation front door and ownership | `docs/README.md`, `docs/documentation-ownership.md`, `docs/documentation-inventory.md` | Root `README.md`, `AGENTS.md`, `CLAUDE.md`, assistant indexes |
 | Project framing, commands, and architecture | `docs/start/README.md`, `docs/product/README.md`, `docs/product/meridian-design-document.md`, `docs/engineering/README.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, `.claude/skills/_shared/project-context.md`, `.agents/skills/_shared/project-context.md` | `AGENTS.md`, Copilot instructions, skills, agents |
+| MDIF context spine | `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, `docs/ai/context/README.md`, `docs/ai/exports/README.md` | Codex quickstart, Claude guide, Copilot instructions, prompt templates, skills, agents, MCP clients |
 | Repo routing and subsystem ownership | `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md`, `docs/ai/navigation/README.md` | MCP navigation resources/tools, generated markdown, navigation agents and skills |
 | Codex task startup and proof routing | `docs/ai/codex/quickstart.md`, `docs/ai/codex/route-cards.md` | Root `AGENTS.md`, `.codex/skills/README.md`, Codex specialist skills |
+| AI working memory | `docs/ai/working-memory.md`, `docs/ai/parallel-task-manifest-template.md`, `docs/ai/agent-handoff-checklist.md` | Codex quickstart, Codex execution contract, parallel lane manifests, handoff packets |
 | Roadmap and source documentation truth | `docs/roadmap/data/*.yml`, `docs/source/data/*.yml`, registered `src/**/README.md` | Generated roadmap/source docs, source README blocks, AI source sync rules |
 | Source documentation staleness | `docs/source/generated/stale-docs.json`, `docs/source/generated/source-hash-manifest.json` | Stale-only README sync/render commands, source-doc hash validation |
 | Known AI mistakes | `docs/ai/ai-known-errors.md` | Copilot instructions, Claude/Codex skills, manual or local docs intake |
 | Codex skill catalog | `.codex/skills/README.md`, `docs/ai/skills/README.md` | Codex UI metadata in `agents/openai.yaml` |
 | Codex agent profiles | `.codex/agents/*.toml`, `docs/ai/codex/README.md`, `docs/ai/agents/README.md` | Codex specialist profile routing and task entrypoints |
 | Codex prompts and validation checklists | `.codex/prompts/`, `.codex/checklists/`, `docs/ai/codex/README.md` | Desktop implementation prompts, MVVM/resource/safe-refactor checklists, and Codex workflow guidance |
+| Codex repo-local memory | `.codex/memory/index.yml`, `docs/ai/codex/memory-system.md` | Selective Codex memory entries, routing metadata, promotion workflow, and `check-codex-memory.py` validation |
 | Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |
 | Claude agent and skill catalog | `.claude/agents/`, `.claude/skills/`, `docs/ai/agents/README.md`, `docs/ai/skills/README.md` | Portable skill packages and Claude settings |
 | Claude plugin packages | `.claude/plugins/csharp-dotnet-development/`, `.claude/plugins/frontend-web-dev/` | Plugin manifests, plugin-contributed agents, plugin-contributed skills, `docs/ai/agents/README.md`, and `docs/ai/skills/README.md` |
@@ -328,13 +490,22 @@ Use this checklist when changing any AI-related asset:
 - [ ] Choose a work mode from [`work-modes.md`](work-modes.md) before implementation and document any mode escalation.
 - [ ] For parallel lanes, initialize [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md)
       and track lane ownership, inspected files, validation plans, and merge risks.
+- [ ] Use [`working-memory.md`](working-memory.md) for concurrent implementation state so active
+      claims, inspected files, assumptions, validation reuse, and codebase drift remain explicit.
+- [ ] Use [`codex/memory-system.md`](codex/memory-system.md) and `.codex/memory/index.yml` only for
+      Codex repo-local memory. Do not read or write user/global memory tiers without explicit future
+      opt-in.
 - [ ] Update [`tooling/README.md`](tooling/README.md) when AI script discovery, validation lanes,
       or safe-usage guidance changes.
 - [ ] Keep all assistant surfaces aligned to the current operator taxonomy: browser dashboard and
       WPF desktop both consume shared contracts, and visible root workspaces remain limited to `Trading`,
       `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
-- [ ] Keep product guidance aligned to the W1-W5 operational record baseline; expansion lanes stay
-      deferred unless roadmap data moves them into active scope.
+- [ ] Keep product guidance aligned to current source evidence, the roadmap registry, and the
+      design charter without treating prior baselines or named productization targets as
+      development ceilings.
+- [ ] Keep MDIF discoverable from Codex, Claude, Copilot, Agent Skills, prompts, and MCP-facing
+      guidance when broad generation, domain modeling, workflow design, or architecture-sensitive
+      refactors are in scope.
 - [ ] Keep the **No mobile development lane** policy mirrored in the root assistant entrypoints,
       Copilot guide, and shared Codex/Claude/Agent Skills project-context files so mobile clients are not
       proposed by one assistant while another follows the browser-workstation plan.
@@ -448,7 +619,7 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-05-31_
+_Last Updated: 2026-06-16_
 
 ## Machine-checkable synchronization contract
 

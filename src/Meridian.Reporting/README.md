@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-09
 ---
 
 # src/Meridian.Reporting
@@ -15,7 +15,8 @@ last_reviewed: 2026-06-07
 
 Physical bounded-context module project for report packs, governed exports, reporting run
 contracts, template catalogs, Security Master-enriched report generation, NAV attribution,
-orchestration, publication, restatement, distribution, and reporting ownership conformance.
+orchestration, publication, restatement, distribution, no-code report-writer grid rendering, and
+reporting ownership conformance.
 
 ## Layer responsibility
 
@@ -31,6 +32,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   audit contracts.
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
   lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
+- `ReportWriterGridEngine.cs` - governed no-code grid renderer for detail, pivot, Top-N,
+  contribution, saved-filter, and formula-backed report-writer tables over supplied dataset rows.
 - `ReportGenerationService.cs` - trial-balance report-pack generation with Security Master
   enrichment, lookup-quality classification, and asset-class section grouping.
 - `NavAttributionService.cs` - fund/entity/sleeve/vehicle NAV attribution over ledger snapshots
@@ -71,10 +74,44 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 `IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`,
 `IReportingRunStore`, `ReportGenerationService`, and `NavAttributionService` publish the Reporting
 module seams consumed by UI Shared report-pack workflows, UI Services reporting status projections,
-and WPF fund-operation views. Reporting template families now cover investor, SEC, shadow NAV,
-performance, holdings, capital-account, board, audit, certified-dataset, and custom report packs;
-shared UI services layer schedule persistence, delivery history, and rendered HTML/PDF artifacts on
-top of those module contracts without moving orchestration ownership out of Reporting.
+and WPF fund-operation views. `ReportWriterGridEngine` renders governed template grid definitions
+without script execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
+metrics, Top-N limits, contribution percentages, and bounded arithmetic formulas are evaluated
+against caller-supplied dataset rows with structured warnings for missing or non-numeric inputs.
+Contribution grids generate `contributionPercent` and `contributionAbsPercent` after aggregation,
+using absolute metric exposure as the denominator so offsetting winners and laggards still produce a
+signed and absolute percentage-of-P&L breakdown. Report-writer formulas can reference those generated
+contribution fields without requiring authors to add duplicate metrics.
+Saved grid filters are applied before aggregation, cross-tab expansion, Top-N, contribution, and
+formula rendering. Rendered grids also include input/output
+row counts, filtered-input counts, source-field lists, metric source mappings, formula dependency
+lineage, filter lineage, data-dictionary fields, and validation checks so report-writer previews
+and downstream exports can retain a source-backed audit trace without relying on UI-local proof
+synthesis. Formula lineage includes brace references, bare identifier references, and `total(...)`
+references, while the evaluator supports nested `abs(...)`, `min(...)`, `max(...)`,
+`safeDivide(numerator, denominator[, fallback])`, `percent(numerator, denominator[, fallback])`,
+`basisPoints(numerator, denominator[, fallback])`, and `round(value[, decimals])` expressions for
+guarded P&L, exposure, contribution, return, and basis-point calculations. Custom formula grids
+therefore retain the same source evidence that was used for evaluation, and formula data-dictionary
+rows retain those source-field pointers while still marking the column as generated.
+Generated Reporting run manifests also retain the report-writer grid
+artifact metadata generated from approved template definitions, including grid title, kind,
+artifact URI, dimension count, metric count, and formula count, while shared UI projections derive
+validation summary counts from retained rendered-grid lineage and warnings so delivery packages and shared UI
+read models do not need to parse artifact strings to explain no-code grid evidence. When ad-hoc or
+scheduled run contracts include dataset rows, the same manifest also retains rendered grid columns,
+rows, warnings, and lineage so generated run delivery artifacts can carry source-backed pivot,
+Top-N, contribution, and formula output instead of only grid descriptors. Scheduled run contracts
+can also carry a selected branding theme id and normalized `ReportBrandingThemeDto`; the resulting
+manifest keeps that theme with generated report-writer packages so recurring PDF/XLSX/CSV
+distribution can prove the firm styling used for the run. Run contracts and manifests can also
+carry the resolved `ReportAccessPolicyDto`, allowing downstream delivery evidence to preserve
+private, restricted group/company, or company-wide report entitlements for generic Reporting runs
+instead of widening generated-run packages to a default audience. Reporting template families now cover
+investor, SEC, shadow NAV, performance, holdings, capital-account, board, audit, certified-dataset,
+and custom report packs; shared UI services layer schedule persistence, delivery history, template
+grid render calls, and rendered HTML/PDF artifacts on top of those module contracts without moving
+orchestration ownership out of Reporting.
 
 ### Migration and archive notes
 

@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-20
+last_reviewed: 2026-06-09
 ---
 
 # src/Meridian.Ui
@@ -36,6 +36,24 @@ state so host-served workstation assets retain the same financial-operations flo
 The dashboard Accounting Closeout trail also mirrors the design-document Financial Operations flow:
 `Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
 The browser Accounting screen renders that same lane above its detailed closeout panels.
+The dashboard Reporting workspace owns schedule draft/save controls, while persistence, delivery
+targets, and due-run execution remain behind the shared schedule endpoints.
+Reporting run cards display generated report-writer grid evidence from shared
+`generatedReportWriterGrids` payloads, so browser code does not parse retained
+`report-writer://.../grids/{gridId}` artifacts or recalculate no-code grid metadata locally.
+Reporting live portfolio cards display shared market tick telemetry, provider labels, tick age,
+tick sequence, and live-link flags from `livePortfolioViews` instead of deriving freshness in React.
+Reporting schedule and delivery panels also render shared package `accessLinks` for secure portal,
+email-link, retained-manifest, operator-route, and artifact-download access instead of deriving
+delivery actions from raw secure-link strings.
+The dashboard Reporting workspace also reuses the shared private-capital activity projection and
+readiness state; browser panels may display fund-event ledger, capital-account subledger, ledger
+impact, retained evidence categories, approval state, published report-output posture, and
+report-ready posture, but fund-event eligibility and report-ready rules stay in shared
+services/contracts rather than browser-local logic.
+The dashboard Accounting journal-entry workstream renders the shared manual journal workbench
+contract, including typed private-capital entries and treasury-context readiness, while validation,
+fund-event/capital-account requirements, persistence, and approval submission stay server-owned.
 Browser navigation and command-palette root commands canonicalize supplied workspace metadata to
 `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` so legacy
 root names stay compatibility aliases. App-shell evidence timeline labels follow the same rule when

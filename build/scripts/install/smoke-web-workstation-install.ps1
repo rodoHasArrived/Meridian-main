@@ -336,7 +336,7 @@ $previousAuthMode = $env:MDC_AUTH_MODE
 $previousDisableRateLimit = $env:MDC_DISABLE_RATE_LIMIT
 $previousUsers = $env:MDC_USERS
 $previousUsername = $env:MDC_USERNAME
-$previousPassword = $env:MDC_PASSWORD
+$previousPasswordHash = $env:MDC_PASSWORD_HASH
 $previousShutdownToken = $env:MDC_SHUTDOWN_TOKEN
 
 New-Item -ItemType Directory -Force -Path $runRoot | Out-Null
@@ -379,7 +379,7 @@ try {
     $env:MDC_DISABLE_RATE_LIMIT = "true"
     $env:MDC_USERS = $null
     $env:MDC_USERNAME = $null
-    $env:MDC_PASSWORD = $null
+    $env:MDC_PASSWORD_HASH = $null
     $env:MDC_SHUTDOWN_TOKEN = $shutdownToken
     $hostArgumentLine = '--mode workstation --http-port {0} --config "{1}"' -f $portToUse, $configPath.Replace('"', '\"')
     $hostProcess = Start-Process `
@@ -422,7 +422,7 @@ finally {
     $env:MDC_DISABLE_RATE_LIMIT = $previousDisableRateLimit
     $env:MDC_USERS = $previousUsers
     $env:MDC_USERNAME = $previousUsername
-    $env:MDC_PASSWORD = $previousPassword
+    $env:MDC_PASSWORD_HASH = $previousPasswordHash
     $env:MDC_SHUTDOWN_TOKEN = $previousShutdownToken
 
     if ($null -ne $hostProcess -and -not $hostProcess.HasExited -and -not $KeepHostOpen) {

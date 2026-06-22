@@ -4,12 +4,12 @@
    src/Meridian.Ui/dashboard/src/styles/index.css and WPF theme resources.
    ===================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 :root {
   /* ---------- RAW HSL (matches dashboard tokens) ---------- */
-  --background:        215 42%  6%;
-  --foreground:        210 30% 92%;
+  --background:        220 10%  6%;
+  --foreground:        210 18% 94%;
   --card:              215 34%  9%;
   --card-foreground:   210 30% 92%;
   --popover:           215 36%  8%;
@@ -44,7 +44,7 @@
   --panel-soft-bg:     #162334;
   --surface-raise-bg:  #1B2A3C;
   --border-color:      #1F344C;
-  --border-hi:         #2A4566;  /* high-contrast border — panels, active states */
+  --border-hi:         #477089;  /* high-contrast border — panels, active states */
 
   /* ================================================
      CYAN ALIAS SYSTEM
@@ -105,6 +105,23 @@
   --state-pending-bd:  rgba(167, 139, 250, 0.35);
   --state-pending-bg:  rgba(167, 139, 250, 0.10);
 
+  /* Sidebar tokens mirror the browser workstation operator rail contract. */
+  --sidebar: 220 12% 5%;
+  --sidebar-foreground: 210 18% 94%;
+  --sidebar-primary: 198 72% 50%;
+  --sidebar-primary-foreground: 213 54% 7%;
+  --sidebar-accent: 213 32% 16%;
+  --sidebar-accent-foreground: 207 44% 90%;
+  --sidebar-border: 205 34% 29%;
+  --sidebar-ring: 198 72% 50%;
+
+  /* Chart tokens use the browser workstation chart-1...5 naming contract. */
+  --chart-1: 198 72% 50%;
+  --chart-2: 158 66% 44%;
+  --chart-3: 354 68% 62%;
+  --chart-4: 36 80% 58%;
+  --chart-5: 214 82% 68%;
+
   /* ================================================
      WORKSPACE ACCENTS
      Current top-level navigation: Trading, Portfolio,
@@ -132,26 +149,32 @@
   --space-panel: 1.5rem;
 
   /* ================================================
-     SHADOWS — 1-2px max. Inset highlight + soft drop.
-     No hard-offset poster shadows. No glow. No elevation theatre.
+     SHADOWS — inset highlight + flat workstation offset.
+     No large poster shadows. No glow. No elevation theatre.
      ================================================ */
   --shadow-workstation:
     0 1px 0 rgba(255,255,255,0.02) inset,
-    0 1px 2px rgba(0,0,0,0.30);
+    3px 3px 0 rgba(0,0,0,0.72);
   --shadow-panel:
     0 1px 0 rgba(255,255,255,0.02) inset,
     0 1px 1px rgba(0,0,0,0.25);
   --shadow-float:
     0 2px 8px rgba(0,0,0,0.40),
     0 0 0 1px rgba(255,255,255,0.02) inset;
+  --shadow-color: 215 30% 0%;
+  --shadow-opacity: 0.24;
+  --shadow-blur: 2px;
+  --shadow-spread: 0px;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 1px;
 
   /* ================================================
      TYPOGRAPHY
      Sans: labels, prose. Mono: ALL DATA. Display: titles.
      Key rule: numbers and identifiers are ALWAYS mono.
      ================================================ */
-  --font-sans:    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-sans:    "Inter", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono", "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --font-display: "Space Grotesk", "IBM Plex Sans", sans-serif;
 
   /* ================================================

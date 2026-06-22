@@ -82,7 +82,7 @@ setup-dev: install-hooks setup-config ## Full local dev setup (hooks, config, re
 	@echo "  $(GREEN)Restore + build succeeded$(NC)"
 	@echo ""
 	@echo "$(BLUE)[3/4] Running quick test...$(NC)"
-	@dotnet test $(TEST_PROJECT) --verbosity quiet --nologo --no-build -c Debug --filter "Category!=Integration" 2>&1 | tail -3
+	@python3 build/python/cli/buildctl.py test --project $(TEST_PROJECT) --configuration Debug --verbosity quiet --filter "Category!=Integration" --queue
 	@echo ""
 	@echo "$(BLUE)[4/4] Shared build workflow configured...$(NC)"
 	@echo "  $(GREEN)Sequential restore/build is now the default setup path$(NC)"

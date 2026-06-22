@@ -1,0 +1,35 @@
+{
+  "skill_name": "meridian-brainstorm",
+  "last_updated": "2026-06-17",
+  "evals": [
+    {
+      "id": 1,
+      "description": "Brainstorm output starts with a skill selection receipt and compact triage table",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/brainstorm_output_check.py",
+        "--sample",
+        "receipt-table",
+        "--json"
+      ],
+      "prompt": "Use $meridian-brainstorm to brainstorm quick wins for operator trust.",
+      "assertions": [
+        "Must include a meridian-brainstorm skill selection receipt",
+        "Must state a concrete detected mode in the receipt",
+        "Must put the compact idea triage table after the receipt"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "summary.skill": "meridian-brainstorm"
+        },
+        "json_min": {
+          "summary.receipt_count": 1,
+          "summary.table_count": 1,
+          "summary.ideas_heading_count": 1
+        }
+      }
+    }
+  ]
+}

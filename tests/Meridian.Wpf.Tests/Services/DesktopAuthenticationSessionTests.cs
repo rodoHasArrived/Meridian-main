@@ -15,9 +15,9 @@ public sealed class DesktopAuthenticationSessionTests
     public void SignIn_WithConfiguredUser_ShouldSetCurrentDesktopUser()
     {
         using var env = new EnvironmentVariableScope()
-            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERS", HashedDesktopAdminUsersJson())
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", null);
 
         var session = CreateSession("Production");
@@ -37,9 +37,9 @@ public sealed class DesktopAuthenticationSessionTests
     public void SignIn_WithWrongPassword_ShouldLeaveSessionUnauthenticated()
     {
         using var env = new EnvironmentVariableScope()
-            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERS", HashedDesktopAdminUsersJson())
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", null);
 
         var session = CreateSession("Production");
@@ -59,7 +59,7 @@ public sealed class DesktopAuthenticationSessionTests
         using var env = new EnvironmentVariableScope()
             .Set("MDC_USERS", null)
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", "optional");
 
         var session = CreateSession("Development");
@@ -79,7 +79,7 @@ public sealed class DesktopAuthenticationSessionTests
         using var env = new EnvironmentVariableScope()
             .Set("MDC_USERS", null)
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", "required");
 
         var session = CreateSession("Production");
@@ -96,6 +96,9 @@ public sealed class DesktopAuthenticationSessionTests
         => new(new LoginSessionService(
             new FakeHostEnvironment(environmentName),
             new UserProfileRegistry()));
+
+    internal static string HashedDesktopAdminUsersJson()
+        => $$"""[{"username":"desktop-admin","passwordHash":"{{PasswordHashing.HashPassword("pw")}}","role":"Admin"}]""";
 
     internal sealed class EnvironmentVariableScope : IDisposable
     {

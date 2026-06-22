@@ -67,6 +67,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             root = Path(tmp)
             write_ui_platform_policy_docs(root)
             write(root / ".codex" / "config.toml")
+            write(root / ".codex" / "memory" / "index.yml")
             write(root / ".codex" / "agents" / "meridian-docs.toml")
             write(root / ".codex" / "AGENTS.md")
             write(root / ".codex" / "environments" / "environment.toml")
@@ -106,6 +107,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             self.assertIn(("entrypoint", "AGENTS.md"), pairs)
             self.assertIn(("entrypoint", "CLAUDE.md"), pairs)
             self.assertIn(("config", "config.toml"), pairs)
+            self.assertIn(("memory-index", "index.yml"), pairs)
             self.assertIn(("agent-profile", "meridian-docs.toml"), pairs)
             self.assertIn(("instruction-entrypoint", "AGENTS.md"), pairs)
             self.assertIn(("environment-config", "environment.toml"), pairs)
@@ -644,7 +646,7 @@ class CheckAiInventoryTests(unittest.TestCase):
             payload = check_ai_inventory.build_payload(root, [], [])
 
             self.assertEqual(".", payload["repositoryRoot"])
-            self.assertEqual(root.name, payload["repositoryName"])
+            self.assertEqual("Meridian-main", payload["repositoryName"])
             self.assertNotIn(str(root), check_ai_inventory.render_markdown(payload))
 
 

@@ -338,31 +338,27 @@ docs/
 │   ├── *.dot
 │   ├── *.png
 │   └── *.svg
-├── evaluations/            # Technology evaluations
-│   └── historical-data-providers-evaluation.md
 ├── generated/              # Auto-generated documentation
 │   ├── repository-structure.md
 │   └── provider-registry.md
-├── getting-started/        # User onboarding
+├── start/                  # User and contributor onboarding
 │   └── README.md
 ├── integrations/           # Integration guides
 │   ├── lean-integration.md
 │   └── fsharp-integration.md
-├── operations/             # Operational guides
-│   ├── operator-runbook.md
-│   └── portable-data-packager.md
-├── providers/              # Provider-specific docs
-│   ├── alpaca-setup.md
-│   ├── interactive-brokers-setup.md
-│   └── provider-comparison.md
+├── operators/              # Operational guides and provider setup
+│   ├── README.md
+│   └── provider-credentials.md
 ├── reference/              # API and data references
 │   ├── api-reference.md
-│   └── data-dictionary.md
-├── status/                 # Project status tracking
-│   ├── ROADMAP.md
-│   ├── TODO.md                 # auto-generated task marker tracking
-│   ├── CHANGELOG.md
-│   └── production-status.md
+│   ├── data-dictionary.md
+│   └── provider-capability-matrix.md
+├── roadmap/                # Registry-owned roadmap tracking
+│   ├── README.md
+│   └── data/
+├── status/                 # Controlled generated/status migration output
+│   ├── README.md
+│   └── doc-health-dashboard.md
 ├── uml/                    # UML diagrams
 │   └── *.puml
 ├── DEPENDENCIES.md
@@ -648,7 +644,7 @@ Follow this structure:
 
 6. **Document setup:**
    ```
-   docs/providers/{provider}-setup.md
+   docs/operators/provider-onboarding-{provider}.md
    ```
 
 ### Adding a New Feature
@@ -662,9 +658,9 @@ Follow this structure:
    - UI in appropriate UI project
 4. **Add tests at each layer**
 5. **Update documentation:**
-   - User guide in `docs/getting-started/`
+   - User guide in `docs/start/` or `docs/operators/`
    - API reference in `docs/reference/`
-   - Changelog in `docs/status/CHANGELOG.md`
+   - Roadmap/status evidence in `docs/roadmap/`, `docs/product/`, or generated status output
 
 ---
 
@@ -742,7 +738,7 @@ This guide should evolve as the repository grows. To suggest improvements:
 
 - **Implementation Guides:**
   - [Provider Implementation Guide](./provider-implementation.md) - Adding data providers
-  - [Desktop Platform Improvements](../evaluations/desktop-platform-improvements-implementation-guide.md) - Desktop development
+  - [Desktop Platform Improvements archive](../../archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical desktop development assessment; use current engineering/operator docs for active work
   - [WPF Implementation Notes](./wpf-implementation-notes.md) - WPF architecture
 
 - **Architecture:**

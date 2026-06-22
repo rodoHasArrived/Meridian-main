@@ -1,0 +1,58 @@
+<!-- @dsCard group="Components" viewport="700x340" name="Data display" subtitle="MetricCard, DenseDataTable, KeyValueGrid" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Data components</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 14px; background: var(--bg); }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { MetricCard, DenseDataTable, KeyValueGrid, PanelSurface } = window.MeridianDesignSystem_4f61be;
+const pnl = (v) => <span style={{ color: v.startsWith("-") ? "var(--red-dim)" : "var(--green-dim)" }}>{v}</span>;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+      <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
+      <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
+      <MetricCard label="Open positions" value="24" delta="3 added" tone="neutral" />
+      <MetricCard label="Data freshness" value="00:00:04" delta="all providers" tone="info" />
+    </div>
+    <DenseDataTable
+      selectedIndex={1}
+      sortKey="pnl" sortDir="desc" onSort={() => {}}
+      onRowClick={() => {}}
+      columns={[
+        { key: "symbol", label: "Symbol" },
+        { key: "qty", label: "Qty", align: "right" },
+        { key: "avg", label: "Avg cost", align: "right" },
+        { key: "last", label: "Last", align: "right" },
+        { key: "pnl", label: "Unrlzd P&L", align: "right", render: (r) => pnl(r.pnl) },
+      ]}
+      rows={[
+        { symbol: "AAPL", qty: "400", avg: "182.4400", last: "201.1200", pnl: "+7,472.00" },
+        { symbol: "MSFT", qty: "150", avg: "411.0200", last: "404.8800", pnl: "-921.00" },
+        { symbol: "NVDA", qty: "80", avg: "118.3300", last: "131.0700", pnl: "+1,019.20" },
+      ]}
+    />
+    <PanelSurface flat style={{ padding: 14 }}>
+      <KeyValueGrid columns={4} items={[
+        { label: "FIGI", value: "BBG000B9XRY4" },
+        { label: "Exchange", value: "XNAS" },
+        { label: "First bar", value: "2004-01-02" },
+        { label: "Resolution", value: "minute · daily" },
+      ]} />
+    </PanelSurface>
+  </div>
+);
+</script>
+</body>
+</html>

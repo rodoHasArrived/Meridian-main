@@ -7,6 +7,9 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Workstation.Controls;
 using Meridian.Wpf.Workstation.Models;
+using TableActivityLogGridControl = Meridian.Wpf.Workstation.Tables.ActivityLogGridControl;
+using TableDenseDataGridControl = Meridian.Wpf.Workstation.Tables.DenseDataGridControl;
+using TableKeyValueFactGridControl = Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl;
 
 namespace Meridian.Wpf.Tests.Views;
 
@@ -165,6 +168,9 @@ public sealed class WorkstationPrimitiveControlsTests
                 HeaderText = "Provider Management",
                 DetailText = "Select a provider row to inspect readiness.",
                 ScopeText = "2 providers",
+                TableHeaderContent = new TextBlock { Text = "Filtered providers" },
+                EmptyContent = new TextBlock { Text = "No filtered providers" },
+                InspectorHeaderContent = new TextBlock { Text = "Readiness summary" },
                 GridAutomationId = "TableInspectorGrid",
                 EmptyAutomationId = "TableInspectorEmpty",
                 InspectorAutomationId = "TableInspectorRail",
@@ -184,9 +190,15 @@ public sealed class WorkstationPrimitiveControlsTests
                 VirtualizingPanel.GetVirtualizationMode(rowsList).Should().Be(VirtualizationMode.Recycling);
                 ScrollViewer.GetCanContentScroll(rowsList).Should().BeTrue();
                 AutomationProperties.GetAutomationId(rowsList).Should().Be("TableInspectorGrid");
+                denseGrid.EmptyContent.Should().BeAssignableTo<TextBlock>();
 
                 var emptyPanel = denseGrid.FindName("EmptyPanel").Should().BeOfType<Border>().Subject;
                 AutomationProperties.GetAutomationId(emptyPanel).Should().Be("TableInspectorEmpty");
+
+                var tableHeader = control.FindName("TableHeaderContentPresenter").Should().BeOfType<ContentPresenter>().Subject;
+                tableHeader.Content.Should().BeAssignableTo<TextBlock>();
+                var inspectorHeader = control.FindName("InspectorHeaderContentPresenter").Should().BeOfType<ContentPresenter>().Subject;
+                inspectorHeader.Content.Should().BeAssignableTo<TextBlock>();
 
                 var inspector = control.FindName("DefaultInspector").Should().BeOfType<InspectorPanelControl>().Subject;
                 AutomationProperties.GetAutomationId(inspector).Should().Be("TableInspectorRail");
@@ -257,8 +269,35 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("<Setter Property=\"MinHeight\" Value=\"26\" />");
         xaml.Should().Contain("FontSize=\"11\"");
         xaml.Should().Contain("SelectionMode=\"{Binding ElementName=Root, Path=SelectionMode}\"");
+        xaml.Should().Contain("EmptyContentPresenter");
         xaml.Should().Contain("VirtualizingPanel.VirtualizationMode=\"Recycling\"");
         xaml.Should().Contain("VirtualizingPanel.ScrollUnit=\"Item\"");
+    }
+
+    [Fact]
+    public void LegacyDataGridWrappers_ShouldDefaultToVirtualizedReadOnlyTables()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var grids = new DataGrid[]
+            {
+                new TableDenseDataGridControl(),
+                new TableKeyValueFactGridControl(),
+                new TableActivityLogGridControl()
+            };
+
+            foreach (var grid in grids)
+            {
+                grid.IsReadOnly.Should().BeTrue();
+                grid.EnableRowVirtualization.Should().BeTrue();
+                grid.EnableColumnVirtualization.Should().BeTrue();
+                ScrollViewer.GetCanContentScroll(grid).Should().BeTrue();
+                VirtualizingPanel.GetIsVirtualizing(grid).Should().BeTrue();
+                VirtualizingPanel.GetVirtualizationMode(grid).Should().Be(VirtualizationMode.Recycling);
+            }
+
+            grids[0].AutoGenerateColumns.Should().BeFalse();
+        });
     }
 
     [Fact]
@@ -272,6 +311,9 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("WorkstationInspectorRailStyle");
         xaml.Should().Contain("DenseDataGridControl");
         xaml.Should().Contain("InspectorPanelControl");
+        xaml.Should().Contain("TableHeaderContent");
+        xaml.Should().Contain("EmptyContent=\"{Binding ElementName=Root, Path=EmptyContent}\"");
+        xaml.Should().Contain("InspectorHeaderContent");
         xaml.Should().Contain("SelectedItems=\"{Binding ElementName=Root, Path=SelectedItems}\"");
     }
 

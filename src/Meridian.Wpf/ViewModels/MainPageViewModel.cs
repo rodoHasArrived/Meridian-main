@@ -23,7 +23,7 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class MainPageViewModel : BindableBase, IDisposable
 {
     private const string DefaultWorkspace = "strategy";
-    private const string DefaultPageTag = "StrategyShell";
+    private const string DefaultPageTag = "HomeWorkspace";
 
     private readonly INavigationService _navigationService;
     private readonly NavigationService? _wpfNavigationService;
@@ -48,8 +48,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
-    private string _currentPageTitle = "Strategy Workspace";
-    private string _currentPageSubtitle = "Configure backtests, review runs, and monitor strategy outcomes.";
+    private string _currentPageTitle = "Home";
+    private string _currentPageSubtitle = "Review operational readiness before opening deep task workspaces.";
     private bool _tickerStripVisible;
     private WorkstationOperatingContext? _selectedOperatingContext;
     private BoundedWindowMode _selectedWindowMode = BoundedWindowMode.DockFloat;
@@ -381,6 +381,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public Visibility DataWorkspaceHomeChromeVisibility
         => IsDataWorkspaceHomePageActive ? Visibility.Collapsed : Visibility.Visible;
 
+    public Visibility WorkspaceHomeSummaryChromeVisibility
+        => IsWorkspaceHomePageActive && !IsDataWorkspaceHomePageActive ? Visibility.Visible : Visibility.Collapsed;
+
     public WorkspaceShellLayoutDescriptor CurrentShellLayoutDescriptor
         => ShellNavigationCatalog.GetWorkspaceLayoutDescriptor(CurrentWorkspace);
 
@@ -443,6 +446,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
+            RaisePropertyChanged(nameof(WorkspaceHomeSummaryChromeVisibility));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
@@ -805,6 +809,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
+            RaisePropertyChanged(nameof(WorkspaceHomeSummaryChromeVisibility));
             RaiseShellLayoutPropertiesChanged();
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
@@ -970,6 +975,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RefreshCommandPalettePages();
             RefreshPrimaryOperatorWorkflowSteps();
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(WorkspaceHomeSummaryChromeVisibility));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             return;
@@ -998,6 +1005,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _currentPageTag = normalized;
         UpdateCurrentPageContent(normalized);
         RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+        RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
+        RaisePropertyChanged(nameof(WorkspaceHomeSummaryChromeVisibility));
         RaisePropertyChanged(nameof(IsWorkflowPageActive));
         RaisePropertyChanged(nameof(ShellContextVisibility));
 
@@ -1292,24 +1301,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     private Guid? ResolveOperatorInboxFundAccountId()
-    {
-        var context = _operatingContextService?.CurrentContext ?? SelectedOperatingContext;
-        if (context is null)
-        {
-            return null;
-        }
+        => ResolveActiveFundAccountId();
 
-        var accountId = context.AccountId;
-        if (string.IsNullOrWhiteSpace(accountId) &&
-            context.ScopeKind == OperatingContextScopeKind.Account)
-        {
-            accountId = context.ScopeId;
-        }
-
-        return Guid.TryParse(accountId, out var parsed)
-            ? parsed
-            : null;
-    }
+    private Guid? ResolveActiveFundAccountId()
+        => WorkstationOperatingContextScopeResolver.ResolveFundAccountId(_operatingContextService?.CurrentContext ?? SelectedOperatingContext);
 
     private void ApplyOperatorInbox(OperatorInboxDto? inbox, string? error)
     {
@@ -1476,9 +1471,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         try
         {
-            var hasOperatingContext = _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null;
-            var operatingContextLabel = _operatingContextService?.CurrentContext?.DisplayName;
+            var operatingContext = _operatingContextService?.CurrentContext ?? SelectedOperatingContext;
+            var hasOperatingContext = operatingContext is not null || _fundContextService.CurrentFundProfile is not null;
+            var operatingContextLabel = operatingContext?.DisplayName;
             var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
+            var fundAccountId = WorkstationOperatingContextScopeResolver.ResolveFundAccountIdString(operatingContext);
             var fundDisplayName = _fundContextService.CurrentFundProfile?.DisplayName;
 
             var summary = await _workflowSummaryService
@@ -1486,6 +1483,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
                     hasOperatingContext: hasOperatingContext,
                     operatingContextDisplayName: operatingContextLabel,
                     fundProfileId: fundProfileId,
+                    fundAccountId: fundAccountId,
                     fundDisplayName: fundDisplayName,
                     ct: ct)
                 .ConfigureAwait(false);

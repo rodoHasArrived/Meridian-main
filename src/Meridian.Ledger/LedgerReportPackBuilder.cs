@@ -24,7 +24,8 @@ public static class LedgerReportPackBuilder
             ledger,
             request.AsOf,
             chart,
-            financialAccountId);
+            financialAccountId,
+            request.LineDimensions);
 
         var artifacts = new List<LedgerReportPackArtifact>
         {
@@ -126,6 +127,7 @@ public static class LedgerReportPackBuilder
         builder.AppendLine(CultureInfo.InvariantCulture, $"  \"periodEnd\": {JsonString(request.PeriodEnd.ToString("O", CultureInfo.InvariantCulture))},");
         builder.AppendLine(CultureInfo.InvariantCulture, $"  \"asOf\": {JsonString(request.AsOf.ToString("O", CultureInfo.InvariantCulture))},");
         builder.AppendLine(CultureInfo.InvariantCulture, $"  \"baseCurrency\": {JsonString(request.BaseCurrency)},");
+        AppendDimensionScope(builder, request.LineDimensions);
         builder.AppendLine(CultureInfo.InvariantCulture, $"  \"lockedPeriod\": {(request.LockedPeriod is null ? "false" : "true")},");
         builder.AppendLine("  \"totals\": {");
         builder.AppendLine(CultureInfo.InvariantCulture, $"    \"assets\": {FormatDecimal(statements.TotalAssets)},");
@@ -191,6 +193,7 @@ public static class LedgerReportPackBuilder
         builder.AppendLine(CultureInfo.InvariantCulture, $"generated-by,{EscapeCsv(request.GeneratedBy)}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"generated-at-utc,{request.GeneratedAtUtc:O}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"locked-period,{(request.LockedPeriod is null ? "false" : "true")}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"dimension-scope,{EscapeCsv(FormatDimensionScope(request.LineDimensions))}");
 
         if (request.LockedPeriod is not null)
         {
@@ -252,6 +255,7 @@ public static class LedgerReportPackBuilder
                     .SelectMany(account => ledger.GetEntries(account, request.PeriodStart, request.AsOf))
                     .Where(entry => string.IsNullOrWhiteSpace(financialAccountId)
                         || string.Equals(entry.Account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+                    .Where(entry => MatchesLineDimensions(entry.Dimensions, request.LineDimensions))
                     .DistinctBy(static entry => entry.EntryId)
                     .OrderBy(static entry => entry.Timestamp)
                     .ThenBy(static entry => entry.EntryId)
@@ -337,6 +341,170 @@ public static class LedgerReportPackBuilder
 
         return builder.ToString();
     }
+
+    private static void AppendDimensionScope(StringBuilder builder, LedgerLineDimensionSet? dimensions)
+    {
+        if (dimensions is null || !HasAnyDimension(dimensions))
+        {
+            builder.AppendLine("  \"dimensionScope\": {},");
+            return;
+        }
+
+        builder.AppendLine("  \"dimensionScope\": {");
+        var fields = BuildDimensionFields(dimensions).ToArray();
+        for (var i = 0; i < fields.Length; i++)
+        {
+            var (name, value) = fields[i];
+            builder.Append(CultureInfo.InvariantCulture, $"    {JsonString(name)}: {JsonString(value)}");
+            builder.AppendLine(i == fields.Length - 1 ? string.Empty : ",");
+        }
+
+        builder.AppendLine("  },");
+    }
+
+    private static string FormatDimensionScope(LedgerLineDimensionSet? dimensions)
+    {
+        if (dimensions is null || !HasAnyDimension(dimensions))
+            return string.Empty;
+
+        return string.Join(
+            ';',
+            BuildDimensionFields(dimensions)
+                .OrderBy(static field => field.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(static field => $"{field.Name}={field.Value}"));
+    }
+
+    private static IEnumerable<(string Name, string Value)> BuildDimensionFields(LedgerLineDimensionSet dimensions)
+    {
+        if (HasValue(dimensions.FundId))
+            yield return ("fundId", dimensions.FundId!.Trim());
+        if (HasValue(dimensions.EntityId))
+            yield return ("entityId", dimensions.EntityId!.Trim());
+        if (HasValue(dimensions.SleeveId))
+            yield return ("sleeveId", dimensions.SleeveId!.Trim());
+        if (HasValue(dimensions.StrategyId))
+            yield return ("strategyId", dimensions.StrategyId!.Trim());
+        if (HasValue(dimensions.InvestorId))
+            yield return ("investorId", dimensions.InvestorId!.Trim());
+        if (HasValue(dimensions.CapitalAccountId))
+            yield return ("capitalAccountId", dimensions.CapitalAccountId!.Trim());
+        if (dimensions.InstrumentId is not null)
+            yield return ("instrumentId", dimensions.InstrumentId.Value.ToString("D"));
+        if (HasValue(dimensions.TaxLotId))
+            yield return ("taxLotId", dimensions.TaxLotId!.Trim());
+        if (HasValue(dimensions.CostCenterId))
+            yield return ("costCenterId", dimensions.CostCenterId!.Trim());
+        if (HasValue(dimensions.CounterpartyId))
+            yield return ("counterpartyId", dimensions.CounterpartyId!.Trim());
+        if (HasValue(dimensions.OrganizationId))
+            yield return ("organizationId", dimensions.OrganizationId!.Trim());
+        if (HasValue(dimensions.PortfolioId))
+            yield return ("portfolioId", dimensions.PortfolioId!.Trim());
+        if (HasValue(dimensions.BookId))
+            yield return ("bookId", dimensions.BookId!.Trim());
+        if (HasValue(dimensions.AccountId))
+            yield return ("accountId", dimensions.AccountId!.Trim());
+        if (HasValue(dimensions.CustomerId))
+            yield return ("customerId", dimensions.CustomerId!.Trim());
+        if (HasValue(dimensions.VendorId))
+            yield return ("vendorId", dimensions.VendorId!.Trim());
+        if (HasValue(dimensions.ProjectId))
+            yield return ("projectId", dimensions.ProjectId!.Trim());
+
+        foreach (var (key, value) in dimensions.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            if (HasValue(key) && HasValue(value))
+                yield return ($"externalGl.{key.Trim()}", value.Trim());
+        }
+    }
+
+    private static bool MatchesLineDimensions(LedgerLineDimensionSet? actual, LedgerLineDimensionSet? expected)
+    {
+        if (expected is null || !HasAnyDimension(expected))
+            return true;
+
+        if (actual is null)
+            return false;
+
+        return Matches(actual.FundId, expected.FundId)
+            && Matches(actual.EntityId, expected.EntityId)
+            && Matches(actual.SleeveId, expected.SleeveId)
+            && Matches(actual.StrategyId, expected.StrategyId)
+            && Matches(actual.InvestorId, expected.InvestorId)
+            && Matches(actual.CapitalAccountId, expected.CapitalAccountId)
+            && Matches(actual.InstrumentId, expected.InstrumentId)
+            && Matches(actual.TaxLotId, expected.TaxLotId)
+            && Matches(actual.CostCenterId, expected.CostCenterId)
+            && Matches(actual.CounterpartyId, expected.CounterpartyId)
+            && Matches(actual.OrganizationId, expected.OrganizationId)
+            && Matches(actual.PortfolioId, expected.PortfolioId)
+            && Matches(actual.BookId, expected.BookId)
+            && Matches(actual.AccountId, expected.AccountId)
+            && Matches(actual.CustomerId, expected.CustomerId)
+            && Matches(actual.VendorId, expected.VendorId)
+            && Matches(actual.ProjectId, expected.ProjectId)
+            && MatchesExternalGlDimensions(actual.ExternalGlDimensions, expected.ExternalGlDimensions);
+    }
+
+    private static bool HasAnyDimension(LedgerLineDimensionSet dimensions)
+        => HasValue(dimensions.FundId)
+            || HasValue(dimensions.EntityId)
+            || HasValue(dimensions.SleeveId)
+            || HasValue(dimensions.StrategyId)
+            || HasValue(dimensions.InvestorId)
+            || HasValue(dimensions.CapitalAccountId)
+            || dimensions.InstrumentId is not null
+            || HasValue(dimensions.TaxLotId)
+            || HasValue(dimensions.CostCenterId)
+            || HasValue(dimensions.CounterpartyId)
+            || HasValue(dimensions.OrganizationId)
+            || HasValue(dimensions.PortfolioId)
+            || HasValue(dimensions.BookId)
+            || HasValue(dimensions.AccountId)
+            || HasValue(dimensions.CustomerId)
+            || HasValue(dimensions.VendorId)
+            || HasValue(dimensions.ProjectId)
+            || dimensions.ExternalGlDimensions.Count > 0;
+
+    private static bool Matches(string? actual, string? expected)
+    {
+        if (!HasValue(expected))
+            return true;
+
+        return string.Equals(actual?.Trim(), expected!.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool Matches(Guid? actual, Guid? expected)
+        => expected is null || actual == expected;
+
+    private static bool MatchesExternalGlDimensions(
+        IReadOnlyDictionary<string, string> actual,
+        IReadOnlyDictionary<string, string> expected)
+    {
+        if (expected.Count == 0)
+            return true;
+
+        foreach (var (key, expectedValue) in expected)
+        {
+            if (!actual.TryGetValue(key, out var actualValue))
+            {
+                var matchingPair = actual.FirstOrDefault(
+                    pair => string.Equals(pair.Key, key, StringComparison.OrdinalIgnoreCase));
+                if (matchingPair.Key is null)
+                    return false;
+
+                actualValue = matchingPair.Value;
+            }
+
+            if (!string.Equals(actualValue?.Trim(), expectedValue?.Trim(), StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool HasValue(string? value)
+        => !string.IsNullOrWhiteSpace(value);
 
     private static string ComputeSha256(string value)
     {

@@ -267,22 +267,18 @@ describe("QuantLabScreen", () => {
   });
 
   it("keeps the parameter panel visible when no runtime parameters are detected", async () => {
-    vi.useFakeTimers();
     renderWithRouter(<QuantLabScreen />);
     await waitForAsyncEffects();
 
     expect(screen.getByRole("heading", { name: "Parameters" })).toBeInTheDocument();
     expect(screen.getByText("Scanning source for runtime parameters.")).toHaveAttribute("role", "status");
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(650);
-    });
-
-    expect(screen.getByText("No runtime parameters detected in the current script.")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByText("No runtime parameters detected in the current script.")).toBeInTheDocument()
+    );
   });
 
   it("links runtime parameter descriptions to editable controls", async () => {
-    vi.useFakeTimers();
     vi.mocked(api.extractQuantParameters).mockResolvedValue({
       parameters: [
         {
@@ -300,11 +296,7 @@ describe("QuantLabScreen", () => {
     renderWithRouter(<QuantLabScreen />);
     await waitForAsyncEffects();
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(650);
-    });
-
-    const lookback = screen.getByLabelText("Lookback parameter");
+    const lookback = await screen.findByLabelText("Lookback parameter");
     expect(lookback).toHaveAttribute("id", "quant-param-lookback");
     expect(lookback).toHaveAttribute("aria-describedby", "quant-param-lookback-description");
     expect(screen.getByText("Rolling window length")).toHaveAttribute("id", "quant-param-lookback-description");

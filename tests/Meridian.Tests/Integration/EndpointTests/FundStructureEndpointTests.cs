@@ -28,6 +28,8 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Collection("Endpoint")]
 public sealed class FundStructureEndpointTests
 {
+    private const string TestPassHash = "pbkdf2-sha256$210000$DdocJLRlUqhBZlBR8YAatA==$MpNJJHhFb6+it6jMKuIzwHtg9Lq/WehIjKrC1m6TRQU=";
+
     private readonly EndpointTestFixture _fixture;
     private readonly HttpClient _client;
 
@@ -61,7 +63,7 @@ public sealed class FundStructureEndpointTests
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         Environment.SetEnvironmentVariable(
             "MDC_USERS",
-            """[{"username":"fund-ops","password":"test-pass","role":"Accounting"}]""");
+            $$"""[{"username":"fund-ops","passwordHash":"{{TestPassHash}}","role":"Accounting"}]""");
 
         try
         {
@@ -96,7 +98,7 @@ public sealed class FundStructureEndpointTests
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         Environment.SetEnvironmentVariable(
             "MDC_USERS",
-            """[{"username":"read-only","password":"test-pass","role":"ReadOnly"}]""");
+            $$"""[{"username":"read-only","passwordHash":"{{TestPassHash}}","role":"ReadOnly"}]""");
 
         try
         {
@@ -443,7 +445,19 @@ public sealed class FundStructureEndpointTests
             FundProfileId: seed.FundProfileId,
             ReportKind: GovernanceReportKindDto.TrialBalance,
             AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
-            Currency: "USD");
+            Currency: "USD",
+            BrandingThemeOverride: new ReportBrandingThemeDto(
+                "allocator-preview",
+                "Allocator Preview",
+                "Northstar Capital",
+                "#101828",
+                "#3B82F6",
+                "#111827",
+                "#FFFFFF",
+                LogoUri: "https://example.test/northstar.png",
+                FooterText: "Northstar Capital confidential.",
+                Disclaimer: "Preview before retained artifact generation.",
+                IsBuiltIn: false));
 
         var response = await _client.PostAsJsonAsync(
             "/api/fund-structure/report-pack-preview",
@@ -458,6 +472,10 @@ public sealed class FundStructureEndpointTests
         payload.ReportKind.Should().Be(GovernanceReportKindDto.TrialBalance);
         payload.TrialBalanceLineCount.Should().BeGreaterThan(0);
         payload.AssetClassSectionCount.Should().BeGreaterThan(0);
+        payload.BrandingTheme.Should().NotBeNull();
+        payload.BrandingTheme!.ThemeId.Should().Be("allocator-preview");
+        payload.BrandingTheme.Name.Should().Be("Allocator Preview");
+        payload.BrandingTheme.IsBuiltIn.Should().BeFalse();
     }
 
     [Fact]
@@ -709,7 +727,7 @@ public sealed class FundStructureEndpointTests
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         Environment.SetEnvironmentVariable(
             "MDC_USERS",
-            """[{"username":"read-only","password":"test-pass","role":"ReadOnly"}]""");
+            $$"""[{"username":"read-only","passwordHash":"{{TestPassHash}}","role":"ReadOnly"}]""");
 
         try
         {
@@ -780,7 +798,7 @@ public sealed class FundStructureEndpointTests
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         Environment.SetEnvironmentVariable(
             "MDC_USERS",
-            """[{"username":"fund-ops","password":"test-pass","role":"Accounting"}]""");
+            $$"""[{"username":"fund-ops","passwordHash":"{{TestPassHash}}","role":"Accounting"}]""");
 
         try
         {

@@ -837,6 +837,75 @@ public sealed class SecurityMasterViewModelTests
     }
 
     [Fact]
+    public void LoadSelectedTrustSnapshotAsync_ShouldLoadInstrumentPassportFromFallbackEndpoint()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("acacacac-1111-1111-1111-111111111111");
+            var snapshot = CreateTrustSnapshot(securityId);
+            var passport = CreateInstrumentPassport(snapshot);
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => snapshot,
+                PassportFactory = (_, _) => passport
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+
+            snapshotClient.PassportRequestCount.Should().Be(1);
+            snapshotClient.LastPassportSecurityId.Should().Be(securityId);
+            viewModel.SelectedTrustSnapshot.Should().Be(snapshot);
+            viewModel.SelectedInstrumentPassport.Should().Be(passport);
+            viewModel.InstrumentPassportErrorText.Should().BeEmpty();
+            viewModel.InstrumentPassportSummaryText.Should().Contain("Apple Inc.");
+            viewModel.InstrumentPassportProviderConfidenceText.Should().Contain("1 active / 1 total");
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Provider confidence" &&
+                field.Value == "1 active / 1 total");
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Primary provider" &&
+                field.Value.Contains("Bloomberg", StringComparison.OrdinalIgnoreCase));
+        });
+    }
+
+    [Fact]
+    public void LoadSelectedTrustSnapshotAsync_WhenInstrumentPassportEndpointFails_ShouldPreserveTrustSnapshot()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var securityId = Guid.Parse("adadadad-1111-1111-1111-111111111111");
+            var snapshot = CreateTrustSnapshot(securityId);
+            var snapshotClient = new StubWorkstationSecurityMasterApiClient
+            {
+                SnapshotFactory = (_, _) => snapshot,
+                PassportFactory = (_, _) => throw new InvalidOperationException("Passport endpoint offline")
+            };
+
+            using var viewModel = CreateViewModel(navigation, snapshotClient);
+
+            await viewModel.LoadSelectedTrustSnapshotAsync(securityId);
+
+            snapshotClient.PassportRequestCount.Should().Be(1);
+            viewModel.SelectedTrustSnapshot.Should().Be(snapshot);
+            viewModel.TrustSnapshotErrorText.Should().BeEmpty();
+            viewModel.SelectedInstrumentPassport.Should().BeNull();
+            viewModel.InstrumentPassportFields.Should().BeEmpty();
+            viewModel.InstrumentPassportErrorText.Should().Be("Instrument passport failed to load.");
+            viewModel.StatusText.Should().Contain("instrument passport evidence failed to load");
+        });
+    }
+
+    [Fact]
     public void SecurityMasterPageSource_BindsScheduleBookAndOpenLotReadModel()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml"));
@@ -1279,6 +1348,58 @@ public sealed class SecurityMasterViewModelTests
         };
     }
 
+    private static InstrumentPassportDto CreateInstrumentPassport(SecurityMasterTrustSnapshotDto snapshot)
+        => new(
+            SecurityId: snapshot.SecurityId,
+            Identity: snapshot.Identity,
+            EconomicDefinition: snapshot.EconomicDefinition,
+            IdentifierSummary: new SecurityMasterIdentifierSummaryDto(
+                PrimaryIdentifierKind: "Ticker",
+                PrimaryIdentifierValue: "AAPL",
+                ActiveIdentifierCount: 1,
+                ActiveAliasCount: 0,
+                ProviderMappingCount: 1,
+                DistinctProviderCount: 1,
+                HasPrimaryIdentifier: true,
+                HasProviderMappings: true,
+                Summary: "Primary identifiers are aligned.",
+                ProviderMappings: []),
+            ProviderMappings: [],
+            LifecycleEvents: [],
+            CorporateActions: snapshot.CorporateActions,
+            Pricing: new InstrumentPassportPricingDto(
+                Status: "Ready",
+                Summary: "Trading parameters are active.",
+                TradingParameters: null,
+                LotSize: 1m,
+                TickSize: 0.01m,
+                ContractMultiplier: 1m,
+                TradingHoursUtc: "13:30-20:00",
+                CircuitBreakerThresholdPct: 10m),
+            Usage: snapshot.DownstreamImpact,
+            TrustPosture: snapshot.TrustPosture,
+            RetrievedAtUtc: snapshot.RetrievedAtUtc)
+        {
+            ProviderConfidence =
+            [
+                new InstrumentPassportProviderConfidenceDto(
+                    Provider: "Bloomberg",
+                    ProviderSource: "blp-reference",
+                    MappingKind: "Ticker",
+                    Symbol: "AAPL US Equity",
+                    NormalizedSymbol: "AAPL",
+                    IsPrimary: true,
+                    IsActive: true,
+                    FreshnessAsOf: snapshot.RetrievedAtUtc.AddMinutes(-5),
+                    FreshnessMinutes: 5,
+                    ConfidenceScore: 0.87m,
+                    ConfidenceReason: "Primary ticker matches the golden copy.",
+                    IdentifierConflictIds: [],
+                    IdentifierConflictSummaries: [],
+                    OverrideHistory: [])
+            ]
+        };
+
     private static SecurityMasterConflictAssessmentDto CreateAssessment(
         Guid securityId,
         Guid conflictId,
@@ -1339,6 +1460,10 @@ public sealed class SecurityMasterViewModelTests
     private sealed class StubWorkstationSecurityMasterApiClient : IWorkstationSecurityMasterApiClient
     {
         public Func<Guid, string?, SecurityMasterTrustSnapshotDto?>? SnapshotFactory { get; init; }
+        public Func<Guid, string?, InstrumentPassportDto?>? PassportFactory { get; init; }
+        public int PassportRequestCount { get; private set; }
+        public Guid? LastPassportSecurityId { get; private set; }
+        public string? LastPassportFundProfileId { get; private set; }
 
         public BulkResolveSecurityMasterConflictsResult BulkResolveResult { get; init; } =
             new(
@@ -1353,6 +1478,14 @@ public sealed class SecurityMasterViewModelTests
 
         public Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default)
             => Task.FromResult(SnapshotFactory?.Invoke(securityId, fundProfileId));
+
+        public Task<InstrumentPassportDto?> GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default)
+        {
+            PassportRequestCount++;
+            LastPassportSecurityId = securityId;
+            LastPassportFundProfileId = fundProfileId;
+            return Task.FromResult(PassportFactory?.Invoke(securityId, fundProfileId));
+        }
 
         public Task<ApiResponse<BulkResolveSecurityMasterConflictsResult>> BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default)
         {

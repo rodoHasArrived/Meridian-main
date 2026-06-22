@@ -537,7 +537,17 @@ public sealed class EvidencePacketValidationService
     {
         var canonicalKinds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "run", "account", "fund", "strategy", "instrument", "reconciliation", "report", "approval"
+            "run",
+            "account",
+            "fund",
+            "strategy",
+            "instrument",
+            "reconciliation",
+            "report",
+            "approval",
+            EvidenceSubjectResolver.PrivateCapitalFundEventKind,
+            EvidenceSubjectResolver.PaymentIntentKind,
+            EvidenceSubjectResolver.ReportPackDeliveryKind
         };
 
         foreach (var node in nodes)
@@ -563,7 +573,8 @@ public sealed class EvidencePacketValidationService
                     continue;
                 }
 
-                if (!canonicalKinds.Contains(artifact.CanonicalSubjectKind))
+                var canonicalSubjectKind = artifact.CanonicalSubjectKind;
+                if (canonicalSubjectKind is null || !canonicalKinds.Contains(canonicalSubjectKind))
                 {
                     issues.Add(new EvidenceValidationIssueDto(
                         Code: "retained-artifact-invalid-canonical-subject-kind",

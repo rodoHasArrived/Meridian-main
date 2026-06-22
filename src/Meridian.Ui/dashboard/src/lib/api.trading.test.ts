@@ -23,6 +23,22 @@ import {
   getPortfolioAggregate,
   getPortfolioExposure,
   getPortfolioSymbolExposure,
+  getPrivateCapitalCloseCockpit,
+  getPrivateCapitalFundEventCommandCenter,
+  activateProviderIntegration,
+  checkProviderIntegrationSchemaDrift,
+  createProviderIntegrationReconciliationHandoff,
+  getProviderIntegrationConnectionMonitor,
+  getProviderIntegrationConnectionSyncPlan,
+  getProviderIntegrationConnectionSyncRuns,
+  getProviderIntegrationIdentityResolution,
+  getProviderIntegrationPromotionReadiness,
+  getProviderIntegrationQuarantineReview,
+  getProviderIntegrationReadiness,
+  getProviderIntegrationReconciliationHandoffHistory,
+  getProviderIntegrationStagingReview,
+  getProviderIntegrationTemplate,
+  getProviderIntegrationTemplates,
   getProviderRoutingBindings,
   getProviderRoutingConnections,
   getProviderRoutingTrustSnapshots,
@@ -36,6 +52,7 @@ import {
   getRunContinuity,
   getRunHistory,
   getRunLedgerJournal,
+  getRunTrialBalance,
   getRunReconciliation,
   getRunReconciliationHistory,
   getRunReviewPacket,
@@ -59,8 +76,15 @@ import {
   pinWorkflowPreset,
   pauseReplay,
   previewProviderRoute,
+  importProviderIntegrationOpenApi,
+  replayProviderIntegrationQuarantineRecords,
+  resolveProviderIntegrationQuarantineRecord,
+  runDueProviderIntegrationSync,
+  runManualCsvProviderIntegrationDryRun,
+  runRestProviderIntegrationDryRun,
   runReconciliation,
   runAnalysisExport,
+  saveProviderIntegrationSetup,
   resetDevelopmentFixtureUsage,
   resumeReplay,
   revokeAlpacaConnection,
@@ -247,6 +271,44 @@ describe("trading endpoint wiring", () => {
     expect(hasDevelopmentFixtureUsage()).toBe(false);
     await expect(getSession()).resolves.toMatchObject({ displayName: "Demo Desk" });
     expect(hasDevelopmentFixtureUsage()).toBe(true);
+  });
+
+  it("wires private-capital fund-event command-center drill-throughs", async () => {
+    const controller = new AbortController();
+
+    await getPrivateCapitalFundEventCommandCenter(
+      {
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "11111111-1111-1111-1111-111111111111",
+        fundEventId: "fund-event:fund-alpha:capital-call"
+      },
+      { signal: controller.signal }
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/ledger/private-capital/fund-event-command-center?fundProfileId=fund-alpha&ledgerBookId=11111111-1111-1111-1111-111111111111&fundEventId=fund-event%3Afund-alpha%3Acapital-call",
+      expect.objectContaining({ signal: controller.signal })
+    );
+  });
+
+  it("wires private-capital close cockpit drill-throughs", async () => {
+    const controller = new AbortController();
+
+    await getPrivateCapitalCloseCockpit(
+      {
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "11111111-1111-1111-1111-111111111111",
+        fundAccountId: "fund-account:lp-1",
+        periodId: "2026-06",
+        entityId: "entity-master"
+      },
+      { signal: controller.signal }
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/operations/private-capital-close-cockpit?fundProfileId=fund-alpha&ledgerBookId=11111111-1111-1111-1111-111111111111&fundAccountId=fund-account%3Alp-1&periodId=2026-06&entityId=entity-master",
+      expect.objectContaining({ signal: controller.signal })
+    );
   });
 
   it("normalizes the host status endpoint into the overview dashboard contract", async () => {
@@ -463,7 +525,8 @@ describe("trading endpoint wiring", () => {
   it("wires workstation workflow library and preset endpoints", async () => {
     await getWorkstationWorkflowSummary({
       hasOperatingContext: true,
-      fundProfileId: "fund-1"
+      fundProfileId: "fund-1",
+      fundAccountId: "account-1"
     });
     await getWorkflowLibrary();
     await getWorkflowPresets();
@@ -489,7 +552,7 @@ describe("trading endpoint wiring", () => {
     await deleteWorkflowPreset("preset-1");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/workflow-summary?hasOperatingContext=true&fundProfileId=fund-1",
+      "/api/workstation/workflow-summary?hasOperatingContext=true&fundProfileId=fund-1&fundAccountId=account-1",
       expect.anything()
     );
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/workflows", expect.anything());
@@ -517,7 +580,29 @@ describe("trading endpoint wiring", () => {
   });
 
   it("wires run continuity, reconciliation, security, and portfolio workstation endpoints", async () => {
-    await getRunLedgerJournal("run-1", { from: "2026-01-01", to: "2026-01-31" });
+    await getRunLedgerJournal("run-1", {
+      from: "2026-01-01",
+      to: "2026-01-31",
+      fundId: "fund-alpha",
+      entityId: "entity-a",
+      instrumentId: "loan-1",
+      counterpartyId: "borrower-1",
+      externalGlDimensions: { Department: "InvestmentOps" }
+    });
+    await getRunTrialBalance("run-1", {
+      accountType: "Asset",
+      fundId: "fund-alpha",
+      entityId: "entity-a",
+      sleeveId: "sleeve-a",
+      strategyId: "strategy-a",
+      investorId: "investor-1",
+      capitalAccountId: "capital-1",
+      instrumentId: "loan-1",
+      taxLotId: "taxlot-1",
+      costCenterId: "ops",
+      counterpartyId: "borrower-1",
+      externalGlDimensions: { Department: "InvestmentOps" }
+    });
     await getRunContinuity("run-1");
     await getRunReviewPacket("run-1", "fund-1");
     await getRunReconciliation("run-1");
@@ -539,7 +624,14 @@ describe("trading endpoint wiring", () => {
     await getPortfolioExposure();
     await getPortfolioSymbolExposure("AAPL");
 
-    expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/ledger/journal?from=2026-01-01&to=2026-01-31", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/runs/run-1/ledger/journal?from=2026-01-01&to=2026-01-31&fundId=fund-alpha&entityId=entity-a&instrumentId=loan-1&counterpartyId=borrower-1&externalGl.Department=InvestmentOps",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/runs/run-1/ledger/trial-balance?accountType=Asset&fundId=fund-alpha&entityId=entity-a&sleeveId=sleeve-a&strategyId=strategy-a&investorId=investor-1&capitalAccountId=capital-1&instrumentId=loan-1&taxLotId=taxlot-1&costCenterId=ops&counterpartyId=borrower-1&externalGl.Department=InvestmentOps",
+      expect.anything()
+    );
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/continuity", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/review-packet?fundAccountId=fund-1", expect.anything());
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/runs/run-1/reconciliation", expect.anything());
@@ -673,6 +765,214 @@ describe("trading endpoint wiring", () => {
           requireProductionReady: false
         })
       })
+    );
+  });
+
+  it("wires provider-integration runtime endpoint group", async () => {
+    const controller = new AbortController();
+    const openApiRequest = {
+      manifestId: "custodian / v1",
+      providerId: "custodian",
+      displayName: "Custodian",
+      environment: "sandbox",
+      authType: "ApiKey",
+      tokenUrl: null,
+      scopes: [],
+      capabilities: ["Positions"],
+      openApiDocumentJson: "{}",
+      importedBy: "ops",
+      importedAt: "2026-06-16T12:00:00Z",
+      changeReason: "Import provider template"
+    } as Parameters<typeof importProviderIntegrationOpenApi>[0];
+    const setupRequest = {
+      manifest: { manifestId: "custodian / v1" },
+      connection: { connectionId: "connection / 1" },
+      savedBy: "ops",
+      savedAt: "2026-06-16T12:01:00Z",
+      changeReason: "Save draft"
+    } as Parameters<typeof saveProviderIntegrationSetup>[0];
+    const manualDryRun = {
+      syncRunId: "sync / 1",
+      manifestId: "custodian / v1",
+      connectionId: "connection / 1",
+      capability: "Positions",
+      fileName: "positions.csv",
+      csvContent: "symbol,quantity\nAAPL,1",
+      requestedBy: "ops",
+      requestedAt: "2026-06-16T12:02:00Z"
+    } as Parameters<typeof runManualCsvProviderIntegrationDryRun>[0];
+    const restDryRun = {
+      syncRunId: "sync / 2",
+      manifestId: "custodian / v1",
+      connectionId: "connection / 1",
+      capability: "Positions",
+      endpointKey: "positions",
+      pathParameters: {},
+      queryParameters: {},
+      requestedBy: "ops",
+      requestedAt: "2026-06-16T12:03:00Z",
+      maxPages: 1
+    } as Parameters<typeof runRestProviderIntegrationDryRun>[0];
+    const activationRequest = {
+      manifestId: "custodian / v1",
+      connectionId: "connection / 1",
+      approvedBy: "ops",
+      approvedAt: "2026-06-16T12:04:00Z",
+      approvalEvidenceId: "approval / 1",
+      changeReason: "Approved dry run"
+    } as Parameters<typeof activateProviderIntegration>[0];
+    const runDueRequest = {
+      connectionId: "connection / 1",
+      requestedAt: "2026-06-16T12:05:00Z",
+      requestedBy: "ops",
+      maxPages: 2,
+      pathParametersByCapability: {},
+      queryParametersByCapability: {}
+    } as Parameters<typeof runDueProviderIntegrationSync>[1];
+    const schemaDriftRequest = {
+      manifestId: "custodian / v1",
+      connectionId: "connection / 1",
+      capability: "Positions",
+      endpointKey: "positions",
+      syncRunId: "sync / 2",
+      rawPayloadId: "payload / 1",
+      checkedBy: "ops",
+      checkedAt: "2026-06-16T12:06:00Z"
+    } as Parameters<typeof checkProviderIntegrationSchemaDrift>[0];
+    const handoffRequest = {
+      connectionId: "connection / 1",
+      stagingRecordIds: ["staging / 1"],
+      requestedBy: "ops",
+      requestedAt: "2026-06-16T12:07:00Z",
+      approvalEvidenceId: "approval / 2",
+      note: "Promote ready rows",
+      recentRunLimit: 5
+    } as Parameters<typeof createProviderIntegrationReconciliationHandoff>[0];
+    const quarantineResolution = {
+      connectionId: "connection / 1",
+      syncRunId: "sync / 2",
+      quarantineRecordId: "quarantine / 1",
+      action: "ReviewOnly",
+      reviewedBy: "ops",
+      reviewedAt: "2026-06-16T12:08:00Z",
+      note: "Reviewed"
+    } as Parameters<typeof resolveProviderIntegrationQuarantineRecord>[0];
+    const quarantineReplay = {
+      replaySyncRunId: "sync / replay",
+      sourceSyncRunId: "sync / 2",
+      manifestId: "custodian / v1",
+      connectionId: "connection / 1",
+      capability: "Positions",
+      quarantineRecordIds: ["quarantine / 1"],
+      requestedBy: "ops",
+      requestedAt: "2026-06-16T12:09:00Z"
+    } as Parameters<typeof replayProviderIntegrationQuarantineRecords>[0];
+
+    await getProviderIntegrationTemplates({ signal: controller.signal });
+    await getProviderIntegrationTemplate("custodian / v1");
+    await importProviderIntegrationOpenApi(openApiRequest);
+    await saveProviderIntegrationSetup(setupRequest);
+    await getProviderIntegrationReadiness("custodian / v1", "connection / 1");
+    await runManualCsvProviderIntegrationDryRun(manualDryRun);
+    await runRestProviderIntegrationDryRun(restDryRun);
+    await activateProviderIntegration(activationRequest);
+    await getProviderIntegrationConnectionMonitor("connection / 1", 3);
+    await getProviderIntegrationConnectionSyncRuns("connection / 1", 4);
+    await getProviderIntegrationConnectionSyncPlan("connection / 1", "2026-06-16T12:10:00Z");
+    await runDueProviderIntegrationSync("connection / 1", runDueRequest);
+    await checkProviderIntegrationSchemaDrift(schemaDriftRequest);
+    await getProviderIntegrationStagingReview("connection / 1", 5);
+    await getProviderIntegrationIdentityResolution("connection / 1", 6);
+    await getProviderIntegrationPromotionReadiness("connection / 1", 7);
+    await getProviderIntegrationReconciliationHandoffHistory("connection / 1");
+    await createProviderIntegrationReconciliationHandoff(handoffRequest);
+    await getProviderIntegrationQuarantineReview("connection / 1", 8);
+    await resolveProviderIntegrationQuarantineRecord(quarantineResolution);
+    await replayProviderIntegrationQuarantineRecords(quarantineReplay);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/templates",
+      expect.objectContaining({ signal: controller.signal })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/templates/custodian%20%2F%20v1",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/import/openapi",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(openApiRequest) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/setup",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(setupRequest) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/manifests/custodian%20%2F%20v1/readiness?connectionId=connection+%2F+1",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/dry-runs/manual-csv",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(manualDryRun) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/dry-runs/rest",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(restDryRun) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/activate",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(activationRequest) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/monitor?recentRunLimit=3",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/sync-runs?recentRunLimit=4",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/sync-plan?evaluatedAt=2026-06-16T12%3A10%3A00Z",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/sync/run-due",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(runDueRequest) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/schema-drift/check",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(schemaDriftRequest) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/staging?recentRunLimit=5",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/identity-resolution?recentRunLimit=6",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/promotion-readiness?recentRunLimit=7",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/reconciliation-handoffs",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/reconciliation/handoff",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(handoffRequest) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/quarantine?recentRunLimit=8",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/quarantine/resolve",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(quarantineResolution) })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/provider-integrations/quarantine/replay",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(quarantineReplay) })
     );
   });
 });

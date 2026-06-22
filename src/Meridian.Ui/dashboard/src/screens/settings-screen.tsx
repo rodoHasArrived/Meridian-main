@@ -1,14 +1,54 @@
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox, Toggle } from "@/components/ui/checkbox";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
+import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { approveSecurityAssetProfile, assignLedgerMapping, createRolePermissionProfile, createSecurityMasterEntry, deleteProviderCredentials, draftSecurityAssetProfile, getSecurityAssetProfileLineage, putProviderCredentials, rollbackSecurityAssetProfile, testProviderConnection, upsertOperationsApprovalPolicyRule, upsertOperationsCloseCalendarItem, verifyProviderConnection } from "@/lib/api";
+import {
+  activateProviderIntegration,
+  approveSecurityAssetProfile,
+  assignLedgerMapping,
+  checkProviderIntegrationSchemaDrift,
+  createProviderIntegrationReconciliationHandoff,
+  createRolePermissionProfile,
+  createScopedAccessAssignment,
+  createSecurityMasterEntry,
+  deleteProviderCredentials,
+  draftSecurityAssetProfile,
+  getProviderIntegrationConnectionMonitor,
+  getProviderIntegrationConnectionSyncPlan,
+  getProviderIntegrationConnectionSyncRuns,
+  getProviderIntegrationIdentityResolution,
+  getProviderIntegrationPromotionReadiness,
+  getProviderIntegrationQuarantineReview,
+  getProviderIntegrationReadiness,
+  getProviderIntegrationReconciliationHandoffHistory,
+  getProviderIntegrationStagingReview,
+  getProviderIntegrationTemplate,
+  getProviderIntegrationTemplates,
+  getSecurityAssetProfileLineage,
+  importProviderIntegrationOpenApi,
+  listScopedAccessAssignments,
+  putProviderCredentials,
+  replayProviderIntegrationQuarantineRecords,
+  resolveProviderIntegrationQuarantineRecord,
+  revokeScopedAccessAssignment,
+  rollbackSecurityAssetProfile,
+  runDueProviderIntegrationSync,
+  runManualCsvProviderIntegrationDryRun,
+  runRestProviderIntegrationDryRun,
+  saveProviderIntegrationSetup,
+  testProviderConnection,
+  upsertOperationsApprovalPolicyRule,
+  upsertOperationsCloseCalendarItem,
+  verifyProviderConnection
+} from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import {
@@ -17,6 +57,7 @@ import {
   useSettingsRecentEventsSelectionViewModel,
   type SettingsAlpacaCredentialFieldState,
   type SettingsProfileAuthenticationStep,
+  type SettingsProviderConnectionRow,
   type SettingsRecentEventDetail,
   type SettingsRecentEventTableRow
 } from "@/screens/settings-screen.view-model";
@@ -33,11 +74,39 @@ import type {
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
+  AccessPrincipalKind,
+  AccessScopeKind,
   LedgerMappingWorkbench,
   OperationsApprovalPolicyMatrix,
   OperationsApprovalPolicyMatrixRow,
   OperationsCloseCalendar,
   OperationsCloseCalendarItem,
+  ProviderIntegrationAuthType,
+  ProviderIntegrationActivationReadiness,
+  ProviderIntegrationActivationResult,
+  ProviderIntegrationCapabilityKind,
+  ProviderIntegrationConnection,
+  ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationDryRunResult,
+  ProviderIntegrationEndpointDefinition,
+  ProviderIntegrationFieldMapping,
+  ProviderIntegrationManifest,
+  ProviderIntegrationOpenApiImportResult,
+  ProviderIntegrationProcessingStatus,
+  ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantinedRecord,
+  ProviderIntegrationQuarantineDecision,
+  ProviderIntegrationQuarantineResolutionAction,
+  ProviderIntegrationQuarantineReview,
+  ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationSchemaDriftCheckResult,
+  ProviderIntegrationSetupSaveResult,
+  ProviderIntegrationStagingIdentityResolutionPreview,
+  ProviderIntegrationStagingReview,
+  ProviderIntegrationSyncPlan,
+  ProviderIntegrationSyncRunEvidence,
+  ProviderIntegrationSyncRunHistory,
+  ProviderIntegrationTemplateCatalogEntry,
   RolePermissionCatalog,
   SecurityAssetProfileDefinition,
   SecurityAssetProfileFieldDefinition,
@@ -47,6 +116,7 @@ import type {
   SessionInfo,
   SystemOverviewResponse,
   TradingWorkspaceResponse,
+  UserAccessAssignment,
   WorkspaceKey
 } from "@/types";
 
@@ -100,6 +170,29 @@ interface RolePermissionProfileState {
   permissionNames: string[];
   rationale: string;
   busy: boolean;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger" | "warning";
+}
+
+interface ScopedAccessAssignmentState {
+  principalId: string;
+  principalKind: AccessPrincipalKind;
+  scopeKind: AccessScopeKind;
+  scopeId: string;
+  role: string;
+  roleProfileName: string;
+  permissionNames: string[];
+  effectiveFrom: string;
+  effectiveTo: string;
+  approvalLimitAmount: string;
+  approvalLimitCurrency: string;
+  segregationOfDutiesRule: string;
+  rationale: string;
+  includeRevoked: boolean;
+  loading: boolean;
+  busy: boolean;
+  revokeBusyId: string | null;
   message: string | null;
   details: string[];
   tone: "default" | "success" | "danger" | "warning";
@@ -187,6 +280,86 @@ interface ProviderInlineState {
   testLatencyLabel: string | null;
 }
 
+type ProviderRuntimePhase = "idle" | "loading" | "loaded" | "error";
+
+interface ProviderRuntimeEvidenceState {
+  phase: ProviderRuntimePhase;
+  message: string | null;
+  details: string[];
+  monitor: ProviderIntegrationConnectionMonitor | null;
+  syncRuns: ProviderIntegrationSyncRunHistory | null;
+  syncPlan: ProviderIntegrationSyncPlan | null;
+  staging: ProviderIntegrationStagingReview | null;
+  identity: ProviderIntegrationStagingIdentityResolutionPreview | null;
+  promotion: ProviderIntegrationPromotionReadinessPreview | null;
+  handoff: ProviderIntegrationReconciliationHandoffHistory | null;
+  quarantine: ProviderIntegrationQuarantineReview | null;
+}
+
+interface ProviderOpenApiImportState {
+  manifestId: string;
+  displayName: string;
+  environment: string;
+  authType: ProviderIntegrationAuthType;
+  tokenUrl: string;
+  scopes: string;
+  capabilities: string;
+  openApiDocumentJson: string;
+  changeReason: string;
+  busy: boolean;
+  result: ProviderIntegrationOpenApiImportResult | null;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger" | "warning";
+}
+type ProviderIntegrationWorkbenchBusyAction =
+  | "activate"
+  | "csv-dry-run"
+  | "drift"
+  | "readiness"
+  | "rest-dry-run"
+  | "save"
+  | "template"
+  | "templates"
+  | null;
+
+interface ProviderIntegrationWorkbenchState {
+  templates: ProviderIntegrationTemplateCatalogEntry[] | null;
+  selectedManifestId: string;
+  manifest: ProviderIntegrationManifest | null;
+  connection: ProviderIntegrationConnection | null;
+  draftManifestJson: string;
+  draftConnectionJson: string;
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey: string;
+  csvFileName: string;
+  csvContent: string;
+  restPathParametersJson: string;
+  restQueryParametersJson: string;
+  readiness: ProviderIntegrationActivationReadiness | null;
+  setupResult: ProviderIntegrationSetupSaveResult | null;
+  dryRunResult: ProviderIntegrationDryRunResult | null;
+  driftResult: ProviderIntegrationSchemaDriftCheckResult | null;
+  activationResult: ProviderIntegrationActivationResult | null;
+  busyAction: ProviderIntegrationWorkbenchBusyAction;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger" | "warning";
+}
+const emptyProviderRuntimeEvidenceState: ProviderRuntimeEvidenceState = {
+  phase: "idle",
+  message: null,
+  details: [],
+  monitor: null,
+  syncRuns: null,
+  syncPlan: null,
+  staging: null,
+  identity: null,
+  promotion: null,
+  handoff: null,
+  quarantine: null
+};
+
 const systemToneClass = {
   default: "border-border/70",
   success: "border-success/30",
@@ -213,13 +386,6 @@ const diagnosticToneClass = {
   success: "border-success/30 bg-success/10",
   warning: "border-warning/35 bg-warning/10",
   danger: "border-danger/35 bg-danger/10"
-} as const;
-
-const formReadinessTextClass = {
-  default: "text-muted-foreground",
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger"
 } as const;
 
 const emptyProviderInlineValues: Record<ProviderInlineField, string> = {};
@@ -317,6 +483,7 @@ const recentEventColumns: DenseDataTableColumn<SettingsRecentEventTableRow>[] = 
 
 type SettingsTaskViewId =
   | "overview"
+  | "access"
   | "operations"
   | "asset-profiles"
   | "providers"
@@ -337,6 +504,12 @@ const settingsTaskViews: SettingsTaskView[] = [
     label: "Overview",
     href: "#settings-overview",
     sectionId: "settings-overview"
+  },
+  {
+    id: "access",
+    label: "Access",
+    href: "#scoped-access-control",
+    sectionId: "scoped-access-control"
   },
   {
     id: "operations",
@@ -378,7 +551,91 @@ const settingsTaskViews: SettingsTaskView[] = [
 
 function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   const normalizedHash = hash.replace(/^#/, "");
+  if (normalizedHash === "backend-capability-coverage") {
+    return "diagnostics";
+  }
   return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
+}
+
+function inferSettingsTaskView({
+  overview,
+  strategy,
+  trading,
+  portfolio,
+  data,
+  accounting,
+  reporting,
+  brokerageConnection,
+  providerConnections,
+  providerRoutingConnections,
+  providerRoutingBindings,
+  providerRoutingTrustSnapshots,
+  featureCapabilities,
+  rolePermissionCatalog,
+  securityAssetProfiles,
+  ledgerMappingWorkbench,
+  operationsApprovalPolicyMatrix,
+  operationsCloseCalendar,
+  error,
+  workspaceErrors
+}: Pick<
+  SettingsScreenProps,
+  | "overview"
+  | "strategy"
+  | "trading"
+  | "portfolio"
+  | "data"
+  | "accounting"
+  | "reporting"
+  | "brokerageConnection"
+  | "providerConnections"
+  | "providerRoutingConnections"
+  | "providerRoutingBindings"
+  | "providerRoutingTrustSnapshots"
+  | "featureCapabilities"
+  | "rolePermissionCatalog"
+  | "securityAssetProfiles"
+  | "ledgerMappingWorkbench"
+  | "operationsApprovalPolicyMatrix"
+  | "operationsCloseCalendar"
+  | "error"
+  | "workspaceErrors"
+>): SettingsTaskViewId {
+  if (providerConnections || providerRoutingConnections || providerRoutingBindings || providerRoutingTrustSnapshots) {
+    return "providers";
+  }
+
+  if (securityAssetProfiles) {
+    return "asset-profiles";
+  }
+
+  if (featureCapabilities) {
+    return "runtime";
+  }
+
+  if (rolePermissionCatalog || ledgerMappingWorkbench || operationsApprovalPolicyMatrix || operationsCloseCalendar) {
+    return "operations";
+  }
+
+  if (brokerageConnection) {
+    return "brokerage";
+  }
+
+  if (
+    error
+    || overview === null
+    || strategy
+    || trading
+    || portfolio
+    || data
+    || accounting
+    || reporting
+    || Object.keys(workspaceErrors ?? {}).length > 0
+  ) {
+    return "diagnostics";
+  }
+
+  return "overview";
 }
 
 export function SettingsScreen({
@@ -409,6 +666,7 @@ export function SettingsScreen({
   error = null,
   workspaceErrors = {}
 }: SettingsScreenProps) {
+  const location = useLocation();
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
@@ -439,21 +697,77 @@ export function SettingsScreen({
     canClear: vm.alpacaConnectionPanel.canClear
   });
   const recentEventsVm = useSettingsRecentEventsSelectionViewModel(vm.recentEventsSection);
-  const [activeTaskView, setActiveTaskView] = useState<SettingsTaskViewId>(() => (
-    typeof window === "undefined" ? "overview" : resolveSettingsTaskViewId(window.location.hash)
-  ));
+  const inferredTaskView = useMemo(() => inferSettingsTaskView({
+    overview,
+    strategy,
+    trading,
+    portfolio,
+    data,
+    accounting,
+    reporting,
+    brokerageConnection,
+    providerConnections,
+    providerRoutingConnections,
+    providerRoutingBindings,
+    providerRoutingTrustSnapshots,
+    featureCapabilities,
+    rolePermissionCatalog,
+    securityAssetProfiles,
+    ledgerMappingWorkbench,
+    operationsApprovalPolicyMatrix,
+    operationsCloseCalendar,
+    error,
+    workspaceErrors
+  }), [
+    accounting,
+    brokerageConnection,
+    data,
+    error,
+    featureCapabilities,
+    ledgerMappingWorkbench,
+    operationsApprovalPolicyMatrix,
+    operationsCloseCalendar,
+    overview,
+    portfolio,
+    providerConnections,
+    providerRoutingBindings,
+    providerRoutingConnections,
+    providerRoutingTrustSnapshots,
+    reporting,
+    rolePermissionCatalog,
+    securityAssetProfiles,
+    strategy,
+    trading,
+    workspaceErrors
+  ]);
+  const [hashTaskView, setHashTaskView] = useState<SettingsTaskViewId | null>(() => {
+    const initialHash = typeof window === "undefined" ? "" : window.location.hash;
+    return initialHash ? resolveSettingsTaskViewId(initialHash) : null;
+  });
+  const routeHashTaskView = location.hash ? resolveSettingsTaskViewId(location.hash) : null;
+  const activeTaskView = routeHashTaskView ?? hashTaskView ?? inferredTaskView;
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
   const [providerVerificationFilter, setProviderVerificationFilter] = useState<"all" | "verified" | "unverified">("all");
   const [providerSort, setProviderSort] = useState<"risk" | "name">("risk");
   const [providerInlineState, setProviderInlineState] = useState<Record<string, ProviderInlineState>>({});
+  const [providerRuntimeState, setProviderRuntimeState] = useState<Record<string, ProviderRuntimeEvidenceState>>({});
+  const [providerOpenApiImportState, setProviderOpenApiImportState] = useState<Record<string, ProviderOpenApiImportState>>({});
   const ledgerMappingDraft = useMemo(
     () => buildLedgerMappingAssignmentDraft(ledgerMappingWorkbench),
     [ledgerMappingWorkbench]
   );
   const roleProfileDraft = useMemo(
     () => buildRolePermissionProfileDraft(rolePermissionCatalog),
+    [rolePermissionCatalog]
+  );
+  const scopedAccessRoleOptions = useMemo(
+    () => buildScopedAccessRoleOptions(rolePermissionCatalog),
+    [rolePermissionCatalog]
+  );
+  const scopedAccessRoleProfileOptions = useMemo(
+    () => buildScopedAccessRoleProfileOptions(rolePermissionCatalog),
     [rolePermissionCatalog]
   );
   const approvalPolicyDraft = useMemo(
@@ -471,6 +785,7 @@ export function SettingsScreen({
   const firstApprovedAssetProfile = approvedAssetProfiles[0] ?? null;
   const ledgerMappingDraftSignature = `${ledgerMappingDraft.accountOptions.map((option) => option.value).join("|")}::${ledgerMappingDraft.ledgerGroupOptions.map((option) => option.value).join("|")}`;
   const roleProfileDraftSignature = `${roleProfileDraft.baseRoleOptions.map((option) => option.value).join("|")}::${roleProfileDraft.permissionOptions.map((option) => option.value).join("|")}`;
+  const scopedAccessCatalogSignature = `${scopedAccessRoleOptions.map((option) => option.value).join("|")}::${scopedAccessRoleProfileOptions.map((option) => option.value).join("|")}::${roleProfileDraft.permissionOptions.map((option) => option.value).join("|")}`;
   const approvalPolicyDraftSignature = approvalPolicyDraft.rows.map((row) => [
     row.policyKey,
     row.requiredPermission,
@@ -513,6 +828,29 @@ export function SettingsScreen({
     details: [],
     tone: "default"
   }));
+  const [scopedAccessAssignments, setScopedAccessAssignments] = useState<UserAccessAssignment[]>([]);
+  const [scopedAccess, setScopedAccess] = useState<ScopedAccessAssignmentState>(() => ({
+    principalId: "",
+    principalKind: "User",
+    scopeKind: "Fund",
+    scopeId: "",
+    role: "",
+    roleProfileName: "",
+    permissionNames: [],
+    effectiveFrom: "",
+    effectiveTo: "",
+    approvalLimitAmount: "",
+    approvalLimitCurrency: "USD",
+    segregationOfDutiesRule: "",
+    rationale: "Grant scoped authority with audit evidence for governed fund operations.",
+    includeRevoked: false,
+    loading: Boolean(rolePermissionCatalog),
+    busy: false,
+    revokeBusyId: null,
+    message: null,
+    details: [],
+    tone: "default"
+  }));
   const [approvalPolicyRule, setApprovalPolicyRule] = useState<ApprovalPolicyRuleState>(() => ({
     policyKey: "",
     requiredPermission: "",
@@ -547,6 +885,8 @@ export function SettingsScreen({
   const [profileBackedSecurity, setProfileBackedSecurity] = useState<ProfileBackedSecurityState>(() => (
     createProfileBackedSecurityState(firstApprovedAssetProfile)
   ));
+  const scopedAccessActiveCount = scopedAccessAssignments.filter((assignment) => !assignment.revokedAtUtc).length;
+  const scopedAccessRevokedCount = scopedAccessAssignments.length - scopedAccessActiveCount;
   const providerInlineFlag = featureCapabilities?.capabilities.find((capability) => (
     capability.capabilityKey === "desktop.settings.provider-connection-center-inline-management"
   ));
@@ -576,17 +916,29 @@ export function SettingsScreen({
   }));
   const settingsTaskFields = [
     { id: "providers", label: "Providers", value: String(allProviderRows.length) },
+    { id: "access", label: "Access", value: String(scopedAccessAssignments.length) },
     { id: "operations", label: "Operations", value: vm.operationsControlCenter.loadedCountLabel },
     { id: "profiles", label: "Profiles", value: vm.assetProfileGovernancePanel.approvedCountLabel },
     { id: "diagnostics", label: "Diagnostics", value: vm.diagnosticCounts.loadedLabel }
   ];
+  const showAccessSection = activeTaskView === "access" || activeTaskView === "operations";
+  const showOperationsSection = activeTaskView === "operations" || activeTaskView === "access";
+  const showAssetProfileSection = activeTaskView === "asset-profiles";
+  const showProviderSection = activeTaskView === "providers";
+  const showBrokerageSection = activeTaskView === "brokerage" || activeTaskView === "providers";
+  const showDiagnosticsSection = activeTaskView === "overview" || activeTaskView === "diagnostics" || activeTaskView === "brokerage";
+  const showRuntimeSection = activeTaskView === "runtime";
+  const showBackendCapabilitySection = activeTaskView === "diagnostics" || activeTaskView === "runtime";
+
+  useEffect(() => {
+    setHashTaskView(routeHashTaskView);
+  }, [routeHashTaskView]);
 
   useEffect(() => {
     const updateActiveTaskView = () => {
-      setActiveTaskView(resolveSettingsTaskViewId(window.location.hash));
+      setHashTaskView(window.location.hash ? resolveSettingsTaskViewId(window.location.hash) : null);
     };
 
-    updateActiveTaskView();
     window.addEventListener("hashchange", updateActiveTaskView);
     return () => window.removeEventListener("hashchange", updateActiveTaskView);
   }, []);
@@ -623,6 +975,77 @@ export function SettingsScreen({
       };
     });
   }, [roleProfileDraftSignature]);
+
+  useEffect(() => {
+    setScopedAccess((current) => {
+      const validRoles = new Set(scopedAccessRoleOptions.map((option) => option.value));
+      const role = validRoles.has(current.role)
+        ? current.role
+        : scopedAccessRoleOptions[0]?.value ?? "";
+      const validProfiles = new Set(scopedAccessRoleProfileOptions.map((option) => option.value));
+      const roleProfileName = validProfiles.has(current.roleProfileName)
+        ? current.roleProfileName
+        : scopedAccessRoleProfileOptions[0]?.value ?? "";
+      const validPermissions = new Set(roleProfileDraft.permissionOptions.map((option) => option.value));
+      const retainedPermissions = current.permissionNames.filter((permission) => validPermissions.has(permission));
+      const selectedRole = rolePermissionCatalog?.roles.find((entry) => entry.role === role);
+      const defaultPermissions = selectedRole?.permissions ?? roleProfileDraft.defaultPermissionNames;
+      return {
+        ...current,
+        role,
+        roleProfileName,
+        permissionNames: retainedPermissions.length > 0 ? retainedPermissions : defaultPermissions,
+        message: null,
+        details: [],
+        tone: "default"
+      };
+    });
+  }, [scopedAccessCatalogSignature]);
+
+  useEffect(() => {
+    if (!rolePermissionCatalog) {
+      return;
+    }
+
+    let cancelled = false;
+    setScopedAccess((current) => current.loading ? current : { ...current, loading: true });
+
+    listScopedAccessAssignments({ includeRevoked: scopedAccess.includeRevoked })
+      .then((assignments) => {
+        if (cancelled) {
+          return;
+        }
+
+        setScopedAccessAssignments(assignments);
+        setScopedAccess((current) => ({
+          ...current,
+          loading: false,
+          message: assignments.length === 0 && !current.message
+            ? "No scoped access assignments loaded."
+            : current.message,
+          details: assignments.length === 0 && !current.message ? [] : current.details,
+          tone: assignments.length === 0 && !current.message ? "default" : current.tone
+        }));
+      })
+      .catch((error) => {
+        if (cancelled) {
+          return;
+        }
+
+        const display = describeApiError(error, "Scoped access assignments could not be loaded.");
+        setScopedAccess((current) => ({
+          ...current,
+          loading: false,
+          message: display.summary,
+          details: display.details,
+          tone: "danger"
+        }));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [rolePermissionCatalog, scopedAccess.includeRevoked]);
 
   useEffect(() => {
     setApprovalPolicyRule((current) => {
@@ -739,6 +1162,26 @@ export function SettingsScreen({
     });
   }, [inlineProviderManagementEnabled, providerRowIdsSignature]);
 
+  useEffect(() => {
+    if (allProviderRows.length === 0) {
+      return;
+    }
+
+    setProviderOpenApiImportState((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const row of allProviderRows) {
+        const stateKey = providerRuntimeStateKey(row);
+        if (next[stateKey]) {
+          continue;
+        }
+        next[stateKey] = createProviderOpenApiImportState(row);
+        changed = true;
+      }
+      return changed ? next : current;
+    });
+  }, [providerRowIdsSignature]);
+
   const filteredProviderGroups = useMemo(() => {
     const search = providerSearch.trim().toLowerCase();
     return vm.providerConnectionCenter.groups.map((group) => {
@@ -777,6 +1220,394 @@ export function SettingsScreen({
         [providerId]: updater(previous)
       };
     });
+  };
+
+  const loadProviderRuntimeEvidence = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const connectionId = row.integrationConnectionId;
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: null,
+        details: []
+      }
+    }));
+
+    const evaluatedAt = new Date().toISOString();
+    const [
+      monitorResult,
+      syncRunsResult,
+      syncPlanResult,
+      stagingResult,
+      identityResult,
+      promotionResult,
+      handoffResult,
+      quarantineResult
+    ] = await Promise.allSettled([
+      getProviderIntegrationConnectionMonitor(connectionId, 5),
+      getProviderIntegrationConnectionSyncRuns(connectionId, 5),
+      getProviderIntegrationConnectionSyncPlan(connectionId, evaluatedAt),
+      getProviderIntegrationStagingReview(connectionId, 5),
+      getProviderIntegrationIdentityResolution(connectionId, 5),
+      getProviderIntegrationPromotionReadiness(connectionId, 5),
+      getProviderIntegrationReconciliationHandoffHistory(connectionId),
+      getProviderIntegrationQuarantineReview(connectionId, 5)
+    ]);
+
+    const details = [
+      providerRuntimeErrorDetail(monitorResult, "Connection monitor"),
+      providerRuntimeErrorDetail(syncRunsResult, "Sync-run history"),
+      providerRuntimeErrorDetail(syncPlanResult, "Sync plan"),
+      providerRuntimeErrorDetail(stagingResult, "Staging review"),
+      providerRuntimeErrorDetail(identityResult, "Identity resolution"),
+      providerRuntimeErrorDetail(promotionResult, "Promotion readiness"),
+      providerRuntimeErrorDetail(handoffResult, "Reconciliation handoff history"),
+      providerRuntimeErrorDetail(quarantineResult, "Quarantine review")
+    ].filter((detail): detail is string => Boolean(detail));
+    const failedCount = details.length;
+    const phase: ProviderRuntimePhase = failedCount === 8 ? "error" : "loaded";
+    const warningSuffix = failedCount === 1 ? "warning" : "warnings";
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        phase,
+        message: failedCount === 0
+          ? "Provider integration runtime evidence loaded."
+          : failedCount === 8
+            ? "Provider integration runtime evidence unavailable."
+            : `Provider integration runtime loaded with ${failedCount} ${warningSuffix}.`,
+        details,
+        monitor: providerRuntimeValue(monitorResult),
+        syncRuns: providerRuntimeValue(syncRunsResult),
+        syncPlan: providerRuntimeValue(syncPlanResult),
+        staging: providerRuntimeValue(stagingResult),
+        identity: providerRuntimeValue(identityResult),
+        promotion: providerRuntimeValue(promotionResult),
+        handoff: providerRuntimeValue(handoffResult),
+        quarantine: providerRuntimeValue(quarantineResult)
+      }
+    }));
+  };
+
+  const updateProviderOpenApiImportState = (
+    row: SettingsProviderConnectionRow,
+    updater: (state: ProviderOpenApiImportState) => ProviderOpenApiImportState
+  ) => {
+    const stateKey = providerRuntimeStateKey(row);
+    setProviderOpenApiImportState((current) => ({
+      ...current,
+      [stateKey]: updater(current[stateKey] ?? createProviderOpenApiImportState(row))
+    }));
+  };
+
+  const submitProviderOpenApiImport = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const formState = providerOpenApiImportState[stateKey] ?? createProviderOpenApiImportState(row);
+    const importedAt = new Date();
+    const capabilities = parseProviderOpenApiCapabilities(formState.capabilities);
+
+    if (!formState.manifestId.trim() || !formState.openApiDocumentJson.trim() || capabilities.length === 0) {
+      updateProviderOpenApiImportState(row, (state) => ({
+        ...state,
+        message: "Manifest id, capability list, and OpenAPI JSON are required before importing a draft.",
+        details: [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    updateProviderOpenApiImportState(row, (state) => ({
+      ...state,
+      busy: true,
+      message: "Importing OpenAPI draft manifest.",
+      details: [],
+      tone: "default"
+    }));
+
+    try {
+      const result = await importProviderIntegrationOpenApi({
+        manifestId: formState.manifestId.trim(),
+        providerId: row.providerId,
+        displayName: formState.displayName.trim() || row.displayName,
+        environment: formState.environment.trim() || "paper",
+        authType: formState.authType,
+        tokenUrl: formState.tokenUrl.trim() || null,
+        scopes: formState.scopes.split(",").map((scope) => scope.trim()).filter(Boolean),
+        capabilities,
+        openApiDocumentJson: formState.openApiDocumentJson,
+        importedBy: session?.displayName ?? "settings-operator",
+        importedAt: importedAt.toISOString(),
+        changeReason: formState.changeReason.trim() || "Imported from the Settings Provider Connection Center."
+      });
+
+      updateProviderOpenApiImportState(row, (state) => ({
+        ...state,
+        busy: false,
+        result,
+        message: result.message ?? `OpenAPI draft imported for ${result.manifest.manifestId}.`,
+        details: [
+          `${result.manifest.endpoints.length} endpoints seeded.`,
+          `${result.readiness.requiredEvidence.length} readiness evidence requirements.`,
+          ...result.issues.map((issue) => issue.message)
+        ],
+        tone: result.readiness.isReady && result.issues.length === 0 ? "success" : "warning"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration OpenAPI import failed.");
+      updateProviderOpenApiImportState(row, (state) => ({
+        ...state,
+        busy: false,
+        message: display.summary,
+        details: display.details,
+        tone: "danger"
+      }));
+    }
+  };
+
+  const runProviderRuntimeDueSync = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const requestedAt = new Date();
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: "Provider integration due-sync is running.",
+        details: []
+      }
+    }));
+
+    try {
+      const result = await runDueProviderIntegrationSync(row.integrationConnectionId, {
+        connectionId: row.integrationConnectionId,
+        requestedAt: requestedAt.toISOString(),
+        requestedBy: session?.displayName ?? "settings-operator",
+        maxPages: 2,
+        pathParametersByCapability: {},
+        queryParametersByCapability: {}
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: `Due-sync completed: ${result.startedCount} started / ${result.skippedCount} skipped.`,
+          details: result.items.flatMap((item) => item.issues.map((issue) => issue.message))
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration due-sync failed.");
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
+  };
+
+  const createProviderRuntimeHandoff = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const currentState = providerRuntimeState[stateKey];
+    const readyRows = currentState?.promotion?.rows.filter((promotionRow) => promotionRow.status === "ReadyForReconciliation") ?? [];
+    const alreadyHandedOff = new Set((currentState?.handoff?.records ?? []).map((record) => record.stagingRecordId));
+    const stagingRecordIds = readyRows
+      .map((promotionRow) => promotionRow.stagingRecordId)
+      .filter((stagingRecordId) => !alreadyHandedOff.has(stagingRecordId));
+    const requestedAt = new Date();
+
+    if (stagingRecordIds.length === 0) {
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: "No promotion-ready staging rows are available for reconciliation handoff.",
+          details: []
+        }
+      }));
+      return;
+    }
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: "Creating provider integration reconciliation handoff.",
+        details: []
+      }
+    }));
+
+    try {
+      const result = await createProviderIntegrationReconciliationHandoff({
+        connectionId: row.integrationConnectionId,
+        stagingRecordIds,
+        requestedBy: session?.displayName ?? "settings-operator",
+        requestedAt: requestedAt.toISOString(),
+        approvalEvidenceId: providerRuntimeHandoffEvidenceId(row.integrationConnectionId, requestedAt),
+        note: "Approved from the Settings Provider Connection Center promotion readiness panel.",
+        recentRunLimit: 5
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: `Reconciliation handoff ${result.accepted ? "created" : "reviewed"}: ${result.acceptedRecordCount} accepted / ${result.duplicateRecordCount} duplicate.`,
+          details: result.issues.map((issue) => issue.message)
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration reconciliation handoff failed.");
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
+  };
+
+  const replayProviderRuntimeQuarantine = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const currentState = providerRuntimeState[stateKey];
+    const replayEligibleRecords = currentState?.quarantine?.records.filter((record) =>
+      !providerRuntimeLatestQuarantineDecision(currentState.quarantine?.decisions, record)
+    ) ?? [];
+    const replaySeed = replayEligibleRecords[0] ?? null;
+    const manifestId = currentState?.monitor?.manifestId ?? null;
+    if (!currentState || !replaySeed || !manifestId) {
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: "Quarantine replay is unavailable until runtime evidence includes monitor data and undecided quarantine records.",
+          details: [],
+        }
+      }));
+      return;
+    }
+
+    const quarantineRecordIds = replayEligibleRecords
+      .filter((record) => record.syncRunId === replaySeed.syncRunId && record.capability === replaySeed.capability)
+      .map((record) => record.quarantineRecordId);
+    const requestedAt = new Date();
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: "Provider integration quarantine replay is running.",
+        details: []
+      }
+    }));
+
+    try {
+      const replayResult = await replayProviderIntegrationQuarantineRecords({
+        replaySyncRunId: providerRuntimeReplaySyncRunId(row.integrationConnectionId, requestedAt),
+        sourceSyncRunId: replaySeed.syncRunId,
+        manifestId,
+        connectionId: row.integrationConnectionId,
+        capability: replaySeed.capability,
+        quarantineRecordIds,
+        requestedBy: session?.displayName ?? "settings-operator",
+        requestedAt: requestedAt.toISOString()
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: `Quarantine replay completed: ${replayResult.recordsAccepted} accepted / ${replayResult.recordsRequarantined} requarantined.`,
+          details: replayResult.issues.map((issue) => issue.message)
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration quarantine replay failed.");
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
+  };
+
+  const resolveProviderRuntimeQuarantineRecord = async (
+    row: SettingsProviderConnectionRow,
+    record: ProviderIntegrationQuarantinedRecord,
+    action: ProviderIntegrationQuarantineResolutionAction
+  ) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const reviewedAt = new Date();
+    const actionLabel = providerRuntimeQuarantineActionLabel(action);
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: `Recording ${actionLabel.toLowerCase()} decision for ${record.quarantineRecordId}.`,
+        details: []
+      }
+    }));
+
+    try {
+      const result = await resolveProviderIntegrationQuarantineRecord({
+        connectionId: row.integrationConnectionId,
+        syncRunId: record.syncRunId,
+        quarantineRecordId: record.quarantineRecordId,
+        action,
+        reviewedBy: session?.displayName ?? "settings-operator",
+        reviewedAt: reviewedAt.toISOString(),
+        note: providerRuntimeQuarantineActionNote(action)
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: result.message ?? `${actionLabel} decision recorded for ${record.quarantineRecordId}.`,
+          details: []
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, `Provider integration quarantine ${actionLabel.toLowerCase()} decision failed.`);
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
   };
 
   const toggleProviderEdit = (providerId: string) => {
@@ -1108,6 +1939,176 @@ export function SettingsScreen({
       setRolePermissionProfile((current) => ({
         ...current,
         busy: false,
+        message: display.summary,
+        details: display.details,
+        tone: "danger"
+      }));
+    }
+  };
+
+  const selectScopedAccessRole = (role: string) => {
+    const selectedRole = rolePermissionCatalog?.roles.find((entry) => entry.role === role);
+    setScopedAccess((current) => ({
+      ...current,
+      role,
+      permissionNames: selectedRole?.permissions ?? current.permissionNames,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  const toggleScopedAccessPermission = (permissionName: string, checked: boolean) => {
+    setScopedAccess((current) => ({
+      ...current,
+      permissionNames: checked
+        ? Array.from(new Set([...current.permissionNames, permissionName]))
+        : current.permissionNames.filter((name) => name !== permissionName),
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  const submitScopedAccessAssignment = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const principalId = scopedAccess.principalId.trim();
+    const scopeId = scopedAccess.scopeKind === "Global" ? null : scopedAccess.scopeId.trim();
+    const rationale = scopedAccess.rationale.trim();
+    const approvalLimitText = scopedAccess.approvalLimitAmount.trim();
+    let approvalLimitAmount: number | null = null;
+    const approvalLimitCurrency = scopedAccess.approvalLimitCurrency.trim().toUpperCase();
+    const segregationOfDutiesRule = scopedAccess.segregationOfDutiesRule.trim();
+    if (!principalId || !scopedAccess.role || scopedAccess.permissionNames.length === 0 || !rationale || (!scopeId && scopedAccess.scopeKind !== "Global")) {
+      setScopedAccess((current) => ({
+        ...current,
+        message: "Principal, scope, role, at least one permission, and rationale are required.",
+        details: scopedAccess.scopeKind !== "Global" && !scopeId ? ["Scoped grants require a concrete scope ID."] : [],
+        tone: "warning"
+      }));
+      return;
+    }
+    if (approvalLimitText) {
+      const parsedApprovalLimitAmount = Number(approvalLimitText);
+      if (!Number.isFinite(parsedApprovalLimitAmount) || parsedApprovalLimitAmount <= 0) {
+        setScopedAccess((current) => ({
+          ...current,
+          message: "Approval limit must be greater than zero.",
+          details: ["Use a positive numeric amount or leave the approval limit blank."],
+          tone: "warning"
+        }));
+        return;
+      }
+
+      approvalLimitAmount = parsedApprovalLimitAmount;
+    }
+    if (approvalLimitAmount !== null && !/^[A-Z]{3}$/.test(approvalLimitCurrency)) {
+      setScopedAccess((current) => ({
+        ...current,
+        message: "Approval limit currency must be a three-letter code.",
+        details: ["Use an ISO-style currency code such as USD."],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    setScopedAccess((current) => ({
+      ...current,
+      busy: true,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+
+    try {
+      const result = await createScopedAccessAssignment({
+        principalId,
+        principalKind: scopedAccess.principalKind,
+        scopeKind: scopedAccess.scopeKind,
+        scopeId,
+        role: scopedAccess.role,
+        roleProfileName: scopedAccess.roleProfileName || null,
+        permissionNames: scopedAccess.permissionNames,
+        effectiveFrom: toScopedAccessDateTime(scopedAccess.effectiveFrom),
+        effectiveTo: toScopedAccessDateTime(scopedAccess.effectiveTo),
+        requestedBy: session?.displayName ?? "settings-screen",
+        rationale,
+        approvalLimitAmount,
+        approvalLimitCurrency: approvalLimitAmount === null ? null : approvalLimitCurrency,
+        segregationOfDutiesRule: segregationOfDutiesRule || null,
+        correlationId: `settings-scoped-access-${Date.now()}`
+      });
+      setScopedAccessAssignments((current) => upsertScopedAccessAssignment(current, result.assignment));
+      await onRefresh?.();
+      setScopedAccess((current) => ({
+        ...current,
+        principalId: "",
+        scopeId: current.scopeKind === "Global" ? "" : current.scopeId,
+        approvalLimitAmount: "",
+        approvalLimitCurrency: current.approvalLimitCurrency || "USD",
+        segregationOfDutiesRule: "",
+        busy: false,
+        message: `Scoped access granted for ${result.assignment.principalId}.`,
+        details: [
+          `Audit ${result.auditEvent.auditId}`,
+          `Correlation ${result.auditEvent.correlationId}`,
+          `Version ${result.assignment.version}`
+        ],
+        tone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Scoped access grant failed.");
+      setScopedAccess((current) => ({
+        ...current,
+        busy: false,
+        message: display.summary,
+        details: display.details,
+        tone: "danger"
+      }));
+    }
+  };
+
+  const revokeScopedAccess = async (assignment: UserAccessAssignment) => {
+    if (assignment.revokedAtUtc) {
+      return;
+    }
+
+    setScopedAccess((current) => ({
+      ...current,
+      revokeBusyId: assignment.assignmentId,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+
+    try {
+      const result = await revokeScopedAccessAssignment({
+        assignmentId: assignment.assignmentId,
+        expectedVersion: assignment.version,
+        requestedBy: session?.displayName ?? "settings-screen",
+        rationale: `Revoke scoped authority for ${assignment.principalId}.`,
+        correlationId: `settings-scoped-access-revoke-${Date.now()}`
+      });
+      setScopedAccessAssignments((current) => upsertScopedAccessAssignment(current, result.assignment).filter((entry) => (
+        scopedAccess.includeRevoked || !entry.revokedAtUtc
+      )));
+      await onRefresh?.();
+      setScopedAccess((current) => ({
+        ...current,
+        revokeBusyId: null,
+        message: `Scoped access revoked for ${result.assignment.principalId}.`,
+        details: [
+          `Audit ${result.auditEvent.auditId}`,
+          `Correlation ${result.auditEvent.correlationId}`,
+          `Version ${result.assignment.version}`
+        ],
+        tone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Scoped access revoke failed.");
+      setScopedAccess((current) => ({
+        ...current,
+        revokeBusyId: null,
         message: display.summary,
         details: display.details,
         tone: "danger"
@@ -1718,17 +2719,12 @@ export function SettingsScreen({
                   ))}
                 </dl>
                 {vm.profileAuthenticationPanel.notice ? (
-                  <div
+                  <StatusBanner
                     role={vm.profileAuthenticationPanel.notice.role}
-                    className={cn("rounded-md border px-3 py-3", diagnosticToneClass[vm.profileAuthenticationPanel.notice.tone])}
-                  >
-                    <div className="text-sm font-semibold text-foreground">
-                      {vm.profileAuthenticationPanel.notice.title}
-                    </div>
-                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                      {vm.profileAuthenticationPanel.notice.detail}
-                    </p>
-                  </div>
+                    tone={settingsBannerTone(vm.profileAuthenticationPanel.notice.tone)}
+                    title={vm.profileAuthenticationPanel.notice.title}
+                    detail={vm.profileAuthenticationPanel.notice.detail}
+                  />
                 ) : null}
               </div>
             </div>
@@ -1782,6 +2778,332 @@ export function SettingsScreen({
         </Card>
       </section>
 
+      {showAccessSection ? (
+      <Card
+        id="scoped-access-control"
+        role="region"
+        aria-label="Scoped access assignment console"
+        className="panel-surface scroll-mt-6 border border-border/70"
+      >
+        <CardHeader>
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="eyebrow-label">Scoped authority</div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Scoped access assignments
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Grant and revoke principal authority by role, permission, scope, version, rationale, and audit event.
+              </CardDescription>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <SettingsChip label="Active" value={String(scopedAccessActiveCount)} />
+              <SettingsChip label="Revoked" value={String(scopedAccessRevokedCount)} />
+              <Badge variant={scopedAccess.loading ? "warning" : scopedAccess.tone === "danger" ? "danger" : "outline"}>
+                {scopedAccess.loading ? "Loading" : scopedAccess.includeRevoked ? "Revoked included" : "Active only"}
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <Checkbox
+              checked={scopedAccess.includeRevoked}
+              onCheckedChange={(checked) => setScopedAccess((current) => ({
+                  ...current,
+                  includeRevoked: checked,
+                  loading: true,
+                  message: null,
+                  details: [],
+                  tone: "default"
+                }))}
+              className="w-fit rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs"
+              label="Include revoked assignments"
+            />
+            <div className="text-xs leading-5 text-muted-foreground">
+              Revocations submit the assignment version currently shown in this console.
+            </div>
+          </div>
+
+          <div role="list" aria-label="Scoped access assignments" className="grid gap-2">
+            {scopedAccessAssignments.length > 0 ? (
+              scopedAccessAssignments.map((assignment) => (
+                <article
+                  key={assignment.assignmentId}
+                  role="listitem"
+                  className={cn(
+                    "grid gap-3 rounded-md border px-3 py-3",
+                    assignment.revokedAtUtc ? diagnosticToneClass.warning : diagnosticToneClass.default
+                  )}
+                >
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="break-words text-sm font-semibold text-foreground">
+                          {assignment.principalId}
+                        </h3>
+                        <Badge variant={assignment.revokedAtUtc ? "warning" : "success"}>
+                          {assignment.revokedAtUtc ? "Revoked" : "Active"}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        {assignment.principalKind} · {formatScopedAccessScope(assignment)} · {formatScopedAccessWindow(assignment)}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void revokeScopedAccess(assignment)}
+                      disabled={Boolean(assignment.revokedAtUtc) || scopedAccess.revokeBusyId !== null}
+                      busy={scopedAccess.revokeBusyId === assignment.assignmentId}
+                      busyLabel="Revoking access"
+                      aria-label={`Revoke scoped access for ${assignment.principalId}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      Revoke
+                    </Button>
+                  </div>
+                  <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
+                    <SettingsFieldRow label="Role" value={assignment.roleProfileName ?? assignment.role} tone="default" />
+                    <SettingsFieldRow label="Version" value={String(assignment.version)} tone="muted" />
+                    <SettingsFieldRow label="Audit" value={assignment.lastAuditId ?? "Pending"} tone={assignment.lastAuditId ? "default" : "warning"} />
+                    <SettingsFieldRow label="Correlation" value={assignment.correlationId} tone="muted" />
+                    <SettingsFieldRow
+                      label="Approval limit"
+                      value={formatScopedAccessApprovalLimit(assignment)}
+                      tone={assignment.approvalLimitAmount === null || assignment.approvalLimitAmount === undefined ? "muted" : "default"}
+                    />
+                    <SettingsFieldRow
+                      label="SoD rule"
+                      value={assignment.segregationOfDutiesRule || "Not specified"}
+                      tone={assignment.segregationOfDutiesRule ? "default" : "muted"}
+                    />
+                  </dl>
+                  <div className="flex flex-wrap gap-2" aria-label={`Permissions for ${assignment.principalId}`}>
+                    {assignment.permissionNames.map((permission) => (
+                      <Badge key={`${assignment.assignmentId}-${permission}`} variant="outline">
+                        {permission}
+                      </Badge>
+                    ))}
+                  </div>
+                  {assignment.revocationReason ? (
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      Revoked by {assignment.revokedBy ?? "unknown"}: {assignment.revocationReason}
+                    </p>
+                  ) : null}
+                </article>
+              ))
+            ) : (
+              <p className="rounded-md border border-border/70 bg-secondary/25 px-4 py-4 text-center text-sm text-muted-foreground">
+                No scoped access assignments are loaded for the selected filter.
+              </p>
+            )}
+          </div>
+
+          <form
+            className="grid gap-3 rounded-md border border-border/70 bg-background/35 px-3 py-3"
+            onSubmit={submitScopedAccessAssignment}
+            aria-label="Grant scoped access assignment"
+          >
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground">Grant scoped access</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Bind a user or group to one scope with explicit permissions, effective dates, and a rationale.
+                </p>
+              </div>
+              <Badge variant={roleProfileDraft.canSave ? "warning" : "outline"}>
+                {roleProfileDraft.canSave ? "Catalog ready" : roleProfileDraft.statusLabel}
+              </Badge>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,1fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Principal ID
+                <Input
+                  value={scopedAccess.principalId}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, principalId: event.target.value, message: null }))}
+                  placeholder="fund-controller"
+                  disabled={scopedAccess.busy}
+                  aria-label="Scoped access principal id"
+                />
+              </label>
+              <FilterSelect
+                label="Principal kind"
+                value={scopedAccess.principalKind}
+                onChange={(value) => setScopedAccess((current) => ({
+                  ...current,
+                  principalKind: value as AccessPrincipalKind,
+                  message: null
+                }))}
+                options={scopedAccessPrincipalKindOptions}
+                disabled={scopedAccess.busy}
+              />
+              <FilterSelect
+                label="Scope kind"
+                value={scopedAccess.scopeKind}
+                onChange={(value) => setScopedAccess((current) => ({
+                  ...current,
+                  scopeKind: value as AccessScopeKind,
+                  scopeId: value === "Global" ? "" : current.scopeId,
+                  message: null
+                }))}
+                options={scopedAccessScopeKindOptions}
+                disabled={scopedAccess.busy}
+              />
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Scope ID
+                <Input
+                  value={scopedAccess.scopeId}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, scopeId: event.target.value, message: null }))}
+                  placeholder={scopedAccess.scopeKind === "Global" ? "Global scope" : "fund-2026-direct-lending"}
+                  disabled={scopedAccess.busy || scopedAccess.scopeKind === "Global"}
+                  aria-label="Scoped access scope id"
+                />
+              </label>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.65fr)_minmax(0,0.65fr)]">
+              <FilterSelect
+                label="Role"
+                value={scopedAccess.role}
+                onChange={selectScopedAccessRole}
+                options={scopedAccessRoleOptions}
+                disabled={scopedAccess.busy || scopedAccessRoleOptions.length === 0}
+              />
+              <FilterSelect
+                label="Role profile"
+                value={scopedAccess.roleProfileName}
+                onChange={(value) => setScopedAccess((current) => ({
+                  ...current,
+                  roleProfileName: value,
+                  message: null
+                }))}
+                options={scopedAccessRoleProfileOptions}
+                disabled={scopedAccess.busy || scopedAccessRoleProfileOptions.length === 0}
+              />
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Effective from
+                <Input
+                  type="date"
+                  value={scopedAccess.effectiveFrom}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, effectiveFrom: event.target.value, message: null }))}
+                  disabled={scopedAccess.busy}
+                  aria-label="Scoped access effective from"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Effective to
+                <Input
+                  type="date"
+                  value={scopedAccess.effectiveTo}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, effectiveTo: event.target.value, message: null }))}
+                  disabled={scopedAccess.busy}
+                  aria-label="Scoped access effective to"
+                />
+              </label>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.35fr)_minmax(0,1.1fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Approval limit
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={scopedAccess.approvalLimitAmount}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, approvalLimitAmount: event.target.value, message: null }))}
+                  placeholder="100000"
+                  disabled={scopedAccess.busy}
+                  aria-label="Scoped access approval limit amount"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Currency
+                <Input
+                  value={scopedAccess.approvalLimitCurrency}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, approvalLimitCurrency: event.target.value.toUpperCase(), message: null }))}
+                  placeholder="USD"
+                  disabled={scopedAccess.busy}
+                  maxLength={3}
+                  aria-label="Scoped access approval limit currency"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Segregation rule
+                <Input
+                  value={scopedAccess.segregationOfDutiesRule}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, segregationOfDutiesRule: event.target.value, message: null }))}
+                  placeholder="Requester cannot approve own payment request"
+                  disabled={scopedAccess.busy}
+                  aria-label="Scoped access segregation of duties rule"
+                />
+              </label>
+            </div>
+            <fieldset
+              className="grid gap-2 rounded-md border border-border/60 bg-secondary/15 px-3 py-3"
+              disabled={scopedAccess.busy || roleProfileDraft.permissionOptions.length === 0}
+            >
+              <legend className="px-1 text-xs font-semibold text-foreground">Scoped permissions</legend>
+              <div className="grid max-h-48 gap-2 overflow-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
+                {roleProfileDraft.permissionOptions.map((permission) => (
+                  <Checkbox
+                    key={`scoped-access-${permission.value}`}
+                    checked={scopedAccess.permissionNames.includes(permission.value)}
+                    onCheckedChange={(checked) => toggleScopedAccessPermission(permission.value, checked)}
+                    className="min-w-0 rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs"
+                    label={
+                      <span className="min-w-0">
+                      <span className="block font-medium text-foreground">{permission.label}</span>
+                      <span className="block break-words text-[11px] leading-4">{permission.group}</span>
+                    </span>
+                    }
+                  />
+                ))}
+              </div>
+            </fieldset>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Rationale
+                <Input
+                  value={scopedAccess.rationale}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, rationale: event.target.value, message: null }))}
+                  placeholder="Reason for the scoped authority grant"
+                  disabled={scopedAccess.busy}
+                  aria-label="Scoped access rationale"
+                />
+              </label>
+              <div className="flex items-end">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={scopedAccess.busy || scopedAccessRoleOptions.length === 0 || roleProfileDraft.permissionOptions.length === 0}
+                  busy={scopedAccess.busy}
+                  busyLabel="Granting access"
+                  disabledReason={scopedAccessRoleOptions.length === 0 ? "Role catalog payload has not loaded." : null}
+                >
+                  <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                  Grant access
+                </Button>
+              </div>
+            </div>
+            {scopedAccess.message ? (
+              <StatusBanner
+                role={scopedAccess.tone === "danger" ? "alert" : "status"}
+                tone={settingsBannerTone(scopedAccess.tone)}
+                title={scopedAccess.message}
+                detail={scopedAccess.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {scopedAccess.details.map((detail) => <li key={detail}>{detail}</li>)}
+                  </ul>
+                ) : null}
+              />
+            ) : null}
+          </form>
+        </CardContent>
+      </Card>
+      ) : null}
+
+      {showOperationsSection ? (
       <Card id="fund-operations-control-center" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -1917,19 +3239,16 @@ export function SettingsScreen({
               </div>
             </div>
             {ledgerMappingAssignment.message ? (
-              <div
+              <StatusBanner
                 role={ledgerMappingAssignment.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[ledgerMappingAssignment.tone])}
-              >
-                <div className="font-semibold text-foreground">{ledgerMappingAssignment.message}</div>
-                {ledgerMappingAssignment.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {ledgerMappingAssignment.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(ledgerMappingAssignment.tone)}
+                title={ledgerMappingAssignment.message}
+                detail={ledgerMappingAssignment.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {ledgerMappingAssignment.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
           <form
@@ -2017,21 +3336,18 @@ export function SettingsScreen({
               <legend className="px-1 text-xs font-semibold text-foreground">Permissions</legend>
               <div className="grid max-h-56 gap-2 overflow-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
                 {roleProfileDraft.permissionOptions.map((permission) => (
-                  <label
+                  <Checkbox
                     key={permission.value}
-                    className="flex min-w-0 items-start gap-2 rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs text-muted-foreground"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={rolePermissionProfile.permissionNames.includes(permission.value)}
-                      onChange={(event) => toggleRoleProfilePermission(permission.value, event.target.checked)}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-                    />
-                    <span className="min-w-0">
+                    checked={rolePermissionProfile.permissionNames.includes(permission.value)}
+                    onCheckedChange={(checked) => toggleRoleProfilePermission(permission.value, checked)}
+                    className="min-w-0 rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs"
+                    label={
+                      <span className="min-w-0">
                       <span className="block font-medium text-foreground">{permission.label}</span>
                       <span className="block break-words text-[11px] leading-4">{permission.group}</span>
                     </span>
-                  </label>
+                    }
+                  />
                 ))}
               </div>
             </fieldset>
@@ -2061,19 +3377,16 @@ export function SettingsScreen({
               </div>
             </div>
             {rolePermissionProfile.message ? (
-              <div
+              <StatusBanner
                 role={rolePermissionProfile.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[rolePermissionProfile.tone])}
-              >
-                <div className="font-semibold text-foreground">{rolePermissionProfile.message}</div>
-                {rolePermissionProfile.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {rolePermissionProfile.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(rolePermissionProfile.tone)}
+                title={rolePermissionProfile.message}
+                detail={rolePermissionProfile.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {rolePermissionProfile.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
           <form
@@ -2185,23 +3498,18 @@ export function SettingsScreen({
                 label: string;
                 checked: boolean;
               }>).map((option) => (
-                <label
+                <Checkbox
                   key={option.key}
-                  className="flex items-center gap-2 rounded-md border border-border/60 bg-secondary/20 px-2 py-2 text-xs text-muted-foreground"
-                >
-                  <input
-                    type="checkbox"
-                    checked={option.checked}
-                    onChange={(event) => setApprovalPolicyRule((current) => ({
+                  checked={option.checked}
+                  onCheckedChange={(checked) => setApprovalPolicyRule((current) => ({
                       ...current,
-                      [option.key]: event.target.checked,
+                      [option.key]: checked,
                       message: null
                     }))}
-                    className="h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-                    disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
-                  />
-                  <span>{option.label}</span>
-                </label>
+                  className="rounded-md border border-border/60 bg-secondary/20 px-2 py-2 text-xs"
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  label={option.label}
+                />
               ))}
             </div>
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -2230,19 +3538,16 @@ export function SettingsScreen({
               </div>
             </div>
             {approvalPolicyRule.message ? (
-              <div
+              <StatusBanner
                 role={approvalPolicyRule.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[approvalPolicyRule.tone])}
-              >
-                <div className="font-semibold text-foreground">{approvalPolicyRule.message}</div>
-                {approvalPolicyRule.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {approvalPolicyRule.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(approvalPolicyRule.tone)}
+                title={approvalPolicyRule.message}
+                detail={approvalPolicyRule.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {approvalPolicyRule.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
           <form
@@ -2324,24 +3629,23 @@ export function SettingsScreen({
               </div>
             </div>
             {closeCalendarItem.message ? (
-              <div
+              <StatusBanner
                 role={closeCalendarItem.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[closeCalendarItem.tone])}
-              >
-                <div className="font-semibold text-foreground">{closeCalendarItem.message}</div>
-                {closeCalendarItem.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {closeCalendarItem.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(closeCalendarItem.tone)}
+                title={closeCalendarItem.message}
+                detail={closeCalendarItem.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {closeCalendarItem.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showAssetProfileSection ? (
       <Card id="asset-profile-accounting" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -2506,17 +3810,16 @@ export function SettingsScreen({
               </div>
             </div>
             {assetProfileDraft.message ? (
-              <div
+              <StatusBanner
                 role={assetProfileDraft.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[assetProfileDraft.tone])}
-              >
-                <div className="font-semibold text-foreground">{assetProfileDraft.message}</div>
-                {assetProfileDraft.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                tone={settingsBannerTone(assetProfileDraft.tone)}
+                title={assetProfileDraft.message}
+                detail={assetProfileDraft.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
                     {assetProfileDraft.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
 
@@ -2610,22 +3913,23 @@ export function SettingsScreen({
               </div>
             </div>
             {profileBackedSecurity.message ? (
-              <div
+              <StatusBanner
                 role={profileBackedSecurity.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[profileBackedSecurity.tone])}
-              >
-                <div className="font-semibold text-foreground">{profileBackedSecurity.message}</div>
-                {profileBackedSecurity.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                tone={settingsBannerTone(profileBackedSecurity.tone)}
+                title={profileBackedSecurity.message}
+                detail={profileBackedSecurity.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
                     {profileBackedSecurity.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showProviderSection ? (
       <Card id="provider-connection-center" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -2798,6 +4102,19 @@ export function SettingsScreen({
                         <SettingsFieldRow label="Production gate" value={row.productionStateLabel} tone={row.productionStateLabel === "Production ready" ? "success" : "warning"} />
                         <SettingsFieldRow label="Affected workflows" value={row.affectedWorkflowsLabel} tone="default" />
                       </dl>
+                      <ProviderIntegrationRuntimePanel
+                        row={row}
+                        state={providerRuntimeState[providerRuntimeStateKey(row)] ?? emptyProviderRuntimeEvidenceState}
+                        operatorName={session?.displayName ?? "settings-operator"}
+                        openApiImportState={providerOpenApiImportState[providerRuntimeStateKey(row)] ?? createProviderOpenApiImportState(row)}
+                        onOpenApiImportStateChange={(updater) => updateProviderOpenApiImportState(row, updater)}
+                        onImportOpenApi={() => void submitProviderOpenApiImport(row)}
+                        onLoad={() => void loadProviderRuntimeEvidence(row)}
+                        onRunDueSync={() => void runProviderRuntimeDueSync(row)}
+                        onCreateHandoff={() => void createProviderRuntimeHandoff(row)}
+                        onReplayQuarantine={() => void replayProviderRuntimeQuarantine(row)}
+                        onResolveQuarantineRecord={(record, action) => void resolveProviderRuntimeQuarantineRecord(row, record, action)}
+                      />
                       {inlineProviderManagementEnabled ? (
                         <ProviderReadinessChecklist
                           row={row}
@@ -2818,7 +4135,9 @@ export function SettingsScreen({
           </div>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showBrokerageSection ? (
       <Card
         id="alpaca-provider-setup"
         className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}
@@ -2915,54 +4234,43 @@ export function SettingsScreen({
               </fieldset>
             </div>
             {alpacaForm.liveAcknowledgement.visible ? (
-              <label
-                htmlFor={alpacaForm.liveAcknowledgement.id}
-                className={cn(
-                  "flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-3 text-sm text-live-env",
-                  alpacaForm.liveAcknowledgement.disabled && "opacity-60"
-                )}
-              >
-                <input
+              <Checkbox
                   id={alpacaForm.liveAcknowledgement.id}
-                  type="checkbox"
                   checked={alpacaForm.liveAcknowledgement.checked}
                   disabled={alpacaForm.liveAcknowledgement.disabled}
                   required={alpacaForm.liveAcknowledgement.required}
-                  onChange={(event) => alpacaForm.setLiveAcknowledged(event.target.checked)}
+                  onCheckedChange={alpacaForm.setLiveAcknowledged}
                   aria-label={alpacaForm.liveAcknowledgement.ariaLabel}
                   aria-describedby={joinDescribedByIds(
                     alpacaForm.liveAcknowledgement.descriptionId,
                     alpacaForm.liveAcknowledgement.disabledReasonId,
                     alpacaForm.formPanelId
                   )}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
+                  className="rounded-md border border-live-env/35 bg-live-env/10 px-3 py-3 text-live-env"
+                  label={alpacaForm.liveAcknowledgement.label}
+                  hint={
+                    <>
+                      <span id={alpacaForm.liveAcknowledgement.descriptionId} className="block">
+                        {alpacaForm.liveAcknowledgement.detail}
+                      </span>
+                      <FieldSupportText
+                        disabledReason={alpacaForm.liveAcknowledgement.disabledReason}
+                        disabledReasonId={alpacaForm.liveAcknowledgement.disabledReasonId ?? undefined}
+                        disabledReasonClassName="mt-1 block"
+                      />
+                    </>
+                  }
                 />
-                <span className="min-w-0">
-                  <span className="block font-semibold text-foreground">{alpacaForm.liveAcknowledgement.label}</span>
-                  <span id={alpacaForm.liveAcknowledgement.descriptionId} className="mt-1 block text-xs leading-5 text-muted-foreground">
-                    {alpacaForm.liveAcknowledgement.detail}
-                  </span>
-                  <FieldSupportText
-                    disabledReason={alpacaForm.liveAcknowledgement.disabledReason}
-                    disabledReasonId={alpacaForm.liveAcknowledgement.disabledReasonId ?? undefined}
-                    disabledReasonClassName="mt-1 block"
-                  />
-                </span>
-              </label>
             ) : null}
-            <div
+            <StatusBanner
               id={alpacaForm.formPanelId}
               role={alpacaForm.formPanelRole}
               aria-live={alpacaForm.formPanelAriaLive}
-              className={cn("rounded-md border px-3 py-3", diagnosticToneClass[alpacaForm.formPanelTone])}
-            >
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0">
-                  <div className={cn("text-sm font-semibold", formReadinessTextClass[alpacaForm.formPanelTone])}>
-                    {alpacaForm.formPanelTitle}
-                  </div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{alpacaForm.formPanelDetail}</p>
-                </div>
+              tone={settingsBannerTone(alpacaForm.formPanelTone)}
+              title={alpacaForm.formPanelTitle}
+              detail={
+                <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                  <p className="leading-5">{alpacaForm.formPanelDetail}</p>
                 <div className="flex flex-wrap gap-2" aria-label="Alpaca credential requirements">
                   {alpacaForm.requirements.map((requirement) => (
                     <span
@@ -2975,7 +4283,8 @@ export function SettingsScreen({
                   ))}
                 </div>
               </div>
-            </div>
+              }
+            />
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="submit"
@@ -3073,7 +4382,9 @@ export function SettingsScreen({
           </div>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showDiagnosticsSection ? (
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card id="diagnostic-endpoints" className="panel-surface scroll-mt-6">
           <CardHeader>
@@ -3200,7 +4511,9 @@ export function SettingsScreen({
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
+      {showRuntimeSection ? (
       <Card id="runtime-feature-capabilities" className="panel-surface scroll-mt-6">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -3242,33 +4555,29 @@ export function SettingsScreen({
                     <SettingsChip label="Default" value={capability.defaultLabel} />
                     <SettingsChip label="Config" value={capability.overrideLabel} />
                   </div>
-                  <label className={cn("mt-4 flex items-start gap-3 text-sm", !capability.canToggle && "opacity-70")}>
-                    <input
-                      type="checkbox"
+                  <div className="mt-4 grid gap-1">
+                    <Toggle
                       checked={capability.isEnabled}
                       disabled={!capability.canToggle || !onFeatureCapabilityToggle}
-                      onChange={(event) => {
-                        void onFeatureCapabilityToggle?.(capability.capabilityKey, event.target.checked);
+                      onCheckedChange={(checked) => {
+                        void onFeatureCapabilityToggle?.(capability.capabilityKey, checked);
                       }}
                       aria-label={capability.ariaLabel}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                      label={capability.canToggle ? "Allow this browser workstation capability" : "Required capability"}
                     />
-                    <span className="min-w-0">
-                      <span className="block font-medium text-foreground">
-                        {capability.canToggle ? "Allow this browser workstation capability" : "Required capability"}
-                      </span>
-                      {capability.disabledReason ? (
-                        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{capability.disabledReason}</span>
-                      ) : null}
-                    </span>
-                  </label>
+                    {capability.disabledReason ? (
+                      <p className="text-xs leading-5 text-muted-foreground">{capability.disabledReason}</p>
+                    ) : null}
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+      ) : null}
 
+      {showBackendCapabilitySection ? (
       <Card id="backend-capability-coverage" className="panel-surface scroll-mt-6">
         <CardHeader>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -3336,6 +4645,7 @@ export function SettingsScreen({
           </div>
         </CardContent>
       </Card>
+      ) : null}
     </div>
   );
 }
@@ -3695,16 +5005,13 @@ function AssetProfileFieldInput({
 }) {
   if (field.fieldType === "Boolean") {
     return (
-      <label className="flex min-h-16 items-center gap-2 rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-xs font-medium text-muted-foreground">
-        <input
-          type="checkbox"
-          checked={value === "true"}
-          onChange={(event) => onChange(event.target.checked ? "true" : "false")}
-          className="h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-          disabled={disabled}
-        />
-        <span>{field.label}{field.isRequired ? " *" : ""}</span>
-      </label>
+      <Checkbox
+        checked={value === "true"}
+        onCheckedChange={(checked) => onChange(checked ? "true" : "false")}
+        className="min-h-16 rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-xs"
+        disabled={disabled}
+        label={`${field.label}${field.isRequired ? " *" : ""}`}
+      />
     );
   }
 
@@ -3839,6 +5146,110 @@ function createBrowserGuid(): string {
     const value = Number(character);
     return (value ^ (Math.random() * 16 >> (value / 4))).toString(16);
   });
+}
+
+const scopedAccessPrincipalKindOptions: Array<{ value: AccessPrincipalKind; label: string }> = [
+  { value: "User", label: "User" },
+  { value: "Group", label: "Group" }
+];
+
+const scopedAccessScopeKindOptions: Array<{ value: AccessScopeKind; label: string }> = [
+  { value: "Fund", label: "Fund" },
+  { value: "Account", label: "Account" },
+  { value: "InvestmentPortfolio", label: "Investment portfolio" },
+  { value: "LegalEntity", label: "Legal entity" },
+  { value: "Vehicle", label: "Vehicle" },
+  { value: "Sleeve", label: "Sleeve" },
+  { value: "Client", label: "Client" },
+  { value: "Business", label: "Business" },
+  { value: "Organization", label: "Organization" },
+  { value: "Global", label: "Global" }
+];
+
+function buildScopedAccessRoleOptions(catalog: RolePermissionCatalog | null): Array<{ value: string; label: string }> {
+  return (catalog?.roles ?? []).map((role) => ({
+    value: role.role,
+    label: role.displayName ? `${role.displayName} (${role.role})` : role.role
+  }));
+}
+
+function buildScopedAccessRoleProfileOptions(catalog: RolePermissionCatalog | null): Array<{ value: string; label: string }> {
+  const profileOptions = (catalog?.roles ?? [])
+    .filter((role) => !role.isBuiltIn)
+    .map((role) => ({
+      value: role.role,
+      label: role.displayName ? `${role.displayName} (${role.role})` : role.role
+    }));
+
+  return [
+    { value: "", label: "No role profile" },
+    ...profileOptions
+  ];
+}
+
+function upsertScopedAccessAssignment(
+  assignments: UserAccessAssignment[],
+  assignment: UserAccessAssignment
+): UserAccessAssignment[] {
+  const index = assignments.findIndex((entry) => entry.assignmentId === assignment.assignmentId);
+  if (index < 0) {
+    return [assignment, ...assignments];
+  }
+
+  const next = [...assignments];
+  next[index] = assignment;
+  return next;
+}
+
+function toScopedAccessDateTime(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(trimmed) ? `${trimmed}T00:00:00Z` : trimmed;
+}
+
+function formatScopedAccessScope(assignment: UserAccessAssignment): string {
+  return assignment.scopeKind === "Global"
+    ? "Global"
+    : `${assignment.scopeKind}: ${assignment.scopeId ?? "Missing scope"}`;
+}
+
+function formatScopedAccessWindow(assignment: UserAccessAssignment): string {
+  const from = formatScopedAccessDate(assignment.effectiveFrom) ?? "Effective now";
+  const to = formatScopedAccessDate(assignment.effectiveTo) ?? "Open-ended";
+  return `${from} to ${to}`;
+}
+
+function formatScopedAccessApprovalLimit(assignment: UserAccessAssignment): string {
+  if (assignment.approvalLimitAmount === null || assignment.approvalLimitAmount === undefined) {
+    return "Not specified";
+  }
+
+  const amount = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2
+  }).format(assignment.approvalLimitAmount);
+  const currency = assignment.approvalLimitCurrency?.trim();
+  return currency ? `${currency} ${amount}` : amount;
+}
+
+function formatScopedAccessDate(value?: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(parsed);
 }
 
 function FilterSelect({
@@ -4011,16 +5422,13 @@ function ProviderInlineActionPanel({
             </select>
           </label>
           {state.environment === "live" ? (
-            <label className="flex items-start gap-2 rounded-md border border-live-env/35 bg-live-env/10 px-2 py-2 text-xs text-live-env">
-              <input
-                type="checkbox"
-                checked={state.liveAcknowledged}
-                onChange={(event) => onLiveAcknowledgementChange(event.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
-                disabled={busy}
-              />
-              <span>I understand this save updates live provider routing credentials.</span>
-            </label>
+            <Checkbox
+              checked={state.liveAcknowledged}
+              onCheckedChange={onLiveAcknowledgementChange}
+              className="rounded-md border border-live-env/35 bg-live-env/10 px-2 py-2 text-xs text-live-env"
+              disabled={busy}
+              label="I understand this save updates live provider routing credentials."
+            />
           ) : null}
         </div>
       ) : null}
@@ -4039,6 +5447,973 @@ function ProviderInlineActionPanel({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function ProviderIntegrationRuntimePanel({
+  row,
+  state,
+  operatorName,
+  openApiImportState,
+  onOpenApiImportStateChange,
+  onImportOpenApi,
+  onLoad,
+  onRunDueSync,
+  onCreateHandoff,
+  onReplayQuarantine,
+  onResolveQuarantineRecord
+}: {
+  row: SettingsProviderConnectionRow;
+  state: ProviderRuntimeEvidenceState;
+  operatorName: string;
+  openApiImportState: ProviderOpenApiImportState;
+  onOpenApiImportStateChange: (updater: (state: ProviderOpenApiImportState) => ProviderOpenApiImportState) => void;
+  onImportOpenApi: () => void;
+  onLoad: () => void;
+  onRunDueSync: () => void;
+  onCreateHandoff: () => void;
+  onReplayQuarantine: () => void;
+  onResolveQuarantineRecord: (
+    record: ProviderIntegrationQuarantinedRecord,
+    action: ProviderIntegrationQuarantineResolutionAction
+  ) => void;
+}) {
+  const runs = providerRuntimeRuns(state);
+  const latestRun = runs[0] ?? null;
+  const issueGroups = state.quarantine?.issueGroups ?? [];
+  const quarantineRecords = state.quarantine?.records ?? [];
+  const quarantineDecisionCount = state.quarantine?.decisionedRecordCount ?? state.quarantine?.decisions.length ?? 0;
+  const pendingReviewRecordCount = state.quarantine?.pendingReviewRecordCount ?? Math.max(quarantineRecords.length - quarantineDecisionCount, 0);
+  const replayRequestedRecordCount = state.quarantine?.replayRequestedRecordCount ?? 0;
+  const ignoredRecordCount = state.quarantine?.ignoredRecordCount ?? 0;
+  const cashPositionCandidateCount = state.quarantine?.cashPositionCandidateCount ?? 0;
+  const syncPlanItems = state.syncPlan?.items ?? [];
+  const blockedSyncItems = state.syncPlan?.blockedCount ?? syncPlanItems.filter((item) => item.isBlocked).length;
+  const dueSyncItems = state.syncPlan?.dueCount ?? syncPlanItems.filter((item) => item.isDue).length;
+  const stagingReviewRows = state.staging?.records.length ?? 0;
+  const identityReviewRequired = (state.identity?.accountReviewRequiredCount ?? 0) + (state.identity?.securityReviewRequiredCount ?? 0);
+  const promotionReady = state.promotion?.readyForReconciliationCount ?? 0;
+  const promotionBlocked = state.promotion?.blockedCount ?? 0;
+  const handoffCount = state.handoff?.handoffCount ?? 0;
+  const criticalIssueCount = providerRuntimeCriticalIssueCount(state);
+  const warningIssueCount = providerRuntimeWarningIssueCount(state);
+  const receivedCount = providerRuntimeReceivedCount(state, runs);
+  const acceptedCount = providerRuntimeAcceptedCount(state, runs);
+  const quarantinedCount = providerRuntimeQuarantinedCount(state, runs);
+  const stagedCount = providerRuntimeStagedCount(state, runs);
+  const durableQuarantinedCount = providerRuntimeDurableQuarantinedCount(state, runs);
+  const totalRuns = state.syncRuns?.totalSyncRuns ?? runs.length;
+  const returnedRuns = state.syncRuns?.returnedSyncRuns ?? runs.length;
+  const loading = state.phase === "loading";
+  const replayEligibleQuarantineRecords = quarantineRecords.filter((record) =>
+    !providerRuntimeLatestQuarantineDecision(state.quarantine?.decisions, record)
+  );
+  const quarantineReplayCount = replayEligibleQuarantineRecords.length;
+  const canReplayQuarantine = !loading && quarantineReplayCount > 0 && Boolean(state.monitor?.manifestId);
+  const canRunDueSync = !loading && Boolean(state.syncPlan) && dueSyncItems > 0 && blockedSyncItems === 0;
+  const alreadyHandedOff = new Set((state.handoff?.records ?? []).map((record) => record.stagingRecordId));
+  const handoffReadyCount = (state.promotion?.rows ?? [])
+    .filter((promotionRow) => promotionRow.status === "ReadyForReconciliation" && !alreadyHandedOff.has(promotionRow.stagingRecordId))
+    .length;
+  const canCreateHandoff = !loading && handoffReadyCount > 0;
+  const actionLabel = state.phase === "loaded" || state.phase === "error" ? "Refresh runtime" : loading ? "Loading runtime" : "Load runtime";
+
+  return (
+    <section
+      className={cn("mt-3 rounded-md border px-3 py-3", diagnosticToneClass[providerRuntimePanelTone(state)])}
+      aria-label={`${row.displayName} provider integration runtime evidence`}
+    >
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h5 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Runtime evidence</h5>
+            <Badge variant={providerRuntimeStatusVariant(state)} dot={state.phase === "loaded"}>
+              {providerRuntimeStatusLabel(state)}
+            </Badge>
+          </div>
+          <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.integrationConnectionId}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={onRunDueSync}
+            disabled={!canRunDueSync}
+            disabledReason={!state.syncPlan ? "Load runtime evidence before running due sync." : blockedSyncItems > 0 ? "Blocked sync-plan items must be resolved before due sync." : dueSyncItems === 0 ? "No due sync-plan items are available." : undefined}
+            aria-label={`Run due provider integration sync for ${row.displayName}`}
+          >
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Activity className="h-3.5 w-3.5" aria-hidden="true" />}
+            Run due sync
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={onCreateHandoff}
+            disabled={!canCreateHandoff}
+            disabledReason={!state.promotion ? "Load promotion readiness before creating a handoff." : handoffReadyCount === 0 ? "No unhanded promotion-ready staging rows are available." : undefined}
+            aria-label={`Create reconciliation handoff for ${handoffReadyCount} provider integration staging rows for ${row.displayName}`}
+          >
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />}
+            Hand off ready
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={onReplayQuarantine}
+            disabled={!canReplayQuarantine}
+            aria-label={`Replay ${quarantineReplayCount} quarantined provider integration records for ${row.displayName}`}
+          >
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
+            Replay quarantine
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={onLoad}
+            disabled={loading}
+            aria-label={`${state.phase === "loaded" || state.phase === "error" ? "Refresh" : "Load"} provider integration runtime evidence for ${row.displayName}`}
+          >
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
+            {actionLabel}
+          </Button>
+        </div>
+      </div>
+      <ProviderOpenApiImportForm
+        row={row}
+        state={openApiImportState}
+        onStateChange={onOpenApiImportStateChange}
+        onSubmit={onImportOpenApi}
+      />
+      <ProviderIntegrationWorkbenchPanel
+        row={row}
+        runtimeState={state}
+        operatorName={operatorName}
+      />
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+        <SettingsFieldRow
+          label="Last sync"
+          value={formatProviderRuntimeUtcMinute(state.syncRuns?.latestStartedAt ?? latestRun?.startedAt)}
+          tone={latestRun ? providerRuntimeRunTone(latestRun) : "muted"}
+        />
+        <SettingsFieldRow label="Sync runs" value={`${formatProviderRuntimeNumber(returnedRuns)} / ${formatProviderRuntimeNumber(totalRuns)}`} tone={returnedRuns > 0 ? "success" : "muted"} />
+        <SettingsFieldRow label="Records received" value={formatProviderRuntimeNumber(receivedCount)} tone={receivedCount > 0 ? "success" : "muted"} />
+        <SettingsFieldRow
+          label="Accepted / quarantined"
+          value={`${formatProviderRuntimeNumber(acceptedCount)} / ${formatProviderRuntimeNumber(quarantinedCount)}`}
+          tone={quarantinedCount > 0 ? providerRuntimeIssueTone(criticalIssueCount, warningIssueCount) : acceptedCount > 0 ? "success" : "muted"}
+        />
+        <SettingsFieldRow label="Staged retained" value={formatProviderRuntimeNumber(stagedCount)} tone={stagedCount > 0 ? "success" : "muted"} />
+        <SettingsFieldRow label="Quarantine retained" value={formatProviderRuntimeNumber(durableQuarantinedCount)} tone={durableQuarantinedCount > 0 ? providerRuntimeIssueTone(criticalIssueCount, warningIssueCount) : "muted"} />
+        <SettingsFieldRow label="Decisioned records" value={formatProviderRuntimeNumber(quarantineDecisionCount)} tone={quarantineDecisionCount > 0 ? "success" : "muted"} />
+        <SettingsFieldRow
+          label="Review posture"
+          value={`${formatProviderRuntimeNumber(pendingReviewRecordCount)} pending / ${formatProviderRuntimeNumber(replayRequestedRecordCount)} replay / ${formatProviderRuntimeNumber(ignoredRecordCount)} ignored / ${formatProviderRuntimeNumber(cashPositionCandidateCount)} cash`}
+          tone={pendingReviewRecordCount > 0 ? "warning" : quarantineDecisionCount > 0 ? "success" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Quarantine groups"
+          value={`${formatProviderRuntimeNumber(issueGroups.length)} groups`}
+          tone={issueGroups.length > 0 ? providerRuntimeIssueTone(criticalIssueCount, warningIssueCount) : "muted"}
+        />
+        <SettingsFieldRow
+          label="Issue counts"
+          value={`${formatProviderRuntimeNumber(criticalIssueCount)} critical / ${formatProviderRuntimeNumber(warningIssueCount)} warning`}
+          tone={providerRuntimeIssueTone(criticalIssueCount, warningIssueCount)}
+        />
+        <SettingsFieldRow
+          label="Sync plan"
+          value={`${formatProviderRuntimeNumber(dueSyncItems)} due / ${formatProviderRuntimeNumber(blockedSyncItems)} blocked`}
+          tone={blockedSyncItems > 0 ? "danger" : dueSyncItems > 0 ? "warning" : state.syncPlan ? "success" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Staging review"
+          value={`${formatProviderRuntimeNumber(stagingReviewRows)} rows`}
+          tone={stagingReviewRows > 0 ? "success" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Identity review"
+          value={`${formatProviderRuntimeNumber(identityReviewRequired)} review required`}
+          tone={identityReviewRequired > 0 ? "warning" : state.identity ? "success" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Promotion readiness"
+          value={`${formatProviderRuntimeNumber(promotionReady)} ready / ${formatProviderRuntimeNumber(promotionBlocked)} blocked`}
+          tone={promotionBlocked > 0 ? "danger" : promotionReady > 0 ? "success" : state.promotion ? "muted" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Reconciliation handoffs"
+          value={`${formatProviderRuntimeNumber(handoffCount)} handoffs`}
+          tone={handoffCount > 0 ? "success" : "muted"}
+        />
+      </dl>
+      {state.message ? (
+        <div role={state.phase === "error" ? "alert" : "status"} className={cn("mt-3 text-xs", itemToneClass[providerRuntimeMessageTone(state)])}>
+          <div>{state.message}</div>
+          {state.details.length > 0 ? (
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+              {state.details.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+      {state.phase === "idle" ? (
+        <p className="mt-3 text-xs text-muted-foreground">No runtime evidence loaded.</p>
+      ) : null}
+      {runs.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} recent provider integration sync runs`}>
+          {runs.slice(0, 3).map((run) => (
+            <div key={run.syncRunId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-mono text-[11px] text-foreground">{run.syncRunId}</span>
+                <Badge variant={providerRuntimeRunVariant(run)}>{run.status}</Badge>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                {run.capability} · {formatProviderRuntimeUtcMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {quarantineRecords.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration quarantine records`}>
+          {quarantineRecords.slice(0, 3).map((record) => {
+            const latestDecision = providerRuntimeLatestQuarantineDecision(state.quarantine?.decisions, record);
+            const hasRecordedDecision = Boolean(latestDecision);
+            const supportsCashDecision = record.capability === "Positions";
+
+            return (
+              <div key={record.quarantineRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={providerRuntimeProcessingStatusVariant(record.status)}>{record.status}</Badge>
+                      <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+                      {record.capability} · {formatProviderRuntimeUtcMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
+                    </p>
+                    {latestDecision ? (
+                      <p className="mt-1 text-[11px] leading-4 text-success">
+                        Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeUtcMinute(latestDecision.reviewedAt)}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {hasRecordedDecision ? (
+                      <Badge variant="success">Decision recorded</Badge>
+                    ) : (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "ReviewOnly")}
+                          disabled={loading}
+                          aria-label={`Review quarantine record ${record.quarantineRecordId} for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <MonitorCheck className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Review
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "ReplayAfterMappingChange")}
+                          disabled={loading}
+                          aria-label={`Mark quarantine record ${record.quarantineRecordId} for replay after mapping change for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Replay later
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "IgnoreProviderRecord")}
+                          disabled={loading}
+                          aria-label={`Ignore quarantine record ${record.quarantineRecordId} for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Ignore
+                        </Button>
+                        {supportsCashDecision ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => onResolveQuarantineRecord(record, "MarkAsCashPosition")}
+                            disabled={loading}
+                            aria-label={`Mark quarantine record ${record.quarantineRecordId} as cash position for ${row.displayName}`}
+                          >
+                            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />}
+                            Mark cash
+                          </Button>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                </div>
+                {record.validationErrors[0] ? (
+                  <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{record.validationErrors[0].message}</p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+      {issueGroups.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration quarantine issue groups`}>
+          {issueGroups.slice(0, 3).map((group) => (
+            <div key={`${group.issueCode}-${group.targetField ?? "record"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={providerRuntimeSeverityVariant(group.severity)}>{group.severity}</Badge>
+                <span className="font-mono text-[11px] text-foreground">{group.issueCode}</span>
+                <span className="text-[11px] text-muted-foreground">{formatProviderRuntimeNumber(group.recordCount)} records</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{group.message}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {syncPlanItems.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration sync plan`}>
+          {syncPlanItems.slice(0, 3).map((item) => (
+            <div key={`${item.capability}-${item.endpointKey ?? "no-endpoint"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={item.isBlocked ? "danger" : item.isDue ? "warning" : "success"}>
+                  {item.isBlocked ? "Blocked" : item.isDue ? "Due" : "Scheduled"}
+                </Badge>
+                <span className="text-[11px] font-medium text-foreground">{item.capability}</span>
+                <span className="font-mono text-[11px] text-muted-foreground">{item.endpointKey ?? "no endpoint"}</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{item.reason}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {state.promotion && state.promotion.rows.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration promotion readiness rows`}>
+          {state.promotion.rows.slice(0, 3).map((promotionRow) => (
+            <div key={promotionRow.stagingRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={providerRuntimePromotionVariant(promotionRow.status)}>{promotionRow.status}</Badge>
+                <span className="font-mono text-[11px] text-foreground">{promotionRow.stagingRecordId}</span>
+                <span className="text-[11px] text-muted-foreground">{promotionRow.promotionTarget}</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+                {promotionRow.providerAccountId ?? "No provider account"} · {promotionRow.securityDisplayName ?? promotionRow.internalSecurityId ?? "No security match"}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function ProviderIntegrationWorkbenchPanel({
+  row,
+  runtimeState,
+  operatorName
+}: {
+  row: SettingsProviderConnectionRow;
+  runtimeState: ProviderRuntimeEvidenceState;
+  operatorName: string;
+}) {
+  const [state, setState] = useState<ProviderIntegrationWorkbenchState>(() => createProviderIntegrationWorkbenchState(row));
+
+  useEffect(() => {
+    setState(createProviderIntegrationWorkbenchState(row));
+  }, [row.integrationConnectionId, row.providerId]);
+
+  const busy = state.busyAction !== null;
+  const manifestId = providerIntegrationWorkbenchManifestId(state, runtimeState);
+  const connectionId = providerIntegrationWorkbenchConnectionId(row, state, runtimeState);
+  const capabilityOptions = providerIntegrationWorkbenchCapabilities(state);
+  const endpointOptions = providerIntegrationWorkbenchEndpoints(state, state.capability);
+  const mappingPreview = providerIntegrationWorkbenchMappings(state, state.capability);
+  const latestRawPayload = providerIntegrationLatestRawPayload(state, runtimeState);
+  const canCheckDrift = Boolean(manifestId && connectionId && latestRawPayload && state.endpointKey.trim());
+  const activationReady = state.readiness?.isReady ?? false;
+
+  const updateField = <K extends keyof ProviderIntegrationWorkbenchState>(
+    field: K,
+    value: ProviderIntegrationWorkbenchState[K]
+  ) => {
+    setState((current) => ({
+      ...current,
+      [field]: value,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  const loadTemplates = async () => {
+    setState((current) => ({ ...current, busyAction: "templates", message: "Loading provider integration templates.", details: [], tone: "default" }));
+    try {
+      const templates = await getProviderIntegrationTemplates();
+      setState((current) => ({
+        ...current,
+        templates,
+        selectedManifestId: providerIntegrationDefaultSelectedManifestId(row, templates, current.selectedManifestId),
+        busyAction: null,
+        message: templates.length === 0 ? "No provider integration templates returned." : `${templates.length} provider integration templates loaded.`,
+        details: templates.slice(0, 3).map((template) => `${template.displayName}: ${template.summary}`),
+        tone: templates.length === 0 ? "warning" : "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration templates could not be loaded.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const useTemplate = async () => {
+    const selectedManifestId = state.selectedManifestId.trim();
+    if (!selectedManifestId) {
+      setState((current) => ({ ...current, message: "Select or enter a manifest id before loading a template.", details: [], tone: "warning" }));
+      return;
+    }
+
+    setState((current) => ({ ...current, busyAction: "template", message: `Loading template ${selectedManifestId}.`, details: [], tone: "default" }));
+    try {
+      const manifest = await getProviderIntegrationTemplate(selectedManifestId);
+      const connection = createProviderIntegrationConnectionDraft(row, manifest, operatorName);
+      setState((current) => providerIntegrationWorkbenchWithDraft(row, current, manifest, connection, {
+        message: `Template ${manifest.manifestId} loaded into draft setup editor.`,
+        details: providerIntegrationWorkbenchDraftDetails(manifest),
+        tone: "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration template could not be loaded.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const saveSetupDraft = async () => {
+    const manifestDraft = parseProviderIntegrationWorkbenchJson<ProviderIntegrationManifest>(state.draftManifestJson, "Manifest draft JSON");
+    const connectionDraft = parseProviderIntegrationWorkbenchJson<ProviderIntegrationConnection>(state.draftConnectionJson, "Connection draft JSON");
+    if (manifestDraft.ok === false || connectionDraft.ok === false) {
+      const details = [
+        manifestDraft.ok === false ? manifestDraft.error : null,
+        connectionDraft.ok === false ? connectionDraft.error : null
+      ].filter((detail): detail is string => Boolean(detail));
+      setState((current) => ({
+        ...current,
+        message: "Provider integration setup draft is not valid JSON.",
+        details,
+        tone: "warning"
+      }));
+      return;
+    }
+
+    const savedAt = new Date().toISOString();
+    setState((current) => ({ ...current, busyAction: "save", message: "Saving provider integration setup draft.", details: [], tone: "default" }));
+    try {
+      const result = await saveProviderIntegrationSetup({
+        manifest: manifestDraft.value,
+        connection: connectionDraft.value,
+        savedBy: operatorName,
+        savedAt,
+        changeReason: manifestDraft.value.changeReason ?? "Saved from the Settings Provider Connection Center guided workbench."
+      });
+      setState((current) => ({
+        ...current,
+        manifest: manifestDraft.value,
+        connection: connectionDraft.value,
+        selectedManifestId: result.manifestId,
+        setupResult: result,
+        readiness: result.readiness,
+        busyAction: null,
+        message: result.message ?? `Provider integration setup saved for ${result.connectionId}.`,
+        details: providerIntegrationReadinessDetails(result.readiness),
+        tone: result.readiness.isReady ? "success" : "warning"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration setup save failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const checkReadiness = async () => {
+    if (!manifestId) {
+      setState((current) => ({
+        ...current,
+        message: "Load a template, import a draft, or load runtime monitor evidence before checking activation readiness.",
+        details: [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    setState((current) => ({ ...current, busyAction: "readiness", message: "Checking provider integration activation readiness.", details: [], tone: "default" }));
+    try {
+      const readiness = await getProviderIntegrationReadiness(manifestId, connectionId);
+      setState((current) => ({
+        ...current,
+        readiness,
+        busyAction: null,
+        message: readiness.isReady ? "Activation readiness passed." : "Activation readiness requires review.",
+        details: providerIntegrationReadinessDetails(readiness),
+        tone: readiness.isReady ? "success" : "warning"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration activation readiness could not be checked.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const runCsvDryRun = async () => {
+    if (!manifestId || !state.csvContent.trim()) {
+      setState((current) => ({ ...current, message: "Manifest id and CSV content are required before running a manual CSV dry-run.", details: [], tone: "warning" }));
+      return;
+    }
+
+    const requestedAt = new Date();
+    setState((current) => ({ ...current, busyAction: "csv-dry-run", message: "Running manual CSV provider integration dry-run.", details: [], tone: "default" }));
+    try {
+      const result = await runManualCsvProviderIntegrationDryRun({
+        syncRunId: providerIntegrationWorkbenchSyncRunId(row.integrationConnectionId, "csv", requestedAt),
+        manifestId,
+        connectionId,
+        capability: state.capability,
+        fileName: state.csvFileName.trim() || `${row.providerId}-sample.csv`,
+        csvContent: state.csvContent,
+        requestedBy: operatorName,
+        requestedAt: requestedAt.toISOString()
+      });
+      setState((current) => ({
+        ...current,
+        dryRunResult: result,
+        busyAction: null,
+        message: `CSV dry-run completed: ${result.recordsAccepted} accepted / ${result.recordsQuarantined} quarantined.`,
+        details: result.issues.map((issue) => issue.message),
+        tone: result.recordsQuarantined > 0 || result.issues.length > 0 ? "warning" : "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Manual CSV provider integration dry-run failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const runRestDryRun = async () => {
+    const pathParameters = parseProviderIntegrationStringRecord(state.restPathParametersJson, "REST path parameters JSON");
+    const queryParameters = parseProviderIntegrationStringRecord(state.restQueryParametersJson, "REST query parameters JSON");
+    if (!manifestId || !state.endpointKey.trim() || pathParameters.ok === false || queryParameters.ok === false) {
+      const details = [
+        pathParameters.ok === false ? pathParameters.error : null,
+        queryParameters.ok === false ? queryParameters.error : null
+      ].filter((detail): detail is string => Boolean(detail));
+      setState((current) => ({
+        ...current,
+        message: "Manifest id, endpoint key, and valid REST parameter JSON are required before running a REST dry-run.",
+        details,
+        tone: "warning"
+      }));
+      return;
+    }
+
+    const requestedAt = new Date();
+    setState((current) => ({ ...current, busyAction: "rest-dry-run", message: "Running REST provider integration dry-run.", details: [], tone: "default" }));
+    try {
+      const result = await runRestProviderIntegrationDryRun({
+        syncRunId: providerIntegrationWorkbenchSyncRunId(row.integrationConnectionId, "rest", requestedAt),
+        manifestId,
+        connectionId,
+        capability: state.capability,
+        endpointKey: state.endpointKey.trim(),
+        pathParameters: pathParameters.value,
+        queryParameters: queryParameters.value,
+        requestedBy: operatorName,
+        requestedAt: requestedAt.toISOString(),
+        maxPages: 2
+      });
+      setState((current) => ({
+        ...current,
+        dryRunResult: result,
+        busyAction: null,
+        message: `REST dry-run completed: ${result.recordsAccepted} accepted / ${result.recordsQuarantined} quarantined.`,
+        details: result.issues.map((issue) => issue.message),
+        tone: result.recordsQuarantined > 0 || result.issues.length > 0 ? "warning" : "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "REST provider integration dry-run failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const checkSchemaDrift = async () => {
+    if (!manifestId || !latestRawPayload || !state.endpointKey.trim()) {
+      setState((current) => ({ ...current, message: "A manifest id, endpoint key, and dry-run or runtime raw payload are required before schema drift review.", details: [], tone: "warning" }));
+      return;
+    }
+
+    const checkedAt = new Date();
+    setState((current) => ({ ...current, busyAction: "drift", message: "Checking provider integration schema drift.", details: [], tone: "default" }));
+    try {
+      const result = await checkProviderIntegrationSchemaDrift({
+        manifestId,
+        connectionId,
+        capability: latestRawPayload.capability,
+        endpointKey: state.endpointKey.trim(),
+        syncRunId: latestRawPayload.syncRunId,
+        rawPayloadId: latestRawPayload.rawPayloadId,
+        checkedBy: operatorName,
+        checkedAt: checkedAt.toISOString()
+      });
+      setState((current) => ({
+        ...current,
+        driftResult: result,
+        busyAction: null,
+        message: result.driftDetected ? "Schema drift detected." : "Schema drift check passed.",
+        details: result.issues.map((issue) => issue.message),
+        tone: result.shouldPauseCapability ? "danger" : result.driftDetected ? "warning" : "success"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration schema drift check failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  const activateSetup = async () => {
+    if (!manifestId || !activationReady) {
+      setState((current) => ({ ...current, message: "Activation is blocked until readiness passes.", details: providerIntegrationReadinessDetails(current.readiness), tone: "warning" }));
+      return;
+    }
+
+    const approvedAt = new Date();
+    setState((current) => ({ ...current, busyAction: "activate", message: "Requesting provider integration activation.", details: [], tone: "default" }));
+    try {
+      const result = await activateProviderIntegration({
+        manifestId,
+        connectionId,
+        approvedBy: operatorName,
+        approvedAt: approvedAt.toISOString(),
+        approvalEvidenceId: providerIntegrationWorkbenchEvidenceId(row.integrationConnectionId, "activation", approvedAt),
+        changeReason: "Activated from the Settings Provider Connection Center guided workbench."
+      });
+      setState((current) => ({
+        ...current,
+        activationResult: result,
+        readiness: result.readiness,
+        busyAction: null,
+        message: result.message ?? `Provider integration ${result.activated ? "activated" : "activation reviewed"}.`,
+        details: providerIntegrationReadinessDetails(result.readiness),
+        tone: result.activated ? "success" : "warning"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration activation failed.");
+      setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
+    }
+  };
+
+  return (
+    <section className="mt-3 rounded-md border border-border/60 bg-background/35 px-3 py-3" aria-label={`${row.displayName} guided provider integration workbench`}>
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h6 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Guided integration workbench</h6>
+          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Template, setup, dry-run, readiness, drift, and quarantine evidence stay on shared provider-integration endpoints.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => void loadTemplates()} disabled={busy} busy={state.busyAction === "templates"} aria-label={`Load provider integration templates for ${row.displayName}`}>
+            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            Load templates
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => void useTemplate()} disabled={busy || !state.selectedManifestId.trim()} busy={state.busyAction === "template"} aria-label={`Use selected provider integration template for ${row.displayName}`}>
+            <Save className="h-3.5 w-3.5" aria-hidden="true" />
+            Use template
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => void checkReadiness()} disabled={busy || !manifestId} busy={state.busyAction === "readiness"} aria-label={`Check provider integration activation readiness for ${row.displayName}`}>
+            <MonitorCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            Check readiness
+          </Button>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Template or manifest ID
+          <Input value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest id`} />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Template catalog
+          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
+            <option value={state.selectedManifestId}>{state.selectedManifestId || "No template selected"}</option>
+            {(state.templates ?? []).map((template) => <option key={template.manifestId} value={template.manifestId}>{template.displayName}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Manifest draft JSON
+          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Connection draft JSON
+          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
+        </label>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={() => void saveSetupDraft()} disabled={busy || !state.draftManifestJson.trim() || !state.draftConnectionJson.trim()} busy={state.busyAction === "save"} aria-label={`Save provider integration setup draft for ${row.displayName}`}>
+          <Save className="h-3.5 w-3.5" aria-hidden="true" />
+          Save setup draft
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => void activateSetup()} disabled={busy || !activationReady} busy={state.busyAction === "activate"} disabledReason={!activationReady ? "Activation readiness must pass before activation." : undefined} aria-label={`Activate provider integration setup for ${row.displayName}`}>
+          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+          Activate when ready
+        </Button>
+      </div>
+      {state.manifest ? (
+        <div className="mt-3 grid gap-2 rounded-sm border border-border/60 bg-background/40 px-2 py-2" aria-label={`${row.displayName} provider integration mapping preview`}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-foreground">Mapping preview</span>
+            <Badge variant="outline">{state.manifest.integrationType}</Badge>
+            <Badge variant={state.manifest.state === "Active" ? "success" : "warning"}>{state.manifest.state}</Badge>
+          </div>
+          <div className="grid gap-2 md:grid-cols-2">
+            {mappingPreview.length > 0 ? mappingPreview.slice(0, 4).map((mapping) => (
+              <div key={`${mapping.capability}-${mapping.sourcePath}-${mapping.targetField}`} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-2 text-[11px] text-muted-foreground">
+                <span className="font-mono text-foreground">{mapping.sourcePath}</span> {" -> "} <span className="font-mono text-foreground">{mapping.targetField}</span> · {mapping.confidence}{mapping.required ? " · required" : ""}
+              </div>
+            )) : <p className="text-[11px] text-muted-foreground">No mapping rows for the selected capability.</p>}
+          </div>
+        </div>
+      ) : null}
+      <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Capability
+          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary" value={state.capability} onChange={(event) => setState((current) => {
+            const capability = event.target.value as ProviderIntegrationCapabilityKind;
+            return { ...current, capability, endpointKey: providerIntegrationPreferredEndpointKey(current.manifest, capability, current.endpointKey), message: null, details: [], tone: "default" };
+          })} disabled={busy} aria-label={`${row.displayName} provider integration dry-run capability`}>
+            {capabilityOptions.map((capability) => <option key={capability} value={capability}>{capability}</option>)}
+          </select>
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Endpoint key
+          <Input value={state.endpointKey} onChange={(event) => updateField("endpointKey", event.target.value)} list={`${row.providerId}-provider-endpoint-options`} disabled={busy} aria-label={`${row.displayName} provider integration dry-run endpoint key`} />
+          <datalist id={`${row.providerId}-provider-endpoint-options`}>{endpointOptions.map((endpoint) => <option key={endpoint.endpointKey} value={endpoint.endpointKey} />)}</datalist>
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          CSV file name
+          <Input value={state.csvFileName} onChange={(event) => updateField("csvFileName", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run file name`} />
+        </label>
+      </div>
+      <div className="mt-3 grid gap-3 lg:grid-cols-2">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          CSV content
+          <textarea className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
+        </label>
+        <div className="grid gap-3">
+          <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+            REST path parameters JSON
+            <Input value={state.restPathParametersJson} onChange={(event) => updateField("restPathParametersJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration REST path parameters JSON`} />
+          </label>
+          <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+            REST query parameters JSON
+            <Input value={state.restQueryParametersJson} onChange={(event) => updateField("restQueryParametersJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration REST query parameters JSON`} />
+          </label>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={() => void runCsvDryRun()} disabled={busy || !manifestId || !state.csvContent.trim()} busy={state.busyAction === "csv-dry-run"} aria-label={`Run provider integration CSV dry-run for ${row.displayName}`}>
+          <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+          CSV dry-run
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => void runRestDryRun()} disabled={busy || !manifestId || !state.endpointKey.trim()} busy={state.busyAction === "rest-dry-run"} aria-label={`Run provider integration REST dry-run for ${row.displayName}`}>
+          <Activity className="h-3.5 w-3.5" aria-hidden="true" />
+          REST dry-run
+        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => void checkSchemaDrift()} disabled={busy || !canCheckDrift} busy={state.busyAction === "drift"} disabledReason={!canCheckDrift ? "A dry-run or runtime raw payload is required before schema drift review." : undefined} aria-label={`Check provider integration schema drift for ${row.displayName}`}>
+          <MonitorCheck className="h-3.5 w-3.5" aria-hidden="true" />
+          Schema drift
+        </Button>
+      </div>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+        <SettingsFieldRow label="Manifest" value={manifestId || "Not selected"} tone={manifestId ? "success" : "muted"} />
+        <SettingsFieldRow label="Connection" value={state.connection?.connectionName ?? runtimeState.monitor?.connectionName ?? "Runtime connection"} tone="muted" />
+        <SettingsFieldRow label="Activation readiness" value={state.readiness ? (state.readiness.isReady ? "Ready" : "Review required") : "Not checked"} tone={state.readiness?.isReady ? "success" : state.readiness ? "warning" : "muted"} />
+        <SettingsFieldRow label="Dry-run result" value={state.dryRunResult ? `${state.dryRunResult.recordsAccepted} accepted / ${state.dryRunResult.recordsQuarantined} quarantined` : "Not run"} tone={state.dryRunResult ? (state.dryRunResult.recordsQuarantined > 0 ? "warning" : "success") : "muted"} />
+        <SettingsFieldRow label="Schema drift" value={state.driftResult ? (state.driftResult.driftDetected ? `${state.driftResult.issues.length} issues` : "No drift") : "Not checked"} tone={state.driftResult ? (state.driftResult.shouldPauseCapability ? "danger" : state.driftResult.driftDetected ? "warning" : "success") : "muted"} />
+        <SettingsFieldRow label="Activation" value={state.activationResult ? state.activationResult.connectionState : "Not requested"} tone={state.activationResult?.activated ? "success" : "muted"} />
+      </dl>
+      {state.message ? (
+        <div role={state.tone === "danger" ? "alert" : "status"} className={cn("mt-3 text-xs", itemToneClass[state.tone])}>
+          <div>{state.message}</div>
+          {state.details.length > 0 ? (
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+              {state.details.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+function ProviderOpenApiImportForm({
+  row,
+  state,
+  onStateChange,
+  onSubmit
+}: {
+  row: SettingsProviderConnectionRow;
+  state: ProviderOpenApiImportState;
+  onStateChange: (updater: (state: ProviderOpenApiImportState) => ProviderOpenApiImportState) => void;
+  onSubmit: () => void;
+}) {
+  const updateField = <K extends keyof ProviderOpenApiImportState>(
+    field: K,
+    value: ProviderOpenApiImportState[K]
+  ) => {
+    onStateChange((current) => ({
+      ...current,
+      [field]: value,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  return (
+    <form
+      className="mt-3 grid gap-3 rounded-md border border-border/60 bg-background/35 px-3 py-3"
+      aria-label={`${row.displayName} OpenAPI import draft`}
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+      noValidate
+    >
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h6 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">OpenAPI import draft</h6>
+          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+            Seed a draft manifest through the shared import endpoint; readiness, mapping, and runtime evidence stay service-owned.
+          </p>
+        </div>
+        <Button
+          type="submit"
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          disabled={state.busy}
+          busy={state.busy}
+          busyLabel="Importing OpenAPI"
+          aria-label={`Import OpenAPI draft manifest for ${row.displayName}`}
+        >
+          <Save className="h-3.5 w-3.5" aria-hidden="true" />
+          Import draft
+        </Button>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Manifest ID
+          <Input
+            value={state.manifestId}
+            onChange={(event) => updateField("manifestId", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI manifest id`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Display name
+          <Input
+            value={state.displayName}
+            onChange={(event) => updateField("displayName", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI display name`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Environment
+          <Input
+            value={state.environment}
+            onChange={(event) => updateField("environment", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI environment`}
+          />
+        </label>
+        <FilterSelect
+          label="Auth type"
+          value={state.authType}
+          onChange={(value) => updateField("authType", value as ProviderIntegrationAuthType)}
+          options={PROVIDER_OPEN_API_AUTH_OPTIONS}
+        />
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Capabilities
+          <Input
+            value={state.capabilities}
+            onChange={(event) => updateField("capabilities", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI capabilities`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          OAuth token URL
+          <Input
+            value={state.tokenUrl}
+            onChange={(event) => updateField("tokenUrl", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI token URL`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Scopes
+          <Input
+            value={state.scopes}
+            onChange={(event) => updateField("scopes", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI scopes`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Change reason
+          <Input
+            value={state.changeReason}
+            onChange={(event) => updateField("changeReason", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI change reason`}
+          />
+        </label>
+      </div>
+      <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        OpenAPI JSON
+        <textarea
+          className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-xs text-foreground outline-none focus:border-primary"
+          value={state.openApiDocumentJson}
+          onChange={(event) => updateField("openApiDocumentJson", event.target.value)}
+          disabled={state.busy}
+          aria-label={`${row.displayName} OpenAPI JSON`}
+          spellCheck={false}
+        />
+      </label>
+      {state.message ? (
+        <div role={state.tone === "danger" ? "alert" : "status"} className={cn("text-xs", itemToneClass[state.tone])}>
+          <div>{state.message}</div>
+          {state.result ? (
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              {state.result.manifest.integrationType} · {state.result.manifest.state} · {state.result.readiness.isReady ? "Ready" : "Readiness review"}
+            </div>
+          ) : null}
+          {state.details.length > 0 ? (
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+              {state.details.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </form>
   );
 }
 
@@ -4258,10 +6633,614 @@ function providerDraftStatusVariant(state: ProviderInlineState | undefined, row:
   return "success";
 }
 
+function providerRuntimeStateKey(row: Pick<SettingsProviderConnectionRow, "integrationConnectionId" | "providerId">): string {
+  return row.integrationConnectionId || row.providerId;
+}
+
+function providerRuntimeReplaySyncRunId(connectionId: string, requestedAt: Date): string {
+  const suffix = requestedAt.toISOString().replace(/[^0-9A-Za-z]/g, "").toLowerCase();
+  const normalizedConnection = (connectionId || "connection").replace(/[^0-9A-Za-z-]/g, "-").toLowerCase();
+  return `provider-replay-${normalizedConnection}-${suffix}`;
+}
+
+function providerRuntimeHandoffEvidenceId(connectionId: string, requestedAt: Date): string {
+  const suffix = requestedAt.toISOString().replace(/[^0-9A-Za-z]/g, "").toLowerCase();
+  const normalizedConnection = (connectionId || "connection").replace(/[^0-9A-Za-z-]/g, "-").toLowerCase();
+  return `settings-provider-handoff-${normalizedConnection}-${suffix}`;
+}
+
+function createProviderIntegrationWorkbenchState(row: SettingsProviderConnectionRow): ProviderIntegrationWorkbenchState {
+  const capability = providerIntegrationDefaultCapability(row);
+  return {
+    templates: null,
+    selectedManifestId: providerIntegrationDefaultManifestId(row),
+    manifest: null,
+    connection: null,
+    draftManifestJson: "",
+    draftConnectionJson: "",
+    capability,
+    endpointKey: providerIntegrationDefaultEndpointKey(capability),
+    csvFileName: `${providerIntegrationNormalizedId(row.providerId)}-${capability.toLowerCase()}.csv`,
+    csvContent: providerIntegrationSampleCsv(capability),
+    restPathParametersJson: "{}",
+    restQueryParametersJson: "{}",
+    readiness: null,
+    setupResult: null,
+    dryRunResult: null,
+    driftResult: null,
+    activationResult: null,
+    busyAction: null,
+    message: null,
+    details: [],
+    tone: "default"
+  };
+}
+
+function providerIntegrationDefaultCapability(row: Pick<SettingsProviderConnectionRow, "capabilityGroup">): ProviderIntegrationCapabilityKind {
+  return row.capabilityGroup === "accounting" ? "Transactions" : "Positions";
+}
+
+function providerIntegrationDefaultEndpointKey(capability: ProviderIntegrationCapabilityKind): string {
+  return capability.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+}
+
+function providerIntegrationDefaultManifestId(row: Pick<SettingsProviderConnectionRow, "providerId" | "capabilityGroup">): string {
+  const suffix = row.capabilityGroup === "accounting" ? "accounting" : row.capabilityGroup === "brokerage" ? "brokerage" : "data";
+  return `template-${providerIntegrationNormalizedId(row.providerId)}-${suffix}-v1`;
+}
+
+function providerIntegrationDefaultSelectedManifestId(
+  row: Pick<SettingsProviderConnectionRow, "providerId" | "displayName" | "capabilityGroup">,
+  templates: ProviderIntegrationTemplateCatalogEntry[],
+  currentManifestId: string
+): string {
+  const current = currentManifestId.trim();
+  if (current && templates.some((template) => template.manifestId === current)) {
+    return current;
+  }
+
+  const normalizedProvider = providerIntegrationNormalizedId(row.providerId);
+  const normalizedName = providerIntegrationNormalizedId(row.displayName);
+  const matched = templates.find((template) => (
+    providerIntegrationNormalizedId(template.providerId) === normalizedProvider ||
+    providerIntegrationNormalizedId(template.displayName).includes(normalizedName) ||
+    providerIntegrationNormalizedId(template.manifestId).includes(normalizedProvider)
+  ));
+
+  return matched?.manifestId ?? templates[0]?.manifestId ?? current ?? providerIntegrationDefaultManifestId(row);
+}
+
+function createProviderIntegrationConnectionDraft(
+  row: SettingsProviderConnectionRow,
+  manifest: ProviderIntegrationManifest,
+  operatorName: string
+): ProviderIntegrationConnection {
+  const now = new Date().toISOString();
+  const enabledCapabilities = manifest.capabilities
+    .filter((capability) => capability.enabled)
+    .map((capability) => capability.capability);
+  return {
+    connectionId: row.integrationConnectionId || `${manifest.manifestId}-connection`,
+    providerId: manifest.providerId || row.providerId,
+    manifestId: manifest.manifestId,
+    connectionName: `${manifest.displayName || row.displayName} ${manifest.environment || providerOpenApiEnvironment(row.environmentLabel)}`.trim(),
+    environment: manifest.environment || providerOpenApiEnvironment(row.environmentLabel),
+    state: manifest.state === "Active" ? "PendingApproval" : manifest.state,
+    credentialSecretRef: row.credentialStatus === "not-required" ? "" : providerIntegrationCredentialReference(row),
+    enabledCapabilities: enabledCapabilities.length > 0 ? enabledCapabilities : [providerIntegrationDefaultCapability(row)],
+    ownerUserId: operatorName,
+    createdAt: manifest.createdAt || now,
+    updatedAt: now,
+    approvalEvidenceId: null
+  };
+}
+
+function providerIntegrationWorkbenchWithDraft(
+  row: SettingsProviderConnectionRow,
+  state: ProviderIntegrationWorkbenchState,
+  manifest: ProviderIntegrationManifest,
+  connection: ProviderIntegrationConnection,
+  status: { message: string; details: string[]; tone: ProviderIntegrationWorkbenchState["tone"] }
+): ProviderIntegrationWorkbenchState {
+  const capability = providerIntegrationWorkbenchCapabilities({ ...state, manifest })[0] ?? providerIntegrationDefaultCapability(row);
+  return {
+    ...state,
+    selectedManifestId: manifest.manifestId,
+    manifest,
+    connection,
+    draftManifestJson: providerIntegrationFormatJson(manifest),
+    draftConnectionJson: providerIntegrationFormatJson(connection),
+    capability,
+    endpointKey: providerIntegrationPreferredEndpointKey(manifest, capability, state.endpointKey),
+    readiness: null,
+    setupResult: null,
+    driftResult: null,
+    activationResult: null,
+    busyAction: null,
+    message: status.message,
+    details: status.details,
+    tone: status.tone
+  };
+}
+
+function providerIntegrationWorkbenchCapabilities(state: Pick<ProviderIntegrationWorkbenchState, "manifest" | "capability">): ProviderIntegrationCapabilityKind[] {
+  const capabilities = new Set<ProviderIntegrationCapabilityKind>();
+  if (state.capability) {
+    capabilities.add(state.capability);
+  }
+  state.manifest?.capabilities
+    .filter((capability) => capability.enabled)
+    .forEach((capability) => capabilities.add(capability.capability));
+  if (capabilities.size === 0) {
+    capabilities.add("Positions");
+  }
+  return Array.from(capabilities);
+}
+
+function providerIntegrationWorkbenchEndpoints(
+  state: Pick<ProviderIntegrationWorkbenchState, "manifest">,
+  capability: ProviderIntegrationCapabilityKind
+): ProviderIntegrationEndpointDefinition[] {
+  return (state.manifest?.endpoints ?? []).filter((endpoint) => endpoint.capability === capability);
+}
+
+function providerIntegrationWorkbenchMappings(
+  state: Pick<ProviderIntegrationWorkbenchState, "manifest">,
+  capability: ProviderIntegrationCapabilityKind
+): ProviderIntegrationFieldMapping[] {
+  return (state.manifest?.fieldMappings ?? []).filter((mapping) => mapping.capability === capability);
+}
+
+function providerIntegrationPreferredEndpointKey(
+  manifest: ProviderIntegrationManifest | null,
+  capability: ProviderIntegrationCapabilityKind,
+  currentEndpointKey: string
+): string {
+  const current = currentEndpointKey.trim();
+  const endpoints = (manifest?.endpoints ?? []).filter((endpoint) => endpoint.capability === capability);
+  if (current && endpoints.some((endpoint) => endpoint.endpointKey === current)) {
+    return current;
+  }
+  return endpoints[0]?.endpointKey ?? (current || providerIntegrationDefaultEndpointKey(capability));
+}
+
+function providerIntegrationWorkbenchManifestId(
+  state: Pick<ProviderIntegrationWorkbenchState, "manifest" | "selectedManifestId">,
+  runtimeState: ProviderRuntimeEvidenceState
+): string {
+  if (state.manifest?.manifestId) {
+    return state.manifest.manifestId;
+  }
+
+  const selectedManifestId = state.selectedManifestId.trim();
+  if (selectedManifestId) {
+    return selectedManifestId;
+  }
+
+  return runtimeState.monitor?.manifestId ?? "";
+}
+
+function providerIntegrationWorkbenchConnectionId(
+  row: Pick<SettingsProviderConnectionRow, "integrationConnectionId">,
+  state: Pick<ProviderIntegrationWorkbenchState, "connection">,
+  runtimeState: ProviderRuntimeEvidenceState
+): string {
+  return state.connection?.connectionId ?? runtimeState.monitor?.connectionId ?? row.integrationConnectionId;
+}
+
+function providerIntegrationLatestRawPayload(
+  state: Pick<ProviderIntegrationWorkbenchState, "dryRunResult" | "capability" | "endpointKey">,
+  runtimeState: ProviderRuntimeEvidenceState
+): { syncRunId: string; rawPayloadId: string; capability: ProviderIntegrationCapabilityKind; endpointKey: string } | null {
+  if (state.dryRunResult?.rawPayloadId) {
+    return {
+      syncRunId: state.dryRunResult.syncRunId,
+      rawPayloadId: state.dryRunResult.rawPayloadId,
+      capability: state.dryRunResult.capability,
+      endpointKey: state.endpointKey
+    };
+  }
+
+  const latestRunWithPayload = providerRuntimeRuns(runtimeState).find((run) => Boolean(run.rawPayloadId));
+  if (!latestRunWithPayload?.rawPayloadId) {
+    return null;
+  }
+
+  return {
+    syncRunId: latestRunWithPayload.syncRunId,
+    rawPayloadId: latestRunWithPayload.rawPayloadId,
+    capability: latestRunWithPayload.capability,
+    endpointKey: latestRunWithPayload.endpointKey
+  };
+}
+
+function providerIntegrationWorkbenchDraftDetails(manifest: ProviderIntegrationManifest): string[] {
+  return [
+    `${manifest.endpoints.length} endpoint definitions`,
+    `${manifest.fieldMappings.length} mapping rows`,
+    `${manifest.validationRules.length} validation rules`
+  ];
+}
+
+function providerIntegrationReadinessDetails(readiness: ProviderIntegrationActivationReadiness | null): string[] {
+  if (!readiness) {
+    return [];
+  }
+
+  return [
+    ...readiness.requiredEvidence.map((evidence) => `Evidence required: ${evidence}`),
+    ...readiness.issues.map((issue) => `${issue.severity}: ${issue.message}`)
+  ];
+}
+
+function providerIntegrationFormatJson(value: unknown): string {
+  return JSON.stringify(value, null, 2);
+}
+
+function parseProviderIntegrationWorkbenchJson<T>(
+  value: string,
+  label: string
+): { ok: true; value: T } | { ok: false; error: string } {
+  try {
+    return { ok: true, value: JSON.parse(value) as T };
+  } catch (error) {
+    return { ok: false, error: `${label}: ${error instanceof Error ? error.message : "Invalid JSON"}` };
+  }
+}
+
+function parseProviderIntegrationStringRecord(
+  value: string,
+  label: string
+): { ok: true; value: Record<string, string> } | { ok: false; error: string } {
+  const parsed = parseProviderIntegrationWorkbenchJson<unknown>(value || "{}", label);
+  if (parsed.ok === false) {
+    return { ok: false, error: parsed.error };
+  }
+  if (!parsed.value || typeof parsed.value !== "object" || Array.isArray(parsed.value)) {
+    return { ok: false, error: `${label}: expected a JSON object.` };
+  }
+
+  return {
+    ok: true,
+    value: Object.fromEntries(Object.entries(parsed.value).map(([key, item]) => [key, String(item)]))
+  };
+}
+
+function providerIntegrationCredentialReference(row: Pick<SettingsProviderConnectionRow, "providerId" | "sourceLabel">): string {
+  return `provider-credential:${providerIntegrationNormalizedId(row.providerId)}:${providerIntegrationNormalizedId(row.sourceLabel || "local")}`;
+}
+
+function providerIntegrationWorkbenchSyncRunId(connectionId: string, mode: string, requestedAt: Date): string {
+  return `settings-${mode}-${providerIntegrationNormalizedId(connectionId || "connection")}-${providerIntegrationTimestampSuffix(requestedAt)}`;
+}
+
+function providerIntegrationWorkbenchEvidenceId(connectionId: string, purpose: string, requestedAt: Date): string {
+  return `settings-provider-${purpose}-${providerIntegrationNormalizedId(connectionId || "connection")}-${providerIntegrationTimestampSuffix(requestedAt)}`;
+}
+
+function providerIntegrationTimestampSuffix(value: Date): string {
+  return value.toISOString().replace(/[^0-9A-Za-z]/g, "").toLowerCase();
+}
+
+function providerIntegrationNormalizedId(value: string): string {
+  return (value || "provider").replace(/[^0-9A-Za-z-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").toLowerCase() || "provider";
+}
+
+function providerIntegrationSampleCsv(capability: ProviderIntegrationCapabilityKind): string {
+  if (capability === "Transactions") {
+    return "transactionId,accountId,amount,currency,postedAt\ntxn-1,acct-1,125.00,USD,2026-06-01";
+  }
+  return "positionId,accountId,symbol,quantity,asOfDate\npos-1,acct-1,MSFT,10,2026-06-01";
+}
+function createProviderOpenApiImportState(row: SettingsProviderConnectionRow): ProviderOpenApiImportState {
+  const normalizedProvider = (row.providerId || row.integrationConnectionId || "provider")
+    .replace(/[^0-9A-Za-z-]/g, "-")
+    .replace(/-+/g, "-")
+    .toLowerCase();
+  const capability = row.capabilityGroup === "accounting" ? "Transactions" : "Positions";
+
+  return {
+    manifestId: `draft-${normalizedProvider}-openapi-v1`,
+    displayName: `${row.displayName} OpenAPI`,
+    environment: providerOpenApiEnvironment(row.environmentLabel),
+    authType: "OAuth2",
+    tokenUrl: "",
+    scopes: "",
+    capabilities: capability,
+    openApiDocumentJson: PROVIDER_OPEN_API_SAMPLE_DOCUMENT,
+    changeReason: "Imported from the Settings Provider Connection Center.",
+    busy: false,
+    result: null,
+    message: null,
+    details: [],
+    tone: "default"
+  };
+}
+
+function providerOpenApiEnvironment(environmentLabel: string): string {
+  const normalized = environmentLabel.trim().toLowerCase();
+  return normalized && normalized !== "not set" ? normalized : "paper";
+}
+
+function parseProviderOpenApiCapabilities(value: string): ProviderIntegrationCapabilityKind[] {
+  const allowed = new Set<ProviderIntegrationCapabilityKind>(PROVIDER_OPEN_API_CAPABILITIES);
+  const capabilities = value
+    .split(",")
+    .map((capability) => capability.trim())
+    .filter((capability): capability is ProviderIntegrationCapabilityKind =>
+      allowed.has(capability as ProviderIntegrationCapabilityKind));
+
+  return Array.from(new Set(capabilities));
+}
+
+function providerRuntimeValue<T>(result: PromiseSettledResult<T>): T | null {
+  return result.status === "fulfilled" ? result.value : null;
+}
+
+function providerRuntimeErrorDetail<T>(result: PromiseSettledResult<T>, label: string): string | null {
+  if (result.status === "fulfilled") {
+    return null;
+  }
+
+  const display = describeApiError(result.reason, `${label} could not be loaded.`);
+  return [display.summary, ...display.details].filter(Boolean).join(" ");
+}
+
+function providerRuntimeRuns(state: ProviderRuntimeEvidenceState): ProviderIntegrationSyncRunEvidence[] {
+  const runs = new Map<string, ProviderIntegrationSyncRunEvidence>();
+  const addRun = (run: ProviderIntegrationSyncRunEvidence | null | undefined) => {
+    if (run) {
+      runs.set(run.syncRunId, run);
+    }
+  };
+
+  addRun(state.monitor?.lastSyncRun);
+  state.monitor?.recentSyncRuns.forEach(addRun);
+  state.syncRuns?.syncRuns.forEach(addRun);
+
+  return Array.from(runs.values()).sort((left, right) => providerRuntimeDateValue(right.startedAt) - providerRuntimeDateValue(left.startedAt));
+}
+
+function providerRuntimeReceivedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.recentRecordsReceived ?? providerRuntimeSum(runs, (run) => run.recordsReceived);
+}
+
+function providerRuntimeAcceptedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.recentRecordsAccepted ?? providerRuntimeSum(runs, (run) => run.recordsAccepted);
+}
+
+function providerRuntimeQuarantinedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.recentRecordsQuarantined ?? state.quarantine?.totalQuarantinedRecords ?? providerRuntimeSum(runs, (run) => run.recordsQuarantined);
+}
+
+function providerRuntimeStagedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.durableStagingRecordCount ?? providerRuntimeSum(runs, (run) => run.durableStagingRecordCount);
+}
+
+function providerRuntimeDurableQuarantinedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.durableQuarantinedRecordCount ?? state.quarantine?.totalQuarantinedRecords ?? providerRuntimeSum(runs, (run) => run.durableQuarantinedRecordCount);
+}
+
+function providerRuntimeCriticalIssueCount(state: ProviderRuntimeEvidenceState): number {
+  return Math.max(
+    state.quarantine?.criticalIssueCount ?? 0,
+    providerRuntimeRuns(state).reduce((sum, run) => sum + run.criticalIssueCount, 0),
+    state.monitor?.hasCriticalIssues ? 1 : 0
+  );
+}
+
+function providerRuntimeWarningIssueCount(state: ProviderRuntimeEvidenceState): number {
+  return Math.max(
+    state.quarantine?.warningIssueCount ?? 0,
+    providerRuntimeRuns(state).reduce((sum, run) => sum + run.warningIssueCount, 0),
+    state.identity?.accountReviewRequiredCount ?? 0,
+    state.identity?.securityReviewRequiredCount ?? 0,
+    state.promotion?.reviewRequiredCount ?? 0
+  );
+}
+
+function providerRuntimeSum(
+  runs: ProviderIntegrationSyncRunEvidence[],
+  selector: (run: ProviderIntegrationSyncRunEvidence) => number
+): number {
+  return runs.reduce((sum, run) => sum + selector(run), 0);
+}
+
+function providerRuntimeDateValue(value: string | null | undefined): number {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function providerRuntimePanelTone(state: ProviderRuntimeEvidenceState): keyof typeof diagnosticToneClass {
+  if (state.phase === "error") return "danger";
+  if (state.phase === "loading") return "warning";
+  if (providerRuntimeCriticalIssueCount(state) > 0) return "danger";
+  if (providerRuntimeQuarantinedCount(state, providerRuntimeRuns(state)) > 0 || providerRuntimeWarningIssueCount(state) > 0) return "warning";
+  if (state.phase === "loaded") return "success";
+  return "default";
+}
+
+function providerRuntimeStatusLabel(state: ProviderRuntimeEvidenceState): string {
+  if (state.phase === "idle") return "Not loaded";
+  if (state.phase === "loading") return "Loading";
+  if (state.phase === "error") return "Unavailable";
+  if (providerRuntimeCriticalIssueCount(state) > 0) return "Critical";
+  if (providerRuntimeQuarantinedCount(state, providerRuntimeRuns(state)) > 0 || providerRuntimeWarningIssueCount(state) > 0) return "Review";
+  return "Synced";
+}
+
+function providerRuntimeStatusVariant(state: ProviderRuntimeEvidenceState): "outline" | "success" | "warning" | "danger" {
+  const tone = providerRuntimePanelTone(state);
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "outline";
+}
+
+function providerRuntimeMessageTone(state: ProviderRuntimeEvidenceState): keyof typeof itemToneClass {
+  if (state.phase === "error") return "danger";
+  if (state.details.length > 0) return "warning";
+  return "success";
+}
+
+function providerRuntimeIssueTone(criticalIssueCount: number, warningIssueCount: number): keyof typeof itemToneClass {
+  if (criticalIssueCount > 0) return "danger";
+  if (warningIssueCount > 0) return "warning";
+  return "success";
+}
+
+function providerRuntimeRunVariant(run: ProviderIntegrationSyncRunEvidence): "outline" | "success" | "warning" | "danger" {
+  const status = run.status.toLowerCase();
+  if (status.includes("fail") || run.criticalIssueCount > 0) return "danger";
+  if (run.recordsQuarantined > 0 || run.warningIssueCount > 0 || status.includes("review")) return "warning";
+  if (status.includes("accepted") || status.includes("complete") || status.includes("success")) return "success";
+  return "outline";
+}
+
+function providerRuntimeProcessingStatusVariant(status: ProviderIntegrationProcessingStatus): "outline" | "success" | "warning" | "danger" {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("block")) return "danger";
+  if (normalized.includes("quarantine")) return "warning";
+  if (normalized.includes("validated") || normalized.includes("loaded") || normalized.includes("published")) return "success";
+  return "outline";
+}
+
+function providerRuntimeLatestQuarantineDecision(
+  decisions: readonly ProviderIntegrationQuarantineDecision[] | null | undefined,
+  record: ProviderIntegrationQuarantinedRecord
+): ProviderIntegrationQuarantineDecision | null {
+  const matching = (decisions ?? [])
+    .filter((decision) => decision.quarantineRecordId === record.quarantineRecordId && decision.syncRunId === record.syncRunId)
+    .sort((left, right) => providerRuntimeDateValue(right.reviewedAt) - providerRuntimeDateValue(left.reviewedAt));
+
+  return matching[0] ?? null;
+}
+
+function providerRuntimeQuarantineActionLabel(action: ProviderIntegrationQuarantineResolutionAction): string {
+  switch (action) {
+    case "ReplayAfterMappingChange":
+      return "Replay after mapping change";
+    case "IgnoreProviderRecord":
+      return "Ignore provider record";
+    case "MarkAsCashPosition":
+      return "Mark as cash position";
+    case "ReviewOnly":
+    default:
+      return "Review";
+  }
+}
+
+function providerRuntimeQuarantineActionNote(action: ProviderIntegrationQuarantineResolutionAction): string {
+  switch (action) {
+    case "ReplayAfterMappingChange":
+      return "Marked from the Settings Provider Connection Center for replay after mapping changes.";
+    case "IgnoreProviderRecord":
+      return "Ignored from the Settings Provider Connection Center after operator review.";
+    case "MarkAsCashPosition":
+      return "Marked from the Settings Provider Connection Center as a cash position candidate.";
+    case "ReviewOnly":
+    default:
+      return "Reviewed from the Settings Provider Connection Center runtime evidence panel.";
+  }
+}
+
+function providerRuntimeRunTone(run: ProviderIntegrationSyncRunEvidence): keyof typeof itemToneClass {
+  const variant = providerRuntimeRunVariant(run);
+  if (variant === "danger") return "danger";
+  if (variant === "warning") return "warning";
+  if (variant === "success") return "success";
+  return "muted";
+}
+
+function providerRuntimeSeverityVariant(severity: string): "outline" | "success" | "warning" | "danger" {
+  const normalized = severity.toLowerCase();
+  if (normalized === "critical" || normalized === "error") return "danger";
+  if (normalized === "warning") return "warning";
+  if (normalized === "info") return "outline";
+  return "outline";
+}
+
+function providerRuntimePromotionVariant(status: string): "outline" | "success" | "warning" | "danger" {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("blocked")) return "danger";
+  if (normalized.includes("review")) return "warning";
+  if (normalized.includes("ready")) return "success";
+  return "outline";
+}
+
+function formatProviderRuntimeNumber(value: number): string {
+  return value.toLocaleString("en-US");
+}
+
+function formatProviderRuntimeUtcMinute(value: string | Date | null | undefined, unavailableLabel = "Not synced"): string {
+  if (!value) {
+    return unavailableLabel;
+  }
+
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) {
+    return unavailableLabel;
+  }
+
+  return `${PROVIDER_RUNTIME_UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padProviderRuntimeUtc(date.getUTCHours())}:${padProviderRuntimeUtc(date.getUTCMinutes())} UTC`;
+}
+
+function padProviderRuntimeUtc(value: number): string {
+  return value.toString().padStart(2, "0");
+}
+
+const PROVIDER_RUNTIME_UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+const PROVIDER_OPEN_API_AUTH_OPTIONS: { value: ProviderIntegrationAuthType; label: string }[] = [
+  { value: "OAuth2", label: "OAuth2" },
+  { value: "ApiKey", label: "API key" },
+  { value: "BearerToken", label: "Bearer token" },
+  { value: "ClientCredentials", label: "Client credentials" },
+  { value: "Basic", label: "Basic" },
+  { value: "None", label: "None" }
+];
+
+const PROVIDER_OPEN_API_CAPABILITIES: ProviderIntegrationCapabilityKind[] = [
+  "Accounts",
+  "Balances",
+  "Positions",
+  "Holdings",
+  "Transactions",
+  "TaxLots",
+  "SecurityReferenceData",
+  "MarketPrices",
+  "CorporateActions",
+  "Documents",
+  "Alerts",
+  "Events",
+  "OrderPreview",
+  "OrderPlacement",
+  "OrderCancellation",
+  "OrderStatus",
+  "Executions"
+];
+
+const PROVIDER_OPEN_API_SAMPLE_DOCUMENT = `{
+  "openapi": "3.0.3",
+  "info": { "title": "Provider API", "version": "draft" },
+  "paths": {}
+}`;
+
 function recentEventsVariant(state: "ready" | "empty" | "unavailable"): "default" | "outline" | "danger" {
   if (state === "unavailable") return "danger";
   if (state === "empty") return "outline";
   return "default";
+}
+
+function settingsBannerTone(tone: keyof typeof diagnosticToneClass | keyof typeof itemToneClass): "success" | "warning" | "danger" | "info" {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "info";
 }
 
 function systemVariant(tone: keyof typeof systemToneClass): "outline" | "success" | "warning" | "danger" {

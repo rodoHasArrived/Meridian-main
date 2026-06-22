@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Research data acquisition package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/research_data_acquisition_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 5
+        }
+      },
+      "prompt": "Use $research-data-acquisition to implement provider-backed import with preview, validation, lineage, catalog handoff, and rejected-row handling."
+    },
+    {
+      "id": 2,
+      "description": "Research acquisition guidance preserves lineage and catalog handoff.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/research_data_acquisition_check.py",
+        "--scenario",
+        "lineage-catalog",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $research-data-acquisition to preserve preview, validation, lineage, and catalog handoff."
+    },
+    {
+      "id": 3,
+      "description": "Research import guidance handles dirty and rejected rows.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/research_data_acquisition_check.py",
+        "--scenario",
+        "dirty-rows",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $research-data-acquisition to handle dirty rows, rejected rows, and provider-backed import risk."
+    }
+  ]
+}

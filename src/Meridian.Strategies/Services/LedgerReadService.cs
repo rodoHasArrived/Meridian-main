@@ -1,3 +1,4 @@
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -102,7 +103,8 @@ public sealed class LedgerReadService
                 SleeveScopeId: scope.SleeveId,
                 SleeveScopeDisplayName: scope.SleeveDisplayName,
                 VehicleScopeId: scope.VehicleId,
-                VehicleScopeDisplayName: scope.VehicleDisplayName))
+                VehicleScopeDisplayName: scope.VehicleDisplayName,
+                Dimensions: BuildDimensions(scope, scope.AccountId)))
             .ToArray();
 
         var accountSummaries = ledger.SummarizeAccounts()
@@ -125,7 +127,10 @@ public sealed class LedgerReadService
                 SleeveScopeId: scope.SleeveId,
                 SleeveScopeDisplayName: scope.SleeveDisplayName,
                 VehicleScopeId: scope.VehicleId,
-                VehicleScopeDisplayName: scope.VehicleDisplayName))
+                VehicleScopeDisplayName: scope.VehicleDisplayName,
+                Dimensions: BuildDimensions(
+                    scope,
+                    string.IsNullOrWhiteSpace(scope.AccountId) ? summary.Account.FinancialAccountId : scope.AccountId)))
             .ToArray();
 
         return new LedgerSummary(
@@ -148,8 +153,24 @@ public sealed class LedgerReadService
             SleeveScopeId: scope.SleeveId,
             SleeveScopeDisplayName: scope.SleeveDisplayName,
             VehicleScopeId: scope.VehicleId,
-            VehicleScopeDisplayName: scope.VehicleDisplayName);
+            VehicleScopeDisplayName: scope.VehicleDisplayName,
+            Dimensions: BuildDimensions(scope, scope.AccountId));
     }
+
+    private static LedgerDimensionSetDto BuildDimensions(StrategyRunScopeMetadata scope, string? accountId) =>
+        new(
+            FundId: scope.FundId,
+            EntityId: scope.EntityId,
+            SleeveId: scope.SleeveId,
+            StrategyId: scope.StrategyId,
+            PortfolioId: scope.PortfolioId,
+            BookId: scope.BookId,
+            AccountId: accountId,
+            OrganizationId: scope.OrganizationId,
+            CustomerId: scope.CustomerId,
+            VendorId: scope.VendorId,
+            ProjectId: scope.ProjectId,
+            ExternalGlDimensions: scope.ExternalGlDimensions);
 
     private static decimal SumBalance(
         IEnumerable<LedgerAccountSummary> summaries,

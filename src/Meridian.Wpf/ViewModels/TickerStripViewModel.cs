@@ -1,14 +1,13 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -80,12 +79,10 @@ public sealed class TickerItemViewModel : BindableBase
 
 /// <summary>
 /// ViewModel for the always-on-top ticker strip window.
-/// Polls the backend HTTP API for live bid/ask/last data for each watchlist symbol.
+/// Polls the remote workstation API for live bid/ask/last data for each watchlist symbol.
 /// </summary>
 public sealed class TickerStripViewModel : BindableBase, IDisposable
 {
-    private static readonly HttpClient _httpClient = new();
-
     private readonly DispatcherTimer _pollTimer;
     private readonly System.Collections.Generic.Dictionary<string, decimal> _lastPrices = new();
     private CancellationTokenSource? _cts;
@@ -93,7 +90,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
     private readonly WpfServices.MessagingService _messagingService;
     private readonly SymbolManagementService _symbolManagementService;
     private readonly WpfServices.ConfigService _configService;
-    private readonly WpfServices.StatusService _statusService;
+    private readonly IRemoteWorkstationClient _remoteClient;
 
     private bool _isVisible;
 
@@ -109,12 +106,12 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         WpfServices.MessagingService messagingService,
         SymbolManagementService symbolManagementService,
         WpfServices.ConfigService configService,
-        WpfServices.StatusService statusService)
+        IRemoteWorkstationClient remoteClient)
     {
         _messagingService = messagingService;
         _symbolManagementService = symbolManagementService;
         _configService = configService;
-        _statusService = statusService;
+        _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
 
         _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1500) };
         _pollTimer.Tick += async (_, _) => await PollAllSymbolsAsync();
@@ -207,52 +204,44 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
 
     private async Task PollAllSymbolsAsync()
     {
-        var baseUrl = _statusService.BaseUrl;
         var symbols = System.Windows.Application.Current?.Dispatcher.Invoke(() => Items.Select(i => i.Symbol).ToList())
                       ?? new System.Collections.Generic.List<string>();
 
         foreach (var symbol in symbols)
         {
-            await PollSymbolAsync(baseUrl, symbol);
+            await PollSymbolAsync(symbol, _cts?.Token ?? CancellationToken.None);
         }
     }
 
-    private async Task PollSymbolAsync(string baseUrl, string symbol)
+    internal async Task PollSymbolAsync(string symbol, CancellationToken ct = default)
     {
         try
         {
-            var url = $"{baseUrl}/api/live/{Uri.EscapeDataString(symbol)}/quote";
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            var endpoint = $"/api/live/{Uri.EscapeDataString(symbol)}/quote";
+            var response = await _remoteClient.GetWithResponseAsync<TickerStripQuoteDto>(endpoint, ct)
+                .ConfigureAwait(false);
+            if (!response.Success || response.Data is null)
+            {
                 return;
-
-            var json = await response.Content.ReadAsStringAsync();
-            var quote = JsonSerializer.Deserialize<JsonElement>(json);
-
-            var bid = quote.TryGetProperty("bid", out var b) ? b.GetDecimal() : 0m;
-            var ask = quote.TryGetProperty("ask", out var a) ? a.GetDecimal() : 0m;
-            var last = quote.TryGetProperty("last", out var l) ? l.GetDecimal() : 0m;
+            }
 
             // Fall back to "price" key if "last" is absent (some endpoints use this)
-            if (last == 0 && quote.TryGetProperty("price", out var p))
-                last = p.GetDecimal();
+            var bid = response.Data.Bid;
+            var ask = response.Data.Ask;
+            var last = response.Data.Last != 0m ? response.Data.Last : response.Data.Price;
 
             var prevLast = _lastPrices.TryGetValue(symbol, out var prev) ? prev : 0m;
             var uptick = last >= prevLast;
 
             System.Windows.Application.Current?.Dispatcher.Invoke(() => UpdateSymbol(symbol, bid, ask, last, uptick));
         }
-        catch (HttpRequestException ex)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] HTTP error polling {symbol}: {ex.Message}");
-        }
-        catch (JsonException ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] JSON parse error for {symbol}: {ex.Message}");
+            throw;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] Unexpected error polling {symbol}: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] Remote quote polling failed for {symbol}: {ex.Message}");
         }
     }
 
@@ -261,5 +250,13 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         Stop();
         _watchlistSubscription?.Dispose();
         _cts?.Dispose();
+    }
+
+    internal sealed class TickerStripQuoteDto
+    {
+        public decimal Bid { get; init; }
+        public decimal Ask { get; init; }
+        public decimal Last { get; init; }
+        public decimal Price { get; init; }
     }
 }

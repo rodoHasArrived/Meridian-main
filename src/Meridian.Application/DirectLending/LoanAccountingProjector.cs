@@ -176,6 +176,18 @@ public sealed class LoanAccountingProjector
         var securityLineage = await ResolveSecurityMasterPostingLineageAsync(securityReference, eventType, ct).ConfigureAwait(false);
         instrumentSymbol = securityLineage.Symbol;
         lines = ApplyAuthoritativeInstrumentSymbol(lines, instrumentSymbol);
+        lines = ApplyLineDimensions(lines, contract, loanId, securityLineage.SecurityId, period.LedgerBookId);
+        var postingCommandId = metadata.CommandId.GetValueOrDefault(sourceEventId);
+        var idempotencyKey = $"direct-lending:{loanId:N}:{eventType}:{sourceEventId:N}";
+        var sourceEvidence = new JournalEvidenceReference(
+            $"direct-lending-event-{sourceEventId:N}",
+            $"direct-lending://events/{sourceEventId:D}",
+            AccountingPostingEvidenceKindDto.Source.ToString(),
+            "DirectLending",
+            timestamp,
+            "meridian.direct-lending",
+            SubjectId: loanId.ToString("D"),
+            Description: eventType);
 
         var entry = new JournalEntry(
             journalEntryId,
@@ -188,6 +200,8 @@ public sealed class LoanAccountingProjector
                 SecurityId: securityLineage.SecurityId,
                 FinancialAccountId: loanId.ToString("D"),
                 Institution: "DirectLending",
+                EffectiveDate: accountingDate,
+                IdempotencyKey: idempotencyKey,
                 Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["loanId"] = loanId.ToString("D"),
@@ -196,7 +210,8 @@ public sealed class LoanAccountingProjector
                     ["sourceEventType"] = eventType,
                     ["securityMasterProvenance"] = securityLineage.Provenance,
                     ["securityMasterLineage"] = securityLineage.Lineage
-                }));
+                },
+                EvidenceReferences: [sourceEvidence]));
 
         return
         [
@@ -213,7 +228,40 @@ public sealed class LoanAccountingProjector
                 RuleVersion: policy.Version,
                 SourceEventId: sourceEventId,
                 PostingKind: postingKind,
-                AdjustmentApproval: adjustmentApproval)
+                AdjustmentApproval: adjustmentApproval,
+                LedgerBookId: period.LedgerBookId,
+                PostingCommand: new AccountingPostingCommandDto(
+                    postingCommandId,
+                    loanId,
+                    period.PeriodId,
+                    accountingDate,
+                    timestamp,
+                    idempotencyKey,
+                    postingKind == LedgerPostingKindDto.Adjustment
+                        ? AccountingPostingIntentDto.Adjustment
+                        : AccountingPostingIntentDto.Originating,
+                    SourceEventId: sourceEventId,
+                    CorrelationId: metadata.CorrelationId,
+                    CausationId: postingCommandId,
+                    SourceEventType: eventType,
+                    ApprovalState: adjustmentApproval?.Status == LedgerAdjustmentApprovalStatusDto.Approved
+                        ? AccountingPostingApprovalStateDto.Approved
+                        : AccountingPostingApprovalStateDto.NotRequired,
+                    ApprovalId: adjustmentApproval?.ApprovalId,
+                    LedgerBookId: period.LedgerBookId,
+                    Evidence:
+                    [
+                        new AccountingPostingEvidenceReferenceDto(
+                            sourceEvidence.EvidenceId,
+                            sourceEvidence.Uri,
+                            AccountingPostingEvidenceKindDto.Source,
+                            sourceEvidence.SourceSystem,
+                            sourceEvidence.RetainedAtUtc,
+                            sourceEvidence.RetainedBy,
+                            sourceEvidence.SubjectId,
+                            sourceEvidence.ContentHash,
+                            sourceEvidence.Description)
+                    ]))
         ];
     }
 
@@ -269,8 +317,36 @@ public sealed class LoanAccountingProjector
                 },
                 line.Debit,
                 line.Credit,
-                line.Description))
+                line.Description,
+                line.Dimensions))
             .ToList();
+
+    private static List<LedgerEntry> ApplyLineDimensions(
+        IReadOnlyList<LedgerEntry> lines,
+        LoanContractDetailDto contract,
+        Guid loanId,
+        Guid securityId,
+        Guid? ledgerBookId)
+    {
+        var dimensions = new LedgerLineDimensionSet(
+            EntityId: contract.Borrower.LegalEntityId?.ToString("D"),
+            InstrumentId: securityId,
+            CounterpartyId: contract.Borrower.BorrowerId.ToString("D"),
+            BookId: ledgerBookId?.ToString("D"),
+            AccountId: loanId.ToString("D"));
+
+        return lines
+            .Select(line => new LedgerEntry(
+                line.EntryId,
+                line.JournalEntryId,
+                line.Timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                line.Description,
+                dimensions))
+            .ToList();
+    }
 
     private async Task<(Guid SecurityId, string Symbol, string Provenance, string Lineage)> ResolveSecurityMasterPostingLineageAsync(
         DirectLendingSecurityMasterReferenceDto? reference,

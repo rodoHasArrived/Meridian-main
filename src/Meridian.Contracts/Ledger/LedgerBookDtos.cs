@@ -172,6 +172,72 @@ public sealed record LedgerBookQuery(
     FundStructureNodeKindDto? FundStructureNodeKind = null,
     AccountingBasisKindDto? AccountingBasis = null);
 
+[JsonConverter(typeof(JsonStringEnumConverter<LedgerBookRolloutIssueSeverityDto>))]
+public enum LedgerBookRolloutIssueSeverityDto
+{
+    Info = 0,
+    Warning = 1,
+    Critical = 2
+}
+
+public sealed record LedgerBookRequiredScopeDto(
+    Guid FundStructureNodeId,
+    FundStructureNodeKindDto FundStructureNodeKind,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string? DisplayName = null);
+
+public sealed record LedgerBookRolloutAssessmentRequest(
+    string? FundProfileId = null,
+    Guid? FundStructureNodeId = null,
+    FundStructureNodeKindDto? FundStructureNodeKind = null,
+    AccountingBasisKindDto? AccountingBasis = null,
+    IReadOnlyList<LedgerBookRequiredScopeDto>? RequiredScopes = null)
+{
+    public IReadOnlyList<LedgerBookRequiredScopeDto> RequiredScopes { get; init; } = RequiredScopes ?? [];
+}
+
+public sealed record LedgerBookRolloutBookStatusDto(
+    Guid LedgerBookId,
+    string FundProfileId,
+    Guid FundStructureNodeId,
+    FundStructureNodeKindDto FundStructureNodeKind,
+    AccountingBasisKindDto AccountingBasis,
+    string AccountingPolicyId,
+    string AccountingPolicyVersion,
+    int PeriodCount,
+    int OpenPeriodCount,
+    int SoftClosedPeriodCount,
+    int HardClosedPeriodCount,
+    DateOnly? FirstPeriodStart,
+    DateOnly? LastPeriodEnd);
+
+public sealed record LedgerBookRolloutIssueDto(
+    string Code,
+    LedgerBookRolloutIssueSeverityDto Severity,
+    string Message,
+    string? Scope = null,
+    Guid? LedgerBookId = null,
+    Guid? FundStructureNodeId = null,
+    AccountingBasisKindDto? AccountingBasis = null);
+
+public sealed record LedgerBookRolloutAssessmentDto(
+    DateTimeOffset GeneratedAtUtc,
+    string? FundProfileId,
+    Guid? FundStructureNodeId,
+    FundStructureNodeKindDto? FundStructureNodeKind,
+    AccountingBasisKindDto? AccountingBasis,
+    IReadOnlyList<LedgerBookRolloutBookStatusDto> Books,
+    IReadOnlyList<LedgerBookRolloutIssueDto> Issues)
+{
+    public IReadOnlyList<LedgerBookRolloutBookStatusDto> Books { get; init; } = Books ?? [];
+    public IReadOnlyList<LedgerBookRolloutIssueDto> Issues { get; init; } = Issues ?? [];
+    public bool IsReady => Issues.All(static issue => issue.Severity != LedgerBookRolloutIssueSeverityDto.Critical);
+    public int CriticalIssueCount => Issues.Count(static issue => issue.Severity == LedgerBookRolloutIssueSeverityDto.Critical);
+    public int WarningIssueCount => Issues.Count(static issue => issue.Severity == LedgerBookRolloutIssueSeverityDto.Warning);
+    public int BookCount => Books.Count;
+    public int OpenPeriodCount => Books.Sum(static book => book.OpenPeriodCount);
+}
+
 public sealed record CreateLedgerPeriodRequest(
     Guid LedgerBookId,
     int FiscalYear,
@@ -209,7 +275,8 @@ public sealed record CloseLedgerPeriodRequest(
     string ClosedBy,
     string? Notes = null,
     string RequiredSignoffRole = "Fund Controller",
-    string ToleranceProfileId = "standard-recon-tolerance");
+    string ToleranceProfileId = "standard-recon-tolerance",
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record LedgerPeriodTrialBalanceLineDto(
     string AccountName,
@@ -226,7 +293,8 @@ public sealed record LedgerPeriodTrialBalanceLineDto(
     string? RuleId = null,
     string? RuleVersion = null,
     string? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record LedgerPeriodSummaryDto(
     Guid PeriodId,
@@ -245,6 +313,47 @@ public sealed record LedgerPeriodSummaryDto(
     AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
     string AccountingPolicyId = "legacy-v1",
     string AccountingPolicyVersion = "legacy-v1");
+
+public sealed record LedgerJournalEntryLineDto(
+    Guid EntryId,
+    Guid JournalEntryId,
+    DateTimeOffset Timestamp,
+    string AccountName,
+    string AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal Debit,
+    decimal Credit,
+    string Description,
+    LedgerDimensionSetDto? Dimensions = null);
+
+public sealed record LedgerJournalEntryDto(
+    Guid JournalEntryId,
+    Guid PeriodId,
+    Guid? LedgerBookId,
+    Guid AggregateId,
+    Guid? CommandId,
+    Guid? CorrelationId,
+    long GlobalSequence,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset Timestamp,
+    string Description,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    bool IsBalanced,
+    IReadOnlyList<LedgerJournalEntryLineDto> Lines,
+    AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,
+    string AccountingPolicyId = "legacy-v1",
+    string AccountingPolicyVersion = "legacy-v1",
+    string? RuleId = null,
+    string? RuleVersion = null,
+    Guid? SourceEventId = null,
+    Guid? SourceJournalEntryId = null,
+    LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null)
+{
+    public IReadOnlyList<LedgerJournalEntryLineDto> Lines { get; init; } = Lines ?? [];
+}
 
 public sealed record LedgerReportSignatureDto(
     string Algorithm,
@@ -318,7 +427,8 @@ public sealed record LedgerCrossPeriodTrialBalanceLineDto(
     string? RuleId = null,
     string? RuleVersion = null,
     string? SourceEventId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record LedgerCrossPeriodTrialBalanceReportDto(
     DateTimeOffset GeneratedAtUtc,
@@ -361,6 +471,12 @@ public interface ILedgerBookService
     Task<LedgerBookDto?> GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);
 
     Task<IReadOnlyList<LedgerBookDto>> ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);
+
+    Task<LedgerBookRolloutAssessmentDto> AssessRolloutAsync(
+        LedgerBookRolloutAssessmentRequest request,
+        CancellationToken ct = default)
+        => Task.FromException<LedgerBookRolloutAssessmentDto>(
+            new NotSupportedException("This ledger book service does not support rollout assessment."));
 
     Task<LedgerPeriodDto> CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);
 

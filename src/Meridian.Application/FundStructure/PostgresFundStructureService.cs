@@ -366,11 +366,16 @@ public sealed class PostgresFundStructureService : IFundStructureService
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
             EnsureUniqueNode(request.InvestmentPortfolioId, snap);
             EnsureExistsInDict(snap.Businesses, request.BusinessId, "Business");
-            if (request.ClientId.HasValue) EnsureExistsInDict(snap.Clients, request.ClientId.Value, "Client");
-            if (request.FundId.HasValue) EnsureExistsInDict(snap.Funds, request.FundId.Value, "Fund");
-            if (request.SleeveId.HasValue) EnsureExistsInDict(snap.Sleeves, request.SleeveId.Value, "Sleeve");
-            if (request.VehicleId.HasValue) EnsureExistsInDict(snap.Vehicles, request.VehicleId.Value, "Vehicle");
-            if (request.EntityId.HasValue) EnsureExistsInDict(snap.Entities, request.EntityId.Value, "LegalEntity");
+            if (request.ClientId.HasValue)
+                EnsureExistsInDict(snap.Clients, request.ClientId.Value, "Client");
+            if (request.FundId.HasValue)
+                EnsureExistsInDict(snap.Funds, request.FundId.Value, "Fund");
+            if (request.SleeveId.HasValue)
+                EnsureExistsInDict(snap.Sleeves, request.SleeveId.Value, "Sleeve");
+            if (request.VehicleId.HasValue)
+                EnsureExistsInDict(snap.Vehicles, request.VehicleId.Value, "Vehicle");
+            if (request.EntityId.HasValue)
+                EnsureExistsInDict(snap.Entities, request.EntityId.Value, "LegalEntity");
 
             var summary = new InvestmentPortfolioSummaryDto(
                 request.InvestmentPortfolioId,
@@ -399,11 +404,16 @@ public sealed class PostgresFundStructureService : IFundStructureService
             }
 
             AutoLink(request.BusinessId, OwnershipRelationshipTypeDto.Operates, "Business operating portfolio");
-            if (request.ClientId.HasValue) AutoLink(request.ClientId.Value, OwnershipRelationshipTypeDto.Owns, "Client investment portfolio");
-            if (request.FundId.HasValue) AutoLink(request.FundId.Value, OwnershipRelationshipTypeDto.AllocatesTo, "Fund investment portfolio");
-            if (request.SleeveId.HasValue) AutoLink(request.SleeveId.Value, OwnershipRelationshipTypeDto.AllocatesTo, "Sleeve investment portfolio");
-            if (request.VehicleId.HasValue) AutoLink(request.VehicleId.Value, OwnershipRelationshipTypeDto.Owns, "Vehicle investment portfolio");
-            if (request.EntityId.HasValue) AutoLink(request.EntityId.Value, OwnershipRelationshipTypeDto.Owns, "Entity overlay");
+            if (request.ClientId.HasValue)
+                AutoLink(request.ClientId.Value, OwnershipRelationshipTypeDto.Owns, "Client investment portfolio");
+            if (request.FundId.HasValue)
+                AutoLink(request.FundId.Value, OwnershipRelationshipTypeDto.AllocatesTo, "Fund investment portfolio");
+            if (request.SleeveId.HasValue)
+                AutoLink(request.SleeveId.Value, OwnershipRelationshipTypeDto.AllocatesTo, "Sleeve investment portfolio");
+            if (request.VehicleId.HasValue)
+                AutoLink(request.VehicleId.Value, OwnershipRelationshipTypeDto.Owns, "Vehicle investment portfolio");
+            if (request.EntityId.HasValue)
+                AutoLink(request.EntityId.Value, OwnershipRelationshipTypeDto.Owns, "Entity overlay");
 
             await PersistChangedAsync(snap, ct).ConfigureAwait(false);
             return snap.InvestmentPortfolios[request.InvestmentPortfolioId];
@@ -420,8 +430,10 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
         var parentKind = await ResolveNodeKindAsync(request.ParentNodeId, ct).ConfigureAwait(false);
         var childKind = await ResolveNodeKindAsync(request.ChildNodeId, ct).ConfigureAwait(false);
-        if (parentKind is null) throw new InvalidOperationException($"Parent node {request.ParentNodeId} was not found.");
-        if (childKind is null) throw new InvalidOperationException($"Child node {request.ChildNodeId} was not found.");
+        if (parentKind is null)
+            throw new InvalidOperationException($"Parent node {request.ParentNodeId} was not found.");
+        if (childKind is null)
+            throw new InvalidOperationException($"Child node {request.ChildNodeId} was not found.");
 
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -451,8 +463,10 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 snap.OwnershipLinks.Values.ToList(),
                 nodeKinds);
 
-            if (parentKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ParentNodeId);
-            if (childKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ChildNodeId);
+            if (parentKind == FundStructureNodeKindDto.Account)
+                snap.LinkedAccountIds.Add(request.ParentNodeId);
+            if (childKind == FundStructureNodeKindDto.Account)
+                snap.LinkedAccountIds.Add(request.ChildNodeId);
 
             snap.OwnershipLinks[link.OwnershipLinkId] = link;
             ApplyOwnershipLink(link, snap);
@@ -538,8 +552,10 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
         var parentKind = await ResolveNodeKindAsync(request.ParentNodeId, ct).ConfigureAwait(false);
         var childKind = await ResolveNodeKindAsync(request.ChildNodeId, ct).ConfigureAwait(false);
-        if (parentKind is null) throw new InvalidOperationException($"Parent node {request.ParentNodeId} was not found.");
-        if (childKind is null) throw new InvalidOperationException($"Child node {request.ChildNodeId} was not found.");
+        if (parentKind is null)
+            throw new InvalidOperationException($"Parent node {request.ParentNodeId} was not found.");
+        if (childKind is null)
+            throw new InvalidOperationException($"Child node {request.ChildNodeId} was not found.");
 
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -575,8 +591,10 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 nodeKinds);
 
             snap.OwnershipLinks[existing.OwnershipLinkId] = expiredExisting;
-            if (parentKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ParentNodeId);
-            if (childKind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.ChildNodeId);
+            if (parentKind == FundStructureNodeKindDto.Account)
+                snap.LinkedAccountIds.Add(request.ParentNodeId);
+            if (childKind == FundStructureNodeKindDto.Account)
+                snap.LinkedAccountIds.Add(request.ChildNodeId);
 
             snap.OwnershipLinks[replacement.OwnershipLinkId] = replacement;
             RebuildOwnershipProjections(snap);
@@ -607,7 +625,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
         ct.ThrowIfCancellationRequested();
 
         var kind = await ResolveNodeKindAsync(request.NodeId, ct).ConfigureAwait(false);
-        if (kind is null) throw new InvalidOperationException($"Node {request.NodeId} was not found.");
+        if (kind is null)
+            throw new InvalidOperationException($"Node {request.NodeId} was not found.");
 
         var normalizedRef = LedgerGroupingRules.NormalizeAssignmentReference(
             request.AssignmentType, request.AssignmentReference);
@@ -626,7 +645,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
             if (snap.Assignments.ContainsKey(request.AssignmentId))
                 throw new InvalidOperationException($"Assignment {request.AssignmentId} already exists.");
-            if (kind == FundStructureNodeKindDto.Account) snap.LinkedAccountIds.Add(request.NodeId);
+            if (kind == FundStructureNodeKindDto.Account)
+                snap.LinkedAccountIds.Add(request.NodeId);
             await _store.UpsertAssignmentAsync(assignment, ct).ConfigureAwait(false);
             return assignment;
         }
@@ -678,7 +698,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
         var activeLinks = FilterVisible(snap.OwnershipLinks, query.ActiveOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
         var activeAssignments = FilterVisible(snap.Assignments, query.ActiveOnly, asOf, static a => (a.EffectiveFrom, a.EffectiveTo));
         var funds = FilterVisible(snap.Funds, query.ActiveOnly, asOf, static f => (f.EffectiveFrom, f.EffectiveTo));
-        if (query.FundId.HasValue) funds = funds.Where(f => f.FundId == query.FundId.Value).ToList();
+        if (query.FundId.HasValue)
+            funds = funds.Where(f => f.FundId == query.FundId.Value).ToList();
 
         var fundIds = funds.Select(static f => f.FundId).ToHashSet();
         var sleeves = FilterVisible(snap.Sleeves, query.ActiveOnly, asOf, static s => (s.EffectiveFrom, s.EffectiveTo))
@@ -737,12 +758,15 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
         var business = FilterVisible(snap.Businesses, query.ActiveOnly, asOf, static b => (b.EffectiveFrom, b.EffectiveTo))
             .FirstOrDefault(b => b.BusinessId == query.BusinessId);
-        if (business is null) return null;
-        if (query.OrganizationId.HasValue && business.OrganizationId != query.OrganizationId.Value) return null;
+        if (business is null)
+            return null;
+        if (query.OrganizationId.HasValue && business.OrganizationId != query.OrganizationId.Value)
+            return null;
 
         var organization = FilterVisible(snap.Organizations, query.ActiveOnly, asOf, static o => (o.EffectiveFrom, o.EffectiveTo))
             .FirstOrDefault(o => o.OrganizationId == business.OrganizationId);
-        if (organization is null) return null;
+        if (organization is null)
+            return null;
 
         var clients = FilterVisible(snap.Clients, query.ActiveOnly, asOf, static c => (c.EffectiveFrom, c.EffectiveTo))
             .Where(c => c.BusinessId == business.BusinessId)
@@ -787,12 +811,15 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
         var business = FilterVisible(snap.Businesses, query.ActiveOnly, asOf, static b => (b.EffectiveFrom, b.EffectiveTo))
             .FirstOrDefault(b => b.BusinessId == query.BusinessId);
-        if (business is null) return null;
-        if (query.OrganizationId.HasValue && business.OrganizationId != query.OrganizationId.Value) return null;
+        if (business is null)
+            return null;
+        if (query.OrganizationId.HasValue && business.OrganizationId != query.OrganizationId.Value)
+            return null;
 
         var organization = FilterVisible(snap.Organizations, query.ActiveOnly, asOf, static o => (o.EffectiveFrom, o.EffectiveTo))
             .FirstOrDefault(o => o.OrganizationId == business.OrganizationId);
-        if (organization is null) return null;
+        if (organization is null)
+            return null;
 
         var funds = FilterVisible(snap.Funds, query.ActiveOnly, asOf, static f => (f.EffectiveFrom, f.EffectiveTo))
             .Where(f => f.BusinessId == business.BusinessId)
@@ -1042,42 +1069,64 @@ public sealed class PostgresFundStructureService : IFundStructureService
             .Concat(snap.Entities.Keys).Concat(snap.InvestmentPortfolios.Keys).ToHashSet();
         foreach (var link in snap.OwnershipLinks.Values)
         {
-            if (!structureNodeIds.Contains(link.ParentNodeId)) snap.LinkedAccountIds.Add(link.ParentNodeId);
-            if (!structureNodeIds.Contains(link.ChildNodeId)) snap.LinkedAccountIds.Add(link.ChildNodeId);
+            if (!structureNodeIds.Contains(link.ParentNodeId))
+                snap.LinkedAccountIds.Add(link.ParentNodeId);
+            if (!structureNodeIds.Contains(link.ChildNodeId))
+                snap.LinkedAccountIds.Add(link.ChildNodeId);
         }
         foreach (var assignment in snap.Assignments.Values)
         {
-            if (!structureNodeIds.Contains(assignment.NodeId)) snap.LinkedAccountIds.Add(assignment.NodeId);
+            if (!structureNodeIds.Contains(assignment.NodeId))
+                snap.LinkedAccountIds.Add(assignment.NodeId);
         }
         return snap;
     }
 
     private async Task PersistChangedAsync(MutableSnapshot snap, CancellationToken ct)
     {
-        foreach (var o in snap.Organizations.Values) await _store.UpsertOrganizationAsync(o, ct).ConfigureAwait(false);
-        foreach (var b in snap.Businesses.Values) await _store.UpsertBusinessAsync(b, ct).ConfigureAwait(false);
-        foreach (var c in snap.Clients.Values) await _store.UpsertClientAsync(c, ct).ConfigureAwait(false);
-        foreach (var f in snap.Funds.Values) await _store.UpsertFundAsync(f, ct).ConfigureAwait(false);
-        foreach (var s in snap.Sleeves.Values) await _store.UpsertSleeveAsync(s, ct).ConfigureAwait(false);
-        foreach (var v in snap.Vehicles.Values) await _store.UpsertVehicleAsync(v, ct).ConfigureAwait(false);
-        foreach (var e in snap.Entities.Values) await _store.UpsertLegalEntityAsync(e, ct).ConfigureAwait(false);
-        foreach (var p in snap.InvestmentPortfolios.Values) await _store.UpsertInvestmentPortfolioAsync(p, ct).ConfigureAwait(false);
-        foreach (var l in snap.OwnershipLinks.Values) await _store.UpsertOwnershipLinkAsync(l, ct).ConfigureAwait(false);
-        foreach (var a in snap.Assignments.Values) await _store.UpsertAssignmentAsync(a, ct).ConfigureAwait(false);
+        foreach (var o in snap.Organizations.Values)
+            await _store.UpsertOrganizationAsync(o, ct).ConfigureAwait(false);
+        foreach (var b in snap.Businesses.Values)
+            await _store.UpsertBusinessAsync(b, ct).ConfigureAwait(false);
+        foreach (var c in snap.Clients.Values)
+            await _store.UpsertClientAsync(c, ct).ConfigureAwait(false);
+        foreach (var f in snap.Funds.Values)
+            await _store.UpsertFundAsync(f, ct).ConfigureAwait(false);
+        foreach (var s in snap.Sleeves.Values)
+            await _store.UpsertSleeveAsync(s, ct).ConfigureAwait(false);
+        foreach (var v in snap.Vehicles.Values)
+            await _store.UpsertVehicleAsync(v, ct).ConfigureAwait(false);
+        foreach (var e in snap.Entities.Values)
+            await _store.UpsertLegalEntityAsync(e, ct).ConfigureAwait(false);
+        foreach (var p in snap.InvestmentPortfolios.Values)
+            await _store.UpsertInvestmentPortfolioAsync(p, ct).ConfigureAwait(false);
+        foreach (var l in snap.OwnershipLinks.Values)
+            await _store.UpsertOwnershipLinkAsync(l, ct).ConfigureAwait(false);
+        foreach (var a in snap.Assignments.Values)
+            await _store.UpsertAssignmentAsync(a, ct).ConfigureAwait(false);
     }
 
     private async Task<FundStructureNodeKindDto?> ResolveNodeKindAsync(Guid nodeId, CancellationToken ct)
     {
         var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
-        if (snap.Organizations.ContainsKey(nodeId)) return FundStructureNodeKindDto.Organization;
-        if (snap.Businesses.ContainsKey(nodeId)) return FundStructureNodeKindDto.Business;
-        if (snap.Clients.ContainsKey(nodeId)) return FundStructureNodeKindDto.Client;
-        if (snap.Funds.ContainsKey(nodeId)) return FundStructureNodeKindDto.Fund;
-        if (snap.Sleeves.ContainsKey(nodeId)) return FundStructureNodeKindDto.Sleeve;
-        if (snap.Vehicles.ContainsKey(nodeId)) return FundStructureNodeKindDto.Vehicle;
-        if (snap.InvestmentPortfolios.ContainsKey(nodeId)) return FundStructureNodeKindDto.InvestmentPortfolio;
-        if (snap.Entities.ContainsKey(nodeId)) return FundStructureNodeKindDto.Entity;
-        if (snap.LinkedAccountIds.Contains(nodeId)) return FundStructureNodeKindDto.Account;
+        if (snap.Organizations.ContainsKey(nodeId))
+            return FundStructureNodeKindDto.Organization;
+        if (snap.Businesses.ContainsKey(nodeId))
+            return FundStructureNodeKindDto.Business;
+        if (snap.Clients.ContainsKey(nodeId))
+            return FundStructureNodeKindDto.Client;
+        if (snap.Funds.ContainsKey(nodeId))
+            return FundStructureNodeKindDto.Fund;
+        if (snap.Sleeves.ContainsKey(nodeId))
+            return FundStructureNodeKindDto.Sleeve;
+        if (snap.Vehicles.ContainsKey(nodeId))
+            return FundStructureNodeKindDto.Vehicle;
+        if (snap.InvestmentPortfolios.ContainsKey(nodeId))
+            return FundStructureNodeKindDto.InvestmentPortfolio;
+        if (snap.Entities.ContainsKey(nodeId))
+            return FundStructureNodeKindDto.Entity;
+        if (snap.LinkedAccountIds.Contains(nodeId))
+            return FundStructureNodeKindDto.Account;
         var account = await _fundAccountService.GetAccountAsync(nodeId, ct).ConfigureAwait(false);
         return account is not null ? FundStructureNodeKindDto.Account : null;
     }
@@ -1189,15 +1238,24 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
     private static bool TryGetNodeKind(MutableSnapshot snap, Guid nodeId, out FundStructureNodeKindDto kind)
     {
-        if (snap.Organizations.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Organization; return true; }
-        if (snap.Businesses.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Business; return true; }
-        if (snap.Clients.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Client; return true; }
-        if (snap.Funds.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Fund; return true; }
-        if (snap.Sleeves.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Sleeve; return true; }
-        if (snap.Vehicles.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Vehicle; return true; }
-        if (snap.InvestmentPortfolios.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.InvestmentPortfolio; return true; }
-        if (snap.Entities.ContainsKey(nodeId)) { kind = FundStructureNodeKindDto.Entity; return true; }
-        if (snap.LinkedAccountIds.Contains(nodeId)) { kind = FundStructureNodeKindDto.Account; return true; }
+        if (snap.Organizations.ContainsKey(nodeId))
+        { kind = FundStructureNodeKindDto.Organization; return true; }
+        if (snap.Businesses.ContainsKey(nodeId))
+        { kind = FundStructureNodeKindDto.Business; return true; }
+        if (snap.Clients.ContainsKey(nodeId))
+        { kind = FundStructureNodeKindDto.Client; return true; }
+        if (snap.Funds.ContainsKey(nodeId))
+        { kind = FundStructureNodeKindDto.Fund; return true; }
+        if (snap.Sleeves.ContainsKey(nodeId))
+        { kind = FundStructureNodeKindDto.Sleeve; return true; }
+        if (snap.Vehicles.ContainsKey(nodeId))
+        { kind = FundStructureNodeKindDto.Vehicle; return true; }
+        if (snap.InvestmentPortfolios.ContainsKey(nodeId))
+        { kind = FundStructureNodeKindDto.InvestmentPortfolio; return true; }
+        if (snap.Entities.ContainsKey(nodeId))
+        { kind = FundStructureNodeKindDto.Entity; return true; }
+        if (snap.LinkedAccountIds.Contains(nodeId))
+        { kind = FundStructureNodeKindDto.Account; return true; }
         kind = default;
         return false;
     }
@@ -1209,7 +1267,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
         HashSet<Guid> visited,
         List<OwnershipGraphValidationIssueDto> issues)
     {
-        if (visited.Contains(nodeId)) return false;
+        if (visited.Contains(nodeId))
+            return false;
         if (!visiting.Add(nodeId))
         {
             issues.Add(new OwnershipGraphValidationIssueDto(
@@ -1375,15 +1434,24 @@ public sealed class PostgresFundStructureService : IFundStructureService
     private static Dictionary<Guid, FundStructureNodeKindDto> CaptureNodeKinds(MutableSnapshot snap)
     {
         var nodeKinds = new Dictionary<Guid, FundStructureNodeKindDto>();
-        foreach (var nodeId in snap.Organizations.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Organization;
-        foreach (var nodeId in snap.Businesses.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Business;
-        foreach (var nodeId in snap.Clients.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Client;
-        foreach (var nodeId in snap.Funds.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Fund;
-        foreach (var nodeId in snap.Sleeves.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Sleeve;
-        foreach (var nodeId in snap.Vehicles.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Vehicle;
-        foreach (var nodeId in snap.Entities.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.Entity;
-        foreach (var nodeId in snap.InvestmentPortfolios.Keys) nodeKinds[nodeId] = FundStructureNodeKindDto.InvestmentPortfolio;
-        foreach (var nodeId in snap.LinkedAccountIds) nodeKinds[nodeId] = FundStructureNodeKindDto.Account;
+        foreach (var nodeId in snap.Organizations.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Organization;
+        foreach (var nodeId in snap.Businesses.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Business;
+        foreach (var nodeId in snap.Clients.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Client;
+        foreach (var nodeId in snap.Funds.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Fund;
+        foreach (var nodeId in snap.Sleeves.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Sleeve;
+        foreach (var nodeId in snap.Vehicles.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Vehicle;
+        foreach (var nodeId in snap.Entities.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Entity;
+        foreach (var nodeId in snap.InvestmentPortfolios.Keys)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.InvestmentPortfolio;
+        foreach (var nodeId in snap.LinkedAccountIds)
+            nodeKinds[nodeId] = FundStructureNodeKindDto.Account;
         foreach (var link in snap.OwnershipLinks.Values)
         {
             nodeKinds.TryAdd(link.ParentNodeId, FundStructureNodeKindDto.Account);
@@ -1414,7 +1482,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
     private static IReadOnlyList<Guid> AppendUnique(IReadOnlyList<Guid> source, Guid value)
     {
-        if (source.Contains(value)) return source;
+        if (source.Contains(value))
+            return source;
         var list = source.ToList();
         list.Add(value);
         return list;
@@ -1494,11 +1563,16 @@ public sealed class PostgresFundStructureService : IFundStructureService
         InvestmentPortfolioSummaryDto p, Guid? clientId = null, Guid? fundId = null, Guid? sleeveId = null, Guid? vehicleId = null)
     {
         var count = new[] { clientId.HasValue, fundId.HasValue, sleeveId.HasValue, vehicleId.HasValue }.Count(static x => x);
-        if (count > 1) throw new InvalidOperationException("A portfolio cannot be linked to more than one operating parent.");
-        if (clientId.HasValue) return p with { ClientId = clientId, FundId = null, SleeveId = null, VehicleId = null };
-        if (fundId.HasValue) return p with { ClientId = null, FundId = fundId, SleeveId = null, VehicleId = null };
-        if (sleeveId.HasValue) return p with { ClientId = null, FundId = null, SleeveId = sleeveId, VehicleId = null };
-        if (vehicleId.HasValue) return p with { ClientId = null, FundId = null, SleeveId = null, VehicleId = vehicleId };
+        if (count > 1)
+            throw new InvalidOperationException("A portfolio cannot be linked to more than one operating parent.");
+        if (clientId.HasValue)
+            return p with { ClientId = clientId, FundId = null, SleeveId = null, VehicleId = null };
+        if (fundId.HasValue)
+            return p with { ClientId = null, FundId = fundId, SleeveId = null, VehicleId = null };
+        if (sleeveId.HasValue)
+            return p with { ClientId = null, FundId = null, SleeveId = sleeveId, VehicleId = null };
+        if (vehicleId.HasValue)
+            return p with { ClientId = null, FundId = null, SleeveId = null, VehicleId = vehicleId };
         return p;
     }
 
@@ -1529,9 +1603,12 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
     private static bool IsVisible(bool isActive, DateTimeOffset effectiveFrom, DateTimeOffset? effectiveTo, bool activeOnly, DateTimeOffset asOf)
     {
-        if (activeOnly && !isActive) return false;
-        if (effectiveFrom > asOf) return false;
-        if (effectiveTo.HasValue && effectiveTo.Value < asOf) return false;
+        if (activeOnly && !isActive)
+            return false;
+        if (effectiveFrom > asOf)
+            return false;
+        if (effectiveTo.HasValue && effectiveTo.Value < asOf)
+            return false;
         return true;
     }
 
@@ -1556,8 +1633,10 @@ public sealed class PostgresFundStructureService : IFundStructureService
         var activeLinks = FilterVisible(snapshot.OwnershipLinks, activeOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
         var activeAssignments = FilterVisible(snapshot.Assignments, activeOnly, asOf, static a => (a.EffectiveFrom, a.EffectiveTo));
 
-        if (businessId.HasValue) businesses = businesses.Where(b => b.BusinessId == businessId.Value).ToList();
-        if (organizationId.HasValue) organizations = organizations.Where(o => o.OrganizationId == organizationId.Value).ToList();
+        if (businessId.HasValue)
+            businesses = businesses.Where(b => b.BusinessId == businessId.Value).ToList();
+        if (organizationId.HasValue)
+            organizations = organizations.Where(o => o.OrganizationId == organizationId.Value).ToList();
 
         var orgIds = organizations.Select(static o => o.OrganizationId).ToHashSet();
         businesses = businesses.Where(b => orgIds.Count == 0 || orgIds.Contains(b.OrganizationId)).ToList();
@@ -1663,8 +1742,10 @@ public sealed class PostgresFundStructureService : IFundStructureService
     private static bool IsAccountInAccountingScope(AccountSummaryDto account, AccountingStructureQuery query,
         AccountingAccountScope scope, IReadOnlyList<OwnershipLinkDto> ownershipLinks)
     {
-        if (IsAccountLinkedToAccountingPortfolios(account, scope.PortfolioIds, ownershipLinks)) return true;
-        if (HasAccountingAccountScopeFilter(query)) return MatchesDirectAccountingAccountFilters(account, query);
+        if (IsAccountLinkedToAccountingPortfolios(account, scope.PortfolioIds, ownershipLinks))
+            return true;
+        if (HasAccountingAccountScopeFilter(query))
+            return MatchesDirectAccountingAccountFilters(account, query);
         return IsAccountInAccountingBusinessScope(account, scope, ownershipLinks);
     }
 
@@ -1676,7 +1757,8 @@ public sealed class PostgresFundStructureService : IFundStructureService
 
     private static bool MatchesDirectAccountingAccountFilters(AccountSummaryDto a, AccountingStructureQuery q)
     {
-        if (q.ClientId.HasValue || q.InvestmentPortfolioId.HasValue) return false;
+        if (q.ClientId.HasValue || q.InvestmentPortfolioId.HasValue)
+            return false;
         var hasDirect = q.FundId.HasValue || q.SleeveId.HasValue || q.VehicleId.HasValue;
         return hasDirect && MatchOpt(a.FundId, q.FundId) && MatchOpt(a.SleeveId, q.SleeveId) && MatchOpt(a.VehicleId, q.VehicleId);
     }

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Architecture"
+  short_description: "Check Meridian architecture boundaries"
+  default_prompt: "Use $meridian-code-architecture to review this Meridian module architecture for boundary drift and validation needs."

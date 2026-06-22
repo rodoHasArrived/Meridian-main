@@ -1,4 +1,5 @@
 using System.Globalization;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Wpf.Models;
@@ -105,18 +106,18 @@ public sealed class FundLedgerReadService
         return new FundLedgerReconciliationSnapshot(
             FundProfileId: snapshot.FundId,
             AsOf: snapshot.AsOf,
-            Consolidated: ProjectDimensionSnapshot(snapshot.Consolidated),
+            Consolidated: ProjectDimensionSnapshot(snapshot.FundId, FundLedgerScope.Consolidated, null, snapshot.Consolidated),
             Entities: snapshot.Entities.ToDictionary(
-                static pair => pair.Key,
-                static pair => ProjectDimensionSnapshot(pair.Value),
+                pair => pair.Key,
+                pair => ProjectDimensionSnapshot(snapshot.FundId, FundLedgerScope.Entity, pair.Key, pair.Value),
                 StringComparer.OrdinalIgnoreCase),
             Sleeves: snapshot.Sleeves.ToDictionary(
-                static pair => pair.Key,
-                static pair => ProjectDimensionSnapshot(pair.Value),
+                pair => pair.Key,
+                pair => ProjectDimensionSnapshot(snapshot.FundId, FundLedgerScope.Sleeve, pair.Key, pair.Value),
                 StringComparer.OrdinalIgnoreCase),
             Vehicles: snapshot.Vehicles.ToDictionary(
-                static pair => pair.Key,
-                static pair => ProjectDimensionSnapshot(pair.Value),
+                pair => pair.Key,
+                pair => ProjectDimensionSnapshot(snapshot.FundId, FundLedgerScope.Vehicle, pair.Key, pair.Value),
                 StringComparer.OrdinalIgnoreCase));
     }
 
@@ -322,7 +323,12 @@ public sealed class FundLedgerReadService
                 FinancialAccountId: pair.Key.FinancialAccountId,
                 Balance: pair.Value,
                 EntryCount: entryCounts.TryGetValue(pair.Key, out var count) ? count : 0,
-                Security: null))
+                Security: null,
+                Dimensions: BuildFundLedgerDimensions(
+                    context.Profile.FundProfileId,
+                    scopeKind,
+                    scopeId,
+                    pair.Key.FinancialAccountId)))
             .ToArray();
     }
 
@@ -341,24 +347,38 @@ public sealed class FundLedgerReadService
         return ledger.GetJournalEntries(to: asOf)
             .OrderByDescending(static entry => entry.Timestamp)
             .ThenBy(static entry => entry.Description, StringComparer.OrdinalIgnoreCase)
-            .Select(static entry => new FundJournalLine(
-                JournalEntryId: entry.JournalEntryId,
-                Timestamp: entry.Timestamp,
-                Description: entry.Description,
-                TotalDebits: entry.Lines.Sum(static line => line.Debit),
-                TotalCredits: entry.Lines.Sum(static line => line.Credit),
-                LineCount: entry.Lines.Count,
-                FinancialAccountIds: entry.Lines
+            .Select(entry =>
+            {
+                var financialAccountIds = entry.Lines
                     .Select(static line => line.Account.FinancialAccountId)
                     .Where(static accountId => !string.IsNullOrWhiteSpace(accountId))
                     .Select(static accountId => accountId!.Trim())
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .OrderBy(static accountId => accountId, StringComparer.OrdinalIgnoreCase)
-                    .ToArray()))
+                    .ToArray();
+
+                return new FundJournalLine(
+                    JournalEntryId: entry.JournalEntryId,
+                    Timestamp: entry.Timestamp,
+                    Description: entry.Description,
+                    TotalDebits: entry.Lines.Sum(static line => line.Debit),
+                    TotalCredits: entry.Lines.Sum(static line => line.Credit),
+                    LineCount: entry.Lines.Count,
+                    FinancialAccountIds: financialAccountIds,
+                    Dimensions: BuildFundLedgerDimensions(
+                        context.Profile.FundProfileId,
+                        scopeKind,
+                        scopeId,
+                        financialAccountIds.Length == 1 ? financialAccountIds[0] : null));
+            })
             .ToArray();
     }
 
-    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(LedgerSnapshot snapshot) =>
+    private static FundLedgerDimensionSnapshot ProjectDimensionSnapshot(
+        string fundProfileId,
+        FundLedgerScope scopeKind,
+        string? scopeId,
+        LedgerSnapshot snapshot) =>
         new(
             Timestamp: snapshot.Timestamp,
             JournalEntryCount: snapshot.JournalEntryCount,
@@ -368,14 +388,32 @@ public sealed class FundLedgerReadService
                 .ThenBy(static pair => pair.Key.Name, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static pair => pair.Key.Symbol, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static pair => pair.Key.FinancialAccountId, StringComparer.OrdinalIgnoreCase)
-                .Select(static pair => new FundLedgerSnapshotBalanceLine(
+                .Select(pair => new FundLedgerSnapshotBalanceLine(
                     AccountName: pair.Key.Name,
                     AccountType: pair.Key.AccountType.ToString(),
                     Symbol: pair.Key.Symbol,
                     FinancialAccountId: pair.Key.FinancialAccountId,
                     Balance: pair.Value,
-                    Security: null))
+                    Security: null,
+                    Dimensions: BuildFundLedgerDimensions(fundProfileId, scopeKind, scopeId, pair.Key.FinancialAccountId)))
                 .ToArray());
+
+    private static LedgerDimensionSetDto BuildFundLedgerDimensions(
+        string fundProfileId,
+        FundLedgerScope scopeKind,
+        string? scopeId,
+        string? financialAccountId)
+    {
+        var normalizedScopeId = TrimOrNull(scopeId);
+        return new LedgerDimensionSetDto(
+            FundId: TrimOrNull(fundProfileId),
+            EntityId: scopeKind == FundLedgerScope.Entity ? normalizedScopeId : null,
+            SleeveId: scopeKind == FundLedgerScope.Sleeve ? normalizedScopeId : null,
+            AccountId: TrimOrNull(financialAccountId));
+    }
+
+    private static string? TrimOrNull(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<FundLedgerSliceDto> BuildLedgerSlices(
         FundLedgerBuildContext context,
@@ -526,24 +564,40 @@ public sealed class FundLedgerReadService
         new(
             FundProfileId: context.Profile.FundProfileId,
             AsOf: asOf,
-            Consolidated: ProjectDimensionSnapshot(context.Book.FundLedger.SnapshotAsOf(asOf)),
+            Consolidated: ProjectDimensionSnapshot(
+                context.Profile.FundProfileId,
+                FundLedgerScope.Consolidated,
+                null,
+                context.Book.FundLedger.SnapshotAsOf(asOf)),
             Entities: context.MaterializedEntityIds
                 .OrderBy(static scopeId => scopeId, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
                     scopeId => scopeId,
-                    scopeId => ProjectDimensionSnapshot(context.Book.EntityLedger(scopeId).SnapshotAsOf(asOf)),
+                    scopeId => ProjectDimensionSnapshot(
+                        context.Profile.FundProfileId,
+                        FundLedgerScope.Entity,
+                        scopeId,
+                        context.Book.EntityLedger(scopeId).SnapshotAsOf(asOf)),
                     StringComparer.OrdinalIgnoreCase),
             Sleeves: context.MaterializedSleeveIds
                 .OrderBy(static scopeId => scopeId, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
                     scopeId => scopeId,
-                    scopeId => ProjectDimensionSnapshot(context.Book.SleeveLedger(scopeId).SnapshotAsOf(asOf)),
+                    scopeId => ProjectDimensionSnapshot(
+                        context.Profile.FundProfileId,
+                        FundLedgerScope.Sleeve,
+                        scopeId,
+                        context.Book.SleeveLedger(scopeId).SnapshotAsOf(asOf)),
                     StringComparer.OrdinalIgnoreCase),
             Vehicles: context.MaterializedVehicleIds
                 .OrderBy(static scopeId => scopeId, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(
                     scopeId => scopeId,
-                    scopeId => ProjectDimensionSnapshot(context.Book.VehicleLedger(scopeId).SnapshotAsOf(asOf)),
+                    scopeId => ProjectDimensionSnapshot(
+                        context.Profile.FundProfileId,
+                        FundLedgerScope.Vehicle,
+                        scopeId,
+                        context.Book.VehicleLedger(scopeId).SnapshotAsOf(asOf)),
                     StringComparer.OrdinalIgnoreCase));
 
     private static Dictionary<LedgerAccount, int> BuildEntryCounts(IReadOnlyLedger ledger, DateTimeOffset asOf) =>

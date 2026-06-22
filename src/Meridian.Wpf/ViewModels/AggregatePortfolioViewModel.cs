@@ -74,7 +74,7 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _positionsEmptyStateTitle, value);
     }
 
-    private string _positionsEmptyStateDetail = "Meridian will load cross-strategy exposure and netted positions from the local workstation host.";
+    private string _positionsEmptyStateDetail = "Meridian will load cross-strategy exposure and netted positions from the local workstation service.";
     public string PositionsEmptyStateDetail
     {
         get => _positionsEmptyStateDetail;
@@ -313,7 +313,7 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
             return new AggregatePortfolioEmptyState(
                 IsVisible: true,
                 Title: "Loading aggregate portfolio",
-                Detail: "Waiting for the local workstation host to return cross-strategy exposure and netted position rows.");
+                Detail: "Waiting for the local workstation service to return cross-strategy exposure and netted position rows.");
         }
 
         if (hasLoadError)
@@ -321,7 +321,7 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
             return new AggregatePortfolioEmptyState(
                 IsVisible: true,
                 Title: "Aggregate portfolio unavailable",
-                Detail: "Refresh after the local workstation host is reachable and portfolio aggregation endpoints are responding.");
+                Detail: "Refresh after the local workstation service is reachable and portfolio aggregation endpoints are responding.");
         }
 
         if (!hasLoadedPortfolioSnapshot)
@@ -329,7 +329,7 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
             return new AggregatePortfolioEmptyState(
                 IsVisible: true,
                 Title: "Waiting for aggregate portfolio",
-                Detail: "Meridian will load cross-strategy exposure and netted positions from the local workstation host.");
+                Detail: "Meridian will load cross-strategy exposure and netted positions from the local workstation service.");
         }
 
         return new AggregatePortfolioEmptyState(

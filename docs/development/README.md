@@ -11,18 +11,19 @@ This directory is the working index for Meridian developer guidance. Use it when
 
 If you are new to the repository, read these in order:
 
-1. [Developer Setup](../../archive/docs/developer/setup.md) for local prerequisites and restore commands.
-2. [Build, Test, Run](../../archive/docs/developer/build-test-run.md) for the shortest current command path.
+1. [Start](../start/README.md) for local prerequisites and restore commands.
+2. [Engineering](../engineering/README.md) for the shortest current build, test, and run command path.
 3. [Repository Organization Guide](repository-organization-guide.md) for folder placement, naming, and doc location rules.
 4. [Repository Rule Set](repository-rule-set.md) for repository-wide contribution and quality expectations.
 5. [Documentation Contribution Guide](documentation-contribution-guide.md) if your change adds, moves, or retires docs.
 
 ### Migration Note
 
-Legacy high-traffic engineering command and setup guides are now retained as archive snapshots:
+High-traffic engineering command and setup guides now route to active docs, with historical versions preserved in archive:
 
-- [archive/docs/developer/setup.md](../../archive/docs/developer/setup.md)
-- [archive/docs/developer/build-test-run.md](../../archive/docs/developer/build-test-run.md)
+- [Developer Setup archive](../../archive/docs/developer/setup.md)
+- [Build, Test, Run archive](../../archive/docs/developer/build-test-run.md)
+- [Publish Standalone EXE archive](../../archive/docs/developer/publish-standalone-exe.md)
 - [docs/development/desktop-testing-guide.md](desktop-testing-guide.md)
 
 For a broader docs map, return to the main [docs index](../README.md).
@@ -40,7 +41,7 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 - Architecture narratives and rationale belong in [architecture/](../architecture/README.md)
 - Operational runbooks and deployment steps belong in [operations/](../operations/README.md)
-- Evaluations, proposals, and option analysis belong in [evaluations/](../evaluations/README.md)
+- Historical evaluations, proposals, and option analysis belong in the [assessment archive](../../archive/docs/assessments/README.md); active findings belong in the owning canonical lane.
 - Active roadmap and delivery tracking belong in [status/](../status/README.md)
 
 ## Guide Map
@@ -49,10 +50,10 @@ For a broader docs map, return to the main [docs index](../README.md).
 
 | Document | Use it when you need to... |
 | --- | --- |
-| [Developer Setup](../../archive/docs/developer/setup.md) | bootstrap the local checkout at `D:\Meridian-main` |
-| [Build, Test, Run](../../archive/docs/developer/build-test-run.md) | choose a narrow build, test, or local run command |
+| [Start](../start/README.md) | bootstrap the local checkout at `D:\Meridian-main` |
+| [Engineering](../engineering/README.md) | choose a narrow build, test, or local run command |
 | [Tooling Architecture](tooling-architecture.md) | understand tooling layers, ownership, and local-to-CI command mapping |
-| [Publish Standalone EXE](../../archive/docs/developer/publish-standalone-exe.md) | produce local standalone publish output |
+| [Publish Standalone EXE archive](../../archive/docs/developer/publish-standalone-exe.md) | review historical standalone publish guidance |
 | [Repository Organization Guide](repository-organization-guide.md) | place code, docs, assets, or new project files in the right location |
 | [Repository Rule Set](repository-rule-set.md) | understand non-negotiable contribution, quality, and repo hygiene rules |
 | [Documentation Contribution Guide](documentation-contribution-guide.md) | add, review, archive, or reorganize documentation correctly |
@@ -123,5 +124,5 @@ When you add, remove, or supersede a guide in this folder:
 
 - [Architecture Documentation](../architecture/README.md)
 - [Operations Documentation](../operations/README.md)
-- [Evaluations](../evaluations/README.md)
+- [Assessment archive](../../archive/docs/assessments/README.md)
 - [Status Docs](../status/README.md)

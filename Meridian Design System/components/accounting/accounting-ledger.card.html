@@ -1,0 +1,122 @@
+<!-- @dsCard group="Components" viewport="780x880" name="Accounting — ledger, accounts, statements & tax lots" subtitle="AmountCell, LedgerTable, AccountTree, StatementTable, TaxLotTable" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accounting components — ledger & statements</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .stack { display: flex; flex-direction: column; gap: 7px; }
+  .cap { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em; color: var(--text-muted); }
+  .amts { display: flex; flex-wrap: wrap; gap: 14px 22px; padding: 12px 14px; }
+  .amts > div { display: flex; flex-direction: column; gap: 3px; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { AmountCell, LedgerTable, AccountTree, StatementTable, TaxLotTable, PanelSurface, Eyebrow } = window.MeridianDesignSystem_4f61be;
+
+const Amt = ({ label, ...p }) => (
+  <div><span className="cap">{label}</span><AmountCell {...p} /></div>
+);
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <div className="stack" style={{ gap: 16 }}>
+
+    <PanelSurface flat>
+      <div className="amts">
+        <Amt label="plain" value={1284002.18} currency="USD" />
+        <Amt label="P&L +" value={7472} currency="USD" mode="pnl" signed />
+        <Amt label="P&L −" value={-921} currency="USD" mode="pnl" signed />
+        <Amt label="parens" value={-4118.22} currency="USD" parens />
+        <Amt label="zero-dash" value={0} currency="USD" zeroDash />
+        <Amt label="EUR" value={88240.5} currency="EUR" />
+        <Amt label="strong" value={1284002.18} currency="USD" strong />
+      </div>
+    </PanelSurface>
+
+    <div className="grid">
+      <div className="stack">
+        <Eyebrow>General ledger · cash account</Eyebrow>
+        <LedgerTable
+          currency="USD"
+          opening={120000}
+          rows={[
+            { date: "06-02", ref: "JE-1042", memo: "Client settlement — AAPL block", debit: 82440, credit: "" },
+            { date: "06-03", ref: "JE-1043", memo: "Commission & fees", debit: "", credit: 318.5 },
+            { date: "06-05", ref: "JE-1051", memo: "Wire to custodian", debit: "", credit: 40000 },
+            { date: "06-09", ref: "JE-1060", memo: "Dividend receivable", debit: 1290, credit: "" },
+          ]}
+        />
+      </div>
+      <div className="stack">
+        <Eyebrow>Chart of accounts · roll-up</Eyebrow>
+        <AccountTree
+          currency="USD"
+          defaultExpandedDepth={1}
+          selectedCode="1100"
+          nodes={[
+            { code: "1000", name: "Assets", children: [
+              { code: "1100", name: "Cash & equivalents", balance: 163411.5 },
+              { code: "1200", name: "Brokerage receivable", balance: 41290 },
+              { code: "1300", name: "Marketable securities", children: [
+                { code: "1310", name: "Equities", balance: 884002 },
+                { code: "1320", name: "Fixed income", balance: 312500 },
+              ]},
+            ]},
+            { code: "2000", name: "Liabilities", children: [
+              { code: "2100", name: "Margin payable", balance: -210000 },
+              { code: "2200", name: "Accrued fees", balance: -3850 },
+            ]},
+          ]}
+        />
+      </div>
+    </div>
+
+    <div className="stack">
+      <Eyebrow>Statement of operations · period comparison</Eyebrow>
+      <StatementTable
+        currency="USD"
+        columns={[{ key: "q2", label: "Q2 2026" }, { key: "q1", label: "Q1 2026" }]}
+        sections={[
+          { label: "Revenue", rows: [
+            { label: "Realized trading gains", values: { q2: 412800, q1: 388110 } },
+            { label: "Interest & dividends", values: { q2: 38420, q1: 35900 } },
+          ], subtotal: { label: "Total revenue", values: { q2: 451220, q1: 424010 } } },
+          { label: "Expenses", rows: [
+            { label: "Commissions & fees", values: { q2: -28440, q1: -26900 } },
+            { label: "Data & infrastructure", values: { q2: -19500, q1: -19500 } },
+            { label: "Financing cost", values: { q2: -41200, q1: -38750 }, indent: 1, muted: true },
+          ], subtotal: { label: "Total expenses", values: { q2: -89140, q1: -85150 } } },
+        ]}
+        total={{ label: "Net income", values: { q2: 362080, q1: 338860 } }}
+      />
+    </div>
+
+    <div className="stack">
+      <Eyebrow>Tax lots · cost basis · unrealized</Eyebrow>
+      <TaxLotTable
+        currency="USD"
+        asOf="2026-06-17"
+        showSymbol
+        lots={[
+          { acquired: "2025-02-14", symbol: "AAPL", quantity: 400, costBasis: 68240, marketValue: 79120 },
+          { acquired: "2026-01-09", symbol: "NVDA", quantity: 150, costBasis: 121500, marketValue: 138900 },
+          { acquired: "2026-04-22", symbol: "TSLA", quantity: 200, costBasis: 49800, marketValue: 44120 },
+          { acquired: "2024-11-03", symbol: "MSFT", quantity: 120, costBasis: 49200, marketValue: 53880 },
+        ]}
+      />
+    </div>
+
+  </div>
+);
+</script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!-- @dsCard group="Components" viewport="1200x800" name="Context menus & validators" subtitle="Right-click menus + shared field validation" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContextMenu & Validators</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+  <style>
+    body {
+      background: var(--bg);
+      padding: 24px;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+    }
+    .section {
+      margin-bottom: 32px;
+    }
+    .section h2 {
+      font-size: var(--type-section);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .section p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+    .demo-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-family: var(--font-data);
+      margin-bottom: 24px;
+    }
+    th {
+      text-align: left;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-medium);
+      font-family: var(--font-body);
+      font-size: 10px;
+      font-variant: all-small-caps;
+    }
+    td {
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    tr:nth-child(even) {
+      background: var(--card-surface-raised);
+    }
+    tr:hover {
+      background: var(--bg-active);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+    .row-menu {
+      cursor: context-menu;
+      user-select: none;
+    }
+    .validator-form {
+      display: grid;
+      gap: 16px;
+      max-width: 400px;
+    }
+    .form-group {
+      display: grid;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 10px;
+      font-weight: 600;
+      font-variant: all-small-caps;
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+    }
+    .form-input {
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-family: var(--font-data);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: white;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(47, 111, 143, 0.15);
+    }
+    .form-input.error {
+      border-color: var(--red);
+      box-shadow: 0 0 0 2px rgba(186, 63, 85, 0.15);
+    }
+    .error-message {
+      font-size: 11px;
+      color: var(--red);
+      font-family: var(--font-body);
+    }
+    .success-message {
+      font-size: 11px;
+      color: var(--green);
+      font-family: var(--font-body);
+    }
+    .info-box {
+      background: var(--blue-a10);
+      border-left: 3px solid var(--accent);
+      padding: 12px;
+      border-radius: 2px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- ContextMenu Section -->
+  <div class="section">
+    <h2>ContextMenu — Right-click table rows</h2>
+    <p>Right-click any row below to see the context menu. Menu intelligently repositions if near screen edge.</p>
+  </div>
+
+  <div class="demo-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th style="text-align: right;">Status</th>
+        </tr>
+      </thead>
+      <tbody id="demo-table">
+        <tr class="row-menu" data-id="TXN-001">
+          <td>2026-06-15</td>
+          <td>Wire transfer to vendor</td>
+          <td>($45,000.00)</td>
+          <td style="text-align: right;">Posted</td>
+        </tr>
+        <tr class="row-menu" data-id="TXN-002">
+          <td>2026-06-14</td>
+          <td>ACH debit — payroll</td>
+          <td>($120,500.00)</td>
+          <td style="text-align: right;">Posted</td>
+        </tr>
+        <tr class="row-menu" data-id="TXN-003">
+          <td>2026-06-13</td>
+          <td>Dividend received</td>
+          <td>$8,250.50</td>
+          <td style="text-align: right;">Pending</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="info-box">
+      → Right-click a row to see Edit, Copy, Reconcile, and Delete options. Try deleting a row.
+    </div>
+  </div>
+
+  <!-- Validators Section -->
+  <div class="section">
+    <h2>Validators — Shared field validation</h2>
+    <p>
+      Try these values to test validation:
+      Currency: "1000", "(500.50)", "abc" ·
+      Date: "2026-06-15", "06/15/2026", "invalid" ·
+      Account: "GL-2540", "US-001", "bad id"
+    </p>
+  </div>
+
+  <div class="demo-card">
+    <div class="validator-form">
+      <div class="form-group">
+        <label class="form-label">Currency Amount</label>
+        <input
+          type="text"
+          class="form-input"
+          id="currency-field"
+          placeholder="1000, (500.50), $1,000.00"
+        />
+        <div id="currency-error" class="error-message" style="display: none;"></div>
+        <div id="currency-success" class="success-message" style="display: none;">✓ Valid</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Date (YYYY-MM-DD)</label>
+        <input
+          type="text"
+          class="form-input"
+          id="date-field"
+          placeholder="2026-06-15"
+        />
+        <div id="date-error" class="error-message" style="display: none;"></div>
+        <div id="date-success" class="success-message" style="display: none;">✓ Valid</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Account ID</label>
+        <input
+          type="text"
+          class="form-input"
+          id="account-field"
+          placeholder="GL-2540, US-001"
+        />
+        <div id="account-error" class="error-message" style="display: none;"></div>
+        <div id="account-success" class="success-message" style="display: none;">✓ Valid</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input
+          type="text"
+          class="form-input"
+          id="email-field"
+          placeholder="user@example.com"
+        />
+        <div id="email-error" class="error-message" style="display: none;"></div>
+        <div id="email-success" class="success-message" style="display: none;">✓ Valid</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simplified validators for demo (in real app, import from Validators module)
+    const validateCurrency = (v) => {
+      if (!v) return "Currency required";
+      const cleaned = v.replace(/[$\s,()]/g, "");
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? "Invalid currency" : true;
+    };
+
+    const validateDate = (v) => {
+      if (!v) return "Date required";
+      const date = new Date(v);
+      return isNaN(date.getTime()) ? "Invalid date (use YYYY-MM-DD)" : true;
+    };
+
+    const validateAccountId = (v) => {
+      if (!v) return "Account ID required";
+      if (!/^[A-Z0-9\-]{3,20}$/i.test(v.trim())) {
+        return "Account ID must be 3-20 alphanumeric + hyphens";
+      }
+      return true;
+    };
+
+    const validateEmail = (v) => {
+      if (!v) return "Email required";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())) {
+        return "Invalid email address";
+      }
+      return true;
+    };
+
+    // Attach validators to form fields
+    function attachValidator(inputId, validator, labelId) {
+      const input = document.getElementById(inputId);
+      const errorEl = document.getElementById(labelId + "-error");
+      const successEl = document.getElementById(labelId + "-success");
+
+      input.addEventListener("blur", () => {
+        const result = validator(input.value);
+        if (result === true) {
+          input.classList.remove("error");
+          errorEl.style.display = "none";
+          successEl.style.display = "block";
+        } else {
+          input.classList.add("error");
+          errorEl.textContent = result;
+          errorEl.style.display = "block";
+          successEl.style.display = "none";
+        }
+      });
+
+      input.addEventListener("focus", () => {
+        input.classList.remove("error");
+        errorEl.style.display = "none";
+        successEl.style.display = "none";
+      });
+    }
+
+    attachValidator("currency-field", validateCurrency, "currency");
+    attachValidator("date-field", validateDate, "date");
+    attachValidator("account-field", validateAccountId, "account");
+    attachValidator("email-field", validateEmail, "email");
+
+    // Context menu demo
+    const rows = document.querySelectorAll(".row-menu");
+    let contextMenu = null;
+
+    rows.forEach((row) => {
+      row.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+
+        // Remove old menu
+        if (contextMenu) contextMenu.remove();
+
+        // Create new menu
+        contextMenu = document.createElement("div");
+        contextMenu.style.cssText = `
+          position: fixed;
+          left: ${e.clientX}px;
+          top: ${e.clientY}px;
+          background: white;
+          border: 1px solid var(--border);
+          border-radius: 4px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+          z-index: 10000;
+          min-width: 160px;
+          overflow: hidden;
+        `;
+
+        const items = [
+          { label: "✎ Edit", onClick: () => alert("Edit " + row.dataset.id) },
+          { label: "⎘ Copy", onClick: () => alert("Copy " + row.dataset.id) },
+          { label: "↻ Reconcile", onClick: () => alert("Reconcile " + row.dataset.id) },
+          { divider: true },
+          { label: "🗑️ Delete", onClick: () => row.remove(), danger: true },
+        ];
+
+        items.forEach((item) => {
+          if (item.divider) {
+            const div = document.createElement("div");
+            div.style.height = "1px";
+            div.style.background = "var(--border)";
+            div.style.margin = "4px 0";
+            contextMenu.appendChild(div);
+          } else {
+            const btn = document.createElement("button");
+            btn.style.cssText = `
+              display: block;
+              width: 100%;
+              text-align: left;
+              padding: 8px 12px;
+              border: none;
+              background: transparent;
+              cursor: pointer;
+              color: ${item.danger ? "var(--red)" : "var(--text-primary)"};
+              font-family: var(--font-body);
+              font-size: 13px;
+            `;
+            btn.textContent = item.label;
+            btn.onmouseover = () =>
+              (btn.style.background = item.danger ? "var(--red-a10)" : "var(--bg-hover)");
+            btn.onmouseout = () => (btn.style.background = "transparent");
+            btn.onclick = () => {
+              item.onClick();
+              contextMenu.remove();
+            };
+            contextMenu.appendChild(btn);
+          }
+        });
+
+        document.body.appendChild(contextMenu);
+
+        // Close on outside click
+        const closeMenu = () => {
+          contextMenu.remove();
+          document.removeEventListener("click", closeMenu);
+        };
+        setTimeout(() => document.addEventListener("click", closeMenu), 0);
+      });
+    });
+  </script>
+</body>
+</html>

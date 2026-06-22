@@ -4,7 +4,7 @@
              x:Name="Root"
              MinWidth="260"
              AutomationProperties.AutomationId="{Binding HostAutomationId, RelativeSource={RelativeSource Self}}"
-             AutomationProperties.Name="Workspace Inspector Host">
+             AutomationProperties.Name="Workspace inspector">
     <Border Padding="12"
             Background="{StaticResource ConsoleBackgroundLightBrush}"
             BorderBrush="{StaticResource ConsoleBorderBrush}"

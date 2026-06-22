@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ public static class ProviderConnectionEndpoints
     public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Provider Connections");
+        group.RequireWorkstationTenantScope();
 
         group.MapGet(UiApiRoutes.ProviderConnections, async (
             HttpContext context,
@@ -44,6 +46,10 @@ public static class ProviderConnectionEndpoints
             {
                 var result = await service.SaveCredentialsAsync(providerId, request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
+            }
+            catch (ProviderCredentialValidationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message, unknownFields = ex.UnknownFields });
             }
             catch (ArgumentException ex)
             {

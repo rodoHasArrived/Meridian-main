@@ -37,9 +37,10 @@ public sealed class EvidenceGraphService
     public async Task<EvidencePacketDto?> GetPacketAsync(
         string subjectKind,
         string subjectId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
-        var subject = await _subjectResolver.ResolveAsync(subjectKind, subjectId, ct).ConfigureAwait(false);
+        var subject = await _subjectResolver.ResolveAsync(subjectKind, subjectId, ct, ledgerBookId).ConfigureAwait(false);
         if (subject is null)
         {
             return null;
@@ -129,6 +130,7 @@ public sealed class EvidenceGraphService
             edges,
             requiredIds,
             template?.NoOrphanRule == true);
+        var proofChain = EvidenceProofChainBuilder.Build(nodeList, validation.Completeness);
 
         foreach (var action in ResolveEvidenceActions())
         {
@@ -142,18 +144,25 @@ public sealed class EvidenceGraphService
             Edges: validation.Edges,
             Completeness: validation.Completeness,
             Actions: actions.Values.OrderBy(static action => action.ActionId, StringComparer.OrdinalIgnoreCase).ToArray(),
-            Warnings: warnings.Concat(validation.Warnings).Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+            Warnings: warnings.Concat(validation.Warnings).Distinct(StringComparer.OrdinalIgnoreCase).ToArray())
+        {
+            ProofChain = proofChain
+        };
     }
 
     public async Task<EvidenceGraphDto?> GetGraphAsync(
         string subjectKind,
         string subjectId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
-        var packet = await GetPacketAsync(subjectKind, subjectId, ct).ConfigureAwait(false);
+        var packet = await GetPacketAsync(subjectKind, subjectId, ct, ledgerBookId).ConfigureAwait(false);
         return packet is null
             ? null
-            : new EvidenceGraphDto(packet.Subject, packet.GeneratedAt, packet.Nodes, packet.Edges, packet.Warnings);
+            : new EvidenceGraphDto(packet.Subject, packet.GeneratedAt, packet.Nodes, packet.Edges, packet.Warnings)
+            {
+                ProofChain = packet.ProofChain
+            };
     }
 
     private IReadOnlyList<WorkflowActionDto> ResolveEvidenceActions()
@@ -179,11 +188,14 @@ public sealed class EvidenceGraphService
             EvidenceSubjectResolver.PaperReadinessKind => "paper-trading-readiness",
             EvidenceSubjectResolver.ReconciliationReviewKind => "accounting-reconciliation-review",
             EvidenceSubjectResolver.ReportPackKind => "portfolio-reporting-output",
+            EvidenceSubjectResolver.ReportPackDeliveryKind => "report-pack-delivery-review",
             EvidenceSubjectResolver.AnalysisExportKind => "portfolio-reporting-output",
             EvidenceSubjectResolver.ProviderTrustKind => "paper-trading-readiness",
             EvidenceSubjectResolver.SecurityMasterConflictKind => "security-master-conflict-review",
             EvidenceSubjectResolver.ApprovalKind => "operations-approval-review",
             EvidenceSubjectResolver.AccountingRecordKind => "accounting-records-evidence-review",
+            EvidenceSubjectResolver.PrivateCapitalFundEventKind => "private-capital-fund-event-review",
+            EvidenceSubjectResolver.PaymentIntentKind => "payment-intent-cash-evidence-review",
             _ => string.Empty
         };
 

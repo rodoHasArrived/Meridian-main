@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-05-18
+**Reviewed:** 2026-06-09
 
 This map gives maintainers a quick layer-oriented view of Meridian.
 
@@ -21,7 +21,13 @@ flowchart LR
   Application --> Storage["Storage and WAL"]
   Application --> Providers["Provider adapters"]
   Application --> Execution["Execution and risk"]
+  Application --> Ledger["Ledger and accounting records"]
+  Application --> Reporting["Reporting and report packs"]
+  Application --> Identity["Identity and scoped access"]
   Application --> UiServices["UI services and shared endpoints"]
+  Ledger --> UiServices
+  Reporting --> UiServices
+  Identity --> UiServices
   UiServices --> Web["Browser workstation"]
   UiServices --> Wpf["WPF desktop shell"]
 ```
@@ -32,12 +38,15 @@ flowchart LR
 | --- | --- | --- |
 | Host | `src/Meridian` | Compose services, expose CLI/API modes, and host workstation endpoints |
 | Application | `src/Meridian.Application` | Coordinate workflows; keep UI and provider specifics out |
-| Domain/Core/Contracts | `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts` | Keep business and contract types UI-independent |
+| Domain/Core/Contracts | `src/Meridian.Domain`, `src/Meridian.Core`, `src/Meridian.Contracts` | Keep business and contract types UI-independent, including workstation, private-capital, reporting, and identity payloads consumed by multiple surfaces |
 | Providers/Infrastructure | `src/Meridian.Infrastructure*`, `src/Meridian.ProviderSdk` | Isolate external API integration behind provider contracts |
 | Storage | `src/Meridian.Storage` | Preserve WAL and atomic-write durability expectations |
 | Execution/Risk | `src/Meridian.Execution*`, `src/Meridian.Risk` | Isolate broker gateways, paper/live controls, and pre-trade validation |
+| Accounting and Ledger | `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger` | Own ledger behavior, private-capital fund-event reconstruction, capital-account subledger impact, treasury ledger metadata, and accounting-record boundaries |
+| Reporting | `src/Meridian.Reporting` | Own governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
+| Identity and Access | `src/Meridian.Identity` | Own sessions, role profiles, scoped access, fund/account traversal authorization, and company-scoped user account/profile state |
 | Strategy/Backtesting | `src/Meridian.Strategies`, `src/Meridian.Backtesting*`, `src/Meridian.QuantScript` | Keep strategy lifecycle, replay, and scripting reusable outside UI |
-| UI Shared | `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared` | Own workstation DTO projection and endpoint/read-model support |
+| UI Shared | `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared` | Own workstation DTO projection and endpoint/read-model support for accounting configuration, private-capital drill-through, report packs, auth/session adapters, and shared browser/WPF workflows |
 | UI Surfaces | `src/Meridian.Ui/dashboard`, `src/Meridian.Wpf` | Keep views thin; put state, labels, disabled reasons, and commands in view models |
 
 ## Boundary Checks
@@ -47,8 +56,22 @@ flowchart LR
 - Browser workstation logic should prefer view-model/read-model seams instead of
   hardcoding workflow state in React components.
 - WPF is the active desktop shell; new desktop workflow lanes are expected and encouraged.
+- Browser and WPF operator surfaces should consume shared DTOs, services, and route definitions for accounting, reporting, private-capital, and identity workflows instead of duplicating business rules.
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.
+
+## Operational Record Boundaries
+
+The current product direction is the W1-W5 operational record baseline: data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed reports. Within that baseline:
+
+- `src/Meridian.Contracts` declares shared workstation, ledger, private-capital, report-pack, report-writer, and identity-facing payloads and routes.
+- `src/Meridian.Ledger` reconstructs posted private-capital fund-event ledger state, capital-account subledger impact, treasury context, and period/report handoff metadata.
+- `src/Meridian.FinancialOperations` owns accounting-close, reconciliation, accounting-record, approval, casework, and close-workflow semantics that coordinate ledger evidence into operational records.
+- `src/Meridian.Reporting` renders governed report packs and no-code report-writer grids with saved filters, formulas, filtered-input counts, and lineage.
+- `src/Meridian.Ui.Shared` adapts those source-owned services into endpoint/read-model support for the browser workstation and WPF shell.
+- External GL and provider systems remain evidence inputs where configured; Meridian-owned ledger records, retained evidence, approvals, and report outputs are the operational record surface.
+- Storage journal records, UI projections, report-pack links, and workflow records are intentionally separate persistence or presentation surfaces. They may carry source-owned identifiers, evidence links, state labels, and DTO snapshots, but they must not redefine posting rules, trial-balance math, close-readiness gates, reconciliation classifications, or accounting approval semantics outside `src/Meridian.Ledger` and `src/Meridian.FinancialOperations`.
+- New accounting-like models outside the ledger or Financial Operations owners must be projection-, persistence-, reporting-, or workflow-specific, named for that role, and covered by the `AccountingSemanticBoundaryTests` allowlist so reviewers can distinguish intentional boundary surfaces from duplicated accounting semantics.
 
 ## Fund Structure Service Refactor Boundaries (Staged Migration)
 

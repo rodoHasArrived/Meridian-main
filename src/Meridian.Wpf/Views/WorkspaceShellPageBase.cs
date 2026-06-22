@@ -15,6 +15,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
 {
     private readonly NavigationService _navigationService;
     private readonly WorkspaceService _workspaceService = WorkspaceService.Instance;
+    private readonly WorkspaceLayoutManager _layoutManager = new();
     private readonly TStateProvider _stateProvider;
     private WorkspaceShellState? _lastState;
 
@@ -194,9 +195,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     }
 
     protected PaneDropAction NormalizeDockAction(PaneDropAction action)
-        => _lastState?.WindowMode == BoundedWindowMode.Focused && action == PaneDropAction.FloatWindow
-            ? PaneDropAction.OpenTab
-            : action;
+        => WorkspaceLayoutManager.NormalizeDetachableAction(_lastState?.WindowMode ?? BoundedWindowMode.DockFloat, action);
 
     protected static string BuildPageKey(string pageTag, object? parameter)
         => parameter is null ? pageTag : $"{pageTag}:{parameter}";
@@ -236,10 +235,10 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     private void LoadDefaultDocking(MeridianDockingManager dockManager, WorkspaceShellState state)
     {
         _lastState = state;
-        foreach (var pane in ShellNavigationCatalog.ResolveDefaultPanes(state))
-        {
-            OpenWorkspacePane(dockManager, pane, state);
-        }
+        _layoutManager.ApplyLayout(
+            dockManager,
+            state,
+            (pane, parameter) => OpenWorkspacePage(dockManager, pane.PageTag, pane.Action, parameter));
     }
 
     private void OpenWorkspacePane(MeridianDockingManager dockManager, WorkspacePaneDefinition pane, WorkspaceShellState state)

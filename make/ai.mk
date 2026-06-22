@@ -9,16 +9,19 @@
         ai-codex-skills-check \
         ai-docs-freshness ai-docs-drift ai-docs-sync-report \
         ai-docs-map ai-docs-map-check ai-plan-checklists-check \
+        ai-codex-memory-check \
         ai-docs-archive ai-docs-archive-execute \
         skill-list skill-resources skill-scripts skill-chains skill-resource \
         skill-run skill-chain skill-run-chain skill-validate skill-run-eval \
         skill-benchmark skill-discover
 
-AI_UPDATER := python3 build/scripts/ai-repo-updater.py
-AI_ARCH_CHECK := python3 build/scripts/ai-architecture-check.py
-AI_DOCS := python3 build/scripts/docs/ai-docs-maintenance.py
+PYTHON ?= python
 
-SKILLS_CLI := python3 .claude/skills/skills_provider.py
+AI_UPDATER := $(PYTHON) build/scripts/ai-repo-updater.py
+AI_ARCH_CHECK := $(PYTHON) build/scripts/ai-architecture-check.py
+AI_DOCS := $(PYTHON) build/scripts/docs/ai-docs-maintenance.py
+
+SKILLS_CLI := $(PYTHON) .claude/skills/skills_provider.py
 SKILL      ?= meridian-code-review
 SCRIPT     ?=
 RESOURCE   ?=
@@ -80,6 +83,10 @@ ai-codex-skills-check: ## Validate Codex skill catalog, metadata, docs, and exec
 	@echo "$(BLUE)Checking Codex skill consistency...$(NC)"
 	@python3 build/scripts/docs/check-codex-skills.py --summary
 
+ai-codex-memory-check: ## Validate Codex memory index, entries, routing metadata, and stale review dates
+	@echo "$(BLUE)Checking Codex memory consistency...$(NC)"
+	@$(PYTHON) build/scripts/docs/check-codex-memory.py --summary
+
 ai-docs-freshness: ## Check staleness of AI documentation files
 	@echo "$(BLUE)Checking AI doc freshness...$(NC)"
 	@$(AI_DOCS) freshness --summary
@@ -99,11 +106,11 @@ ai-docs-map: ## Generate AI navigation plus roadmap/source documentation maps
 	@python3 build/scripts/docs/render-source-docs.py --summary
 	@echo "$(GREEN)AI documentation maps generated$(NC)"
 
-ai-docs-map-check: ## Validate roadmap/source registries, README coverage, TODOs, and AI inventory
+ai-docs-map-check: ## Validate roadmap/source registries, README coverage, TODOs, stale docs, and AI inventory
 	@python3 build/scripts/docs/validate-roadmap-registry.py --summary
 	@python3 build/scripts/docs/validate-source-readmes.py --summary
 	@python3 build/scripts/docs/scan-source-todos.py --summary
-	@python3 build/scripts/docs/mark-stale-docs.py --write --summary
+	@python3 build/scripts/docs/mark-stale-docs.py --summary
 	@python3 build/scripts/docs/validate-doc-hashes.py --summary
 	@python3 build/scripts/docs/check-ai-inventory.py --summary
 	@echo "$(GREEN)AI documentation map checks complete$(NC)"

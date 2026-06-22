@@ -902,7 +902,7 @@ public sealed class MockExampleClient : IMarketDataClient
 5. Register in DI (`ServiceCompositionRoot.cs` or via `IProviderModule`)
 6. Add config section in `config/appsettings.sample.json`
 7. Add tests in `tests/Meridian.Tests/Infrastructure/Adapters/`
-8. Document in `docs/providers/`
+8. Document setup in `docs/operators/` or capability/status lookup in `docs/reference/`
 
 ### Historical Provider
 
@@ -965,8 +965,7 @@ public sealed class MockExampleClient : IMarketDataClient
   - [ADR-005: Attribute-Based Discovery](../adr/005-attribute-based-discovery.md) — `[DataSource]`, `[ImplementsAdr]`
   - [ADR-010: HttpClient Factory](../adr/010-httpclient-factory.md) — HTTP client lifecycle management
   - [ADR-013: Bounded Channel Policy](../adr/013-bounded-channel-policy.md) — Consistent backpressure presets
-  - [Provider Comparison](../providers/provider-comparison.md) — Feature comparison matrix
-  - [Data Sources Overview](../providers/data-sources.md) — Complete provider catalog
+  - [Provider Capability Matrix](../reference/provider-capability-matrix.md) — Feature comparison matrix and provider catalog
 
 - **Implementation Guides:**
   - [Refactor Map](./refactor-map.md) — Safe refactoring procedures
@@ -974,9 +973,9 @@ public sealed class MockExampleClient : IMarketDataClient
   - [WPF Implementation Notes](./wpf-implementation-notes.md) — Desktop integration patterns
 
 - **Operations and Testing:**
-  - [Backfill Guide](../providers/backfill-guide.md) — Historical data procedures
+  - [Provider Backfill Operations](../operators/provider-backfill-operations.md) — Historical data procedures
   - [Performance Tuning](../operations/performance-tuning.md) — Optimization strategies
-- [Provider-Specific Setup Guides](../providers/README.md) — Interactive Brokers, Alpaca, etc.
+- [Provider onboarding guides](../operators/README.md) — Interactive Brokers, Alpaca, and related operator procedures
 
 - **AI Guides:**
   - [CLAUDE.providers.md](../ai/claude/CLAUDE.providers.md) — AI-focused provider reference

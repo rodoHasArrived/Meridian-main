@@ -39,6 +39,24 @@ public sealed class LoginSessionMiddleware
     public const string CurrentUserRoleKey = "CurrentUserRole";
 
     /// <summary>
+    /// Key for the authenticated user's role-profile name stored in
+    /// <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+    /// </summary>
+    public const string CurrentUserRoleProfileNameKey = "CurrentUserRoleProfileName";
+
+    /// <summary>
+    /// Key for the authenticated user's company id stored in
+    /// <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+    /// </summary>
+    public const string CurrentUserCompanyIdKey = "CurrentUserCompanyId";
+
+    /// <summary>
+    /// Key for the tenant scope resolved for the authenticated request.
+    /// Until tenant ids diverge from company ids, this carries the authenticated company id.
+    /// </summary>
+    public const string CurrentTenantIdKey = "CurrentTenantId";
+
+    /// <summary>
     /// Key for the authenticated user's <see cref="Meridian.Identity.Auth.UserPermission"/> flags
     /// stored in <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
     /// </summary>
@@ -103,6 +121,18 @@ public sealed class LoginSessionMiddleware
             {
                 context.Items[CurrentUserKey] = profile.Username;
                 context.Items[CurrentUserRoleKey] = profile.Role;
+                if (!string.IsNullOrWhiteSpace(profile.RoleProfileName))
+                {
+                    context.Items[CurrentUserRoleProfileNameKey] = profile.RoleProfileName.Trim();
+                }
+
+                if (!string.IsNullOrWhiteSpace(profile.CompanyId))
+                {
+                    var companyId = profile.CompanyId.Trim();
+                    context.Items[CurrentUserCompanyIdKey] = companyId;
+                    context.Items[CurrentTenantIdKey] = companyId;
+                }
+
                 context.Items[CurrentUserPermissionsKey] = profile.Permissions;
                 CookieCsrfProtection.EnsureCsrfCookie(
                     context,
@@ -137,13 +167,13 @@ public sealed class LoginSessionMiddleware
         {
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(
-                """{"error":"Authentication is required but not configured. Set MDC_USERNAME and MDC_PASSWORD or configure MDC_AUTH_MODE=optional for local development."}""");
+                """{"error":"Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development."}""");
             return;
         }
 
         context.Response.ContentType = "text/plain; charset=utf-8";
         await context.Response.WriteAsync(
-            "Authentication is required but not configured. Set MDC_USERNAME and MDC_PASSWORD or configure MDC_AUTH_MODE=optional for local development.");
+            "Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development.");
     }
 
     private static bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)

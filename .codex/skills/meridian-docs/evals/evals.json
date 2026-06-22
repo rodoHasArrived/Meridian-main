@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Meridian docs package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/docs_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 4
+        }
+      },
+      "prompt": "Use $meridian-docs to update stale guidance with current repo evidence, generated-doc safety, and narrow validation."
+    },
+    {
+      "id": 2,
+      "description": "Docs guidance names authoritative source, repo evidence, exact paths, and commands.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/docs_check.py",
+        "--scenario",
+        "source-evidence",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-docs to name the authoritative source, repo evidence, exact paths, and commands behind the docs update."
+    },
+    {
+      "id": 3,
+      "description": "Docs guidance protects generated docs and marks uncertainty with todos.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/docs_check.py",
+        "--scenario",
+        "generated-safety",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-docs to avoid hand-editing generated docs and mark uncertainty with TODOs."
+    }
+  ]
+}

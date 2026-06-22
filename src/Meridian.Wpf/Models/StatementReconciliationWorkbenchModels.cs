@@ -54,6 +54,9 @@ public sealed record StatementUnresolvedBreakRow(
     string LastObservedText,
     string RecommendedAction,
     string EvidenceLink,
+    string SlaLabel,
+    string EscalationLabel,
+    string EscalationReason,
     WorkstationReadinessTone ReadinessTone,
     string Tone);
 

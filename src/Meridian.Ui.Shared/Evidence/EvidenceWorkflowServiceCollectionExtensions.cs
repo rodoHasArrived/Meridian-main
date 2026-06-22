@@ -21,10 +21,13 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, TradingReadinessEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ReconciliationEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ReportPackEvidenceContributor>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ReportPackDeliveryEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ProviderTrustEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, ExportEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, SecurityMasterConflictEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, OperationsApprovalEvidenceContributor>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, PrivateCapitalFundEventEvidenceContributor>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, PaymentIntentEvidenceContributor>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IEvidenceContributor, EvidenceVaultEvidenceContributor>());
         return services;
     }

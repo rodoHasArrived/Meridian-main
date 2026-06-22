@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import * as coveredCallApi from "@/lib/api/covered-call";
+import * as coveredCallApi from "@/lib/api/covered-call.api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
@@ -13,7 +13,7 @@ import type {
   CoveredCallRunSummary,
   CoveredCallScoringMode,
   CoveredCallTrade
-} from "@/types/covered-call";
+} from "@/lib/covered-call";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
 
 export type CoveredCallStage = "configure" | "run" | "results";

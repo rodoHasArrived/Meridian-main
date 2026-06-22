@@ -74,7 +74,7 @@ UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsCha
 | Roadmap item | Title |
 | --- | --- |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
-| `W5-MULTIASSET-001` | - |
+| `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

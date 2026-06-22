@@ -3,6 +3,7 @@ import {
   exportEvidenceManifest,
   getEvidencePacket,
   getEvidenceSubjects,
+  listEvidenceVaultRequestLists,
   validateEvidencePacket
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
@@ -24,9 +25,13 @@ import type {
   EvidenceNode,
   EvidencePacket,
   EvidencePacketExportResponse,
+  EvidenceProofChain,
+  EvidenceRequestList,
   EvidenceSlaAssessment,
   EvidenceStatus,
   EvidenceSubject,
+  EvidenceVaultRequestListEntry,
+  EvidenceVaultRequestListQuery,
   WorkflowAction
 } from "@/types";
 
@@ -35,6 +40,7 @@ export interface EvidenceWorkbenchServices {
   getPacket: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidencePacket>;
   validatePacket: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidenceCompleteness>;
   exportManifest: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidencePacketExportResponse>;
+  listRequestLists?: (query: EvidenceVaultRequestListQuery, options?: ApiRequestOptions) => Promise<EvidenceVaultRequestListEntry[]>;
 }
 
 export interface EvidenceNodeGroupViewModel {
@@ -201,6 +207,30 @@ export interface EvidenceAssurancePanelViewModel {
   validationIssueLabel: string;
 }
 
+export interface EvidenceProofChainLayerRowViewModel {
+  id: string;
+  label: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  coverageLabel: string;
+  readyLabel: string;
+  reviewLabel: string;
+  missingLabel: string;
+  kindsLabel: string;
+  summary: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceProofChainPanelViewModel {
+  title: string;
+  summaryLabel: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  coverageLabel: string;
+  hasLayers: boolean;
+  rows: EvidenceProofChainLayerRowViewModel[];
+}
+
 export type EvidencePacketActionControl = "link" | "validate" | "export";
 export type EvidencePacketActionTone = "primary" | "success" | "warning" | "danger" | "muted";
 
@@ -246,6 +276,10 @@ export interface EvidenceExportResultViewModel {
   storageKindLabel: string | null;
   artifactSummaryLabel: string | null;
   artifactRows: EvidenceVaultArtifactRowViewModel[];
+  requestListSummaryLabel: string | null;
+  requestListRows: EvidenceVaultRequestListRowViewModel[];
+  supportRequestSummaryLabel: string | null;
+  supportRequestRows: EvidenceVaultSupportRequestRowViewModel[];
 }
 
 export interface EvidenceVaultArtifactRowViewModel {
@@ -256,8 +290,62 @@ export interface EvidenceVaultArtifactRowViewModel {
   hashLabel: string;
   sourceLabel: string;
   canonicalSubjectLabel: string;
+  captureLabel: string;
+  extractionLabel: string;
   retainedLabel: string;
   ariaLabel: string;
+}
+
+export interface EvidenceVaultRequestListRowViewModel {
+  id: string;
+  requestListKindLabel: string;
+  targetLabel: string;
+  highestSeverityLabel: string;
+  highestSeverityTone: EvidenceStatusTone;
+  statusLabel: string;
+  requestCountLabel: string;
+  evidenceKindsLabel: string;
+  blockedOutputsLabel: string;
+  summary: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceVaultSupportRequestRowViewModel {
+  id: string;
+  requestKindLabel: string;
+  evidenceLabel: string;
+  evidenceKindLabel: string;
+  severityLabel: string;
+  severityTone: EvidenceStatusTone;
+  statusLabel: string;
+  summary: string;
+  sourceLabel: string;
+  workItemLabel: string;
+  blockedOutputLabel: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceVaultRequestListIndexPanelViewModel {
+  title: string;
+  description: string;
+  summaryLabel: string;
+  scopeLabel: string;
+  hasRows: boolean;
+  rows: EvidenceVaultRequestListIndexRowViewModel[];
+  emptyTitle: string;
+  emptyDetail: string;
+}
+
+export interface EvidenceVaultRequestListIndexRowViewModel extends EvidenceVaultRequestListRowViewModel {
+  vaultLabel: string;
+  subjectLabel: string;
+  openRequestCountLabel: string;
+  retainedLabel: string;
+  manifestHref: string | null;
+  manifestLabel: string | null;
+  manifestAriaLabel: string | null;
+  supportRequestSummaryLabel: string;
+  supportRequestRows: EvidenceVaultSupportRequestRowViewModel[];
 }
 
 export interface EvidenceWorkbenchViewModel {
@@ -289,6 +377,8 @@ export interface EvidenceWorkbenchViewModel {
   statusTone: EvidenceStatusTone;
   generatedLabel: string;
   assurancePanel: EvidenceAssurancePanelViewModel;
+  proofChainPanel: EvidenceProofChainPanelViewModel;
+  requestListPanel: EvidenceVaultRequestListIndexPanelViewModel;
   lineagePanel: EvidenceLineagePanelViewModel;
   nodeGroups: EvidenceNodeGroupViewModel[];
   hasPacketActions: boolean;
@@ -322,10 +412,23 @@ const defaultServices: EvidenceWorkbenchServices = {
   getSubjects: getEvidenceSubjects,
   getPacket: getEvidencePacket,
   validatePacket: validateEvidencePacket,
-  exportManifest: (subjectKind, subjectId, options) => exportEvidenceManifest(subjectKind, subjectId, { includeWarnings: true }, options)
+  exportManifest: (subjectKind, subjectId, options) => exportEvidenceManifest(subjectKind, subjectId, { includeWarnings: true }, options),
+  listRequestLists: listEvidenceVaultRequestLists
 };
 
 const noopReloadEvidence = () => {};
+
+function buildEvidenceVaultRequestListQuery(
+  subjectKind: string | null,
+  subjectId: string | null
+): EvidenceVaultRequestListQuery {
+  return {
+    subjectKind: subjectKind || null,
+    subjectId: subjectId || null,
+    status: "Open",
+    maxResults: subjectKind && subjectId ? 25 : 10
+  };
+}
 
 export function useEvidenceWorkbenchViewModel(
   search: string,
@@ -336,6 +439,7 @@ export function useEvidenceWorkbenchViewModel(
   const selectedSubjectId = params.get("subjectId");
   const [subjects, setSubjects] = useState<EvidenceSubject[]>([]);
   const [packet, setPacket] = useState<EvidencePacket | null>(null);
+  const [requestLists, setRequestLists] = useState<EvidenceVaultRequestListEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<EvidenceWorkbenchErrorState | null>(null);
   const [exportBusy, setExportBusy] = useState(false);
@@ -364,6 +468,7 @@ export function useEvidenceWorkbenchViewModel(
     setLoading(true);
     setError(null);
     setPacket(null);
+    setRequestLists([]);
     setExportResult(null);
     setValidationResult(null);
     setExportBusy(false);
@@ -371,11 +476,18 @@ export function useEvidenceWorkbenchViewModel(
 
     const load = async () => {
       try {
-        const subjectList = await services.getSubjects({ signal: controller.signal });
+        const requestListQuery = buildEvidenceVaultRequestListQuery(selectedSubjectKind, selectedSubjectId);
+        const listRequestLists: NonNullable<EvidenceWorkbenchServices["listRequestLists"]> =
+          services.listRequestLists ?? (() => Promise.resolve([]));
+        const [subjectList, requestListEntries] = await Promise.all([
+          services.getSubjects({ signal: controller.signal }),
+          listRequestLists(requestListQuery, { signal: controller.signal })
+        ]);
         if (requestRevisionRef.current !== revision) {
           return;
         }
         setSubjects(subjectList);
+        setRequestLists(requestListEntries);
 
         if (selectedSubjectKind && selectedSubjectId) {
           const nextPacket = await services.getPacket(selectedSubjectKind, selectedSubjectId, { signal: controller.signal });
@@ -492,6 +604,7 @@ export function useEvidenceWorkbenchViewModel(
     error,
     subjects,
     packet,
+    requestLists,
     exportBusy,
     exportResult,
     validateBusy,
@@ -510,6 +623,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
   error: EvidenceWorkbenchErrorState | null;
   subjects: EvidenceSubject[];
   packet: EvidencePacket | null;
+  requestLists?: EvidenceVaultRequestListEntry[];
   exportBusy: boolean;
   exportResult: EvidencePacketExportResponse | null;
   validateBusy: boolean;
@@ -584,6 +698,13 @@ export function buildEvidenceWorkbenchViewModel(input: {
     statusTone: completeness ? mapStatusTone(completeness.status) : "muted",
     generatedLabel: input.packet ? formatDate(input.packet.generatedAt) : "Not generated",
     assurancePanel: buildEvidenceAssurancePanel(completeness),
+    proofChainPanel: buildEvidenceProofChainPanel(input.packet?.proofChain ?? null),
+    requestListPanel: buildEvidenceVaultRequestListIndexPanel(
+      input.requestLists ?? [],
+      hasSelection,
+      input.selectedSubjectKind,
+      input.selectedSubjectId
+    ),
     lineagePanel: buildEvidenceLineagePanel(input.packet?.edges ?? [], input.packet?.subject ?? null),
     nodeGroups: groupNodes(input.packet?.nodes ?? []),
     hasPacketActions: packetActions.length > 0,
@@ -610,6 +731,91 @@ export function buildEvidenceWorkbenchViewModel(input: {
     reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
+  };
+}
+
+export function buildEvidenceProofChainPanel(
+  proofChain: EvidenceProofChain | null
+): EvidenceProofChainPanelViewModel {
+  const status = proofChain?.status ?? "Unknown";
+  const rows = (proofChain?.layers ?? []).map((layer) => ({
+    id: layer.layer,
+    label: layer.label,
+    statusLabel: formatStatus(layer.status),
+    statusTone: mapStatusTone(layer.status),
+    coverageLabel: `${layer.coveragePercent}%`,
+    readyLabel: formatCount(layer.readyEvidenceIds.length, "ready node"),
+    reviewLabel: formatCount(layer.reviewEvidenceIds.length, "review node"),
+    missingLabel: formatCount(layer.missingEvidenceIds.length, "missing node"),
+    kindsLabel: layer.evidenceKinds.length > 0 ? layer.evidenceKinds.map(formatKind).join(", ") : "No evidence kinds",
+    summary: layer.summary,
+    ariaLabel: `${layer.label} proof-chain layer, ${layer.coveragePercent}% ${formatStatus(layer.status)}. ${layer.summary}`
+  }));
+
+  return {
+    title: "Operational Evidence Graph",
+    summaryLabel: proofChain?.summary ?? "Proof-chain coverage was not returned by this packet.",
+    statusLabel: formatStatus(status),
+    statusTone: mapStatusTone(status),
+    coverageLabel: proofChain
+      ? `${proofChain.coveredLayerCount}/${proofChain.totalLayerCount} layers, ${proofChain.coveragePercent}% coverage`
+      : "No proof-chain coverage",
+    hasLayers: rows.length > 0,
+    rows
+  };
+}
+
+function buildEvidenceVaultRequestListIndexPanel(
+  entries: EvidenceVaultRequestListEntry[],
+  hasSelection: boolean,
+  selectedSubjectKind: string | null,
+  selectedSubjectId: string | null
+): EvidenceVaultRequestListIndexPanelViewModel {
+  const rows = entries.map(buildVaultRequestListIndexRow);
+  const scopeLabel = hasSelection && selectedSubjectKind && selectedSubjectId
+    ? `${formatKind(selectedSubjectKind)} ${selectedSubjectId}`
+    : "All evidence subjects";
+  const summaryLabel = rows.length === 0
+    ? "No open request lists"
+    : rows.length === 1
+      ? "1 open request list"
+      : `${rows.length} open request lists`;
+
+  return {
+    title: "Evidence Vault request lists",
+    description: "Frozen support requests retained by Evidence Vault manifests and indexed by the shared workstation API.",
+    summaryLabel,
+    scopeLabel,
+    hasRows: rows.length > 0,
+    rows,
+    emptyTitle: hasSelection ? "No open request lists for this subject" : "No open request lists returned",
+    emptyDetail: hasSelection
+      ? "Retained support requests for the selected subject will appear here after an evidence manifest export freezes them."
+      : "Open close, audit, tax, report-package, and operator support requests will appear here after retained vault identities are available."
+  };
+}
+
+function buildVaultRequestListIndexRow(entry: EvidenceVaultRequestListEntry): EvidenceVaultRequestListIndexRowViewModel {
+  const base = buildVaultRequestListRow(entry);
+  const manifestHref = normalizeManifestRoute(entry.manifestRoute);
+  const supportRequestRows = (entry.supportRequests ?? []).map(buildVaultSupportRequestRow);
+  const openRequestCountLabel = entry.openRequestCount === 1
+    ? "1 open request"
+    : `${entry.openRequestCount} open requests`;
+  return {
+    ...base,
+    vaultLabel: entry.vaultId,
+    subjectLabel: `${formatKind(entry.subjectKind)} ${entry.subjectId}`,
+    openRequestCountLabel,
+    retainedLabel: `Retained ${formatDate(entry.retainedAt)}`,
+    manifestHref,
+    manifestLabel: manifestHref ? "Open manifest" : null,
+    manifestAriaLabel: manifestHref ? `Open retained manifest for request list ${entry.requestListId}` : null,
+    supportRequestSummaryLabel: supportRequestRows.length === 1
+      ? "1 support request"
+      : `${supportRequestRows.length} support requests`,
+    supportRequestRows,
+    ariaLabel: `${base.ariaLabel}. ${openRequestCountLabel}; vault ${entry.vaultId}; subject ${entry.subjectKind}/${entry.subjectId}`
   };
 }
 
@@ -1071,23 +1277,40 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
   const warningLabel = result.warningCount === 1 ? "1 warning" : `${result.warningCount} warnings`;
   const artifactRows = (result.vaultIdentity?.artifacts ?? []).map(buildVaultArtifactRow);
   const artifactLabel = artifactRows.length === 1 ? "1 retained artifact" : `${artifactRows.length} retained artifacts`;
+  const requestListRows = (result.vaultIdentity?.requestLists ?? []).map(buildVaultRequestListRow);
+  const requestListLabel = requestListRows.length === 1 ? "1 request list" : `${requestListRows.length} request lists`;
+  const supportRequestRows = (result.vaultIdentity?.supportRequests ?? []).map(buildVaultSupportRequestRow);
+  const supportRequestLabel = supportRequestRows.length === 1 ? "1 support request" : `${supportRequestRows.length} support requests`;
+  const vaultSummaryParts = result.vaultIdentity
+    ? [
+        artifactLabel,
+        ...(requestListRows.length > 0 ? [requestListLabel] : []),
+        ...(supportRequestRows.length > 0 ? [supportRequestLabel] : [])
+      ]
+    : [];
   return {
     title: result.retained ? "Manifest retained" : "Manifest generated",
     manifestPath: result.manifestPath,
-    summaryLabel: `${nodeLabel}, ${warningLabel}${result.vaultIdentity ? `, ${artifactLabel}` : ""}`,
+    summaryLabel: `${nodeLabel}, ${warningLabel}${vaultSummaryParts.length > 0 ? `, ${vaultSummaryParts.join(", ")}` : ""}`,
     routeHref,
     routeLabel: routeHref ? "Open manifest" : null,
     routeAriaLabel: routeHref ? `Open retained evidence manifest at ${result.manifestPath}` : null,
     vaultIdLabel: result.vaultIdentity?.vaultId ?? null,
     storageKindLabel: result.vaultIdentity ? formatKind(result.vaultIdentity.storageKind) : null,
     artifactSummaryLabel: result.vaultIdentity ? artifactLabel : null,
-    artifactRows
+    artifactRows,
+    requestListSummaryLabel: result.vaultIdentity ? requestListLabel : null,
+    requestListRows,
+    supportRequestSummaryLabel: result.vaultIdentity ? supportRequestLabel : null,
+    supportRequestRows
   };
 }
 
 function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["artifacts"][number]): EvidenceVaultArtifactRowViewModel {
   const sourceLabel = artifact.sourceRoute ?? artifact.sourcePath ?? "No source";
   const canonicalSubjectLabel = formatCanonicalSubject(artifact.canonicalSubjectKind, artifact.canonicalSubjectId) ?? "No canonical subject";
+  const captureLabel = formatVaultArtifactCapture(artifact.capture);
+  const extractionLabel = formatVaultArtifactExtraction(artifact.extractedFields ?? []);
   return {
     id: artifact.artifactId,
     kind: formatKind(artifact.kind),
@@ -1096,9 +1319,99 @@ function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportRespons
     hashLabel: artifact.contentHashSha256,
     sourceLabel,
     canonicalSubjectLabel,
+    captureLabel,
+    extractionLabel,
     retainedLabel: `Retained ${formatDate(artifact.retainedAt)}`,
-    ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}`
+    ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}, ${captureLabel}, ${extractionLabel}`
   };
+}
+
+function formatVaultArtifactCapture(
+  capture: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["artifacts"][number]["capture"]
+): string {
+  if (!capture) {
+    return "No capture metadata";
+  }
+
+  const channel = formatKind(capture.captureChannel);
+  const source = capture.sourceSystem ?? "unknown source";
+  const received = capture.receivedAt ? `received ${formatDate(capture.receivedAt)}` : "received time unknown";
+  const reference = capture.sourceReference ? `reference ${capture.sourceReference}` : "no source reference";
+  return `${channel} via ${source}; ${received}; ${reference}`;
+}
+
+function formatVaultArtifactExtraction(
+  fields: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["artifacts"][number]["extractedFields"]
+): string {
+  if (!fields || fields.length === 0) {
+    return "No extracted fields";
+  }
+
+  const validatedCount = fields.filter((field) => field.validationStatus === "Ready").length;
+  const reviewedCount = fields.filter((field) => field.reviewState.toLowerCase() === "reviewed").length;
+  return `${fields.length} extracted ${fields.length === 1 ? "field" : "fields"}; ${validatedCount} validated; ${reviewedCount} reviewed`;
+}
+
+function buildVaultRequestListRow(requestList: EvidenceRequestList): EvidenceVaultRequestListRowViewModel {
+  const requestListKindLabel = formatKind(requestList.requestListKind);
+  const targetLabel = `${formatKind(requestList.targetKind)} ${requestList.targetId}`;
+  const highestSeverityLabel = formatKind(requestList.highestSeverity.toLowerCase());
+  const requestCountLabel = requestList.requestCount === 1 ? "1 support request" : `${requestList.requestCount} support requests`;
+  const evidenceKindsLabel = requestList.evidenceKinds.length > 0
+    ? requestList.evidenceKinds.map(formatKind).join(", ")
+    : "No evidence kinds";
+  const blockedOutputsLabel = requestList.blockedOutputs.length > 0
+    ? requestList.blockedOutputs.join(", ")
+    : "No blocked outputs";
+  return {
+    id: requestList.requestListId,
+    requestListKindLabel,
+    targetLabel,
+    highestSeverityLabel,
+    highestSeverityTone: mapValidationSeverityTone(requestList.highestSeverity),
+    statusLabel: requestList.status,
+    requestCountLabel,
+    evidenceKindsLabel,
+    blockedOutputsLabel,
+    summary: requestList.summary,
+    ariaLabel: `${requestListKindLabel} for ${targetLabel}, ${highestSeverityLabel}, ${requestList.status}. ${requestList.summary}`
+  };
+}
+
+function buildVaultSupportRequestRow(
+  request: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["supportRequests"][number]
+): EvidenceVaultSupportRequestRowViewModel {
+  const requestKindLabel = formatKind(request.requestKind);
+  const evidenceKindLabel = request.evidenceKind ? formatKind(request.evidenceKind) : "Unclassified evidence";
+  const severityLabel = formatKind(request.severity.toLowerCase());
+  const sourceLabel = request.sourceSystem ?? "No source system";
+  const workItemLabel = request.workItemId ?? "No work item";
+  const blockedOutputLabel = request.blockedOutput ?? "No blocked output";
+  return {
+    id: request.requestId,
+    requestKindLabel,
+    evidenceLabel: request.evidenceId,
+    evidenceKindLabel,
+    severityLabel,
+    severityTone: mapValidationSeverityTone(request.severity),
+    statusLabel: request.status,
+    summary: request.summary,
+    sourceLabel,
+    workItemLabel,
+    blockedOutputLabel,
+    ariaLabel: `${requestKindLabel} support request for ${request.evidenceId}, ${severityLabel}, ${request.status}. ${request.summary}`
+  };
+}
+
+function mapValidationSeverityTone(severity: "Info" | "Warning" | "Critical"): EvidenceStatusTone {
+  switch (severity) {
+    case "Critical":
+      return "danger";
+    case "Warning":
+      return "warning";
+    default:
+      return "muted";
+  }
 }
 
 function formatCanonicalSubject(kind?: string | null, id?: string | null) {
@@ -1158,7 +1471,9 @@ function mapWorkflowActionTone(tone: string): EvidencePacketActionTone {
 
 function formatKind(kind: string) {
   return kind
-    .split("-")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .split(/[-_\s]+/)
+    .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }

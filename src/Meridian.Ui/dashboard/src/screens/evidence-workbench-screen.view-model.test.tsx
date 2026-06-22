@@ -7,6 +7,7 @@ import {
   exportEvidenceManifest,
   getEvidencePacket,
   getEvidenceSubjects,
+  listEvidenceVaultRequestLists,
   validateEvidencePacket
 } from "@/lib/api";
 import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
@@ -14,6 +15,7 @@ import {
   buildEvidenceLineageDetail,
   buildEvidenceLineagePanel,
   buildEvidenceNodeDetail,
+  buildEvidenceProofChainPanel,
   buildEvidenceWorkbenchViewModel,
   groupNodes,
   mapStatusTone,
@@ -25,6 +27,7 @@ import type {
   EvidencePacket,
   EvidencePacketExportResponse,
   EvidenceSubject,
+  EvidenceVaultRequestListEntry,
   WorkflowAction
 } from "@/types";
 
@@ -32,11 +35,13 @@ vi.mock("@/lib/api", () => ({
   getEvidenceSubjects: vi.fn(),
   getEvidencePacket: vi.fn(),
   validateEvidencePacket: vi.fn(),
-  exportEvidenceManifest: vi.fn()
+  exportEvidenceManifest: vi.fn(),
+  listEvidenceVaultRequestLists: vi.fn()
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(listEvidenceVaultRequestLists).mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -188,6 +193,55 @@ const completeness: EvidenceCompleteness = {
   }
 };
 
+const vaultRequestListEntry: EvidenceVaultRequestListEntry = {
+  requestListId: "request-list:auditrequestlist:audit:close-2026-05",
+  requestListKind: "AuditRequestList",
+  targetKind: "audit",
+  targetId: "close-2026-05",
+  highestSeverity: "Critical",
+  status: "Open",
+  requestCount: 2,
+  openRequestCount: 2,
+  requestIds: [
+    "support-request:missingevidence:audit-support",
+    "support-request:blockedworkitem:audit-request"
+  ],
+  evidenceKinds: ["audit-history", "source-document"],
+  blockedOutputs: ["report-pack/close-2026-05"],
+  summary: "audit/close-2026-05 has 2 frozen requests; 2 open requests remain.",
+  vaultId: "ev-request-list-demo",
+  subjectKind: subject.subjectKind,
+  subjectId: subject.subjectId,
+  manifestRoute: "/workstation/evidence/strategy-run/run-1/manifest.json",
+  retainedAt: "2026-05-09T12:35:00Z",
+  supportRequests: [
+    {
+      requestId: "support-request:missingevidence:audit-support",
+      requestKind: "MissingEvidence",
+      evidenceId: "audit-support",
+      evidenceKind: "audit-history",
+      severity: "Critical",
+      status: "Open",
+      summary: "Audit support package is missing.",
+      sourceSystem: "test",
+      workItemId: "audit-request:close-2026-05",
+      blockedOutput: "report-pack/close-2026-05"
+    },
+    {
+      requestId: "support-request:blockedworkitem:audit-request",
+      requestKind: "BlockedWorkItem",
+      evidenceId: "source-node",
+      evidenceKind: "source-document",
+      severity: "Warning",
+      status: "Open",
+      summary: "Audit request work item blocks close publication.",
+      sourceSystem: "test",
+      workItemId: "audit-request:close-2026-05",
+      blockedOutput: "report-pack/close-2026-05"
+    }
+  ]
+};
+
 const evidenceActions: WorkflowAction[] = [
   {
     actionId: "workflow.evidence.open-packet",
@@ -238,7 +292,68 @@ const packet: EvidencePacket = {
   ],
   completeness,
   actions: evidenceActions,
-  warnings: ["DK1 sample review is pending."]
+  warnings: ["DK1 sample review is pending."],
+  proofChain: {
+    coveragePercent: 44,
+    status: "ReviewRequired",
+    coveredLayerCount: 4,
+    totalLayerCount: 9,
+    summary: "4 of 9 v0.18 proof-chain layers have evidence; 1 blocked or missing, 1 stale, 1 review-required.",
+    layers: [
+      {
+        layer: "Source",
+        label: "Source",
+        status: "Ready",
+        coveragePercent: 100,
+        requiredEvidenceIds: [readyNode.evidenceId],
+        evidenceIds: [readyNode.evidenceId],
+        readyEvidenceIds: [readyNode.evidenceId],
+        reviewEvidenceIds: [],
+        missingEvidenceIds: [],
+        evidenceKinds: [readyNode.kind],
+        summary: "Source has 1 evidence node(s), 1 ready, 0 review-required or blocked, and 0 missing."
+      },
+      {
+        layer: "Normalization",
+        label: "Normalization",
+        status: "Missing",
+        coveragePercent: 0,
+        requiredEvidenceIds: [],
+        evidenceIds: [],
+        readyEvidenceIds: [],
+        reviewEvidenceIds: [],
+        missingEvidenceIds: [],
+        evidenceKinds: [],
+        summary: "No Normalization evidence is present in this packet."
+      },
+      {
+        layer: "Ledger",
+        label: "Ledger",
+        status: "Blocked",
+        coveragePercent: 0,
+        requiredEvidenceIds: ["strategy-run:run-1:ledger"],
+        evidenceIds: [],
+        readyEvidenceIds: [],
+        reviewEvidenceIds: [],
+        missingEvidenceIds: ["strategy-run:run-1:ledger"],
+        evidenceKinds: [],
+        summary: "No Ledger evidence is present in this packet."
+      },
+      {
+        layer: "Close",
+        label: "Close",
+        status: "ReviewRequired",
+        coveragePercent: 0,
+        requiredEvidenceIds: [blockedNode.evidenceId],
+        evidenceIds: [blockedNode.evidenceId],
+        readyEvidenceIds: [],
+        reviewEvidenceIds: [blockedNode.evidenceId],
+        missingEvidenceIds: [],
+        evidenceKinds: [blockedNode.kind],
+        summary: "Close has 1 evidence node(s), 0 ready, 1 review-required or blocked, and 0 missing."
+      }
+    ]
+  }
 };
 
 function createDeferred<T>() {
@@ -261,6 +376,7 @@ describe("Evidence Workbench view model", () => {
       error: null,
       subjects: [subject],
       packet,
+      requestLists: [vaultRequestListEntry],
       exportBusy: false,
       exportResult: null,
       validateBusy: false,
@@ -299,6 +415,53 @@ describe("Evidence Workbench view model", () => {
       breached: true,
       tone: "warning",
       message: "Replay evidence is outside the replay freshness window."
+    });
+    expect(vm.proofChainPanel).toMatchObject({
+      title: "Operational Evidence Graph",
+      summaryLabel: "4 of 9 v0.18 proof-chain layers have evidence; 1 blocked or missing, 1 stale, 1 review-required.",
+      statusLabel: "Review Required",
+      statusTone: "warning",
+      coverageLabel: "4/9 layers, 44% coverage",
+      hasLayers: true
+    });
+    expect(vm.proofChainPanel.rows.map((row) => row.id)).toEqual(["Source", "Normalization", "Ledger", "Close"]);
+    expect(vm.proofChainPanel.rows[2]).toMatchObject({
+      label: "Ledger",
+      statusLabel: "Blocked",
+      statusTone: "danger",
+      coverageLabel: "0%",
+      readyLabel: "0 ready nodes",
+      missingLabel: "1 missing node",
+      kindsLabel: "No evidence kinds"
+    });
+    expect(vm.requestListPanel).toMatchObject({
+      title: "Evidence Vault request lists",
+      summaryLabel: "1 open request list",
+      scopeLabel: "Strategy Run run-1",
+      hasRows: true
+    });
+    expect(vm.requestListPanel.rows[0]).toMatchObject({
+      requestListKindLabel: "Audit Request List",
+      targetLabel: "Audit close-2026-05",
+      highestSeverityLabel: "Critical",
+      highestSeverityTone: "danger",
+      statusLabel: "Open",
+      requestCountLabel: "2 support requests",
+      openRequestCountLabel: "2 open requests",
+      evidenceKindsLabel: "Audit History, Source Document",
+      blockedOutputsLabel: "report-pack/close-2026-05",
+      subjectLabel: "Strategy Run run-1",
+      vaultLabel: "ev-request-list-demo",
+      manifestHref: "/workstation/evidence/strategy-run/run-1/manifest.json",
+      retainedLabel: "Retained May 9, 12:35 UTC",
+      supportRequestSummaryLabel: "2 support requests"
+    });
+    expect(vm.requestListPanel.rows[0]?.supportRequestRows[0]).toMatchObject({
+      requestKindLabel: "Missing Evidence",
+      evidenceLabel: "audit-support",
+      severityLabel: "Critical",
+      statusLabel: "Open",
+      workItemLabel: "audit-request:close-2026-05"
     });
     expect(vm.generatedLabel).toBe("May 9, 12:30 UTC");
     expect(vm.missingEvidence).toEqual(["strategy-run:run-1:ledger"]);
@@ -358,6 +521,20 @@ describe("Evidence Workbench view model", () => {
       relationshipLabel: "Requires",
       ariaLabel: "Requires from strategy-run:run-1:detail to strategy-run:run-1:replay. Replay evidence supports the run.",
       selectAriaLabel: "Inspect lineage edge: Requires from strategy-run:run-1:detail to strategy-run:run-1:replay"
+    });
+  });
+
+  it("keeps older packets usable when proof-chain coverage is absent", () => {
+    const panel = buildEvidenceProofChainPanel(null);
+
+    expect(panel).toMatchObject({
+      title: "Operational Evidence Graph",
+      summaryLabel: "Proof-chain coverage was not returned by this packet.",
+      statusLabel: "Unknown",
+      statusTone: "muted",
+      coverageLabel: "No proof-chain coverage",
+      hasLayers: false,
+      rows: []
     });
   });
 
@@ -498,6 +675,57 @@ describe("Evidence Workbench view model", () => {
     expect(vm.sourceWorkflowHref).toBe(expectedHref);
     expect(vm.packetActions[0]).toMatchObject({
       href: expectedHref,
+      targetLabel: "Evidence Workbench"
+    });
+  });
+
+  it("preserves report-pack delivery evidence targets with direct package routes", () => {
+    const deliverySubject: EvidenceSubject = {
+      subjectId: "11111111-1111-1111-1111-111111111111:22222222-2222-2222-2222-222222222222",
+      subjectKind: "report-pack-delivery",
+      label: "Report-pack delivery Board reporting committee 1",
+      workspace: "Reporting",
+      route: "/reporting/report-packs?reportId=11111111-1111-1111-1111-111111111111&deliveryAttemptId=22222222-2222-2222-2222-222222222222",
+      pageTag: "EvidenceWorkbench"
+    };
+    const deliveryPacket: EvidencePacket = {
+      ...packet,
+      subject: deliverySubject,
+      actions: [
+        {
+          actionId: "workflow.evidence.open-packet",
+          label: "Open Delivery Evidence",
+          detail: "Open retained delivery evidence for the selected report-pack package.",
+          targetPageTag: "EvidenceWorkbench",
+          tone: "Primary",
+          workItemKind: null,
+          routePrefixes: ["/api/workstation/evidence/subjects/report-pack-delivery"],
+          routeContains: [],
+          aliases: []
+        }
+      ]
+    };
+
+    const vm = buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: "report-pack-delivery",
+      selectedSubjectId: deliverySubject.subjectId,
+      loading: false,
+      error: null,
+      subjects: [deliverySubject],
+      packet: deliveryPacket,
+      exportBusy: false,
+      exportResult: null,
+      validateBusy: false,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    const expectedWorkbenchHref = "/reporting/evidence?subjectKind=report-pack-delivery&subjectId=11111111-1111-1111-1111-111111111111%3A22222222-2222-2222-2222-222222222222";
+    expect(vm.sourceWorkflowHref).toBe(deliverySubject.route);
+    expect(vm.openSubjectHref(deliverySubject)).toBe(expectedWorkbenchHref);
+    expect(vm.packetActions[0]).toMatchObject({
+      href: expectedWorkbenchHref,
       targetLabel: "Evidence Workbench"
     });
   });
@@ -903,7 +1131,72 @@ describe("Evidence Workbench view model", () => {
               sourcePath: "C:/statement.csv",
               sourceRoute: "/api/workstation/reconciliation/statement-runs/import-1",
               canonicalSubjectKind: "report",
-              canonicalSubjectId: "report-pack-1"
+              canonicalSubjectId: "report-pack-1",
+              capture: {
+                captureChannel: "Upload",
+                sourceSystem: "Evidence Vault upload",
+                receivedAt: "2026-05-09T12:30:00Z",
+                receivedBy: "ops-user",
+                sourceReference: "portal-upload:broker-statement",
+                receiptHash: "a".repeat(64)
+              },
+              extractedFields: [
+                {
+                  fieldName: "cashAmount",
+                  extractedValue: "0",
+                  expectedValue: "0",
+                  confidenceScore: 0.98,
+                  reviewState: "Reviewed",
+                  validationStatus: "Ready",
+                  validationMessage: "Cash amount matched.",
+                  linkedRecordKind: "reconciliation-case",
+                  linkedRecordId: "case-1"
+                }
+              ]
+            }
+          ],
+          requestLists: [
+            {
+              requestListId: "request-list:auditrequestlist:audit:close-2026-05",
+              requestListKind: "AuditRequestList",
+              targetKind: "audit",
+              targetId: "close-2026-05",
+              highestSeverity: "Critical",
+              status: "Open",
+              requestCount: 2,
+              requestIds: [
+                "support-request:missingevidence:audit-support",
+                "support-request:blockedworkitem:audit-support:audit-request-close-2026-05"
+              ],
+              evidenceKinds: ["audit-history"],
+              blockedOutputs: ["report-pack/close-2026-05"],
+              summary: "audit/close-2026-05 has 2 frozen requests; 2 open requests remain."
+            }
+          ],
+          supportRequests: [
+            {
+              requestId: "support-request:missingevidence:audit-support",
+              requestKind: "MissingEvidence",
+              evidenceId: "audit-support",
+              evidenceKind: "audit-history",
+              severity: "Critical",
+              status: "Open",
+              summary: "Audit support package is missing.",
+              sourceSystem: "test",
+              workItemId: null,
+              blockedOutput: "report-pack/close-2026-05"
+            },
+            {
+              requestId: "support-request:blockedworkitem:audit-support:audit-request-close-2026-05",
+              requestKind: "BlockedWorkItem",
+              evidenceId: "audit-support",
+              evidenceKind: "audit-history",
+              severity: "Critical",
+              status: "Open",
+              summary: "Work item 'audit-request:close-2026-05' blocks evidence support.",
+              sourceSystem: "test",
+              workItemId: "audit-request:close-2026-05",
+              blockedOutput: "report-pack/close-2026-05"
             }
           ]
         }
@@ -914,7 +1207,7 @@ describe("Evidence Workbench view model", () => {
     expect(result.current.exportResultDetail).toMatchObject({
       title: "Manifest retained",
       manifestPath: "fresh-manifest.json",
-      summaryLabel: "3 nodes, 1 warning, 1 retained artifact",
+      summaryLabel: "3 nodes, 1 warning, 1 retained artifact, 1 request list, 2 support requests",
       routeHref: "/workstation/evidence/fresh-manifest.json",
       routeLabel: "Open manifest",
       routeAriaLabel: "Open retained evidence manifest at fresh-manifest.json",
@@ -930,7 +1223,47 @@ describe("Evidence Workbench view model", () => {
           hashLabel: "a".repeat(64),
           sourceLabel: "/api/workstation/reconciliation/statement-runs/import-1",
           canonicalSubjectLabel: "Report report-pack-1",
+          captureLabel: "Upload via Evidence Vault upload; received May 9, 12:30 UTC; reference portal-upload:broker-statement",
+          extractionLabel: "1 extracted field; 1 validated; 1 reviewed",
           retainedLabel: "Retained May 9, 12:36 UTC"
+        })
+      ],
+      requestListSummaryLabel: "1 request list",
+      requestListRows: [
+        expect.objectContaining({
+          id: "request-list:auditrequestlist:audit:close-2026-05",
+          requestListKindLabel: "Audit Request List",
+          targetLabel: "Audit close-2026-05",
+          highestSeverityLabel: "Critical",
+          highestSeverityTone: "danger",
+          statusLabel: "Open",
+          requestCountLabel: "2 support requests",
+          evidenceKindsLabel: "Audit History",
+          blockedOutputsLabel: "report-pack/close-2026-05",
+          summary: "audit/close-2026-05 has 2 frozen requests; 2 open requests remain."
+        })
+      ],
+      supportRequestSummaryLabel: "2 support requests",
+      supportRequestRows: [
+        expect.objectContaining({
+          id: "support-request:missingevidence:audit-support",
+          requestKindLabel: "Missing Evidence",
+          evidenceLabel: "audit-support",
+          evidenceKindLabel: "Audit History",
+          severityLabel: "Critical",
+          severityTone: "danger",
+          statusLabel: "Open",
+          summary: "Audit support package is missing.",
+          sourceLabel: "test",
+          workItemLabel: "No work item",
+          blockedOutputLabel: "report-pack/close-2026-05"
+        }),
+        expect.objectContaining({
+          id: "support-request:blockedworkitem:audit-support:audit-request-close-2026-05",
+          requestKindLabel: "Blocked Work Item",
+          evidenceLabel: "audit-support",
+          workItemLabel: "audit-request:close-2026-05",
+          blockedOutputLabel: "report-pack/close-2026-05"
         })
       ]
     });
@@ -971,13 +1304,64 @@ describe("EvidenceWorkbenchScreen", () => {
             sourcePath: null,
             sourceRoute: "/api/workstation/reconciliation/statement-runs/import-1",
             canonicalSubjectKind: "report",
-            canonicalSubjectId: "report-pack-1"
+            canonicalSubjectId: "report-pack-1",
+            capture: {
+              captureChannel: "Upload",
+              sourceSystem: "Evidence Vault upload",
+              receivedAt: "2026-05-09T12:30:00Z",
+              receivedBy: "ops-user",
+              sourceReference: "portal-upload:broker-statement",
+              receiptHash: "b".repeat(64)
+            },
+            extractedFields: [
+              {
+                fieldName: "cashAmount",
+                extractedValue: "0",
+                expectedValue: "0",
+                confidenceScore: 0.98,
+                reviewState: "Reviewed",
+                validationStatus: "Ready",
+                validationMessage: "Cash amount matched.",
+                linkedRecordKind: "reconciliation-case",
+                linkedRecordId: "case-1"
+              }
+            ]
+          }
+        ],
+        requestLists: [
+          {
+            requestListId: "request-list:auditrequestlist:audit:close-2026-05",
+            requestListKind: "AuditRequestList",
+            targetKind: "audit",
+            targetId: "close-2026-05",
+            highestSeverity: "Critical",
+            status: "Open",
+            requestCount: 1,
+            requestIds: ["support-request:missingevidence:audit-support"],
+            evidenceKinds: ["audit-history"],
+            blockedOutputs: ["report-pack/close-2026-05"],
+            summary: "audit/close-2026-05 has 1 frozen request; 1 open request remains."
+          }
+        ],
+        supportRequests: [
+          {
+            requestId: "support-request:missingevidence:audit-support",
+            requestKind: "MissingEvidence",
+            evidenceId: "audit-support",
+            evidenceKind: "audit-history",
+            severity: "Critical",
+            status: "Open",
+            summary: "Audit support package is missing.",
+            sourceSystem: "test",
+            workItemId: "audit-request:close-2026-05",
+            blockedOutput: "report-pack/close-2026-05"
           }
         ]
       }
     };
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+    vi.mocked(listEvidenceVaultRequestLists).mockResolvedValue([vaultRequestListEntry]);
     vi.mocked(validateEvidencePacket).mockResolvedValue(validation);
     vi.mocked(exportEvidenceManifest).mockResolvedValue(exportResponse);
     const user = userEvent.setup();
@@ -985,7 +1369,36 @@ describe("EvidenceWorkbenchScreen", () => {
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
     expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    expect(listEvidenceVaultRequestLists).toHaveBeenCalledWith(
+      {
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        status: "Open",
+        maxResults: 25
+      },
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+    const requestListPanel = screen.getByRole("region", { name: "Evidence Vault request lists" });
+    expect(requestListPanel).toHaveTextContent("1 open request list");
+    expect(requestListPanel).toHaveTextContent("Strategy Run run-1");
+    expect(requestListPanel).toHaveTextContent("Audit close-2026-05");
+    expect(requestListPanel).toHaveTextContent("2 open requests");
+    expect(requestListPanel).toHaveTextContent("ev-request-list-demo");
+    expect(requestListPanel).toHaveTextContent("Audit support package is missing.");
+    expect(screen.getByRole("link", { name: /open retained manifest for request list/i })).toHaveAttribute(
+      "href",
+      "/workstation/evidence/strategy-run/run-1/manifest.json"
+    );
     expect(screen.getByText("Missing evidence")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Operational Evidence Graph" })).toHaveTextContent(
+      "4/9 layers, 44% coverage"
+    );
+    expect(screen.getByRole("list", { name: "Operational evidence proof-chain layers" })).toHaveTextContent(
+      "No Normalization evidence is present in this packet."
+    );
+    expect(screen.getByRole("list", { name: "Operational evidence proof-chain layers" })).toHaveTextContent(
+      "1 missing node"
+    );
     expect(screen.getByRole("region", { name: "Meridian Assurance" })).toHaveTextContent("45% assurance");
     expect(screen.getByRole("region", { name: "Meridian Assurance" })).toHaveTextContent("No-orphan rule breached");
     expect(screen.getByRole("list", { name: "Assurance score components" })).toHaveTextContent("Replay freshness");
@@ -1021,13 +1434,25 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
-    expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact")).toBeInTheDocument();
+    expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact, 1 request list, 1 support request")).toBeInTheDocument();
     expect(screen.getByText("ev-abcdefabcdefabcdefabcdef")).toBeInTheDocument();
     expect(screen.getByText("File Bundle")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Retained vault artifacts" })).toBeInTheDocument();
     expect(screen.getByText("Broker Statement")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv")).toBeInTheDocument();
     expect(screen.getByText("Report report-pack-1")).toBeInTheDocument();
+    expect(screen.getByText("Upload via Evidence Vault upload; received May 9, 12:30 UTC; reference portal-upload:broker-statement")).toBeInTheDocument();
+    expect(screen.getByText("1 extracted field; 1 validated; 1 reviewed")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Evidence vault request lists" })).toBeInTheDocument();
+    expect(screen.getAllByText("Audit Request List").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Audit close-2026-05").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("audit/close-2026-05 has 1 frozen request; 1 open request remains.")).toBeInTheDocument();
+    expect(screen.getAllByText("Audit History").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("list", { name: "Evidence vault support requests" })).toBeInTheDocument();
+    expect(screen.getAllByText("Missing Evidence").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("audit-support").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Audit support package is missing.").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("audit-request:close-2026-05").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("link", { name: /open retained evidence manifest/i })).toHaveAttribute(
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"

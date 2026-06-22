@@ -18,6 +18,13 @@ public partial class WorkspaceShellContextStripControl : UserControl
             typeof(WorkspaceShellContextStripControl),
             new PropertyMetadata(new WorkspaceShellContext(), OnShellContextChanged));
 
+    public static readonly DependencyProperty IsCompactProperty =
+        DependencyProperty.Register(
+            nameof(IsCompact),
+            typeof(bool),
+            typeof(WorkspaceShellContextStripControl),
+            new PropertyMetadata(false, OnCompactPresentationChanged));
+
     public WorkspaceShellContextStripControl()
     {
         InitializeComponent();
@@ -28,6 +35,12 @@ public partial class WorkspaceShellContextStripControl : UserControl
     {
         get => (WorkspaceShellContext)GetValue(ShellContextProperty);
         set => SetValue(ShellContextProperty, value);
+    }
+
+    public bool IsCompact
+    {
+        get => (bool)GetValue(IsCompactProperty);
+        set => SetValue(IsCompactProperty, value);
     }
 
     internal static WorkspaceShellBadge? ResolveAttentionBadge(WorkspaceShellContext? shellContext)
@@ -69,6 +82,14 @@ public partial class WorkspaceShellContextStripControl : UserControl
         }
     }
 
+    private static void OnCompactPresentationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is WorkspaceShellContextStripControl control)
+        {
+            control.UpdateAttentionPresentation();
+        }
+    }
+
     private static bool IsAttentionTone(string tone)
         => string.Equals(tone, WorkspaceTone.Danger, StringComparison.Ordinal)
             || string.Equals(tone, WorkspaceTone.Warning, StringComparison.Ordinal);
@@ -93,6 +114,14 @@ public partial class WorkspaceShellContextStripControl : UserControl
     {
         if (AttentionBanner is null)
         {
+            return;
+        }
+
+        if (IsCompact)
+        {
+            AttentionBanner.Visibility = Visibility.Collapsed;
+            AttentionTitleText.Text = string.Empty;
+            AttentionDetailText.Text = string.Empty;
             return;
         }
 

@@ -127,7 +127,8 @@ public static class LiveDataEndpoints
                 filter = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var part in symbols.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
-                    if (part.Length > 0) filter.Add(part);
+                    if (part.Length > 0)
+                        filter.Add(part);
                 }
             }
 
@@ -483,7 +484,8 @@ public static class LiveDataEndpoints
 
     private static SessionStatsDto? ToSessionDto(Meridian.Contracts.Domain.Models.SessionStats? stats)
     {
-        if (stats is null) return null;
+        if (stats is null)
+            return null;
         return new SessionStatsDto(
             SessionDate: stats.SessionDate.ToString("yyyy-MM-dd"),
             Open: stats.Open,

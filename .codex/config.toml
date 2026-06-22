@@ -1,6 +1,316 @@
-# Repository-local Codex defaults must fail closed. Individual operators can
-# override these settings in their user profile when a task genuinely needs
-# broader filesystem access or unattended execution.
-sandbox_mode = "workspace-write"
+# Repository-local Codex defaults are optimized for trusted Meridian development.
+# Individual operators can still override these settings in their user profile
+# when a task needs narrower isolation, unattended execution, external services,
+# or personal model choices.
 
+################################################################################
+# Permission Baseline
+################################################################################
+
+# Keep filesystem access fast for trusted shared project work while preserving
+# interactive approval for escalation-sensitive commands.
+# Documented Codex values include: read-only, workspace-write, danger-full-access.
+sandbox_mode = "danger-full-access"
+
+# Keep command escalation interactive by default. Operators who need unattended
+# automation should override this in their own Codex home, not in repository-local
+# config.
 approval_policy = "on-request"
+
+# Avoid loading user shell startup state from shared project defaults. User
+# profiles can opt back into login-shell behavior when a machine requires it.
+allow_login_shell = false
+
+# Meridian work often depends on current external API/tooling behavior. Keep the
+# web-search surface live by default; operator-specific domain limits belong in
+# user-level profiles.
+web_search = "live"
+
+################################################################################
+# Project Guidance Discovery
+################################################################################
+
+# Allow the root AGENTS.md plus the narrower .codex/AGENTS.md guidance to fit
+# comfortably while still limiting accidental instruction bloat.
+project_doc_max_bytes = 65536
+
+# Allow legacy agent shims to remain discoverable when a directory lacks
+# AGENTS.md / AGENTS.override.md. Prefer AGENTS.md for new directory-scoped rules.
+project_doc_fallback_filenames = ["CLAUDE.md"]
+
+# Anchor project discovery on the Meridian solution first, then fall back to the
+# Git checkout marker when Codex searches parent directories for .codex folders.
+project_root_markers = ["Meridian.sln", ".git"]
+
+################################################################################
+# Shared Config Boundary
+################################################################################
+
+# Project-local config should stay free of secrets and machine-specific values.
+# Do not add API keys, tokens, provider auth, endpoint overrides, user-only
+# paths, telemetry exporters, notification commands, or personal model
+# preferences here. Put those in ~/.codex/config.toml or a user profile.
+#
+# Keep model, model_reasoning_effort, model_provider, model_providers,
+# openai_base_url, chatgpt_base_url, mcp_servers, notify, profile, profiles, and
+# otel out of this shared file unless the current Codex documentation explicitly
+# permits the specific project-scoped use case and the value is secret-free.
+
+################################################################################
+# Shared Tooling Features
+################################################################################
+
+[features]
+# Keep Codex lifecycle hooks available for trusted project, user, managed, or
+# plugin layers. Actual command hook handlers must live in hooks.json or inline
+# [hooks] tables and still require the normal Codex trust review before running.
+hooks = true
+
+# Meridian keeps many reusable specialist profiles in .codex/agents. Enable the
+# stable multi-agent surface while keeping concurrency bounded below.
+multi_agent = true
+child_agents_md = true
+
+[features.multi_agent_v2]
+enabled = true
+max_concurrent_threads_per_session = 6
+min_wait_timeout_ms = 10000
+default_wait_timeout_ms = 30000
+max_wait_timeout_ms = 3600000
+usage_hint_enabled = true
+usage_hint_text = "Use Meridian specialist agents only for explicit delegation or parallel work; keep ownership disjoint and preserve user-owned changes."
+
+[skills]
+include_instructions = true
+
+[skills.bundled]
+enabled = true
+
+[tools.web_search]
+context_size = "medium"
+
+################################################################################
+# Subagent Limits
+################################################################################
+
+# Keep project-local subagent orchestration bounded. Specialist profiles live
+# in .codex/agents/. The multi-agent v2 concurrency cap is configured above
+# under [features.multi_agent_v2]; do not set legacy agents.max_threads here.
+[agents]
+max_depth = 1
+job_max_runtime_seconds = 3600
+
+[agents."dense-data-grid-inspector-panel"]
+config_file = "agents/dense-data-grid-inspector-panel.toml"
+
+[agents."desktop-test-generation"]
+config_file = "agents/desktop-test-generation.toml"
+
+[agents."diagnostics-audit-timeline"]
+config_file = "agents/diagnostics-audit-timeline.toml"
+
+[agents."meridian-archive-organizer"]
+config_file = "agents/meridian-archive-organizer.toml"
+
+[agents."meridian-blueprint"]
+config_file = "agents/meridian-blueprint.toml"
+
+[agents."meridian-brainstorm"]
+config_file = "agents/meridian-brainstorm.toml"
+
+[agents."meridian-opportunity-scout"]
+config_file = "agents/meridian-opportunity-scout.toml"
+
+[agents."meridian-persona-signal-scout"]
+config_file = "agents/meridian-persona-signal-scout.toml"
+
+[agents."meridian-idea-critic"]
+config_file = "agents/meridian-idea-critic.toml"
+
+[agents."meridian-feasibility-sketcher"]
+config_file = "agents/meridian-feasibility-sketcher.toml"
+
+[agents."meridian-idea-to-blueprint-router"]
+config_file = "agents/meridian-idea-to-blueprint-router.toml"
+
+[agents."meridian-browser-workstation"]
+config_file = "agents/meridian-browser-workstation.toml"
+
+[agents."meridian-cleanup"]
+config_file = "agents/meridian-cleanup.toml"
+
+[agents."meridian-code-review"]
+config_file = "agents/meridian-code-review.toml"
+
+[agents."meridian-code-architecture"]
+config_file = "agents/meridian-code-architecture.toml"
+
+[agents."meridian-contract-governance"]
+config_file = "agents/meridian-contract-governance.toml"
+
+[agents."meridian-accounting-posting-controls"]
+config_file = "agents/meridian-accounting-posting-controls.toml"
+
+[agents."meridian-event-accounting-architecture"]
+config_file = "agents/meridian-event-accounting-architecture.toml"
+
+[agents."meridian-ledger-projection-replay-review"]
+config_file = "agents/meridian-ledger-projection-replay-review.toml"
+
+[agents."meridian-codex-skill-builder"]
+config_file = "agents/meridian-codex-skill-builder.toml"
+
+[agents."meridian-docs"]
+config_file = "agents/meridian-docs.toml"
+
+[agents."meridian-implementation-assurance"]
+config_file = "agents/meridian-implementation-assurance.toml"
+
+[agents."meridian-provider-builder"]
+config_file = "agents/meridian-provider-builder.toml"
+
+[agents."meridian-repo-navigation"]
+config_file = "agents/meridian-repo-navigation.toml"
+
+[agents."meridian-roadmap-strategist"]
+config_file = "agents/meridian-roadmap-strategist.toml"
+
+[agents."meridian-simulated-user-panel"]
+config_file = "agents/meridian-simulated-user-panel.toml"
+
+[agents."meridian-test-writer"]
+config_file = "agents/meridian-test-writer.toml"
+
+[agents."meridian-user-testing-financial-operations-professional"]
+config_file = "agents/meridian-user-testing-financial-operations-professional.toml"
+
+[agents."meridian-user-testing-investment-accountant"]
+config_file = "agents/meridian-user-testing-investment-accountant.toml"
+
+[agents."meridian-user-testing-reconciliation-analyst"]
+config_file = "agents/meridian-user-testing-reconciliation-analyst.toml"
+
+[agents."meridian-user-testing-fund-accountant"]
+config_file = "agents/meridian-user-testing-fund-accountant.toml"
+
+[agents."meridian-user-testing-operations-manager"]
+config_file = "agents/meridian-user-testing-operations-manager.toml"
+
+[agents."meridian-user-testing-data-operations-analyst"]
+config_file = "agents/meridian-user-testing-data-operations-analyst.toml"
+
+[agents."meridian-user-testing-treasury-operations-specialist"]
+config_file = "agents/meridian-user-testing-treasury-operations-specialist.toml"
+
+[agents."meridian-user-testing-reporting-analyst"]
+config_file = "agents/meridian-user-testing-reporting-analyst.toml"
+
+[agents."meridian-user-testing-portfolio-manager"]
+config_file = "agents/meridian-user-testing-portfolio-manager.toml"
+
+[agents."meridian-user-testing-investment-analyst"]
+config_file = "agents/meridian-user-testing-investment-analyst.toml"
+
+[agents."meridian-user-testing-quantitative-researcher"]
+config_file = "agents/meridian-user-testing-quantitative-researcher.toml"
+
+[agents."meridian-user-testing-trader"]
+config_file = "agents/meridian-user-testing-trader.toml"
+
+[agents."meridian-user-testing-risk-manager"]
+config_file = "agents/meridian-user-testing-risk-manager.toml"
+
+[agents."meridian-user-testing-cfo"]
+config_file = "agents/meridian-user-testing-cfo.toml"
+
+[agents."meridian-user-testing-cio"]
+config_file = "agents/meridian-user-testing-cio.toml"
+
+[agents."meridian-user-testing-controller"]
+config_file = "agents/meridian-user-testing-controller.toml"
+
+[agents."meridian-user-testing-compliance-officer"]
+config_file = "agents/meridian-user-testing-compliance-officer.toml"
+
+[agents."meridian-user-testing-fund-investor-lp"]
+config_file = "agents/meridian-user-testing-fund-investor-lp.toml"
+
+[agents."meridian-user-testing-ria-client"]
+config_file = "agents/meridian-user-testing-ria-client.toml"
+
+[agents."meridian-user-testing-family-beneficiary"]
+config_file = "agents/meridian-user-testing-family-beneficiary.toml"
+
+[agents."meridian-user-testing-trustee"]
+config_file = "agents/meridian-user-testing-trustee.toml"
+
+[agents."meridian-user-testing-auditor"]
+config_file = "agents/meridian-user-testing-auditor.toml"
+
+[agents."meridian-user-testing-system-administrator"]
+config_file = "agents/meridian-user-testing-system-administrator.toml"
+
+[agents."meridian-user-testing-security-administrator"]
+config_file = "agents/meridian-user-testing-security-administrator.toml"
+
+[agents."meridian-user-testing-integration-administrator"]
+config_file = "agents/meridian-user-testing-integration-administrator.toml"
+
+[agents."modular-desktop-mvvm"]
+config_file = "agents/modular-desktop-mvvm.toml"
+
+[agents."performance-resource-review"]
+config_file = "agents/performance-resource-review.toml"
+
+[agents."provider-management-workflow"]
+config_file = "agents/provider-management-workflow.toml"
+
+[agents."research-data-acquisition"]
+config_file = "agents/research-data-acquisition.toml"
+
+[agents."safe-refactoring"]
+config_file = "agents/safe-refactoring.toml"
+
+[agents."shared-component-extraction"]
+config_file = "agents/shared-component-extraction.toml"
+
+[agents."workstation-screen-composition"]
+config_file = "agents/workstation-screen-composition.toml"
+
+################################################################################
+# Workspace Sandbox
+################################################################################
+
+# Workspace-write mode should not imply broad network or machine writes. Keep
+# extra writable roots empty in shared config; add local paths in user config
+# when a specific workflow needs them.
+[sandbox_workspace_write]
+writable_roots = []
+network_access = false
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false
+
+################################################################################
+# Shell Environment
+################################################################################
+
+# Inherit the normal process environment for Windows/.NET/npm command discovery,
+# but keep Codex's default secret filters and add explicit cloud/provider guards.
+[shell_environment_policy]
+inherit = "all"
+ignore_default_excludes = false
+exclude = [
+  "AWS_*",
+  "AZURE_*",
+  "GCP_*",
+  "GOOGLE_*",
+  "GITHUB_TOKEN",
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "MERIDIAN_*_KEY",
+  "MERIDIAN_*_TOKEN",
+  "*PASSWORD*",
+]
+set = {}
+include_only = []
+experimental_use_profile = false

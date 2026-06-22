@@ -57,7 +57,7 @@ def recommended_actions(reasons: list[str]) -> list[str]:
         actions.append("review README changes and rerender generated blocks if needed")
     if "missing_hash_entry" in reasons:
         actions.append("review the module baseline and refresh hashes after docs are current")
-    actions.append("run validate-doc-hashes.py --write only after the docs/code alignment review is complete")
+    actions.append("run validate-doc-hashes.py --write-module <MODULE_ID> only after the docs/code alignment review is complete")
     return list(dict.fromkeys(actions))
 
 

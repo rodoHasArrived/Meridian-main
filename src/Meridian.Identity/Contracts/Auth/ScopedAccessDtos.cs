@@ -1,3 +1,5 @@
+using Meridian.Contracts.Workstation;
+
 namespace Meridian.Identity.Auth;
 
 public enum AccessPrincipalKindDto
@@ -41,7 +43,10 @@ public sealed record UserAccessAssignmentDto(
     string? RevokedBy = null,
     DateTimeOffset? RevokedAtUtc = null,
     string? RevocationReason = null,
-    string? LastAuditId = null);
+    string? LastAuditId = null,
+    decimal? ApprovalLimitAmount = null,
+    string? ApprovalLimitCurrency = null,
+    string? SegregationOfDutiesRule = null);
 
 public sealed record UserAccessAssignmentCreateRequestDto(
     string PrincipalId,
@@ -55,14 +60,19 @@ public sealed record UserAccessAssignmentCreateRequestDto(
     DateTimeOffset? EffectiveTo,
     string RequestedBy,
     string Rationale,
-    string? CorrelationId = null);
+    decimal? ApprovalLimitAmount = null,
+    string? ApprovalLimitCurrency = null,
+    string? SegregationOfDutiesRule = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record UserAccessAssignmentRevokeRequestDto(
     Guid AssignmentId,
     long ExpectedVersion,
     string RequestedBy,
     string Rationale,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record UserAccessAssignmentQueryDto(
     string? PrincipalId = null,
@@ -88,7 +98,10 @@ public sealed record UserAccessAssignmentAuditEventDto(
     Guid? ScopeId,
     IReadOnlyList<string> PermissionNames,
     long PermissionMask,
-    long Version);
+    long Version,
+    decimal? ApprovalLimitAmount = null,
+    string? ApprovalLimitCurrency = null,
+    string? SegregationOfDutiesRule = null);
 
 public sealed record ScopedAuthorizationDecisionDto(
     bool IsAllowed,

@@ -1,0 +1,38 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Accent & text" subtitle="One teal-blue accent + the dark-on-light text ladder" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .group { display: flex; flex-direction: column; gap: 6px; }
+  .swrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .sw { border-radius: 8px; padding: 10px 10px 8px; height: 64px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
+  .n { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: #fff; }
+  .v { font-family: var(--font-data); font-size: 8.5px; color: rgba(255,255,255,.8); }
+  .txt { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+  .tline { font-family: var(--font-data); font-size: 12.5px; }
+  .cap { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <div class="group">
+    <span class="cap">Accent · teal-blue</span>
+    <div class="swrow">
+      <div class="sw" style="background: var(--accent);"><span class="n">accent</span><span class="v">#2F6F8F</span></div>
+      <div class="sw" style="background: var(--accent-dim);"><span class="n">dim · pressed</span><span class="v">#255B75</span></div>
+      <div class="sw" style="background: var(--accent-vibrant);"><span class="n">vibrant</span><span class="v">#3B82A6</span></div>
+    </div>
+  </div>
+  <div class="group">
+    <span class="cap">Text on paper</span>
+    <div class="txt">
+      <span class="tline" style="color: var(--text-primary);">primary · #22272E</span>
+      <span class="tline" style="color: var(--text-secondary);">secondary · #4D5967</span>
+      <span class="tline" style="color: var(--text-muted);">muted · #6E7781</span>
+      <span class="tline" style="color: var(--text-disabled);">disabled · #9AA4AF</span>
+    </div>
+  </div>
+</body>
+</html>

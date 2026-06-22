@@ -58,6 +58,293 @@
       }
     },
     {
+      "id": "architecture-boundary",
+      "description": "Route architecture conformance, module-boundary, and dependency-map requests to the code architecture lane.",
+      "matchWeighted": {
+        "architecture": 2.5,
+        "module architecture": 2.5,
+        "module boundary": 2.5,
+        "boundary drift": 3.0,
+        "dependency map": 2.0,
+        "adr": 1.5,
+        "source-doc": 1.5,
+        "layer violation": 2.0
+      },
+      "route": {
+        "lane": "architecture",
+        "skill": "meridian-code-architecture",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Architecture prompts need module-map, source-doc, ADR, and dependency evidence before implementation or review.",
+        "validationFloor": [
+          "python .codex/skills/meridian-code-architecture/scripts/architecture_surface.py --path <path> --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "architecture-surface",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "architecture assessment changes shared contracts",
+          "dependency evidence shows layer violation",
+          "source-doc or ADR alignment is missing"
+        ]
+      }
+    },
+    {
+      "id": "contract-governance",
+      "description": "Route DTO, API route, provider interface, and shared read-model impact requests to contract governance.",
+      "matchWeighted": {
+        "contract": 2.5,
+        "dto": 2.0,
+        "api route": 2.0,
+        "read model": 2.0,
+        "provider interface": 2.0,
+        "contract impact": 3.0,
+        "shared payload": 2.0,
+        "compatibility": 1.5
+      },
+      "route": {
+        "lane": "contract-governance",
+        "skill": "meridian-contract-governance",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Shared contract prompts must trace services, browser, WPF, tests, docs, and compatibility before implementation.",
+        "validationFloor": [
+          "python .codex/skills/meridian-contract-governance/scripts/contract_impact.py --path <path> --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "contract-impact",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "contract change is breaking or removal",
+          "browser and WPF consumers diverge",
+          "consumer tests or docs are missing"
+        ]
+      }
+    },
+    {
+      "id": "accounting-posting-controls",
+      "description": "Route accounting posting command, approval, period lock, idempotency, and reversal/rebook control requests to the posting-controls specialist.",
+      "matchWeighted": {
+        "posting control": 3.0,
+        "posting command": 2.8,
+        "journal draft": 2.2,
+        "ledger write gate": 2.5,
+        "approval gate": 2.2,
+        "period lock": 2.2,
+        "idempotency key": 2.2,
+        "stale-version": 2.0,
+        "reversal/rebook": 2.2,
+        "double-entry balance": 2.0
+      },
+      "route": {
+        "lane": "accounting-posting-controls",
+        "skill": "meridian-accounting-posting-controls",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Posting-control prompts need source evidence, approval, period, idempotency, concurrency, double-entry, and correction-path checks before implementation.",
+        "validationFloor": [
+          "python .codex/skills/meridian-accounting-posting-controls/scripts/posting_controls_check.py --summary",
+          "python .codex/skills/meridian-accounting-posting-controls/scripts/run_evals.py --all --dry-run --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "accounting-posting-controls-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "posting command or journal contract changes",
+          "period lock or approval behavior is missing",
+          "idempotency, concurrency, or reversal/rebook controls are incomplete"
+        ]
+      }
+    },
+    {
+      "id": "ledger-projection-replay-review",
+      "description": "Route ledger projection, replay ordering, rebuild, versioning, drift, and report handoff requests to the projection/replay specialist.",
+      "matchWeighted": {
+        "projection replay": 3.0,
+        "ledger projection": 2.8,
+        "projection rebuild": 2.5,
+        "idempotent replay": 2.5,
+        "out-of-order": 2.0,
+        "duplicate detection": 2.0,
+        "projection version": 2.2,
+        "balance drift": 2.0,
+        "report-line provenance": 2.0,
+        "replay evidence": 1.8
+      },
+      "route": {
+        "lane": "ledger-projection-replay-review",
+        "skill": "meridian-ledger-projection-replay-review",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Projection/replay prompts need duplicate, ordering, rebuild, projection-version, balance-drift, report-handoff, and audit replay controls before implementation.",
+        "validationFloor": [
+          "python .codex/skills/meridian-ledger-projection-replay-review/scripts/projection_replay_check.py --summary",
+          "python .codex/skills/meridian-ledger-projection-replay-review/scripts/run_evals.py --all --dry-run --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "ledger-projection-replay-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "projection replay changes accounting balances",
+          "projection or report-line contracts change",
+          "duplicate, ordering, rebuild, versioning, or drift controls are incomplete"
+        ]
+      }
+    },
+    {
+      "id": "event-accounting-architecture",
+      "description": "Route event-sourced accounting, immutable ledger, projection/replay, and accounting evidence architecture requests to the event accounting specialist.",
+      "matchWeighted": {
+        "event accounting": 3.0,
+        "event-based accounting": 3.0,
+        "event sourced accounting": 3.0,
+        "event-sourced ledger": 2.8,
+        "immutable journal": 2.5,
+        "ledger projection": 2.5,
+        "reversal rebook": 2.0,
+        "fund-event posting": 2.5,
+        "accounting evidence": 2.0
+      },
+      "route": {
+        "lane": "event-accounting-architecture",
+        "skill": "meridian-event-accounting-architecture",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Event accounting prompts need immutable ledger, double-entry, evidence, approval, period, idempotency, replay, and projection controls before implementation.",
+        "validationFloor": [
+          "python .codex/skills/meridian-event-accounting-architecture/scripts/accounting_architecture_check.py --summary",
+          "python .codex/skills/meridian-event-accounting-architecture/scripts/run_evals.py --all --dry-run --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "event-accounting-architecture-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "posting rules or ledger contracts change",
+          "projection replay changes accounting balances",
+          "evidence, approval, period lock, or idempotency controls are missing"
+        ]
+      }
+    },
+    {
+      "id": "brainstorm-ideation",
+      "description": "Route open-ended ideas, quick wins, product bets, and opportunity exploration to the brainstorm lane.",
+      "matchWeighted": {
+        "brainstorm": 3.0,
+        "ideas": 2.0,
+        "quick wins": 2.5,
+        "product bets": 2.0,
+        "what should we build": 2.5,
+        "opportunities": 1.5,
+        "ux improvements": 1.5,
+        "technical debt ideas": 1.5
+      },
+      "route": {
+        "lane": "ideate",
+        "skill": "meridian-brainstorm",
+        "mode": "Lightweight",
+        "modelRouteId": "analysis-economy",
+        "rationale": "Ideation prompts should produce Meridian-grounded options, not implementation specs.",
+        "validationFloor": [
+          "python .codex/skills/meridian-brainstorm/scripts/brainstorm_output_check.py --sample receipt-table --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "brainstorm-output-check",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "user selects one idea for implementation design",
+          "ideas need committed roadmap sequencing",
+          "persona critique is required before selection"
+        ]
+      }
+    },
+    {
+      "id": "codex-skill-builder",
+      "description": "Route Codex skill package, eval, script, metadata, profile, and route coverage work to the skill builder lane.",
+      "matchWeighted": {
+        "codex skill": 3.0,
+        "skill package": 2.5,
+        "openai.yaml": 2.0,
+        "skill eval": 2.5,
+        "run_evals.py": 2.0,
+        "agent profile": 1.5,
+        "prompt-route": 1.5,
+        "skill_script_advisor": 2.0
+      },
+      "route": {
+        "lane": "codex-skill-builder",
+        "skill": "meridian-codex-skill-builder",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Codex skill package work must keep SKILL.md, metadata, scripts, evals, profiles, catalogs, and route rules aligned.",
+        "validationFloor": [
+          "python .codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill> --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary",
+          "python build/scripts/docs/check-ai-inventory.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "skill-package-audit",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "skill behavior is shared across hosts",
+          "eval or script helper changes deterministic validation",
+          "catalog or route coverage is incomplete"
+        ]
+      }
+    },
+    {
       "id": "docs-maintenance",
       "description": "Route docs/index updates to the docs lane.",
       "matchWeighted": {
@@ -91,6 +378,235 @@
           "docs change touches shared AI policy",
           "docs change spans Codex and shared host guidance",
           "required validation script fails"
+        ]
+      }
+    },
+    {
+      "id": "cleanup-maintainability",
+      "description": "Route focused behavior-preserving cleanup, dead code, stale docs, and tidy maintainability requests to cleanup.",
+      "matchWeighted": {
+        "clean up": 3.0,
+        "cleanup": 3.0,
+        "tidy": 2.5,
+        "dead code": 2.5,
+        "stale docs": 2.2,
+        "maintainability": 2.0,
+        "remove unused": 2.0,
+        "log hygiene": 1.8
+      },
+      "route": {
+        "lane": "cleanup",
+        "skill": "meridian-cleanup",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Focused cleanup prompts must preserve observable behavior, avoid unrelated formatter churn, and prove the touched surface with narrow validation.",
+        "validationFloor": [
+          "git diff --check",
+          "python .codex/skills/meridian-cleanup/scripts/run_evals.py --all --dry-run --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "cleanup-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "cleanup uncovers a likely behavioral bug",
+          "stale material belongs in archive instead of in-place cleanup",
+          "cleanup would change public contracts or architecture boundaries"
+        ]
+      }
+    },
+    {
+      "id": "implementation-assurance",
+      "description": "Route implementation, rollout certification, and evidence-backed validation requests to implementation assurance.",
+      "matchWeighted": {
+        "implement": 2.0,
+        "certify": 2.5,
+        "validate rollout": 2.5,
+        "implementation assurance": 3.0,
+        "prove it": 1.8,
+        "ship this": 1.8,
+        "residual risk": 1.5
+      },
+      "route": {
+        "lane": "implementation-assurance",
+        "skill": "meridian-implementation-assurance",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Implementation and certification prompts need requirement-to-evidence mapping, narrow proof, docs sync, and residual-risk reporting.",
+        "validationFloor": [
+          "python build/scripts/docs/check-codex-skills.py --summary",
+          "python .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "implementation-assurance-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "validation failure changes implementation plan",
+          "docs or generated metadata must move with source",
+          "residual risk requires user acceptance"
+        ]
+      }
+    },
+    {
+      "id": "blueprint-planning",
+      "description": "Route selected ideas and design-plan requests to the Meridian blueprint lane.",
+      "matchWeighted": {
+        "blueprint": 3.0,
+        "technical design": 2.5,
+        "implementation plan": 2.0,
+        "design doc": 1.5,
+        "code-ready plan": 2.5,
+        "acceptance criteria": 1.5
+      },
+      "route": {
+        "lane": "plan",
+        "skill": "meridian-blueprint",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Blueprint prompts should convert one selected idea into a decision-complete, code-ready Meridian design.",
+        "validationFloor": [
+          "python .codex/skills/meridian-blueprint/scripts/run_evals.py --all --dry-run --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "blueprint-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "plan changes shared contracts",
+          "plan requires roadmap reprioritization",
+          "acceptance criteria are ambiguous"
+        ]
+      }
+    },
+    {
+      "id": "roadmap-strategy",
+      "description": "Route roadmap, target-state, and delivery sequencing requests to roadmap strategist.",
+      "matchWeighted": {
+        "roadmap": 3.0,
+        "target state": 2.5,
+        "delivery plan": 2.5,
+        "wave": 1.8,
+        "prioritize": 1.5,
+        "opportunity map": 1.5
+      },
+      "route": {
+        "lane": "roadmap",
+        "skill": "meridian-roadmap-strategist",
+        "mode": "Standard",
+        "modelRouteId": "governance-research",
+        "rationale": "Roadmap prompts need source-led reconciliation of roadmap data, delivery waves, and product target-state docs.",
+        "validationFloor": [
+          "python .codex/skills/meridian-roadmap-strategist/scripts/run_evals.py --all --dry-run --summary",
+          "python build/scripts/docs/validate-roadmap-registry.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "roadmap-strategist-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "roadmap data changes",
+          "deferred lane is proposed as active",
+          "source docs and roadmap registry disagree"
+        ]
+      }
+    },
+    {
+      "id": "archive-organization",
+      "description": "Route archive, stale-material, and repository hygiene classification requests to archive organizer.",
+      "matchWeighted": {
+        "archive": 3.0,
+        "stale material": 2.5,
+        "deprecated": 1.8,
+        "delete candidate": 1.8,
+        "superseded": 2.0,
+        "move stale": 2.0
+      },
+      "route": {
+        "lane": "archive",
+        "skill": "meridian-archive-organizer",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Archive prompts must classify with evidence before moving or deleting material.",
+        "validationFloor": [
+          "python .codex/skills/meridian-archive-organizer/scripts/run_evals.py --all --json",
+          "git diff --check"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "archive-organizer-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "archive move spans many files",
+          "delete candidate lacks evidence",
+          "generated docs or source registries need updates"
+        ]
+      }
+    },
+    {
+      "id": "simulated-user-review",
+      "description": "Route persona-backed product critique and user-testing requests to simulated user panel.",
+      "matchWeighted": {
+        "simulated user": 3.0,
+        "user testing": 2.5,
+        "persona": 2.0,
+        "design partner": 2.0,
+        "usability": 2.0,
+        "release gate": 1.5
+      },
+      "route": {
+        "lane": "simulated-user-review",
+        "skill": "meridian-simulated-user-panel",
+        "mode": "Standard",
+        "modelRouteId": "governance-research",
+        "rationale": "Persona review prompts should critique concrete artifacts with explicit evidence and inference boundaries.",
+        "validationFloor": [
+          "python .codex/skills/meridian-simulated-user-panel/scripts/run_evals.py --all --dry-run --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "simulated-user-panel-evals",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "review lacks a concrete artifact",
+          "persona assumptions need product-source confirmation",
+          "feedback becomes implementation scope"
         ]
       }
     },
@@ -160,6 +676,331 @@
         "escalationTriggers": [
           "desktop change touches shared service contracts",
           "focused WPF validation fails"
+        ]
+      }
+    },
+    {
+      "id": "desktop-screen-composition",
+      "description": "Route WPF workspace and screen composition requests to workstation screen composition.",
+      "matchWeighted": {
+        "screen composition": 3.0,
+        "workspace layout": 2.5,
+        "command bar": 1.8,
+        "detail pane": 1.8,
+        "operator briefing": 1.8,
+        "workstation screen": 2.5
+      },
+      "route": {
+        "lane": "desktop-composition",
+        "skill": "workstation-screen-composition",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Screen composition prompts need shared shell, navigation, command, status, table, and inspector primitives.",
+        "validationFloor": [
+          "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~<TouchedShellOrViewModel>\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "screen introduces new shared primitives",
+          "navigation taxonomy changes",
+          "focused WPF validation fails"
+        ]
+      }
+    },
+    {
+      "id": "desktop-shared-component-extraction",
+      "description": "Route repeated WPF control, template, command, and view-model extraction to shared component extraction.",
+      "matchWeighted": {
+        "shared component": 2.5,
+        "extract component": 3.0,
+        "duplicate controls": 2.0,
+        "reusable control": 2.0,
+        "shared primitive": 2.0
+      },
+      "route": {
+        "lane": "component-extraction",
+        "skill": "shared-component-extraction",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Repeated desktop patterns should be extracted only when reuse and ownership are clear.",
+        "validationFloor": [
+          "pwsh ./tools/codex/component-inventory.ps1",
+          "git diff --check"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "extraction changes observable behavior",
+          "shared primitive ownership is unclear",
+          "WPF tests do not cover affected consumers"
+        ]
+      }
+    },
+    {
+      "id": "provider-management-workflow",
+      "description": "Route WPF provider setup, credential, health, validation, and recovery workflow requests to provider management workflow.",
+      "matchWeighted": {
+        "provider setup": 2.5,
+        "provider management": 3.0,
+        "credential workflow": 2.0,
+        "provider health": 2.0,
+        "provider recovery": 2.0
+      },
+      "route": {
+        "lane": "provider-workflow",
+        "skill": "provider-management-workflow",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Provider workflow prompts need credential, health, validation, degradation, and recovery guardrails.",
+        "validationFloor": [
+          "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~Provider\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "credential handling changes",
+          "provider validation or failover behavior changes",
+          "security or operator recovery evidence is missing"
+        ]
+      }
+    },
+    {
+      "id": "research-data-acquisition",
+      "description": "Route research import, preview, validation, lineage, and catalog handoff workflows to research data acquisition.",
+      "matchWeighted": {
+        "data acquisition": 2.5,
+        "research import": 2.5,
+        "import preview": 2.0,
+        "lineage": 1.8,
+        "backfill": 1.5,
+        "catalog handoff": 2.0
+      },
+      "route": {
+        "lane": "research-acquisition",
+        "skill": "research-data-acquisition",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Research acquisition prompts need bounded import, preview, validation, lineage, and catalog handoff.",
+        "validationFloor": [
+          "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~Data\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "provider-backed import touches shared contracts",
+          "lineage or catalog handoff is incomplete",
+          "validation finds dirty or rejected rows"
+        ]
+      }
+    },
+    {
+      "id": "dense-grid-inspector",
+      "description": "Route dense WPF data grid, table, inspector, and selection behavior requests to dense data grid skill.",
+      "matchWeighted": {
+        "dense grid": 3.0,
+        "data grid": 2.0,
+        "inspector panel": 2.5,
+        "selection persistence": 2.0,
+        "virtualized grid": 2.5,
+        "blotter": 1.8
+      },
+      "route": {
+        "lane": "dense-data-ui",
+        "skill": "dense-data-grid-inspector-panel",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Dense table prompts need virtualization, lightweight row models, stable selection, and bounded detail loading.",
+        "validationFloor": [
+          "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~<TouchedViewModel>\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "large dataset assumptions are unknown",
+          "virtualization or selection behavior changes",
+          "resource review finds unbounded work"
+        ]
+      }
+    },
+    {
+      "id": "diagnostics-audit-timeline",
+      "description": "Route diagnostics, audit timeline, evidence trail, and recovery surface requests to diagnostics audit timeline.",
+      "matchWeighted": {
+        "diagnostics": 2.0,
+        "audit timeline": 3.0,
+        "evidence trail": 2.5,
+        "activity history": 2.0,
+        "replay evidence": 2.0,
+        "operator recovery": 1.8
+      },
+      "route": {
+        "lane": "diagnostics-audit",
+        "skill": "diagnostics-audit-timeline",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Diagnostics and audit prompts need evidence-first presentation, recovery actions, and replayable state.",
+        "validationFloor": [
+          "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~Diagnostics\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "audit evidence is incomplete",
+          "recovery action changes durable state",
+          "timeline source data lacks provenance"
+        ]
+      }
+    },
+    {
+      "id": "performance-resource-review",
+      "description": "Route resource, rendering, memory, CPU, I/O, concurrency, and lifecycle review requests to performance resource review.",
+      "matchWeighted": {
+        "performance": 2.0,
+        "resource review": 3.0,
+        "memory": 1.8,
+        "cpu": 1.5,
+        "rendering": 1.5,
+        "lifecycle": 1.5,
+        "responsiveness": 2.0
+      },
+      "route": {
+        "lane": "resource-review",
+        "skill": "performance-resource-review",
+        "mode": "Deep Review",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Resource prompts need explicit memory, CPU, I/O, rendering, concurrency, lifecycle, and validation evidence.",
+        "validationFloor": [
+          "pwsh ./tools/codex/resource-review.ps1",
+          "git diff --check"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "resource risk is on a hot path",
+          "local machine capacity blocks validation",
+          "fix requires shared lifecycle changes"
+        ]
+      }
+    },
+    {
+      "id": "safe-refactoring",
+      "description": "Route behavior-preserving extraction, consolidation, and simplification requests to safe refactoring.",
+      "matchWeighted": {
+        "safe refactor": 3.0,
+        "behavior-preserving": 2.5,
+        "extract helper": 1.8,
+        "consolidate": 1.8,
+        "modularize without changing": 2.5
+      },
+      "route": {
+        "lane": "safe-refactor",
+        "skill": "safe-refactoring",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Safe refactoring prompts need characterization, small reversible steps, and narrow validation.",
+        "validationFloor": [
+          "git diff --check",
+          "dotnet test <touched test project> --filter \"FullyQualifiedName~<TouchedBehavior>\""
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "behavioral expectations are not characterized",
+          "refactor crosses module boundaries",
+          "validation cannot isolate touched behavior"
+        ]
+      }
+    },
+    {
+      "id": "desktop-test-generation",
+      "description": "Route WPF view-model, command, service, binding, and shell route test authoring requests to desktop test generation.",
+      "matchWeighted": {
+        "wpf test": 2.5,
+        "desktop test": 2.5,
+        "viewmodel test": 2.0,
+        "binding test": 2.0,
+        "shell route test": 2.0,
+        "command test": 1.8
+      },
+      "route": {
+        "lane": "desktop-tests",
+        "skill": "desktop-test-generation",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Desktop test prompts need focused WPF view-model, command, service, binding, and shell-route coverage.",
+        "validationFloor": [
+          "dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter \"FullyQualifiedName~<TouchedViewModelOrCommand>\" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "test needs shared service fixtures",
+          "binding test requires rendered WPF evidence",
+          "focused test fails"
         ]
       }
     },

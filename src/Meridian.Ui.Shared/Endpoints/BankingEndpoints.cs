@@ -176,6 +176,58 @@ public static class BankingEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
 
+        group.MapPost("/payments/{pendingPaymentId:guid}/bank-evidence", async (Guid pendingPaymentId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            if (!TryGetRequiredEntityId(context, out var entityId, out var entityError))
+            {
+                return entityError!;
+            }
+
+            if (!TryGetCurrentUsername(context, out var currentUser))
+            {
+                return Results.Problem("Unauthorized.", statusCode: StatusCodes.Status401Unauthorized);
+            }
+
+            if (!HasPermission(context, UserPermission.ManageDirectLending))
+            {
+                return Results.Problem("Forbidden.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            var payment = await service.GetPaymentAsync(pendingPaymentId, context.RequestAborted).ConfigureAwait(false);
+            if (payment is null || payment.EntityId != entityId)
+            {
+                return Results.NotFound();
+            }
+
+            var request = JsonSerializer.Deserialize<RecordPaymentBankEvidenceRequest>(body.GetRawText(), jsonOptions);
+            if (request is null)
+            {
+                return Results.Problem("Bank evidence request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var serverRequest = request with { RecordedBy = currentUser };
+
+            try
+            {
+                var result = await service.RecordPaymentBankEvidenceAsync(pendingPaymentId, serverRequest, context.RequestAborted).ConfigureAwait(false);
+                return result is null ? Results.NotFound() : Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (BankingException ex)
+            {
+                return ToProblem(ex);
+            }
+        })
+        .WithName("RecordPaymentBankEvidence")
+        .Produces<BankTransactionDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound);
+
         // -------------------------------------------------------------------
         // Bank transaction records
         // -------------------------------------------------------------------

@@ -8,13 +8,16 @@ All agent surfaces should follow the shared provider-agnostic workflow in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 
 All three surfaces should stay aligned around the same current product framing: Meridian is a
-.NET 10 fund-management and trading platform with an active browser-based operator workstation,
+.NET 10 operational-finance and trading platform with an active browser-based operator workstation,
 active WPF operator work, and visible navigation limited to `Trading`, `Portfolio`, `Accounting`,
 `Reporting`, `Strategy`, `Data`, and `Settings` on top of strong provider, storage, execution,
 ledger, and MCP foundations.
 
 When an agent lane needs validator, route, handoff-packet, or maintenance-script selection, load
 [`../tooling/README.md`](../tooling/README.md) instead of rediscovering command lanes from scratch.
+When an agent, prompt, skill, rubric, or graph-memory workflow is being improved from feedback,
+use the Codex self-improving loop in [`../codex/self-improving-agents.md`](../codex/self-improving-agents.md)
+and keep promotion evidence tied to the owning skill or agent profile.
 
 ---
 
@@ -24,8 +27,7 @@ When an agent lane needs validator, route, handoff-packet, or maintenance-script
 
 **Copilot file:** [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/repo-navigation-agent.md)
 
-**Claude files:** [`.claude/agents/meridian-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-navigation.md),
-[`.claude/agents/meridian-repo-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-repo-navigation.md)
+**Claude file:** [`.claude/agents/meridian-repo-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-repo-navigation.md)
 
 Routes large-repo work to the right subsystem, docs, entrypoints, and downstream specialist agents before implementation starts. It owns four roles:
 
@@ -48,17 +50,109 @@ Primary inputs:
 Codex TOML profiles route recurring specialist work to compact, provider-specific entrypoints while
 the shared policy remains in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)
 and [`../codex/README.md`](../codex/README.md).
+The former `meridian-navigation` and `meridian-user-panel` compatibility aliases were pruned; use
+`meridian-repo-navigation` and `meridian-simulated-user-panel` for those lanes.
+Each profile must define `name`, `description`, and `developer_instructions`; it can also include
+supported Codex `config.toml` keys such as `model`, `model_reasoning_effort`, `sandbox_mode`,
+`mcp_servers`, and `skills.config` for lane-specific overrides. Keep shared project profiles
+conservative and put secrets, provider auth, notifications, telemetry, and personal model choices
+in user-level Codex config.
 
 | Profile | Purpose |
 | ------ | --------- |
+| `dense-data-grid-inspector-panel.toml` | Build scalable dense grids, stable selection, and inspector panels |
+| `desktop-test-generation.toml` | Generate focused WPF desktop workflow tests |
+| `diagnostics-audit-timeline.toml` | Build diagnostics panels, audit timelines, evidence trails, and recovery surfaces |
 | `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
 | `meridian-blueprint.toml` | Create implementation-ready technical designs |
+| `meridian-brainstorm.toml` | Generate Meridian-native product and architecture ideas |
+| `meridian-browser-workstation.toml` | Route and implement browser workstation TypeScript/React tasks |
 | `meridian-cleanup.toml` | Clean up code and docs without behavior changes |
+| `meridian-code-architecture.toml` | Check architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
+| `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-contract-governance.toml` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-accounting-posting-controls.toml` | Review accounting posting gates, approval, period locks, idempotency, and reversal/rebook safeguards |
+| `meridian-event-accounting-architecture.toml` | Design event-based accounting architecture and evidence-backed ledger controls |
+| `meridian-ledger-projection-replay-review.toml` | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
+| `meridian-codex-skill-builder.toml` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs.toml` | Maintain documentation and AI guidance |
-| `meridian-navigation.toml` | Route tasks through Meridian repo-navigation context |
+| `meridian-feasibility-sketcher.toml` | Add lightweight seams, dependency, validation, and size cards to brainstormed ideas |
+| `meridian-idea-critic.toml` | Critique brainstorm output for weak anchors, duplication, hidden cost, and wrong-lane routing |
+| `meridian-idea-to-blueprint-router.toml` | Route brainstorm candidates to blueprint, roadmap, docs, review, or no action |
+| `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
+| `meridian-opportunity-scout.toml` | Find repo-grounded opportunity areas before brainstorm generation |
+| `meridian-persona-signal-scout.toml` | Extract Persona Matrix pressure points before persona-sensitive ideation |
+| `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
 | `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
-| `meridian-user-panel.toml` | Run structured simulated-user feedback workflows |
+| `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
+| `meridian-test-writer.toml` | Write scenario-first Meridian tests |
+| `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
+| `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
+| `provider-management-workflow.toml` | Build secure provider setup, health, validation, and recovery workflows |
+| `research-data-acquisition.toml` | Build research acquisition, preview, validation, lineage, and cleanup workflows |
+| `safe-refactoring.toml` | Refactor desktop and shared code incrementally without behavior drift |
+| `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
+| `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
+
+### Brainstorm companion profiles
+
+These Codex-only profiles support `meridian-brainstorm` without replacing it or creating duplicate
+roadmap, blueprint, or user-panel brainstorm lanes. Use the full chain when ideation needs both
+grounding and post-processing:
+
+```text
+meridian-opportunity-scout -> meridian-persona-signal-scout -> meridian-brainstorm
+  -> meridian-idea-critic -> meridian-feasibility-sketcher -> meridian-idea-to-blueprint-router
+```
+
+| Profile | Output boundary |
+| ------ | --------------- |
+| `meridian-opportunity-scout` | Repo anchors, opportunity gaps, and avoid-list only |
+| `meridian-persona-signal-scout` | Persona pressure points from the current Persona Matrix only |
+| `meridian-idea-critic` | Keep, refine, reject, or reroute decisions for existing ideas |
+| `meridian-feasibility-sketcher` | Lightweight feasibility cards, not class-level blueprint details |
+| `meridian-idea-to-blueprint-router` | One recommended next lane per candidate and required input for that lane |
+
+Do not add a separate `meridian-competitive-pattern-adapter` in this layer. Competitive signals
+belong in `meridian-opportunity-scout` and the existing `meridian-brainstorm` competitive reference,
+then advance through the same critic, feasibility, and router gates as other ideas.
+
+### Persona Matrix user-testing profiles
+
+The `meridian-user-testing-*` Codex profiles simulate one role at a time from the Persona Matrix in
+[`../../product/meridian-design-document.md`](../../product/meridian-design-document.md). Use them
+for focused single-persona user testing, and use `meridian-simulated-user-panel` for multi-persona
+panels. Each profile carries the persona's matrix facts plus domain experience, familiar programs,
+preferences, and testing pressure points.
+
+| Profile | Persona category |
+| ------ | --------- |
+| `meridian-user-testing-financial-operations-professional.toml` | Primary Operator |
+| `meridian-user-testing-investment-accountant.toml` | Primary Operator |
+| `meridian-user-testing-reconciliation-analyst.toml` | Primary Operator |
+| `meridian-user-testing-fund-accountant.toml` | Primary Operator |
+| `meridian-user-testing-operations-manager.toml` | Primary Operator / Manager |
+| `meridian-user-testing-data-operations-analyst.toml` | Primary Operator |
+| `meridian-user-testing-treasury-operations-specialist.toml` | Primary Operator |
+| `meridian-user-testing-reporting-analyst.toml` | Primary Operator |
+| `meridian-user-testing-portfolio-manager.toml` | Investment User |
+| `meridian-user-testing-investment-analyst.toml` | Investment User |
+| `meridian-user-testing-quantitative-researcher.toml` | Investment User |
+| `meridian-user-testing-trader.toml` | Investment User |
+| `meridian-user-testing-risk-manager.toml` | Governance / Investment User |
+| `meridian-user-testing-cfo.toml` | Executive |
+| `meridian-user-testing-cio.toml` | Executive |
+| `meridian-user-testing-controller.toml` | Governance |
+| `meridian-user-testing-compliance-officer.toml` | Governance |
+| `meridian-user-testing-fund-investor-lp.toml` | Stakeholder |
+| `meridian-user-testing-ria-client.toml` | Stakeholder |
+| `meridian-user-testing-family-beneficiary.toml` | Stakeholder |
+| `meridian-user-testing-trustee.toml` | Stakeholder |
+| `meridian-user-testing-auditor.toml` | External / Governance |
+| `meridian-user-testing-system-administrator.toml` | Administration |
+| `meridian-user-testing-security-administrator.toml` | Administration |
+| `meridian-user-testing-integration-administrator.toml` | Administration |
 
 ---
 
@@ -85,16 +179,25 @@ and [`../codex/README.md`](../codex/README.md).
 
 ## Claude Code Agents (`.claude/agents/`)
 
+Each agent is a lightweight entrypoint that routes to its portable skill package in
+`.claude/skills/`. The set mirrors the meridian-* Codex profiles in `.codex/agents/`;
+the former `meridian-navigation` and `meridian-user-panel` aliases were pruned here too.
+
 | Agent | Purpose |
 | ------ | --------- |
 | [`meridian-archive-organizer.md`](../../../.claude/agents/meridian-archive-organizer.md) | Archive stale files and keep repository structure tidy |
 | [`meridian-blueprint.md`](../../../.claude/agents/meridian-blueprint.md) | Blueprint and design specialist |
+| [`meridian-brainstorm.md`](../../../.claude/agents/meridian-brainstorm.md) | Generate Meridian-native product and architecture ideas |
+| [`meridian-browser-workstation.md`](../../../.claude/agents/meridian-browser-workstation.md) | Route and implement browser workstation TypeScript/React tasks |
 | [`meridian-cleanup.md`](../../../.claude/agents/meridian-cleanup.md) | Cleanup specialist |
+| [`meridian-code-review.md`](../../../.claude/agents/meridian-code-review.md) | Review changes for bugs, regressions, and architecture drift |
 | [`meridian-docs.md`](../../../.claude/agents/meridian-docs.md) | Documentation specialist |
-| [`meridian-navigation.md`](../../../.claude/agents/meridian-navigation.md) | Repo navigation and routing specialist |
+| [`meridian-implementation-assurance.md`](../../../.claude/agents/meridian-implementation-assurance.md) | Verify implementation completeness, evidence, docs sync, and guardrails |
+| [`meridian-provider-builder.md`](../../../.claude/agents/meridian-provider-builder.md) | Build or extend ProviderSdk-compliant data providers |
 | [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist |
 | [`meridian-roadmap-strategist.md`](../../../.claude/agents/meridian-roadmap-strategist.md) | Roadmap, delivery-plan, and target-state specialist |
-| [`meridian-user-panel.md`](../../../.claude/agents/meridian-user-panel.md) | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
+| [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
+| [`meridian-test-writer.md`](../../../.claude/agents/meridian-test-writer.md) | Write scenario-first Meridian tests |
 
 ---
 
@@ -131,6 +234,9 @@ each specialist lane. Specialist agents should load only the required context fo
 the `required context` vs `optional context` split from
 [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md), and record rerun triggers before
 handoff so downstream agents do not repeat discovery or validation without cause.
+When local validation is blocked by machine capacity, restore failures, or MSBuild locks, agents
+should use GitHub Actions `Targeted Test` on the pushed branch as the hosted proof lane before
+retrying broad local scripts.
 
 ## AI Contract Coverage
 
@@ -141,6 +247,8 @@ handoff so downstream agents do not repeat discovery or validation without cause
   do not hand-edit docs under `docs/ai/generated/` or generator outputs in `docs/generated/`.
 - Agent orchestration: `docs/ai/parallel-task-manifest-template.md`, `docs/ai/agent-handoff-checklist.md`,
   and `.codex/agents/` profiles for cross-lane routing
+- Agent improvement: `docs/ai/codex/self-improving-agents.md` for baseline, feedback, eval,
+  promotion, and graph/retrieval guardrails
 - Tooling and validators: prefer [`../tooling/README.md`](../tooling/README.md) for script choice,
   route artifacts, and maintenance lanes instead of copying command catalogs into agent prompts
 - Parallel workflow: keep lane scopes disjoint in the manifest and record handoff expectations before merge
@@ -166,6 +274,7 @@ handoff so downstream agents do not repeat discovery or validation without cause
 | ---------- | --------- |
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md) | Provider-agnostic workflow and alignment rules for all assistant surfaces |
+| [`../codex/self-improving-agents.md`](../codex/self-improving-agents.md) | Baseline-to-eval promotion loop for improving agents, prompts, skills, and agent retrieval memory |
 | [`../navigation/README.md`](../navigation/README.md) | Navigation workflow guide |
 | [`../generated/repo-navigation.md`](../generated/repo-navigation.md) | Generated routing digest |
 | [`../skills/README.md`](../skills/README.md) | Skill catalog across Codex and portable packages |
@@ -173,4 +282,4 @@ handoff so downstream agents do not repeat discovery or validation without cause
 
 ---
 
-_Last Updated: 2026-06-03_
+_Last Updated: 2026-06-20_

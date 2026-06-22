@@ -7,6 +7,7 @@ Shared skill policy, cross-provider safety rules, and alignment checks live in
 [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md).
 Codex-specific execution gates, current skill validation, and repo-local skill maintenance live in
 [`../codex/README.md`](../codex/README.md).
+Treat `.codex/skills/` as the execution source for repo-local Codex package structure, evals, scripts, agent profiles, and route coverage. Mirror only host-neutral workflow behavior into `.agents/skills/` and `.claude/skills/`; do not copy Codex-only eval/script package surfaces into portable mirrors unless a host-neutral package contract is explicitly added.
 
 When a skill lane needs validator, route, handoff-packet, or maintenance-script selection, load
 [`../tooling/README.md`](../tooling/README.md) before widening repository context or repeating
@@ -40,9 +41,15 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | Implement and review browser workstation TypeScript/React changes |
 | `meridian-cleanup` | Clean code and docs without changing observable behavior |
+| `meridian-code-architecture` | Review architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-contract-governance` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-accounting-posting-controls` | Review accounting posting gates, approval, period locks, idempotency, and reversal/rebook safeguards |
+| `meridian-event-accounting-architecture` | Design event-based accounting architecture, immutable journals, ledger projections, and evidence-backed controls |
+| `meridian-ledger-projection-replay-review` | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
+| `meridian-codex-skill-builder` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
-| `meridian-implementation-assurance` | Implement and verify work with strict Codex gates, explicit evidence, and docs sync |
+| `meridian-implementation-assurance` | Implement, certify, and improve work with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
 | `meridian-provider-builder` | Build and extend providers with the right contracts |
 | `meridian-repo-navigation` | Route large-repo tasks before deeper work |
 | `meridian-roadmap-strategist` | Refresh roadmap and target-state documents |
@@ -82,9 +89,9 @@ Shared grounding files:
 - Parallel workflow: disambiguate ownership by lane and keep touched skill surfaces non-overlapping.
 - Token/context management: use `../work-modes.md`, keep required vs optional context explicit in
   handoff packets, and record validation reuse or rerun triggers before switching lanes.
-- Validation: `check-ai-inventory`, `check-codex-skills`, `validate-skill-packages`,
-  `check-ai-handoff --strict`, and `git diff --check`
-  for skills/docs-only batches.
+- Validation: `check-ai-inventory`, `check-codex-skills`, Codex
+  `skill_package_audit.py --skill <skill>`, portable/Claude `validate-skill-packages`,
+  `check-ai-handoff --strict`, and `git diff --check` for skills/docs-only batches.
 - Documentation ownership: [`../../documentation-ownership.md`](../../documentation-ownership.md)
 
 ---
@@ -93,7 +100,7 @@ Shared grounding files:
 
 Portable packages are mirrored under [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills)
 for Agent Skills-compatible hosts and [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills)
-for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavior changes.
+for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavior changes, but keep Codex-only package evals, scripts, profile wiring, and route rules in `.codex/skills/`.
 
 | Skill | SKILL.md | Purpose |
 | ------ | --------- | --------- |
@@ -101,7 +108,9 @@ for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavio
 | `meridian-blueprint` | [`SKILL.md`](../../../.claude/skills/meridian-blueprint/SKILL.md) | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | [`SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md) | Generate high-value product and architecture ideas |
 | `meridian-browser-workstation` | [`SKILL.md`](../../../.claude/skills/meridian-browser-workstation/SKILL.md) | Route and implement browser workstation TypeScript/React work |
+| `meridian-cleanup` | [`SKILL.md`](../../../.claude/skills/meridian-cleanup/SKILL.md) | Clean up code and docs without changing observable behavior |
 | `meridian-code-review` | [`SKILL.md`](../../../.claude/skills/meridian-code-review/SKILL.md) | Apply Meridian’s 7-lens review framework |
+| `meridian-docs` | [`SKILL.md`](../../../.claude/skills/meridian-docs/SKILL.md) | Maintain documentation accurately and conservatively |
 | `meridian-implementation-assurance` | [`SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md) | Validate completed work against requirements and evidence |
 | `meridian-provider-builder` | [`SKILL.md`](../../../.claude/skills/meridian-provider-builder/SKILL.md) | Scaffold and extend providers with the right contracts and resilience patterns |
 | `meridian-repo-navigation` | [`SKILL.md`](../../../.claude/skills/meridian-repo-navigation/SKILL.md) | Route large-repo tasks before deeper work |
@@ -149,10 +158,15 @@ Validate skill packaging with:
 
 ```bash
 python3 build/scripts/docs/check-codex-skills.py --summary
+python3 .codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill> --summary
 python3 build/scripts/docs/validate-skill-packages.py
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
+Use `skill_package_audit.py --skill <skill>` for repo-local Codex package completeness.
+Use `validate-skill-packages.py` for portable Agent Skills and Claude mirror packages unless that
+script is explicitly changed to cover `.codex/skills/`.
+
 ---
 
-_Last Updated: 2026-06-03_
+_Last Updated: 2026-06-19_

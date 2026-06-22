@@ -6,7 +6,7 @@ of copying generated trees into this file.
 
 ## What Meridian Is
 
-Meridian is a .NET 10 trading and fund-operations platform with:
+Meridian is a .NET 10 trading and operational-finance platform with fund operations as a first-class specialization and:
 
 - market data ingestion, streaming, and historical backfill,
 - strategy, backtesting, paper validation, and execution workflows,
@@ -25,6 +25,7 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 6. Treat unrelated dirty-worktree changes as user-owned.
 7. For workflows with multiple agents/lanes, use `docs/ai/agent-handoff-checklist.md` as the required handoff format.
 8. Select `docs/ai/work-modes.md` mode before implementation; if running parallel lanes, initialize `docs/ai/parallel-task-manifest-template.md`.
+9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine in `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
 
 ## Current Product Direction
 
@@ -32,11 +33,10 @@ Meridian is a .NET 10 trading and fund-operations platform with:
   `docs/engineering/README.md`, and the [canonical design charter](docs/product/meridian-design-document.md).
   Use the roadmap registry (`docs/roadmap/README.md` and
   `docs/roadmap/data/*.yml`) for authoritative planning interpretation.
-- Keep product work centered on the W1-W5 operational record baseline: data confidence, retained
-  source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage,
-  and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first governance,
-  full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and
-  other expansion lanes unless they directly strengthen that workflow.
+- Keep product work grounded in current source evidence, the roadmap registry, and the design
+  charter. Treat prior baselines and named productization targets as roadmap/status evidence, not
+  development ceilings; expansion lanes can proceed when current source, roadmap, or user direction
+  supports them.
 - Active operator UI work spans `src/Meridian.Ui/dashboard/` and `src/Meridian.Wpf/`.
 - Built browser-workstation assets live in `src/Meridian.Ui/wwwroot/workstation/`.
 - Shared read-model and endpoint support belongs in `src/Meridian.Ui.Services/` and
@@ -62,7 +62,18 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 python3 build/scripts/docs/check-ai-inventory.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
-make test
+```
+
+GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
+nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
+
+When local machine limits, restore failures, or MSBuild locks make validation unreliable, push the
+branch and use the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
+broad local scripts. The .NET lane requires a repo-relative test project under `tests/` and a
+non-empty `dotnet_filter`:
+
+```bash
+gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 ```
 
 ## Repository Layout
@@ -109,7 +120,10 @@ tasks. Route work through it when any of the following apply:
   reconciliation summaries, report-pack approvals).
 
 Use specialist agents (blueprint, test-writer, code-review, etc.) for single-domain tasks; route
-multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime.
+multi-domain, approval-gated, or evidence-synthesis tasks through the CoS runtime. Ordinary
+assistant sessions still follow the provider-agnostic Human-in-the-loop Gates in
+`docs/ai/assistant-workflow-contract.md`; those gates define when to pause and confirm, while CoS
+remains the heavy-duty path for structured approval, evidence synthesis, and retained sign-off.
 
 ### Agent Design Patterns
 
@@ -160,6 +174,7 @@ Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained 
 - `docs/documentation-ownership.md` for docs ownership, generated-doc, and archive rules.
 - `docs/architecture/project-structure.md` for the maintained repository map.
 - `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
+- `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md` for MDIF grounding before broad AI-assisted generation or architecture-sensitive work.
 - `docs/start/README.md` and `docs/engineering/README.md` for current local build, test, and run commands.
 - `docs/prompts/repo-maintenance-prompts.md` for prompt, agent, and skill maintenance rules.
 - `docs/ai/navigation/README.md` for the generated repo-navigation workflow.

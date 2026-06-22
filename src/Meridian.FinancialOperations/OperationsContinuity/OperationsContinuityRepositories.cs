@@ -16,7 +16,8 @@ public interface IOperationsContinuityRepository
         Guid? fundAccountId = null,
         string? periodId = null,
         OperationsWorkflowStatusDto? status = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null);
 }
 
 public interface IOperationsWorkflowAuditStore
@@ -100,7 +101,8 @@ public sealed class InMemoryOperationsContinuityRepository : IOperationsContinui
         Guid? fundAccountId = null,
         string? periodId = null,
         OperationsWorkflowStatusDto? status = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
         ct.ThrowIfCancellationRequested();
         lock (_lock)
@@ -114,6 +116,11 @@ public sealed class InMemoryOperationsContinuityRepository : IOperationsContinui
             if (!string.IsNullOrWhiteSpace(periodId))
             {
                 query = query.Where(workflow => string.Equals(workflow.PeriodId, periodId, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (ledgerBookId.HasValue)
+            {
+                query = query.Where(workflow => workflow.LedgerBookId == ledgerBookId.Value);
             }
 
             if (status.HasValue)
@@ -220,7 +227,8 @@ public sealed class FileOperationsContinuityRepository : IOperationsContinuityRe
         Guid? fundAccountId = null,
         string? periodId = null,
         OperationsWorkflowStatusDto? status = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? ledgerBookId = null)
     {
         var rows = new List<OperationsContinuityWorkflow>();
         foreach (var path in Directory.EnumerateFiles(_directory, "*.json", SearchOption.TopDirectoryOnly))
@@ -251,6 +259,11 @@ public sealed class FileOperationsContinuityRepository : IOperationsContinuityRe
         if (!string.IsNullOrWhiteSpace(periodId))
         {
             query = query.Where(workflow => string.Equals(workflow.PeriodId, periodId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (ledgerBookId.HasValue)
+        {
+            query = query.Where(workflow => workflow.LedgerBookId == ledgerBookId.Value);
         }
 
         if (status.HasValue)

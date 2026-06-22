@@ -111,6 +111,11 @@ public sealed class AuditTrailExplorerServiceTests
             entry.ObjectId.Should().Be("ovr-live-1");
             entry.RelatedObjectIds.Should().Contain(["run-live", "corr-override", "AAPL", "AllowLivePromotion", "strategy-alpha"]);
             entry.EvidenceRoute.Should().Be("/api/execution/controls/manual-overrides/ovr-live-1/clear");
+            entry.ActionLedgerSource.Should().Be("ExecutionAuditTrail");
+            entry.ActionLedgerSequence.Should().Be(1);
+            entry.CurrentActionHash.Should().HaveLength(64);
+            entry.PreviousActionHash.Should().BeNull();
+            entry.ActionLedgerStatus.Should().Be("WalRetained");
         }
         finally
         {
@@ -259,8 +264,14 @@ public sealed class AuditTrailExplorerServiceTests
         entry.Action.Should().Be("reconciliation-run");
         entry.Actor.Should().Be("ops-user");
         entry.RelatedObjectIds.Should().Contain([workflowId.ToString("D"), fundAccountId.ToString("D"), "ledger-batch-1"]);
+        entry.Metadata.Should().ContainKey("previousHash").WhoseValue.Should().Be("prev");
         entry.Metadata.Should().ContainKey("currentHash").WhoseValue.Should().Be("hash");
         entry.EvidenceRoute.Should().Be("/api/workstation/operations/continuity/reconciliation/case-closed");
+        entry.ActionLedgerSource.Should().Be("OperationsContinuityTimeline");
+        entry.ActionLedgerSequence.Should().Be(1);
+        entry.PreviousActionHash.Should().Be("prev");
+        entry.CurrentActionHash.Should().Be("hash");
+        entry.ActionLedgerStatus.Should().Be("HashChained");
     }
 
     [Fact]
@@ -386,10 +397,16 @@ public sealed class AuditTrailExplorerServiceTests
             Guid? fundAccountId = null,
             string? periodId = null,
             OperationsWorkflowStatusDto? status = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            Guid? ledgerBookId = null)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>>([summary]);
+            var matches =
+                (!fundAccountId.HasValue || summary.FundAccountId == fundAccountId.Value) &&
+                (string.IsNullOrWhiteSpace(periodId) || string.Equals(summary.PeriodId, periodId, StringComparison.OrdinalIgnoreCase)) &&
+                (!ledgerBookId.HasValue || summary.LedgerBookId == ledgerBookId.Value) &&
+                (!status.HasValue || summary.Status == status.Value);
+            return Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>>(matches ? [summary] : []);
         }
 
         public Task<IReadOnlyList<OperationsTimelineEntryDto>> GetTimelineAsync(Guid workflowId, CancellationToken ct = default)
@@ -409,6 +426,7 @@ public sealed class AuditTrailExplorerServiceTests
         public Task<OperationsTransitionResultDto> PostLedgerEntriesAsync(Guid workflowId, OperationsLedgerPostRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> ResolveBreakCaseAsync(Guid workflowId, string breakId, OperationsResolveBreakCaseRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<OperationsTransitionResultDto> AssignBreakCaseAsync(Guid workflowId, string breakId, OperationsAssignBreakCaseRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> SubmitForApprovalAsync(Guid workflowId, OperationsSubmitApprovalRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> ApproveWorkflowAsync(Guid workflowId, OperationsApprovalDecisionRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> RejectWorkflowAsync(Guid workflowId, OperationsRejectWorkflowRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();

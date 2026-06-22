@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, StrictMode, type ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import * as api from "@/lib/api";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
@@ -10,6 +10,7 @@ import type {
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
   MultiAssetCoverageSummary,
+  OperatorWorkflowHomeSummary,
   ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
@@ -50,6 +51,7 @@ vi.mock("@/lib/api", () => ({
   getStrategyWorkspace: vi.fn(),
   getSystemStatus: vi.fn(),
   getTradingWorkspace: vi.fn(),
+  getWorkstationWorkflowSummary: vi.fn(),
   getWorkflowLibrary: vi.fn(),
   getWorkflowPresets: vi.fn(),
   getFeatureCapabilities: vi.fn(),
@@ -116,6 +118,7 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getOperationsApprovalPolicyMatrix).mockResolvedValue({ generatedAt: "2026-01-01T00:00:00Z" } as never);
     vi.mocked(api.getOperationsCloseCalendar).mockResolvedValue({ generatedAt: "2026-01-01T00:00:00Z" } as never);
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
+    vi.mocked(api.getWorkstationWorkflowSummary).mockResolvedValue(buildWorkflowSummary("default"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
     vi.mocked(api.getFeatureCapabilities).mockResolvedValue({
@@ -123,6 +126,11 @@ describe("useWorkstationData", () => {
       capabilities: []
     } as never);
     vi.mocked(api.hasDevelopmentFixtureUsage).mockReturnValue(false);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it("ignores an older full refresh that resolves after a newer refresh", async () => {
@@ -250,6 +258,125 @@ describe("useWorkstationData", () => {
     });
 
     expect(result.current.session?.displayName).toBe("strict-active session");
+  });
+
+  it("publishes the active workspace before slower secondary workspaces settle", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "accounting" }));
+
+    await waitFor(() => expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 0, {
+        activeWorkspace: "accounting",
+        commandCount: 1,
+        displayName: "active session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "active overview" } as unknown as SystemOverviewResponse);
+      resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "active accounting" } as unknown as AccountingWorkspaceResponse);
+      resolveRequest<MultiAssetCoverageSummary>(
+        "portfolioMultiAssetCoverage",
+        0,
+        { marker: "active portfolio coverage" } as unknown as MultiAssetCoverageSummary
+      );
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "active workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, {
+        generatedAt: "2026-01-01T00:00:00Z",
+        presets: []
+      });
+      await flushAsync();
+    });
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.accounting).toEqual({ marker: "active accounting" });
+    expect(result.current.strategy).toBeNull();
+    expect(result.current.refreshStatus.inFlight).toBe(true);
+
+    await act(async () => {
+      resolveSecondaryRefreshBatch(0, "secondary");
+      await flushAsync();
+    });
+
+    expect(result.current.strategy).toEqual({ marker: "secondary strategy" });
+    expect(result.current.trading).toEqual({ marker: "secondary trading" });
+    expect(result.current.refreshStatus.inFlight).toBe(false);
+  });
+
+  it("passes account scope into the shared workflow summary request", async () => {
+    const scopedSummary = buildWorkflowSummary("scoped");
+    vi.mocked(api.getWorkstationWorkflowSummary).mockResolvedValue(scopedSummary);
+    const { result } = renderHook(() => useWorkstationData({
+      activeWorkspace: "accounting",
+      workflowSummaryScope: {
+        hasOperatingContext: true,
+        fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+      }
+    }));
+
+    await waitFor(() => expect(api.getWorkstationWorkflowSummary).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "scoped");
+      await flushAsync();
+    });
+
+    expect(api.getWorkstationWorkflowSummary).toHaveBeenCalledWith(expect.objectContaining({
+      hasOperatingContext: true,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      signal: expect.any(AbortSignal)
+    }));
+    expect(result.current.workflowSummary).toBe(scopedSummary);
+  });
+
+  it("polls only the visible route-relevant refresh lanes", async () => {
+    const intervals: Array<{ handler: TimerHandler; delay?: number }> = [];
+    vi.spyOn(window, "setInterval").mockImplementation((handler: TimerHandler, delay?: number) => {
+      intervals.push({ handler, delay });
+      return intervals.length as unknown as ReturnType<typeof setInterval>;
+    });
+    vi.spyOn(window, "clearInterval").mockImplementation(() => undefined);
+    const { unmount } = renderHook(() => useWorkstationData({ activeWorkspace: "data" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    const workstationIntervals = intervals.filter((interval) => interval.delay === 30_000 || interval.delay === 5_000);
+    expect(workstationIntervals).toHaveLength(1);
+    expect(workstationIntervals[0].delay).toBe(30_000);
+    act(() => {
+      const handler = workstationIntervals[0].handler;
+      if (typeof handler === "function") {
+        handler();
+      }
+    });
+    await waitFor(() => expect(api.getProviderConnections).toHaveBeenCalledTimes(2));
+
+    expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
+    expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(1);
+    unmount();
+  });
+
+  it("pauses automatic polling while the document is hidden", async () => {
+    const setIntervalSpy = vi.spyOn(window, "setInterval");
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    const { unmount } = renderHook(() => useWorkstationData({ activeWorkspace: "portfolio" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    const workstationIntervalCalls = setIntervalSpy.mock.calls.filter(([, delay]) => delay === 30_000 || delay === 5_000);
+    expect(workstationIntervalCalls).toHaveLength(0);
+    expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
+    expect(api.getProviderConnections).toHaveBeenCalledTimes(1);
+    expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(1);
+    unmount();
   });
 
   it("surfaces development fixture usage after bootstrap", async () => {
@@ -595,6 +722,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.getPortfolioMultiAssetCoverage).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2));
 
     await act(async () => {
       rejectRequest("portfolio", 1, new Error("Portfolio refresh failed."));
@@ -604,11 +732,13 @@ describe("useWorkstationData", () => {
         { marker: "refreshed portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 1, { marker: "refreshed reporting" } as unknown as ReportingWorkspaceResponse);
       await portfolioRefresh;
     });
 
     expect(result.current.portfolio).toEqual({ marker: "initial portfolio" });
     expect(result.current.brokeragePortfolio).toEqual({ marker: "initial brokerage" });
+    expect(result.current.reporting).toEqual({ marker: "refreshed reporting" });
     expect(result.current.workspaceErrors.portfolio).toBe(
       "Portfolio refresh failed.; Brokerage portfolio refresh failed."
     );
@@ -632,6 +762,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.getPortfolioMultiAssetCoverage).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2));
     await act(async () => {
       rejectRequest("portfolio", 1, new Error("Portfolio refresh failed."));
       resolveRequest<MultiAssetCoverageSummary>(
@@ -640,6 +771,7 @@ describe("useWorkstationData", () => {
         { marker: "failed-refresh portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      rejectRequest("reporting", 1, new Error("Reporting refresh failed."));
       await failedRefresh;
     });
 
@@ -650,6 +782,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(3));
     await waitFor(() => expect(api.getPortfolioMultiAssetCoverage).toHaveBeenCalledTimes(3));
     await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(3));
     await act(async () => {
       resolveRequest<PortfolioWorkspaceResponse>("portfolio", 2, { marker: "recovered portfolio" } as unknown as PortfolioWorkspaceResponse);
       resolveRequest<MultiAssetCoverageSummary>(
@@ -658,13 +791,50 @@ describe("useWorkstationData", () => {
         { marker: "recovered portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 2, { marker: "recovered brokerage" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 2, { marker: "recovered reporting" } as unknown as ReportingWorkspaceResponse);
       await recoveryRefresh;
     });
 
     expect(result.current.portfolio).toEqual({ marker: "recovered portfolio" });
     expect(result.current.brokeragePortfolio).toEqual({ marker: "recovered brokerage" });
+    expect(result.current.reporting).toEqual({ marker: "recovered reporting" });
     expect(result.current.workspaceErrors.portfolio).toBeUndefined();
+    expect(result.current.workspaceErrors.reporting).toBeUndefined();
     expect(result.current.error).toBeNull();
+  });
+
+  it("refreshes reporting live-view payloads with the portfolio refresh lane", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "reporting" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let portfolioRefresh!: Promise<void>;
+    act(() => {
+      portfolioRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 1, { marker: "live portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<MultiAssetCoverageSummary>(
+        "portfolioMultiAssetCoverage",
+        1,
+        { marker: "live portfolio coverage" } as unknown as MultiAssetCoverageSummary
+      );
+      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 1, { marker: "live brokerage" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 1, { marker: "live reporting views" } as unknown as ReportingWorkspaceResponse);
+      await portfolioRefresh;
+    });
+
+    expect(result.current.portfolio).toEqual({ marker: "live portfolio" });
+    expect(result.current.reporting).toEqual({ marker: "live reporting views" });
+    expect(result.current.workspaceErrors.reporting).toBeUndefined();
   });
 });
 
@@ -689,8 +859,60 @@ function createDeferred<T>(): Deferred<T> {
   return { promise, resolve, reject };
 }
 
+function buildWorkflowSummary(marker: string): OperatorWorkflowHomeSummary {
+  return {
+    generatedAt: "2026-01-01T00:00:00Z",
+    hasOperatingContext: true,
+    operatingContextLabel: `${marker} context`,
+    fundDisplayName: `${marker} fund`,
+    workspaces: [
+      {
+        workspaceId: "accounting",
+        workspaceTitle: "Accounting",
+        statusLabel: "Financial operations exceptions require review",
+        statusDetail: `${marker} financial operations detail`,
+        statusTone: "Warning",
+        nextAction: {
+          label: "Resolve Exceptions",
+          detail: "Open reconciliation casework.",
+          targetPageTag: "FundReconciliation",
+          tone: "Primary"
+        },
+        primaryBlocker: {
+          code: "financial-operations-exceptions",
+          label: "1 unresolved exception",
+          detail: "Resolve the retained exception before close.",
+          tone: "Warning",
+          isBlocking: true
+        },
+        evidence: [
+          { label: "Core flow", value: "Resolve Exceptions", tone: "Warning" },
+          { label: "Breaks", value: "1", tone: "Warning" },
+          { label: "Approval", value: "Pending", tone: "Warning" },
+          { label: "Evidence", value: "1", tone: "Success" }
+        ]
+      }
+    ]
+  };
+}
+
 function resolveRefreshBatch(index: number, marker: string) {
   resolveRefreshBatchWithIndexes({ marker, defaultIndex: index, tradingIndex: index });
+}
+
+function resolveSecondaryRefreshBatch(index: number, marker: string) {
+  resolveRequest<StrategyWorkspaceResponse>("strategy", index, { marker: `${marker} strategy` } as unknown as StrategyWorkspaceResponse);
+  resolveRequest<TradingWorkspaceResponse>("trading", index, { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
+  resolveRequest<PortfolioWorkspaceResponse>("portfolio", index, { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
+  resolveRequest<DataWorkspaceResponse>("data", index, { marker: `${marker} data` } as unknown as DataWorkspaceResponse);
+  resolveRequest<ReportingWorkspaceResponse>("reporting", index, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
+  resolveRequest<BrokerageConnectionStatus>("brokerageConnection", index, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveRequest<ProviderConnectionRow[]>("providerConnections", index, []);
+  resolveRequest<ProviderReadinessSummary>("providerReadiness", index, buildProviderReadiness(marker));
+  resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", index, []);
+  resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", index, []);
+  resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", index, []);
+  resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", index, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
 }
 
 function resolveRefreshBatchWithIndexes({

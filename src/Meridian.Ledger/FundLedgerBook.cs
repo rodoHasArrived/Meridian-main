@@ -41,30 +41,40 @@ public sealed class FundLedgerBook
     // ── Consolidated views ─────────────────────────────────────────────────────
 
     /// <summary>Consolidated trial balance across all sub-ledgers in this fund.</summary>
-    public IReadOnlyDictionary<LedgerAccount, decimal> ConsolidatedTrialBalance() =>
-        _inner.ConsolidatedTrialBalance();
+    public IReadOnlyDictionary<LedgerAccount, decimal> ConsolidatedTrialBalance(
+        LedgerLineDimensionSet? lineDimensions = null) =>
+        _inner.ConsolidatedTrialBalance(lineDimensions: lineDimensions);
 
     /// <summary>Consolidated point-in-time snapshot across all sub-ledgers.</summary>
-    public LedgerSnapshot ConsolidatedSnapshotAsOf(DateTimeOffset asOf) =>
-        _inner.ConsolidatedSnapshotAsOf(asOf);
+    public LedgerSnapshot ConsolidatedSnapshotAsOf(
+        DateTimeOffset asOf,
+        LedgerLineDimensionSet? lineDimensions = null) =>
+        _inner.ConsolidatedSnapshotAsOf(asOf, lineDimensions: lineDimensions);
 
     /// <summary>All journal entries across all sub-ledgers, ordered by timestamp.</summary>
-    public IReadOnlyList<JournalEntry> ConsolidatedJournalEntries() =>
-        _inner.ConsolidatedJournalEntries();
+    public IReadOnlyList<JournalEntry> ConsolidatedJournalEntries(
+        LedgerLineDimensionSet? lineDimensions = null) =>
+        _inner.ConsolidatedJournalEntries(lineDimensions is null ? null : new LedgerQuery(LineDimensions: lineDimensions));
 
     // ── Per-dimension snapshots ────────────────────────────────────────────────
 
     /// <summary>Point-in-time snapshots keyed by entity identifier.</summary>
-    public IReadOnlyDictionary<string, LedgerSnapshot> EntitySnapshotsAsOf(DateTimeOffset asOf)
-        => SnapshotsByPrefix("Entity:", asOf);
+    public IReadOnlyDictionary<string, LedgerSnapshot> EntitySnapshotsAsOf(
+        DateTimeOffset asOf,
+        LedgerLineDimensionSet? lineDimensions = null)
+        => SnapshotsByPrefix("Entity:", asOf, lineDimensions);
 
     /// <summary>Point-in-time snapshots keyed by sleeve identifier.</summary>
-    public IReadOnlyDictionary<string, LedgerSnapshot> SleeveSnapshotsAsOf(DateTimeOffset asOf)
-        => SnapshotsByPrefix("Sleeve:", asOf);
+    public IReadOnlyDictionary<string, LedgerSnapshot> SleeveSnapshotsAsOf(
+        DateTimeOffset asOf,
+        LedgerLineDimensionSet? lineDimensions = null)
+        => SnapshotsByPrefix("Sleeve:", asOf, lineDimensions);
 
     /// <summary>Point-in-time snapshots keyed by vehicle identifier.</summary>
-    public IReadOnlyDictionary<string, LedgerSnapshot> VehicleSnapshotsAsOf(DateTimeOffset asOf)
-        => SnapshotsByPrefix("Vehicle:", asOf);
+    public IReadOnlyDictionary<string, LedgerSnapshot> VehicleSnapshotsAsOf(
+        DateTimeOffset asOf,
+        LedgerLineDimensionSet? lineDimensions = null)
+        => SnapshotsByPrefix("Vehicle:", asOf, lineDimensions);
 
     // ── Reconciliation snapshot ────────────────────────────────────────────────
 
@@ -72,18 +82,23 @@ public sealed class FundLedgerBook
     /// Returns a reconciliation-friendly snapshot that includes the consolidated
     /// fund view together with per-entity, per-sleeve, and per-vehicle breakdowns.
     /// </summary>
-    public FundLedgerSnapshot ReconciliationSnapshot(DateTimeOffset asOf) =>
+    public FundLedgerSnapshot ReconciliationSnapshot(
+        DateTimeOffset asOf,
+        LedgerLineDimensionSet? lineDimensions = null) =>
         new FundLedgerSnapshot(
             FundId: FundId,
             AsOf: asOf,
-            Consolidated: ConsolidatedSnapshotAsOf(asOf),
-            Entities: EntitySnapshotsAsOf(asOf),
-            Sleeves: SleeveSnapshotsAsOf(asOf),
-            Vehicles: VehicleSnapshotsAsOf(asOf));
+            Consolidated: ConsolidatedSnapshotAsOf(asOf, lineDimensions),
+            Entities: EntitySnapshotsAsOf(asOf, lineDimensions),
+            Sleeves: SleeveSnapshotsAsOf(asOf, lineDimensions),
+            Vehicles: VehicleSnapshotsAsOf(asOf, lineDimensions));
 
     // ── Private helpers ────────────────────────────────────────────────────────
 
-    private Dictionary<string, LedgerSnapshot> SnapshotsByPrefix(string prefix, DateTimeOffset asOf)
+    private Dictionary<string, LedgerSnapshot> SnapshotsByPrefix(
+        string prefix,
+        DateTimeOffset asOf,
+        LedgerLineDimensionSet? lineDimensions)
     {
         var result = new Dictionary<string, LedgerSnapshot>(StringComparer.OrdinalIgnoreCase);
         foreach (var (key, ledger) in _inner.FilteredSnapshot())
@@ -92,7 +107,7 @@ public sealed class FundLedgerBook
                 continue;
 
             var dimensionId = key.LedgerBook[prefix.Length..];
-            result[dimensionId] = ledger.SnapshotAsOf(asOf);
+            result[dimensionId] = ledger.SnapshotAsOf(asOf, lineDimensions: lineDimensions);
         }
         return result;
     }

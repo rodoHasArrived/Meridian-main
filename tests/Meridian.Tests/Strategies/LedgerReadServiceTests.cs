@@ -313,17 +313,32 @@ public sealed class LedgerReadServiceTests
         summary.EntityScopeId.Should().Be("entity-paper");
         summary.SleeveScopeId.Should().Be("sleeve-paper");
         summary.VehicleScopeId.Should().Be("vehicle-paper");
+        summary.Dimensions.Should().NotBeNull();
+        summary.Dimensions!.FundId.Should().BeNull();
+        summary.Dimensions.StrategyId.Should().Be("strategy-1");
+        summary.Dimensions.PortfolioId.Should().Be("strategy-1-backtest-portfolio");
+        summary.Dimensions.AccountId.Should().Be("acct-paper");
+        summary.Dimensions.EntityId.Should().Be("entity-paper");
+        summary.Dimensions.SleeveId.Should().Be("sleeve-paper");
         summary.TrialBalance.Should().OnlyContain(line =>
             line.AccountScopeId == "acct-paper" &&
             line.EntityScopeId == "entity-paper" &&
             line.SleeveScopeId == "sleeve-paper" &&
-            line.VehicleScopeId == "vehicle-paper");
-        summary.Journal.Should().OnlyContain(line => line.AccountScopeId == "acct-paper");
+            line.VehicleScopeId == "vehicle-paper" &&
+            line.Dimensions != null &&
+            line.Dimensions.AccountId == "acct-paper" &&
+            line.Dimensions.EntityId == "entity-paper");
+        summary.Journal.Should().OnlyContain(line =>
+            line.AccountScopeId == "acct-paper" &&
+            line.Dimensions != null &&
+            line.Dimensions.AccountId == "acct-paper");
 
         var json = JsonSerializer.Serialize(summary);
         json.Should().Contain("entityScopeId");
         json.Should().Contain("sleeveScopeDisplayName");
         json.Should().Contain("vehicleScopeDisplayName");
+        json.Should().Contain("Dimensions");
+        json.Should().Contain("StrategyId");
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

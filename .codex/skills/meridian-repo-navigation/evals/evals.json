@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Meridian repo navigation package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/repo_navigation_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 5
+        }
+      },
+      "prompt": "Use $meridian-repo-navigation to orient a large-repo task to owner files, docs, and the right specialist lane."
+    },
+    {
+      "id": 2,
+      "description": "Navigation output identifies owner files, first docs, and route recommendation.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/repo_navigation_check.py",
+        "--scenario",
+        "owner-routing",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-repo-navigation to identify owner files, first docs, recommended skill, and handoff boundary."
+    },
+    {
+      "id": 3,
+      "description": "Navigation guidance uses generated repo map before broad search.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/repo_navigation_check.py",
+        "--scenario",
+        "generated-map",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $meridian-repo-navigation to use generated repo maps before broad recursive search."
+    }
+  ]
+}

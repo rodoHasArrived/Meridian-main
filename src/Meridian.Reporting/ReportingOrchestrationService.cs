@@ -80,6 +80,13 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 var sections = template.Sections
                     .Select(section => renderer.RenderSection(runId, contract, template, section, attempt))
                     .ToImmutableArray();
+                var gridArtifacts = BuildReportWriterGridArtifacts(runId, template);
+                var renderedReportWriterGrids = ReportWriterGridEngine
+                    .RenderGrids(template.ReportWriterGrids, contract.DatasetRows)
+                    .ToImmutableArray();
+                var reportWriterDatasetRowCount = template.ReportWriterGrids is { Count: > 0 }
+                    ? contract.DatasetRows?.Count ?? 0
+                    : (int?)null;
 
                 var manifest = new ReportingOutputManifest(
                     runId,
@@ -87,16 +94,31 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     contract.AsOfDate,
                     ReportingRunStatus.Draft,
                     sections,
-                    [
+                    new[]
+                    {
                         $"{runId}.manifest.json",
                         $"{runId}.pdf"
-                    ],
+                    }
+                    .Concat(gridArtifacts)
+                    .ToImmutableArray(),
                     attempt,
                     contract.Trigger,
-                    contract.ScheduleId);
+                    contract.ScheduleId,
+                    ReportWriterGrids: BuildReportWriterGridArtifactMetadata(runId, template).ToImmutableArray(),
+                    RenderedReportWriterGrids: renderedReportWriterGrids,
+                    ReportWriterDatasetSourceId: NormalizeOptional(contract.ReportWriterDatasetSourceId),
+                    ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
+                    ReportWriterDatasetRowCount: reportWriterDatasetRowCount,
+                    BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
+                    BrandingTheme: contract.BrandingTheme,
+                    AccessPolicy: contract.AccessPolicy);
 
                 manifests[runId] = manifest;
-                AppendAudit(runId, "RunGenerated", contract.RequestedBy, $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}");
+                AppendAudit(
+                    runId,
+                    "RunGenerated",
+                    contract.RequestedBy,
+                    $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; reportWriterDatasetSource={manifest.ReportWriterDatasetSourceId ?? "none"}; reportWriterDatasetRows={manifest.ReportWriterDatasetRowCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "n/a"}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}");
                 await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
                 return manifest;
             }
@@ -118,7 +140,13 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     attempt,
                     contract.Trigger,
                     contract.ScheduleId,
-                    ex.Message);
+                    ex.Message,
+                    ReportWriterDatasetSourceId: NormalizeOptional(contract.ReportWriterDatasetSourceId),
+                    ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
+                    ReportWriterDatasetRowCount: contract.DatasetRows?.Count,
+                    BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
+                    BrandingTheme: contract.BrandingTheme,
+                    AccessPolicy: contract.AccessPolicy);
                 manifests[runId] = failed;
                 AppendAudit(runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; error={ex.Message}");
                 await PersistAsync(failed, cancellationToken).ConfigureAwait(false);
@@ -228,8 +256,44 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             ? Task.CompletedTask
             : runStore.SaveAsync(manifest, GetAudit(manifest.RunId), cancellationToken);
 
+    private static string[] BuildReportWriterGridArtifacts(string runId, ReportingTemplateMetadata template) =>
+        (template.ReportWriterGrids ?? [])
+            .Where(static grid => !string.IsNullOrWhiteSpace(grid.GridId))
+            .Select(static grid => grid.GridId.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static gridId => gridId, StringComparer.OrdinalIgnoreCase)
+            .Select(gridId => $"report-writer://{runId}/grids/{gridId}")
+            .ToArray();
+
+    private static IEnumerable<ReportingRunReportWriterGridArtifact> BuildReportWriterGridArtifactMetadata(
+        string runId,
+        ReportingTemplateMetadata template) =>
+        (template.ReportWriterGrids ?? [])
+            .Where(static grid => !string.IsNullOrWhiteSpace(grid.GridId))
+            .GroupBy(static grid => grid.GridId.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static grid => grid.GridId, StringComparer.OrdinalIgnoreCase)
+            .Select(grid =>
+            {
+                var gridId = grid.GridId.Trim();
+                return new ReportingRunReportWriterGridArtifact(
+                    gridId,
+                    string.IsNullOrWhiteSpace(grid.Title) ? gridId : grid.Title.Trim(),
+                    grid.Kind.ToString(),
+                    $"report-writer://{runId}/grids/{gridId}",
+                    (grid.RowFields?.Count ?? 0) + (grid.ColumnFields?.Count ?? 0),
+                    grid.Metrics?.Count ?? 0,
+                    grid.Formulas?.Count ?? 0);
+            });
+
     private static string BuildRunId(ReportingJobContract contract)
         => $"{contract.JobId}-{contract.AsOfDate:yyyyMMdd}";
+
+    private static string? NormalizeOptional(string? value)
+    {
+        var normalized = value?.Trim();
+        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
+    }
 }
 
 public sealed class DeterministicReportingSectionRenderer : IReportingSectionRenderer

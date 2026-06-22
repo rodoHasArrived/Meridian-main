@@ -14,9 +14,9 @@ public sealed class StartupWindowViewModelTests
     public async Task SignInCommand_WithValidCredentials_ShouldCompleteStartupAndClearPassword()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
-            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", null);
         var session = DesktopAuthenticationSessionTests.CreateSession("Production");
         var viewModel = CreateViewModel(session, "Production");
@@ -44,9 +44,9 @@ public sealed class StartupWindowViewModelTests
     public async Task SignInCommand_WithInvalidCredentials_ShouldShowErrorAndKeepStartupOpen()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
-            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", null);
         var session = DesktopAuthenticationSessionTests.CreateSession("Production");
         var viewModel = CreateViewModel(session, "Production");
@@ -71,7 +71,7 @@ public sealed class StartupWindowViewModelTests
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
             .Set("MDC_USERS", null)
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", "optional");
         var session = DesktopAuthenticationSessionTests.CreateSession("Development");
         var viewModel = CreateViewModel(session, "Development");

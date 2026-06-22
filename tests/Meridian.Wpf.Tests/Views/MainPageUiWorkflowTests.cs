@@ -190,7 +190,7 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
-    public void MainPage_DataWorkspaceHome_ShouldCollapseRedundantShellChrome()
+    public void MainPage_DataWorkspaceAndDeepPages_ShouldCollapseRedundantShellSummaryChrome()
     {
         WpfTestThread.Run(() =>
         {
@@ -200,6 +200,9 @@ public sealed class MainPageUiWorkflowTests
 
             facade.ViewModel.CurrentPageTag.Should().Be("DataShell");
             facade.ViewModel.DataWorkspaceHomeChromeVisibility.Should().Be(Visibility.Collapsed);
+            facade.ViewModel.WorkspaceHomeSummaryChromeVisibility.Should().Be(Visibility.Collapsed);
+            facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripData")
+                .Visibility.Should().Be(Visibility.Collapsed);
             facade.TopBarContextChrome.Visibility.Should().Be(Visibility.Collapsed);
             facade.WorkspacePageHeader.Visibility.Should().Be(Visibility.Collapsed);
             facade.SplitPaneLayoutChrome.Visibility.Should().Be(Visibility.Collapsed);
@@ -208,9 +211,12 @@ public sealed class MainPageUiWorkflowTests
 
             facade.ViewModel.CurrentPageTag.Should().Be("SecurityMaster");
             facade.ViewModel.DataWorkspaceHomeChromeVisibility.Should().Be(Visibility.Visible);
+            facade.ViewModel.WorkspaceHomeSummaryChromeVisibility.Should().Be(Visibility.Collapsed);
+            facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripData")
+                .Visibility.Should().Be(Visibility.Collapsed);
             facade.TopBarContextChrome.Visibility.Should().Be(Visibility.Visible);
             facade.WorkspacePageHeader.Visibility.Should().Be(Visibility.Visible);
-            facade.SplitPaneLayoutChrome.Visibility.Should().Be(Visibility.Visible);
+            facade.SplitPaneLayoutChrome.Visibility.Should().Be(Visibility.Collapsed);
         });
     }
 
@@ -397,15 +403,17 @@ public sealed class MainPageUiWorkflowTests
             var fundContextService = new FundContextService(Path.Combine(Path.GetTempPath(), $"mainpage-workflow-{Guid.NewGuid():N}.json"));
             using var facade = new MainPageUiAutomationFacade(fundContextService);
 
-            facade.ViewModel.RefreshPageCommand.Execute(null);
-            await WaitForConditionAsync(() =>
-                facade.ViewModel.PrimaryWorkflowSummary is not null &&
-                facade.ViewModel.SecondaryWorkflowSummaries.Count == 6,
-                timeoutMs: 10000).ConfigureAwait(true);
+            await RefreshShellContextAsync(facade.ViewModel).ConfigureAwait(true);
+            RunMatUiAutomationFacade.DrainDispatcher();
+            facade.ViewModel.PrimaryWorkflowSummary.Should().NotBeNull();
+            facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(6);
 
             facade.Click(facade.TradingWorkspaceButton);
             await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading").ConfigureAwait(true);
 
+            facade.ViewModel.WorkspaceHomeSummaryChromeVisibility.Should().Be(Visibility.Visible);
+            facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripTrading")
+                .Visibility.Should().Be(Visibility.Visible);
             facade.WorkflowSummaryStrip.Visibility.Should().Be(Visibility.Visible);
             facade.ViewModel.WorkflowSummaries.Should().HaveCount(7);
             facade.ViewModel.PrimaryWorkflowSummary.Should().NotBeNull();
@@ -622,6 +630,18 @@ public sealed class MainPageUiWorkflowTests
         }
 
         predicate().Should().BeTrue("expected condition to become true within the timeout window");
+    }
+
+    private static Task RefreshShellContextAsync(MainPageViewModel viewModel)
+    {
+        var method = typeof(MainPageViewModel).GetMethod(
+            "RefreshShellContextAsync",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        method.Should().NotBeNull();
+
+        var task = method!.Invoke(viewModel, [System.Threading.CancellationToken.None]) as Task;
+        task.Should().NotBeNull();
+        return task!;
     }
 
     private sealed class RecordingOperatorInboxApiClient : IWorkstationOperatorInboxApiClient

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Shared Component Extraction"
+  display_name: "Extract Shared Components"
   short_description: "Extract reusable desktop controls and view models"
   default_prompt: "Use $shared-component-extraction to consolidate repeated Meridian desktop patterns into reusable controls, commands, services, or view models."

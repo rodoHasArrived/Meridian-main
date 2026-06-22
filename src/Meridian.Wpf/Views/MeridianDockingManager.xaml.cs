@@ -36,7 +36,8 @@ public partial class MeridianDockingManager : UserControl
         public required string PageTag { get; init; }
         public required string Title { get; init; }
         public required PaneDropAction Action { get; set; }
-        public required LayoutDocument Document { get; init; }
+        public LayoutDocument? Document { get; init; }
+        public Window? FloatingWindow { get; init; }
     }
 
     /// <summary>
@@ -77,20 +78,49 @@ public partial class MeridianDockingManager : UserControl
 
         if (_openDocuments.TryGetValue(pageKey, out var existing))
         {
-            if (WorkspaceShellFallbackContentFactory.IsFallbackContent(existing.Document.Content))
+            if (action == PaneDropAction.FloatWindow)
             {
-                existing.Document.Title = title;
-                existing.Document.Content = documentContent;
+                if (existing.FloatingWindow is not null)
+                {
+                    ActivateExistingDescriptor(existing);
+                    existing.Action = action;
+                    return;
+                }
+
+                _openDocuments.Remove(pageKey);
+                existing.Document?.Close();
+                OpenFloatingPane(pageKey, title, documentContent);
+                return;
             }
 
-            existing.Document.IsActive = true;
-            existing.Action = action;
-            return;
+            if (existing.FloatingWindow is not null)
+            {
+                _openDocuments.Remove(pageKey);
+                existing.FloatingWindow.Close();
+            }
+            else if (existing.Document is not null)
+            {
+                if (WorkspaceShellFallbackContentFactory.IsFallbackContent(existing.Document.Content))
+                {
+                    existing.Document.Title = title;
+                    existing.Document.Content = documentContent;
+                }
+
+                existing.Document.IsActive = true;
+                existing.Action = action;
+                return;
+            }
         }
 
         if (action == PaneDropAction.Replace)
         {
-            ClearDocuments();
+            ClearAllPanes();
+        }
+
+        if (action == PaneDropAction.FloatWindow)
+        {
+            OpenFloatingPane(pageKey, title, documentContent);
+            return;
         }
 
         var document = new LayoutDocument
@@ -112,6 +142,19 @@ public partial class MeridianDockingManager : UserControl
             Action = action,
             Document = document
         };
+    }
+
+    public void ClearAllPanes()
+    {
+        foreach (var descriptor in _openDocuments.Values.ToList())
+        {
+            if (descriptor.FloatingWindow is not null)
+            {
+                descriptor.FloatingWindow.Close();
+            }
+        }
+
+        ClearDocuments();
     }
 
     /// <summary>
@@ -166,7 +209,7 @@ public partial class MeridianDockingManager : UserControl
                 PageTag = descriptor.PageTag,
                 Title = descriptor.Title,
                 DockZone = ToDockZone(descriptor.Action),
-                IsActive = descriptor.Document.IsActive,
+                IsActive = descriptor.Document?.IsActive == true || descriptor.FloatingWindow?.IsActive == true,
                 Order = index
             })
             .ToList();
@@ -230,6 +273,47 @@ public partial class MeridianDockingManager : UserControl
     {
         PrimaryDocumentPane.Children.Clear();
         _openDocuments.Clear();
+    }
+
+    private void OpenFloatingPane(string pageKey, string title, FrameworkElement content)
+    {
+        var window = new Window
+        {
+            Title = title,
+            Width = 960,
+            Height = 720,
+            MinWidth = 640,
+            MinHeight = 420,
+            Content = content,
+            Owner = Window.GetWindow(this)
+        };
+
+        window.Closed += (_, _) => _openDocuments.Remove(pageKey);
+        _openDocuments[pageKey] = new DockedPageDescriptor
+        {
+            PageKey = pageKey,
+            PageTag = ExtractPageTag(pageKey),
+            Title = title,
+            Action = PaneDropAction.FloatWindow,
+            FloatingWindow = window
+        };
+
+        window.Show();
+        window.Activate();
+    }
+
+    private static void ActivateExistingDescriptor(DockedPageDescriptor descriptor)
+    {
+        if (descriptor.FloatingWindow is not null)
+        {
+            descriptor.FloatingWindow.Activate();
+            return;
+        }
+
+        if (descriptor.Document is not null)
+        {
+            descriptor.Document.IsActive = true;
+        }
     }
 
     private static string ExtractPageTag(string pageKey)

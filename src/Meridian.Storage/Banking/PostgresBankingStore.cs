@@ -44,16 +44,16 @@ public sealed class PostgresBankingStore : IBankingStore
                 reviewed_at     = EXCLUDED.reviewed_at;
             """;
 
-        cmd.Parameters.AddWithValue("id",          payment.PendingPaymentId);
-        cmd.Parameters.AddWithValue("eid",         payment.EntityId);
-        cmd.Parameters.AddWithValue("amount",      payment.Amount);
-        cmd.Parameters.AddWithValue("eff",         payment.EffectiveDate);
-        cmd.Parameters.AddWithValue("xref",        (object?)payment.ExternalRef ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("notes",       (object?)payment.Notes ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("status",      (short)payment.Status);
+        cmd.Parameters.AddWithValue("id", payment.PendingPaymentId);
+        cmd.Parameters.AddWithValue("eid", payment.EntityId);
+        cmd.Parameters.AddWithValue("amount", payment.Amount);
+        cmd.Parameters.AddWithValue("eff", payment.EffectiveDate);
+        cmd.Parameters.AddWithValue("xref", (object?)payment.ExternalRef ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("notes", (object?)payment.Notes ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("status", (short)payment.Status);
         cmd.Parameters.AddWithValue("reviewed_by", (object?)payment.ReviewedBy ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("review_notes",(object?)payment.ReviewNotes ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("initiated_at",payment.InitiatedAt);
+        cmd.Parameters.AddWithValue("review_notes", (object?)payment.ReviewNotes ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("initiated_at", payment.InitiatedAt);
         cmd.Parameters.AddWithValue("reviewed_at", (object?)payment.ReviewedAt ?? DBNull.Value);
 
         await cmd.ExecuteNonQueryAsync(ct);
@@ -74,7 +74,8 @@ public sealed class PostgresBankingStore : IBankingStore
         cmd.Parameters.AddWithValue("id", pendingPaymentId);
 
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        if (!await reader.ReadAsync(ct)) return null;
+        if (!await reader.ReadAsync(ct))
+            return null;
         return ReadPendingPayment(reader);
     }
 
@@ -111,24 +112,25 @@ public sealed class PostgresBankingStore : IBankingStore
             INSERT INTO {_options.Schema}.bank_transactions
                 (bank_transaction_id, entity_id, transaction_type, effective_date,
                  transaction_date, settlement_date, amount, currency, external_ref,
-                 recorded_at, is_voided)
+                 recorded_at, is_voided, recorded_by)
             VALUES
                 (@id, @eid, @type, @eff, @tx_date, @settle, @amount, @currency,
-                 @xref, @recorded_at, @is_voided)
+                 @xref, @recorded_at, @is_voided, @recorded_by)
             ON CONFLICT (bank_transaction_id) DO NOTHING;
             """;
 
-        cmd.Parameters.AddWithValue("id",          transaction.BankTransactionId);
-        cmd.Parameters.AddWithValue("eid",         transaction.EntityId);
-        cmd.Parameters.AddWithValue("type",        transaction.TransactionType);
-        cmd.Parameters.AddWithValue("eff",         transaction.EffectiveDate);
-        cmd.Parameters.AddWithValue("tx_date",     transaction.TransactionDate);
-        cmd.Parameters.AddWithValue("settle",      transaction.SettlementDate);
-        cmd.Parameters.AddWithValue("amount",      transaction.Amount);
-        cmd.Parameters.AddWithValue("currency",    transaction.Currency);
-        cmd.Parameters.AddWithValue("xref",        (object?)transaction.ExternalRef ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("id", transaction.BankTransactionId);
+        cmd.Parameters.AddWithValue("eid", transaction.EntityId);
+        cmd.Parameters.AddWithValue("type", transaction.TransactionType);
+        cmd.Parameters.AddWithValue("eff", transaction.EffectiveDate);
+        cmd.Parameters.AddWithValue("tx_date", transaction.TransactionDate);
+        cmd.Parameters.AddWithValue("settle", transaction.SettlementDate);
+        cmd.Parameters.AddWithValue("amount", transaction.Amount);
+        cmd.Parameters.AddWithValue("currency", transaction.Currency);
+        cmd.Parameters.AddWithValue("xref", (object?)transaction.ExternalRef ?? DBNull.Value);
         cmd.Parameters.AddWithValue("recorded_at", transaction.RecordedAt);
-        cmd.Parameters.AddWithValue("is_voided",   transaction.IsVoided);
+        cmd.Parameters.AddWithValue("is_voided", transaction.IsVoided);
+        cmd.Parameters.AddWithValue("recorded_by", (object?)transaction.RecordedBy ?? DBNull.Value);
 
         await cmd.ExecuteNonQueryAsync(ct);
     }
@@ -146,7 +148,7 @@ public sealed class PostgresBankingStore : IBankingStore
             cmd.CommandText = $"""
                 SELECT bank_transaction_id, entity_id, transaction_type, effective_date,
                        transaction_date, settlement_date, amount, currency, external_ref,
-                       recorded_at, is_voided
+                       recorded_at, is_voided, recorded_by
                 FROM {_options.Schema}.bank_transactions
                 WHERE entity_id = @eid
                 ORDER BY effective_date DESC;
@@ -158,7 +160,7 @@ public sealed class PostgresBankingStore : IBankingStore
             cmd.CommandText = $"""
                 SELECT bank_transaction_id, entity_id, transaction_type, effective_date,
                        transaction_date, settlement_date, amount, currency, external_ref,
-                       recorded_at, is_voided
+                       recorded_at, is_voided, recorded_by
                 FROM {_options.Schema}.bank_transactions
                 ORDER BY effective_date DESC;
                 """;
@@ -193,28 +195,29 @@ public sealed class PostgresBankingStore : IBankingStore
     private static PendingPaymentDto ReadPendingPayment(NpgsqlDataReader r)
         => new(
             PendingPaymentId: r.GetGuid(0),
-            EntityId:         r.GetGuid(1),
-            Amount:           r.GetDecimal(2),
-            EffectiveDate:    r.GetFieldValue<DateOnly>(3),
-            ExternalRef:      r.IsDBNull(4) ? null : r.GetString(4),
-            Notes:            r.IsDBNull(5) ? null : r.GetString(5),
-            Status:           (PaymentApprovalStatus)r.GetInt16(6),
-            ReviewedBy:       r.IsDBNull(7) ? null : r.GetString(7),
-            ReviewNotes:      r.IsDBNull(8) ? null : r.GetString(8),
-            InitiatedAt:      r.GetFieldValue<DateTimeOffset>(9),
-            ReviewedAt:       r.IsDBNull(10) ? null : r.GetFieldValue<DateTimeOffset>(10));
+            EntityId: r.GetGuid(1),
+            Amount: r.GetDecimal(2),
+            EffectiveDate: r.GetFieldValue<DateOnly>(3),
+            ExternalRef: r.IsDBNull(4) ? null : r.GetString(4),
+            Notes: r.IsDBNull(5) ? null : r.GetString(5),
+            Status: (PaymentApprovalStatus)r.GetInt16(6),
+            ReviewedBy: r.IsDBNull(7) ? null : r.GetString(7),
+            ReviewNotes: r.IsDBNull(8) ? null : r.GetString(8),
+            InitiatedAt: r.GetFieldValue<DateTimeOffset>(9),
+            ReviewedAt: r.IsDBNull(10) ? null : r.GetFieldValue<DateTimeOffset>(10));
 
     private static BankTransactionDto ReadBankTransaction(NpgsqlDataReader r)
         => new(
             BankTransactionId: r.GetGuid(0),
-            EntityId:          r.GetGuid(1),
-            TransactionType:   r.GetString(2),
-            EffectiveDate:     r.GetFieldValue<DateOnly>(3),
-            TransactionDate:   r.GetFieldValue<DateOnly>(4),
-            SettlementDate:    r.GetFieldValue<DateOnly>(5),
-            Amount:            r.GetDecimal(6),
-            Currency:          r.GetString(7),
-            ExternalRef:       r.IsDBNull(8) ? null : r.GetString(8),
-            RecordedAt:        r.GetFieldValue<DateTimeOffset>(9),
-            IsVoided:          r.GetBoolean(10));
+            EntityId: r.GetGuid(1),
+            TransactionType: r.GetString(2),
+            EffectiveDate: r.GetFieldValue<DateOnly>(3),
+            TransactionDate: r.GetFieldValue<DateOnly>(4),
+            SettlementDate: r.GetFieldValue<DateOnly>(5),
+            Amount: r.GetDecimal(6),
+            Currency: r.GetString(7),
+            ExternalRef: r.IsDBNull(8) ? null : r.GetString(8),
+            RecordedAt: r.GetFieldValue<DateTimeOffset>(9),
+            IsVoided: r.GetBoolean(10),
+            RecordedBy: r.IsDBNull(11) ? null : r.GetString(11));
 }

@@ -72,7 +72,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     {
         ArgumentNullException.ThrowIfNull(request);
         var existing = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
-        if (existing is null) return null;
+        if (existing is null)
+            return null;
         EnsureAllowed(existing, "update-custodian-details");
         var updated = existing with { CustodianDetails = request.Details };
         await _store.UpsertAccountAsync(updated, ct).ConfigureAwait(false);
@@ -86,7 +87,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     {
         ArgumentNullException.ThrowIfNull(request);
         var existing = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
-        if (existing is null) return null;
+        if (existing is null)
+            return null;
         EnsureAllowed(existing, "update-bank-details");
         var updated = existing with { BankDetails = request.Details };
         await _store.UpsertAccountAsync(updated, ct).ConfigureAwait(false);
@@ -97,7 +99,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         Guid accountId, string deactivatedBy, CancellationToken ct = default)
     {
         var existing = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
-        if (existing is null) return null;
+        if (existing is null)
+            return null;
         var updated = existing with { IsActive = false, EffectiveTo = DateTimeOffset.UtcNow };
         await _store.UpsertAccountAsync(updated, ct).ConfigureAwait(false);
         return updated;
@@ -424,7 +427,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
     {
         ct.ThrowIfCancellationRequested();
         var account = await _store.GetAccountAsync(accountId, ct).ConfigureAwait(false);
-        if (account is null) return null;
+        if (account is null)
+            return null;
 
         var syncHistory = await _store.GetSyncHistoryAsync(accountId, null, ct).ConfigureAwait(false);
         var marginSnapshots = await _store.GetMarginSnapshotsAsync(accountId, ct).ConfigureAwait(false);
@@ -553,7 +557,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         Guid? accountId = null, CancellationToken ct = default)
     {
         var query = new AccountStructureQuery();
-        if (accountId.HasValue) query = query with { AccountId = accountId };
+        if (accountId.HasValue)
+            query = query with { AccountId = accountId };
         var accounts = await _store.QueryAccountsAsync(query, ct).ConfigureAwait(false);
         return accounts
             .SelectMany(a => new[]

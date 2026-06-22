@@ -576,8 +576,12 @@ def run_eval_script(description: str = "", runs_per_query: int = 3) -> str:
             timeout=300,
         )
         output = result.stdout.strip()
-        if result.returncode != 0 and not output:
-            return f"Error (exit {result.returncode}): {result.stderr.strip()}"
+        if result.returncode != 0:
+            stderr = result.stderr.strip()
+            details = output
+            if stderr:
+                details = f"{stderr}\n\n{output}" if output else stderr
+            return f"Error (exit {result.returncode}): {details}"
         return output
     except subprocess.TimeoutExpired:
         return "Error: eval timed out after 300 s"

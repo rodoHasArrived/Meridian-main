@@ -16,11 +16,13 @@ public sealed class ProviderSetupService
 
     private readonly UI.ConfigStore _store;
     private readonly IProviderCredentialStore _credentialStore;
+    private readonly IProviderSetupRegistry _setupRegistry;
 
-    public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore)
+    public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry)
     {
         _store = store;
         _credentialStore = credentialStore;
+        _setupRegistry = setupRegistry;
     }
 
     public async Task<ProviderSetupResult> ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default)
@@ -33,12 +35,13 @@ public sealed class ProviderSetupService
             return Failure(string.Empty, "Provider display name is required.");
         }
 
-        if (!TryResolveProviderKind(request.Kind, out var sourceKind, out var providerFamilyId, out var credentialOnly, out var providerError))
+        var handler = _setupRegistry.Find(request.Kind ?? string.Empty);
+        if (handler is null)
         {
-            return Failure(displayName, providerError);
+            return Failure(displayName, $"Provider '{request.Kind}' is not yet supported by the local data-source configuration model.");
         }
 
-        var descriptor = ProviderCredentialCatalog.Find(providerFamilyId);
+        var descriptor = ProviderCredentialCatalog.Find(handler.Descriptor.ProviderId);
         if (descriptor is null)
         {
             return Failure(displayName, $"Provider '{request.Kind}' is not in the credential catalog.");
@@ -46,14 +49,29 @@ public sealed class ProviderSetupService
 
         var normalizedCapabilities = NormalizeCapabilities(request.Capabilities);
         var sourceType = ResolveSourceType(normalizedCapabilities);
-        var environment = descriptor.NormalizeEnvironment(request.Environment);
+        var setupContext = new ProviderSetupContext(
+            handler.Descriptor.ProviderId,
+            displayName,
+            normalizedCapabilities,
+            request.Environment,
+            request.ApiKey,
+            request.ApiSecret,
+            request.Endpoint);
+        var validation = handler.Validate(setupContext);
+        if (!validation.Success)
+        {
+            return Failure(displayName, validation.Error ?? "Provider setup validation failed.");
+        }
+
+        var environment = validation.NormalizedEnvironment ?? descriptor.NormalizeEnvironment(request.Environment);
         var referenceEnvironment = string.IsNullOrWhiteSpace(environment) ? "default" : environment;
         var credentialReference = descriptor.RequiresCredentials
             ? $"vault:{descriptor.ProviderId}/{referenceEnvironment}"
             : null;
         var warnings = new List<string>();
 
-        var submittedCredentials = BuildCredentialMap(descriptor, request);
+        var submittedCredentials = new Dictionary<string, string?>(validation.Credentials ?? new Dictionary<string, string?>(), StringComparer.OrdinalIgnoreCase);
+        warnings.AddRange(validation.Warnings ?? Array.Empty<string>());
         ProviderCredentialStoreStatus credentialStatus;
         if (submittedCredentials.Count > 0)
         {
@@ -87,13 +105,10 @@ public sealed class ProviderSetupService
             warnings.Add("Credential setup is incomplete; required credential fields are missing.");
         }
 
-        if (descriptor.ProviderId.Equals("alpaca", StringComparison.OrdinalIgnoreCase) &&
-            credentialStatus.Environment?.Equals("live", StringComparison.OrdinalIgnoreCase) == true)
-        {
-            warnings.Add("Alpaca is configured for a live environment; keep live trading and production routing gated until verification and certification pass.");
-        }
+        var execution = handler.BuildExecution(setupContext, credentialStatus);
+        warnings.AddRange(execution.Warnings);
 
-        if (credentialOnly)
+        if (execution.CredentialOnly)
         {
             return new ProviderSetupResult(
                 Success: true,
@@ -110,6 +125,7 @@ public sealed class ProviderSetupService
                 Warnings: warnings.ToArray());
         }
 
+        var sourceKind = execution.DataSourceKind;
         if (sourceKind is null)
         {
             return Failure(displayName, $"Provider '{request.Kind}' is not yet supported by the local data-source configuration model.");
@@ -148,8 +164,8 @@ public sealed class ProviderSetupService
             ProviderFamilyId: descriptor.ProviderId,
             DisplayName: displayName,
             ConnectionType: ProviderConnectionType.DataVendor,
-            ConnectionMode: ResolveConnectionMode(credentialStatus.Environment, normalizedCapabilities),
-            Enabled: true,
+            ConnectionMode: execution.ConnectionMode,
+            Enabled: execution.EnableBindings,
             CredentialReference: credentialReference,
             Tags: normalizedCapabilities,
             Description: $"Configured from the provider setup form for {displayName}.",
@@ -166,7 +182,7 @@ public sealed class ProviderSetupService
             connections.Add(connection);
         }
 
-        var seededBindingIds = SeedBindings(providerId, normalizedCapabilities, sourceType, sourcePriority, bindings);
+        var seededBindingIds = SeedBindings(providerId, normalizedCapabilities, sourceType, sourcePriority, execution.EnableBindings, bindings);
         var nextDataSources = dataSources with
         {
             Sources = sources.ToArray(),
@@ -208,44 +224,6 @@ public sealed class ProviderSetupService
             Error: error,
             Warnings: Array.Empty<string>());
 
-    private static bool TryResolveProviderKind(
-        string? kind,
-        out DataSourceKind? sourceKind,
-        out string providerFamilyId,
-        out bool credentialOnly,
-        out string error)
-    {
-        var normalizedKind = NormalizeProviderKind(kind);
-        error = string.Empty;
-        credentialOnly = false;
-        (sourceKind, providerFamilyId, credentialOnly) = normalizedKind switch
-        {
-            "alpaca" => ((DataSourceKind?)DataSourceKind.Alpaca, "alpaca", false),
-            "polygon" => ((DataSourceKind?)DataSourceKind.Polygon, "polygon", false),
-            "yahoo" or "yahoofinance" => ((DataSourceKind?)DataSourceKind.Yahoo, "yahoo", false),
-            "interactivebrokers" or "ib" => ((DataSourceKind?)DataSourceKind.IB, "ib", false),
-            "synthetic" or "custom" => ((DataSourceKind?)DataSourceKind.Synthetic, "synthetic", false),
-            "plaid" or "plaidapi" => ((DataSourceKind?)null, "plaid", true),
-            _ => ((DataSourceKind?)null, string.Empty, false)
-        };
-
-        if (!string.IsNullOrWhiteSpace(providerFamilyId))
-        {
-            return true;
-        }
-
-        error = $"Provider '{kind}' is not yet supported by the local data-source configuration model.";
-        return false;
-    }
-
-    private static string NormalizeProviderKind(string? kind)
-    {
-        var normalized = (kind ?? string.Empty).Trim().ToLowerInvariant();
-        return normalized.Replace("-", string.Empty, StringComparison.Ordinal)
-            .Replace("_", string.Empty, StringComparison.Ordinal)
-            .Replace(" ", string.Empty, StringComparison.Ordinal);
-    }
-
     private static DataSourceType ResolveSourceType(IReadOnlyList<string> capabilities)
     {
         var hasStreaming = capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.RealtimeMarketData));
@@ -265,42 +243,6 @@ public sealed class ProviderSetupService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(capability => capability, StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? Array.Empty<string>();
-
-    private static Dictionary<string, string?> BuildCredentialMap(
-        ProviderCredentialCatalogEntry descriptor,
-        ProviderSetupRequest request)
-    {
-        var values = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        var apiKey = NullIfBlank(request.ApiKey);
-        var apiSecret = NullIfBlank(request.ApiSecret);
-
-        if (descriptor.ProviderId.Equals("alpaca", StringComparison.OrdinalIgnoreCase))
-        {
-            if (apiKey is not null)
-            {
-                values["KeyId"] = apiKey;
-            }
-
-            if (apiSecret is not null)
-            {
-                values["SecretKey"] = apiSecret;
-            }
-
-            return values;
-        }
-
-        if (descriptor.RequiredFields.Count > 0 && apiKey is not null)
-        {
-            values[descriptor.RequiredFields[0].Name] = apiKey;
-        }
-
-        if (descriptor.RequiredFields.Count > 1 && apiSecret is not null)
-        {
-            values[descriptor.RequiredFields[1].Name] = apiSecret;
-        }
-
-        return values;
-    }
 
     private static string BuildProviderId(
         string providerFamilyId,
@@ -333,6 +275,7 @@ public sealed class ProviderSetupService
         IReadOnlyList<string> capabilities,
         DataSourceType sourceType,
         int priority,
+        bool enabled,
         List<ProviderBindingConfig> bindings)
     {
         var capabilityKinds = ResolveCapabilityKinds(capabilities, sourceType);
@@ -346,7 +289,7 @@ public sealed class ProviderSetupService
                 ConnectionId: providerId,
                 Target: new ProviderBindingTarget(),
                 Priority: priority,
-                Enabled: true,
+                Enabled: enabled,
                 Notes: "Seeded by provider setup."));
             seeded.Add(bindingId);
         }
@@ -437,32 +380,6 @@ public sealed class ProviderSetupService
 
         bool Exists(string id)
             => bindings.Any(binding => string.Equals(binding.BindingId, id, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static ProviderConnectionMode ResolveConnectionMode(
-        string? environment,
-        IReadOnlyList<string> capabilities)
-    {
-        if (environment is not null)
-        {
-            if (environment.Equals("live", StringComparison.OrdinalIgnoreCase) ||
-                environment.Equals("production", StringComparison.OrdinalIgnoreCase))
-            {
-                return ProviderConnectionMode.Live;
-            }
-
-            if (environment.Equals("paper", StringComparison.OrdinalIgnoreCase) ||
-                environment.Equals("sandbox", StringComparison.OrdinalIgnoreCase))
-            {
-                return ProviderConnectionMode.Paper;
-            }
-        }
-
-        return capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.RealtimeMarketData)) ||
-               capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.HistoricalBars)) ||
-               capabilities.Any(capability => ResolvesCapability(capability, ProviderCapabilityKind.ReferenceData))
-            ? ProviderConnectionMode.ReadOnly
-            : ProviderConnectionMode.Research;
     }
 
     private static IBOptions BuildInteractiveBrokersOptions(string? endpoint)

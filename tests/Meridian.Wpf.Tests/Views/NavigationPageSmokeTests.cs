@@ -237,6 +237,54 @@ public sealed class NavigationPageSmokeTests
         });
     }
 
+    [Fact]
+    public void MeridianDockingManager_ShouldCaptureFloatingPaneAndDockBackIntoMainHost()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var manager = new MeridianDockingManager
+            {
+                Width = 1200,
+                Height = 800
+            };
+
+            var window = new Window
+            {
+                Width = 1280,
+                Height = 900,
+                Content = manager
+            };
+
+            try
+            {
+                window.Show();
+                manager.UpdateLayout();
+                window.UpdateLayout();
+
+                manager.LoadPage("order-book", "Order Book", new Page(), PaneDropAction.FloatWindow);
+                RunMatUiAutomationFacade.DrainDispatcher();
+
+                var floatingLayout = manager.CaptureLayoutState("trading-cockpit", "Trading Cockpit");
+                floatingLayout.Panes.Should().ContainSingle(pane => pane.PageTag == "order-book" && pane.DockZone == "floating");
+                floatingLayout.FloatingWindows.Should().ContainSingle(floating => floating.PaneId == "order-book");
+
+                manager.LoadPage("order-book", "Order Book", new Page(), PaneDropAction.SplitRight);
+                RunMatUiAutomationFacade.DrainDispatcher();
+
+                var dockedLayout = manager.CaptureLayoutState("trading-cockpit", "Trading Cockpit");
+                dockedLayout.Panes.Should().ContainSingle(pane => pane.PageTag == "order-book" && pane.DockZone == "right");
+                dockedLayout.FloatingWindows.Should().BeEmpty();
+            }
+            finally
+            {
+                manager.ClearAllPanes();
+                window.Close();
+            }
+        });
+    }
+
     private static void InvokeConfigureServices(MethodInfo configureServices, IServiceCollection services)
     {
         if (configureServices.GetParameters().Length == 1)

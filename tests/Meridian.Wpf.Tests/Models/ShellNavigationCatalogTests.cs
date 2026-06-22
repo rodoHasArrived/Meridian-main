@@ -2,6 +2,7 @@ using Meridian.Ui.Services;
 using Meridian.Wpf.Features;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Shell.Services;
+using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Models;
 
@@ -299,6 +300,33 @@ public sealed class ShellNavigationCatalogTests
 
         dataShell.Should().NotBeNull();
         dataShell!.PageType.Should().Be(typeof(Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPage));
+    }
+
+    [Fact]
+    public void FinancialRecordExplorers_ShouldResolveToSharedExplorerPageAndRelatedRoutes()
+    {
+        (string PageTag, string WorkspaceId, string[] RelatedPageTags)[] expectations =
+        [
+            ("LedgerExplorer", "accounting", ["FundLedger", "FundTrialBalance", "RunLedger", "FundAuditTrail"]),
+            ("PortfolioExplorer", "portfolio", ["RunPortfolio", "AccountPortfolio", "SecurityInstrumentExplorer", "RunLedger"]),
+            ("SecurityInstrumentExplorer", "accounting", ["SecurityMaster", "LedgerExplorer", "FundLedger", "PortfolioExplorer"])
+        ];
+
+        foreach (var expectation in expectations)
+        {
+            var descriptor = ShellNavigationCatalog.GetPage(expectation.PageTag);
+
+            descriptor.Should().NotBeNull();
+            descriptor!.PageType.Should().Be(typeof(FinancialRecordExplorerPage));
+            descriptor.WorkspaceId.Should().Be(expectation.WorkspaceId);
+            descriptor.VisibilityTier.Should().Be(ShellNavigationVisibilityTier.Secondary);
+            descriptor.RelatedPageTags.Should().Contain(expectation.RelatedPageTags);
+        }
+
+        ShellNavigationCatalog.GetRelatedPages("SecurityMaster")
+            .Select(static page => page.PageTag)
+            .Should()
+            .Contain("SecurityInstrumentExplorer");
     }
 
     [Fact]

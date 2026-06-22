@@ -206,7 +206,35 @@ public sealed record GovernanceLifecycleProjectionDto(
     int EvidenceReferenceCount = 0,
     IReadOnlyList<string>? EvidenceReferences = null,
     IReadOnlyList<string>? AuditReferences = null,
-    OperationsAccountingRecordSummaryDto? AccountingRecordSummary = null);
+    OperationsAccountingRecordSummaryDto? AccountingRecordSummary = null,
+    IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null,
+    IReadOnlyList<OperationsReconciliationLaneSummaryDto>? ReconciliationLanes = null,
+    IReadOnlyList<OperationsBreakCaseDto>? BreakCases = null,
+    IReadOnlyList<OperationsCloseChecklistTaskDto>? CloseChecklist = null,
+    IReadOnlyList<OperationsApprovalDto>? Approvals = null,
+    OperationsReviewedAutomationSummaryDto? ReviewedAutomation = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public IReadOnlyList<string> AuditReferences { get; init; } =
+        AuditReferences ?? [];
+
+    public IReadOnlyList<OperationsEvidencePackageSummaryDto> EvidencePackages { get; init; } =
+        EvidencePackages ?? [];
+
+    public IReadOnlyList<OperationsReconciliationLaneSummaryDto> ReconciliationLanes { get; init; } =
+        ReconciliationLanes ?? [];
+
+    public IReadOnlyList<OperationsBreakCaseDto> BreakCases { get; init; } =
+        BreakCases ?? [];
+
+    public IReadOnlyList<OperationsCloseChecklistTaskDto> CloseChecklist { get; init; } =
+        CloseChecklist ?? [];
+
+    public IReadOnlyList<OperationsApprovalDto> Approvals { get; init; } =
+        Approvals ?? [];
+}
 
 /// <summary>
 /// Reconciliation break-queue projection used by shared operator workflows.

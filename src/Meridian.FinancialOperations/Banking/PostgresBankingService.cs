@@ -29,16 +29,16 @@ public sealed class PostgresBankingService : IBankingService
 
         var pending = new PendingPaymentDto(
             PendingPaymentId: Guid.NewGuid(),
-            EntityId:         entityId,
-            Amount:           request.Amount,
-            EffectiveDate:    request.EffectiveDate,
-            ExternalRef:      request.ExternalRef,
-            Notes:            request.Notes,
-            Status:           PaymentApprovalStatus.Pending,
-            ReviewedBy:       null,
-            ReviewNotes:      null,
-            InitiatedAt:      DateTimeOffset.UtcNow,
-            ReviewedAt:       null);
+            EntityId: entityId,
+            Amount: request.Amount,
+            EffectiveDate: request.EffectiveDate,
+            ExternalRef: request.ExternalRef,
+            Notes: request.Notes,
+            Status: PaymentApprovalStatus.Pending,
+            ReviewedBy: null,
+            ReviewNotes: null,
+            InitiatedAt: DateTimeOffset.UtcNow,
+            ReviewedAt: null);
 
         await _store.UpsertPendingPaymentAsync(pending, ct);
         return pending;
@@ -50,9 +50,11 @@ public sealed class PostgresBankingService : IBankingService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "approve payment requests");
 
         var pending = await _store.GetPendingPaymentAsync(pendingPaymentId, ct);
-        if (pending is null) return null;
+        if (pending is null)
+            return null;
 
         if (pending.Status != PaymentApprovalStatus.Pending)
             throw new BankingException(
@@ -60,30 +62,25 @@ public sealed class PostgresBankingService : IBankingService
 
         var approved = pending with
         {
-            Status      = PaymentApprovalStatus.Approved,
-            ReviewedBy  = request.ReviewedBy,
+            Status = PaymentApprovalStatus.Approved,
+            ReviewedBy = request.ReviewedBy,
             ReviewNotes = request.ReviewNotes,
-            ReviewedAt  = DateTimeOffset.UtcNow
+            ReviewedAt = DateTimeOffset.UtcNow
         };
 
         await _store.UpsertPendingPaymentAsync(approved, ct);
-
-        // Record a bank transaction for the approved payment
-        var bankTx = new BankTransactionDto(
-            BankTransactionId: Guid.NewGuid(),
-            EntityId:          pending.EntityId,
-            TransactionType:   "ApprovedPayment",
-            EffectiveDate:     pending.EffectiveDate,
-            TransactionDate:   pending.EffectiveDate,
-            SettlementDate:    pending.EffectiveDate.AddDays(2),
-            Amount:            pending.Amount,
-            Currency:          "USD",
-            ExternalRef:       pending.ExternalRef,
-            RecordedAt:        DateTimeOffset.UtcNow,
-            IsVoided:          false);
-
-        await _store.InsertBankTransactionAsync(bankTx, ct);
         return approved;
+    }
+
+    private static void EnsureHumanOrigin(
+        Meridian.Contracts.Workstation.OperationsActionOriginDto actionOrigin,
+        string action)
+    {
+        if (actionOrigin != Meridian.Contracts.Workstation.OperationsActionOriginDto.HumanOperator)
+        {
+            throw new BankingException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
     }
 
     public async Task<PendingPaymentDto?> RejectPaymentAsync(
@@ -92,11 +89,13 @@ public sealed class PostgresBankingService : IBankingService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "reject payments");
         if (string.IsNullOrWhiteSpace(request.Reason))
             throw new BankingException("Rejection reason is required.");
 
         var pending = await _store.GetPendingPaymentAsync(pendingPaymentId, ct);
-        if (pending is null) return null;
+        if (pending is null)
+            return null;
 
         if (pending.Status != PaymentApprovalStatus.Pending)
             throw new BankingException(
@@ -104,14 +103,41 @@ public sealed class PostgresBankingService : IBankingService
 
         var rejected = pending with
         {
-            Status      = PaymentApprovalStatus.Rejected,
-            ReviewedBy  = request.ReviewedBy,
+            Status = PaymentApprovalStatus.Rejected,
+            ReviewedBy = request.ReviewedBy,
             ReviewNotes = request.Reason,
-            ReviewedAt  = DateTimeOffset.UtcNow
+            ReviewedAt = DateTimeOffset.UtcNow
         };
 
         await _store.UpsertPendingPaymentAsync(rejected, ct);
         return rejected;
+    }
+
+    public Task<PendingPaymentDto?> GetPaymentAsync(Guid pendingPaymentId, CancellationToken ct = default)
+        => _store.GetPendingPaymentAsync(pendingPaymentId, ct);
+
+    public async Task<BankTransactionDto?> RecordPaymentBankEvidenceAsync(
+        Guid pendingPaymentId,
+        RecordPaymentBankEvidenceRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "record bank evidence");
+        var pending = await _store.GetPendingPaymentAsync(pendingPaymentId, ct).ConfigureAwait(false);
+        if (pending is null)
+        {
+            return null;
+        }
+
+        if (pending.Status != PaymentApprovalStatus.Approved)
+        {
+            throw new BankingException(
+                $"Payment '{pendingPaymentId}' must be approved before bank confirmation, return, or reversal evidence is recorded.");
+        }
+
+        var bankTx = BuildPaymentBankEvidenceTransaction(pending, request);
+        await _store.InsertBankTransactionAsync(bankTx, ct).ConfigureAwait(false);
+        return bankTx;
     }
 
     public async Task<IReadOnlyList<PendingPaymentDto>> GetPendingPaymentsAsync(
@@ -153,8 +179,8 @@ public sealed class PostgresBankingService : IBankingService
         var seeded = 0;
         var processedIds = new List<Guid>();
 
-        var fromDate  = request.FromDate ?? DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-6));
-        var toDate    = request.ToDate   ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var fromDate = request.FromDate ?? DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-6));
+        var toDate = request.ToDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var totalDays = Math.Max(1, toDate.DayNumber - fromDate.DayNumber);
 
         // When no entity IDs are provided use existing entity IDs from the transactions table
@@ -181,16 +207,16 @@ public sealed class PostgresBankingService : IBankingService
 
                 var bankTx = new BankTransactionDto(
                     BankTransactionId: Guid.NewGuid(),
-                    EntityId:          entityId,
-                    TransactionType:   txType,
-                    EffectiveDate:     txDate,
-                    TransactionDate:   txDate,
-                    SettlementDate:    txDate.AddDays(2),
-                    Amount:            amount,
-                    Currency:          "USD",
-                    ExternalRef:       $"SEED-{i + 1:D4}-{entityId.ToString("N")[..8]}",
-                    RecordedAt:        DateTimeOffset.UtcNow,
-                    IsVoided:          false);
+                    EntityId: entityId,
+                    TransactionType: txType,
+                    EffectiveDate: txDate,
+                    TransactionDate: txDate,
+                    SettlementDate: txDate.AddDays(2),
+                    Amount: amount,
+                    Currency: "USD",
+                    ExternalRef: $"SEED-{i + 1:D4}-{entityId.ToString("N")[..8]}",
+                    RecordedAt: DateTimeOffset.UtcNow,
+                    IsVoided: false);
 
                 await _store.InsertBankTransactionAsync(bankTx, ct);
                 seeded++;
@@ -200,8 +226,65 @@ public sealed class PostgresBankingService : IBankingService
         }
 
         return new BankTransactionSeedResultDto(
-            EntitiesProcessed:    processedIds.Count,
-            TransactionsSeeded:   seeded,
-            ProcessedEntityIds:   processedIds);
+            EntitiesProcessed: processedIds.Count,
+            TransactionsSeeded: seeded,
+            ProcessedEntityIds: processedIds);
     }
+
+    private static BankTransactionDto BuildPaymentBankEvidenceTransaction(
+        PendingPaymentDto pending,
+        RecordPaymentBankEvidenceRequest request)
+    {
+        var evidenceType = NormalizeEvidenceType(request.EvidenceType);
+        var amount = request.Amount ?? pending.Amount;
+        if (amount <= 0m)
+        {
+            throw new BankingException("Bank evidence amount must be positive.");
+        }
+
+        var currency = string.IsNullOrWhiteSpace(request.Currency)
+            ? "USD"
+            : request.Currency.Trim().ToUpperInvariant();
+        if (currency.Length != 3)
+        {
+            throw new BankingException("Bank evidence currency must be a three-letter ISO currency code.");
+        }
+
+        var transactionDate = request.TransactionDate ?? pending.EffectiveDate;
+        var settlementDate = request.SettlementDate ?? transactionDate;
+        if (settlementDate < transactionDate)
+        {
+            throw new BankingException("Bank evidence settlement date cannot be before transaction date.");
+        }
+
+        return new BankTransactionDto(
+            BankTransactionId: Guid.NewGuid(),
+            EntityId: pending.EntityId,
+            TransactionType: evidenceType,
+            EffectiveDate: pending.EffectiveDate,
+            TransactionDate: transactionDate,
+            SettlementDate: settlementDate,
+            Amount: amount,
+            Currency: currency,
+            ExternalRef: FirstNonBlank(request.ExternalRef, pending.ExternalRef, pending.PendingPaymentId.ToString("D")),
+            RecordedAt: DateTimeOffset.UtcNow,
+            IsVoided: IsReturnOrReversalEvidence(evidenceType),
+            RecordedBy: FirstNonBlank(request.RecordedBy));
+    }
+
+    private static string NormalizeEvidenceType(string? evidenceType)
+        => (evidenceType ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "" or "confirmation" or "confirmed" or "bankconfirmation" or "bank-confirmation" => "BankConfirmation",
+            "return" or "returned" or "bankreturn" or "bank-return" => "BankReturn",
+            "reversal" or "reversed" or "bankreversal" or "bank-reversal" => "BankReversal",
+            "failure" or "failed" or "reject" or "rejected" or "bankfailure" or "bank-failure" => "BankFailure",
+            _ => throw new BankingException("Bank evidence type must be BankConfirmation, BankReturn, BankReversal, or BankFailure.")
+        };
+
+    private static bool IsReturnOrReversalEvidence(string evidenceType)
+        => evidenceType is "BankReturn" or "BankReversal" or "BankFailure";
+
+    private static string? FirstNonBlank(params string?[] values)
+        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 }

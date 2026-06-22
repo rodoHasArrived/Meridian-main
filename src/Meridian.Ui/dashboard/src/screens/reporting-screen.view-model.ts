@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
-import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
+import {
+  EXPORT_API_ENDPOINTS,
+  exportPreviewEndpoint,
+  reportPackEvidenceBundleEndpoint,
+  reportingRunReportWriterGridEndpoint
+} from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterDatasetSource, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -25,18 +30,17 @@ const formatReportPackDistributionDue = (dueAtUtc: string | null): string => {
     return "No due date";
   }
 
-  const due = new Date(dueAtUtc);
-  if (Number.isNaN(due.getTime())) {
-    return dueAtUtc;
-  }
-
-  return due.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  });
+  return formatTimestamp(dueAtUtc);
 };
+
+const reportingTimestampFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "UTC",
+  timeZoneName: "short"
+});
 
 export interface ReportingProfileBadge {
   label: string;
@@ -119,6 +123,7 @@ export interface ReportingPackTargetRow {
   pendingSummary: string;
   ownerLabel: string;
   dueLabel: string;
+  lastSentLabel: string;
   href: string;
   ariaLabel: string;
 }
@@ -133,16 +138,50 @@ export interface ReportingChipViewModel {
   value: string;
 }
 
+export interface ReportingAccessAuditCountRow {
+  id: string;
+  label: string;
+  visibleLabel: string;
+  hiddenLabel: string;
+  hasHidden: boolean;
+}
+
+export interface ReportingAccessAuditViewModel {
+  evaluationScope: string;
+  summary: string;
+  principalScopes: string[];
+  scopeLabel: string;
+  hiddenTotalLabel: string;
+  postureLabel: string;
+  postureVariant: ReportingBadgeVariant;
+  countRows: ReportingAccessAuditCountRow[];
+  denialReasons: string[];
+  hasDenialReasons: boolean;
+  ariaLabel: string;
+}
+
 export interface ReportingTemplateRow {
   id: string;
+  templateName: string;
   name: string;
   family: string;
   version: string;
+  versionNumber: number;
   sectionSummary: string;
   statusLabel: string;
   statusVariant: Exclude<ReportingBadgeVariant, "default">;
   sourceLabel: string;
   approvalSummary: string;
+  accessMode: string;
+  accessSummary: string;
+  isAccessible: boolean;
+  accessGovernance: ReportingTemplateAccessGovernanceRow;
+  latestApprovedLabel: string;
+  versionLineageSummary: string;
+  auditTrailSummary: string;
+  lastAuditSummary: string;
+  decisionSummary: string;
+  validationSummary: string;
   authoringHref: string;
   actionLabel: string;
   actionAriaLabel: string;
@@ -150,6 +189,82 @@ export interface ReportingTemplateRow {
   runActionLabel: string;
   runActionAriaLabel: string;
   runDisabledReason: string | null;
+  lifecycleActions: ReportingTemplateLifecycleActionRow[];
+  hasLifecycleActions: boolean;
+  writerGrids: ReportingWriterGridRow[];
+  hasWriterGrids: boolean;
+  writerGridSummary: string;
+}
+
+export interface ReportingTemplateAccessGovernanceRow {
+  modeLabel: string;
+  scopeLabel: string;
+  postureLabel: string;
+  postureVariant: ReportingBadgeVariant;
+  detail: string;
+  ariaLabel: string;
+}
+
+export type ReportingTemplateLifecycleActionKind = "submit" | "approve" | "reject";
+
+export interface ReportingTemplateLifecycleActionRow {
+  id: string;
+  kind: ReportingTemplateLifecycleActionKind;
+  label: string;
+  ariaLabel: string;
+  targetStatus: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+}
+
+export type ReportingWriterTokenKind = "field" | "metric" | "formula";
+
+export interface ReportingWriterToken {
+  id: string;
+  label: string;
+  detail: string;
+  kind: ReportingWriterTokenKind;
+  fieldName?: string | null;
+  sourceField?: string | null;
+  function?: ReportWriterAggregateFunction | null;
+  expression?: string | null;
+  name?: string | null;
+  dataType?: string | null;
+  dataset?: string | null;
+  role?: string | null;
+}
+
+export interface ReportingWriterFilterRow {
+  id: string;
+  field: string;
+  operator: ReportWriterFilterOperator | string;
+  value: string | null;
+  label: string;
+  summary: string;
+}
+
+export interface ReportingWriterGridRow {
+  id: string;
+  gridId: string;
+  templateId: string;
+  templateVersion: string;
+  family: string;
+  title: string;
+  kind: string;
+  topN: number | null;
+  sortBy: string | null;
+  sortDescending: boolean;
+  summary: string;
+  sourceFields: ReportingWriterToken[];
+  rowFields: ReportingWriterToken[];
+  columnFields: ReportingWriterToken[];
+  metrics: ReportingWriterToken[];
+  formulas: ReportingWriterToken[];
+  filters: ReportingWriterFilterRow[];
+  topNLabel: string;
+  sortLabel: string;
+  filterSummary: string;
+  ariaLabel: string;
 }
 
 export interface ReportingRunStatusRow {
@@ -158,6 +273,20 @@ export interface ReportingRunStatusRow {
   family: string;
   status: string;
   trigger: string;
+  runIdLabel: string;
+  templateLabel: string;
+  asOfDateLabel: string;
+  attemptLabel: string;
+  sectionLabel: string;
+  lineageLabel: string;
+  artifactLabel: string;
+  artifactNames: string[];
+  hasArtifacts: boolean;
+  generatedGridLabel: string;
+  generatedGridNames: string[];
+  generatedGridArtifacts: ReportingGeneratedGridArtifactRow[];
+  hasGeneratedGrids: boolean;
+  datasetSourceLabel: string;
   lineageSummary: string;
   auditSummary: string;
   failureReason: string | null;
@@ -165,6 +294,16 @@ export interface ReportingRunStatusRow {
   nextActions: ReportingRunActionRow[];
   hasDrilldownLinks: boolean;
   hasNextActions: boolean;
+}
+
+export interface ReportingGeneratedGridArtifactRow {
+  id: string;
+  label: string;
+  jsonHref: string;
+  csvHref: string;
+  pdfHref: string;
+  xlsHref: string;
+  xlsxHref: string;
 }
 
 export interface ReportingRunLinkRow {
@@ -203,8 +342,56 @@ export interface ReportingScheduleRow {
   lastRunLabel: string;
   runCountLabel: string;
   description: string;
+  deliveryTargetLabel: string;
+  datasetSourceLabel: string;
   canPause: boolean;
   canResume: boolean;
+  ariaLabel: string;
+}
+
+export interface ReportingScheduleDeliveryPlanRow {
+  id: string;
+  scheduleId: string;
+  templateId: string;
+  distributionId: string;
+  recipient: string;
+  recipientRole: string;
+  channel: string;
+  deliveryMode: string;
+  formatsLabel: string;
+  readinessSummary: string;
+  readinessVariant: Exclude<ReportingBadgeVariant, "default">;
+  dueLabel: string;
+  nextAsOfLabel: string;
+  ownerLabel: string;
+  route: string;
+  note: string | null;
+  lastDeliveryLabel: string;
+  lastDeliveryHref: string | null;
+  lastDeliveryLinks: ReportingDeliveryAccessLinkRow[];
+  accessExpiryLabel: string;
+  accessSummaryLabel: string;
+  channelSummaryLabel: string;
+  downloadSummaryLabel: string;
+  notificationSummaryLabel: string;
+  reportWriterDatasetSummaryLabel: string;
+  reportWriterGridSummaryLabel: string;
+  integrityLabel: string;
+  integritySummary: string | null;
+  entitlementLabel: string;
+  brandingLabel: string;
+  versionStamp: string | null;
+  ariaLabel: string;
+}
+
+export interface ReportingDeliveryAccessLinkRow {
+  id: string;
+  kind: string;
+  label: string;
+  href: string;
+  tokenLabel: string;
+  expiresLabel: string | null;
+  description: string | null;
   ariaLabel: string;
 }
 
@@ -264,6 +451,27 @@ export interface ReportingRestatementReviewPanel {
   emptyText: string;
 }
 
+export interface ReportingLineProvenanceRow {
+  id: string;
+  lineKey: string;
+  sourceLabel: string;
+  valueLabel: string;
+  evidenceLabel: string;
+  evidenceHref: string | null;
+  financialRecordLabel: string;
+  financialRecordHref: string | null;
+  ariaLabel: string;
+}
+
+export interface ReportingPublicationEvidenceRow {
+  id: string;
+  label: string;
+  sourceLabel: string;
+  capturedLabel: string;
+  href: string | null;
+  ariaLabel: string;
+}
+
 export interface ReportingPublicationReviewPanel {
   regionLabel: string;
   title: string;
@@ -273,6 +481,14 @@ export interface ReportingPublicationReviewPanel {
   summaryText: string;
   fields: ReportingDetailField[];
   evidenceSummary: string;
+  evidenceLinksLabel: string;
+  evidenceLinks: ReportingPublicationEvidenceRow[];
+  hasEvidenceLinks: boolean;
+  evidenceLinksEmptyText: string;
+  lineProvenanceLabel: string;
+  lineProvenanceRows: ReportingLineProvenanceRow[];
+  hasLineProvenance: boolean;
+  lineProvenanceEmptyText: string;
 }
 
 export interface ReportingWorkflowTaskPanel {
@@ -339,6 +555,7 @@ export interface ReportingScreenViewModel {
   workbenchChips: ReportingChipViewModel[];
   queueChips: ReportingChipViewModel[];
   packTargetChips: ReportingChipViewModel[];
+  accessAudit: ReportingAccessAuditViewModel;
   templateRows: ReportingTemplateRow[];
   runStatusRows: ReportingRunStatusRow[];
   hasRunStatusRows: boolean;
@@ -347,6 +564,11 @@ export interface ReportingScreenViewModel {
   scheduleSummary: string;
   scheduleListLabel: string;
   scheduleEmptyText: string;
+  scheduleDeliveryPlanRows: ReportingScheduleDeliveryPlanRow[];
+  hasScheduleDeliveryPlanRows: boolean;
+  scheduleDeliveryPlanSummary: string;
+  scheduleDeliveryPlanListLabel: string;
+  scheduleDeliveryPlanEmptyText: string;
   detailId: string;
   statusTitle: string;
   statusDetail: string;
@@ -473,6 +695,7 @@ export function useReportingScreenViewModel(
       workbenchChips: buildWorkbenchChips("0 profiles", "0", "0"),
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
+      accessAudit: buildReportingAccessAudit(null),
       templateRows: [],
       runStatusRows: [],
       hasRunStatusRows: false,
@@ -481,6 +704,11 @@ export function useReportingScreenViewModel(
       scheduleSummary: "No reporting schedules configured.",
       scheduleListLabel: "Reporting schedules",
       scheduleEmptyText: "No reporting schedules are configured.",
+      scheduleDeliveryPlanRows: [],
+      hasScheduleDeliveryPlanRows: false,
+      scheduleDeliveryPlanSummary: "No schedule delivery plans configured.",
+      scheduleDeliveryPlanListLabel: "Reporting schedule delivery plans",
+      scheduleDeliveryPlanEmptyText: "No scheduled delivery targets are configured.",
       detailId,
       statusTitle: "No profile selected",
       statusDetail: "Reporting data is unavailable. Check the Reporting workspace API connection.",
@@ -581,6 +809,7 @@ export function useReportingScreenViewModel(
     pendingSummary: distribution.pendingSummary,
     ownerLabel: distribution.owner,
     dueLabel: formatReportPackDistributionDue(distribution.dueAtUtc),
+    lastSentLabel: distribution.lastSentAtUtc ? formatReportPackDistributionDue(distribution.lastSentAtUtc) : "Not sent",
     href: distribution.route,
     ariaLabel: `${distribution.recipient} report-pack distribution: ${distribution.pendingSummary}`
   }));
@@ -594,7 +823,9 @@ export function useReportingScreenViewModel(
   });
   const templateRows = buildTemplateRows(reporting.templates ?? []);
   const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? []);
-  const scheduleRows = buildScheduleRows(reporting.schedules ?? []);
+  const scheduleRows = buildScheduleRows(reporting.schedules ?? [], reporting.reportWriterDatasetSources ?? []);
+  const scheduleDeliveryPlanRows = buildScheduleDeliveryPlanRows(reporting.scheduleDeliveryPlans ?? []);
+  const accessAudit = buildReportingAccessAudit(reporting);
 
   return {
     title: "Report packs",
@@ -612,6 +843,7 @@ export function useReportingScreenViewModel(
     workbenchChips: buildWorkbenchChips(countLabel, packTargetCountLabel, recommendedCountLabel),
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
+    accessAudit,
     templateRows,
     runStatusRows,
     hasRunStatusRows: runStatusRows.length > 0,
@@ -620,6 +852,11 @@ export function useReportingScreenViewModel(
     scheduleSummary: buildScheduleSummary(scheduleRows),
     scheduleListLabel: "Reporting schedules",
     scheduleEmptyText: "No reporting schedules are configured.",
+    scheduleDeliveryPlanRows,
+    hasScheduleDeliveryPlanRows: scheduleDeliveryPlanRows.length > 0,
+    scheduleDeliveryPlanSummary: buildScheduleDeliveryPlanSummary(scheduleDeliveryPlanRows),
+    scheduleDeliveryPlanListLabel: "Reporting schedule delivery plans",
+    scheduleDeliveryPlanEmptyText: "No scheduled delivery targets are configured.",
     detailId,
     statusTitle,
     statusDetail: selectedProfileData
@@ -697,6 +934,7 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
     })[0] ?? null;
   const publication = selected?.publication ?? null;
   const evidenceCount = publication?.evidenceLinks?.length ?? 0;
+  const lineProvenance = selected?.lineProvenance ?? [];
   const signedOffBy = publication?.signedOffBy?.trim() || "signer pending";
   const publicationTime = publication?.signedOffAt?.trim() || "Publication time pending";
 
@@ -717,9 +955,29 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
       buildReportingDetailField("Evidence hash", publication?.evidenceHash ?? "None", publication?.evidenceHash ? "success" : "muted"),
       buildReportingDetailField("Manifest path", publication?.retainedManifestPath ?? "None", publication?.retainedManifestPath ? "default" : "muted"),
       buildReportingDetailField("Publication time", publicationTime, publication ? "default" : "muted"),
-      buildReportingDetailField("Evidence links", String(evidenceCount), evidenceCount > 0 ? "success" : "muted")
+      buildReportingDetailField("Evidence links", String(evidenceCount), evidenceCount > 0 ? "success" : "muted"),
+      buildReportingDetailField("Line provenance", String(lineProvenance.length), lineProvenance.length > 0 ? "success" : "muted")
     ],
-    evidenceSummary: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
+    evidenceSummary: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"} / ${lineProvenance.length} provenance line${lineProvenance.length === 1 ? "" : "s"}`,
+    evidenceLinksLabel: "Publication evidence links",
+    evidenceLinks: (publication?.evidenceLinks ?? []).map(buildPublicationEvidenceRow),
+    hasEvidenceLinks: evidenceCount > 0,
+    evidenceLinksEmptyText: "No retained publication evidence links are attached to the selected publication.",
+    lineProvenanceLabel: "Report-line provenance drill-through",
+    lineProvenanceRows: lineProvenance.map((line, index) => buildLineProvenanceRow(line, publication?.evidenceLinks ?? [], index)),
+    hasLineProvenance: lineProvenance.length > 0,
+    lineProvenanceEmptyText: "No retained report-line provenance is attached to the selected publication."
+  };
+}
+
+function buildPublicationEvidenceRow(link: ReportingWorkflowEvidenceLink): ReportingPublicationEvidenceRow {
+  return {
+    id: link.evidenceId,
+    label: link.label,
+    sourceLabel: `${link.evidenceId} · ${link.source}`,
+    capturedLabel: link.capturedAtUtc ?? "capture time pending",
+    href: link.route ?? null,
+    ariaLabel: `${link.label} publication evidence from ${link.source}`
   };
 }
 
@@ -737,6 +995,45 @@ function buildRestatementChangedLineRow(line: ReportingWorkflowChangedLine, inde
   };
 }
 
+function buildLineProvenanceRow(
+  line: ReportingWorkflowLineProvenance,
+  publicationEvidenceLinks: ReportingWorkflowEvidenceLink[],
+  index: number
+): ReportingLineProvenanceRow {
+  const evidence = publicationEvidenceLinks.find((link) => link.evidenceId === line.evidenceId) ?? null;
+  const explorerLabel = formatFinancialRecordExplorerLabel(line.financialRecordExplorerId);
+  const sourceLabel = [
+    line.sourceKind,
+    line.sourceId,
+    line.ledgerEntryId ? `ledger=${line.ledgerEntryId}` : null,
+    line.reconciliationOutcome ? `recon=${line.reconciliationOutcome}` : null
+  ].filter(Boolean).join(" · ");
+
+  return {
+    id: `${line.lineKey || "line"}-${index}`,
+    lineKey: line.lineKey,
+    sourceLabel,
+    valueLabel: line.reportValue ? `value ${line.reportValue}` : "No report value",
+    evidenceLabel: evidence?.label ?? line.evidenceId ?? "No retained evidence",
+    evidenceHref: evidence?.route ?? null,
+    financialRecordLabel: explorerLabel,
+    financialRecordHref: line.financialRecordHref ?? null,
+    ariaLabel: `${line.lineKey} provenance from ${line.sourceKind} with ${explorerLabel}`
+  };
+}
+
+function formatFinancialRecordExplorerLabel(explorerId: string | null | undefined): string {
+  if (explorerId === "portfolio") {
+    return "Open Portfolio Explorer";
+  }
+
+  if (explorerId === "security-instrument") {
+    return "Open Security & Instrument Explorer";
+  }
+
+  return "Open Ledger Explorer";
+}
+
 function countRestatementEvidence(selected: ReportingWorkflowRecord | null, changedLines: ReportingWorkflowChangedLine[]): number {
   if (!selected) {
     return 0;
@@ -746,34 +1043,516 @@ function countRestatementEvidence(selected: ReportingWorkflowRecord | null, chan
 }
 
 function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
-  return templates.map((template) => ({
-    id: template.templateId,
-    name: template.name,
-    family: template.family,
-    version: template.version,
-    sectionSummary: `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`,
-    statusLabel: template.lifecycleStatus ?? "Approved",
-    statusVariant: templateStatusVariant(template.lifecycleStatus),
-    sourceLabel: template.isBuiltIn === false ? "Custom" : "Built-in",
-    approvalSummary: template.approvalSummary ?? (
-      template.isBuiltIn === false
-        ? "Custom template approval metadata is pending."
-        : "Built-in approved template."
-    ),
-    authoringHref: template.authoringRoute ?? `/api/fund-structure/reporting/templates/${template.templateId}/versions/${template.version}`,
-    actionLabel: template.isBuiltIn === false ? "Review version" : "Draft revision",
-    actionAriaLabel: template.isBuiltIn === false
-      ? `Review ${template.name} template version`
-      : `Draft a revision of ${template.name}`,
-    canRunOnDemand: (template.isBuiltIn !== false) && (template.lifecycleStatus ?? "Approved") === "Approved",
-    runActionLabel: "Run report",
-    runActionAriaLabel: `Run ${template.name} report on demand`,
-    runDisabledReason: template.isBuiltIn === false
-      ? "Custom template rendering is not available for on-demand runs yet."
-      : (template.lifecycleStatus ?? "Approved") === "Approved"
-        ? null
-        : "Only approved templates can be run on demand."
+  return templates.map((template) => {
+    const writerGrids = buildWriterGridRows(template);
+    const gridCount = template.reportWriterGrids?.length ?? 0;
+    const gridMetricCount = template.reportWriterGrids?.reduce((total, grid) => total + grid.metricCount + grid.formulaCount, 0) ?? 0;
+    const sectionLabel = `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`;
+    const gridLabel = gridCount > 0
+      ? `; ${gridCount} report-writer grid${gridCount === 1 ? "" : "s"} with ${gridMetricCount} metric${gridMetricCount === 1 ? "" : "s"}`
+      : "";
+    const isAccessible = template.isAccessible ?? true;
+    const lifecycleStatus = template.lifecycleStatus ?? "Approved";
+    const versionNumber = parseTemplateVersionNumber(template.version);
+    const runDisabledReason = resolveTemplateRunDisabledReason(template, isAccessible, lifecycleStatus);
+    const lifecycleActions = buildTemplateLifecycleActions(template, isAccessible, lifecycleStatus);
+    const auditTrail = template.auditTrail ?? [];
+    const validationIssues = template.validationIssues ?? [];
+
+    return {
+      id: `${template.templateId}:${template.version}`,
+      templateName: template.templateId,
+      name: template.name,
+      family: template.family,
+      version: template.version,
+      versionNumber,
+      sectionSummary: `${sectionLabel}${gridLabel}`,
+      statusLabel: lifecycleStatus,
+      statusVariant: templateStatusVariant(template.lifecycleStatus),
+      sourceLabel: template.isBuiltIn === false ? "Custom" : "Built-in",
+      approvalSummary: template.approvalSummary ?? (
+        template.isBuiltIn === false
+          ? "Custom template approval metadata is pending."
+          : "Built-in approved template."
+      ),
+      accessMode: template.accessMode ?? "CompanyWide",
+      accessSummary: template.accessSummary ?? "Company-wide access",
+      isAccessible,
+      accessGovernance: buildTemplateAccessGovernance(template, isAccessible),
+      latestApprovedLabel: template.isLatestApproved ? "Latest approved" : "Not latest approved",
+      versionLineageSummary: buildTemplateVersionLineageSummary(template),
+      auditTrailSummary: `${auditTrail.length} audit event${auditTrail.length === 1 ? "" : "s"}`,
+      lastAuditSummary: buildTemplateLastAuditSummary(template),
+      decisionSummary: buildTemplateDecisionSummary(template),
+      validationSummary: validationIssues.length > 0
+        ? `${validationIssues.length} validation issue${validationIssues.length === 1 ? "" : "s"}`
+        : "No validation issues",
+      authoringHref: template.authoringRoute ?? `/api/fund-structure/reporting/templates/${template.templateId}/versions/${template.version}`,
+      actionLabel: template.isBuiltIn === false ? "Review version" : "Draft revision",
+      actionAriaLabel: template.isBuiltIn === false
+        ? `Review ${template.name} template version`
+        : `Draft a revision of ${template.name}`,
+      canRunOnDemand: isAccessible && lifecycleStatus === "Approved",
+      runActionLabel: "Run report",
+      runActionAriaLabel: `Run ${template.name} report on demand`,
+      runDisabledReason,
+      lifecycleActions,
+      hasLifecycleActions: lifecycleActions.length > 0,
+      writerGrids,
+      hasWriterGrids: writerGrids.length > 0,
+      writerGridSummary: writerGrids.length > 0
+        ? `${writerGrids.length} grid${writerGrids.length === 1 ? "" : "s"} ready for no-code layout`
+        : "No report-writer grids"
+    };
+  });
+}
+
+function buildTemplateAccessGovernance(
+  template: ReportingTemplateMetadata,
+  isAccessible: boolean
+): ReportingTemplateAccessGovernanceRow {
+  const mode = template.accessMode ?? "CompanyWide";
+  const summary = template.accessSummary ?? "Company-wide access";
+  const modeLabel = formatTemplateAccessMode(mode);
+  const scopeLabel = resolveTemplateAccessScopeLabel(mode, summary);
+  const postureLabel = isAccessible ? "Runnable" : "Access blocked";
+  return {
+    modeLabel,
+    scopeLabel,
+    postureLabel,
+    postureVariant: isAccessible ? "success" : "warning",
+    detail: isAccessible
+      ? `${summary}; run and lifecycle actions use the shared access evaluation.`
+      : `${summary}; run and lifecycle actions are disabled by the shared access evaluation.`,
+    ariaLabel: `${template.name} access governance ${modeLabel} ${postureLabel}`
+  };
+}
+
+function formatTemplateAccessMode(mode: string): string {
+  if (mode === "Private") {
+    return "User-locked";
+  }
+
+  if (mode === "Restricted") {
+    return "User/group";
+  }
+
+  return "Company-wide";
+}
+
+function resolveTemplateAccessScopeLabel(mode: string, summary: string): string {
+  if (mode === "Private") {
+    return "Owner";
+  }
+
+  if (mode === "Restricted") {
+    if (/\buser\b/i.test(summary)) {
+      return "User";
+    }
+
+    if (/\bcompany\b/i.test(summary)) {
+      return "Company";
+    }
+
+    return "Group";
+  }
+
+  return "Company";
+}
+
+function buildTemplateVersionLineageSummary(template: ReportingTemplateMetadata): string {
+  const basedOn = template.basedOnTemplateId
+    ? `based on ${template.basedOnTemplateId.name}@v${template.basedOnTemplateId.version}`
+    : "no prior template";
+  const updatedBy = template.updatedBy?.trim() || template.createdBy?.trim() || "unknown actor";
+  const updatedAt = template.updatedAt ?? template.createdAt;
+  const updated = updatedAt ? `updated ${formatTimestamp(updatedAt)} by ${updatedBy}` : `updated by ${updatedBy}`;
+  return `${template.templateId}@v${template.version} ${basedOn}; ${updated}`;
+}
+
+function buildTemplateLastAuditSummary(template: ReportingTemplateMetadata): string {
+  const auditTrail = template.auditTrail ?? [];
+  const last = auditTrail[auditTrail.length - 1];
+  if (!last) {
+    return "No template audit events retained in payload";
+  }
+
+  return `${last.action} ${last.fromStatus}->${last.toStatus} by ${last.actor} at ${formatTimestamp(last.at)}`;
+}
+
+function buildTemplateDecisionSummary(template: ReportingTemplateMetadata): string {
+  const decision = template.decisionRationale?.trim();
+  const approvalReference = template.approvalReference?.trim();
+  const approvedBy = template.approvedBy?.trim();
+  const rejectedBy = template.rejectedBy?.trim();
+  const submittedBy = template.submittedBy?.trim();
+  const reviewer = approvedBy
+    ? `approved by ${approvedBy}`
+    : rejectedBy
+      ? `rejected by ${rejectedBy}`
+      : submittedBy
+        ? `submitted by ${submittedBy}`
+        : null;
+
+  return [
+    reviewer,
+    approvalReference ? `ref ${approvalReference}` : null,
+    decision
+  ].filter(Boolean).join("; ") || "No review decision recorded";
+}
+
+function buildTemplateLifecycleActions(
+  template: ReportingTemplateMetadata,
+  isAccessible: boolean,
+  lifecycleStatus: string
+): ReportingTemplateLifecycleActionRow[] {
+  if (template.isBuiltIn !== false || !isAccessible) {
+    return [];
+  }
+
+  if (lifecycleStatus === "Draft" || lifecycleStatus === "Rejected") {
+    return [
+      {
+        id: `${template.templateId}:${template.version}:submit`,
+        kind: "submit",
+        label: "Submit",
+        ariaLabel: `Submit ${template.name} template version ${template.version} for review`,
+        targetStatus: "InReview",
+        isEnabled: true,
+        disabledReason: null
+      }
+    ];
+  }
+
+  if (lifecycleStatus === "InReview") {
+    return [
+      {
+        id: `${template.templateId}:${template.version}:approve`,
+        kind: "approve",
+        label: "Approve",
+        ariaLabel: `Approve ${template.name} template version ${template.version}`,
+        targetStatus: "Approved",
+        isEnabled: true,
+        disabledReason: null
+      },
+      {
+        id: `${template.templateId}:${template.version}:reject`,
+        kind: "reject",
+        label: "Reject",
+        ariaLabel: `Reject ${template.name} template version ${template.version}`,
+        targetStatus: "Rejected",
+        isEnabled: true,
+        disabledReason: null
+      }
+    ];
+  }
+
+  return [];
+}
+
+function buildWriterGridRows(template: ReportingTemplateMetadata): ReportingWriterGridRow[] {
+  return (template.reportWriterGrids ?? []).map((grid) => {
+    const rowFields = buildFieldTokens(grid.rowFields, "row", grid.dimensionCount);
+    const columnFields = buildFieldTokens(grid.columnFields, "column", 0);
+    const metrics = buildMetricTokens(grid);
+    const formulas = buildFormulaTokens(grid);
+    const filters = buildFilterRows(grid);
+    const sourceFields = buildSourceFieldTokens(grid, rowFields, columnFields, metrics, formulas);
+    const sortLabel = grid.sortBy
+      ? `${grid.sortDescending === false ? "Ascending" : "Descending"} by ${grid.sortBy}`
+      : "Default order";
+    const topNLabel = grid.kind === "TopN" && grid.topN
+      ? `Top ${grid.topN}`
+      : grid.kind;
+    const filterSummary = filters.length > 0
+      ? `${filters.length} saved filter${filters.length === 1 ? "" : "s"}`
+      : "No saved filters";
+
+    return {
+      id: `${template.templateId}:${template.version}:${grid.gridId}`,
+      gridId: grid.gridId,
+      templateId: template.templateId,
+      templateVersion: template.version,
+      family: template.family,
+      title: grid.title,
+      kind: grid.kind,
+      topN: grid.topN ?? null,
+      sortBy: grid.sortBy ?? null,
+      sortDescending: grid.sortDescending ?? true,
+      summary: `${grid.kind} grid with ${rowFields.length + columnFields.length} dimension${rowFields.length + columnFields.length === 1 ? "" : "s"}, ${metrics.length} metric${metrics.length === 1 ? "" : "s"}, ${formulas.length} formula${formulas.length === 1 ? "" : "s"}, and ${filters.length} saved filter${filters.length === 1 ? "" : "s"}.`,
+      sourceFields,
+      rowFields,
+      columnFields,
+      metrics,
+      formulas,
+      filters,
+      topNLabel,
+      sortLabel,
+      filterSummary,
+      ariaLabel: `${template.name} ${grid.title} ${grid.kind} report-writer grid`
+    };
+  });
+}
+
+function buildFieldTokens(fields: string[] | null | undefined, zone: string, fallbackCount: number): ReportingWriterToken[] {
+  if (fields && fields.length > 0) {
+    return fields.map((field) => ({
+      id: `${zone}:${field}`,
+      label: field,
+      detail: "Dataset field",
+      kind: "field",
+      fieldName: field
+    }));
+  }
+
+  return Array.from({ length: fallbackCount }, (_, index) => ({
+    id: `${zone}:field-${index + 1}`,
+    label: `Field ${index + 1}`,
+    detail: "Field metadata unavailable",
+    kind: "field",
+    fieldName: null
   }));
+}
+
+function buildMetricTokens(grid: ReportingTemplateGridMetadata): ReportingWriterToken[] {
+  if (grid.metrics && grid.metrics.length > 0) {
+    return grid.metrics.map((metric) => ({
+      id: `metric:${metric.name}`,
+      label: metric.label ?? metric.name,
+      detail: `${metric.function}(${metric.sourceField})`,
+      kind: "metric",
+      name: metric.name,
+      sourceField: metric.sourceField,
+      function: normalizeAggregateFunction(metric.function),
+      fieldName: metric.sourceField
+    }));
+  }
+
+  return Array.from({ length: grid.metricCount }, (_, index) => ({
+    id: `metric:metric-${index + 1}`,
+    label: `Metric ${index + 1}`,
+    detail: "Metric metadata unavailable",
+    kind: "metric",
+    name: null,
+    sourceField: null,
+    function: "Sum",
+    fieldName: null
+  }));
+}
+
+function buildFormulaTokens(grid: ReportingTemplateGridMetadata): ReportingWriterToken[] {
+  if (grid.formulas && grid.formulas.length > 0) {
+    return grid.formulas.map((formula) => ({
+      id: `formula:${formula.name}`,
+      label: formula.label ?? formula.name,
+      detail: formula.expression,
+      kind: "formula",
+      name: formula.name,
+      expression: formula.expression
+    }));
+  }
+
+  return Array.from({ length: grid.formulaCount }, (_, index) => ({
+    id: `formula:formula-${index + 1}`,
+    label: `Formula ${index + 1}`,
+    detail: "Formula metadata unavailable",
+    kind: "formula",
+    name: null,
+    expression: null
+  }));
+}
+
+function buildFilterRows(grid: ReportingTemplateGridMetadata): ReportingWriterFilterRow[] {
+  return (grid.filters ?? []).map((filter, index) => {
+    const operator = normalizeFilterOperator(filter.operator);
+    const value = filter.value?.trim() || null;
+    const label = filter.label?.trim() || `${filter.field} ${formatFilterOperator(operator)}${value ? ` ${value}` : ""}`.trim();
+    return {
+      id: `filter:${filter.field}:${operator}:${value ?? index}`,
+      field: filter.field,
+      operator,
+      value,
+      label,
+      summary: `${filter.field} ${formatFilterOperator(operator)}${value ? ` ${value}` : ""}`.trim()
+    };
+  });
+}
+
+function buildSourceFieldTokens(
+  grid: ReportingTemplateGridMetadata,
+  rowFields: ReportingWriterToken[],
+  columnFields: ReportingWriterToken[],
+  metrics: ReportingWriterToken[],
+  formulas: ReportingWriterToken[]
+): ReportingWriterToken[] {
+  if (grid.sourceFields && grid.sourceFields.length > 0) {
+    return grid.sourceFields.map((field) => ({
+      id: `source:${field.name}`,
+      label: field.label || field.name,
+      detail: `${field.dataset} · ${field.role} · ${field.dataType}${field.description ? ` · ${field.description}` : ""}`,
+      kind: field.role?.toLowerCase() === "generated" ? "formula" : field.role?.toLowerCase() === "metric" ? "metric" : "field",
+      fieldName: field.name,
+      sourceField: field.name,
+      name: field.name,
+      function: field.role?.toLowerCase() === "metric" ? "Sum" : null,
+      expression: field.role?.toLowerCase() === "generated" ? `{${field.name}}` : null,
+      dataType: field.dataType,
+      dataset: field.dataset,
+      role: field.role
+    }));
+  }
+
+  const names = new Set<string>();
+  for (const token of [...rowFields, ...columnFields]) {
+    if (!token.label.startsWith("Field ")) {
+      names.add(token.label);
+    }
+  }
+
+  for (const metric of grid.metrics ?? []) {
+    names.add(metric.sourceField);
+  }
+
+  for (const formula of grid.formulas ?? []) {
+    for (const field of extractFormulaFields(formula.expression)) {
+      names.add(field);
+    }
+  }
+
+  for (const filter of grid.filters ?? []) {
+    names.add(filter.field);
+  }
+
+  if (grid.sortBy) {
+    names.add(grid.sortBy);
+  }
+
+  if (names.size === 0) {
+    for (const token of [...metrics, ...formulas]) {
+      names.add(token.label);
+    }
+  }
+
+  return Array.from(names)
+    .sort((left, right) => left.localeCompare(right))
+    .map((name) => ({
+      id: `source:${name}`,
+      label: name,
+      detail: "Available dataset field",
+      kind: "field",
+      fieldName: name
+    }));
+}
+
+function normalizeFilterOperator(value: ReportWriterFilterOperator | string | null | undefined): ReportWriterFilterOperator {
+  switch ((value ?? "").toString().toLowerCase()) {
+    case "notequals":
+    case "not-equals":
+      return "NotEquals";
+    case "contains":
+      return "Contains";
+    case "startswith":
+    case "starts-with":
+      return "StartsWith";
+    case "endswith":
+    case "ends-with":
+      return "EndsWith";
+    case "greaterthan":
+    case "greater-than":
+      return "GreaterThan";
+    case "greaterthanorequal":
+    case "greater-than-or-equal":
+      return "GreaterThanOrEqual";
+    case "lessthan":
+    case "less-than":
+      return "LessThan";
+    case "lessthanorequal":
+    case "less-than-or-equal":
+      return "LessThanOrEqual";
+    case "isblank":
+    case "is-blank":
+      return "IsBlank";
+    case "isnotblank":
+    case "is-not-blank":
+      return "IsNotBlank";
+    default:
+      return "Equals";
+  }
+}
+
+function formatFilterOperator(operator: ReportWriterFilterOperator | string): string {
+  switch (normalizeFilterOperator(operator)) {
+    case "NotEquals":
+      return "!=";
+    case "Contains":
+      return "contains";
+    case "StartsWith":
+      return "starts with";
+    case "EndsWith":
+      return "ends with";
+    case "GreaterThan":
+      return ">";
+    case "GreaterThanOrEqual":
+      return ">=";
+    case "LessThan":
+      return "<";
+    case "LessThanOrEqual":
+      return "<=";
+    case "IsBlank":
+      return "is blank";
+    case "IsNotBlank":
+      return "is not blank";
+    default:
+      return "=";
+  }
+}
+
+function normalizeAggregateFunction(value: string | null | undefined): ReportWriterAggregateFunction {
+  switch ((value ?? "").toLowerCase()) {
+    case "count":
+      return "Count";
+    case "average":
+      return "Average";
+    case "min":
+      return "Min";
+    case "max":
+      return "Max";
+    default:
+      return "Sum";
+  }
+}
+
+function extractFormulaFields(expression: string): string[] {
+  const fields = new Set<string>();
+  const matches = expression.matchAll(/\{([^}]+)\}/g);
+  for (const match of matches) {
+    const field = match[1]?.trim();
+    if (field) {
+      fields.add(field);
+    }
+  }
+
+  return Array.from(fields);
+}
+
+function parseTemplateVersionNumber(version: string): number {
+  const match = version.match(/\d+/);
+  const parsed = match ? Number.parseInt(match[0], 10) : Number.NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function resolveTemplateRunDisabledReason(
+  template: ReportingTemplateMetadata,
+  isAccessible: boolean,
+  lifecycleStatus: string
+): string | null {
+  if (!isAccessible) {
+    return "Current user does not have access to this report template.";
+  }
+
+  return lifecycleStatus === "Approved"
+    ? null
+    : "Only approved templates can be run on demand.";
 }
 
 function templateStatusVariant(status?: string): Exclude<ReportingBadgeVariant, "default"> {
@@ -799,6 +1578,20 @@ function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunS
       family: run.family,
       status: run.status,
       trigger: run.trigger,
+      runIdLabel: run.runId,
+      templateLabel: run.templateId,
+      asOfDateLabel: run.asOfDate?.trim() || "As-of date unavailable",
+      attemptLabel: `${run.attemptCount} attempt${run.attemptCount === 1 ? "" : "s"}`,
+      sectionLabel: `${run.sectionCount} section${run.sectionCount === 1 ? "" : "s"}`,
+      lineageLabel: `${run.lineageLinkedSections}/${run.sectionCount} linked`,
+      artifactLabel: `${run.artifacts.length} artifact${run.artifacts.length === 1 ? "" : "s"}`,
+      artifactNames: run.artifacts,
+      hasArtifacts: run.artifacts.length > 0,
+      generatedGridLabel: buildGeneratedGridLabel(run),
+      generatedGridNames: buildGeneratedGridNames(run),
+      generatedGridArtifacts: buildGeneratedGridArtifactRows(run),
+      hasGeneratedGrids: (run.generatedReportWriterGrids?.length ?? 0) > 0,
+      datasetSourceLabel: buildRunDatasetSourceLabel(run),
       lineageSummary: `${run.lineageLinkedSections}/${run.sectionCount} sections linked`,
       auditSummary: run.auditActions.length > 0 ? run.auditActions.join(" → ") : "No audit actions",
       failureReason: run.failureReason,
@@ -806,6 +1599,69 @@ function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunS
       nextActions,
       hasDrilldownLinks: drilldownLinks.length > 0,
       hasNextActions: nextActions.length > 0
+    };
+  });
+}
+
+function buildRunDatasetSourceLabel(run: ReportingRunStatusProjection): string {
+  const sourceLabel = run.reportWriterDatasetSourceLabel?.trim();
+  const sourceId = run.reportWriterDatasetSourceId?.trim();
+  const rowCount = run.reportWriterDatasetRowCount;
+  if (!sourceLabel && !sourceId && rowCount == null) {
+    return "No report-writer dataset retained";
+  }
+
+  const baseLabel = sourceLabel || sourceId || "Report-writer dataset";
+  return rowCount == null
+    ? baseLabel
+    : `${baseLabel} (${rowCount} row${rowCount === 1 ? "" : "s"})`;
+}
+
+function buildGeneratedGridLabel(run: ReportingRunStatusProjection): string {
+  const grids = run.generatedReportWriterGrids ?? [];
+  if (grids.length === 0) {
+    return "No generated report-writer grids";
+  }
+
+  const formulaCount = grids.reduce((total, grid) => total + Math.max(0, grid.formulaCount), 0);
+  const validationCount = grids.reduce((total, grid) => total + Math.max(0, grid.validationPassedCount ?? 0) + Math.max(0, grid.validationWarningCount ?? 0) + Math.max(0, grid.validationFailedCount ?? 0), 0);
+  const validationIssues = grids.reduce((total, grid) => total + Math.max(0, grid.validationWarningCount ?? 0) + Math.max(0, grid.validationFailedCount ?? 0), 0);
+  const validationSummary = validationCount > 0
+    ? `; validation ${validationCount - validationIssues} passed / ${validationCount} checks${validationIssues > 0 ? `, ${validationIssues} review` : ""}`
+    : "";
+  return `${grids.length} generated grid${grids.length === 1 ? "" : "s"} with ${formulaCount} formula${formulaCount === 1 ? "" : "s"}${validationSummary}`;
+}
+
+function buildGeneratedGridNames(run: ReportingRunStatusProjection): string[] {
+  return (run.generatedReportWriterGrids ?? []).map((grid) => {
+    const title = grid.title?.trim() || grid.gridId;
+    const counts = [
+      `${grid.dimensionCount}d`,
+      `${grid.metricCount}m`,
+      `${grid.formulaCount}f`
+    ].join("/");
+    const validationSummary = grid.validationSummary?.trim();
+    return validationSummary
+      ? `${title} (${grid.kind}, ${counts}, validation ${validationSummary})`
+      : `${title} (${grid.kind}, ${counts})`;
+  });
+}
+
+function buildGeneratedGridArtifactRows(run: ReportingRunStatusProjection): ReportingGeneratedGridArtifactRow[] {
+  return (run.generatedReportWriterGrids ?? []).map((grid) => {
+    const title = grid.title?.trim() || grid.gridId;
+    const validationSummary = grid.validationSummary?.trim();
+    const label = validationSummary
+      ? `${title} (${grid.kind}, validation ${validationSummary})`
+      : `${title} (${grid.kind})`;
+    return {
+      id: `${run.runId}-${grid.gridId}`,
+      label,
+      jsonHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId),
+      csvHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "csv"),
+      pdfHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "pdf"),
+      xlsHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "xls"),
+      xlsxHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "xlsx")
     };
   });
 }
@@ -860,7 +1716,10 @@ function buildRunActionRows(run: ReportingRunStatusProjection): ReportingRunActi
   }));
 }
 
-function buildScheduleRows(schedules: ReportingScheduleRecord[]): ReportingScheduleRow[] {
+function buildScheduleRows(
+  schedules: ReportingScheduleRecord[],
+  datasetSources: ReportWriterDatasetSource[]
+): ReportingScheduleRow[] {
   return schedules.map((schedule) => ({
     id: schedule.scheduleId,
     templateId: schedule.templateId,
@@ -872,6 +1731,8 @@ function buildScheduleRows(schedules: ReportingScheduleRecord[]): ReportingSched
     lastRunLabel: schedule.lastRunAtUtc ? formatTimestamp(schedule.lastRunAtUtc) : "Not run",
     runCountLabel: `${schedule.runCount} run${schedule.runCount === 1 ? "" : "s"}`,
     description: schedule.description?.trim() || "No schedule note",
+    deliveryTargetLabel: formatScheduleDeliveryTargets(schedule.deliveryTargets),
+    datasetSourceLabel: formatScheduleDatasetSource(schedule.datasetSourceId, datasetSources),
     canPause: schedule.state === "Active",
     canResume: schedule.state === "Paused",
     ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
@@ -887,18 +1748,140 @@ function buildScheduleSummary(schedules: ReportingScheduleRow[]): string {
   return `${schedules.length} schedule${schedules.length === 1 ? "" : "s"} configured; ${activeCount} active.`;
 }
 
+function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): ReportingScheduleDeliveryPlanRow[] {
+  return plans.map((plan) => ({
+    id: plan.planId,
+    scheduleId: plan.scheduleId,
+    templateId: plan.templateId,
+    distributionId: plan.distributionId,
+    recipient: plan.recipient,
+    recipientRole: plan.recipientRole,
+    channel: plan.channel,
+    deliveryMode: plan.deliveryMode,
+    formatsLabel: plan.formats.length > 0 ? plan.formats.join(", ") : "Pdf, Xlsx, Csv",
+    readinessSummary: plan.readinessSummary,
+    readinessVariant: plan.isReady ? "success" : "warning",
+    dueLabel: formatTimestamp(plan.dueAtUtc),
+    nextAsOfLabel: plan.nextAsOfDate,
+    ownerLabel: plan.owner,
+    route: plan.route,
+    note: plan.note,
+    lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
+    lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
+    lastDeliveryLinks: buildDeliveryAccessLinkRows(plan.lastDeliveryAccessLinks, `${plan.planId}-delivery-link`),
+    accessExpiryLabel: plan.lastDeliveryAccessExpiresAtUtc
+      ? formatTimestamp(plan.lastDeliveryAccessExpiresAtUtc)
+      : "No retained access expiry",
+    accessSummaryLabel: plan.lastDeliveryAccessSummary?.trim() || "No retained access summary",
+    channelSummaryLabel: plan.lastDeliveryChannelSummary?.trim() || "No retained channel summary",
+    downloadSummaryLabel: plan.lastDeliveryDownloadSummary?.trim() || "No retained download summary",
+    notificationSummaryLabel: plan.lastDeliveryNotificationSummary?.trim() || "No retained notification proof",
+    reportWriterDatasetSummaryLabel: plan.lastDeliveryReportWriterDatasetSummary?.trim() || "No retained report-writer dataset",
+    reportWriterGridSummaryLabel: plan.lastDeliveryReportWriterGridSummary?.trim() || "No retained report-writer grids",
+    integrityLabel: formatSchedulePlanIntegrity(plan),
+    integritySummary: plan.lastDeliveryIntegritySummary ?? null,
+    entitlementLabel: plan.lastDeliveryEntitlementScope?.trim() || "No retained delivery entitlement",
+    brandingLabel: formatSchedulePlanBranding(plan),
+    versionStamp: plan.versionStamp,
+    ariaLabel: `${plan.recipient} ${plan.deliveryMode} scheduled delivery plan for ${plan.scheduleId}`
+  }));
+}
+
+function formatSchedulePlanBranding(plan: ReportingScheduleDeliveryPlan): string {
+  if (plan.brandingTheme) {
+    return `${plan.brandingTheme.name} · ${plan.brandingTheme.firmName} · ${plan.brandingTheme.themeId}`;
+  }
+
+  return plan.brandingThemeId?.trim() || "Default theme";
+}
+
+function formatScheduleDatasetSource(
+  datasetSourceId: string | null | undefined,
+  datasetSources: ReportWriterDatasetSource[]
+): string {
+  const normalizedSourceId = datasetSourceId?.trim();
+  if (!normalizedSourceId) {
+    return "Default retained dataset";
+  }
+
+  const source = datasetSources.find((candidate) =>
+    candidate.sourceId.localeCompare(normalizedSourceId, undefined, { sensitivity: "base" }) === 0);
+
+  return source ? `${source.label} (${source.rowCount})` : normalizedSourceId;
+}
+
+function buildDeliveryAccessLinkRows(
+  links: ReportPackDeliveryAccessLink[] | null | undefined,
+  idPrefix: string
+): ReportingDeliveryAccessLinkRow[] {
+  return (links ?? [])
+    .filter((link) => link.href?.trim())
+    .map((link, index) => {
+      const label = link.label?.trim() || link.kind || "Delivery link";
+      const href = link.href.trim();
+      const expiresLabel = link.expiresAtUtc ? `Expires ${formatTimestamp(link.expiresAtUtc)}` : null;
+      return {
+        id: `${idPrefix}-${index + 1}`,
+        kind: link.kind?.trim() || "delivery-link",
+        label,
+        href,
+        tokenLabel: link.requiresToken ? "Token gated" : "Internal",
+        expiresLabel,
+        description: link.description?.trim() || null,
+        ariaLabel: `${label} ${link.requiresToken ? "token gated" : "internal route"} ${href}`
+      };
+    });
+}
+
+function buildScheduleDeliveryPlanSummary(plans: ReportingScheduleDeliveryPlanRow[]): string {
+  if (plans.length === 0) {
+    return "No schedule delivery plans configured.";
+  }
+
+  const readyCount = plans.filter((plan) => plan.readinessVariant === "success").length;
+  return `${plans.length} delivery plan${plans.length === 1 ? "" : "s"} configured; ${readyCount} ready.`;
+}
+
+function formatSchedulePlanLastDelivery(plan: ReportingScheduleDeliveryPlan): string {
+  if (!plan.lastDeliveryAtUtc || !plan.lastDeliveryState) {
+    return "No retained delivery yet";
+  }
+
+  return `${plan.lastDeliveryState} ${formatTimestamp(plan.lastDeliveryAtUtc)}`;
+}
+
+function formatSchedulePlanIntegrity(plan: ReportingScheduleDeliveryPlan): string {
+  const artifactCount = plan.lastDeliveryArtifactCount ?? 0;
+  if (artifactCount <= 0) {
+    return "No retained artifact checksums";
+  }
+
+  return `${artifactCount} artifact${artifactCount === 1 ? "" : "s"} with SHA-256`;
+}
+
+function formatScheduleDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {
+  if (!targets || targets.length === 0) {
+    return "No delivery targets";
+  }
+
+  return targets.map(formatScheduleDeliveryTarget).join("; ");
+}
+
+function formatScheduleDeliveryTarget(target: ReportingScheduleDeliveryTarget): string {
+  const formats = target.formats && target.formats.length > 0
+    ? target.formats.join("/")
+    : "Pdf/Xlsx/Csv";
+  const mode = target.deliveryMode ?? "Policy";
+  return `${target.distributionId} via ${mode} (${formats})`;
+}
+
 function formatTimestamp(value: string): string {
   const timestamp = new Date(value);
   if (Number.isNaN(timestamp.getTime())) {
     return value;
   }
 
-  return timestamp.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  });
+  return reportingTimestampFormatter.format(timestamp);
 }
 
 function artifactLabel(artifact: string): string {
@@ -1003,6 +1986,75 @@ function buildPackTargetChips(
     { label: "Recipients", value: packTargetCountLabel },
     { label: "Inspector", value: statusTitle }
   ];
+}
+
+function buildReportingAccessAudit(reporting: GovernanceReportingSummary | null): ReportingAccessAuditViewModel {
+  const audit = reporting?.accessAudit ?? null;
+  if (!audit) {
+    return {
+      evaluationScope: "Unavailable",
+      summary: "Reporting access audit evidence is not available for this payload.",
+      principalScopes: ["scope:unavailable"],
+      scopeLabel: "scope:unavailable",
+      hiddenTotalLabel: "0 hidden",
+      postureLabel: "Unknown",
+      postureVariant: "outline",
+      countRows: buildAccessAuditCountRows(),
+      denialReasons: ["The server did not include aggregate access-audit counts for this Reporting payload."],
+      hasDenialReasons: true,
+      ariaLabel: "Reporting access audit unavailable"
+    };
+  }
+
+  const hiddenTotal =
+    audit.hiddenTemplateCount +
+    audit.hiddenReportPackCount +
+    audit.hiddenScheduleCount +
+    audit.hiddenDeliveryAttemptCount +
+    audit.hiddenStructuredExportCount;
+  const principalScopes = audit.principalScopes.length > 0 ? audit.principalScopes : ["scope:anonymous"];
+  const postureLabel = hiddenTotal > 0 ? "Scoped" : "Fully visible";
+
+  return {
+    evaluationScope: audit.evaluationScope,
+    summary: audit.summary,
+    principalScopes,
+    scopeLabel: principalScopes.join(" · "),
+    hiddenTotalLabel: `${hiddenTotal} hidden`,
+    postureLabel,
+    postureVariant: hiddenTotal > 0 ? "warning" : "success",
+    countRows: buildAccessAuditCountRows(audit),
+    denialReasons: audit.denialReasons,
+    hasDenialReasons: audit.denialReasons.length > 0,
+    ariaLabel: `${audit.evaluationScope} reporting access audit: ${hiddenTotal} hidden object${hiddenTotal === 1 ? "" : "s"}`
+  };
+}
+
+function buildAccessAuditCountRows(
+  audit?: GovernanceReportingSummary["accessAudit"] | null
+): ReportingAccessAuditCountRow[] {
+  return [
+    buildAccessAuditCountRow("templates", "Templates", audit?.visibleTemplateCount ?? 0, audit?.hiddenTemplateCount ?? 0),
+    buildAccessAuditCountRow("report-packs", "Report packs", audit?.visibleReportPackCount ?? 0, audit?.hiddenReportPackCount ?? 0),
+    buildAccessAuditCountRow("schedules", "Schedules", audit?.visibleScheduleCount ?? 0, audit?.hiddenScheduleCount ?? 0),
+    buildAccessAuditCountRow("deliveries", "Deliveries", audit?.visibleDeliveryAttemptCount ?? 0, audit?.hiddenDeliveryAttemptCount ?? 0),
+    buildAccessAuditCountRow("structured-exports", "Structured exports", audit?.visibleStructuredExportCount ?? 0, audit?.hiddenStructuredExportCount ?? 0)
+  ];
+}
+
+function buildAccessAuditCountRow(
+  id: string,
+  label: string,
+  visibleCount: number,
+  hiddenCount: number
+): ReportingAccessAuditCountRow {
+  return {
+    id,
+    label,
+    visibleLabel: `${visibleCount} visible`,
+    hiddenLabel: `${hiddenCount} hidden`,
+    hasHidden: hiddenCount > 0
+  };
 }
 
 function buildWorkflowTaskPanel({

@@ -15,6 +15,7 @@ public static class ProviderRoutingEndpoints
     public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Provider Routing");
+        group.RequireWorkstationTenantScope();
 
         group.MapGet(UiApiRoutes.ProviderRoutingConnections, async (
             ProviderConnectionService service,

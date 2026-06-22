@@ -53,11 +53,17 @@ public sealed record ProviderCapabilityDescriptor(
 
     public IEnumerable<Type> Implementations()
     {
-        if (Streaming is not null) yield return Streaming;
-        if (Historical is not null) yield return Historical;
-        if (Search is not null) yield return Search;
-        if (CorporateActions is not null) yield return CorporateActions;
-        if (Options is not null) yield return Options;
-        if (Brokerage is not null) yield return Brokerage;
+        if (Streaming is not null)
+            yield return Streaming;
+        if (Historical is not null)
+            yield return Historical;
+        if (Search is not null)
+            yield return Search;
+        if (CorporateActions is not null)
+            yield return CorporateActions;
+        if (Options is not null)
+            yield return Options;
+        if (Brokerage is not null)
+            yield return Brokerage;
     }
 }

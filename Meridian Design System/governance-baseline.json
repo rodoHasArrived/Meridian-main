@@ -1,5 +1,7 @@
 {
   "raw_hex_allowed": [
+    "Accounting Reconciliation (standalone).html",
+    "BRAND_GUIDELINES.md",
     "colors_and_type.css",
     "index.html",
     "README.md",
@@ -8,6 +10,14 @@
     "ICONOGRAPHY.md",
     "CONTENT_FUNDAMENTALS.md",
     "INSPIRATION_BRIEF.md",
+    "components/**/*.card.html",
+    "components/**/*.jsx",
+    "components/**/*.prompt.md",
+    "guidelines/*.card.html",
+    "guidelines/*.md",
+    "src/Meridian.Ui/dashboard/src/styles/index.css",
+    "templates/*/*.jsx",
+    "tokens/*.css",
     "ui_kits/dashboard/components.jsx",
     "ui_kits/dashboard/README.md",
     "ui_kits/plottool_workstation.html",
@@ -72,7 +82,8 @@
     "preview/design-standards.html",
     "preview/institutional-workstation.html",
     "preview/spacing-radii.html",
-    "preview/state-patterns.html"
+    "preview/state-patterns.html",
+    "src/Meridian.Ui/dashboard/src/styles/index.css"
   ],
   "gradient_allowed": [
     "colors_and_type.css",
@@ -83,6 +94,7 @@
     "preview/charts-heatmap.html",
     "preview/charts-volsurface.html",
     "ui_kits/plottool_workstation.html",
+    "src/Meridian.Ui/dashboard/src/styles/index.css",
     "ui_kits/security_master.html",
     "ui_kits/security_master-company.html",
     "ui_kits/security_master-print.html"
@@ -98,6 +110,8 @@
     "ui_kits/security_master.html",
     "ui_kits/security_master-company.html",
     "ui_kits/security_master-print.html",
+    "components/**/*.card.html",
+    "guidelines/*.card.html",
     "preview/charts-candlestick.html",
     "preview/charts-equity-print.html",
     "preview/charts-equity.html",

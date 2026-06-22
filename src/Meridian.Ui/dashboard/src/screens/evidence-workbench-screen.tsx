@@ -13,13 +13,15 @@ import {
   type EvidenceLineagePanelViewModel,
   type EvidenceLineageRowViewModel,
   type EvidenceAssurancePanelViewModel,
+  type EvidenceProofChainPanelViewModel,
   type EvidenceSlaAssessmentRowViewModel,
   type EvidenceNodeDetailViewModel,
   type EvidenceNodeGroupViewModel,
   type EvidenceNodeRowViewModel,
   type EvidencePacketActionTone,
   type EvidencePacketActionViewModel,
-  type EvidenceStatusTone
+  type EvidenceStatusTone,
+  type EvidenceVaultRequestListIndexPanelViewModel
 } from "@/screens/evidence-workbench-screen.view-model";
 
 const badgeVariant: Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline"> = {
@@ -166,118 +168,176 @@ export function EvidenceWorkbenchScreen() {
         </Card>
       ) : null}
 
+      <EvidenceVaultRequestListPanel panel={vm.requestListPanel} />
+
       {vm.hasPacket && vm.packet ? (
         <>
           <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-            <Card className="panel-surface">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-                  Completeness
-                </CardTitle>
-                <CardDescription>
-                  Validation reads the current packet graph and does not mutate source workflows.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <EvidenceMetric label="Required" value={String(vm.packet.completeness.requiredIds.length)} />
-                  <EvidenceMetric label="Ready" value={String(vm.packet.completeness.readyIds.length)} />
-                  <EvidenceMetric label="Missing" value={String(vm.missingEvidence.length)} tone={vm.missingEvidence.length ? "danger" : "success"} />
-                  <EvidenceMetric label="Stale" value={String(vm.staleEvidence.length)} tone={vm.staleEvidence.length ? "warning" : "success"} />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={vm.validatePacket}
-                    busy={vm.validateCommand.busy}
-                    busyLabel={vm.validateCommand.busyLabel}
-                    disabled={vm.validateCommand.disabled}
-                    disabledReason={vm.validateCommand.disabledReason}
-                    aria-label={vm.validateCommand.ariaLabel}
-                  >
-                    <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                    {vm.validateCommand.label}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={vm.exportManifest}
-                    busy={vm.exportCommand.busy}
-                    busyLabel={vm.exportCommand.busyLabel}
-                    disabled={vm.exportCommand.disabled}
-                    disabledReason={vm.exportCommand.disabledReason}
-                    aria-label={vm.exportCommand.ariaLabel}
-                  >
-                    <Download className="h-4 w-4" aria-hidden="true" />
-                    {vm.exportCommand.label}
-                  </Button>
-                </div>
-                {vm.validationResult ? (
-                  <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-                    Validation returned {vm.validationResult.score}% completeness with {vm.validationResult.blockingWorkItemIds.length} blocking item(s).
-                  </p>
-                ) : null}
-                {vm.exportResultDetail ? (
-                  <div role="status" className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="font-semibold">{vm.exportResultDetail.title}</div>
-                        <div className="mt-1 break-all font-mono text-xs">{vm.exportResultDetail.manifestPath}</div>
-                        <div className="mt-1 text-xs">{vm.exportResultDetail.summaryLabel}</div>
-                        {vm.exportResultDetail.vaultIdLabel || vm.exportResultDetail.storageKindLabel ? (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {vm.exportResultDetail.vaultIdLabel ? (
-                              <Badge variant="outline">{vm.exportResultDetail.vaultIdLabel}</Badge>
-                            ) : null}
-                            {vm.exportResultDetail.storageKindLabel ? (
-                              <Badge variant="outline">{vm.exportResultDetail.storageKindLabel}</Badge>
-                            ) : null}
-                          </div>
+            <div className="space-y-4">
+              <Card className="panel-surface">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
+                    Completeness
+                  </CardTitle>
+                  <CardDescription>
+                    Validation reads the current packet graph and does not mutate source workflows.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <EvidenceMetric label="Required" value={String(vm.packet.completeness.requiredIds.length)} />
+                    <EvidenceMetric label="Ready" value={String(vm.packet.completeness.readyIds.length)} />
+                    <EvidenceMetric label="Missing" value={String(vm.missingEvidence.length)} tone={vm.missingEvidence.length ? "danger" : "success"} />
+                    <EvidenceMetric label="Stale" value={String(vm.staleEvidence.length)} tone={vm.staleEvidence.length ? "warning" : "success"} />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={vm.validatePacket}
+                      busy={vm.validateCommand.busy}
+                      busyLabel={vm.validateCommand.busyLabel}
+                      disabled={vm.validateCommand.disabled}
+                      disabledReason={vm.validateCommand.disabledReason}
+                      aria-label={vm.validateCommand.ariaLabel}
+                    >
+                      <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+                      {vm.validateCommand.label}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={vm.exportManifest}
+                      busy={vm.exportCommand.busy}
+                      busyLabel={vm.exportCommand.busyLabel}
+                      disabled={vm.exportCommand.disabled}
+                      disabledReason={vm.exportCommand.disabledReason}
+                      aria-label={vm.exportCommand.ariaLabel}
+                    >
+                      <Download className="h-4 w-4" aria-hidden="true" />
+                      {vm.exportCommand.label}
+                    </Button>
+                  </div>
+                  {vm.validationResult ? (
+                    <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                      Validation returned {vm.validationResult.score}% completeness with {vm.validationResult.blockingWorkItemIds.length} blocking item(s).
+                    </p>
+                  ) : null}
+                  {vm.exportResultDetail ? (
+                    <div role="status" className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm leading-6 text-primary">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-semibold">{vm.exportResultDetail.title}</div>
+                          <div className="mt-1 break-all font-mono text-xs">{vm.exportResultDetail.manifestPath}</div>
+                          <div className="mt-1 text-xs">{vm.exportResultDetail.summaryLabel}</div>
+                          {vm.exportResultDetail.vaultIdLabel || vm.exportResultDetail.storageKindLabel ? (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {vm.exportResultDetail.vaultIdLabel ? (
+                                <Badge variant="outline">{vm.exportResultDetail.vaultIdLabel}</Badge>
+                              ) : null}
+                              {vm.exportResultDetail.storageKindLabel ? (
+                                <Badge variant="outline">{vm.exportResultDetail.storageKindLabel}</Badge>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
+                        {vm.exportResultDetail.routeHref && vm.exportResultDetail.routeLabel && vm.exportResultDetail.routeAriaLabel ? (
+                          <Button asChild variant="outline" size="sm">
+                            <a
+                              href={vm.exportResultDetail.routeHref}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={vm.exportResultDetail.routeAriaLabel}
+                            >
+                              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                              {vm.exportResultDetail.routeLabel}
+                            </a>
+                          </Button>
                         ) : null}
                       </div>
-                      {vm.exportResultDetail.routeHref && vm.exportResultDetail.routeLabel && vm.exportResultDetail.routeAriaLabel ? (
-                        <Button asChild variant="outline" size="sm">
-                          <a
-                            href={vm.exportResultDetail.routeHref}
-                            target="_blank"
-                            rel="noreferrer"
-                            aria-label={vm.exportResultDetail.routeAriaLabel}
-                          >
-                            <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                            {vm.exportResultDetail.routeLabel}
-                          </a>
-                        </Button>
+                      {vm.exportResultDetail.artifactRows.length > 0 ? (
+                        <ul className="mt-3 grid gap-2" aria-label="Retained vault artifacts">
+                          {vm.exportResultDetail.artifactRows.map((artifact) => (
+                            <li
+                              key={artifact.id}
+                              aria-label={artifact.ariaLabel}
+                              className="rounded-sm border border-primary/30 bg-background/40 px-2.5 py-2 text-xs"
+                            >
+                              <div className="flex flex-wrap items-center gap-2 font-semibold">
+                                <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>{artifact.kind}</span>
+                                <Badge variant="success">{artifact.sizeLabel}</Badge>
+                              </div>
+                              <div className="mt-1 break-all font-mono">{artifact.relativePath}</div>
+                              <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
+                                <span className="break-all">{artifact.hashLabel}</span>
+                                <span className="break-all">{artifact.canonicalSubjectLabel}</span>
+                                <span className="break-all">{artifact.sourceLabel}</span>
+                                <span>{artifact.retainedLabel}</span>
+                                <span className="break-all">{artifact.captureLabel}</span>
+                                <span>{artifact.extractionLabel}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {vm.exportResultDetail.requestListRows.length > 0 ? (
+                        <ul className="mt-3 grid gap-2" aria-label="Evidence vault request lists">
+                          {vm.exportResultDetail.requestListRows.map((requestList) => (
+                            <li
+                              key={requestList.id}
+                              aria-label={requestList.ariaLabel}
+                              className="rounded-sm border border-primary/30 bg-background/40 px-2.5 py-2 text-xs"
+                            >
+                              <div className="flex flex-wrap items-center gap-2 font-semibold">
+                                <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>{requestList.requestListKindLabel}</span>
+                                <Badge variant={badgeVariant[requestList.highestSeverityTone]}>{requestList.highestSeverityLabel}</Badge>
+                                <Badge variant="outline">{requestList.statusLabel}</Badge>
+                              </div>
+                              <div className="mt-1 break-all font-mono">{requestList.targetLabel}</div>
+                              <p className="mt-1 text-xs leading-5 text-primary/90">{requestList.summary}</p>
+                              <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
+                                <span className="break-all">{requestList.requestCountLabel}</span>
+                                <span className="break-all">{requestList.evidenceKindsLabel}</span>
+                                <span className="break-all sm:col-span-2">{requestList.blockedOutputsLabel}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {vm.exportResultDetail.supportRequestRows.length > 0 ? (
+                        <ul className="mt-3 grid gap-2" aria-label="Evidence vault support requests">
+                          {vm.exportResultDetail.supportRequestRows.map((request) => (
+                            <li
+                              key={request.id}
+                              aria-label={request.ariaLabel}
+                              className="rounded-sm border border-primary/30 bg-background/40 px-2.5 py-2 text-xs"
+                            >
+                              <div className="flex flex-wrap items-center gap-2 font-semibold">
+                                <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>{request.requestKindLabel}</span>
+                                <Badge variant={badgeVariant[request.severityTone]}>{request.severityLabel}</Badge>
+                                <Badge variant="outline">{request.statusLabel}</Badge>
+                              </div>
+                              <div className="mt-1 break-all font-mono">{request.evidenceLabel}</div>
+                              <p className="mt-1 text-xs leading-5 text-primary/90">{request.summary}</p>
+                              <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
+                                <span className="break-all">{request.evidenceKindLabel}</span>
+                                <span className="break-all">{request.sourceLabel}</span>
+                                <span className="break-all">{request.workItemLabel}</span>
+                                <span className="break-all">{request.blockedOutputLabel}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
                       ) : null}
                     </div>
-                    {vm.exportResultDetail.artifactRows.length > 0 ? (
-                      <ul className="mt-3 grid gap-2" aria-label="Retained vault artifacts">
-                        {vm.exportResultDetail.artifactRows.map((artifact) => (
-                          <li
-                            key={artifact.id}
-                            aria-label={artifact.ariaLabel}
-                            className="rounded-sm border border-primary/30 bg-background/40 px-2.5 py-2 text-xs"
-                          >
-                            <div className="flex flex-wrap items-center gap-2 font-semibold">
-                              <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-                              <span>{artifact.kind}</span>
-                              <Badge variant="success">{artifact.sizeLabel}</Badge>
-                            </div>
-                            <div className="mt-1 break-all font-mono">{artifact.relativePath}</div>
-                            <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
-                              <span className="break-all">{artifact.hashLabel}</span>
-                              <span className="break-all">{artifact.canonicalSubjectLabel}</span>
-                              <span className="break-all">{artifact.sourceLabel}</span>
-                              <span>{artifact.retainedLabel}</span>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </div>
-                ) : null}
-              </CardContent>
-            </Card>
+                  ) : null}
+                </CardContent>
+              </Card>
+              <EvidenceProofChainPanel panel={vm.proofChainPanel} />
+            </div>
 
             <Card className="panel-surface">
               <CardHeader>
@@ -426,6 +486,58 @@ function EvidenceMetric({ label, value, tone = "muted" }: { label: string; value
       <div className="eyebrow-label">{label}</div>
       <div className={cn("mt-1 font-mono text-lg font-semibold", metricToneClass[tone])}>{value}</div>
     </div>
+  );
+}
+
+function EvidenceProofChainPanel({ panel }: { panel: EvidenceProofChainPanelViewModel }) {
+  return (
+    <Card className="panel-surface" role="region" aria-label={panel.title}>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Network className="h-4 w-4 text-primary" aria-hidden="true" />
+              {panel.title}
+            </CardTitle>
+            <CardDescription>{panel.summaryLabel}</CardDescription>
+          </div>
+          <Badge variant={badgeVariant[panel.statusTone]}>{panel.statusLabel}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <EvidenceMetric label="Layer coverage" value={panel.coverageLabel} tone={panel.statusTone} />
+        {panel.hasLayers ? (
+          <ul className="grid gap-2" aria-label="Operational evidence proof-chain layers">
+            {panel.rows.map((row) => (
+              <li
+                key={row.id}
+                aria-label={row.ariaLabel}
+                className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2 text-xs"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-semibold text-foreground">{row.label}</span>
+                  <span className="flex flex-wrap gap-2">
+                    <Badge variant={badgeVariant[row.statusTone]}>{row.statusLabel}</Badge>
+                    <Badge variant="outline">{row.coverageLabel}</Badge>
+                  </span>
+                </div>
+                <p className="mt-1 leading-5 text-muted-foreground">{row.summary}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Badge variant="success">{row.readyLabel}</Badge>
+                  <Badge variant={row.reviewLabel.startsWith("0 ") ? "outline" : "warning"}>{row.reviewLabel}</Badge>
+                  <Badge variant={row.missingLabel.startsWith("0 ") ? "outline" : "danger"}>{row.missingLabel}</Badge>
+                </div>
+                <div className="mt-2 break-words font-mono text-[0.7rem] text-muted-foreground">{row.kindsLabel}</div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-sm border border-dashed border-border/70 bg-secondary/20 px-2.5 py-2 text-sm text-muted-foreground">
+            No proof-chain layers returned.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -609,6 +721,123 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
         </section>
       </div>
     </aside>
+  );
+}
+
+function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestListIndexPanelViewModel }) {
+  return (
+    <Card className="panel-surface" role="region" aria-label={panel.title}>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              {panel.title}
+            </CardTitle>
+            <CardDescription>{panel.description}</CardDescription>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Badge variant="outline">{panel.scopeLabel}</Badge>
+            <Badge variant={panel.hasRows ? "warning" : "success"}>{panel.summaryLabel}</Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {panel.hasRows ? (
+          <ul className="grid gap-3 xl:grid-cols-2" aria-label="Open Evidence Vault request lists">
+            {panel.rows.map((requestList) => (
+              <li
+                key={requestList.id}
+                aria-label={requestList.ariaLabel}
+                className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
+                      <span>{requestList.requestListKindLabel}</span>
+                      <Badge variant={badgeVariant[requestList.highestSeverityTone]}>{requestList.highestSeverityLabel}</Badge>
+                      <Badge variant="outline">{requestList.statusLabel}</Badge>
+                    </div>
+                    <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{requestList.targetLabel}</div>
+                  </div>
+                  {requestList.manifestHref && requestList.manifestLabel && requestList.manifestAriaLabel ? (
+                    <Button asChild variant="outline" size="sm">
+                      <a
+                        href={requestList.manifestHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={requestList.manifestAriaLabel}
+                      >
+                        <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                        {requestList.manifestLabel}
+                      </a>
+                    </Button>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{requestList.summary}</p>
+                <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.openRequestCountLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.requestCountLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.evidenceKindsLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.blockedOutputsLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.subjectLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.vaultLabel}
+                  </span>
+                </div>
+                {requestList.supportRequestRows.length > 0 ? (
+                  <ul className="mt-3 grid gap-2" aria-label={`${requestList.requestListKindLabel} support requests`}>
+                    {requestList.supportRequestRows.map((request) => (
+                      <li
+                        key={request.id}
+                        aria-label={request.ariaLabel}
+                        className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2 text-xs"
+                      >
+                        <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
+                          <span>{request.requestKindLabel}</span>
+                          <Badge variant={badgeVariant[request.severityTone]}>{request.severityLabel}</Badge>
+                          <Badge variant="outline">{request.statusLabel}</Badge>
+                        </div>
+                        <div className="mt-1 break-all font-mono text-muted-foreground">{request.evidenceLabel}</div>
+                        <p className="mt-1 leading-5 text-muted-foreground">{request.summary}</p>
+                        <div className="mt-2 grid gap-1 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                          <span className="break-all">{request.evidenceKindLabel}</span>
+                          <span className="break-all">{request.workItemLabel}</span>
+                          <span className="break-all sm:col-span-2">{request.blockedOutputLabel}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 rounded-sm border border-dashed border-border/70 bg-background/30 px-2.5 py-2 text-xs text-muted-foreground">
+                    {requestList.supportRequestSummaryLabel}
+                  </p>
+                )}
+                <div className="mt-3 text-xs text-muted-foreground">{requestList.retainedLabel}</div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div
+            role="status"
+            className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-4 py-4 text-sm text-muted-foreground"
+          >
+            <div className="font-semibold text-foreground">{panel.emptyTitle}</div>
+            <p className="mt-1 max-w-2xl leading-6">{panel.emptyDetail}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

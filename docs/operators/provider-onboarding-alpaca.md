@@ -77,5 +77,4 @@ Keep evidence packets under sanitized paths used by team policy (for example: `a
 
 ## Source and archive
 
-- Legacy source: [docs/providers/alpaca-setup.md](../providers/alpaca-setup.md)
-- Archive copy: [archive/docs/providers/alpaca-setup.md](../../archive/docs/providers/alpaca-setup.md)
+- Legacy source archived at [archive/docs/providers/alpaca-setup.md](../../archive/docs/providers/alpaca-setup.md)

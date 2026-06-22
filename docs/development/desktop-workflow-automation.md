@@ -7,7 +7,7 @@ This guide covers the scripted desktop workflows that launch `Meridian.Desktop`,
 - `scripts/dev/run-desktop-workflow.ps1` launches the WPF shell, drives a named workflow, captures screenshots, and writes a JSON manifest.
 - `scripts/dev/summarize-desktop-workflow-bundle.ps1` reads bundle diagnostics and emits `bundle-summary.md` with failure-first triage hints.
 - `scripts/dev/generate-desktop-user-manual.ps1` runs one or more manual workflows and produces a markdown user manual plus screenshot assets.
-- `scripts/dev/capture-desktop-screenshots.ps1` now routes through the shared workflow runner so the screenshot catalog and debugging workflows use the same automation path.
+- `scripts/dev/capture-desktop-screenshots.ps1` now routes through the shared workflow runner so the screenshot catalog and debugging workflows use the same automation path. The wrapper writes screenshots to the requested catalog directory and uses a fresh `artifacts/desktop-workflows/capture-<timestamp>-<pid>/` artifact root by default, which prevents stale checkpoint hashes from blocking captures after desktop program or profile updates.
 - `scripts/dev/validate-screenshot-captures.py` validates captured PNGs against the web route or
   desktop workflow definitions, checks capture freshness, rejects wrong-route or wrong-page-tag
   manifest entries, and fails blank or low-entropy screenshots before they can be uploaded or
@@ -55,7 +55,7 @@ For migration context and replacement mappings, see:
 | Workflow | Purpose | Output |
 | --- | --- | --- |
 | `debug-startup` | Fast startup and diagnostics sweep for debugging | `artifacts/desktop-workflows/<timestamp>-debug-startup/` |
-| `screenshot-catalog` | Refresh the existing WPF screenshot set used by docs | `docs/screenshots/desktop/` when run through `capture-desktop-screenshots.ps1` |
+| `screenshot-catalog` | Refresh the existing WPF screenshot set used by docs | `docs/screenshots/desktop/` when run through `capture-desktop-screenshots.ps1`; run logs/checkpoints land under a fresh `artifacts/desktop-workflows/capture-.../` root |
 | `manual-overview` | Shell and workspace overview for operators | Included in the generated user manual |
 | `manual-data` | Providers, symbols, storage, and backfill workflow | Included in the generated user manual |
 | `manual-strategy-and-trading` | Strategy, backtesting, Quant Script, and trading flow | Included in the generated user manual |
@@ -90,7 +90,9 @@ Before any screenshot is saved, the runner now:
 2. enters the operating-context selector when fixture startup lands on that first-run surface and fails immediately if that selection cannot be confirmed,
 3. re-queries the live shell window,
 4. checks `ShellAutomationState` / `PageTitleText` markers, whose automation names expose the current page tag and page title,
-5. fails the step if the requested page was not actually confirmed.
+5. requests an in-process WPF render with `--screenshot=<path>` and validates the resulting PNG,
+6. falls back to native window capture only when the in-process render is unavailable,
+7. fails the step if the requested page was not actually confirmed or the saved screenshot is blank.
 
 The runner resolves the Meridian window from the owned `Meridian.Desktop` process handle first and
 only falls back to narrow title-based UI Automation lookup. Avoid broad root-window scans in this

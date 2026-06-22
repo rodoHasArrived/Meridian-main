@@ -1461,7 +1461,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             var results = _accounts.Values.Select(static a => a.Summary)
                 .Where(a => accountId is null || a.AccountId == accountId)
-                .SelectMany(a => new []
+                .SelectMany(a => new[]
                 {
                     new AccountSettlementInstructionView(a.AccountId, "Custodian", a.CustodianDetails?.SubAccountNumber, a.Institution),
                     new AccountSettlementInstructionView(a.AccountId, "Bank", a.BankDetails?.AccountNumber, a.BankDetails?.BankName ?? a.Institution)

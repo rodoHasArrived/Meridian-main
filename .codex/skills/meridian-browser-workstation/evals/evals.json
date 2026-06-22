@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Meridian browser workstation package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/browser_workstation_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 4
+        }
+      },
+      "prompt": "Use $meridian-browser-workstation to update a dashboard route while preserving accessibility, deep links, and dashboard-local validation."
+    },
+    {
+      "id": 2,
+      "description": "Browser changes preserve accessibility and route/deep-link behavior.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/browser_workstation_check.py",
+        "--scenario",
+        "accessibility-routing",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-browser-workstation to protect accessible names, keyboard behavior, live-region copy, and route/deep-link state."
+    },
+    {
+      "id": 3,
+      "description": "Browser changes use shared contracts and dashboard-local validation.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/browser_workstation_check.py",
+        "--scenario",
+        "shared-validation",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $meridian-browser-workstation to route shared behavior through shared contracts and run dashboard test/build validation."
+    }
+  ]
+}

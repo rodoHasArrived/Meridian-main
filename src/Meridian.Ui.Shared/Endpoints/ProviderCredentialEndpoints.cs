@@ -21,6 +21,7 @@ public static class ProviderCredentialEndpoints
     public static void MapProviderCredentialEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Provider Credentials");
+        group.RequireWorkstationTenantScope();
 
         group.MapPost(UiApiRoutes.ProviderCredentialsValidate, (
             HttpContext context,

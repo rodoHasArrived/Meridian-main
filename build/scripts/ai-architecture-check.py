@@ -23,9 +23,9 @@ Commands:
 
 Usage:
     python3 build/scripts/ai-architecture-check.py
-    python3 build/scripts/ai-architecture-check.py check --src src/
-    python3 build/scripts/ai-architecture-check.py check --json
-    python3 build/scripts/ai-architecture-check.py summary
+    python3 build/scripts/ai-architecture-check.py --src src/ check
+    python3 build/scripts/ai-architecture-check.py --json check
+    python3 build/scripts/ai-architecture-check.py --src src/ summary
     python3 build/scripts/ai-architecture-check.py check-cpm
     python3 build/scripts/ai-architecture-check.py check-adrs
 
@@ -41,11 +41,24 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Sequence
+
+
+def _configure_stdio() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except OSError:
+                pass
+
+
+_configure_stdio()
 
 # ---------------------------------------------------------------------------
 # Data model
@@ -109,26 +122,65 @@ def dim(t: str) -> str: return _c("2", t)
 # File scanning helpers
 # ---------------------------------------------------------------------------
 
+_SKIP_DIR_NAMES = {
+    ".build-system",
+    ".git",
+    ".hg",
+    ".svn",
+    ".vite",
+    "artifacts",
+    "bin",
+    "build",
+    "coverage",
+    "dist",
+    "node_modules",
+    "obj",
+    "publish",
+    "TestResults",
+}
+
+_SKIP_SOURCE_DIR_NAMES = {"Benchmarks", "Tests", "_Template"}
+
+
+def _is_reparse_point(path: Path) -> bool:
+    if os.name != "nt":
+        return False
+    try:
+        return bool(path.stat(follow_symlinks=False).st_file_attributes & 0x400)
+    except OSError:
+        return True
+
+
+def _iter_matching_files(root: Path, suffix: str, *, skip_source_dirs: bool = False) -> list[Path]:
+    files: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
+        current = Path(dirpath)
+        pruned: list[str] = []
+        for dirname in dirnames:
+            if dirname in _SKIP_DIR_NAMES:
+                continue
+            if skip_source_dirs and dirname in _SKIP_SOURCE_DIR_NAMES:
+                continue
+            child = current / dirname
+            if child.is_symlink() or _is_reparse_point(child):
+                continue
+            pruned.append(dirname)
+        dirnames[:] = pruned
+
+        for filename in filenames:
+            if filename.endswith(suffix):
+                files.append(current / filename)
+    return files
+
+
 def _iter_cs_files(root: Path) -> list[Path]:
     """Return all .cs source files under *root*, excluding test/benchmark dirs."""
-    files = []
-    for p in root.rglob("*.cs"):
-        # Skip test projects and benchmarks
-        parts = p.parts
-        if any(part in ("Tests", "Benchmarks", "obj", "bin") for part in parts):
-            continue
-        files.append(p)
-    return files
+    return _iter_matching_files(root, ".cs", skip_source_dirs=True)
 
 
 def _iter_csproj_files(root: Path) -> list[Path]:
     """Return all .csproj files under *root*, excluding bin/obj."""
-    files = []
-    for p in root.rglob("*.csproj"):
-        if "obj" in p.parts or "bin" in p.parts:
-            continue
-        files.append(p)
-    return files
+    return _iter_matching_files(root, ".csproj")
 
 
 def _read_lines(path: Path) -> list[str]:
@@ -295,10 +347,7 @@ def check_adrs(root: Path) -> CheckResult:
     if not adapter_root.exists():
         adapter_root = root  # fallback
 
-    for path in adapter_root.rglob("*.cs"):
-        if any(p in ("Tests", "obj", "bin", "_Template") for p in path.parts):
-            continue
-
+    for path in _iter_matching_files(adapter_root, ".cs", skip_source_dirs=True):
         content = path.read_text(encoding="utf-8", errors="replace")
         if not _PROVIDER_IMPL_PATTERN.search(content):
             continue
@@ -400,12 +449,15 @@ def check_sinks(root: Path) -> CheckResult:
         check_id="SINK",
         description="ADR-007: Direct FileStream writes bypass AtomicFileWriter",
     )
-    sink_paths = list((root / "Meridian.Storage").rglob("*.cs")) if \
-        (root / "Meridian.Storage").exists() else list(root.rglob("*Sink*.cs"))
+    if (root / "Meridian.Storage").exists():
+        sink_paths = _iter_matching_files(root / "Meridian.Storage", ".cs", skip_source_dirs=True)
+    else:
+        sink_paths = [
+            path for path in _iter_matching_files(root, ".cs", skip_source_dirs=True)
+            if "Sink" in path.name
+        ]
 
     for path in sink_paths:
-        if any(p in ("Tests", "obj", "bin") for p in path.parts):
-            continue
         lines = _read_lines(path)
         result.files_scanned += 1
         for i, line in enumerate(lines, start=1):
@@ -568,14 +620,14 @@ def print_human_report(results: list[CheckResult]) -> int:
     print()
 
     if total_findings == 0:
-        print(green("  ✓ No architecture violations found."))
+        print(green("  OK No architecture violations found."))
         print()
         return 0
 
     for cr in results:
         if not cr.findings:
             continue
-        print(f"  {cyan('■')} {cr.check_id}: {cr.description}")
+        print(f"  {cyan('*')} {cr.check_id}: {cr.description}")
         for f in cr.findings:
             print(f"    {_severity_label(f.severity)} {dim(f.check)}")
             print(f"      {f.file}:{f.line}")
@@ -587,9 +639,9 @@ def print_human_report(results: list[CheckResult]) -> int:
             print()
 
     if total_critical > 0:
-        print(red(f"  ✗ {total_critical} CRITICAL finding(s). Fix before submitting."))
+        print(red(f"  FAIL {total_critical} CRITICAL finding(s). Fix before submitting."))
     else:
-        print(yellow(f"  ⚠  {total_warning} WARNING(s). Review before submitting."))
+        print(yellow(f"  WARN {total_warning} WARNING(s). Review before submitting."))
     print()
 
     return 1 if total_critical > 0 else 0
@@ -623,14 +675,14 @@ def print_summary(results: list[CheckResult]) -> int:
     critical = sum(r.critical_count for r in results)
     warning = sum(r.warning_count for r in results)
     if critical == 0 and warning == 0:
-        print(green("✓ Architecture guard: clean"))
+        print(green("OK Architecture guard: clean"))
         return 0
     parts = []
     if critical:
         parts.append(red(f"{critical} CRITICAL"))
     if warning:
         parts.append(yellow(f"{warning} WARNING"))
-    print(f"Architecture guard: {', '.join(parts)} — run `ai-arch-check` for details")
+    print(f"Architecture guard: {', '.join(parts)} - run `ai-arch-check` for details")
     return 1 if critical > 0 else 0
 
 
@@ -638,44 +690,62 @@ def print_summary(results: list[CheckResult]) -> int:
 # CLI
 # ---------------------------------------------------------------------------
 
+_COMMAND_HELP = {
+    "check": "Run all compliance checks (default)",
+    "check-cpm": "CPM violations only",
+    "check-deps": "Forbidden dependency directions only",
+    "check-adrs": "Missing [ImplementsAdr] attributes only",
+    "check-channels": "Raw Channel.Create* calls only",
+    "check-sinks": "Direct FileStream writes in sinks only",
+    "check-json": "Reflection JSON serialization only",
+    "summary": "One-line summary (useful in CI)",
+}
+
+
+def _add_common_options(
+    parser: argparse.ArgumentParser,
+    *,
+    suppress_defaults: bool = False,
+) -> None:
+    default = argparse.SUPPRESS if suppress_defaults else None
+    parser.add_argument(
+        "--src",
+        default=argparse.SUPPRESS if suppress_defaults else "src",
+        metavar="PATH",
+        help="Source root to scan (default: src/)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        default=default,
+        help="Emit JSON output instead of human-readable text",
+    )
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        default=default,
+        help="Disable ANSI colour output",
+    )
+    parser.add_argument(
+        "--fail-on",
+        choices=["CRITICAL", "WARNING", "INFO"],
+        default=argparse.SUPPRESS if suppress_defaults else "CRITICAL",
+        metavar="LEVEL",
+        help="Exit non-zero if any finding at or above this severity (default: CRITICAL)",
+    )
+
+
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="ai-architecture-check",
         description="AI Architecture Guard — static compliance checker for Meridian",
     )
-    p.add_argument(
-        "--src",
-        default="src",
-        metavar="PATH",
-        help="Source root to scan (default: src/)",
-    )
-    p.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit JSON output instead of human-readable text",
-    )
-    p.add_argument(
-        "--no-color",
-        action="store_true",
-        help="Disable ANSI colour output",
-    )
-    p.add_argument(
-        "--fail-on",
-        choices=["CRITICAL", "WARNING", "INFO"],
-        default="CRITICAL",
-        metavar="LEVEL",
-        help="Exit non-zero if any finding at or above this severity (default: CRITICAL)",
-    )
+    _add_common_options(p)
 
     sub = p.add_subparsers(dest="command")
-    sub.add_parser("check",          help="Run all compliance checks (default)")
-    sub.add_parser("check-cpm",      help="CPM violations only")
-    sub.add_parser("check-deps",     help="Forbidden dependency directions only")
-    sub.add_parser("check-adrs",     help="Missing [ImplementsAdr] attributes only")
-    sub.add_parser("check-channels", help="Raw Channel.Create* calls only")
-    sub.add_parser("check-sinks",    help="Direct FileStream writes in sinks only")
-    sub.add_parser("check-json",     help="Reflection JSON serialization only")
-    sub.add_parser("summary",        help="One-line summary (useful in CI)")
+    for command, help_text in _COMMAND_HELP.items():
+        command_parser = sub.add_parser(command, help=help_text)
+        _add_common_options(command_parser, suppress_defaults=True)
 
     return p
 

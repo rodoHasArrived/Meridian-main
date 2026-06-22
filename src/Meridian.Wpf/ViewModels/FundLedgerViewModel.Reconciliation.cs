@@ -821,7 +821,7 @@ public sealed partial class FundLedgerViewModel
         ReconciliationDetailGuidanceText = detail.SourceType == FundReconciliationSourceType.AccountRun
             ? "Account-level reconciliation is read-only in Accounting. Open the account workflow to rerun or resolve it."
             : detail.SupportsBreakActions
-                ? "Inline break actions update the shared workstation queue and keep operator notes attached to the exception."
+                ? "Inline break actions update the shared workstation queue and keep operator notes attached to the review item."
                 : "Select a break from Break Queue to start review, resolve, or dismiss it inline.";
         ReconciliationDetailTotalChecksText = detail.TotalChecks.ToString("N0");
         ReconciliationDetailMatchedText = detail.TotalMatched.ToString("N0");
@@ -970,7 +970,7 @@ public sealed partial class FundLedgerViewModel
         if (summary is null)
         {
             ReconciliationCalibrationStatusText = "Unavailable";
-            ReconciliationCalibrationSummaryText = "The workstation host did not return reconciliation calibration posture.";
+            ReconciliationCalibrationSummaryText = "The workstation service did not return reconciliation calibration posture.";
             ReconciliationCalibrationProfilesText = "0";
             ReconciliationCalibrationPendingSignoffText = "0";
             ReconciliationCalibrationMissingMetadataText = "0";
@@ -1382,7 +1382,7 @@ public sealed partial class FundLedgerViewModel
             : SelectedBreakQueueItem.SuggestedNextActionLabel;
         ReconciliationBlockerReasonText = SelectedBreakQueueItem.ProbableCauseLabel == "Not reported"
             ? string.IsNullOrWhiteSpace(SelectedBreakQueueItem.Reason)
-                ? "Awaiting break summary from workstation host."
+                ? "Awaiting break summary from the workstation service."
                 : SelectedBreakQueueItem.Reason
             : $"{SelectedBreakQueueItem.ProbableCauseLabel} Ledger impact: {SelectedBreakQueueItem.LedgerImpactLabel}";
         ReconciliationEvidenceLinksText = SelectedBreakQueueItem.EvidenceLinksLabel == "No evidence links reported"
@@ -1401,7 +1401,7 @@ public sealed partial class FundLedgerViewModel
         };
         var target = $"/api/workstation/reconciliation/break-queue/{breakRow.BreakId}";
         var reason = string.IsNullOrWhiteSpace(breakRow.ExplanationSummary) || breakRow.ExplanationSummary == "No structured break explanation reported"
-            ? "Awaiting break summary from workstation host."
+            ? "Awaiting break summary from the workstation service."
             : breakRow.ExplanationSummary;
         var owner = string.IsNullOrWhiteSpace(ReconciliationOperatorText) ||
                     string.Equals(ReconciliationOperatorText, DefaultReconciliationOperator, StringComparison.OrdinalIgnoreCase)

@@ -356,8 +356,39 @@ public sealed class ProviderRoutingEndpointsTests
         configJson.Should().Contain("Yahoo Historical");
     }
 
+
+    [Fact]
+    public async Task ConfigureProvider_UsesRegisteredHandlerWithoutChangingSetupService()
+    {
+        await using var app = await CreateAppAsync(registerServices: services =>
+        {
+            services.AddSingleton<IProviderSetupHandler>(new FakeProviderSetupHandler());
+        });
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "fake-finnhub",
+            displayName = "Fake Finnhub",
+            apiKey = "fake-handler-key",
+            environment = "paper",
+            capabilities = new[] { "reference" }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = Deserialize<ProviderSetupResult>(await response.Content.ReadAsStringAsync());
+        result.Success.Should().BeTrue();
+        result.ProviderId.Should().Be("finnhub");
+        result.ConnectionId.Should().BeNull();
+        result.Warnings.Should().Contain("Fake handler warning from DI.");
+
+        var stored = await app.Services.GetRequiredService<IProviderCredentialStore>().ReadForProviderAsync("finnhub");
+        stored.Should().NotBeNull();
+        stored!.Get("ApiKey").Should().Be("fake-handler-key");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
-        UserPermission? permissions = UserPermission.ManageProviders | UserPermission.ManageCredentials)
+        UserPermission? permissions = UserPermission.ManageProviders | UserPermission.ManageCredentials,
+        Action<IServiceCollection>? registerServices = null)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-routing-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -373,6 +404,11 @@ public sealed class ProviderRoutingEndpointsTests
         builder.Services.AddSingleton(new ApplicationConfigStore(configPath));
         builder.Services.AddSingleton(new SharedConfigStore(configPath));
         builder.Services.AddSingleton<IProviderCredentialStore>(_ => new FileProviderCredentialStore(dataRoot));
+        foreach (var handler in DefaultProviderSetupHandlers.Create())
+        {
+            builder.Services.AddSingleton(typeof(IProviderSetupHandler), handler);
+        }
+        builder.Services.AddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
         builder.Services.AddSingleton<ProviderSetupService>();
         builder.Services.AddSingleton<ProviderConnectionService>();
         builder.Services.AddSingleton<ProviderBindingService>();
@@ -383,6 +419,7 @@ public sealed class ProviderRoutingEndpointsTests
         builder.Services.AddSingleton<IBestOfBreedProviderSelector, BestOfBreedProviderSelector>();
         builder.Services.AddSingleton<ProviderRouteExplainabilityService>();
         builder.Services.AddSingleton<ProviderTrustScoringService>();
+        registerServices?.Invoke(builder.Services);
         builder.Services.AddRateLimiter(options =>
         {
             options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ =>
@@ -519,4 +556,31 @@ public sealed class ProviderRoutingEndpointsTests
             return ValueTask.FromResult<object?>(null);
         }
     }
+
+    private sealed class FakeProviderSetupHandler : IProviderSetupHandler
+    {
+        public ProviderSetupDescriptor Descriptor { get; } = new(
+            "finnhub",
+            ["fake-finnhub"],
+            ProviderCredentialCatalog.BuildCredentialFields(ProviderCredentialCatalog.Find("finnhub")!),
+            [],
+            SupportsVerification: false,
+            DefaultRoutingMode: ProviderConnectionMode.ReadOnly,
+            EnableBindingsImmediately: false,
+            CredentialOnly: true);
+
+        public bool CanHandle(string providerIdOrAlias)
+            => providerIdOrAlias.Equals("fake-finnhub", StringComparison.OrdinalIgnoreCase);
+
+        public ProviderSetupValidationResult Validate(ProviderSetupContext context)
+            => new(
+                true,
+                Credentials: new Dictionary<string, string?> { ["ApiKey"] = context.ApiKey },
+                NormalizedEnvironment: "paper",
+                Warnings: ["Fake handler warning from DI."]);
+
+        public ProviderSetupExecutionResult BuildExecution(ProviderSetupContext context, ProviderCredentialStoreStatus credentialStatus)
+            => new(null, ProviderConnectionMode.ReadOnly, EnableBindings: false, CredentialOnly: true, []);
+    }
+
 }

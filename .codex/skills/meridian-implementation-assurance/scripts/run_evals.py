@@ -2,21 +2,22 @@
 """
 Deterministic eval runner for the meridian-implementation-assurance skill.
 
-Reads eval cases from evals/evals.json, captures JSONL traces from `codex exec --json`,
-applies deterministic checks, and reports pass/fail per case with optional regression
-comparison against evals/benchmark_baseline.json.
+Reads eval cases from evals/evals.json, validates fixture shape by default, and only captures
+JSONL traces from `codex exec --json` when --live-run is explicitly passed. Live runs can mutate
+the checkout through the prompts under test; run them only from an isolated worktree or scratch
+clone.
 
-Usage (single case):
-    python3 scripts/run_evals.py --eval-id 1
+Usage (single live case):
+    python scripts/run_evals.py --eval-id 1 --live-run
 
-Usage (all cases):
-    python3 scripts/run_evals.py --all
+Usage (all live cases):
+    python scripts/run_evals.py --all --live-run
 
 Usage (summary with regression check):
-    python3 scripts/run_evals.py --all --summary
+    python scripts/run_evals.py --all --summary --live-run
 
-Usage (dry-run — validate setup without running codex):
-    python3 scripts/run_evals.py --all --dry-run
+Usage (dry-run - validate setup without running codex):
+    python scripts/run_evals.py --all --dry-run
 
 The runner calls:
     codex exec --json --full-auto "<prompt>"
@@ -406,7 +407,16 @@ def parse_args() -> argparse.Namespace:
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument("--eval-id", type=int, metavar="N", help="Run a single eval by ID.")
     group.add_argument("--all", action="store_true", help="Run all eval cases.")
-    p.add_argument("--dry-run", action="store_true", help="Validate setup without calling codex exec.")
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate setup without calling codex exec. This is the default unless --live-run is passed.",
+    )
+    p.add_argument(
+        "--live-run",
+        action="store_true",
+        help="Run codex exec for selected cases. Use only from an isolated worktree or scratch clone.",
+    )
     p.add_argument("--summary", action="store_true", help="Print aggregate summary and regression check.")
     p.add_argument("--json", action="store_true", help="Emit machine-readable JSON results to stdout.")
     return p.parse_args()
@@ -414,6 +424,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    if args.dry_run and args.live_run:
+        print("error: --dry-run and --live-run are mutually exclusive", file=sys.stderr)
+        return 2
+
     cases = load_evals()
 
     if args.eval_id:
@@ -422,7 +436,9 @@ def main() -> int:
             print(f"error: eval-id {args.eval_id} not found in {EVALS_JSON}", file=sys.stderr)
             return 2
 
-    if args.dry_run:
+    dry_run = args.dry_run or not args.live_run
+
+    if dry_run:
         print(f"[dry-run] Validating {len(cases)} eval case(s) without calling codex exec.", file=sys.stderr)
         st, sn = validate_prompts_csv()
         print(f"[dry-run] Prompts CSV: {st} should-trigger, {sn} should-not-trigger", file=sys.stderr)
@@ -450,11 +466,15 @@ def main() -> int:
             print_dry_run_summary(cases, st, sn)
         return 0
 
+    print(
+        "[live-run] Running codex exec. Ensure this is an isolated worktree or scratch clone.",
+        file=sys.stderr,
+    )
+
     results = []
     for case in cases:
-        if not args.dry_run:
-            print(f"Running eval {case.id}: {case.description} ...", file=sys.stderr)
-        r = run_case(case, dry_run=args.dry_run)
+        print(f"Running eval {case.id}: {case.description} ...", file=sys.stderr)
+        r = run_case(case, dry_run=False)
         results.append(r)
         if not args.json:
             print_result(r)

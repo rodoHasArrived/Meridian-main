@@ -3,6 +3,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 namespace Meridian.Tests.Storage;
 
@@ -61,6 +62,48 @@ public sealed class LedgerJournalStoreTests
 
         await act.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*not balanced*");
+    }
+
+    [Fact]
+    public async Task QueryAsync_EmptyFilter_RejectsBeforeOpeningConnection()
+    {
+        var store = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions());
+
+        var act = () => store.QueryAsync(new LedgerJournalEntryQuery());
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*At least one journal query filter is required*");
+    }
+
+    [Fact]
+    public void LineDimensionContainmentJson_UsesSparseCanonicalDimensionPayload()
+    {
+        var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(new LedgerLineDimensionSet(
+            FundId: " fund-alpha ",
+            EntityId: "entity-master",
+            InstrumentId: instrumentId,
+            CostCenterId: "fund-accounting",
+            CounterpartyId: "administrator",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "FundAccounting",
+                [" "] = "ignored",
+                ["Region"] = " US "
+            }));
+
+        json.Should().NotBeNull();
+        using var document = JsonDocument.Parse(json!);
+        var root = document.RootElement;
+        root.GetProperty("fundId").GetString().Should().Be("fund-alpha");
+        root.GetProperty("entityId").GetString().Should().Be("entity-master");
+        root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
+        root.GetProperty("counterpartyId").GetString().Should().Be("administrator");
+        root.TryGetProperty("investorId", out _).Should().BeFalse();
+        root.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("FundAccounting");
+        root.GetProperty("externalGlDimensions").GetProperty("Region").GetString().Should().Be("US");
+        root.GetProperty("externalGlDimensions").TryGetProperty(" ", out _).Should().BeFalse();
     }
 
     [Fact]
@@ -192,6 +235,58 @@ public sealed class LedgerJournalStoreTests
 
         act.Should().Throw<LedgerValidationException>()
             .WithMessage("*outside accounting period*2026-P01*");
+    }
+
+    [Fact]
+    public void PostingGuard_TreasuryLedgerMetadata_AllowsCompleteContextWithinPeriod()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildTreasuryJournalWrite(period.PeriodId);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void PostingGuard_EffectiveDateOnlyMetadata_AllowsGeneralLedgerEntry()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildBalancedJournalWrite(period.PeriodId);
+        var entry = new JournalEntry(
+            write.Entry.JournalEntryId,
+            write.Entry.Timestamp,
+            write.Entry.Description,
+            write.Entry.Lines,
+            new JournalEntryMetadata(EffectiveDate: new DateOnly(2026, 1, 31)));
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write with { Entry = entry }, period);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void PostingGuard_TreasuryLedgerMetadata_RejectsMissingIdempotencyKey()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildTreasuryJournalWrite(period.PeriodId, idempotencyKey: null);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*idempotency key*");
+    }
+
+    [Fact]
+    public void PostingGuard_TreasuryLedgerMetadata_RejectsEffectiveDateOutsidePeriod()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildTreasuryJournalWrite(period.PeriodId, effectiveDate: new DateOnly(2026, 2, 1));
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*effective date*outside accounting period*");
     }
 
     [Fact]
@@ -526,6 +621,324 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void LedgerJournalIdempotencyMigration_DefinesDurableDuplicateGuards()
+    {
+        var sql = ReadMigration("V_ledger_013__journal_idempotency_guards.sql");
+
+        sql.Should().Contain("ux_journal_entries_aggregate_command");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (aggregate_id, command_id)");
+        sql.Should().Contain("where command_id is not null");
+        sql.Should().Contain("ux_journal_entries_aggregate_source_event");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (aggregate_id, source_event_id)");
+        sql.Should().Contain("where source_event_id is not null");
+        sql.Should().Contain("ux_journal_entries_aggregate_idempotency_key");
+        sql.Should().Contain("lower(metadata ->> 'idempotencyKey')");
+        sql.Should().Contain("where nullif(btrim(metadata ->> 'idempotencyKey'), '') is not null");
+    }
+
+    [Fact]
+    public void LedgerJournalLineDimensionMigration_DefinesDurableLineDimensions()
+    {
+        var sql = ReadMigration("V_ledger_014__journal_leg_dimensions.sql");
+
+        sql.Should().Contain("alter table __SCHEMA__.journal_legs");
+        sql.Should().Contain("add column if not exists dimensions jsonb null");
+        sql.Should().Contain("ix_journal_legs_dimensions_gin");
+        sql.Should().Contain("using gin (dimensions)");
+    }
+
+
+    [Fact]
+    public void PostingCommand_ApprovedCommand_NormalizesWriteMetadataAndEvidence()
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var commandId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var write = BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            PostingCommand = new AccountingPostingCommandDto(
+                commandId,
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "capital-call:fund-alpha:20260131",
+                SourceEventId: sourceEventId,
+                SourceEventType: "CapitalCall",
+                TreasuryContext: new TreasuryLedgerContextDto(
+                    EffectiveDate: new DateOnly(2026, 1, 31),
+                    IdempotencyKey: "capital-call:fund-alpha:20260131",
+                    FundEventId: "fund-event:fund-alpha:capital-call:20260131",
+                    FundEventType: "CapitalCall",
+                    CapitalAccountId: "capital-account:fund-alpha:lp-1"),
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                ApprovalId: "approval-capital-call-1",
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-capital-call-1",
+                        "evidence://capital-call/notice-1",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "DocumentVault",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: ledgerBookId)
+        };
+
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        normalized.CommandId.Should().Be(commandId);
+        normalized.SourceEventId.Should().Be(sourceEventId);
+        normalized.LedgerBookId.Should().Be(ledgerBookId);
+        normalized.Entry.Metadata.EffectiveDate.Should().Be(new DateOnly(2026, 1, 31));
+        normalized.Entry.Metadata.IdempotencyKey.Should().Be("capital-call:fund-alpha:20260131");
+        normalized.Entry.Metadata.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:20260131");
+        normalized.Entry.Metadata.CapitalAccountId.Should().Be("capital-account:fund-alpha:lp-1");
+        normalized.Entry.Metadata.EvidenceReferences.Should().ContainSingle(evidence =>
+            evidence.EvidenceId == "evidence-capital-call-1" &&
+            evidence.Uri == "evidence://capital-call/notice-1" &&
+            evidence.Kind == AccountingPostingEvidenceKindDto.Source.ToString());
+    }
+
+    [Fact]
+    public void PostingCommand_MetadataLineDimensions_AreMaterializedBeforeAppend()
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var commandId = Guid.NewGuid();
+        var instrumentId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var write = BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId
+        };
+        var debitLine = write.Entry.Lines.Single(line => line.Debit > 0m);
+        var creditLine = write.Entry.Lines.Single(line => line.Credit > 0m);
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [$"lineDimensions.{debitLine.EntryId:N}.fundId"] = " fund-alpha ",
+            [$"lineDimensions.{debitLine.EntryId:N}.entityId"] = "entity-master",
+            [$"lineDimensions.{debitLine.EntryId:N}.instrumentId"] = instrumentId.ToString("D"),
+            [$"lineDimensions.{debitLine.EntryId:N}.costCenterId"] = "investment-ops",
+            [$"lineDimensions.{debitLine.EntryId:N}.counterpartyId"] = "custodian-bny",
+            [$"lineDimensions.{debitLine.EntryId:N}.externalGl.Department"] = " InvestmentOps ",
+            [$"lineDimensions.{creditLine.EntryId:N}.fundId"] = "fund-alpha",
+            [$"lineDimensions.{creditLine.EntryId:N}.entityId"] = "entity-master",
+            [$"lineDimensions.{creditLine.EntryId:N}.costCenterId"] = "income-review",
+            [$"lineDimensions.{creditLine.EntryId:N}.externalGl.Department"] = "FundAccounting"
+        };
+        write = write with
+        {
+            Entry = new JournalEntry(
+                write.Entry.JournalEntryId,
+                write.Entry.Timestamp,
+                write.Entry.Description,
+                write.Entry.Lines,
+                new JournalEntryMetadata(
+                    ActivityType: "CustodianInterestAccrual",
+                    Tags: tags)),
+            PostingCommand = new AccountingPostingCommandDto(
+                commandId,
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "custodian-interest:fund-alpha:20260131",
+                SourceEventId: sourceEventId,
+                SourceEventType: "CustodianInterestAccrual",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-interest-accrual-1",
+                        "evidence://custodian/interest-accrual-1",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "DocumentVault",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: ledgerBookId)
+        };
+
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        normalized.LedgerBookId.Should().Be(ledgerBookId);
+        var normalizedDebit = normalized.Entry.Lines.Single(line => line.EntryId == debitLine.EntryId);
+        normalizedDebit.Dimensions.Should().NotBeNull();
+        normalizedDebit.Dimensions!.FundId.Should().Be("fund-alpha");
+        normalizedDebit.Dimensions.EntityId.Should().Be("entity-master");
+        normalizedDebit.Dimensions.InstrumentId.Should().Be(instrumentId);
+        normalizedDebit.Dimensions.CostCenterId.Should().Be("investment-ops");
+        normalizedDebit.Dimensions.CounterpartyId.Should().Be("custodian-bny");
+        normalizedDebit.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
+
+        var normalizedCredit = normalized.Entry.Lines.Single(line => line.EntryId == creditLine.EntryId);
+        normalizedCredit.Dimensions.Should().NotBeNull();
+        normalizedCredit.Dimensions!.FundId.Should().Be("fund-alpha");
+        normalizedCredit.Dimensions.EntityId.Should().Be("entity-master");
+        normalizedCredit.Dimensions.CostCenterId.Should().Be("income-review");
+        normalizedCredit.Dimensions.ExternalGlDimensions["Department"].Should().Be("FundAccounting");
+    }
+
+    [Fact]
+    public void PostingCommand_PendingReviewerState_RejectsBeforeAppend()
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var write = BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            PostingCommand = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "capital-call:fund-alpha:pending",
+                SourceEventId: Guid.NewGuid(),
+                SourceEventType: "CapitalCall",
+                ApprovalState: AccountingPostingApprovalStateDto.Pending,
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-capital-call-pending",
+                        "evidence://capital-call/pending",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "DocumentVault",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: ledgerBookId)
+        };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*approved or not-required reviewer state*");
+    }
+
+    [Fact]
+    public void PostingCommand_LedgerBookMismatch_RejectsBeforeAppend()
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var writeLedgerBookId = Guid.NewGuid();
+        var commandLedgerBookId = Guid.NewGuid();
+        var write = BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            LedgerBookId = writeLedgerBookId,
+            PostingCommand = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "capital-call:fund-alpha:book-mismatch",
+                SourceEventId: Guid.NewGuid(),
+                SourceEventType: "CapitalCall",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-capital-call-book-mismatch",
+                        "evidence://capital-call/book-mismatch",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "DocumentVault",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: commandLedgerBookId)
+        };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*ledger book id conflicts*");
+    }
+
+    [Fact]
+    public void PostingCommand_MissingLedgerBook_RejectsBeforeAppend()
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var write = BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            PostingCommand = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "capital-call:fund-alpha:missing-book",
+                SourceEventId: Guid.NewGuid(),
+                SourceEventType: "CapitalCall",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-capital-call-missing-book",
+                        "evidence://capital-call/missing-book",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "DocumentVault",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ])
+        };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*ledger book id is required*");
+    }
+
+    [Fact]
+    public void PostingCommand_ReversalWithoutSourceJournalLineage_RejectsBeforeAppend()
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var write = BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            PostingCommand = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "capital-call:fund-alpha:reversal",
+                AccountingPostingIntentDto.Reversal,
+                SourceEventId: Guid.NewGuid(),
+                SourceEventType: "CapitalCallReversal",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-capital-call-reversal",
+                        "evidence://capital-call/reversal",
+                        AccountingPostingEvidenceKindDto.Correction,
+                        "DocumentVault",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: ledgerBookId)
+        };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*source journal entry lineage*");
+    }
+
+    [Fact]
     public void LedgerPostingKindMigration_DefinesJournalPostingKindColumnsAndIndexes()
     {
         var sql = ReadMigration("V_ledger_006__journal_posting_kind.sql");
@@ -656,6 +1069,31 @@ public sealed class LedgerJournalStoreTests
                 ]),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
+    }
+
+    private static LedgerJournalEntryWrite BuildTreasuryJournalWrite(
+        Guid periodId,
+        DateOnly? effectiveDate = null,
+        string? idempotencyKey = "capital-call:fund-alpha:20260131")
+    {
+        var write = BuildBalancedJournalWrite(periodId);
+        var entry = new JournalEntry(
+            write.Entry.JournalEntryId,
+            write.Entry.Timestamp,
+            write.Entry.Description,
+            write.Entry.Lines,
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: effectiveDate ?? new DateOnly(2026, 1, 31),
+                IdempotencyKey: idempotencyKey,
+                FundEventId: "fund-event:fund-alpha:capital-call:20260131",
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                PaymentIntentId: "payment:fund-alpha:capital-call:20260131",
+                SettlementReference: "settlement:fund-alpha:capital-call:20260131"));
+
+        return write with { Entry = entry };
     }
 
     private static LedgerJournalEntryWrite BuildInstrumentJournalWrite(

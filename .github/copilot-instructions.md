@@ -1,6 +1,6 @@
 # Copilot Repository Instructions
 
-**Last Updated:** 2026-06-04
+**Last Updated:** 2026-06-16
 
 Use these instructions for every task in this repository to improve quality, reliability, and review speed.
 
@@ -18,17 +18,16 @@ For each task, follow this sequence:
 6. Select a mode from `docs/ai/work-modes.md` before implementation; escalate only when risk or scope increases.
 7. For concurrent lanes, initialize `docs/ai/parallel-task-manifest-template.md` before edits to keep ownership boundaries explicit.
 8. If the task needs AI validators, routing tools, or maintenance scripts, load `docs/ai/tooling/README.md` instead of rediscovering command lanes ad hoc.
-9. Summarize what changed, why, and how it was validated.
+9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load MDIF: `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
+10. Summarize what changed, why, and how it was validated.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
 mobile-first workflows. Responsive browser validation may continue for the browser workstation.
 
-Keep product work centered on the W1-W5 operational record baseline: data confidence, retained
-source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage,
-and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first governance, full
-payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and other
-expansion lanes unless they directly strengthen that workflow.
+Keep product work grounded in current source evidence, the roadmap registry, and the design charter.
+Treat prior baselines and named productization targets as roadmap/status evidence, not development
+ceilings; expansion lanes can proceed when current source, roadmap, or user direction supports them.
 
 If the task request is ambiguous, document assumptions in the PR body.
 
@@ -91,6 +90,14 @@ dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release 
 ```
 
 If only one area is affected, run the nearest test project first and expand scope only if needed.
+When local machine limits, dependency restore, or MSBuild locks make validation unreliable, push the
+branch and run the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
+broad local scripts. The .NET lane requires a repo-relative test project under `tests/` and a
+non-empty `dotnet_filter`:
+
+```bash
+gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+```
 
 ## 5) Response quality expectations
 
@@ -117,6 +124,7 @@ Relevant examples:
 
 - [`CLAUDE.md`](../CLAUDE.md) — comprehensive project context, architecture, conventions
 - [`docs/ai/README.md`](../docs/ai/README.md) — master AI resource index with reading order by task type
+- [`docs/architecture/meridian-development-intelligence-framework.md`](../docs/architecture/meridian-development-intelligence-framework.md) — MDIF context spine for broad generation and architecture-sensitive work
 - [`docs/ai/ai-known-errors.md`](../docs/ai/ai-known-errors.md) — mandatory error prevention registry
 - [`docs/ai/copilot/instructions.md`](../docs/ai/copilot/instructions.md) — compact Copilot host guide and routing links
 - [`docs/ai/tooling/README.md`](../docs/ai/tooling/README.md) — shared AI validator and script index

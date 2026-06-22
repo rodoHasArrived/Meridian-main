@@ -1,307 +1,121 @@
 // C4 Level 3: Component Diagram
-// Meridian current project state
-// Last Updated: 2026-02-21
+// Meridian current project stance
+// Last Updated: 2026-06-10
 //
-// This diagram shows the internal components of the Meridian Core.
-// It answers: "What are the building blocks and their responsibilities?"
-//
-// Generate: dot -Tpng c4-level3-components.dot -o c4-level3-components.png
-//           dot -Tsvg c4-level3-components.dot -o c4-level3-components.svg
+// This diagram focuses on the operational-record core behind the shared
+// workstation APIs, not on a standalone market-data collector.
 
 digraph C4_Components {
-  rankdir=TB;
-  graph [fontname="Helvetica", fontsize=11, bgcolor="white", compound=true, nodesep=0.5, pad=0.5];
-  node  [fontname="Helvetica", fontsize=9, shape=box, style="rounded,filled"];
-  edge  [fontname="Helvetica", fontsize=8, color="#4a5568"];
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
-  // Title
   labelloc="t";
-  label="Meridian - Component Diagram (C4 Level 3)\nCore Collector Internals";
+  label="Meridian - Component Diagram (C4 Level 3)\nOperational record core";
 
-  // External Systems
-  subgraph cluster_external {
-    label="External Systems";
-    color="#999999";
-    style="dashed";
-
-    IB [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-        label="Interactive Brokers\n[TWS/Gateway]"];
-    ALP [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-         label="Alpaca\n[WebSocket]"];
-    NYSE [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-          label="NYSE Direct\n[Exchange Feed]"];
-    SS [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-        label="StockSharp\n[Multi-Exchange]"];
-    HIST_API [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
-              label="Historical APIs\n[15 provider classes]"];
-  }
-
-  FS [shape=cylinder, style="filled", fillcolor="#718096", fontcolor="white",
-      label="File System\n[Local/Cloud]"];
-
-  // Core Collector Container
-  subgraph cluster_core {
-    label="Meridian Core [.NET 10 Console App]";
-    color="#438dd5";
+  subgraph cluster_ui {
+    label="Shared workstation entry points";
+    color="#805ad5";
     style="rounded";
-    bgcolor="#f0f8ff";
+    bgcolor="#faf5ff";
 
-    // Infrastructure Layer - Providers
-    subgraph cluster_infra {
-      label="Infrastructure Layer - Provider Implementations";
-      color="#2b6cb0";
-      style="rounded";
-      bgcolor="#dbeafe";
-
-      // Streaming Providers
-      subgraph cluster_streaming_clients {
-        label="Streaming Clients (IMarketDataClient)";
-        style="dashed";
-        color="#1e40af";
-
-        IB_CLIENT [label="IBMarketDataClient\n[Component]\n\nIB TWS/Gateway API\nTrades, Quotes, L2 Depth\nMarket Scanner", fillcolor="#bfdbfe"];
-        ALP_CLIENT [label="AlpacaMarketDataClient\n[Component]\n\nWebSocket streaming\nIEX/SIP feeds\nTrades + Quotes", fillcolor="#bfdbfe"];
-        NYSE_CLIENT [label="NYSEDataSource\n[Component]\n\nExchange-direct feed\nUS Equities\nReal-time + Historical", fillcolor="#bfdbfe"];
-        SS_CLIENT [label="StockSharpConnector\n[Component]\n\nMulti-exchange adapter\nGlobal markets", fillcolor="#bfdbfe"];
-        POL_CLIENT [label="PolygonMarketDataClient\n[Component]\n\nPolygon.io streaming\nTrades, quotes, websocket", fillcolor="#bfdbfe"];
-      }
-
-      // Historical Providers
-      subgraph cluster_historical_clients {
-        label="Historical Providers (IHistoricalDataProvider)";
-        style="dashed";
-        color="#1e40af";
-
-        HIST_COMPOSITE [label="CompositeHistoricalDataProvider\n[Orchestrator]\n\nAutomatic failover\nRate-limit rotation\nPriority selection\nHealth checking", fillcolor="#fef3c7"];
-        HIST_IMPLS [label="Provider Implementations\n[10 Components]\n\nAlpaca, Yahoo, Stooq\nTiingo, Finnhub, Polygon\nNasdaq, Alpha Vantage\nIB, StockSharp", fillcolor="#bfdbfe"];
-      }
-
-      // Connection Management
-      subgraph cluster_resilience {
-        label="Connection & Resilience";
-        style="dashed";
-        color="#1e40af";
-
-        CONN_MGR [label="EnhancedIBConnectionManager\n[Component]\n\nReconnection logic\nHeartbeat monitoring\nState management", fillcolor="#bfdbfe"];
-        WS_RESILIENCE [label="WebSocketResiliencePolicy\n[Component]\n\nPolly retry policies\nCircuit breaker\nExponential backoff", fillcolor="#bfdbfe"];
-        FAILOVER [label="AutomaticFailoverManager\n[Component]\n\nMulti-provider failover\nHealth monitoring", fillcolor="#bfdbfe"];
-      }
-
-      // Performance
-      subgraph cluster_perf {
-        label="Performance Optimizations";
-        style="dashed";
-        color="#1e40af";
-
-        JSON_CTX [label="MarketDataJsonContext\n[Component]\n\nSource-generated JSON\n2-3x faster serialization", fillcolor="#bfdbfe"];
-        CONN_WARMUP [label="ConnectionWarmUp\n[Component]\n\nPre-JIT critical paths\nConnection pooling", fillcolor="#bfdbfe"];
-      }
-    }
-
-    // Domain Layer
-    subgraph cluster_domain {
-      label="Domain Layer - Business Logic";
-      color="#2c7a7b";
-      style="rounded";
-      bgcolor="#d1fae5";
-
-      // Collectors
-      subgraph cluster_collectors {
-        label="Domain Collectors";
-        style="dashed";
-        color="#047857";
-
-        TRADE_COLL [label="TradeDataCollector\n[Component]\n\nTick-by-tick processing\nSequence validation\nOrder-flow statistics\nAggressor inference", fillcolor="#a7f3d0"];
-        QUOTE_COLL [label="QuoteCollector\n[Component]\n\nBBO state cache\nSpread calculation\nCrossed market detection\nQuote event emission", fillcolor="#a7f3d0"];
-        DEPTH_COLL [label="MarketDepthCollector\n[Component]\n\nL2 order book state\nInsert/Update/Delete ops\nIntegrity checking\nBook freeze on error", fillcolor="#a7f3d0"];
-      }
-
-      // Models
-      subgraph cluster_models {
-        label="Domain Models";
-        style="dashed";
-        color="#047857";
-
-        MODELS [label="Core Event Types\n[Value Objects]\n\nTrade, BboQuote, LOBSnapshot\nOrderFlowStatistics\nIntegrityEvent, Heartbeat", fillcolor="#a7f3d0"];
-        FSHARP_TYPES [label="F# Domain Types\n[Discriminated Unions]\n\nMarketEvent variants\nValidationError\nResult<T, TError>", fillcolor="#6ee7b7"];
-      }
-
-      // Validation
-      VALIDATION [label="F# Validation Pipeline\n[Component]\n\nRailway-oriented validation\nError accumulation\nPure functional", fillcolor="#6ee7b7"];
-    }
-
-    // Application Layer
-    subgraph cluster_app {
-      label="Application Layer - Orchestration";
-      color="#805ad5";
-      style="rounded";
-      bgcolor="#ede9fe";
-
-      // Pipeline
-      PIPELINE [label="EventPipeline\n[Component]\n\nBounded Channel (100K)\nDropOldest backpressure\nAsync producer-consumer", fillcolor="#ddd6fe"];
-
-      // Technical Indicators
-      INDICATORS [label="TechnicalIndicatorService\n[Component]\n\n200+ indicators (TALib)\nVWAP, TWAP, Microprice\nImbalance calculations", fillcolor="#ddd6fe"];
-
-      // Config & Monitoring
-      subgraph cluster_config {
-        label="Configuration & Monitoring";
-        style="dashed";
-        color="#6b21a8";
-
-        CONFIG [label="ConfigWatcher\n[Component]\n\nHot reload appsettings\nSymbol resubscription", fillcolor="#ddd6fe"];
-        HTTP_SERVER [label="StatusHttpServer\n[Component]\n\n/status - JSON metrics\n/metrics - Prometheus\n/health, /ready, /live", fillcolor="#ddd6fe"];
-        METRICS [label="Metrics\n[Component]\n\nPublished, Dropped\nIntegrity counters", fillcolor="#ddd6fe"];
-      }
-
-      // Tracing
-      OTEL [label="OpenTelemetrySetup\n[Component]\n\nDistributed tracing\nJaeger/Tempo export", fillcolor="#ddd6fe"];
-
-      // Backfill
-      BACKFILL [label="HistoricalBackfillService\n[Component]\n\nPriority queue scheduling\nDependency chains\nGap repair coordination", fillcolor="#ddd6fe"];
-
-      // Onboarding & Diagnostics
-      subgraph cluster_onboarding {
-        label="Onboarding & Diagnostics";
-        style="dashed";
-        color="#ed8936";
-
-        AUTO_CONFIG [label="AutoConfigurationService\n[Component]\n\nProvider auto-detection\nEnv var scanning\nUse case presets", fillcolor="#fbd38d"];
-        WIZARD [label="ConfigurationWizard\n[Component]\n\n8-step guided setup\nInteractive terminal UI\nTemplate generation", fillcolor="#fbd38d"];
-        FIRST_RUN [label="FirstRunDetector\n[Component]\n\nFirst-run detection\nWelcome message display\nSetup guidance", fillcolor="#fbd38d"];
-        CONNECTIVITY [label="ConnectivityTestService\n[Component]\n\nProvider connectivity tests\nNetwork diagnostics\nResponse time measurement", fillcolor="#fbd38d"];
-        CRED_VALIDATE [label="CredentialValidationService\n[Component]\n\nAPI key validation\nParallel credential testing\nAccount info extraction", fillcolor="#fbd38d"];
-      }
-    }
-
-    // Platform Runtime
-    subgraph cluster_platform_runtime {
-      label="Platform Runtime";
-      style="rounded";
-      color="#0f766e";
-      bgcolor="#ccfbf1";
-
-      ERROR_FMT [label="FriendlyErrorFormatter\n[Component]\n\n24 error codes (Meridian-XXX)\nUser-friendly messages\nTroubleshooting suggestions", fillcolor="#99f6e4"];
-      PROGRESS [label="ProgressDisplayService\n[Component]\n\nProgress bars, spinners\nReal-time status updates\nTTY-aware display", fillcolor="#99f6e4"];
-      STARTUP_SUM [label="StartupSummary\n[Component]\n\nConfiguration review\nQuick health checks\nIssue severity reporting", fillcolor="#99f6e4"];
-    }
-
-    // Storage Layer
-    subgraph cluster_storage {
-      label="Storage Layer - Persistence";
-      color="#c53030";
-      style="rounded";
-      bgcolor="#fee2e2";
-
-      // Write Path
-      subgraph cluster_write_path {
-        label="Write Path (Archival-First)";
-        style="dashed";
-        color="#991b1b";
-
-        WAL [label="WriteAheadLog\n[Component]\n\nCrash-safe journaling\nSHA256 checksums\nCommit/Rollback semantics", fillcolor="#fecaca"];
-        JSONL_SINK [label="JsonlStorageSink\n[Component]\n\nAppend-only writes\nDaily partitioning\nRetention enforcement", fillcolor="#fecaca"];
-        PARQUET_SINK [label="ParquetStorageSink\n[Component]\n\nColumnar archive\n10-20x compression\nAnalytics-optimized", fillcolor="#fecaca"];
-      }
-
-      // Compression & Archival
-      subgraph cluster_archival {
-        label="Compression & Archival";
-        style="dashed";
-        color="#991b1b";
-
-        COMPRESS [label="CompressionProfileManager\n[Component]\n\nLZ4 (real-time)\nZSTD (archive)\nGzip (portable)", fillcolor="#fecaca"];
-        TIERED [label="TieredStorageManager\n[Component]\n\nHot/Warm/Cold tiers\nAutomatic migration", fillcolor="#fecaca"];
-        SCHEMA [label="SchemaVersionManager\n[Component]\n\nSemantic versioning\nAutomatic migration\nJSON Schema export", fillcolor="#fecaca"];
-      }
-
-      // Export & Quality
-      subgraph cluster_export {
-        label="Export & Quality";
-        style="dashed";
-        color="#991b1b";
-
-        EXPORT [label="AnalysisExportService\n[Component]\n\nPython (Parquet)\nR (CSV), Lean (ZIP)\nExcel, PostgreSQL", fillcolor="#fecaca"];
-        QUALITY [label="AnalysisQualityReport\n[Component]\n\nCompleteness scoring\nOutlier detection (4s)\nA+ to F grading", fillcolor="#fecaca"];
-      }
-    }
-
+    DASHBOARD [fillcolor="#805ad5", fontcolor="white",
+      label="Browser workstation\nReact/TypeScript dashboard"];
+    WPF [fillcolor="#805ad5", fontcolor="white",
+      label="WPF desktop workstation\nMVVM shell and dense workbenches"];
+    ENDPOINTS [fillcolor="#c4b5fd",
+      label="Meridian.Ui.Shared endpoints\nWorkstation, portfolio, ledger,\nreporting, evidence, provider routes"];
+    READ_SERVICES [fillcolor="#ddd6fe",
+      label="Meridian.Ui.Services read models\nShared projections for browser and WPF"];
   }
 
-  // External -> Infrastructure
-  IB -> CONN_MGR [color="#2b6cb0"];
-  CONN_MGR -> IB_CLIENT [color="#2b6cb0"];
-  ALP -> ALP_CLIENT [color="#2b6cb0"];
-  ALP_CLIENT -> WS_RESILIENCE [color="#2b6cb0"];
-  NYSE -> NYSE_CLIENT [color="#2b6cb0"];
-  SS -> SS_CLIENT [color="#2b6cb0"];
-  HIST_API -> HIST_COMPOSITE [color="#2c7a7b"];
-  HIST_COMPOSITE -> HIST_IMPLS;
+  subgraph cluster_ingest {
+    label="Source evidence acquisition";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
 
-  // Infrastructure -> Domain
-  IB_CLIENT -> TRADE_COLL [color="#2c7a7b"];
-  IB_CLIENT -> QUOTE_COLL [color="#2c7a7b"];
-  IB_CLIENT -> DEPTH_COLL [color="#2c7a7b"];
-  ALP_CLIENT -> TRADE_COLL [color="#2c7a7b"];
-  ALP_CLIENT -> QUOTE_COLL [color="#2c7a7b"];
-  NYSE_CLIENT -> TRADE_COLL [color="#2c7a7b"];
-  SS_CLIENT -> TRADE_COLL [color="#2c7a7b"];
+    PROVIDER_CATALOG [fillcolor="#bfdbfe",
+      label="Provider catalog and credentials\nmetadata-driven setup,\nhealth, scoped secrets"];
+    PROVIDER_ADAPTERS [fillcolor="#93c5fd",
+      label="Provider adapters\nmarket, broker, bank,\ncustodian, fund-admin inputs"];
+    DOCUMENT_IMPORT [fillcolor="#93c5fd",
+      label="Document and upload intake\nstatements, PDFs, contracts,\nsource payload manifests"];
+    RAW_EVIDENCE [shape=cylinder, fillcolor="#bfdbfe",
+      label="Raw evidence store\npayloads preserved as received"];
+  }
 
-  // Domain internal
-  TRADE_COLL -> MODELS;
-  QUOTE_COLL -> MODELS;
-  DEPTH_COLL -> MODELS;
-  MODELS -> FSHARP_TYPES;
-  FSHARP_TYPES -> VALIDATION;
-  QUOTE_COLL -> TRADE_COLL [style=dashed, label="BBO state\nfor aggressor"];
+  subgraph cluster_validation {
+    label="Validation and operational review";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#e6fffa";
 
-  // Domain -> Application
-  TRADE_COLL -> PIPELINE [color="#805ad5"];
-  QUOTE_COLL -> PIPELINE [color="#805ad5"];
-  DEPTH_COLL -> PIPELINE [color="#805ad5"];
-  VALIDATION -> PIPELINE [color="#805ad5"];
+    NORMALIZATION [fillcolor="#9ae6b4",
+      label="Normalization services\ncanonical records, mappings,\nsource lineage"];
+    CONFIDENCE [fillcolor="#9ae6b4",
+      label="Data confidence checks\nfreshness, completeness,\nunsupported-source gates"];
+    RECON [fillcolor="#38a169", fontcolor="white",
+      label="Reconciliation services\ncase queues, break review,\nsource-to-source checks"];
+    APPROVALS [fillcolor="#38a169", fontcolor="white",
+      label="Approval workflow\noperator sign-off,\nmateriality, override evidence"];
+  }
 
-  // Application internal
-  PIPELINE -> INDICATORS [style=dashed];
+  subgraph cluster_record {
+    label="Approved record and publication";
+    color="#c53030";
+    style="rounded";
+    bgcolor="#fff5f5";
 
-  // Storage path
-  PIPELINE -> WAL [color="#c53030", label="1. journal"];
-  WAL -> JSONL_SINK [color="#c53030", label="2. persist"];
-  JSONL_SINK -> COMPRESS [color="#c53030", label="3. compress"];
-  COMPRESS -> PARQUET_SINK [color="#c53030", label="4. archive"];
-  PARQUET_SINK -> TIERED [color="#c53030"];
-  TIERED -> FS [color="#c53030"];
-  JSONL_SINK -> FS [color="#c53030"];
-  SCHEMA -> EXPORT;
-  EXPORT -> QUALITY;
+    LEDGER [fillcolor="#e53e3e", fontcolor="white",
+      label="Meridian ledger authority\njournals, adjustments,\ncapital accounts, close support"];
+    SECURITY_MASTER [fillcolor="#fecaca",
+      label="Security Master and reference data\nprofiles, conflicts,\nprojection cache"];
+    REPORTING [fillcolor="#fbd38d",
+      label="Governed reporting\nreport packs, frozen snapshots,\nrestatement lineage"];
+    AUDIT [shape=cylinder, fillcolor="#fc8181",
+      label="Audit and lineage store\nsource -> record -> case -> ledger -> report"];
+  }
 
-  // Backfill path
-  HIST_COMPOSITE -> BACKFILL [color="#805ad5"];
-  BACKFILL -> PIPELINE [color="#805ad5"];
+  subgraph cluster_support {
+    label="Runtime support";
+    color="#718096";
+    style="rounded";
+    bgcolor="#edf2f7";
 
-  // Config/Monitoring
-  CONFIG -> IB_CLIENT [style=dashed, label="reload"];
-  CONFIG -> ALP_CLIENT [style=dashed];
-  HTTP_SERVER -> PIPELINE [style=dashed, label="stats"];
-  HTTP_SERVER -> METRICS [style=dashed];
-  OTEL -> PIPELINE [style=dashed, label="traces"];
+    PIPELINE [fillcolor="#e2e8f0",
+      label="EventPipeline + WAL\nbounded channels, durable append,\nreplay/backfill evidence"];
+    CONFIG [fillcolor="#e2e8f0",
+      label="Options and local config\nfail-closed defaults,\nno tracked secrets"];
+    MCP [fillcolor="#e2e8f0",
+      label="src/Meridian.Mcp\nrepo-scoped AI tools and resources"];
+  }
 
-  // Failover
-  FAILOVER -> HIST_COMPOSITE [style=dashed];
-  FAILOVER -> IB_CLIENT [style=dashed];
-  FAILOVER -> ALP_CLIENT [style=dashed];
+  DASHBOARD -> ENDPOINTS;
+  WPF -> ENDPOINTS;
+  ENDPOINTS -> READ_SERVICES;
+  READ_SERVICES -> RECON;
+  READ_SERVICES -> LEDGER;
+  READ_SERVICES -> REPORTING;
 
-  // Onboarding flow
-  FIRST_RUN -> WIZARD [color="#ed8936", label="guides to"];
-  FIRST_RUN -> AUTO_CONFIG [color="#ed8936"];
-  WIZARD -> AUTO_CONFIG [color="#ed8936"];
-  AUTO_CONFIG -> CONFIG [color="#ed8936", label="generates"];
-  CONNECTIVITY -> IB_CLIENT [style=dashed, color="#ed8936"];
-  CONNECTIVITY -> ALP_CLIENT [style=dashed, color="#ed8936"];
-  CONNECTIVITY -> HIST_COMPOSITE [style=dashed, color="#ed8936"];
-  CRED_VALIDATE -> HIST_IMPLS [style=dashed, color="#ed8936"];
-  STARTUP_SUM -> CONFIG [style=dashed, color="#ed8936", label="reads"];
-  STARTUP_SUM -> PIPELINE [style=dashed, color="#ed8936", label="checks"];
-  ERROR_FMT -> HTTP_SERVER [style=dashed, color="#ed8936"];
-  PROGRESS -> WIZARD [style=dashed, color="#ed8936"];
+  PROVIDER_CATALOG -> PROVIDER_ADAPTERS;
+  PROVIDER_ADAPTERS -> RAW_EVIDENCE;
+  DOCUMENT_IMPORT -> RAW_EVIDENCE;
+  RAW_EVIDENCE -> NORMALIZATION;
+  NORMALIZATION -> CONFIDENCE;
+  CONFIDENCE -> RECON [label="trusted"];
+  CONFIDENCE -> APPROVALS [style=dashed, label="manual review"];
+  RECON -> APPROVALS;
+  APPROVALS -> LEDGER;
+  APPROVALS -> REPORTING;
+  NORMALIZATION -> SECURITY_MASTER;
+
+  LEDGER -> AUDIT;
+  SECURITY_MASTER -> AUDIT;
+  REPORTING -> AUDIT;
+  PIPELINE -> RAW_EVIDENCE [label="durable ingest"];
+  PIPELINE -> AUDIT [label="replay evidence"];
+  CONFIG -> PROVIDER_CATALOG [style=dashed];
+  MCP -> CONFIG [style=dashed];
 }

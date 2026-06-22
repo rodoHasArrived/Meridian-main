@@ -120,7 +120,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
         if (_drainLoop is not null)
         {
-            try { await _drainLoop.ConfigureAwait(false); }
+            try
+            { await _drainLoop.ConfigureAwait(false); }
             catch (OperationCanceledException) { }
         }
 
@@ -129,7 +130,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         var pending = _activeRunTasks.Values.ToArray();
         if (pending.Length > 0)
         {
-            try { await Task.WhenAll(pending).ConfigureAwait(false); }
+            try
+            { await Task.WhenAll(pending).ConfigureAwait(false); }
             catch (OperationCanceledException) { }
             catch (Exception ex)
             {
@@ -394,7 +396,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         foreach (var candidate in preview.Candidates)
         {
             var (meets, reason) = ApplyFilters(candidate, stubParams);
-            if (meets) passed++;
+            if (meets)
+                passed++;
             rows.Add(CoveredCallRunProjection.ToChainRow(candidate, meets, reason));
         }
 
@@ -599,7 +602,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             _activeRunTasks.TryRemove(runId, out _);
             if (acquired)
             {
-                try { semaphore.Release(); }
+                try
+                { semaphore.Release(); }
                 catch (SemaphoreFullException) { /* benign during resize */ }
                 catch (ObjectDisposedException) { /* benign during resize */ }
             }
@@ -682,19 +686,27 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     {
         if (!OptionsOverwriteFilters.PassesLiquidityFilter(opt, p))
         {
-            if (opt.Bid <= 0m) return (false, "Zero bid");
-            if (opt.OpenInterest < p.MinOpenInterest) return (false, $"OI < {p.MinOpenInterest}");
-            if (opt.Volume < p.MinVolume) return (false, $"Volume < {p.MinVolume}");
-            if (opt.SpreadPct > p.MaxSpreadPct) return (false, $"Spread > {p.MaxSpreadPct:P0}");
+            if (opt.Bid <= 0m)
+                return (false, "Zero bid");
+            if (opt.OpenInterest < p.MinOpenInterest)
+                return (false, $"OI < {p.MinOpenInterest}");
+            if (opt.Volume < p.MinVolume)
+                return (false, $"Volume < {p.MinVolume}");
+            if (opt.SpreadPct > p.MaxSpreadPct)
+                return (false, $"Spread > {p.MaxSpreadPct:P0}");
             return (false, "Liquidity filter");
         }
 
         if (!OptionsOverwriteFilters.PassesRiskFilter(opt, p))
         {
-            if (opt.Strike < p.MinStrike) return (false, $"Strike < MinStrike ({p.MinStrike})");
-            if (Math.Abs(opt.Delta) > p.MaxDelta) return (false, $"|Delta| > {p.MaxDelta:F2}");
-            if (opt.DaysToExpiration < p.MinDte) return (false, $"DTE < {p.MinDte}");
-            if (p.MaxDte.HasValue && opt.DaysToExpiration > p.MaxDte.Value) return (false, $"DTE > {p.MaxDte.Value}");
+            if (opt.Strike < p.MinStrike)
+                return (false, $"Strike < MinStrike ({p.MinStrike})");
+            if (Math.Abs(opt.Delta) > p.MaxDelta)
+                return (false, $"|Delta| > {p.MaxDelta:F2}");
+            if (opt.DaysToExpiration < p.MinDte)
+                return (false, $"DTE < {p.MinDte}");
+            if (p.MaxDte.HasValue && opt.DaysToExpiration > p.MaxDte.Value)
+                return (false, $"DTE > {p.MaxDte.Value}");
             return (false, "Risk filter");
         }
 

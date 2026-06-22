@@ -1,16 +1,29 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type {
+  AccountingSystemImportDetail,
+  AccountingSystemProvider,
+  AccountingSystemReconciliationSummary,
   CorporateAction,
   AccountingWorkspaceResponse,
+  AccountingConfigurationWorkspace,
+  AccountingProductionReadiness,
+  ExternalGlExportPackage,
+  ExternalGlExportPackageManifest,
+  ExternalGlMappingProfile,
+  ClosePeriodPlan,
   LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  CapitalAccountWorkbench,
+  GeneratedPostingLine,
+  PostingRuleJournalCandidateResult,
+  RuleDryRunResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   SecurityMasterConflict,
@@ -19,8 +32,103 @@ import type {
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
+  const createFinancialRecordExplorer = (explorerId: string) => ({
+    explorerId,
+    title: explorerId === "security-instrument" ? "Security & Instrument Explorer" : "Ledger Explorer",
+    description: "Explore retained financial records and proof links.",
+    sourceState: `Source-backed ${explorerId} projection from run run-42.`,
+    isBlocked: false,
+    blockedReason: "",
+    scopeItems: [
+      { label: "Workstream", value: "Accounting", tone: "Info" },
+      { label: "Source", value: explorerId === "security-instrument" ? "Security Master instruments" : "Journal entries and ledger detail", tone: "Default" }
+    ],
+    savedViews: [
+      {
+        viewId: `system-${explorerId}-default`,
+        label: explorerId === "security-instrument" ? "Instrument proof" : "Controller review",
+        description: "Source-backed system view.",
+        isSystem: true,
+        isActive: true,
+        filters: [],
+        searchText: ""
+      }
+    ],
+    summaryItems: [
+      { label: explorerId === "security-instrument" ? "Security coverage" : "Records", value: "1", detail: "Retained source-backed rows.", tone: "Success" }
+    ],
+    filters: [
+      { filterId: "all-records", label: explorerId === "security-instrument" ? "No selection" : "All accounts", value: explorerId === "security-instrument" ? "No selection" : "All accounts", operator: "equals", tone: "Info" }
+    ],
+    columns: [
+      { columnId: "name", header: explorerId === "security-instrument" ? "Security" : "Account", cellKind: "text", width: 220, isRightAligned: false },
+      { columnId: "status", header: "Status", cellKind: "text", width: 110, isRightAligned: false }
+    ],
+    rows: [
+      {
+        recordId: `${explorerId}:run-42:1`,
+        recordType: explorerId,
+        label: explorerId === "security-instrument" ? "Apple Inc." : "Cash",
+        source: explorerId === "security-instrument" ? "Security Master" : "Trial balance",
+        status: "Ready",
+        tone: "Success",
+        cells: [
+          { columnId: "name", displayValue: explorerId === "security-instrument" ? "Apple Inc." : "Cash", rawValue: "", tone: "Success", linkHref: "" },
+          { columnId: "status", displayValue: "Ready", rawValue: "Ready", tone: "Success", linkHref: "" }
+        ],
+        detail: {
+          recordId: `${explorerId}:run-42:1`,
+          recordType: explorerId === "security-instrument" ? "Security instrument" : "Ledger account",
+          title: explorerId === "security-instrument" ? "Apple Inc." : "Cash",
+          subtitle: "run-42",
+          description: "Source-backed record detail.",
+          tone: "Success",
+          fields: [{ label: "Status", value: "Ready", detail: "Retained source projection.", tone: "Success" }],
+          proofActions: [
+            {
+              actionId: "open-source",
+              label: "Open source record",
+              description: "Open retained source.",
+              href: "/accounting/ledger",
+              isEnabled: true,
+              disabledReason: "",
+              tone: "Info"
+            }
+          ],
+          usedIn: [{ relationshipId: "accounting", label: "Accounting", description: "Used by Accounting close.", href: "/accounting", tone: "Info" }],
+          impacts: [{ relationshipId: "audit", label: "Audit trail", description: "Supports retained proof.", href: "/reporting/evidence", tone: "Info" }],
+          fullRecordHref: "/accounting/ledger"
+        }
+      }
+    ],
+    selectedRecord: null,
+    proofActions: [
+      {
+        actionId: "evidence",
+        label: explorerId === "security-instrument" ? "Open search" : "Evidence packet",
+        description: "Open retained evidence.",
+        href: "/reporting/evidence",
+        isEnabled: true,
+        disabledReason: "",
+        tone: "Info"
+      }
+    ],
+    recordGraph: { nodes: [], edges: [] }
+  });
   return {
     ...actual,
+    getFinancialRecordExplorer: vi.fn((explorerId: string) => Promise.resolve(createFinancialRecordExplorer(explorerId))),
+    saveFinancialRecordExplorerView: vi.fn((_explorerId: string, request: { label: string; description: string; filters: unknown[]; searchText: string }) =>
+      Promise.resolve({
+        viewId: "operator-test-view",
+        label: request.label,
+        description: request.description,
+        isSystem: false,
+        isActive: false,
+        filters: request.filters,
+        searchText: request.searchText
+      })
+    ),
     searchSecurities: vi.fn().mockResolvedValue([
       {
         securityId: "22222222-2222-2222-2222-222222222222",
@@ -79,15 +187,87 @@ vi.mock("@/lib/api", async () => {
     previewAccountingSystemImport: vi.fn(),
     getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
     getLatestAccountingSystemReconciliation: vi.fn().mockResolvedValue(null),
+    getAccountingSystemMappingProfiles: vi.fn().mockResolvedValue([]),
+    listAccountingSystemExportPackages: vi.fn().mockResolvedValue([]),
+    getAccountingMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "default-fund", ledgerBookId: null, artifacts: [] }),
+    createAccountingSystemExportPackage: vi.fn(),
+    getAccountingSystemExportPackageManifest: vi.fn(),
+    certifyAccountingSystemExportPackage: vi.fn(),
+    assessAccountingProductionReadiness: vi.fn(),
+    getAccountingProductionCertificationProfile: vi.fn(),
+    upsertAccountingProductionCertificationProfile: vi.fn(),
+    getAccountingTenantAdministrationProfile: vi.fn(),
+    upsertAccountingTenantAdministrationProfile: vi.fn(),
+    getAccountingConfiguration: vi.fn(),
+    previewAccountingConfigurationTemplate: vi.fn(),
+    dryRunAccountingConfigurationPostingRule: vi.fn(),
+    buildAccountingPostingRuleJournalCandidate: vi.fn(),
+    executeAccountingConfigurationPostingRuleTests: vi.fn(),
+    upsertAccountingConfigurationPostingRule: vi.fn(),
+    upsertAccountingConfigurationPostingRuleTestCase: vi.fn(),
+    approveAccountingConfigurationPostingRulePromotion: vi.fn(),
+    activateAccountingConfiguration: vi.fn(),
     getManualJournalEntryWorkbench: vi.fn(),
+    getCapitalAccountWorkbench: vi.fn(),
     saveManualJournalEntryDraft: vi.fn(),
     validateManualJournalEntryDraft: vi.fn(),
     submitManualJournalEntryApproval: vi.fn(),
+    attachManualJournalEntryEvidence: vi.fn(),
+    applyManualJournalEntryLifecycleAction: vi.fn(),
+    getLedgerCloseManagementPeriodPlan: vi.fn(),
+    createLedgerCloseManagementLateAdjustment: vi.fn(),
+    reviewLedgerCloseManagementLateAdjustment: vi.fn(),
+    signOffLedgerCloseManagementTask: vi.fn(),
+    listLedgerAccountingReportPackages: vi.fn().mockResolvedValue([]),
+    buildLedgerAccountingReportPackage: vi.fn(),
+    certifyLedgerAccountingReportPackage: vi.fn(),
+    getLedgerAccountingReportPackageExport: vi.fn(),
     getCorporateActions: vi.fn().mockResolvedValue([]),
+    getReferenceDataWorkbenchCoverage: vi.fn().mockResolvedValue({
+      requestedAtUtc: "2026-05-21T15:00:00Z",
+      endpoints: [
+        {
+          id: "bond-reference",
+          family: "Bonds",
+          label: "Bond reference",
+          method: "GET",
+          path: "/api/reference-data/bonds/22222222-2222-2222-2222-222222222222",
+          requestLabel: "GET bond reference for 22222222-2222-2222-2222-222222222222",
+          probe: true,
+          status: "Ready",
+          statusCode: 200,
+          durationMs: 12,
+          responseCount: 1,
+          responseSummary: "1 fields returned.",
+          responsePreview: "{\n  \"couponRate\": 5.25\n}",
+          errorSummary: null,
+          errorDetails: []
+        },
+        {
+          id: "option-chain-import",
+          family: "Options",
+          label: "Option chain import",
+          method: "POST",
+          path: "/api/reference-data/options/chains/import",
+          requestLabel: "POST option chain import endpoint catalogued; not invoked by this read-only workbench.",
+          probe: false,
+          mutation: true,
+          status: "Deferred",
+          statusCode: null,
+          durationMs: null,
+          responseCount: null,
+          responseSummary: "POST option chain import endpoint catalogued; not invoked by this read-only workbench.",
+          responsePreview: null,
+          errorSummary: null,
+          errorDetails: []
+        }
+      ]
+    }),
     getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflow: vi.fn(),
     approveOperationsContinuityWorkflow: vi.fn(),
     rejectOperationsContinuityWorkflow: vi.fn(),
+    getSecurityInstrumentPassport: vi.fn().mockResolvedValue(null),
     getTradingParameters: vi.fn().mockResolvedValue(null),
     getSecurityTrustSnapshot: vi.fn().mockResolvedValue({
       securityId: "sec-1",
@@ -232,6 +412,7 @@ const approvalWorkflowSummary: OperationsContinuityWorkflowSummary = {
   workflowId: "workflow-approval-1",
   fundAccountId: "fund-alpha",
   periodId: "2026-05",
+  ledgerBookId: "book-alpha",
   securityMasterSnapshotId: "sm-snapshot-1",
   brokerSource: "Northern Trust",
   status: "ApprovalPending",
@@ -580,7 +761,18 @@ const manualJournalDraft: ManualJournalEntryDraft = {
   imbalance: 0,
   approvalId: null,
   submittedAtUtc: null,
-  submittedBy: null
+  submittedBy: null,
+  entryType: "Distribution",
+  treasuryContext: {
+    effectiveDate: "2026-06-30",
+    idempotencyKey: "browser:fund-alpha:distribution:manual-je-1",
+    fundEventId: "fund-event:fund-alpha:distribution:20260630",
+    fundEventType: "Distribution",
+    capitalAccountId: "capital-account:fund-alpha:lp-1",
+    investorId: "investor:lp-1",
+    paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+    settlementReference: "settlement:fund-alpha:distribution:20260630"
+  }
 };
 
 const manualJournalWorkbench: ManualJournalEntryWorkbench = {
@@ -593,7 +785,665 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
     { nodeId: "interest-income", path: "Income:Interest", accountName: "Interest Income", accountType: "Revenue", isArchived: false }
   ],
   drafts: [manualJournalDraft],
-  auditTrail: []
+  auditTrail: [],
+  privateCapitalActivity: {
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "book-alpha",
+    projectedAtUtc: "2026-06-30T00:00:00Z",
+    fundEventCount: 1,
+    capitalAccountCount: 1,
+    submittedFundEventCount: 0,
+    approvalQueueCount: 0,
+    postedFundEventCount: 0,
+    publishedReportOutputCount: 0,
+    netCapitalActivity: -100,
+    currency: "USD",
+    fundEvents: [
+      {
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        entryType: "Distribution",
+        journalStatus: "Draft",
+        journalEntryId: "manual-je-1",
+        effectiveDate: "2026-06-30",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        grossAmount: 100,
+        netCapitalActivity: -100,
+        memo: "Manual close adjustment",
+        paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+        settlementReference: "settlement:fund-alpha:distribution:20260630",
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        validationIssues: [],
+        updatedAtUtc: "2026-06-30T00:00:00Z"
+      }
+    ],
+    capitalAccounts: [
+      {
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        contributions: 0,
+        distributions: 100,
+        subscriptions: 0,
+        redemptions: 0,
+        managementFees: 0,
+        netActivity: -100,
+        fundEventCount: 1,
+        lastEffectiveDate: "2026-06-30",
+        lastFundEventType: "Distribution",
+        fundEventIds: ["fund-event:fund-alpha:distribution:20260630"]
+      }
+    ],
+    capitalAccountSubledgerEntries: [
+      {
+        subledgerEntryId: "capital-account-subledger:fund-event:fund-alpha:distribution:20260630",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        entryType: "Distribution",
+        approvalState: "Draft",
+        journalEntryId: "manual-je-1",
+        effectiveDate: "2026-06-30",
+        grossAmount: 100,
+        netCapitalActivity: -100,
+        runningNetActivity: -100,
+        memo: "Manual close adjustment",
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        validationIssues: [],
+        updatedAtUtc: "2026-06-30T00:00:00Z"
+      }
+    ],
+    ledgerImpacts: [
+      {
+        ledgerImpactId: "ledger-impact:fund-event:fund-alpha:distribution:20260630:manual-je-1",
+        journalEntryId: "manual-je-1",
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        approvalState: "Draft",
+        effectiveDate: "2026-06-30",
+        currency: "USD",
+        totalDebits: 100,
+        totalCredits: 100,
+        imbalance: 0,
+        lineCount: 2,
+        isBalanced: true,
+        isPostingReady: false,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        lines: [
+          {
+            lineId: "line-debit",
+            accountPath: "Equity:Distributions",
+            side: "Debit",
+            amount: 100,
+            currency: "USD",
+            entityId: null,
+            securityId: null,
+            securityDisplayName: null,
+            evidenceLink: null
+          },
+          {
+            lineId: "line-credit",
+            accountPath: "Assets:Cash",
+            side: "Credit",
+            amount: 100,
+            currency: "USD",
+            entityId: null,
+            securityId: null,
+            securityDisplayName: null,
+            evidenceLink: null
+          }
+        ],
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-ledger-impact-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "manual-je-1",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    reportOutputs: [
+      {
+        reportOutputId: "report-output:fund-event:fund-alpha:distribution:20260630:distributionnotice",
+        reportOutputType: "DistributionNotice",
+        displayName: "DistributionNotice for Distribution",
+        reportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        reportOutputRoute: "/api/ledger/private-capital/report-output?fundProfileId=fund-alpha&reportOutputId=report-output%3Afund-event%3Afund-alpha%3Adistribution%3A20260630%3Adistributionnotice&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        approvalState: "Draft",
+        effectiveDate: "2026-06-30",
+        currency: "USD",
+        netCapitalActivity: -100,
+        evidenceLinkCount: 2,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        isReportReady: false,
+        reportWorkflowState: "Draft",
+        reportLineProvenanceCount: 1,
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-report-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "fund-event:fund-alpha:distribution:20260630",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    fundEventRecords: [
+      {
+        fundEventRecordId: "fund-event-ledger-record:fund-event:fund-alpha:distribution:20260630",
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        approvalState: "Draft",
+        journalEntryId: "manual-je-1",
+        effectiveDate: "2026-06-30",
+        currency: "USD",
+        grossAmount: 100,
+        netCapitalActivity: -100,
+        capitalAccountOpeningNetActivity: 0,
+        capitalAccountEndingNetActivity: -100,
+        memo: "Manual close adjustment",
+        paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+        settlementReference: "settlement:fund-alpha:distribution:20260630",
+        activityRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        evidenceRoute: "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Adistribution%3A20260630/packet",
+        approvalId: null,
+        approvalRoute: null,
+        isPosted: false,
+        isPostingReady: false,
+        isReportReady: false,
+        isPublished: false,
+        readiness: "ApprovalPending",
+        readinessLabel: "Approval pending",
+        readinessReason: "Submit the fund-event journal for approval before posting or stakeholder report output.",
+        nextAction: "Submit approval",
+        nextActionRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        evidenceLinkCount: 2,
+        capitalAccountSubledgerEntryCount: 1,
+        ledgerImpactCount: 1,
+        reportOutputCount: 1,
+        validationIssueCount: 2,
+        primaryReportOutputId: "report-output:fund-event:fund-alpha:distribution:20260630:distributionnotice",
+        primaryReportOutputType: "DistributionNotice",
+        primaryReportRoute: "/api/ledger/private-capital/report-output?fundProfileId=fund-alpha&reportOutputId=report-output%3Afund-event%3Afund-alpha%3Adistribution%3A20260630%3Adistributionnotice&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        reportWorkflowState: "Draft",
+        publicationManifestId: null,
+        retainedManifestPath: null,
+        reportLineProvenanceCount: 1,
+        evidenceLinks: [
+          "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+          "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+        ],
+        evidenceCategories: [
+          {
+            categoryId: "source-support",
+            label: "Source support",
+            isReady: true,
+            summary: "Source documents or retained evidence links support the fund event.",
+            evidenceLinkCount: 2,
+            evidenceLinks: [
+              "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+              "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+            ],
+            requiredEvidence: ["Source document or retained evidence link"]
+          },
+          {
+            categoryId: "capital-account-subledger",
+            label: "Capital-account subledger",
+            isReady: true,
+            summary: "Capital-account impact is represented in the subledger.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Capital-account impact"]
+          },
+          {
+            categoryId: "ledger-impact",
+            label: "Ledger impact",
+            isReady: false,
+            summary: "Balanced ledger impact and line evidence are available for the fund event.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Balanced ledger impact", "Ledger line evidence"]
+          },
+          {
+            categoryId: "approval-state",
+            label: "Approval state",
+            isReady: false,
+            summary: "Approval reference is missing for the fund event.",
+            evidenceLinkCount: 0,
+            evidenceLinks: [],
+            requiredEvidence: ["Approval reference"]
+          },
+          {
+            categoryId: "payment-intent",
+            label: "Payment intent",
+            isReady: true,
+            summary: "Payment intent and settlement reference are captured.",
+            evidenceLinkCount: 2,
+            evidenceLinks: [
+              "payment:fund-alpha:distribution:manual-je-1",
+              "settlement:fund-alpha:distribution:20260630"
+            ],
+            requiredEvidence: ["Payment intent id", "Settlement reference"]
+          },
+          {
+            categoryId: "cash-evidence",
+            label: "Cash evidence",
+            isReady: true,
+            summary: "Payment intent payment:fund-alpha:distribution:manual-je-1 and settlement settlement:fund-alpha:distribution:20260630 have 1 retained cash evidence link(s); live execution remains deferred.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"],
+            requiredEvidence: []
+          },
+          {
+            categoryId: "report-output",
+            label: "Report output",
+            isReady: false,
+            summary: "Governed report output is linked to the fund event.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Governed report output"]
+          }
+        ],
+        paymentIntentEvidence: {
+          paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+          settlementReference: "settlement:fund-alpha:distribution:20260630",
+          status: "SettlementMatched",
+          isReady: true,
+          direction: "Outflow",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          summary: "Payment intent payment:fund-alpha:distribution:manual-je-1 and settlement settlement:fund-alpha:distribution:20260630 have 1 retained cash evidence link(s); live execution remains deferred.",
+          cashEvidenceLinkCount: 1,
+          cashEvidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"],
+          requiredEvidence: [],
+          evidenceRoute: "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Adistribution%3A20260630/packet"
+        },
+        fundEvent: {
+          fundEventId: "fund-event:fund-alpha:distribution:20260630",
+          fundEventType: "Distribution",
+          entryType: "Distribution",
+          journalStatus: "Draft",
+          journalEntryId: "manual-je-1",
+          effectiveDate: "2026-06-30",
+          capitalAccountId: "capital-account:fund-alpha:lp-1",
+          investorId: "investor:lp-1",
+          currency: "USD",
+          grossAmount: 100,
+          netCapitalActivity: -100,
+          memo: "Manual close adjustment",
+          paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+          settlementReference: "settlement:fund-alpha:distribution:20260630",
+          evidenceLinks: [
+            "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+            "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+          ],
+          validationIssues: [],
+          updatedAtUtc: "2026-06-30T00:00:00Z"
+        },
+        capitalAccountSubledgerEntries: [
+          {
+            subledgerEntryId: "capital-account-subledger:fund-event:fund-alpha:distribution:20260630",
+            capitalAccountId: "capital-account:fund-alpha:lp-1",
+            investorId: "investor:lp-1",
+            currency: "USD",
+            fundEventId: "fund-event:fund-alpha:distribution:20260630",
+            fundEventType: "Distribution",
+            entryType: "Distribution",
+            approvalState: "Draft",
+            journalEntryId: "manual-je-1",
+            effectiveDate: "2026-06-30",
+            grossAmount: 100,
+            netCapitalActivity: -100,
+            runningNetActivity: -100,
+            memo: "Manual close adjustment",
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            validationIssues: [],
+            updatedAtUtc: "2026-06-30T00:00:00Z"
+          }
+        ],
+        ledgerImpacts: [
+          {
+            ledgerImpactId: "ledger-impact:fund-event:fund-alpha:distribution:20260630:manual-je-1",
+            journalEntryId: "manual-je-1",
+            fundEventId: "fund-event:fund-alpha:distribution:20260630",
+            fundEventType: "Distribution",
+            capitalAccountId: "capital-account:fund-alpha:lp-1",
+            investorId: "investor:lp-1",
+            approvalState: "Draft",
+            effectiveDate: "2026-06-30",
+            currency: "USD",
+            totalDebits: 100,
+            totalCredits: 100,
+            imbalance: 0,
+            lineCount: 2,
+            isBalanced: true,
+            isPostingReady: false,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            lines: [
+              {
+                lineId: "line-debit",
+                accountPath: "Equity:Distributions",
+                side: "Debit",
+                amount: 100,
+                currency: "USD",
+                entityId: null,
+                securityId: null,
+                securityDisplayName: null,
+                evidenceLink: null
+              },
+              {
+                lineId: "line-credit",
+                accountPath: "Assets:Cash",
+                side: "Credit",
+                amount: 100,
+                currency: "USD",
+                entityId: null,
+                securityId: null,
+                securityDisplayName: null,
+                evidenceLink: null
+              }
+            ],
+            validationIssues: [
+              {
+                code: "manual-je.private-capital-ledger-impact-approval-pending",
+                severity: "Warning",
+                message: "Approval is pending.",
+                targetId: "manual-je-1",
+                suggestedAction: "Submit approval."
+              }
+            ]
+          }
+        ],
+        reportOutputs: [
+          {
+            reportOutputId: "report-output:fund-event:fund-alpha:distribution:20260630:distributionnotice",
+            reportOutputType: "DistributionNotice",
+            displayName: "DistributionNotice for Distribution",
+            reportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+            fundEventId: "fund-event:fund-alpha:distribution:20260630",
+            fundEventType: "Distribution",
+            capitalAccountId: "capital-account:fund-alpha:lp-1",
+            investorId: "investor:lp-1",
+            approvalState: "Draft",
+            effectiveDate: "2026-06-30",
+            currency: "USD",
+            netCapitalActivity: -100,
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            isReportReady: false,
+            reportWorkflowState: "Draft",
+            reportLineProvenanceCount: 1,
+            validationIssues: [
+              {
+                code: "manual-je.private-capital-report-approval-pending",
+                severity: "Warning",
+                message: "Approval is pending.",
+                targetId: "fund-event:fund-alpha:distribution:20260630",
+                suggestedAction: "Submit approval."
+              }
+            ]
+          }
+        ],
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-ledger-impact-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "manual-je-1",
+            suggestedAction: "Submit approval."
+          },
+          {
+            code: "manual-je.private-capital-report-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "fund-event:fund-alpha:distribution:20260630",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    capitalAccountSubledgers: [
+      {
+        subledgerId: "capital-account-subledger:capital-account:fund-alpha:lp-1:investor:lp-1:usd",
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "book-alpha",
+        projectedAtUtc: "2026-06-30T00:00:00Z",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        activityRoute: "/api/ledger/private-capital/capital-account-subledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD",
+        contributions: 0,
+        distributions: 100,
+        subscriptions: 0,
+        redemptions: 0,
+        managementFees: 0,
+        openingNetActivity: 0,
+        endingNetActivity: -100,
+        netCapitalActivity: -100,
+        fundEventCount: 1,
+        approvalQueueCount: 0,
+        postedFundEventCount: 0,
+        publishedReportOutputCount: 0,
+        evidenceLinkCount: 1,
+        validationIssueCount: 2,
+        firstEffectiveDate: "2026-06-30",
+        lastEffectiveDate: "2026-06-30",
+        lastFundEventType: "Distribution",
+        evidenceLinks: [
+          "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+          "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+        ],
+        evidenceCategories: [
+          {
+            categoryId: "source-support",
+            label: "Source support",
+            isReady: true,
+            summary: "Source support is retained for this capital account's fund events.",
+            evidenceLinkCount: 2,
+            evidenceLinks: [
+              "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+              "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+            ],
+            requiredEvidence: ["Source document or retained evidence link"]
+          },
+          {
+            categoryId: "capital-account-subledger",
+            label: "Capital-account subledger",
+            isReady: true,
+            summary: "Capital-account impacts are represented in the running subledger.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Capital-account impact"]
+          },
+          {
+            categoryId: "ledger-impact",
+            label: "Ledger impact",
+            isReady: false,
+            summary: "Ledger impacts are linked to this capital account.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Balanced ledger impact", "Ledger line evidence"]
+          },
+          {
+            categoryId: "approval-state",
+            label: "Approval state",
+            isReady: false,
+            summary: "Approval references are missing for this capital account.",
+            evidenceLinkCount: 0,
+            evidenceLinks: [],
+            requiredEvidence: ["Approval reference"]
+          },
+          {
+            categoryId: "payment-intent",
+            label: "Payment intent",
+            isReady: true,
+            summary: "Payment intent and settlement reference are captured.",
+            evidenceLinkCount: 2,
+            evidenceLinks: [
+              "payment:fund-alpha:distribution:manual-je-1",
+              "settlement:fund-alpha:distribution:20260630"
+            ],
+            requiredEvidence: ["Payment intent id", "Settlement reference"]
+          },
+          {
+            categoryId: "cash-evidence",
+            label: "Cash evidence",
+            isReady: true,
+            summary: "1 payment intent(s), 1 settlement reference(s), and 1 retained cash evidence link(s) support this subledger; live execution remains deferred.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"],
+            requiredEvidence: []
+          },
+          {
+            categoryId: "report-output",
+            label: "Report output",
+            isReady: false,
+            summary: "Governed report outputs are linked to this capital account.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Governed report output"]
+          }
+        ],
+        paymentIntentEvidence: {
+          paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+          settlementReference: "settlement:fund-alpha:distribution:20260630",
+          status: "SettlementMatched",
+          isReady: true,
+          direction: "Outflow",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          summary: "1 payment intent(s), 1 settlement reference(s), and 1 retained cash evidence link(s) support this subledger; live execution remains deferred.",
+          cashEvidenceLinkCount: 1,
+          cashEvidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"],
+          requiredEvidence: [],
+          evidenceRoute: "/api/ledger/private-capital/capital-account-subledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD"
+        },
+        capitalAccount: null,
+        fundEventRecords: [],
+        subledgerEntries: [],
+        ledgerImpacts: [],
+        reportOutputs: [],
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-ledger-impact-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "manual-je-1",
+            suggestedAction: "Submit approval."
+          },
+          {
+            code: "manual-je.private-capital-report-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "fund-event:fund-alpha:distribution:20260630",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    paymentIntents: [
+      {
+        paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+        settlementReference: "settlement:fund-alpha:distribution:20260630",
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "book-alpha",
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        journalEntryId: "manual-je-1",
+        requester: "ops-user",
+        requestedAtUtc: "2026-06-30T00:00:00Z",
+        status: "ApprovalPending",
+        statusLabel: "Approval pending",
+        readinessReason: "Requester and expected movement are captured, but controller approval is not complete.",
+        executionDeferredReason: "Full payment execution is explicitly deferred in v0.18; this layer only retains intent, control, cash-evidence, reconciliation, and audit history before any bank-side instruction.",
+        expectedCashMovement: {
+          paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+          direction: "Outflow",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          settlementReference: "settlement:fund-alpha:distribution:20260630",
+          fundEventId: "fund-event:fund-alpha:distribution:20260630",
+          fundEventType: "Distribution",
+          capitalAccountId: "capital-account:fund-alpha:lp-1",
+          investorId: "investor:lp-1",
+          purpose: "Distribution for Fund Alpha LP",
+          payee: "investor:lp-1",
+          accountScope: "fund:fund-alpha / book:book-alpha / capital-account:fund-alpha:lp-1 / investor:lp-1",
+          businessPurpose: "Distribution for Fund Alpha LP",
+          approvalPolicy: "Controller approval pending before execution-deferred reliance",
+          sourceEvidenceLinks: [
+            "/api/workstation/evidence/subjects/accounting-record/manual-je",
+            "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+          ]
+        },
+        evidenceRoute: "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Adistribution%3Amanual-je-1/packet",
+        workbenchRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&paymentIntentId=payment%3Afund-alpha%3Adistribution%3Amanual-je-1",
+        approvalChain: [
+          { sequence: 1, role: "Requester", actor: "ops-user", status: "Requested", decidedAtUtc: "2026-06-30T00:00:00Z", evidenceRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha" },
+          { sequence: 2, role: "Controller approval", actor: "controller", status: "Pending", decidedAtUtc: null, evidenceRoute: null }
+        ],
+        bankEvidence: [
+          {
+            evidenceId: "retained-cash-evidence:distribution",
+            evidenceKind: "RetainedCashEvidence",
+            status: "Retained",
+            summary: "Retained wire evidence supports the expected distribution cash movement.",
+            amount: 100,
+            currency: "USD",
+            effectiveDate: "2026-06-30",
+            recordedAtUtc: "2026-06-30T00:00:00Z",
+            externalRef: "settlement:fund-alpha:distribution:20260630",
+            recordedBy: "cash-ops@example.com",
+            evidenceRoute: "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+          }
+        ],
+        reconciliationLinks: [
+          {
+            linkId: "reconciliation:distribution",
+            status: "Ready",
+            summary: "Cash evidence is linked to reconciliation review.",
+            evidenceRoute: "/api/reconciliation/runs/distribution"
+          }
+        ],
+        auditHistory: [
+          {
+            auditEventId: "payment-intent-requested:manual-je-1",
+            recordedAtUtc: "2026-06-30T00:00:00Z",
+            actor: "ops-user",
+            action: "payment-intent.requested",
+            summary: "Payment intent was requested.",
+            evidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"]
+          },
+          {
+            auditEventId: "payment-intent-execution-deferred:manual-je-1",
+            recordedAtUtc: "2026-06-30T00:00:00Z",
+            actor: "system",
+            action: "payment-intent.execution-deferred",
+            summary: "Payment execution remains deferred.",
+            evidenceLinks: []
+          }
+        ]
+      }
+    ],
+    validationIssues: []
+  }
 };
 
 async function renderAccountingScreen(
@@ -643,11 +1493,1396 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
   });
 
+  it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
+    const generatedPostings: GeneratedPostingLine[] = [
+      {
+        lineId: "generated-investment",
+        accountPath: "1200.Investments",
+        side: "Debit",
+        amountFormulaId: "formula-source",
+        amount: 250000,
+        currency: "USD",
+        dimensions: {
+          fundId: "fund-alpha",
+          instrumentId: "AAPL"
+        },
+        description: "Debit investment cost."
+      },
+      {
+        lineId: "generated-cash",
+        accountPath: "1000.Cash",
+        side: "Credit",
+        amountFormulaId: "formula-source",
+        amount: 250000,
+        currency: "USD",
+        dimensions: {
+          fundId: "fund-alpha",
+          counterpartyId: "cp-001"
+        },
+        description: "Credit cash settlement."
+      }
+    ];
+    const workspace: AccountingConfigurationWorkspace = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      status: "Draft",
+      configurationVersion: "v4",
+      updatedAtUtc: "2026-06-30T12:00:00Z",
+      ledgerBooks: [{
+        ledgerBookId: "book-primary",
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "entity-master",
+        fundStructureNodeKind: "Entity",
+        displayName: "Primary book",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-06-30T12:00:00Z",
+        description: "Primary accounting book.",
+        accountingBasis: "Gaap",
+        accountingPolicyId: "policy-gaap",
+        accountingPolicyVersion: "2026.06"
+      }],
+      chartOfAccounts: [
+        {
+          nodeId: "coa-cash",
+          path: "1000.Cash",
+          accountName: "Cash",
+          accountType: "Asset",
+          parentPath: null,
+          isArchived: false
+        },
+        {
+          nodeId: "coa-investment",
+          path: "1200.Investments",
+          accountName: "Investments",
+          accountType: "Asset",
+          parentPath: null,
+          isArchived: false
+        }
+      ],
+      journalTemplates: [{
+        templateId: "template-trade-buy",
+        displayName: "Trade buy settlement",
+        description: "Balanced trade settlement posting.",
+        isArchived: false,
+        version: "v2",
+        lines: [
+          {
+            lineId: "line-investment",
+            accountPath: "1200.Investments",
+            side: "Debit",
+            amount: 250000,
+            currency: "USD",
+            description: "Investment cost"
+          },
+          {
+            lineId: "line-cash",
+            accountPath: "1000.Cash",
+            side: "Credit",
+            amount: 250000,
+            currency: "USD",
+            description: "Cash settlement"
+          }
+        ]
+      }],
+      postingRules: [{
+        ruleId: "rule-trade-buy",
+        displayName: "Trade buy posting",
+        sourceEventType: "TradeExecuted",
+        templateId: "template-trade-buy",
+        ruleVersion: "v3",
+        isArchived: false,
+        description: "Generate trade buy settlement postings.",
+        effectiveFrom: "2026-01-01",
+        effectiveTo: "2026-12-31",
+        priority: 10,
+        scope: {
+          fundId: "fund-alpha",
+          entityId: "entity-master",
+          strategyId: "strategy-long-only",
+          counterpartyId: "cp-001",
+          externalGlDimensions: {
+            class: "FundAlpha"
+          }
+        },
+        conditions: [{
+          conditionId: "cond-event",
+          field: "event.kind",
+          operator: "Equals",
+          value: "TradeExecuted",
+          isRequired: true,
+          description: "Only trade events use this rule."
+        }],
+        conditionGroups: [{
+          groupId: "group-trade-source",
+          operator: "Any",
+          isRequired: true,
+          description: "Allow broker or operations source evidence.",
+          conditions: [
+            {
+              conditionId: "cond-broker-source",
+              field: "event.source",
+              operator: "Equals",
+              value: "Broker",
+              isRequired: false,
+              description: "Broker feed."
+            },
+            {
+              conditionId: "cond-ops-source",
+              field: "event.source",
+              operator: "Equals",
+              value: "Operations",
+              isRequired: false,
+              description: "Operations upload."
+            }
+          ]
+        }],
+        formulas: [{
+          formulaId: "formula-source",
+          kind: "SourceAmount",
+          value: 250000,
+          currency: "USD",
+          description: "Use source trade amount."
+        }],
+        allocations: [{
+          allocationRuleId: "alloc-strategy",
+          basis: "StrategyWeight",
+          weight: 1,
+          formulaId: "formula-source",
+          targetDimensions: {
+            sleeveId: "sleeve-core",
+            strategyId: "strategy-long-only"
+          },
+          description: "Allocate to the core strategy sleeve."
+        }],
+        generatedPostings,
+        versions: [{
+          version: "v3",
+          createdAtUtc: "2026-06-15T10:00:00Z",
+          createdBy: "controller",
+          changeSummary: "Added counterparty scope and generated postings.",
+          promotionApproval: null,
+          evidenceLinks: ["evidence://rule/v3"]
+        }],
+        promotionApproval: null,
+        requiresPromotionApproval: true
+      }],
+      validationIssues: [],
+      auditTrail: [],
+      ruleTestCases: [{
+        testCaseId: "rule-test-trade-buy-saved",
+        displayName: "Saved trade buy regression",
+        request: {
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "book-primary",
+          sourceEventType: "TradeExecuted",
+          eventAmount: 250000,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          actor: "controller",
+          dimensions: {
+            fundId: "fund-alpha",
+            entityId: "entity-master",
+            counterpartyId: "cp-001"
+          },
+          counterpartyId: "cp-001"
+        },
+        expectedRuleId: "rule-trade-buy",
+        expectedRuleVersion: "v3",
+        expectBalancedPosting: true,
+        expectedIssueCodes: [],
+        expectedGeneratedPostingLines: generatedPostings
+      }]
+    };
+    const dryRunResult: RuleDryRunResult = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      sourceEventType: "TradeExecuted",
+      effectiveDate: "2026-01-01",
+      eventAmount: 250000,
+      currency: "USD",
+      isPostingBalanced: true,
+      selectedRuleId: "rule-trade-buy",
+      ruleMatches: [{
+        ruleId: "rule-trade-buy",
+        displayName: "Trade buy posting",
+        ruleVersion: "v3",
+        priority: 10,
+        isMatched: true,
+        explanations: ["Effective date and source event predicates matched."],
+        validationIssues: []
+      }],
+      generatedLines: [
+        {
+          accountPath: "1200.Investments",
+          accountName: "Investments",
+          side: "Debit",
+          amount: 250000,
+          currency: "USD",
+          description: "Debit investment cost."
+        },
+        {
+          accountPath: "1000.Cash",
+          accountName: "Cash",
+          side: "Credit",
+          amount: 250000,
+          currency: "USD",
+          description: "Credit cash settlement."
+        }
+      ],
+      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      validationIssues: []
+    };
+    const journalCandidateResult: PostingRuleJournalCandidateResult = {
+      dryRunResult,
+      selectedRuleId: "rule-trade-buy",
+      selectedRuleVersion: "v3",
+      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      postingCommand: {
+        commandId: "00000000-0000-4000-8000-000000000101",
+        aggregateId: "00000000-0000-4000-8000-000000000102",
+        periodId: "00000000-0000-4000-8000-000000000103",
+        effectiveDate: "2026-01-01",
+        postingDate: "2026-06-30T12:10:00Z",
+        idempotencyKey: "posting-candidate-rule-trade-buy",
+        intent: "Originating",
+        sourceEventId: "00000000-0000-4000-8000-000000000104",
+        correlationId: "00000000-0000-4000-8000-000000000105",
+        sourceEventType: "TradeExecuted",
+        treasuryContext: null,
+        approvalState: "Pending",
+        approvalId: "approval-rule-trade-buy",
+        evidence: [{
+          evidenceId: "evidence-rule-trade-buy",
+          uri: "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+          kind: "Source",
+          sourceSystem: "Meridian",
+          retainedAtUtc: "2026-06-30T12:10:00Z",
+          retainedBy: "browser-accounting-operator",
+          subjectId: "rule-trade-buy",
+          contentHash: null,
+          description: "Rules Studio dry-run evidence."
+        }],
+        actionOrigin: "HumanOperator"
+      },
+      journalEntryId: "00000000-0000-4000-8000-000000000106",
+      totalDebits: 250000,
+      totalCredits: 250000,
+      imbalance: 0,
+      isBalanced: true,
+      hasBlockingIssues: false,
+      canSubmitForApproval: true,
+      canPostWithoutAdditionalApproval: false,
+      evidenceLinks: [
+        "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+        "browser://accounting/rules-studio/journal-candidate/rule-trade-buy/00000000-0000-4000-8000-000000000105"
+      ],
+      issues: [{
+        code: "ApprovalRequired",
+        severity: "Info",
+        message: "Posting command remains pending until journal lifecycle approval.",
+        blocksCandidate: false,
+        targetId: "rule-trade-buy",
+        suggestedAction: "Submit the generated journal draft through lifecycle approval."
+      }]
+    };
+    const ruleTestSuite = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      executedAtUtc: "2026-06-30T12:05:00Z",
+      actor: "browser-accounting-operator",
+      totalCount: 1,
+      passedCount: 1,
+      failedCount: 0,
+      results: [
+        {
+          testCaseId: "rule-test-rule-trade-buy",
+          displayName: "Saved trade buy regression",
+          passed: true,
+          dryRunResult,
+          assertionIssues: []
+        }
+      ]
+    };
+    const savedWorkspace: AccountingConfigurationWorkspace = {
+      ...workspace,
+      ruleTestCases: [
+        ...(workspace.ruleTestCases ?? []),
+        {
+          testCaseId: "rule-test-rule-trade-buy",
+          displayName: "Trade buy posting retained dry-run regression",
+          request: {
+            fundProfileId: "fund-alpha",
+            ledgerBookId: "book-primary",
+            sourceEventType: "TradeExecuted",
+            eventAmount: 250000,
+            currency: "USD",
+            effectiveDate: "2026-01-01",
+            actor: "browser-accounting-operator",
+            dimensions: {
+              fundId: "fund-alpha",
+              entityId: "entity-master",
+              strategyId: "strategy-long-only",
+              counterpartyId: "cp-001"
+            },
+            counterpartyId: "cp-001",
+            correlationId: "browser-accounting-rule-test-rule-trade-buy"
+          },
+          expectedRuleId: "rule-trade-buy",
+          expectedRuleVersion: "v3",
+          expectBalancedPosting: true,
+          expectedIssueCodes: [],
+          expectedGeneratedPostingLines: workspace.postingRules[0].generatedPostings,
+          evidenceLinks: [
+            "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+            "browser://accounting/rules-studio/test-case/rule-trade-buy"
+          ]
+        }
+      ]
+    };
+    const approvedWorkspace: AccountingConfigurationWorkspace = {
+      ...workspace,
+      postingRules: [{
+        ...workspace.postingRules[0],
+        promotionApproval: {
+          approvalId: "browser-approval-rule-trade-buy-v3",
+          requestedBy: "controller",
+          requestedAtUtc: "2026-06-15T10:00:00Z",
+          approvalState: "Approved",
+          approvedBy: "browser-accounting-operator",
+          approvedAtUtc: "2026-06-30T12:03:00Z",
+          notes: "Approved Trade buy posting v3 from Accounting Rules Studio.",
+          evidenceLinks: ["browser://accounting/rules-studio/promotion-review/rule-trade-buy/v3"]
+        },
+        versions: [{
+          ...workspace.postingRules[0].versions![0],
+          promotionApproval: {
+            approvalId: "browser-approval-rule-trade-buy-v3",
+            requestedBy: "controller",
+            requestedAtUtc: "2026-06-15T10:00:00Z",
+            approvalState: "Approved",
+            approvedBy: "browser-accounting-operator",
+            approvedAtUtc: "2026-06-30T12:03:00Z",
+            notes: "Approved Trade buy posting v3 from Accounting Rules Studio.",
+            evidenceLinks: ["browser://accounting/rules-studio/promotion-review/rule-trade-buy/v3"]
+          },
+          evidenceLinks: [
+            "evidence://rule/v3",
+            "browser://accounting/rules-studio/promotion-review/rule-trade-buy/v3"
+          ]
+        }]
+      }]
+    };
+    const productionReadiness: AccountingProductionReadiness = {
+      generatedAtUtc: "2026-06-30T12:15:00Z",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      status: "ReviewRequired",
+      score: 78,
+      externalGlProviderCount: 3,
+      certifiedExternalGlMappingProfileCount: 1,
+      externalGlLivePostingEnabled: false,
+      criticalIssueCount: 0,
+      warningIssueCount: 1,
+      ledgerBookRollout: {
+        generatedAtUtc: "2026-06-30T12:15:00Z",
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "entity-master",
+        fundStructureNodeKind: "Entity",
+        accountingBasis: "Gaap",
+        books: [],
+        issues: [],
+        isReady: true,
+        criticalIssueCount: 0,
+        warningIssueCount: 0,
+        bookCount: 1,
+        openPeriodCount: 1
+      },
+      rulesStudioSummary: workspace.rulesStudio?.summary ?? null,
+      ledgerBookWorkflows: {
+        ledgerBookId: "book-primary",
+        postingRulesLedgerBookNativeCertified: true,
+        journalLifecycleLedgerBookNativeCertified: true,
+        closeReportingLedgerBookNativeCertified: false,
+        externalGlLedgerBookNativeCertified: false,
+        reconciliationLedgerBookNativeCertified: false,
+        directLendingLedgerBookNativeCertified: false,
+        strategyLedgerReadLedgerBookNativeCertified: false,
+        evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
+        completedControlCount: 4,
+        requiredControlCount: 9,
+        hasLedgerBookScope: true,
+        hasRetainedEvidence: true,
+        hasLedgerBookScopedEvidence: true
+      },
+      dimensionalReporting: {
+        ledgerBookId: "book-primary",
+        periodReportDimensionQueriesCertified: true,
+        crossPeriodReportDimensionQueriesCertified: false,
+        journalQueryDimensionFiltersCertified: true,
+        externalExportDimensionMappingCertified: false,
+        ledgerLineDimensionsPersistedCertified: false,
+        trialBalanceDimensionFiltersCertified: false,
+        reportPackageDimensionProvenanceCertified: false,
+        evidenceReferences: ["evidence://ledger-book/book-primary/dimensions/reporting"],
+        completedControlCount: 4,
+        requiredControlCount: 9,
+        hasLedgerBookScope: true,
+        hasRetainedEvidence: true,
+        hasLedgerBookScopedEvidence: true
+      },
+      tenantAdministration: {
+        tenantId: "tenant-alpha",
+        companyId: "company-alpha",
+        tenantScopeConfigured: true,
+        adminRoleProfileConfigured: true,
+        scopedAccessPoliciesConfigured: true,
+        reportingGroupsConfigured: false,
+        accountingAdminSurfaceConfigured: false,
+        browserAccountingAdminSurfaceConfigured: false,
+        wpfAccountingAdminSurfaceConfigured: false,
+        chartAdministrationStudioConfigured: false,
+        ruleTestPromotionStudioConfigured: false,
+        closeSetupStudioConfigured: false,
+        providerMappingStudioConfigured: false,
+        tenantCompanyReportGroupSetupStudioConfigured: false,
+        auditReviewToolingConfigured: false,
+        bulkImportExportSafeguardsConfigured: false,
+        performanceValidationConfigured: false,
+        disasterRecoveryRunbookConfigured: false,
+        ledgerBookAdministrationStudioConfigured: false,
+        postingRuleAuthoringStudioConfigured: false,
+        approvalQueueStudioConfigured: false,
+        dimensionMappingStudioConfigured: false,
+        implementationSandboxConfigured: false,
+        evidenceReferences: ["evidence://tenant-admin/gap"],
+        completedControlCount: 5,
+        requiredControlCount: 23,
+        hasTenantScope: true,
+        hasCompanyScope: true,
+        hasRetainedEvidence: true
+      },
+      productionGaps: [
+        {
+          code: "multi-ledger-native-workflows",
+          label: "Configurable multi-ledger accounting",
+          status: "ReviewRequired",
+          highestSeverity: "Warning",
+          summary: "Ledger-book-native certification still needs end-to-end workflow evidence.",
+          requiredAction: "Retain ledger-book-native workflow evidence for posting, JE lifecycle, reconciliation, close, and reporting.",
+          areas: ["LedgerBooks", "PostingRules", "JournalLifecycle", "CloseReporting"],
+          blockingIssueCodes: ["workflow.evidence.missing", "journal.lifecycle.missing"],
+          routes: ["/accounting/configure", "/accounting/journal-entries"]
+        },
+        {
+          code: "enterprise-accounting-configuration-studio",
+          label: "Enterprise accounting configuration studio",
+          status: "ReviewRequired",
+          highestSeverity: "Warning",
+          summary: "Operator setup controls still need enterprise admin-studio coverage.",
+          requiredAction: "Complete retained chart, rules, approval, tenant, and dimension setup controls.",
+          areas: ["RulesStudio", "TenantAdministration"],
+          blockingIssueCodes: ["tenant-admin.operator-surface-required"],
+          routes: ["/accounting/configure", "/settings"]
+        },
+        {
+          code: "external-gl-guarded-integration",
+          label: "External GL guarded integration",
+          status: "ReviewRequired",
+          highestSeverity: "Info",
+          summary: "External GL remains import-first with guarded export artifacts.",
+          requiredAction: "Retain mapping, reconciliation, and export-package evidence while live posting remains disabled.",
+          areas: ["ExternalGl"],
+          blockingIssueCodes: ["external-gl.live-posting-disabled"],
+          routes: ["/accounting/external-gl"]
+        },
+        {
+          code: "dimensional-ledger-reporting",
+          label: "Dimensional ledger and reporting",
+          status: "ReviewRequired",
+          highestSeverity: "Warning",
+          summary: "Dimensional ledger/query/report/export controls need full certification.",
+          requiredAction: "Certify ledger-line dimensions, trial-balance filters, report provenance, and export mappings.",
+          areas: ["DimensionalAccounting", "ExternalGl", "CloseReporting"],
+          blockingIssueCodes: ["dimensions.external-gl-missing"],
+          routes: ["/accounting/ledger", "/reporting"]
+        },
+        {
+          code: "production-controls-hardening",
+          label: "Production controls and rollout hardening",
+          status: "ReviewRequired",
+          highestSeverity: "Warning",
+          summary: "Migration, performance, disaster recovery, and bulk safeguard controls need completion.",
+          requiredAction: "Retain certified migration runs, performance proof, disaster-recovery runbooks, and bulk import/export safeguards.",
+          areas: ["MigrationRollout", "TenantAdministration", "CloseReporting"],
+          blockingIssueCodes: ["migration.close-reporting-evidence-not-certified"],
+          routes: ["/accounting/configure", "/settings", "/accounting/close"]
+        }
+      ],
+      migrationRolloutPlan: [
+        {
+          kind: "LedgerBookScope",
+          code: "ledger-book-scope",
+          label: "Ledger-book migration scope",
+          certified: true,
+          status: "Ready",
+          scopeLabel: "tenant tenant-alpha | company company-alpha | fund fund-alpha | book book-primary",
+          requiredAction: "Ledger-book scope migration is retained.",
+          latestRunId: "migration-run-ledger-book-scope-book-primary",
+          latestRunStatus: "Certified",
+          migratedRecordCount: 24,
+          issueCount: 0,
+          evidenceReferences: ["evidence://migration/ledger-book-scope/book-primary"],
+          blockingIssueCodes: []
+        },
+        {
+          kind: "HistoricalJournalBackfill",
+          code: "historical-journal-backfill",
+          label: "Historical journal backfill",
+          certified: false,
+          status: "Blocked",
+          scopeLabel: "tenant tenant-alpha | company company-alpha | fund fund-alpha | book book-primary",
+          requiredAction: "Run and retain historical journal backfill evidence before certifying ledger-book-native accounting.",
+          latestRunId: null,
+          latestRunStatus: null,
+          migratedRecordCount: 0,
+          issueCount: 0,
+          evidenceReferences: [],
+          blockingIssueCodes: ["migration.historical-journal-backfill-not-certified"]
+        }
+      ],
+      components: [
+        {
+          area: "RulesStudio",
+          label: "Rules Studio",
+          status: "Ready",
+          score: 92,
+          summary: "Rule versions, dry-run regression cases, and promotion approvals are retained.",
+          issues: [],
+          evidenceReferences: ["evidence://rule/v3"],
+          route: "/accounting/configure"
+        },
+        {
+          area: "TenantAdministration",
+          label: "Tenant administration",
+          status: "ReviewRequired",
+          score: 50,
+          summary: "Tenant setup operator workflow still needs completion.",
+          issues: [
+            {
+              code: "tenant-admin.operator-surface-required",
+              area: "TenantAdministration",
+              severity: "Warning",
+              message: "Production rollout still needs tenant setup controls.",
+              suggestedAction: "Bind admin setup screens to this shared readiness contract.",
+              evidenceReferences: ["evidence://tenant-admin/gap"]
+            }
+          ],
+          evidenceReferences: ["evidence://tenant-admin/gap"],
+          route: "/settings"
+        }
+      ],
+      issues: [
+        {
+          code: "tenant-admin.operator-surface-required",
+          area: "TenantAdministration",
+          severity: "Warning",
+          message: "Production rollout still needs tenant setup controls.",
+          suggestedAction: "Bind admin setup screens to this shared readiness contract.",
+          evidenceReferences: ["evidence://tenant-admin/gap"]
+        }
+      ]
+    };
+    vi.mocked(api.getAccountingConfiguration).mockResolvedValueOnce(workspace);
+    vi.mocked(api.assessAccountingProductionReadiness).mockResolvedValueOnce(productionReadiness);
+    vi.mocked(api.getAccountingProductionCertificationProfile).mockResolvedValueOnce({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      postingRulesLedgerBookNativeCertified: true,
+      journalLifecycleLedgerBookNativeCertified: true,
+      closeReportingLedgerBookNativeCertified: false,
+      externalGlLedgerBookNativeCertified: false,
+      reconciliationLedgerBookNativeCertified: false,
+      directLendingLedgerBookNativeCertified: false,
+      strategyLedgerReadLedgerBookNativeCertified: false,
+      periodReportDimensionQueriesCertified: true,
+      crossPeriodReportDimensionQueriesCertified: false,
+      journalQueryDimensionFiltersCertified: true,
+      externalExportDimensionMappingCertified: false,
+      ledgerLineDimensionsPersistedCertified: false,
+      trialBalanceDimensionFiltersCertified: false,
+      reportPackageDimensionProvenanceCertified: false,
+      updatedAtUtc: "2026-06-30T11:50:00Z",
+      updatedBy: "controller",
+      evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
+      correlationId: "production-certification-existing"
+    });
+    vi.mocked(api.getAccountingTenantAdministrationProfile).mockResolvedValueOnce({
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      tenantScopeConfigured: true,
+      adminRoleProfileConfigured: true,
+      scopedAccessPoliciesConfigured: true,
+      reportingGroupsConfigured: false,
+      accountingAdminSurfaceConfigured: false,
+      browserAccountingAdminSurfaceConfigured: false,
+      wpfAccountingAdminSurfaceConfigured: false,
+      chartAdministrationStudioConfigured: false,
+      ruleTestPromotionStudioConfigured: false,
+      closeSetupStudioConfigured: false,
+      providerMappingStudioConfigured: false,
+      tenantCompanyReportGroupSetupStudioConfigured: false,
+      auditReviewToolingConfigured: false,
+      bulkImportExportSafeguardsConfigured: false,
+      performanceValidationConfigured: false,
+      disasterRecoveryRunbookConfigured: false,
+      ledgerBookAdministrationStudioConfigured: false,
+      postingRuleAuthoringStudioConfigured: false,
+      approvalQueueStudioConfigured: false,
+      dimensionMappingStudioConfigured: false,
+      implementationSandboxConfigured: false,
+      updatedAtUtc: "2026-06-30T11:55:00Z",
+      updatedBy: "controller",
+      evidenceReferences: ["evidence://tenant-admin/setup"],
+      correlationId: "tenant-admin-existing"
+    });
+    vi.mocked(api.getAccountingMigrationRunArtifacts).mockResolvedValueOnce({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      artifacts: [
+        {
+          runId: "migration-run-dimensional-backfill-book-primary",
+          kind: "DimensionalBackfill",
+          status: "Certified",
+          startedAtUtc: "2026-01-15T00:00:00Z",
+          completedAtUtc: "2026-01-15T00:12:00Z",
+          actor: "controller",
+          migratedRecordCount: 128,
+          issueCount: 0,
+          evidenceReferences: ["evidence://migration/dimensions/book-primary"],
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "book-primary",
+          summary: "Dimensional backfill retained for primary book.",
+          dimensions: {
+            fundId: "fund-alpha",
+            bookId: "book-primary",
+            entityId: "entity-master",
+            costCenterId: "fund-accounting",
+            counterpartyId: "administrator",
+            externalGlDimensions: {
+              department: "fund-accounting"
+            }
+          }
+        }
+      ]
+    });
+    vi.mocked(api.approveAccountingConfigurationPostingRulePromotion).mockResolvedValueOnce(approvedWorkspace);
+    vi.mocked(api.dryRunAccountingConfigurationPostingRule).mockResolvedValueOnce(dryRunResult);
+    vi.mocked(api.buildAccountingPostingRuleJournalCandidate).mockResolvedValueOnce(journalCandidateResult);
+    vi.mocked(api.upsertAccountingConfigurationPostingRuleTestCase).mockResolvedValueOnce(savedWorkspace);
+    vi.mocked(api.executeAccountingConfigurationPostingRuleTests).mockResolvedValueOnce(ruleTestSuite);
+
+    await renderAccountingScreen(data, "/accounting/configure");
+
+    expect(await screen.findByText("Accounting Rules Studio")).toBeInTheDocument();
+    expect(screen.getByText("Ledger book administration")).toBeInTheDocument();
+    expect(screen.getByText("1 ledger book registered | selected Primary book.")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting ledger book catalog" })).toBeInTheDocument();
+    expect(screen.getByText("policy-gaap/2026.06")).toBeInTheDocument();
+    expect(screen.getByText("fund-alpha / Entity entity-master")).toBeInTheDocument();
+    expect(screen.getByText("Accounting production readiness")).toBeInTheDocument();
+    expect(screen.getByText("78/100")).toBeInTheDocument();
+    expect(screen.getByText("Tenant administration")).toBeInTheDocument();
+    expect(screen.getByText("Dimensions")).toBeInTheDocument();
+    expect(screen.getByText("4/9 ledger/query/report/export dimension controls | ledger book book-primary")).toBeInTheDocument();
+    expect(screen.getByText("1 retained dimensional evidence reference")).toBeInTheDocument();
+    expect(screen.getByText("5/23 admin controls | tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
+    expect(screen.getByText("1 retained setup evidence reference")).toBeInTheDocument();
+    const productionGapChecklist = screen.getByRole("region", { name: "Accounting production gap checklist" });
+    expect(within(productionGapChecklist).getByText("Configurable multi-ledger accounting")).toBeInTheDocument();
+    expect(within(productionGapChecklist).getByText("Enterprise accounting configuration studio")).toBeInTheDocument();
+    expect(within(productionGapChecklist).getByText("External GL guarded integration")).toBeInTheDocument();
+    expect(within(productionGapChecklist).getByText("Dimensional ledger and reporting")).toBeInTheDocument();
+    expect(within(productionGapChecklist).getByText("Production controls and rollout hardening")).toBeInTheDocument();
+    expect(within(productionGapChecklist).getByText("multi-ledger-native-workflows")).toBeInTheDocument();
+    expect(within(productionGapChecklist).getByText("workflow.evidence.missing, journal.lifecycle.missing")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
+    expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Operator surface").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Chart setup").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rule tests").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Provider mapping").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Book admin").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Rule authoring").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Approvals").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Dimension maps").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Sandbox proof").length).toBeGreaterThan(0);
+    expect(screen.getByRole("region", { name: "Accounting migration rollout plan" })).toBeInTheDocument();
+    expect(screen.getByText("Ledger-book migration scope")).toBeInTheDocument();
+    expect(screen.getByText("Historical journal backfill")).toBeInTheDocument();
+    expect(screen.getByText(/migration-run-ledger-book-scope-book-primary/)).toBeInTheDocument();
+    expect(screen.getByText("migration.historical-journal-backfill-not-certified")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting production certification profile editor" })).toBeInTheDocument();
+    expect(screen.getByText("Tenant context | company context | fund fund-alpha | ledger book book-primary")).toBeInTheDocument();
+    expect(screen.getByText("Rules by book")).toBeInTheDocument();
+    expect(screen.getByText("Cross-period dimensions")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("evidence://ledger-book/book-primary/workflow-certification")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting tenant administration setup editor" })).toBeInTheDocument();
+    expect(screen.getByText("Tenant tenant-alpha | company company-alpha")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("evidence://tenant-admin/setup")).toBeInTheDocument();
+    expect(screen.getByText("1/1 retained artifact certified")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Retained accounting migration run artifacts" })).toBeInTheDocument();
+    expect(screen.getByText("Dimensional backfill")).toBeInTheDocument();
+    expect(screen.getByText("Dimensional backfill retained for primary book.")).toBeInTheDocument();
+    expect(screen.getByText(/Dimensions Fund: fund-alpha, Entity: entity-master/)).toBeInTheDocument();
+    expect(api.assessAccountingProductionReadiness).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      requiredLedgerBookScopes: null
+    }));
+    expect(api.getAccountingMigrationRunArtifacts).toHaveBeenCalledWith({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary"
+    });
+    expect(screen.getAllByText("Trade buy posting").length).toBeGreaterThan(0);
+    expect(screen.getByText("2026-01-01 -> 2026-12-31")).toBeInTheDocument();
+    expect(screen.getByText("Fund: fund-alpha")).toBeInTheDocument();
+    expect(screen.getByText(/event\.kind Equals TradeExecuted/)).toBeInTheDocument();
+    expect(screen.getByText(/group-trade-source: Any \(required\)/)).toBeInTheDocument();
+    expect(screen.getByText(/event\.source Equals Broker/)).toBeInTheDocument();
+    expect(screen.getByText(/formula-source: SourceAmount/)).toBeInTheDocument();
+    expect(screen.getByText(/alloc-strategy: StrategyWeight weight 1 via formula-source/)).toBeInTheDocument();
+    expect(screen.getByText(/Debit 1200\.Investments/)).toBeInTheDocument();
+    expect(screen.getByText("Promotion approval required")).toBeInTheDocument();
+    const savedCases = screen.getByRole("region", { name: "Saved accounting rule test cases" });
+    expect(within(savedCases).getByText("1 saved")).toBeInTheDocument();
+    expect(within(savedCases).getByText("Saved trade buy regression")).toBeInTheDocument();
+    expect(within(savedCases).getByText("Expect rule-trade-buy version v3, balanced, no expected issue codes, 2 expected generated posting lines.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Approve rule promotion" }));
+    await screen.findByText("Approved promotion for Trade buy posting.");
+    expect(screen.getByText("Approved by browser-accounting-operator")).toBeInTheDocument();
+    expect(api.approveAccountingConfigurationPostingRulePromotion).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ruleId: "rule-trade-buy",
+      ruleVersion: "v3",
+      actor: "browser-accounting-operator",
+      approvalId: "browser-approval-rule-trade-buy-v3",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/rules-studio/promotion-review/rule-trade-buy/v3"
+      ])
+    }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Dry-run selected rule" }));
+
+    const preview = await screen.findByRole("region", { name: "Accounting rule dry-run preview" });
+    expect(within(preview).getByText("TradeExecuted dry run")).toBeInTheDocument();
+    expect(within(preview).getByText("Balanced $250,000 USD")).toBeInTheDocument();
+    expect(within(preview).getByText(/Trade buy posting matched at priority 10/)).toBeInTheDocument();
+    expect(within(preview).getAllByText(/Credit 1000\.Cash/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Apply event predicate" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Raise priority" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Apply dry-run scope" })).toBeInTheDocument();
+    expect(api.dryRunAccountingConfigurationPostingRule).toHaveBeenCalledWith(expect.objectContaining({
+      sourceEventType: "TradeExecuted",
+      counterpartyId: "cp-001",
+      dimensions: expect.objectContaining({
+        fundId: "fund-alpha"
+      })
+    }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Build journal candidate" }));
+    const candidate = await screen.findByRole("region", { name: "Accounting rule journal draft candidate" });
+    expect(within(candidate).getByText("Governed journal draft candidate")).toBeInTheDocument();
+    expect(within(candidate).getByText("Selected rule rule-trade-buy version v3")).toBeInTheDocument();
+    expect(within(candidate).getByText("Balanced $250,000 / $250,000")).toBeInTheDocument();
+    expect(within(candidate).getByText(/Draft command 00000000-0000-4000-8000-000000000101 is pending and remains lifecycle-gated/)).toBeInTheDocument();
+    expect(within(candidate).getByText(/Approval Pending; post-without-approval blocked/)).toBeInTheDocument();
+    expect(within(candidate).getByText(/ApprovalRequired: Posting command remains pending until journal lifecycle approval/)).toBeInTheDocument();
+    expect(api.buildAccountingPostingRuleJournalCandidate).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      sourceEventType: "TradeExecuted",
+      eventAmount: 250000,
+      currency: "USD",
+      effectiveDate: "2026-01-01",
+      actor: "browser-accounting-operator",
+      accountingBasis: "Gaap",
+      policyId: "policy-gaap",
+      treatmentKind: "General",
+      postingKind: "Originating",
+      dimensions: expect.objectContaining({
+        fundId: "fund-alpha",
+        entityId: "entity-master",
+        strategyId: "strategy-long-only",
+        counterpartyId: "cp-001"
+      }),
+      counterpartyId: "cp-001",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/rules-studio/dry-run/rule-trade-buy"
+      ])
+    }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Save dry-run as test case" }));
+    await screen.findByText("Trade buy posting retained dry-run regression");
+    expect(api.upsertAccountingConfigurationPostingRuleTestCase).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      testCase: expect.objectContaining({
+        testCaseId: "rule-test-rule-trade-buy",
+        expectedRuleId: "rule-trade-buy",
+        expectedRuleVersion: "v3",
+        expectBalancedPosting: true,
+        expectedGeneratedPostingLines: expect.arrayContaining([
+          expect.objectContaining({
+            lineId: "generated-investment",
+            accountPath: "1200.Investments",
+            amount: 250000,
+            dimensions: expect.objectContaining({
+              fundId: "fund-alpha",
+              instrumentId: "AAPL"
+            })
+          }),
+          expect.objectContaining({
+            lineId: "generated-cash",
+            accountPath: "1000.Cash",
+            amount: 250000
+          })
+        ]),
+        evidenceLinks: expect.arrayContaining([
+          "browser://accounting/rules-studio/dry-run/rule-trade-buy",
+          "browser://accounting/rules-studio/test-case/rule-trade-buy"
+        ])
+      }),
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/rules-studio/dry-run/rule-trade-buy"
+      ])
+    }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Run rule tests" }));
+    const ruleTests = await screen.findByRole("region", { name: "Accounting rule test cases" });
+    expect(within(ruleTests).getByText("Accounting rule regression tests")).toBeInTheDocument();
+    expect(within(ruleTests).getByText("1/1 passed")).toBeInTheDocument();
+    expect(within(ruleTests).getByText(/Pass: Saved trade buy regression selected rule-trade-buy, balanced/)).toBeInTheDocument();
+    expect(api.executeAccountingConfigurationPostingRuleTests).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      actor: "browser-accounting-operator",
+      testCases: null
+    }));
+  });
+
+  it("renders external GL evidence package posture from the reconciliation response", async () => {
+    const provider: AccountingSystemProvider = {
+      providerId: "quickbooks-fixture",
+      displayName: "QuickBooks Fixture",
+      state: "Available",
+      requiresCredentials: false,
+      supportsChartOfAccounts: true,
+      supportsJournalEntries: true,
+      supportsTrialBalance: true,
+      supportsPosting: false,
+      statusLabel: "Ready for read-only import",
+      statusDetail: "Fixture provider ready.",
+      evidenceKinds: ["QuickBooksTrialBalance"]
+    };
+    const xeroProvider: AccountingSystemProvider = {
+      providerId: "xero",
+      displayName: "Xero",
+      state: "Planned",
+      requiresCredentials: true,
+      supportsChartOfAccounts: true,
+      supportsJournalEntries: true,
+      supportsTrialBalance: true,
+      supportsPosting: false,
+      statusLabel: "Import mapping planned",
+      statusDetail: "Xero remains import-first until mapping certification is complete.",
+      evidenceKinds: ["XeroChartOfAccounts", "XeroTrialBalance"]
+    };
+    const netSuiteProvider: AccountingSystemProvider = {
+      providerId: "netsuite",
+      displayName: "NetSuite",
+      state: "Planned",
+      requiresCredentials: true,
+      supportsChartOfAccounts: true,
+      supportsJournalEntries: true,
+      supportsTrialBalance: true,
+      supportsPosting: false,
+      statusLabel: "Import mapping planned",
+      statusDetail: "NetSuite remains import-first until mapping certification is complete.",
+      evidenceKinds: ["NetSuiteChartOfAccounts", "NetSuiteTrialBalance"]
+    };
+    const importDetail: AccountingSystemImportDetail = {
+      summary: {
+        importId: "qbo-fixture-20260131",
+        providerId: "quickbooks-fixture",
+        providerDisplayName: "QuickBooks Fixture",
+        fundProfileId: "default-fund",
+        ledgerBookId: null,
+        state: "Imported",
+        periodStart: "2026-01-01",
+        periodEnd: "2026-01-31",
+        importedAtUtc: "2026-02-01T00:00:00Z",
+        chartAccountCount: 1,
+        journalEntryCount: 1,
+        trialBalanceLineCount: 1,
+        evidenceReferences: ["quickbooks-fixture:trial-balance"],
+        warnings: []
+      },
+      chartAccounts: [],
+      journalEntries: [],
+      trialBalance: []
+    };
+    const reconciliation: AccountingSystemReconciliationSummary = {
+      reconciliationId: "gl-recon-qbo-fixture-20260131",
+      importId: "qbo-fixture-20260131",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "default-fund",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+      generatedAtUtc: "2026-02-01T00:05:00Z",
+      matchedCount: 0,
+      breakCount: 1,
+      totalExternalDebits: 100,
+      totalExternalCredits: 0,
+      totalMeridianDebits: 0,
+      totalMeridianCredits: 0,
+      postingEnabled: false,
+      postingDisabledReason: "Posting/export remains disabled.",
+      evidenceReferences: ["quickbooks-fixture:trial-balance"],
+      evidencePackages: [
+        {
+          packageId: "gl-external-evidence:qbo-fixture-20260131",
+          label: "External GL import evidence",
+          status: "Ready",
+          evidenceReferenceCount: 1,
+          evidenceReferences: ["quickbooks-fixture:trial-balance"],
+          requiredActions: []
+        },
+        {
+          packageId: "gl-meridian-ledger-evidence:qbo-fixture-20260131",
+          label: "Meridian ledger evidence",
+          status: "Missing",
+          evidenceReferenceCount: 0,
+          evidenceReferences: [],
+          requiredActions: ["Load Meridian ledger journal evidence for the fund, book, and period before close approval."]
+        },
+        {
+          packageId: "gl-reconciliation-tie-out:qbo-fixture-20260131",
+          label: "GL reconciliation tie-out",
+          status: "ReviewRequired",
+          evidenceReferenceCount: 1,
+          evidenceReferences: ["quickbooks-fixture:trial-balance"],
+          requiredActions: ["Resolve GL reconciliation breaks before approving close evidence."]
+        }
+      ],
+      rows: [
+        {
+          rowId: "gl-recon-cash",
+          accountCode: "Assets:Cash",
+          accountName: "Cash",
+          currency: "USD",
+          status: "MissingMeridian",
+          externalDebit: 100,
+          externalCredit: 0,
+          meridianDebit: 0,
+          meridianCredit: 0,
+          variance: 100,
+          detail: "External GL evidence is absent from Meridian-owned ledger truth.",
+          evidenceRef: "quickbooks-fixture:trial-balance:cash",
+          externalEvidenceReferences: ["quickbooks-fixture:trial-balance:cash"],
+          meridianEvidenceReferences: [],
+          evidenceReferences: ["quickbooks-fixture:trial-balance:cash"]
+        }
+      ]
+    };
+    const mappingProfiles: ExternalGlMappingProfile[] = [
+      {
+        profileId: "qbo-default-fund-certified",
+        providerId: "quickbooks-fixture",
+        displayName: "Default fund QBO mapping",
+        updatedAtUtc: "2026-02-01T00:08:00Z",
+        certificationState: "Certified",
+        accountMappings: {
+          "Assets:Cash": "qbo-1000"
+        },
+        dimensionMappings: [
+          {
+            profileId: "qbo-default-fund-dimensions",
+            displayName: "Default fund dimensions",
+            providerId: "quickbooks-fixture",
+            meridianDimensions: {
+              fundId: "default-fund",
+              externalGlDimensions: {}
+            },
+            externalDimensions: {
+              fundId: "Class:DefaultFund",
+              externalGlDimensions: {
+                Class: "DefaultFund"
+              }
+            },
+            certificationState: "Certified",
+            validationIssues: []
+          }
+        ]
+      }
+    ];
+    const exportPackage: ExternalGlExportPackage = {
+      exportPackageId: "external-gl-export-quickbooks-fixture-default-fund-20260131",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "default-fund",
+      ledgerBookId: null,
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+      createdAtUtc: "2026-02-01T00:10:00Z",
+      createdBy: "browser-accounting-operator",
+      postingEnabled: false,
+      postingDisabledReason: "Guarded export package only; live external GL posting remains disabled.",
+      journalEntryIds: [],
+      evidenceLinks: [
+        "external-gl-mapping-profile:qbo-default-fund-certified",
+        "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
+        "quickbooks-fixture:trial-balance"
+      ],
+      certification: {
+        certificationId: "external-gl-export-cert-qbo-fixture",
+        state: "ReadyForReview",
+        actor: "browser-accounting-operator",
+        recordedAtUtc: "2026-02-01T00:10:00Z",
+        summary: "Export package is retained as a guarded review artifact and ready for certification.",
+        evidenceLinks: ["external-gl-reconciliation:gl-recon-qbo-fixture-20260131"]
+      },
+      validationIssues: [
+        {
+          code: "LiveExternalPostingDisabled",
+          severity: "Info",
+          message: "Live external GL posting is disabled; this operation only creates a guarded export artifact.",
+          targetId: "quickbooks-fixture",
+          suggestedAction: "Review and reconcile the package before external GL handling."
+        }
+      ]
+    };
+    const certifiedExportPackage: ExternalGlExportPackage = {
+      ...exportPackage,
+      certification: {
+        certificationId: "external-gl-export-cert-qbo-fixture",
+        state: "Certified",
+        actor: "browser-accounting-controller",
+        recordedAtUtc: "2026-02-01T00:15:00Z",
+        summary: "Controller certified the guarded external GL export package.",
+        evidenceLinks: [
+          ...exportPackage.evidenceLinks,
+          "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
+          `external-gl-export-certification:${exportPackage.exportPackageId}`
+        ]
+      }
+    };
+    const retainedHistoryPackage: ExternalGlExportPackage = {
+      ...exportPackage,
+      exportPackageId: "external-gl-export-quickbooks-fixture-default-fund-20251231",
+      periodStart: "2025-12-01",
+      periodEnd: "2025-12-31",
+      createdAtUtc: "2026-01-02T00:10:00Z",
+      certification: {
+        certificationId: "external-gl-export-cert-qbo-fixture-20251231",
+        state: "Certified",
+        actor: "browser-accounting-controller",
+        recordedAtUtc: "2026-01-02T00:15:00Z",
+        summary: "Prior retained guarded external GL export package was certified.",
+        evidenceLinks: [
+          "external-gl-reconciliation:gl-recon-qbo-fixture-20251231",
+          "external-gl-export-certification:external-gl-export-quickbooks-fixture-default-fund-20251231"
+        ]
+      },
+      validationIssues: []
+    };
+    const exportManifest: ExternalGlExportPackageManifest = {
+      exportPackageId: exportPackage.exportPackageId,
+      providerId: exportPackage.providerId,
+      fundProfileId: exportPackage.fundProfileId,
+      ledgerBookId: exportPackage.ledgerBookId,
+      periodStart: exportPackage.periodStart,
+      periodEnd: exportPackage.periodEnd,
+      certificationState: "ReadyForReview",
+      generatedAtUtc: "2026-02-01T00:10:00Z",
+      contentHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      contentType: "application/json",
+      fileName: "external-gl-export-quickbooks-fixture-default-fund-20260131.external-gl-export.json",
+      externalPostingAllowed: false,
+      postingDisabledReason: exportPackage.postingDisabledReason,
+      payload: "{\"exportPackageId\":\"external-gl-export-quickbooks-fixture-default-fund-20260131\"}",
+      generatedLines: [],
+      evidenceLinks: exportPackage.evidenceLinks,
+      validationIssues: exportPackage.validationIssues
+    };
+    const certifiedExportManifest: ExternalGlExportPackageManifest = {
+      ...exportManifest,
+      certificationState: "Certified",
+      generatedAtUtc: "2026-02-01T00:15:00Z",
+      contentHash: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+    };
+
+    vi.mocked(api.getAccountingSystemProviders).mockResolvedValueOnce([provider, xeroProvider, netSuiteProvider]);
+    vi.mocked(api.getLatestAccountingSystemImport).mockResolvedValueOnce(importDetail);
+    vi.mocked(api.getLatestAccountingSystemReconciliation).mockResolvedValueOnce(reconciliation);
+    vi.mocked(api.getAccountingSystemMappingProfiles).mockResolvedValueOnce(mappingProfiles);
+    vi.mocked(api.listAccountingSystemExportPackages).mockResolvedValueOnce([retainedHistoryPackage]);
+    vi.mocked(api.createAccountingSystemExportPackage).mockResolvedValueOnce(exportPackage);
+    vi.mocked(api.getAccountingSystemExportPackageManifest)
+      .mockResolvedValueOnce(exportManifest)
+      .mockResolvedValueOnce(certifiedExportManifest);
+    vi.mocked(api.certifyAccountingSystemExportPackage).mockResolvedValueOnce(certifiedExportPackage);
+
+    await renderAccountingScreen(data, "/accounting");
+
+    const providerPosture = await screen.findByLabelText("External GL provider import posture");
+    expect(providerPosture).toHaveTextContent("QuickBooks Fixture");
+    expect(providerPosture).toHaveTextContent("Mapping profile retained");
+    expect(providerPosture).toHaveTextContent("Xero");
+    expect(providerPosture).toHaveTextContent("NetSuite");
+    expect(providerPosture).toHaveTextContent("Mapping profile needed");
+    expect(providerPosture).toHaveTextContent("Live posting disabled");
+
+    const profiles = await screen.findByLabelText("External GL mapping profiles");
+    expect(profiles).toHaveTextContent("Default fund QBO mapping");
+    expect(profiles).toHaveTextContent("Certified");
+    expect(profiles).toHaveTextContent("qbo-default-fund-certified");
+
+    const packages = await screen.findByLabelText("External GL evidence packages");
+    expect(packages).toHaveTextContent("External GL import evidence");
+    expect(packages).toHaveTextContent("Ready");
+    expect(packages).toHaveTextContent("Meridian ledger evidence");
+    expect(packages).toHaveTextContent("Missing");
+    expect(packages).toHaveTextContent("Load Meridian ledger journal evidence");
+    expect(packages).toHaveTextContent("GL reconciliation tie-out");
+    expect(packages).toHaveTextContent("Resolve GL reconciliation breaks before approving close evidence.");
+
+    const safeguards = await screen.findByLabelText("External GL export safeguards");
+    expect(safeguards).toHaveTextContent("Balanced reconciliation required");
+    expect(safeguards).toHaveTextContent("1 reconciliation break(s) must clear before certification.");
+    expect(safeguards).toHaveTextContent("Certified mapping profile");
+    expect(safeguards).toHaveTextContent("Default fund QBO mapping maps 1 account(s) and 1 dimension set(s).");
+    expect(safeguards).toHaveTextContent("Controlled export manifest");
+    expect(safeguards).toHaveTextContent("Not loaded");
+    expect(safeguards).toHaveTextContent("Live external posting gate");
+    expect(safeguards).toHaveTextContent("Disabled");
+    expect(api.listAccountingSystemExportPackages).toHaveBeenCalledWith(expect.objectContaining({
+      providerId: "quickbooks-fixture",
+      fundProfileId: "default-fund",
+      ledgerBookId: null
+    }));
+
+    const packageHistory = await screen.findByLabelText("External GL export package history");
+    expect(packageHistory).toHaveTextContent("1 retained package");
+    expect(packageHistory).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20251231");
+    expect(packageHistory).toHaveTextContent("Certified");
+    expect(packageHistory).toHaveTextContent("Posting");
+    expect(packageHistory).toHaveTextContent("Disabled");
+
+    await userEvent.click(screen.getByRole("button", { name: "Create export package" }));
+
+    const retainedPackage = await screen.findByLabelText("External GL export package");
+    expect(retainedPackage).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20260131");
+    expect(retainedPackage).toHaveTextContent("Posting disabled");
+    expect(retainedPackage).toHaveTextContent("ReadyForReview");
+    expect(retainedPackage).toHaveTextContent("Validation issues");
+    expect(retainedPackage).toHaveTextContent("Manifest hash");
+    expect(retainedPackage).toHaveTextContent("0123456789ab");
+    expect(retainedPackage).toHaveTextContent("External posting");
+    expect(retainedPackage).toHaveTextContent("Disabled");
+    expect(safeguards).toHaveTextContent("0123456789ab");
+    expect(safeguards).toHaveTextContent("0 generated mapped export line(s) retained for review.");
+    expect(safeguards).toHaveTextContent("1 package validation issue(s) retained; none are critical.");
+    expect(packageHistory).toHaveTextContent("2 retained packages");
+    expect(packageHistory).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20260131");
+    expect(api.createAccountingSystemExportPackage).toHaveBeenCalledWith(expect.objectContaining({
+      actor: "browser-accounting-operator",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "default-fund",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+      mappingProfileId: "qbo-default-fund-certified",
+      requireBalancedReconciliation: true,
+      evidenceLinks: expect.arrayContaining([
+        "external-gl-mapping-profile:qbo-default-fund-certified",
+        "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
+        "quickbooks-fixture:trial-balance"
+      ])
+    }));
+    expect(api.getAccountingSystemExportPackageManifest).toHaveBeenCalledWith(exportPackage.exportPackageId);
+
+    await userEvent.click(screen.getByRole("button", { name: "Certify export" }));
+
+    await screen.findByText("Certified external GL export package external-gl-export-quickbooks-fixture-default-fund-20260131.");
+    expect(retainedPackage).toHaveTextContent("Certified");
+    expect(retainedPackage).toHaveTextContent("Posting disabled");
+    expect(retainedPackage).toHaveTextContent("abcdef012345");
+    expect(retainedPackage).toHaveTextContent("External posting");
+    expect(retainedPackage).toHaveTextContent("Disabled");
+    expect(api.certifyAccountingSystemExportPackage).toHaveBeenCalledWith(expect.objectContaining({
+      exportPackageId: exportPackage.exportPackageId,
+      actor: "browser-accounting-controller",
+      notes: "Certified external GL export package external-gl-export-quickbooks-fixture-default-fund-20260131.",
+      evidenceLinks: expect.arrayContaining([
+        "external-gl-mapping-profile:qbo-default-fund-certified",
+        "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
+        `external-gl-export-certification:${exportPackage.exportPackageId}`
+      ]),
+      correlationId: `browser-external-gl-certify:${exportPackage.exportPackageId}`
+    }));
+    expect(api.getAccountingSystemExportPackageManifest).toHaveBeenCalledTimes(2);
+    expect(api.getAccountingSystemExportPackageManifest).toHaveBeenNthCalledWith(2, certifiedExportPackage.exportPackageId);
+  });
+
+  it("requests close late adjustments through the shared close-management endpoint", async () => {
+    const user = userEvent.setup();
+    const closePlan: ClosePeriodPlan = {
+      closePlanId: "close-plan-workflow-approval-1",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha",
+      periodId: "2026-05",
+      periodStart: "2026-05-01",
+      periodEnd: "2026-05-31",
+      closeDueDate: "2026-06-05",
+      isPeriodLocked: false,
+      tasks: [],
+      lateAdjustments: [],
+      materialityPolicy: {
+        policyId: "materiality-policy-fund-alpha",
+        amountThreshold: 1000,
+        percentThreshold: 1,
+        currency: "USD",
+        reviewRole: "Controller",
+        requiresLateAdjustmentApproval: true
+      },
+      validationIssues: [],
+      closeCalendar: []
+    };
+    const lateAdjustmentPlan: ClosePeriodPlan = {
+      ...closePlan,
+      lateAdjustments: [{
+        requestId: "late-adjustment-manual-je-1",
+        journalEntryId: "manual-je-1",
+        requestedBy: "browser-accounting-controller",
+        requestedAtUtc: "2026-06-02T12:00:00Z",
+        amount: 1250,
+        currency: "USD",
+        reason: "Accrual invoice received after controller review.",
+        approvalState: "Submitted",
+        materialityPolicy: closePlan.materialityPolicy,
+        evidenceLinks: [
+          "browser://accounting/close/late-adjustment/workflow-approval-1/manual-je-1"
+        ]
+      }]
+    };
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
+    vi.mocked(api.getLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
+    vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValueOnce([]);
+    vi.mocked(api.createLedgerCloseManagementLateAdjustment).mockResolvedValueOnce(lateAdjustmentPlan);
+
+    await renderAccountingScreen(data, "/accounting");
+
+    const cockpit = await screen.findByRole("region", { name: "Accounting close and report package certification cockpit" });
+    expect(await within(cockpit).findByText("$1,000 USD or 1% review by Controller")).toBeInTheDocument();
+    fireEvent.change(within(cockpit).getByLabelText("Journal entry"), { target: { value: "manual-je-1" } });
+    fireEvent.change(within(cockpit).getByLabelText("Amount"), { target: { value: "1250" } });
+    fireEvent.change(within(cockpit).getByLabelText("Reason"), { target: { value: "Accrual invoice received after controller review." } });
+    await waitFor(() => expect(within(cockpit).getByRole("button", { name: "Request late adjustment" })).toBeEnabled());
+    await user.click(within(cockpit).getByRole("button", { name: "Request late adjustment" }));
+
+    expect(await screen.findByText("Late adjustment requested for manual-je-1.")).toBeInTheDocument();
+    expect(within(cockpit).getByText("Accrual invoice received after controller review.")).toBeInTheDocument();
+    expect(api.createLedgerCloseManagementLateAdjustment).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-approval-1",
+      journalEntryId: "manual-je-1",
+      amount: 1250,
+      currency: "USD",
+      reason: "Accrual invoice received after controller review.",
+      requestedBy: "browser-accounting-controller",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/late-adjustment/workflow-approval-1/manual-je-1",
+        "browser://accounting/close/materiality-review/workflow-approval-1"
+      ])
+    }));
+  });
+
+  it("scopes the close command center workflow lookup to route fund and period", async () => {
+    const unrelatedWorkflowSummary: OperationsContinuityWorkflowSummary = {
+      ...approvalWorkflowSummary,
+      workflowId: "workflow-unrelated-newer",
+      fundAccountId: "fund-beta",
+      periodId: "2026-06",
+      updatedAtUtc: "2026-06-15T12:00:00Z"
+    };
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([
+      unrelatedWorkflowSummary,
+      approvalWorkflowSummary
+    ]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
+
+    await renderAccountingScreen(data, "/accounting?fundAccountId=fund-alpha&periodId=2026-05");
+
+    expect(api.getOperationsContinuityWorkflows).toHaveBeenCalledWith({
+      fundAccountId: "fund-alpha",
+      ledgerBookId: undefined,
+      periodId: "2026-05",
+      status: undefined
+    });
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+  });
+
+  it("scopes the close command center workflow lookup to route ledger book", async () => {
+    const otherBookWorkflowSummary: OperationsContinuityWorkflowSummary = {
+      ...approvalWorkflowSummary,
+      workflowId: "workflow-other-book-newer",
+      ledgerBookId: "book-tax",
+      updatedAtUtc: "2026-06-15T12:00:00Z"
+    };
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([
+      otherBookWorkflowSummary,
+      approvalWorkflowSummary
+    ]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
+
+    await renderAccountingScreen(data, "/accounting?fundAccountId=fund-alpha&ledgerBookId=book-alpha&periodId=2026-05");
+
+    expect(api.getOperationsContinuityWorkflows).toHaveBeenCalledWith({
+      fundAccountId: "fund-alpha",
+      ledgerBookId: "book-alpha",
+      periodId: "2026-05",
+      status: undefined
+    });
+    expect(api.getOperationsContinuityWorkflow).toHaveBeenCalledWith("workflow-approval-1");
+  });
+
   it("renders reconciliation, cash-flow, and reporting summaries", async () => {
     await renderAccountingScreen();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Accounting");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Journal entries and ledger detail");
+    expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Controller review");
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("All accounts");
+    expect(screen.getByLabelText("Ledger Explorer proof actions")).toHaveTextContent("Evidence packet");
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
+    const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
+    expect(within(workflow).getByRole("link", { name: "Review ledger: Ledger authority, current Accounting workstream" })).toHaveAttribute(
+      "href",
+      "/accounting/ledger"
+    );
+    expect(within(workflow).getByRole("link", { name: "Review ledger: Ledger authority, current Accounting workstream" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
+      "href",
+      "/accounting/journal-entries"
+    );
+    expect(within(workflow).getByRole("link", { name: "Open retained accounting record evidence" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence"
+    );
     expect(screen.getByRole("link", { name: "Open Accounting reconciliation workstream" })).toHaveAttribute(
       "href",
       "/accounting/reconciliation"
@@ -661,23 +2896,604 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Cash-flow evidence for Ledger context at /accounting" })).toBeInTheDocument();
     expect(screen.getByLabelText("Cash-flow status Variance review. Net variance $500.")).toHaveTextContent("Variance review");
     expect(screen.getByLabelText("Runs with variance: 1")).toHaveTextContent("1");
-    expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
+    expect(screen.getAllByText("Paper Index Mean Reversion").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
 
-    await renderAccountingScreen(data, "/accounting/journal-entries");
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal entry workbench");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Manual journal entry - balanced double-entry" })).toHaveTextContent("Totals");
+    expect(screen.getByDisplayValue("2026-06-30")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Manual close adjustment")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Microsoft Corp./ })).toBeInTheDocument();
     expect(screen.getByText("Controller support package")).toBeInTheDocument();
+    expect(screen.getByText("Private-capital activity")).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Distribution");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Manual close adjustment");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("payment:fund-alpha:distribution:manual-je-1");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("$100 USD gross");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("$0 USD opening -> -$100.00 USD ending");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("2 record issue");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Approval pending");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Submit the fund-event journal for approval");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("1 report output");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("DistributionNotice / Draft / 1 provenance");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("fund-event%3Afund-alpha%3Adistribution%3A20260630");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("payment:fund-alpha:distribution:manual-je-1");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("Approval pending");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("Outflow / $100 USD / 2026-06-30 / settlement:fund-alpha:distribution:20260630");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("payee investor:lp-1");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("2 source evidence link(s)");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("0/2 approved");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("0 confirmed / 1 retained / 0 returned");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("Full payment execution is explicitly deferred");
+    expect(screen.getByRole("link", { name: "Open payment intent evidence packet for payment:fund-alpha:distribution:manual-je-1" })).toHaveAttribute(
+      "href",
+      "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Adistribution%3Amanual-je-1/packet"
+    );
+    const paymentIntentDrilldown = screen.getByRole("region", {
+      name: "Cash evidence drilldown for payment:fund-alpha:distribution:manual-je-1"
+    });
+    expect(paymentIntentDrilldown).toHaveTextContent("Approval chain");
+    expect(paymentIntentDrilldown).toHaveTextContent("Controller approval / controller");
+    expect(paymentIntentDrilldown).toHaveTextContent("Decision pending");
+    expect(paymentIntentDrilldown).toHaveTextContent("Bank evidence");
+    expect(paymentIntentDrilldown).toHaveTextContent("Retained wire evidence supports the expected distribution cash movement.");
+    expect(paymentIntentDrilldown).toHaveTextContent("$100 USD / 2026-06-30");
+    expect(paymentIntentDrilldown).toHaveTextContent("Recorded by cash-ops@example.com");
+    expect(paymentIntentDrilldown).toHaveTextContent("Reconciliation");
+    expect(paymentIntentDrilldown).toHaveTextContent("Cash evidence is linked to reconciliation review.");
+    expect(paymentIntentDrilldown).toHaveTextContent("Audit trail");
+    expect(paymentIntentDrilldown).toHaveTextContent("payment-intent.execution-deferred");
+    expect(screen.getByRole("link", {
+      name: "Open bank evidence for payment:fund-alpha:distribution:manual-je-1 RetainedCashEvidence"
+    })).toHaveAttribute(
+      "href",
+      "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+    );
+    expect(screen.getByRole("link", {
+      name: "Open reconciliation evidence for payment:fund-alpha:distribution:manual-je-1 reconciliation:distribution"
+    })).toHaveAttribute("href", "/api/reconciliation/runs/distribution");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Settlement matched / Outflow / $100 USD / 1 cash evidence / settlement linked");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("live execution remains deferred");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("4/7 evidence categories ready");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Source support");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Approval state");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Approval reference is missing for the fund event.");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Governed report output");
+    expect(screen.getByRole("link", { name: "Open private-capital activity record for Distribution" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1"
+    );
+    expect(screen.getByRole("link", { name: "Open fund event command center for Distribution" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/fund-event-command-center?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630"
+    );
+    expect(screen.getByRole("link", { name: "Open next action for Distribution" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1"
+    );
+    expect(screen.getByRole("link", { name: "Open evidence packet for Distribution" })).toHaveAttribute(
+      "href",
+      "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Adistribution%3A20260630/packet"
+    );
+    expect(screen.queryByRole("link", { name: "Open approval route for Distribution" })).not.toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Private-capital capital account activity" })).toHaveTextContent("capital-account:fund-alpha:lp-1");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledgers" })).toHaveTextContent("capital-account:fund-alpha:lp-1");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledgers" })).toHaveTextContent("Review");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledgers" })).toHaveTextContent("$0 USD opening");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledgers" })).toHaveTextContent("-$100.00 USD net");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledgers" })).toHaveTextContent("1 fund event");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledgers" })).toHaveTextContent("0 published report output");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledgers" })).toHaveTextContent("Settlement matched / Outflow / $100 USD / 1 cash evidence / settlement linked");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledgers" })).toHaveTextContent("4/7 evidence categories ready");
+    expect(screen.getByRole("link", { name: "Open capital-account subledger for capital-account:fund-alpha:lp-1" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/capital-account-subledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD"
+    );
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledger" })).toHaveTextContent("Distribution");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledger" })).toHaveTextContent("-$100.00 USD");
+    expect(screen.getByRole("table", { name: "Private-capital ledger impacts" })).toHaveTextContent("Distribution");
+    expect(screen.getByRole("table", { name: "Private-capital report outputs" })).toHaveTextContent("DistributionNotice for Distribution");
+    expect(screen.getByRole("table", { name: "Private-capital report outputs" })).toHaveTextContent("Draft");
+    expect(screen.getByRole("table", { name: "Private-capital report outputs" })).toHaveTextContent("1 provenance line");
+    expect(screen.getAllByText("-$100.00 USD").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Distribution").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Security").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
-    expect(api.getManualJournalEntryWorkbench).toHaveBeenCalled();
+    expect(api.getManualJournalEntryWorkbench).toHaveBeenCalledWith({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha"
+    });
+  });
+
+  it("applies manual journal lifecycle transitions through the shared endpoint and renders audit evidence", async () => {
+    const user = userEvent.setup();
+    const submittedDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      status: "Submitted",
+      version: 2,
+      submittedAtUtc: "2026-06-30T01:00:00Z",
+      submittedBy: "browser-user",
+      lifecycleTransitions: [{
+        transitionId: "transition-submit",
+        fromStatus: "Draft",
+        toStatus: "Submitted",
+        action: "Submit",
+        actor: "browser-user",
+        recordedAtUtc: "2026-06-30T01:00:00Z",
+        notes: "Submitted for approval.",
+        correlationId: "manual-je-submit",
+        evidenceLinks: manualJournalDraft.evidenceLinks
+      }]
+    };
+    const approvedDraft: ManualJournalEntryDraft = {
+      ...submittedDraft,
+      status: "Approved",
+      version: 3,
+      approvedAtUtc: "2026-06-30T01:05:00Z",
+      approvedBy: "browser-user",
+      lifecycleTransitions: [
+        ...(submittedDraft.lifecycleTransitions ?? []),
+        {
+          transitionId: "transition-approve",
+          fromStatus: "Submitted",
+          toStatus: "Approved",
+          action: "Approve",
+          actor: "browser-user",
+          recordedAtUtc: "2026-06-30T01:05:00Z",
+          notes: "Controller approval for journal entry manual-je-1.",
+          correlationId: "manual-je-approve",
+          evidenceLinks: manualJournalDraft.evidenceLinks
+        }
+      ]
+    };
+    const postedDraft: ManualJournalEntryDraft = {
+      ...approvedDraft,
+      status: "Posted",
+      version: 4,
+      postedAtUtc: "2026-06-30T01:10:00Z",
+      postedBy: "browser-user",
+      lifecycleTransitions: [
+        ...(approvedDraft.lifecycleTransitions ?? []),
+        {
+          transitionId: "transition-post",
+          fromStatus: "Approved",
+          toStatus: "Posted",
+          action: "Post",
+          actor: "browser-user",
+          recordedAtUtc: "2026-06-30T01:10:00Z",
+          notes: "Post approved journal entry manual-je-1.",
+          correlationId: "manual-je-post",
+          evidenceLinks: manualJournalDraft.evidenceLinks
+        }
+      ]
+    };
+    const reversalDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      journalEntryId: "manual-je-1-reversal",
+      status: "Draft",
+      version: 1,
+      memo: "Reversal for manual-je-1",
+      reversalOfJournalEntryId: "manual-je-1",
+      lines: manualJournalDraft.lines.map((line) => ({
+        ...line,
+        lineId: `${line.lineId}-reversal`,
+        side: line.side === "Debit" ? "Credit" : "Debit"
+      }))
+    };
+    const reversedDraft: ManualJournalEntryDraft = {
+      ...postedDraft,
+      status: "Reversed",
+      version: 5,
+      reversal: {
+        originalJournalEntryId: "manual-je-1",
+        reversalJournalEntryId: "manual-je-1-reversal",
+        createdAtUtc: "2026-06-30T01:15:00Z",
+        createdBy: "browser-user",
+        reason: "Create reversal draft for posted journal entry manual-je-1."
+      },
+      lifecycleTransitions: [
+        ...(postedDraft.lifecycleTransitions ?? []),
+        {
+          transitionId: "transition-reverse",
+          fromStatus: "Posted",
+          toStatus: "Reversed",
+          action: "Reverse",
+          actor: "browser-user",
+          recordedAtUtc: "2026-06-30T01:15:00Z",
+          notes: "Create reversal draft for posted journal entry manual-je-1.",
+          correlationId: "manual-je-reverse",
+          evidenceLinks: manualJournalDraft.evidenceLinks
+        }
+      ]
+    };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [submittedDraft]
+    });
+    vi.mocked(api.applyManualJournalEntryLifecycleAction)
+      .mockResolvedValueOnce({
+        journalEntry: approvedDraft,
+        transition: approvedDraft.lifecycleTransitions![1],
+        generatedJournalEntries: []
+      })
+      .mockResolvedValueOnce({
+        journalEntry: postedDraft,
+        transition: postedDraft.lifecycleTransitions![2],
+        generatedJournalEntries: []
+      })
+      .mockResolvedValueOnce({
+        journalEntry: reversedDraft,
+        transition: reversedDraft.lifecycleTransitions![3],
+        generatedJournalEntries: [reversalDraft]
+      });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    await user.click(screen.getByRole("button", { name: "Approve" }));
+    expect(await screen.findByText("Approve recorded: Submitted -> Approved")).toBeInTheDocument();
+    expect(screen.getByText("Approve: Submitted -> Approved")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Post" }));
+    expect(await screen.findByText("Post recorded: Approved -> Posted")).toBeInTheDocument();
+    expect(screen.getByText("Post: Approved -> Posted")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Reverse" }));
+    expect(await screen.findByText("Reverse recorded: Posted -> Reversed")).toBeInTheDocument();
+    expect(screen.getByText("Reverse: Posted -> Reversed")).toBeInTheDocument();
+    expect(screen.getAllByText("Reversal for manual-je-1").length).toBeGreaterThan(0);
+    expect(screen.getByText("Reversal of manual-je-1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Audit transitions");
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      action: "Approve",
+      version: 2,
+      evidenceLinks: manualJournalDraft.evidenceLinks,
+      actionOrigin: "HumanOperator"
+    }));
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      action: "Post",
+      version: 3
+    }));
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      action: "Reverse",
+      version: 4,
+      rebookLines: []
+    }));
+  });
+
+  it("rebooks a posted manual journal entry through the shared lifecycle endpoint", async () => {
+    const user = userEvent.setup();
+    const postedDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      status: "Posted",
+      version: 4,
+      submittedAtUtc: "2026-06-30T01:00:00Z",
+      submittedBy: "browser-user",
+      approvedAtUtc: "2026-06-30T01:05:00Z",
+      approvedBy: "browser-user",
+      postedAtUtc: "2026-06-30T01:10:00Z",
+      postedBy: "browser-user"
+    };
+    const rebookDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      journalEntryId: "manual-je-1-rebook",
+      status: "Draft",
+      version: 1,
+      memo: "Rebook for manual-je-1",
+      rebookedFromJournalEntryId: "manual-je-1",
+      lines: manualJournalDraft.lines.map((line) => ({
+        ...line,
+        lineId: `${line.lineId}-rebook`
+      }))
+    };
+    const rebookedDraft: ManualJournalEntryDraft = {
+      ...postedDraft,
+      status: "Rebooked",
+      version: 5,
+      rebook: {
+        originalJournalEntryId: "manual-je-1",
+        rebookJournalEntryId: "manual-je-1-rebook",
+        createdAtUtc: "2026-06-30T01:20:00Z",
+        createdBy: "browser-user",
+        reason: "Create rebook draft for posted journal entry manual-je-1."
+      },
+      lifecycleTransitions: [{
+        transitionId: "transition-rebook",
+        fromStatus: "Posted",
+        toStatus: "Rebooked",
+        action: "Rebook",
+        actor: "browser-user",
+        recordedAtUtc: "2026-06-30T01:20:00Z",
+        notes: "Create rebook draft for posted journal entry manual-je-1.",
+        correlationId: "manual-je-rebook",
+        evidenceLinks: manualJournalDraft.evidenceLinks
+      }]
+    };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [postedDraft]
+    });
+    vi.mocked(api.applyManualJournalEntryLifecycleAction).mockResolvedValueOnce({
+      journalEntry: rebookedDraft,
+      transition: rebookedDraft.lifecycleTransitions![0],
+      generatedJournalEntries: [rebookDraft]
+    });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    await user.click(screen.getByRole("button", { name: "Rebook" }));
+
+    expect(await screen.findByText("Rebook recorded: Posted -> Rebooked")).toBeInTheDocument();
+    expect(screen.getByText("Rebook: Posted -> Rebooked")).toBeInTheDocument();
+    expect(screen.getAllByText("Rebook for manual-je-1").length).toBeGreaterThan(0);
+    expect(screen.getByText("Rebook from manual-je-1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Rebook");
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenCalledWith(expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      action: "Rebook",
+      version: 4,
+      notes: "Create rebook draft for posted journal entry manual-je-1.",
+      correlationId: "manual-je-rebook",
+      evidenceLinks: manualJournalDraft.evidenceLinks,
+      actionOrigin: "HumanOperator",
+      periodIsLocked: false,
+      rebookLines: postedDraft.lines
+    }));
+  });
+
+  it("close-locks a posted manual journal entry through the shared lifecycle endpoint", async () => {
+    const user = userEvent.setup();
+    const postedDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      status: "Posted",
+      version: 4,
+      submittedAtUtc: "2026-06-30T01:00:00Z",
+      submittedBy: "browser-user",
+      approvedAtUtc: "2026-06-30T01:05:00Z",
+      approvedBy: "browser-user",
+      postedAtUtc: "2026-06-30T01:10:00Z",
+      postedBy: "browser-user"
+    };
+    const closeLockedDraft: ManualJournalEntryDraft = {
+      ...postedDraft,
+      status: "CloseLocked",
+      version: 5,
+      closedLockedAtUtc: "2026-06-30T01:30:00Z",
+      closeLockedBy: "browser-user",
+      lifecycleTransitions: [{
+        transitionId: "transition-lock-after-close",
+        fromStatus: "Posted",
+        toStatus: "CloseLocked",
+        action: "LockAfterClose",
+        actor: "browser-user",
+        recordedAtUtc: "2026-06-30T01:30:00Z",
+        notes: "Lock posted journal entry manual-je-1 after close.",
+        correlationId: "manual-je-lockafterclose",
+        evidenceLinks: manualJournalDraft.evidenceLinks
+      }]
+    };
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [postedDraft]
+    });
+    vi.mocked(api.applyManualJournalEntryLifecycleAction).mockResolvedValueOnce({
+      journalEntry: closeLockedDraft,
+      transition: closeLockedDraft.lifecycleTransitions![0],
+      generatedJournalEntries: []
+    });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    await user.click(screen.getByRole("button", { name: "Lock after close" }));
+
+    expect(await screen.findByText("LockAfterClose recorded: Posted -> CloseLocked")).toBeInTheDocument();
+    expect(screen.getByText("LockAfterClose: Posted -> CloseLocked")).toBeInTheDocument();
+    expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Locked");
+    expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Audit transitions");
+    expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenCalledWith(expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      action: "LockAfterClose",
+      version: 4,
+      notes: "Lock posted journal entry manual-je-1 after close.",
+      correlationId: "manual-je-lockafterclose",
+      evidenceLinks: manualJournalDraft.evidenceLinks,
+      actionOrigin: "HumanOperator",
+      periodIsLocked: true,
+      rebookLines: []
+    }));
+  });
+
+  it("renders the Capital Account Workbench route from the shared endpoint", async () => {
+    const workbench: CapitalAccountWorkbench = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha",
+      projectedAtUtc: "2026-06-30T17:00:00Z",
+      capitalAccountId: "capital-account:fund-alpha:lp-1",
+      investorId: "investor:lp-1",
+      currency: "USD",
+      workbenchRoute: "/api/ledger/private-capital/capital-account-workbench?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+      statusLabel: "Restated lineage",
+      statusReason: "Statement lineage includes retained restatement metadata and audit evidence.",
+      investorAccountCount: 1,
+      fundEventCount: 1,
+      statementCount: 1,
+      restatementLineageCount: 1,
+      auditDrillThroughCount: 1,
+      netCapitalActivity: 100,
+      investorAccounts: [{
+        accountKey: "capital-account:fund-alpha:lp-1|investor:lp-1|USD",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        activityRoute: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+        readiness: "Ready",
+        readinessLabel: "Ready",
+        readinessReason: "Retained evidence is available.",
+        nextAction: "Open statement",
+        nextActionRoute: "/api/ledger/private-capital/report-output?reportOutputId=report-output-1",
+        openingNetActivity: 0,
+        endingNetActivity: 100,
+        netCapitalActivity: 100,
+        contributions: 100,
+        distributions: 0,
+        subscriptions: 0,
+        redemptions: 0,
+        managementFees: 0,
+        fundEventCount: 1,
+        postedFundEventCount: 1,
+        approvalQueueCount: 0,
+        publishedReportOutputCount: 1,
+        evidenceLinkCount: 1,
+        validationIssueCount: 0,
+        evidenceCategorySummary: "1/1 allocation evidence categories ready.",
+        evidenceLinks: ["/evidence/source"],
+        evidenceCategories: [],
+        fundEventRecords: [manualJournalWorkbench.privateCapitalActivity!.fundEventRecords[0]],
+        subledgerEntries: [],
+        ledgerImpacts: [],
+        reportOutputs: [],
+        validationIssues: [],
+        paymentIntentEvidence: {
+          paymentIntentId: "payment-1",
+          settlementReference: "settlement-1",
+          status: "SettlementMatched",
+          isReady: true,
+          direction: "Inflow",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          summary: "Cash evidence matched.",
+          cashEvidenceLinkCount: 1,
+          cashEvidenceLinks: ["/evidence/source"],
+          requiredEvidence: [],
+          evidenceRoute: "/evidence/payment-1"
+        }
+      }],
+      allocationRules: [{
+        ruleId: "rule-source",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        categoryId: "source-support",
+        label: "Source support",
+        basis: "Fund event source support must be retained.",
+        isSatisfied: true,
+        reason: "Source support is retained.",
+        route: "/evidence/source",
+        evidenceLinkCount: 1,
+        evidenceLinks: ["/evidence/source"],
+        requiredEvidence: ["Source document"],
+        ruleVersion: "source-support:projection:1.1.1.1",
+        effectiveFrom: "2026-06-30",
+        effectiveTo: "2026-06-30",
+        formula: "fund_event.source_evidence_count > 0",
+        approvalState: "Approved",
+        approvalReference: "approval-lp-1 / /accounting/approvals?approvalId=approval-lp-1",
+        replayTrace: "Trace uses 1 fund event(s), 1 subledger entry(ies), 1 ledger impact(s), 1 report output(s), and 1 allocation input(s).",
+        inputs: [{
+          inputId: "allocation-input:fund-event:fund-event:fund-alpha:capital-call",
+          kind: "fund-event",
+          sourceId: "fund-event:fund-alpha:capital-call",
+          label: "CapitalCall / Capital call",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          evidenceRoute: "/evidence/source"
+        }],
+        relatedFundEventIds: ["fund-event:fund-alpha:capital-call"]
+      }],
+      statementLineage: [{
+        lineageId: "lineage-1",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        reportOutputId: "report-output-1",
+        reportOutputType: "CapitalAccountStatement",
+        displayName: "LP 1 Statement",
+        reportRoute: "/reporting/report-packs/lp-1",
+        reportPackId: "report-pack-1",
+        reportWorkflowState: "Restated",
+        isPublished: true,
+        isReportReady: true,
+        publicationManifestId: "manifest-1",
+        retainedManifestPath: "/evidence/manifest.json",
+        publicationEvidenceHash: "hash-1",
+        publishedAtUtc: "2026-06-30T17:00:00Z",
+        publishedBy: "publisher",
+        reportLineProvenanceCount: 2,
+        hasRestatementLineage: true,
+        restatementStatus: "Restatement lineage retained.",
+        restatementReasonCode: "capital-account-correction",
+        restatementPriorVersionReportId: "prior-report",
+        restatementApprover: "audit-partner",
+        restatementChangedLineCount: 1,
+        restatementEvidenceLinkCount: 1,
+        reportOutputRoute: "/api/ledger/private-capital/report-output?reportOutputId=report-output-1",
+        evidenceRoute: "/evidence/report",
+        capitalAccountSubledgerRoute: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+        evidenceLinks: ["/evidence/report"],
+        restatementEvidenceLinks: ["/evidence/restatement"],
+        restatementChangedLines: [{
+          lineKey: "capital-account-ending",
+          previousValue: "100.00",
+          currentValue: "125.00",
+          evidenceLinkCount: 1,
+          evidenceLinks: ["/evidence/restatement"]
+        }]
+      }],
+      auditDrillThroughs: [{
+        drillThroughId: "drill-subledger",
+        kind: "subledger",
+        label: "LP 1 subledger",
+        summary: "Open capital-account subledger.",
+        route: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+        isAvailable: true,
+        evidenceLinkCount: 1,
+        evidenceLinks: ["/evidence/source"],
+        relatedIds: ["fund-event-1"]
+      }],
+      validationIssues: [],
+      liveCapabilities: ["Investor-level capital account evidence"],
+      plannedCapabilities: ["Full cap-table administration"]
+    };
+    vi.mocked(api.getCapitalAccountWorkbench).mockResolvedValueOnce(workbench);
+
+    await renderAccountingScreen(data, "/accounting/capital-accounts?capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1");
+
+    await waitFor(() => expect(api.getCapitalAccountWorkbench).toHaveBeenCalledWith(expect.objectContaining({
+      capitalAccountId: "capital-account:fund-alpha:lp-1",
+      investorId: "investor:lp-1"
+    })));
+    const region = screen.getByRole("region", { name: "Capital Account Workbench" });
+    expect(region).toHaveTextContent("Investor capital accounts");
+    expect(region).toHaveTextContent("Fund-event command centers");
+    expect(within(region).getByRole("table", { name: "Capital-account fund-event command centers" })).toHaveTextContent("Distribution");
+    expect(within(region).getByRole("table", { name: "Capital-account fund-event command centers" })).toHaveTextContent("Approval pending");
+    expect(within(region).getByRole("table", { name: "Capital-account fund-event command centers" })).toHaveTextContent("1 ledger impact");
+    expect(within(region).getByRole("link", { name: "Open capital-account fund-event command center for Distribution" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/fund-event-command-center?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630"
+    );
+    expect(region).toHaveTextContent("Source support");
+    expect(region).toHaveTextContent("source-support:projection:1.1.1.1");
+    expect(region).toHaveTextContent("fund_event.source_evidence_count > 0");
+    expect(region).toHaveTextContent("Trace uses 1 fund event(s)");
+    expect(region).toHaveTextContent("Statement lineage");
+    expect(region).toHaveTextContent("capital-account-ending");
+    expect(region).toHaveTextContent("100.00 -> 125.00");
+    expect(region).toHaveTextContent("1 changed-line evidence");
+    expect(region).toHaveTextContent("Audit drill-through");
+    expect(region).toHaveTextContent("Live in v0.18 slice");
+    expect(region).toHaveTextContent("Still planned");
+    expect(region).toHaveTextContent("Full cap-table administration");
   });
 
   it("selects Security Master results and adds source evidence on the manual journal entry workbench", async () => {
@@ -691,6 +3507,17 @@ describe("AccountingScreen", () => {
         evidenceAttachments: []
       }]
     });
+    vi.mocked(api.attachManualJournalEntryEvidence).mockImplementationOnce((request) => Promise.resolve({
+      ...manualJournalDraft,
+      version: manualJournalDraft.version + 1,
+      lines: manualJournalDraft.lines.map((line) => line.lineId === "line-debit" ? {
+        ...line,
+        securityId: "22222222-2222-2222-2222-222222222222",
+        securityDisplayName: "Apple Inc."
+      } : line),
+      evidenceLinks: request.evidenceLinks,
+      evidenceAttachments: [request.attachment]
+    }));
 
     await renderAccountingScreen(data, "/accounting/journal-entries");
 
@@ -699,11 +3526,24 @@ describe("AccountingScreen", () => {
     await user.click(await screen.findByRole("button", { name: /Apple Inc./ }));
     expect(screen.getByRole("button", { name: /Apple Inc./ })).toBeInTheDocument();
 
-    await user.type(screen.getByLabelText("Label"), "Trade blotter");
-    await user.type(screen.getByLabelText("Route or path"), "/api/workstation/evidence/subjects/accounting-record/trade-blotter");
+    fireEvent.change(screen.getByLabelText("Label"), { target: { value: "Trade blotter" } });
+    fireEvent.change(screen.getByLabelText("Route or path"), {
+      target: { value: "/api/workstation/evidence/subjects/accounting-record/trade-blotter" }
+    });
     await user.click(screen.getByRole("button", { name: "Attach" }));
 
-    expect(screen.getByText("Trade blotter")).toBeInTheDocument();
+    expect(await screen.findByText("Trade blotter")).toBeInTheDocument();
+    expect(api.attachManualJournalEntryEvidence).toHaveBeenCalledWith(expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      version: 1,
+      evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/trade-blotter"],
+      attachment: expect.objectContaining({
+        displayName: "Trade blotter",
+        uri: "/api/workstation/evidence/subjects/accounting-record/trade-blotter",
+        evidenceKind: "SourceDocument"
+      })
+    }));
     expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
   });
 
@@ -740,6 +3580,11 @@ describe("AccountingScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
+    const comparison = screen.getByRole("region", { name: "Cash reconciliation broker statement versus ledger comparison" });
+    expect(comparison).toHaveTextContent("Cash reconciliation - broker statement vs. ledger");
+    expect(comparison).toHaveTextContent("Statement balance");
+    expect(comparison).toHaveTextContent("Ledger balance");
+    expect(comparison).toHaveTextContent("Out by $500");
     expect(screen.getAllByRole("table", { name: "Reconciliation runs" })).toHaveLength(1);
     expect(screen.queryByRole("link", { name: "Open Accounting reconciliation workstream" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
@@ -937,7 +3782,7 @@ describe("AccountingScreen", () => {
     expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
     expect(screen.getByRole("region", { name: "Trial-balance detail for Cash" })).toHaveTextContent("$120,500");
     expect(screen.getByLabelText("Filter by General Ledger account")).toHaveValue("");
-    expect(screen.getByText("2 GL account rows")).toBeInTheDocument();
+    expect(screen.getAllByText("2 GL account rows").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("list", { name: "Ledger lines for selected account" })).toHaveTextContent("je-cash-1");
     expect(screen.getByRole("link", { name: "Open source event evt-cash-1 for Cash" })).toHaveAttribute(
       "href",
@@ -956,7 +3801,7 @@ describe("AccountingScreen", () => {
 
     await user.type(screen.getByLabelText("Filter by General Ledger account"), "financing");
 
-    expect(screen.getByText("1 of 2 GL account rows")).toBeInTheDocument();
+    expect(screen.getAllByText("1 of 2 GL account rows").length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole("row", { name: "Inspect trial-balance account Cash for Asset" })).not.toBeInTheDocument();
     const filteredFinancingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
     expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
@@ -1115,6 +3960,12 @@ describe("AccountingScreen", () => {
   it("adapts the hero copy for security-master deep links", async () => {
     await renderAccountingScreen(data, "/accounting/security-master");
 
+    expect(screen.getByRole("heading", { name: "Security & Instrument Explorer" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Accounting");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Security Master instruments");
+    expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Instrument proof");
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("No selection");
+    expect(screen.getByLabelText("Security & Instrument Explorer proof actions")).toHaveTextContent("Open search");
     expect(screen.getAllByText("Security coverage").length).toBeGreaterThan(0);
   });
 
@@ -1207,6 +4058,29 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("table", { name: "Aliases for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByText("AAPL.OQ")).toBeInTheDocument();
     expect(screen.getByText("Collector")).toBeInTheDocument();
+  });
+
+  it("renders multi-asset reference data endpoint coverage after selecting a security", async () => {
+    const user = userEvent.setup();
+
+    await renderAccountingScreen(data, "/accounting/security-master");
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+    await user.click(securityRow);
+
+    expect(await screen.findByRole("heading", { name: "Multi-asset reference data" })).toBeInTheDocument();
+    expect(api.getReferenceDataWorkbenchCoverage).toHaveBeenCalledWith(expect.objectContaining({
+      securityId: "22222222-2222-2222-2222-222222222222",
+      primaryIdentifierValue: "AAPL"
+    }));
+
+    const table = screen.getByRole("table", {
+      name: /Reference data endpoint coverage for 22222222-2222-2222-2222-222222222222/
+    });
+    expect(within(table).getByText("Bond reference")).toBeInTheDocument();
+    expect(within(table).getByText("Option chain import")).toBeInTheDocument();
+    expect(screen.getByText(/couponRate/)).toBeInTheDocument();
   });
 
   it("selects Security Master search rows with keyboard-expanded detail linkage", async () => {

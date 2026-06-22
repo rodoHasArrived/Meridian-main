@@ -26,6 +26,7 @@ proof, and routing updates to the right AI catalogs.
 > **GitHub Copilot equivalent:** [`.github/agents/implementation-assurance-agent.md`](../../../.github/agents/implementation-assurance-agent.md)
 > **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)
 > **Shared project context:** [`../_shared/project-context.md`](../_shared/project-context.md)
+> **Self-improving agent loop:** [`docs/ai/codex/self-improving-agents.md`](../../../docs/ai/codex/self-improving-agents.md)
 
 ## Definition Of Done
 
@@ -35,6 +36,7 @@ A task delivered by this skill is complete when **all** of the following are tru
 - **Tests cover the change:** happy path, failure path, and cancellation or disposal are covered or explicitly cited as gaps.
 - **Validation evidence is explicit:** the final response includes exact commands and their pass or fail results.
 - **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
+- **Agent improvements are promoted through the eval loop:** baseline, feedback source, candidate diff, aggregate score, threshold, retry count, and updated catalog paths are recorded.
 - **Rubric score >= 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
 - **Performance-sensitive paths are annotated:** any hot path touched by the change includes an explicit note on allocation, async, or buffering risk.
 - **Summary is traceable:** the closing summary links requirement -> files changed -> validation artifact -> doc update.
@@ -69,6 +71,19 @@ Follow this 4-step loop for every implementation-assurance task:
 - Include validation commands, outcomes, and links to updated docs or agents.
 - Update AI and agent catalogs per `doc_route.py` guidance.
 
+## Self-Improving Agent Loop
+
+For agent, prompt, skill, rubric, or graph-memory improvements, use
+`docs/ai/codex/self-improving-agents.md` as the promotion contract. Record the current artifact as
+the baseline, collect human feedback or LLM-as-judge findings, apply one candidate change at a time,
+run the relevant evals, compare the aggregate score to the target threshold, and promote only after
+validation, catalog updates, and rollback notes are complete.
+
+For graph, semantic-memory, or retrieval-agent changes, require source-backed temporal records,
+non-destructive versioning, retention and pruning policy, staged concurrency with backpressure,
+token-cost controls, and source-cited retrieval behavior before claiming the agent is production
+ready.
+
 ## Requirement Type Detection
 
 Use this decision tree before starting any task to pick the right validation lane:
@@ -94,7 +109,7 @@ Use this lane whenever the task creates or updates a skill or agent package.
 - Inspect only the relevant Meridian instinct files when local learned behavior would help, and verify each instinct against the repository before turning it into instructions.
 - Keep the main skill file concise and imperative. Put detailed material in `references/`, deterministic helpers in `scripts/`, and output resources in `assets/`.
 - Preserve host-specific metadata rules. For Codex repo-local skills, keep frontmatter to `name` and `description`. For portable Codex packages, preserve the metadata required by that host.
-- Keep mirrored Codex, Codex, and GitHub agent guidance aligned when a shared workflow or policy changes.
+- Keep mirrored Codex, Claude, and GitHub agent guidance aligned when a shared workflow or policy changes.
 - Avoid auxiliary docs in skill folders unless they directly support execution or the host format requires them.
 - When `agents/openai.yaml` exists, regenerate or update it so the UI metadata still matches the skill text.
 - Validate package shape after editing and run representative checks for any added or changed scripts.
@@ -127,5 +142,6 @@ Load these only when the task requires the deeper context they provide:
 - [ ] validation commands and results included
 - [ ] performance-sensitive changes reviewed with explicit notes
 - [ ] docs updated or newly added in the correct location
+- [ ] agent-improvement baseline, feedback, score, threshold, retry count, and promotion decision recorded when applicable
 - [ ] evaluation harness completed with a rubric score summary (>= 8/10, no category at 0)
 - [ ] final traceable summary kept to 15 lines or fewer

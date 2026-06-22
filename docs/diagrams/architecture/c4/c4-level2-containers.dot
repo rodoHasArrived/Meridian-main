@@ -1,251 +1,150 @@
 // C4 Level 2: Container Diagram
-// Meridian current project state
-// Last Updated: 2026-05-28
+// Meridian current project stance
+// Last Updated: 2026-06-10
 //
-// This diagram shows the major deployable units within the system.
-// It answers: "What are the major technology choices?"
-//
-// Generate: dot -Tpng c4-level2-containers.dot -o c4-level2-containers.png
-//           dot -Tsvg c4-level2-containers.dot -o c4-level2-containers.svg
+// This diagram shows the deployable and shared containers that support the
+// W1-W5 operational record baseline.
 
 digraph C4_Containers {
-  rankdir=TB;
+  rankdir=LR;
   graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
   node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
-  // Title
   labelloc="t";
-  label="Meridian - Container Diagram (C4 Level 2)";
+  label="Meridian - Container Diagram (C4 Level 2)\nOperational record baseline";
 
-  // External Actors
-  Operator [shape=oval, style="filled", fillcolor="#08427b", fontcolor="white",
-            label="Operator\n[Person]"];
-  Quant [shape=oval, style="filled", fillcolor="#08427b", fontcolor="white",
-         label="Quant/Analyst\n[Person]"];
+  OPERATOR [shape=oval, fillcolor="#08427b", fontcolor="white",
+    label="Operator\nfinance ops, accounting,\nreconciliation, data ops"];
+  GOVERNANCE [shape=oval, fillcolor="#08427b", fontcolor="white",
+    label="Governance user\ncontroller, compliance,\nauditor, trustee"];
 
-  // External Systems - Data Sources
-  subgraph cluster_external {
-    label="External Data Sources";
-    color="#999999";
-    style="dashed";
-    bgcolor="#fafafa";
-
-    IB [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-        label="Interactive Brokers\n[External]\n\nTWS/Gateway"];
-    ALP [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-         label="Alpaca\n[External]\n\nWebSocket"];
-    NYSE [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-          label="NYSE Direct\n[External]\n\nExchange Feed"];
-    POL [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-         label="Polygon.io\n[External]\n\nWebSocket"];
-    SS [shape=box, style="rounded,filled", fillcolor="#4a90d9", fontcolor="white",
-        label="StockSharp\n[External]\n\nMulti-Exchange"];
-    HIST_PROVIDERS [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
-                    label="Historical APIs\n[External]\n\nYahoo, Tiingo, Finnhub\nPolygon, Stooq, IB, etc.\n(15 provider classes)"];
-  }
-
-  // System Boundary
-  subgraph cluster_mdc {
-    label="Meridian System Boundary";
+  subgraph cluster_meridian {
+    label="Meridian system boundary";
     color="#438dd5";
     style="rounded";
     bgcolor="#f0f8ff";
 
-    // Presentation Layer
-    subgraph cluster_presentation {
-      label="Presentation Layer";
+    subgraph cluster_surfaces {
+      label="Active workstation surfaces";
       color="#805ad5";
       style="rounded";
       bgcolor="#faf5ff";
 
-      WPF [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
-           label="WPF Desktop App\n[.NET 10 / WPF]\n\n67 pages, 94 ViewModel files\nActive operator workstation shell\nNative Windows experience"];
-
-      WEB_UI [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
-              label="Desktop-local API host\n[ASP.NET Core / Minimal APIs]\n\nlocalhost workstation API\nSwagger + health endpoints\nused by desktop and tooling"];
-
-      CLI [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white",
-           label="CLI Interface\n[.NET Console]\n\nCommand-line operation\n24+ flags: --wizard, --auto-config\n--backfill, --mode desktop, --dry-run"];
+      BROWSER [fillcolor="#805ad5", fontcolor="white",
+        label="Browser workstation\nsrc/Meridian.Ui/dashboard\n\nSeven root workspaces:\nTrading, Portfolio, Accounting,\nReporting, Strategy, Data, Settings"];
+      STATIC_ASSETS [fillcolor="#c4b5fd",
+        label="Built workstation assets\nsrc/Meridian.Ui/wwwroot/workstation\n\nServed by local Meridian host"];
+      WPF [fillcolor="#805ad5", fontcolor="white",
+        label="WPF desktop workstation\nsrc/Meridian.Wpf\n\nNative shell, dense workbenches,\noperator launch workflows"];
     }
 
-    // Onboarding & Diagnostics Layer
-    subgraph cluster_onboarding {
-      label="Onboarding & Diagnostics Layer";
-      color="#ed8936";
+    subgraph cluster_shared_ui {
+      label="Shared UI and API support";
+      color="#6b46c1";
       style="rounded";
-      bgcolor="#fffaf0";
+      bgcolor="#f3e8ff";
 
-      WIZARD [shape=box, style="rounded,filled", fillcolor="#ed8936", fontcolor="white",
-              label="Configuration Wizard\n[Interactive Setup]\n\n8-step guided setup\nProvider detection\nTemplate generation"];
-
-      AUTO_CONFIG [shape=box, style="rounded,filled", fillcolor="#fbd38d",
-                   label="Auto-Configuration\n[Service]\n\nEnv var detection\nUse case presets\nSelf-healing config"];
-
-      DIAGNOSTICS [shape=box, style="rounded,filled", fillcolor="#fbd38d",
-                   label="Diagnostic Services\n[8 Services]\n\nConnectivity testing\nCredential validation\nFirst-run detection"];
-
-      ERROR_FMT [shape=box, style="rounded,filled", fillcolor="#fbd38d",
-                 label="Error Formatter\n[UX Service]\n\n24 error codes\nFriendly messages\nTroubleshooting tips"];
+      UI_SHARED [fillcolor="#ddd6fe",
+        label="Meridian.Ui.Shared\n\nEndpoint catalog, DTOs,\nauth/scoped access,\nworkstation routes"];
+      UI_SERVICES [fillcolor="#ddd6fe",
+        label="Meridian.Ui.Services\n\nRead models and orchestration\nfor browser and WPF surfaces"];
+      LOCAL_HOST [fillcolor="#c4b5fd",
+        label="Local ASP.NET host\nsrc/Meridian\n\nDesktop mode, workstation API,\nhealth, Swagger, fixtures"];
     }
 
-    // Core Collector Service
-    CORE [shape=box, style="rounded,filled", fillcolor="#438dd5", fontcolor="white", width=3.5,
-          label="Meridian Core\n[.NET 10 Console App | C# 13]\n\nEvent pipeline with bounded channel policy\nCollectors: Trade, Quote, OrderBook\nStreaming + Historical data processing\nPrometheus metrics, health endpoints"];
-
-    // F# Domain Library
-    FSHARP [shape=box, style="rounded,filled", fillcolor="#2c7a7b", fontcolor="white",
-            label="F# Domain Library\n[.NET Library | F# 8]\n\nType-safe domain models\nRailway-oriented validation\nPure functional calculations\nDiscriminated unions"];
-
-    // Contracts Library
-    CONTRACTS [shape=box, style="rounded,filled", fillcolor="#718096", fontcolor="white",
-               label="Contracts Library\n[.NET Library]\n\nShared DTOs\nEvent interfaces\nMassTransit contracts"];
-
-    // Microservices (Optional)
-    subgraph cluster_microservices {
-      label="Microservices (Optional Distributed Deployment)";
+    subgraph cluster_operational_core {
+      label="Operational record core";
       color="#2c7a7b";
-      style="dashed";
+      style="rounded";
       bgcolor="#e6fffa";
 
-      GATEWAY [shape=box, style="rounded,filled", fillcolor="#2c7a7b", fontcolor="white",
-               label="API Gateway\n[ASP.NET Core]\n:5000\n\nRouting, Rate Limiting\nAuth, Health Aggregation"];
-
-      TRADE_SVC [shape=box, style="rounded,filled", fillcolor="#319795", fontcolor="white",
-                 label="Trade Ingestion\n[.NET Worker]\n:5001\n\nHigh-throughput\nSequence validation"];
-
-      ORDERBOOK_SVC [shape=box, style="rounded,filled", fillcolor="#319795", fontcolor="white",
-                     label="OrderBook Ingestion\n[.NET Worker]\n:5002\n\nL2 depth processing\nIntegrity checking"];
-
-      QUOTE_SVC [shape=box, style="rounded,filled", fillcolor="#319795", fontcolor="white",
-                 label="Quote Ingestion\n[.NET Worker]\n:5003\n\nBBO/NBBO processing\nSpread calculation"];
-
-      HIST_SVC [shape=box, style="rounded,filled", fillcolor="#319795", fontcolor="white",
-                label="Historical Ingestion\n[.NET Worker]\n:5004\n\nBackfill coordination\nGap repair"];
-
-      VAL_SVC [shape=box, style="rounded,filled", fillcolor="#319795", fontcolor="white",
-               label="Data Validation\n[.NET Worker]\n:5005\n\nQuality checks\nAnomaly detection"];
+      APPLICATION [fillcolor="#38a169", fontcolor="white",
+        label="Meridian.Application\n\nImport/backfill orchestration,\nvalidation, reconciliation jobs,\nworkflow command handlers"];
+      PROVIDER_SDK [fillcolor="#9ae6b4",
+        label="Meridian.ProviderSdk\n\nProvider contracts for\nsource-backed evidence"];
+      INFRA [fillcolor="#9ae6b4",
+        label="Meridian.Infrastructure\n\nProvider adapters, credential-aware\nHTTP integration, resilience"];
+      LEDGER [fillcolor="#2c7a7b", fontcolor="white",
+        label="Meridian.Ledger + FSharp.Ledger\n\nMeridian-owned ledger truth,\naccounting records, close evidence"];
+      REPORTING [fillcolor="#2c7a7b", fontcolor="white",
+        label="Reporting and evidence services\n\nReport packs, provenance,\nrestatement lineage"];
+      STORAGE [shape=cylinder, fillcolor="#e53e3e", fontcolor="white",
+        label="Storage layer\n\nWAL, JSONL, Parquet,\nlineage, retained evidence"];
     }
 
-    // HTTP Monitoring Server
-    HTTP [shape=box, style="rounded,filled", fillcolor="#ed8936", fontcolor="white",
-          label="Local HTTP Endpoints\n[ASP.NET Core]\n\n/swagger + workstation APIs\n/metrics - Prometheus\n/healthz, /readyz, /livez"];
+    subgraph cluster_supporting {
+      label="Supporting foundations";
+      color="#718096";
+      style="rounded";
+      bgcolor="#edf2f7";
+
+      CORE [fillcolor="#e2e8f0",
+        label="Meridian.Core + Contracts\n\nConfiguration, serialization,\nshared DTOs, diagnostics"];
+      DOMAIN [fillcolor="#e2e8f0",
+        label="Meridian.Domain + FSharp\n\nMarket events, validation,\ncalculations, interop"];
+      MCP [fillcolor="#e2e8f0",
+        label="Meridian.Mcp\n\nRepo-scoped developer co-pilot\nstdio MCP host"];
+    }
   }
 
-  // Message Bus
-  subgraph cluster_messaging {
-    label="Message Bus";
-    color="#ff6b6b";
-    style="rounded";
-    bgcolor="#fff5f5";
-
-    RABBITMQ [shape=box, style="rounded,filled", fillcolor="#e53e3e", fontcolor="white",
-              label="RabbitMQ / Azure Service Bus\n[Message Broker]\n\nMassTransit messaging\nTrade/Quote/Depth exchanges\nEvent distribution"];
-  }
-
-  // Storage
-  subgraph cluster_storage {
-    label="Storage Layer (Tiered)";
-    color="#c53030";
-    style="rounded";
-    bgcolor="#fff5f5";
-
-    WAL [shape=cylinder, style="filled", fillcolor="#fc8181", fontcolor="white",
-         label="Write-Ahead Log\n[Durability]\n\nCrash-safe journaling\nSHA256 checksums\nTransaction semantics"];
-
-    JSONL [shape=cylinder, style="filled", fillcolor="#feb2b2", fontcolor="black",
-           label="JSONL Files\n[Hot Storage]\n\nReal-time append\nLZ4 compression\nDaily partitioning"];
-
-    PARQUET [shape=cylinder, style="filled", fillcolor="#fecaca", fontcolor="black",
-             label="Parquet Files\n[Archive Storage]\n\nColumnar format\nZSTD compression\n10-20x compression ratio"];
-
-    CLOUD [shape=cylinder, style="filled", fillcolor="#feebc8", fontcolor="black",
-           label="Cloud Storage\n[Cold Tier]\n\nS3, Azure Blob\nGlacier archive"];
-  }
-
-  // Monitoring
-  subgraph cluster_monitoring {
-    label="Observability";
-    color="#38a169";
+  subgraph cluster_external {
+    label="External systems";
+    color="#999999";
     style="dashed";
-    bgcolor="#f0fff4";
-
-    PROM [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
-          label="Prometheus\n[Metrics]\n\nScrapes /metrics"];
-    GRAFANA [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
-             label="Grafana\n[Dashboards]\n\nVisualization"];
-    JAEGER [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white",
-            label="Jaeger/Tempo\n[Tracing]\n\nOpenTelemetry"];
-  }
-
-  // Relationships - Users
-  Operator -> WPF [label="Configures"];
-  Operator -> WEB_UI [label="Inspects / automates"];
-  Operator -> CLI [label="Operates"];
-  Quant -> PARQUET [label="Analyzes\ndata"];
-
-  // Relationships - Presentation to Core
-  WPF -> CORE [label="Local API"];
-  WEB_UI -> HTTP [label="Swagger / status"];
-  CLI -> CORE [label="In-process"];
-
-  // Relationships - CLI to Onboarding
-  CLI -> WIZARD [label="--wizard", style=dashed, color="#ed8936"];
-  CLI -> AUTO_CONFIG [label="--auto-config", style=dashed, color="#ed8936"];
-  CLI -> DIAGNOSTICS [label="--test-connectivity\n--validate-credentials", style=dashed, color="#ed8936"];
-  WIZARD -> AUTO_CONFIG [style=dashed];
-  AUTO_CONFIG -> CORE [label="Generates config", style=dashed, color="#ed8936"];
-  DIAGNOSTICS -> CORE [label="Pre-flight checks", style=dashed, color="#ed8936"];
-  ERROR_FMT -> CLI [label="Formats errors", style=dashed, color="#ed8936"];
-
-  // Relationships - External to Core
-  IB -> CORE [label="WebSocket\nL1/L2 streaming", color="#2b6cb0"];
-  ALP -> CORE [label="WebSocket\nreal-time", color="#2b6cb0"];
-  NYSE -> CORE [label="Exchange feed", color="#2b6cb0"];
-  POL -> CORE [label="WebSocket\nstreaming", color="#2b6cb0"];
-  SS -> CORE [label="Multi-exchange\nadapter", color="#2b6cb0"];
-  HIST_PROVIDERS -> CORE [label="REST API\nbackfill", color="#2c7a7b"];
-
-  // Relationships - Internal
-  CORE -> FSHARP [label="Uses domain\ntypes"];
-  CORE -> CONTRACTS [label="Uses"];
-  CORE -> RABBITMQ [label="Publishes\nevents"];
-  CORE -> HTTP [label="Exposes\nendpoints"];
-
-  // Microservices relationships
-  RABBITMQ -> GATEWAY [label="Consumes", style=dashed];
-  GATEWAY -> TRADE_SVC [style=dashed];
-  GATEWAY -> ORDERBOOK_SVC [style=dashed];
-  GATEWAY -> QUOTE_SVC [style=dashed];
-  GATEWAY -> HIST_SVC [style=dashed];
-  GATEWAY -> VAL_SVC [style=dashed];
-  TRADE_SVC -> CONTRACTS [style=dashed];
-  QUOTE_SVC -> CONTRACTS [style=dashed];
-
-  // Storage relationships
-  CORE -> WAL [label="1. Journal", color="#c53030"];
-  WAL -> JSONL [label="2. Persist", color="#c53030"];
-  JSONL -> PARQUET [label="3. Archive", color="#c53030"];
-  PARQUET -> CLOUD [label="4. Tier", style=dashed, color="#c53030"];
-
-  // Monitoring relationships
-  HTTP -> PROM [label="Scrapes"];
-  PROM -> GRAFANA;
-  CORE -> JAEGER [label="Traces", style=dashed];
-
-  // Legend
-  subgraph cluster_legend {
-    label="Legend";
-    style="rounded";
-    color="#666666";
     bgcolor="#fafafa";
 
-    L1 [shape=oval, style="filled", fillcolor="#08427b", fontcolor="white", label="Person"];
-    L2 [shape=box, style="rounded,filled", fillcolor="#438dd5", fontcolor="white", label="Core Container"];
-    L3 [shape=box, style="rounded,filled", fillcolor="#805ad5", fontcolor="white", label="UI Container"];
-    L4 [shape=box, style="rounded,filled", fillcolor="#ed8936", fontcolor="white", label="Onboarding/UX"];
-    L5 [shape=box, style="rounded,filled", fillcolor="#2c7a7b", fontcolor="white", label="Microservice"];
-    L6 [shape=cylinder, style="filled", fillcolor="#fc8181", fontcolor="white", label="Storage"];
-    L7 [shape=box, style="rounded,filled", fillcolor="#38a169", fontcolor="white", label="Monitoring"];
+    PROVIDERS [fillcolor="#bfdbfe",
+      label="Providers\ncustodian, broker, bank,\nmarket data, fund admin"];
+    ACCOUNTING [fillcolor="#bfdbfe",
+      label="External GL/accounting systems\nread-only reconciliation evidence"];
+    DOCUMENTS [fillcolor="#bfdbfe",
+      label="Documents and uploads\nPDFs, contracts, statements"];
+    IDENTITY [fillcolor="#bfdbfe",
+      label="Identity provider\nusers, roles, company scope"];
   }
+
+  subgraph cluster_deferred {
+    label="Gated expansion";
+    color="#718096";
+    style="dashed";
+    bgcolor="#edf2f7";
+
+    BACKTESTING [fillcolor="#e2e8f0",
+      label="Backtesting Studio and live-readiness\nplanned; roadmap-evidence guided\npaper-first governance applies where relevant"];
+    SCALEOUT [fillcolor="#e2e8f0",
+      label="Payments, forecasting,\nenterprise risk, portal,\nworkflow designer, mobile\nnot an active container lane"];
+  }
+
+  OPERATOR -> BROWSER;
+  OPERATOR -> WPF;
+  GOVERNANCE -> BROWSER [label="review evidence"];
+
+  BROWSER -> UI_SHARED;
+  WPF -> UI_SHARED;
+  STATIC_ASSETS -> LOCAL_HOST [label="served by"];
+  UI_SHARED -> UI_SERVICES;
+  UI_SERVICES -> APPLICATION;
+  LOCAL_HOST -> UI_SHARED [label="maps endpoints"];
+  LOCAL_HOST -> APPLICATION;
+
+  PROVIDERS -> INFRA [label="raw records"];
+  INFRA -> PROVIDER_SDK;
+  PROVIDER_SDK -> APPLICATION;
+  DOCUMENTS -> APPLICATION [label="attachments"];
+  ACCOUNTING -> APPLICATION [label="read-only signals"];
+  IDENTITY -> UI_SHARED [label="auth and scope"];
+
+  APPLICATION -> DOMAIN;
+  APPLICATION -> LEDGER [label="approved accounting records"];
+  APPLICATION -> REPORTING [label="governed reports"];
+  APPLICATION -> STORAGE [label="retained evidence"];
+  LEDGER -> STORAGE;
+  REPORTING -> STORAGE;
+  CORE -> APPLICATION;
+  CORE -> UI_SHARED;
+  MCP -> CORE [style=dashed, label="repo guidance"];
+
+  BACKTESTING -> APPLICATION [style=dashed, label="only when evidence-linked"];
+  SCALEOUT -> APPLICATION [style=dashed, label="deferred"];
 }

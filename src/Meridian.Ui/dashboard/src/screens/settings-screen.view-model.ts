@@ -796,6 +796,7 @@ export interface SettingsAlpacaConnectionPanel {
 
 export interface SettingsProviderConnectionRow {
   providerId: string;
+  integrationConnectionId: string;
   rowAnchorId: string;
   displayName: string;
   capabilityLabel: string;
@@ -1154,6 +1155,10 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     unavailableDetail: "Accounting workspace payload has not loaded.",
     endpoints: [
       { id: "accounting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.accounting },
+      { id: "private-capital-activity", method: "GET", label: "Private-capital activity", href: WORKSTATION_API_ENDPOINTS.privateCapitalActivity },
+      { id: "private-capital-fund-event-record", method: "GET", label: "Fund-event ledger record", href: WORKSTATION_API_ENDPOINTS.privateCapitalFundEventRecord },
+      { id: "private-capital-capital-account-subledger", method: "GET", label: "Capital-account subledger", href: WORKSTATION_API_ENDPOINTS.privateCapitalCapitalAccountSubledger },
+      { id: "private-capital-report-output", method: "GET", label: "Report output", href: WORKSTATION_API_ENDPOINTS.privateCapitalReportOutput },
       { id: "recon-runs", method: "POST", label: "Run reconciliation", href: RECONCILIATION_API_ENDPOINTS.runs },
       { id: "break-queue", method: "GET", label: "Break queue", href: RECONCILIATION_API_ENDPOINTS.breakQueue },
       { id: "calibration", method: "GET", label: "Calibration", href: RECONCILIATION_API_ENDPOINTS.calibrationSummary },
@@ -1912,6 +1917,7 @@ function buildProviderConnectionRow(
       : ["Workflow impact not declared"];
   return {
     providerId: row.providerId,
+    integrationConnectionId: routingContext.connection?.connectionId ?? row.providerId,
     rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
     displayName: row.displayName,
     capabilityLabel: providerCapabilityLabel(row.capability),
@@ -1969,6 +1975,7 @@ function buildProviderRoutingConnectionRow(
 
   return {
     providerId: connection.connectionId,
+    integrationConnectionId: connection.connectionId,
     rowAnchorId: `provider-${connection.connectionId}-connection`,
     displayName: connection.displayName,
     capabilityLabel: providerRoutingCapabilityLabel(routingContext.bindings, connection),

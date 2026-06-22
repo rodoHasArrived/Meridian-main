@@ -114,8 +114,10 @@ public sealed class SessionStatsCollector
                     return;
                 }
 
-                if (price > _high) _high = price;
-                if (price < _low) _low = price;
+                if (price > _high)
+                    _high = price;
+                if (price < _low)
+                    _low = price;
                 _last = price;
                 _tradeCount++;
                 _lastTradeAt = timestamp;

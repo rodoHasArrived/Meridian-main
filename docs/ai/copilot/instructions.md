@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
-**Last Updated:** 2026-06-04
+**Reviewed:** 2026-06-16
+**Last Updated:** 2026-06-16
 
 This file is the Copilot-specific companion to the shared Meridian AI guidance. Keep it short:
 shared policy belongs in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md),
@@ -22,9 +22,14 @@ Use this order for Copilot Chat, Copilot coding agent, and Copilot-authored PRs:
 4. [`../ai-known-errors.md`](../ai-known-errors.md) before changing code or generated artifacts.
 5. [`../navigation/README.md`](../navigation/README.md) and
    [`../generated/repo-navigation.md`](../generated/repo-navigation.md) for large-repo routing.
-6. `../agent-handoff-checklist.md` for coordinator-to-specialist-to-assurance handoffs.
-7. `../work-modes.md` to select Lightweight, Standard, or Deep Review context budgets before implementation.
-8. [`../tooling/README.md`](../tooling/README.md) when the task needs AI validators, route tooling,
+6. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load
+   [`../../architecture/meridian-development-intelligence-framework.md`](../../architecture/meridian-development-intelligence-framework.md),
+   [`../../architecture/meridian-vision.md`](../../architecture/meridian-vision.md),
+   [`../../architecture/meridian-domain-model.md`](../../architecture/meridian-domain-model.md),
+   [`../../domain/README.md`](../../domain/README.md), and [`../context/README.md`](../context/README.md).
+7. `../agent-handoff-checklist.md` for coordinator-to-specialist-to-assurance handoffs.
+8. `../work-modes.md` to select Lightweight, Standard, or Deep Review context budgets before implementation.
+9. [`../tooling/README.md`](../tooling/README.md) when the task needs AI validators, route tooling,
    or maintenance scripts.
 
 Do not copy the full repository tree or long convention lists into Copilot prompts. Link to the
@@ -42,18 +47,16 @@ current source instead.
 
 ## Current Product Framing
 
-Meridian is a .NET 10 fund-management and trading platform. Active operator UI work spans
+Meridian is a .NET 10 operational-finance and trading platform where fund management is a first-class specialization. Active operator UI work spans
 [`../../../src/Meridian.Ui/dashboard/`](../../../src/Meridian.Ui/dashboard/) and
 [`../../../src/Meridian.Wpf/`](../../../src/Meridian.Wpf/), with built browser assets in
 [`../../../src/Meridian.Ui/wwwroot/workstation/`](../../../src/Meridian.Ui/wwwroot/workstation/).
 Shared product behavior should land behind shared contracts, local/web API endpoints, or shared
 read models before either client composes it.
 
-Keep product work centered on the W1-W5 operational record baseline: data confidence, retained
-source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage,
-and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first governance, full
-payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and other
-expansion lanes unless they directly strengthen that workflow.
+Keep product work grounded in current source evidence, the roadmap registry, and the design charter.
+Treat prior baselines and named productization targets as roadmap/status evidence, not development
+ceilings; expansion lanes can proceed when current source, roadmap, or user direction supports them.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
@@ -67,6 +70,7 @@ Visible operator navigation should stay aligned to `Trading`, `Portfolio`, `Acco
 | Task | Start here |
 | --- | --- |
 | Need repo orientation | [`../navigation/README.md`](../navigation/README.md) |
+| Broad generation or architecture-sensitive work | [`../../architecture/meridian-development-intelligence-framework.md`](../../architecture/meridian-development-intelligence-framework.md), [`../../domain/README.md`](../../domain/README.md), and [`../context/README.md`](../context/README.md) |
 | Bug or regression | [`../../../.github/agents/bug-fix-agent.md`](../../../.github/agents/bug-fix-agent.md) |
 | Code review | [`../../../.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md) |
 | Tests | [`../../../.github/instructions/dotnet-tests.instructions.md`](../../../.github/instructions/dotnet-tests.instructions.md) and [`../../../.github/agents/test-writer-agent.md`](../../../.github/agents/test-writer-agent.md) |

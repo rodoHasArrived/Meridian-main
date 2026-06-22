@@ -88,6 +88,15 @@ public enum OperationsReconciliationStateDto : byte
     Complete = 5
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<OperationsReconciliationLaneStatusDto>))]
+public enum OperationsReconciliationLaneStatusDto : byte
+{
+    Missing = 0,
+    Ready = 1,
+    ReviewRequired = 2,
+    Blocked = 3
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<OperationsApprovalStateDto>))]
 public enum OperationsApprovalStateDto : byte
 {
@@ -160,6 +169,14 @@ public static class OperationsWorkflowContractMatrix
         OperationsReconciliationStateDto.InReview,
         OperationsReconciliationStateDto.Cleared,
         OperationsReconciliationStateDto.Complete
+    ];
+
+    public static IReadOnlyList<OperationsReconciliationLaneStatusDto> ReconciliationLaneStatuses { get; } =
+    [
+        OperationsReconciliationLaneStatusDto.Missing,
+        OperationsReconciliationLaneStatusDto.Ready,
+        OperationsReconciliationLaneStatusDto.ReviewRequired,
+        OperationsReconciliationLaneStatusDto.Blocked
     ];
 
     public static IReadOnlyList<OperationsApprovalStateDto> ApprovalSubStates { get; } =
@@ -252,7 +269,10 @@ public static class OperationsWorkflowContractMatrix
         "POSITION_COVERAGE_INCOMPLETE",
         "PRICING_COVERAGE_INCOMPLETE",
         "RECONCILIATION_ACTUAL_FEED_ACTIVITY_MISSING_EXPECTED_EVENT",
+        "RECONCILIATION_BREAK_ALREADY_CLOSED",
+        "RECONCILIATION_BREAK_ASSIGNMENT_RATIONALE_REQUIRED",
         "RECONCILIATION_BREAK_NOT_FOUND",
+        "RECONCILIATION_BREAK_OWNER_REQUIRED",
         "RECONCILIATION_BREAK_RATIONALE_REQUIRED",
         "RECONCILIATION_CRITICAL_BREAKS_OPEN",
         "RECONCILIATION_EVIDENCE_MISSING",
@@ -269,6 +289,7 @@ public static class OperationsWorkflowContractMatrix
         "REPORT_PACK_ID_MISMATCH",
         "REPORT_PACK_NOT_READY",
         "REPORT_PACK_REQUIRED",
+        "REVIEWED_AUTOMATION_MATERIAL_ACTION_REJECTED",
         "SECURITY_MASTER_RESOLUTION_REQUIRED",
         "ACCRUAL_ACTUAL_EVENT_MISSING",
         "ACCRUAL_AMOUNT_MISMATCH",
@@ -402,6 +423,8 @@ public static class OperationsWorkflowContractMatrix
         "ledger-posted",
         "ledger-posting-blocked",
         "reconciliation-run",
+        "reconciliation-break-assigned",
+        "reconciliation-break-escalated",
         "reconciliation-break-resolved",
         "approval-submitted",
         "approval-approved",
@@ -433,6 +456,15 @@ public enum OperationsIssueCodeDto : byte
     GovernanceApprovalRequired = 16
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<OperationsActionOriginDto>))]
+public enum OperationsActionOriginDto : byte
+{
+    HumanOperator = 0,
+    AutomationSuggestion = 1,
+    AssistantDraft = 2,
+    AutomationAssistant = 3
+}
+
 public sealed record OperationsStartWorkflowRequestDto(
     Guid FundAccountId,
     string PeriodId,
@@ -441,7 +473,8 @@ public sealed record OperationsStartWorkflowRequestDto(
     string Actor,
     string? Rationale = null,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    Guid? LedgerBookId = null);
 
 public sealed record OperationsTransitionRequestDto(
     long ExpectedVersion,
@@ -459,7 +492,8 @@ public sealed record OperationsSecurityMasterOverrideApprovalRequestDto(
     string PolicyReference,
     DateOnly? ExpiresOn,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsGatePostureRequestDto(
     long ExpectedVersion,
@@ -527,7 +561,8 @@ public sealed record OperationsLedgerPostRequestDto(
     string? Rationale = null,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
-    OperationsLedgerJournalCandidateDto? JournalCandidate = null);
+    OperationsLedgerJournalCandidateDto? JournalCandidate = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsLedgerJournalCandidateDto(
     Guid? JournalEntryId,
@@ -564,7 +599,8 @@ public sealed record OperationsLedgerJournalLineDto(
     string? SecurityMasterProvenance = null,
     string? LedgerMappingReference = null,
     string? SecurityMasterApprovalReference = null,
-    SecurityStatusDto? SecurityMasterStatus = null);
+    SecurityStatusDto? SecurityMasterStatus = null,
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record OperationsJournalEntryMetadataDto(
     string? ActivityType = null,
@@ -596,7 +632,8 @@ public sealed record OperationsReconciliationRunRequestDto(
     string? ReconciliationRunId = null,
     Guid? BankEntityId = null,
     decimal? AmountTolerance = null,
-    int? MaxAsOfDriftMinutes = null);
+    int? MaxAsOfDriftMinutes = null,
+    IReadOnlyList<OperationsReconciliationLaneSummaryDto>? ReconciliationLanes = null);
 
 public sealed record OperationsResolveBreakCaseRequestDto(
     long ExpectedVersion,
@@ -604,7 +641,20 @@ public sealed record OperationsResolveBreakCaseRequestDto(
     string ResolutionStatus,
     string Rationale,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+
+public sealed record OperationsAssignBreakCaseRequestDto(
+    long ExpectedVersion,
+    string Actor,
+    string Owner,
+    string Rationale,
+    string? EscalationLevel = null,
+    string? EscalationReason = null,
+    DateOnly? DueDate = null,
+    string? CorrelationId = null,
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsSubmitApprovalRequestDto(
     long ExpectedVersion,
@@ -614,7 +664,8 @@ public sealed record OperationsSubmitApprovalRequestDto(
     string ReportPackId,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
-    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null);
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsApprovalDecisionRequestDto(
     long ExpectedVersion,
@@ -624,7 +675,8 @@ public sealed record OperationsApprovalDecisionRequestDto(
     string ReportPackId,
     string? CorrelationId = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
-    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null);
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsRejectWorkflowRequestDto(
     long ExpectedVersion,
@@ -633,7 +685,8 @@ public sealed record OperationsRejectWorkflowRequestDto(
     string Rationale,
     string ReasonCode,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsCloseWorkflowRequestDto(
     long ExpectedVersion,
@@ -646,7 +699,8 @@ public sealed record OperationsCloseWorkflowRequestDto(
     string? ClosePackageId = null,
     string? ClosePackageManifestId = null,
     string? ClosePackageEvidenceHash = null,
-    string? ClosePackageRetainedManifestRoute = null);
+    string? ClosePackageRetainedManifestRoute = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsReopenWorkflowRequestDto(
     long ExpectedVersion,
@@ -658,7 +712,8 @@ public sealed record OperationsReopenWorkflowRequestDto(
     string? ApprovalReference = null,
     string? ImpactSummary = null,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsChecklistControlApprovalDto(
     string TaskId,
@@ -805,7 +860,44 @@ public sealed record OperationsContinuityWorkflowSummaryDto(
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
     IReadOnlyList<OperationsGateDto> Gates,
-    IReadOnlyList<OperationsNextActionDto> NextActions);
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    Guid? LedgerBookId = null);
+
+public sealed record OperationsReviewedAutomationSummaryDto(
+    string SummaryId,
+    string Stage,
+    EvidenceStatusDto Status,
+    bool RequiresHumanReview,
+    string Summary,
+    IReadOnlyList<string> AllowedUseCases,
+    IReadOnlyList<string> ProhibitedActions,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null,
+    IReadOnlyList<OperationsReviewedAutomationArtifactDto>? Artifacts = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+
+    public IReadOnlyList<OperationsReviewedAutomationArtifactDto> Artifacts { get; init; } =
+        Artifacts ?? [];
+}
+
+public sealed record OperationsReviewedAutomationArtifactDto(
+    string ArtifactId,
+    string ArtifactKind,
+    string Title,
+    EvidenceStatusDto Status,
+    bool RequiresHumanReview,
+    decimal? ConfidencePercent,
+    string SourceSummary,
+    string SuggestedOperatorAction,
+    string BlockedMaterialAction,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? ReviewChecklist = null)
+{
+    public IReadOnlyList<string> ReviewChecklist { get; init; } =
+        ReviewChecklist ?? [];
+}
 
 public sealed record OperationsContinuityWorkflowDto(
     Guid WorkflowId,
@@ -834,7 +926,74 @@ public sealed record OperationsContinuityWorkflowDto(
     IReadOnlyList<OperationsNextActionDto> NextActions,
     OperationsCloseReadinessDto? CloseReadiness = null,
     OperationsClosePackagePublicationDto? ClosePackage = null,
-    OperationsAccountingRecordSummaryDto? AccountingRecordSummary = null);
+    OperationsAccountingRecordSummaryDto? AccountingRecordSummary = null,
+    IReadOnlyList<OperationsReconciliationLaneSummaryDto>? ReconciliationLanes = null,
+    OperationsDashboardSummaryDto? DashboardSummary = null,
+    IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null,
+    OperationsReviewedAutomationSummaryDto? ReviewedAutomation = null,
+    Guid? LedgerBookId = null)
+{
+    public IReadOnlyList<OperationsEvidencePackageSummaryDto> EvidencePackages { get; init; } =
+        EvidencePackages ?? [];
+}
+
+public sealed record OperationsDashboardSummaryDto(
+    string DashboardId,
+    string Stage,
+    EvidenceStatusDto Status,
+    bool IsReady,
+    int ReadyMetricCount,
+    int TotalMetricCount,
+    string Summary,
+    IReadOnlyList<OperationsDashboardMetricDto> Metrics,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record OperationsDashboardMetricDto(
+    string MetricId,
+    string Label,
+    string Value,
+    EvidenceStatusDto Status,
+    string Detail,
+    string? RouteHint,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record OperationsEvidencePackageSummaryDto(
+    string PackageId,
+    string Label,
+    EvidenceStatusDto Status,
+    bool IsReady,
+    string Summary,
+    string? RouteHint,
+    int CompleteCategoryCount,
+    int RequiredCategoryCount,
+    int EvidenceLinkCount,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record OperationsReconciliationLaneSummaryDto(
+    string LaneId,
+    string Label,
+    OperationsReconciliationLaneStatusDto Status,
+    bool IsReady,
+    int BreakCount,
+    string Summary,
+    string? RouteHint,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null);
 
 public sealed record OperationsAccountingRecordSummaryDto(
     string RecordId,
@@ -958,7 +1117,16 @@ public sealed record OperationsBreakCaseDto(
     string? Symbol,
     string? SuggestedAction,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
-    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null);
+    OperationsContinuityCorrelationKeysDto? CorrelationKeys = null,
+    string? EscalationLevel = null,
+    string? EscalationReason = null,
+    DateTimeOffset? EscalatedAtUtc = null,
+    string? SlaState = null,
+    DateTimeOffset? SlaDueAtUtc = null,
+    decimal? Materiality = null,
+    string? RootCauseCode = null,
+    string? ApprovalState = null,
+    IReadOnlyList<string>? BlockedOutputs = null);
 
 public sealed record OperationsContinuityCorrelationKeysDto(
     string? RunId = null,
@@ -1042,3 +1210,143 @@ public sealed record OperationsEvidenceLinkDto(
     string? Route,
     string? Source,
     DateTimeOffset? CapturedAtUtc);
+
+public sealed record PrivateCapitalCloseCockpitWorkflowDto(
+    Guid WorkflowId,
+    Guid FundAccountId,
+    string PeriodId,
+    OperationsWorkflowStatusDto Status,
+    int CloseReadinessScore,
+    bool IsReadyToClose,
+    string WorkflowRoute,
+    string? ClosePackageId,
+    string? ClosePackageRoute,
+    int BlockerCount,
+    int OpenChecklistCount,
+    DateTimeOffset UpdatedAtUtc);
+
+public sealed record PrivateCapitalCloseCockpitLaneDto(
+    string LaneId,
+    string Label,
+    EvidenceStatusDto Status,
+    bool IsReady,
+    string Summary,
+    string? Route,
+    int EvidenceLinkCount,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record PrivateCapitalCloseCockpitApprovalDto(
+    string ApprovalId,
+    Guid WorkflowId,
+    Guid FundAccountId,
+    string PeriodId,
+    OperationsApprovalStateDto Status,
+    string? Operator,
+    string? Reviewer,
+    string? Rationale,
+    DateTimeOffset? SubmittedAtUtc,
+    DateTimeOffset? DecidedAtUtc,
+    string WorkflowRoute,
+    int EvidenceLinkCount,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+
+public sealed record PrivateCapitalNavSupportComponentDto(
+    string ComponentId,
+    string Label,
+    EvidenceStatusDto Status,
+    bool IsReady,
+    string Summary,
+    string? Route,
+    int Score);
+
+public sealed record PrivateCapitalShadowNavTieOutDto(
+    string TieOutId,
+    EvidenceStatusDto Status,
+    bool IsReady,
+    decimal? MeridianShadowNav,
+    decimal? AdministratorNav,
+    decimal? Variance,
+    decimal Tolerance,
+    string? Currency,
+    string Summary,
+    string? Route,
+    int EvidenceLinkCount,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record PrivateCapitalNavSupportPackageDto(
+    string PackageId,
+    string Label,
+    EvidenceStatusDto Status,
+    bool IsReady,
+    string Summary,
+    string? Route,
+    decimal? ShadowNav,
+    string? Currency,
+    int EvidenceLinkCount,
+    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+    IReadOnlyList<PrivateCapitalNavSupportComponentDto> Components,
+    IReadOnlyList<string>? RequiredActions = null,
+    PrivateCapitalShadowNavTieOutDto? ShadowNavTieOut = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record PrivateCapitalCloseCockpitDto(
+    string? FundProfileId,
+    Guid? LedgerBookId,
+    Guid? FundAccountId,
+    string? PeriodId,
+    string? EntityId,
+    DateTimeOffset ProjectedAtUtc,
+    string CockpitRoute,
+    EvidenceStatusDto OverallStatus,
+    bool IsReadyToClose,
+    int ReadinessScore,
+    int WorkflowCount,
+    int FundEventCount,
+    int CapitalAccountCount,
+    int ReportOutputCount,
+    int DeliveredReportOutputCount,
+    int ReadyLaneCount,
+    int BlockedLaneCount,
+    IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> Lanes,
+    IReadOnlyList<PrivateCapitalCloseCockpitWorkflowDto> Workflows,
+    IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers,
+    IReadOnlyList<OperationsNextActionDto> NextActions,
+    IReadOnlyList<string> LiveCapabilities,
+    IReadOnlyList<string> PlannedCapabilities,
+    IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto>? ApprovalHistory = null,
+    IReadOnlyList<PrivateCapitalNavSupportPackageDto>? NavSupportPackages = null,
+    IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null)
+{
+    public IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto> ApprovalHistory { get; init; } =
+        ApprovalHistory ?? [];
+
+    public IReadOnlyList<PrivateCapitalNavSupportPackageDto> NavSupportPackages { get; init; } =
+        NavSupportPackages ?? [];
+
+    public IReadOnlyList<OperationsEvidencePackageSummaryDto> EvidencePackages { get; init; } =
+        EvidencePackages ?? [];
+}
+
+public interface IPrivateCapitalCloseCockpitService
+{
+    Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        Guid? fundAccountId = null,
+        string? periodId = null,
+        string? entityId = null,
+        CancellationToken ct = default);
+}

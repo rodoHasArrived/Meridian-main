@@ -51,6 +51,17 @@ from pathlib import Path
 from typing import Any
 
 
+def _configure_stdio() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except OSError:
+                pass
+
+
+_configure_stdio()
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------

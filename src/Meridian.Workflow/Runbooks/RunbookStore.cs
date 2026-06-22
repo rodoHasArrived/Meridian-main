@@ -43,7 +43,8 @@ public sealed class JsonRunbookStore : IRunbookStore
 
     private async Task<Dictionary<string, RunbookDefinition>> ReadMapAsync(CancellationToken ct)
     {
-        if (!File.Exists(_filePath)) return new(StringComparer.OrdinalIgnoreCase);
+        if (!File.Exists(_filePath))
+            return new(StringComparer.OrdinalIgnoreCase);
         await using var stream = File.OpenRead(_filePath);
         var map = await JsonSerializer.DeserializeAsync<Dictionary<string, RunbookDefinition>>(stream, JsonOptions, ct).ConfigureAwait(false);
         return map ?? new(StringComparer.OrdinalIgnoreCase);

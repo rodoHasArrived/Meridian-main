@@ -17,7 +17,8 @@ public sealed record LedgerReportSchedule
         IReadOnlyList<string> recipients,
         string createdBy,
         DateTimeOffset createdAtUtc,
-        DateOnly? endsOn = null)
+        DateOnly? endsOn = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         if (string.IsNullOrWhiteSpace(scheduleId))
             throw new ArgumentException("Schedule identifier must not be null or whitespace.", nameof(scheduleId));
@@ -59,6 +60,7 @@ public sealed record LedgerReportSchedule
         CreatedBy = createdBy.Trim();
         CreatedAtUtc = createdAtUtc.ToUniversalTime();
         EndsOn = endsOn;
+        LineDimensions = lineDimensions;
     }
 
     public string ScheduleId { get; }
@@ -84,4 +86,6 @@ public sealed record LedgerReportSchedule
     public DateTimeOffset CreatedAtUtc { get; }
 
     public DateOnly? EndsOn { get; }
+
+    public LedgerLineDimensionSet? LineDimensions { get; }
 }

@@ -2,11 +2,15 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
-internal sealed record DesktopLaunchRequest(string? PageTag, bool StartCollector)
+internal sealed record DesktopLaunchRequest(string? PageTag, bool StartCollector, string? ScreenshotPath)
 {
     public bool HasPageNavigation => !string.IsNullOrWhiteSpace(PageTag);
 
-    public bool HasActions => HasPageNavigation || StartCollector;
+    public bool HasScreenshotRequest => !string.IsNullOrWhiteSpace(ScreenshotPath);
+
+    public bool RequiresShell => HasPageNavigation || HasScreenshotRequest;
+
+    public bool HasActions => HasPageNavigation || StartCollector || HasScreenshotRequest;
 }
 
 internal static class DesktopLaunchArguments
@@ -15,11 +19,12 @@ internal static class DesktopLaunchArguments
     {
         if (args is null || args.Count == 0)
         {
-            return new DesktopLaunchRequest(PageTag: null, StartCollector: false);
+            return new DesktopLaunchRequest(PageTag: null, StartCollector: false, ScreenshotPath: null);
         }
 
         string? pageTag = null;
         var startCollector = false;
+        string? screenshotPath = null;
 
         for (var i = 0; i < args.Count; i++)
         {
@@ -46,13 +51,30 @@ internal static class DesktopLaunchArguments
                 continue;
             }
 
+            if (arg.StartsWith("--screenshot=", StringComparison.OrdinalIgnoreCase))
+            {
+                screenshotPath = NormalizeScreenshotPath(arg["--screenshot=".Length..]);
+                continue;
+            }
+
+            if (string.Equals(arg, "--screenshot", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(arg, "--capture-screenshot", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Count)
+                {
+                    screenshotPath = NormalizeScreenshotPath(args[++i]);
+                }
+
+                continue;
+            }
+
             if (string.Equals(arg, "--start-collector", StringComparison.OrdinalIgnoreCase))
             {
                 startCollector = true;
             }
         }
 
-        return new DesktopLaunchRequest(pageTag, startCollector);
+        return new DesktopLaunchRequest(pageTag, startCollector, screenshotPath);
     }
 
     private static string? NormalizePageTag(string? pageTag)
@@ -63,5 +85,10 @@ internal static class DesktopLaunchArguments
         }
 
         return ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
+    }
+
+    private static string? NormalizeScreenshotPath(string? path)
+    {
+        return string.IsNullOrWhiteSpace(path) ? null : path.Trim();
     }
 }

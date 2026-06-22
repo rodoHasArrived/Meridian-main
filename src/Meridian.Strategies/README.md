@@ -33,6 +33,11 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+`LedgerReadService` projects strategy-run trial balance and journal rows with canonical
+`LedgerDimensionSetDto` scope for fund, strategy, portfolio, book, account, entity, sleeve,
+organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
+ledger drill-throughs stay aligned with accounting dimensions instead of a strategy-only scope
+vocabulary.
 Paper-to-live promotion requires the live approval checklist, explicit evidence references for
 each live checklist item, and an active `AllowLivePromotion` manual override. Approved and
 execution-control-blocked live promotion attempts are written to the durable execution audit
@@ -49,6 +54,10 @@ when normalizing economic definitions so factor paydowns stay principal events i
 collapsed into generic unsupported instruments.
 `GovernanceExceptionService` classifies ledger reconciliation breaks into strategy-governance
 exception severities and dashboard projections from this module instead of the Application layer.
+The shared reconciliation break queue also enforces v0.18 reviewed-automation boundaries: assistant
+or automation-origin commands may assist triage, comments, and evidence gathering, but resolve,
+sign-off, dismiss, and privileged reopen paths fail closed with a retained `MaterialActionDenied`
+audit event before case state changes.
 
 ## Diagrams
 

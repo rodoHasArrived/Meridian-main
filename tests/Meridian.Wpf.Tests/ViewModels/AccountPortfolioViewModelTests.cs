@@ -97,8 +97,8 @@ public sealed class AccountPortfolioViewModelTests
         xaml.Should().NotContain("<DataGrid");
         xaml.Should().Contain("AccountPortfolioActionStrip");
         xaml.Should().Contain("AccountPortfolioWorkbench");
-        xaml.Should().Contain("DenseDataGridControl");
-        xaml.Should().Contain("InspectorPanelControl");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("EmptyContent");
         xaml.Should().Contain("AccountPortfolioPositionsGrid");
         xaml.Should().Contain("AccountPortfolioSelectionInspector");
         xaml.Should().Contain("AccountPortfolioActionInspector");
@@ -108,7 +108,7 @@ public sealed class AccountPortfolioViewModelTests
         xaml.Should().Contain("AccountPositionsEmptyStateRefreshButton");
         xaml.Should().Contain("Table=\"{Binding PositionsTable}\"");
         xaml.Should().Contain("SelectedItem=\"{Binding SelectedPosition, Mode=TwoWay}\"");
-        xaml.Should().Contain("{Binding IsPositionsGridVisible");
+        xaml.Should().Contain("Inspector=\"{Binding SelectedPositionInspector}\"");
         xaml.Should().Contain("{Binding IsPositionsEmptyStateVisible");
         xaml.Should().Contain("{Binding PositionsEmptyStateTitle}");
         xaml.Should().Contain("{Binding PositionsEmptyStateDetail}");

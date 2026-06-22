@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-06-10
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -10,7 +10,8 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 ## What a Stakeholder Should Read Here
 
 - If you need the current product framing, start with:
-  - [Meridian Design Document (Version 0.15)](meridian-design-document.md) — design baseline extended with current implementation posture and the v0.15 accounting records package
+  - [Meridian Design Document (Version 0.18)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update
+  - [Meridian Implementation TODO List](implementation-todo-list.md) — single planning-tooling tracker for implemented design-document items and remaining TODOs
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
 - If you need evidence-backed examples of current operations, check:
@@ -41,11 +42,9 @@ The operating question remains:
 
 > Can Meridian prove, book, reconcile, approve, and report an investment decision?
 
-## Active Product Scope Gate
+## Product Scope Guidance
 
-The active product scope is the W1-W5 operational record baseline: data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed report packs.
-
-Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment execution, full alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work directly strengthens that operational record workflow.
+Scope guidance is evidence-led. Use current source, the roadmap registry, and the design charter to determine whether work belongs to a prior baseline, named productization target, or later expansion lane. Prior baselines and named targets are roadmap/status evidence, not development ceilings.
 
 ## Canonical Product Truth Order
 
@@ -61,10 +60,10 @@ Defer Backtesting Studio, live-readiness beyond paper-first governance, full tre
 
 ## Design Charter Integration
 
-- The [Meridian Design Document (Version 0.15)](meridian-design-document.md) is the active stakeholder-facing product framing source.
+- The [Meridian Design Document (Version 0.18)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 0.15)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap and source-module evidence.
+- Design Baseline: `Meridian Design Document (Version 0.18)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap, source-module evidence, private-capital operating patterns, treasury-ledger controls, shared explorer UX direction, and the operational proof layer thesis.
 
 ## Stakeholder Narrative
 
@@ -72,8 +71,12 @@ Defer Backtesting Studio, live-readiness beyond paper-first governance, full tre
   - trusted data intake and provider validation,
   - reconciliation and exception workflows,
   - approval and promotion controls,
-  - governed reporting and evidence retention.
+  - governed reporting and evidence retention,
+  - capital-account, fund-event, and treasury-ledger records.
+- Product wedge: Meridian should make the operational proof chain the product, linking source evidence through validation, reconciliation, ledger impact, capital-account impact, close state, report line, delivery evidence, and audit history.
+- Operator UX direction: Accounting, Portfolio, Portfolio/Data, and Reporting should converge around shared Financial Record Explorers, while Accounting/Reporting should expose a W5X-FINOPS Financial Operations cockpit for today's close and reconciliation state, priority-ranked exception queues, report-package release safety, and drill-through into Ledger Explorer, Evidence Vault, Operational Event Command Spine, fund-event specializations, and Report-Line Provenance Explorer.
 - Operating model: configurable tenant-aware system, not separate apps per organization type.
+- Extensibility model: stable financial operations core objects stay consistent across tenants; workflows, rules, data mappings, reports, permissions, domain extensions, and tenant templates are governed configuration layers. See the [Core Extensibility Model](../architecture/core-extensibility-model.md).
 - Shared operator root model remains: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`.
 
 ## Evidence-Backed Investment-Operations Lifecycle
@@ -100,10 +103,18 @@ Use this compact claim status model for stakeholder-facing updates:
 
 ## Current Supportability Claims
 
+- Source review on 2026-06-09 confirms the active W1-W5 support surface is centered on accounting configuration, manual journal entry workbenches, private-capital fund-event ledger records, capital-account subledgers, retained evidence categories, governed report outputs, report-pack delivery/readiness, report-writer grids, and company-scoped access metadata.
+- `src/Meridian.Contracts/`, `src/Meridian.Ledger/`, `src/Meridian.Reporting/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Ui/dashboard/`, and `src/Meridian.Wpf/` now carry the shared source seams for those workflows; browser and WPF surfaces should consume those seams instead of forking product state.
+- External GL and provider systems remain source evidence or integration context unless a route explicitly posts Meridian-owned records. Meridian-owned ledger entries, retained source evidence, approvals, documents, and report outputs are the operational record.
+- Mobile remains closed. Responsive browser validation is allowed for the browser workstation, but there is no native mobile, MAUI, React Native, Flutter, or mobile-first workflow lane.
+
 ## Current Wave Posture
 
 - W1-W5 are closed baselines in the registry and treated as the coherent near-term operational record release unless a later registry change says otherwise.
 - W5 is the v0.15 accounting records, operational evidence, and multi-asset coverage package.
+- W5X-FREX-001 is a planned productization target that uses the closed W1-W5 evidence baseline to build shared Ledger Explorer, Portfolio Explorer, Security & Instrument Explorer, and Report-Line Provenance Explorer surfaces. It is not a claim that those explorer surfaces are already complete.
+- W5X-FINOPS-001 is a planned productization target that turns Financial Operations into an Accounting/Reporting cockpit for today's close/reconciliation state by organization, entity, portfolio, account, book, period, fund where applicable, and report package; queues for breaks, missing evidence, stale valuations, unapproved journals, blocked report lines, failed imports, and late delivery items; priority ranking by materiality, SLA, period impact, report impact, and approval blockers; and drill-through to Ledger Explorer, Evidence Vault, Operational Event Command Spine, fund-event specializations, and Report-Line Provenance Explorer. Browser workstation triage and WPF dense workpaper execution must preserve shared read-model state. It is not a claim that the complete cockpit is already shipped.
+- The remaining proof-layer targets, including Operational Evidence Graph, Operational Event Command Spine, fund-event command-center specializations, Capital Account Workbench, Private-Capital Close Cockpit, and Evidence Vault with Request Lists, are design priorities until roadmap rows and acceptance evidence move them into delivery status.
 - W6 is the deferred Backtesting Studio evidence loop.
 - W7 remains the controlled live-readiness path.
 - `Paper-first`, `read-only where uncertain`, and `governance-first` defaults remain active by policy.
@@ -131,10 +142,11 @@ Use this matrix to avoid source-of-truth drift:
 
 | Topic | Canonical home | Why |
 | --- | --- | --- |
-| Product design and assumptions | [Meridian Design Document (Version 0.15)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Product design and assumptions | [Meridian Design Document (Version 0.18)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Extensibility engineering boundaries | [Core Extensibility Model](../architecture/core-extensibility-model.md) and `src/Meridian.Contracts/Extensibility/` | Stable-core and governed-configuration rules for implementation |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
-| Detailed planning / historical analysis | `docs/plans/`, `docs/evaluations/`, `docs/status/` | Source material only; extract only active facts |
+| Detailed planning / historical analysis | `docs/plans/`, `archive/docs/assessments/`, `docs/status/` | Source material only; extract only active facts |
 
 ## Product-Critical Migration Index
 
@@ -155,7 +167,7 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 ## High-Value Input Files for Stakeholder Questions
 
-- [Meridian Design Document (Version 0.15)](meridian-design-document.md)
+- [Meridian Design Document (Version 0.18)](meridian-design-document.md)
 - [Roadmap README](../roadmap/README.md)
 - [Roadmap item list](../roadmap/README.md)
 - [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)

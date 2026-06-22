@@ -1,0 +1,234 @@
+<!-- @dsCard group="Components" viewport="1200x700" name="Expandable data table" subtitle="Collapsible detail rows with smooth slide animation" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExpandableDataTable</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+  <style>
+    body {
+      background: var(--bg);
+      padding: 24px;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+    }
+    .section {
+      margin-bottom: 32px;
+    }
+    .section h2 {
+      font-size: var(--type-section);
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+    .section p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+    .demo-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+    }
+    .detail-content {
+      display: grid;
+      gap: 12px;
+      font-size: 13px;
+    }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 12px;
+    }
+    .detail-label {
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-variant: all-small-caps;
+      letter-spacing: 0.03em;
+    }
+    .detail-value {
+      color: var(--text-primary);
+      font-family: var(--font-data);
+    }
+    .audit-trail {
+      background: var(--bg-medium);
+      border-left: 3px solid var(--accent);
+      padding: 12px;
+      border-radius: 2px;
+      font-size: 12px;
+    }
+    .audit-item {
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+    .audit-item:last-child {
+      margin-bottom: 0;
+    }
+    .audit-time {
+      font-family: var(--font-data);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="section">
+    <h2>ExpandableDataTable — Collapsible detail rows</h2>
+    <p>
+      Click the chevron (›) to expand a row and reveal full-width detail content.
+      Great for audit trails, allocations, related records, and transaction details.
+    </p>
+  </div>
+
+  <div class="demo-card">
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; font-family: var(--font-data);">
+      <thead>
+        <tr style="background: var(--bg-medium);">
+          <th style="width: 34px; padding: 9px 10px; text-align: center; border-bottom: 1px solid var(--border); font-family: var(--font-body); font-size: 10px; font-variant: all-small-caps; color: var(--text-muted); font-weight: 600;"></th>
+          <th style="padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); font-family: var(--font-body); font-size: 10px; font-variant: all-small-caps; color: var(--text-muted); font-weight: 600;">Date</th>
+          <th style="padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); font-family: var(--font-body); font-size: 10px; font-variant: all-small-caps; color: var(--text-muted); font-weight: 600;">Description</th>
+          <th style="padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--border); font-family: var(--font-body); font-size: 10px; font-variant: all-small-caps; color: var(--text-muted); font-weight: 600;">Amount</th>
+        </tr>
+      </thead>
+      <tbody id="demo-table">
+        <!-- Rows will be rendered here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Demo data with audit trails
+    const transactions = [
+      {
+        id: 'TXN-001',
+        date: '2026-06-15',
+        description: 'Wire transfer to vendor',
+        amount: '($45,000.00)',
+        account: 'Operating Expenses',
+        reference: 'INV-2024-0521',
+        posted: 'Yes',
+        audit: [
+          '2026-06-15 14:32:11Z — Created by john.doe',
+          '2026-06-15 14:45:22Z — Approved by manager.smith',
+          '2026-06-16 09:15:00Z — Posted by admin'
+        ]
+      },
+      {
+        id: 'TXN-002',
+        date: '2026-06-14',
+        description: 'ACH debit — payroll',
+        amount: '($120,500.00)',
+        account: 'Payroll',
+        reference: 'RUN-2026-Q2-06',
+        posted: 'Yes',
+        audit: [
+          '2026-06-14 10:00:00Z — Created by payroll.admin',
+          '2026-06-14 11:30:45Z — Auto-posted'
+        ]
+      },
+      {
+        id: 'TXN-003',
+        date: '2026-06-13',
+        description: 'Dividend received',
+        amount: '$8,250.50',
+        account: 'Investment Income',
+        reference: 'DIV-AAPL-2026',
+        posted: 'No',
+        audit: [
+          '2026-06-13 15:22:33Z — Created by broker feed'
+        ]
+      }
+    ];
+
+    // Render table rows
+    const tbody = document.getElementById('demo-table');
+    let expandedId = null;
+
+    transactions.forEach((txn, idx) => {
+      // Main row
+      const mainRow = document.createElement('tr');
+      mainRow.style.cssText = 'background: var(--bg-light); border-top: 1px solid var(--border);';
+      if (idx % 2 === 1) mainRow.style.background = 'var(--card-surface-raised)';
+
+      mainRow.innerHTML = `
+        <td style="padding: 7px 10px; text-align: center; cursor: pointer; border-top: 1px solid var(--border);" onclick="toggleExpand(event, '${txn.id}')">
+          <span class="chevron-${txn.id}" style="display: inline-block; transition: transform 200ms ease;">›</span>
+        </td>
+        <td style="padding: 7px 12px; border-top: 1px solid var(--border); color: var(--text-primary);">${txn.date}</td>
+        <td style="padding: 7px 12px; border-top: 1px solid var(--border); color: var(--text-primary);">${txn.description}</td>
+        <td style="padding: 7px 12px; border-top: 1px solid var(--border); text-align: right; color: var(--text-primary);">${txn.amount}</td>
+      `;
+      tbody.appendChild(mainRow);
+
+      // Detail row (hidden by default)
+      const detailRow = document.createElement('tr');
+      detailRow.id = `detail-${txn.id}`;
+      detailRow.style.display = 'none';
+      detailRow.style.background = 'var(--blue-a10)';
+      detailRow.innerHTML = `
+        <td colspan="4" style="padding: 0; border: none;">
+          <div style="padding: 16px 12px;">
+            <div class="detail-content">
+              <div class="detail-row">
+                <div class="detail-label">Account</div>
+                <div class="detail-value">${txn.account}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Reference</div>
+                <div class="detail-value">${txn.reference}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Status</div>
+                <div class="detail-value">
+                  <span style="display: inline-block; padding: 2px 8px; background: ${txn.posted === 'Yes' ? 'var(--green-a20)' : 'var(--orange-a20)'}; color: ${txn.posted === 'Yes' ? 'var(--green-dim)' : 'var(--orange-dim)'}; border-radius: 2px; font-size: 11px; font-weight: 500;">
+                    ${txn.posted}
+                  </span>
+                </div>
+              </div>
+              <div style="margin-top: 12px;">
+                <div class="detail-label" style="margin-bottom: 8px;">Audit Trail</div>
+                <div class="audit-trail">
+                  ${txn.audit.map(item => `<div class="audit-item">${item}</div>`).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(detailRow);
+    });
+
+    function toggleExpand(event, id) {
+      event.stopPropagation();
+      const detailRow = document.getElementById(`detail-${id}`);
+      const chevron = document.querySelector(`.chevron-${id}`);
+
+      // Close previously expanded row
+      if (expandedId && expandedId !== id) {
+        const prevDetail = document.getElementById(`detail-${expandedId}`);
+        const prevChevron = document.querySelector(`.chevron-${expandedId}`);
+        if (prevDetail) {
+          prevDetail.style.display = 'none';
+          prevChevron.style.transform = 'rotate(0deg)';
+        }
+      }
+
+      // Toggle current row
+      if (detailRow.style.display === 'none') {
+        detailRow.style.display = 'table-row';
+        chevron.style.transform = 'rotate(90deg)';
+        expandedId = id;
+      } else {
+        detailRow.style.display = 'none';
+        chevron.style.transform = 'rotate(0deg)';
+        expandedId = null;
+      }
+    }
+  </script>
+</body>
+</html>

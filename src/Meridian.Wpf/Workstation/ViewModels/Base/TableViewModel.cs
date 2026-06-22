@@ -5,6 +5,7 @@ namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
 public abstract class TableViewModel<TRow> : Meridian.Wpf.ViewModels.BindableBase
 {
+    private readonly BatchedObservableCollection<TRow> _rows = [];
     private bool _hasRows;
 
     protected TableViewModel()
@@ -13,7 +14,7 @@ public abstract class TableViewModel<TRow> : Meridian.Wpf.ViewModels.BindableBas
         UpdateHasRows();
     }
 
-    public ObservableCollection<TRow> Rows { get; } = [];
+    public ObservableCollection<TRow> Rows => _rows;
 
     public bool HasRows
     {
@@ -24,11 +25,7 @@ public abstract class TableViewModel<TRow> : Meridian.Wpf.ViewModels.BindableBas
     public virtual void ReplaceRows(IEnumerable<TRow> rows)
     {
         ArgumentNullException.ThrowIfNull(rows);
-        Rows.Clear();
-        foreach (var row in rows)
-        {
-            Rows.Add(row);
-        }
+        _rows.ReplaceAll(rows);
     }
 
     private void OnRowsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateHasRows();

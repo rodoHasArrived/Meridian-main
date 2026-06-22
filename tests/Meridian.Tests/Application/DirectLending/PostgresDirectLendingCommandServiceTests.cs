@@ -179,6 +179,31 @@ public sealed class PostgresDirectLendingCommandServiceTests
             .WhoseValue.Should().Contain("server-resolved:true");
         write.Entry.Metadata.Tags.Should().ContainKey("securityMasterLineage")
             .WhoseValue.Should().Contain("ledger-map:direct-lending:NWTERM26");
+        write.Entry.Metadata.EffectiveDate.Should().Be(new DateOnly(2026, 3, 24));
+        write.Entry.Metadata.IdempotencyKey.Should().Be($"direct-lending:{loanId:N}:loan.daily-accrual-posted:{capturedEventId:N}");
+        write.Entry.Metadata.EvidenceReferences.Should().ContainSingle(evidence =>
+            evidence.Uri == $"direct-lending://events/{capturedEventId:D}" &&
+            evidence.Kind == AccountingPostingEvidenceKindDto.Source.ToString());
+        write.PostingCommand.Should().NotBeNull();
+        write.PostingCommand!.CommandId.Should().Be(commandId);
+        write.PostingCommand.AggregateId.Should().Be(loanId);
+        write.PostingCommand.PeriodId.Should().NotBeEmpty();
+        write.LedgerBookId.Should().Be(Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"));
+        write.PostingCommand.LedgerBookId.Should().Be(Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"));
+        write.PostingCommand.SourceEventId.Should().Be(capturedEventId);
+        write.PostingCommand.CorrelationId.Should().Be(correlationId);
+        write.PostingCommand.IdempotencyKey.Should().Be($"direct-lending:{loanId:N}:loan.daily-accrual-posted:{capturedEventId:N}");
+        write.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.NotRequired);
+        write.PostingCommand.Evidence.Should().ContainSingle(evidence =>
+            evidence.Uri == $"direct-lending://events/{capturedEventId:D}" &&
+            evidence.Kind == AccountingPostingEvidenceKindDto.Source);
+        write.Entry.Lines.Should().OnlyContain(line =>
+            line.Dimensions != null &&
+            line.Dimensions.EntityId == contract.Borrower.LegalEntityId!.Value.ToString("D") &&
+            line.Dimensions.InstrumentId == Guid.Parse("99999999-9999-9999-9999-999999999999") &&
+            line.Dimensions.CounterpartyId == contract.Borrower.BorrowerId.ToString("D") &&
+            line.Dimensions.BookId == "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee" &&
+            line.Dimensions.AccountId == loanId.ToString("D"));
         write.Entry.Lines
             .Where(static line => !string.Equals(line.Account.Name, "Cash", StringComparison.OrdinalIgnoreCase))
             .Should()

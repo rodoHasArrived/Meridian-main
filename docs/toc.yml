@@ -30,6 +30,8 @@
       href: engineering/README.md
     - name: Architecture and Modules
       href: architecture/README.md
+    - name: Core Extensibility Model
+      href: architecture/core-extensibility-model.md
     - name: Source Module Registry
       href: source/README.md
 

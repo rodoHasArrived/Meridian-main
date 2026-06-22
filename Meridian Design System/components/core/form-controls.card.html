@@ -1,0 +1,155 @@
+<!-- @dsCard group="Components" viewport="1100x720" name="Form Controls" subtitle="Toast, Select, Checkbox, Toggle, Tooltip, Tabs, FormRow, FormGrid, Breadcrumb" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Form Controls</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const {
+  ToastProvider, useToast, Select, Checkbox, Toggle,
+  Tooltip, Tabs, TabPanel, FormRow, FormGrid, FormDivider, Breadcrumb, Button, Input
+} = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+function Section({ title, children }) {
+  return (
+    <div style={{ background:"white", border:"1px solid var(--border)", borderRadius:8, padding:16 }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:12 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function Demo() {
+  const toast = useToast();
+  const [sel, setSel] = useState("aapl");
+  const [chk, setChk] = useState(true);
+  const [tog, setTog] = useState(true);
+  const [tog2, setTog2] = useState(false);
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+      <ToastProvider />
+
+      {/* Toast */}
+      <Section title="Toast · ephemeral notifications">
+        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+          <Button onClick={() => toast.success("Backfill complete", "412,008 bars · 0 gaps")}>Success</Button>
+          <Button onClick={() => toast.warning("Provider degraded", "Polygon latency 340 ms")}>Warning</Button>
+          <Button onClick={() => toast.error("Connection lost", "Reconnecting…")}>Error</Button>
+          <Button onClick={() => toast.info("Order filled", "AAPL 100 shares @ 189.42")}>Info</Button>
+        </div>
+      </Section>
+
+      {/* Select */}
+      <Section title="Select · single-value dropdown">
+        <Select
+          label="Security"
+          value={sel}
+          onChange={setSel}
+          options={[
+            { value:"aapl", label:"AAPL · Apple Inc." },
+            { value:"msft", label:"MSFT · Microsoft Corp." },
+            "---",
+            { value:"spy",  label:"SPY · SPDR S&P 500 ETF" },
+            { value:"qqq",  label:"QQQ · Invesco QQQ Trust" },
+          ]}
+        />
+      </Section>
+
+      {/* Checkbox + Toggle */}
+      <Section title="Checkbox + Toggle">
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <Checkbox checked={chk} onChange={setChk} label="Include open positions" hint="Adds unrealized P&L to totals" />
+          <Checkbox checked={false} onChange={() => {}} label="Show zero-balance accounts" />
+          <Checkbox checked={true} onChange={() => {}} label="Disabled example" disabled />
+          <FormDivider />
+          <Toggle checked={tog} onChange={setTog} label="Live market data" />
+          <Toggle checked={tog2} onChange={setTog2} label="Extended hours" />
+        </div>
+      </Section>
+
+      {/* Tooltip */}
+      <Section title="Tooltip · hover for detail">
+        <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
+          <Tooltip content="Apple Inc. — Common Stock" placement="above">
+            <span style={{ fontFamily:"var(--font-data)", fontSize:13, fontWeight:600,
+              color:"var(--accent)", cursor:"default", borderBottom:"1px dashed var(--accent)" }}>
+              AAPL
+            </span>
+          </Tooltip>
+          <Tooltip content="Last updated 14:02:11Z" placement="above">
+            <span style={{ fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-muted)",
+              cursor:"default" }}>$189.42 ↑</span>
+          </Tooltip>
+          <Tooltip content="Weighted avg cost basis across all lots" placement="right">
+            <Button>Hover me</Button>
+          </Tooltip>
+        </div>
+      </Section>
+
+      {/* Tabs */}
+      <Section title="Tabs + TabPanel">
+        <Tabs tabs={[
+          { label:"General Ledger", count:48 },
+          { label:"Reconciliation", count:3 },
+          { label:"Tax Lots" },
+          { label:"Archived", disabled:true },
+        ]}>
+          <TabPanel><div style={{ padding:"12px 0", fontSize:12, color:"var(--text-secondary)" }}>GL entries panel</div></TabPanel>
+          <TabPanel><div style={{ padding:"12px 0", fontSize:12, color:"var(--text-secondary)" }}>Reconciliation panel</div></TabPanel>
+          <TabPanel><div style={{ padding:"12px 0", fontSize:12, color:"var(--text-secondary)" }}>Tax lots panel</div></TabPanel>
+          <TabPanel><div /></TabPanel>
+        </Tabs>
+      </Section>
+
+      {/* FormRow + FormGrid */}
+      <Section title="FormGrid · 2-column form layout">
+        <FormGrid cols={2}>
+          <FormRow label="Account code">
+            <Input placeholder="1100" />
+          </FormRow>
+          <FormRow label="Description">
+            <Input placeholder="Cash & equivalents" />
+          </FormRow>
+          <FormRow label="Currency">
+            <Select value="usd" options={[{value:"usd",label:"USD"},{value:"gbp",label:"GBP"},{value:"eur",label:"EUR"}]} onChange={() => {}} />
+          </FormRow>
+          <FormRow label="Type">
+            <Select value="asset" options={["asset","liability","equity","revenue","expense"]} onChange={() => {}} />
+          </FormRow>
+          <FormRow label="Notes" span={2}>
+            <Input placeholder="Optional notes…" />
+          </FormRow>
+        </FormGrid>
+      </Section>
+
+      {/* Breadcrumb */}
+      <Section title="Breadcrumb · drill-down navigator">
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <Breadcrumb items={[
+            { label:"Security Master", onClick: () => {} },
+            { label:"AAPL · Apple Inc.", onClick: () => {} },
+            { label:"Position history" },
+          ]} />
+          <Breadcrumb items={[
+            { label:"Accounting", onClick: () => {} },
+            { label:"General Ledger" },
+          ]} />
+        </div>
+      </Section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

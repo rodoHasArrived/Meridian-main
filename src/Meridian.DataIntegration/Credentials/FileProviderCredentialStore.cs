@@ -13,6 +13,10 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     private const string VaultFileName = "provider-credentials.vault";
     private const string KeyFileName = "provider-credentials.key";
     private const string AuditFileName = "provider-credentials.audit.jsonl";
+    private const string EnvironmentFallbackOverride = "MDC_PROVIDER_ALLOW_ENV_FALLBACK";
+    private const string PackagedBuildEnvVar = "MDC_PACKAGED_BUILD";
+    private const string CustomerBuildEnvVar = "MERIDIAN_CUSTOMER_BUILD";
+    private const int DefaultRotationWindowDays = 90;
     private static readonly byte[] Entropy = "Meridian.ProviderCredentialStore.v1"u8.ToArray();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -73,6 +77,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     {
         ArgumentNullException.ThrowIfNull(request);
         var descriptor = RequireDescriptor(request.ProviderId);
+        var normalizedCredentials = NormalizeCredentialFields(descriptor, request.Credentials ?? new Dictionary<string, string?>());
         var now = DateTimeOffset.UtcNow;
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -82,7 +87,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             vault.Providers.TryGetValue(descriptor.ProviderId, out var existing);
 
             var fields = new Dictionary<string, string>(existing?.Fields ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, value) in request.Credentials)
+            foreach (var (key, value) in normalizedCredentials)
             {
                 if (string.IsNullOrWhiteSpace(key))
                 {
@@ -110,6 +115,10 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
                     }
                 }
             }
+            metadata["lastRotatedAt"] = now.ToString("O");
+            metadata["rotationDueAt"] = now.AddDays(DefaultRotationWindowDays).ToString("O");
+            metadata["verificationRequired"] = "true";
+            metadata["credentialStore"] = "local-encrypted-vault";
 
             var updated = new ProviderCredentialVaultRecord
             {
@@ -187,10 +196,13 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             if (update.Success)
             {
                 record.LastSuccessfulAt = verifiedAt;
+                record.Metadata["verificationRequired"] = "false";
+                record.Metadata["lastVerifiedBy"] = string.IsNullOrWhiteSpace(update.Actor) ? "local-operator" : update.Actor.Trim();
             }
             else
             {
                 record.LastFailureAt = verifiedAt;
+                record.Metadata["verificationRequired"] = "true";
             }
 
             vault.Providers[descriptor.ProviderId] = record;
@@ -212,6 +224,42 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     private static ProviderCredentialCatalogEntry RequireDescriptor(string providerId)
         => ProviderCredentialCatalog.Find(providerId)
            ?? throw new ArgumentException($"Provider '{providerId}' is not in the provider credential catalog.", nameof(providerId));
+
+    private static IReadOnlyDictionary<string, string?> NormalizeCredentialFields(
+        ProviderCredentialCatalogEntry descriptor,
+        IReadOnlyDictionary<string, string?> credentials)
+    {
+        var allowedFields = descriptor.RequiredFields.ToDictionary(
+            static field => field.Name,
+            static field => field.Name,
+            StringComparer.OrdinalIgnoreCase);
+        var normalized = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        var unknownFields = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (key, value) in credentials)
+        {
+            var trimmedKey = key?.Trim();
+            if (string.IsNullOrWhiteSpace(trimmedKey))
+            {
+                continue;
+            }
+
+            if (!allowedFields.TryGetValue(trimmedKey, out var canonicalName))
+            {
+                unknownFields.Add(trimmedKey);
+                continue;
+            }
+
+            normalized[canonicalName] = value;
+        }
+
+        if (unknownFields.Count > 0)
+        {
+            throw new ProviderCredentialValidationException(descriptor.ProviderId, unknownFields.ToArray());
+        }
+
+        return normalized;
+    }
 
     private static ProviderCredentialStoreStatus BuildStatus(
         ProviderCredentialCatalogEntry descriptor,
@@ -351,7 +399,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private static ProviderCredentialVaultRecord? ReadEnvironmentFallback(ProviderCredentialCatalogEntry descriptor)
     {
-        if (!descriptor.RequiresCredentials)
+        if (!descriptor.RequiresCredentials || !ShouldAllowEnvironmentFallback())
         {
             return null;
         }
@@ -384,10 +432,40 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             UpdatedAt = DateTimeOffset.UtcNow,
             Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["legacyFallback"] = "environment"
+                ["legacyFallback"] = "environment",
+                ["environmentFallbackAllowed"] = "true",
+                ["migrationRequired"] = "store-provider-secrets-in-vault"
             }
         };
     }
+
+    private static bool ShouldAllowEnvironmentFallback()
+    {
+        if (IsTruthy(Environment.GetEnvironmentVariable(EnvironmentFallbackOverride)))
+        {
+            return true;
+        }
+
+        if (IsTruthy(Environment.GetEnvironmentVariable(PackagedBuildEnvVar)) ||
+            IsTruthy(Environment.GetEnvironmentVariable(CustomerBuildEnvVar)))
+        {
+            return false;
+        }
+
+        return IsDevelopmentLike(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")) ||
+               IsDevelopmentLike(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
+    }
+
+    private static bool IsDevelopmentLike(string? environment)
+        => environment is not null &&
+           (environment.Equals("Development", StringComparison.OrdinalIgnoreCase) ||
+            environment.Equals("Test", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsTruthy(string? value)
+        => value is not null &&
+           (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("yes", StringComparison.OrdinalIgnoreCase));
 
     private static string? ReadFirstEnvironmentValue(IReadOnlyList<string> names)
     {
@@ -441,7 +519,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         var envelope = JsonSerializer.Deserialize<ProtectedVaultEnvelope>(envelopeJson, JsonOptions)
             ?? throw new InvalidOperationException("Provider credential vault envelope is invalid.");
         var protectedBytes = Convert.FromBase64String(envelope.CipherText);
-        var plainBytes = Unprotect(envelope.Protection, protectedBytes, ct);
+        var plainBytes = await UnprotectAsync(envelope.Protection, protectedBytes, ct).ConfigureAwait(false);
         var vaultJson = Encoding.UTF8.GetString(plainBytes);
         var vault = JsonSerializer.Deserialize<ProviderCredentialVault>(vaultJson, JsonOptions);
         return vault ?? new ProviderCredentialVault();
@@ -455,13 +533,13 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         var vaultJson = JsonSerializer.Serialize(vault, JsonOptions);
         var plainBytes = Encoding.UTF8.GetBytes(vaultJson);
-        var (protection, protectedBytes) = Protect(plainBytes, ct);
+        var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
         var envelope = new ProtectedVaultEnvelope(VaultVersion, protection, Convert.ToBase64String(protectedBytes));
         var envelopeJson = JsonSerializer.Serialize(envelope, JsonOptions);
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
     }
 
-    private (string Protection, byte[] ProtectedBytes) Protect(byte[] plainBytes, CancellationToken ct)
+    private async Task<(string Protection, byte[] ProtectedBytes)> ProtectAsync(byte[] plainBytes, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         if (OperatingSystem.IsWindows())
@@ -469,17 +547,17 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             return ("dpapi-current-user", ProtectWithDpapi(plainBytes));
         }
 
-        return ("local-aes-gcm", ProtectWithLocalKey(plainBytes, ct));
+        return ("local-aes-gcm", await ProtectWithLocalKeyAsync(plainBytes, ct).ConfigureAwait(false));
     }
 
-    private byte[] Unprotect(string protection, byte[] protectedBytes, CancellationToken ct)
+    private async Task<byte[]> UnprotectAsync(string protection, byte[] protectedBytes, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         return protection switch
         {
             "dpapi-current-user" when OperatingSystem.IsWindows() => UnprotectWithDpapi(protectedBytes),
             "dpapi-current-user" => throw new PlatformNotSupportedException("DPAPI protected credential vaults can only be opened by the Windows user profile that created them."),
-            "local-aes-gcm" => UnprotectWithLocalKey(protectedBytes, ct),
+            "local-aes-gcm" => await UnprotectWithLocalKeyAsync(protectedBytes, ct).ConfigureAwait(false),
             _ => throw new InvalidOperationException($"Unsupported provider credential vault protection '{protection}'.")
         };
     }
@@ -492,9 +570,9 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     private static byte[] UnprotectWithDpapi(byte[] protectedBytes)
         => ProtectedData.Unprotect(protectedBytes, Entropy, DataProtectionScope.CurrentUser);
 
-    private byte[] ProtectWithLocalKey(byte[] plainBytes, CancellationToken ct)
+    private async Task<byte[]> ProtectWithLocalKeyAsync(byte[] plainBytes, CancellationToken ct)
     {
-        var key = GetOrCreateLocalKey(ct);
+        var key = await GetOrCreateLocalKeyAsync(ct).ConfigureAwait(false);
         var nonce = RandomNumberGenerator.GetBytes(12);
         var tag = new byte[16];
         var cipher = new byte[plainBytes.Length];
@@ -508,14 +586,14 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return output;
     }
 
-    private byte[] UnprotectWithLocalKey(byte[] protectedBytes, CancellationToken ct)
+    private async Task<byte[]> UnprotectWithLocalKeyAsync(byte[] protectedBytes, CancellationToken ct)
     {
         if (protectedBytes.Length < 28)
         {
             throw new InvalidOperationException("Provider credential vault payload is truncated.");
         }
 
-        var key = GetOrCreateLocalKey(ct);
+        var key = await GetOrCreateLocalKeyAsync(ct).ConfigureAwait(false);
         var nonce = protectedBytes.AsSpan(0, 12).ToArray();
         var tag = protectedBytes.AsSpan(12, 16).ToArray();
         var cipher = protectedBytes.AsSpan(28).ToArray();
@@ -525,16 +603,16 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return plainBytes;
     }
 
-    private byte[] GetOrCreateLocalKey(CancellationToken ct)
+    private async Task<byte[]> GetOrCreateLocalKeyAsync(CancellationToken ct)
     {
         Directory.CreateDirectory(_directoryPath);
         if (File.Exists(_keyPath))
         {
-            return File.ReadAllBytes(_keyPath);
+            return await File.ReadAllBytesAsync(_keyPath, ct).ConfigureAwait(false);
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
-        AtomicFileWriter.WriteAsync(_keyPath, key, ct).GetAwaiter().GetResult();
+        await AtomicFileWriter.WriteAsync(_keyPath, key, ct).ConfigureAwait(false);
         TrySetHidden(_keyPath);
         return key;
     }

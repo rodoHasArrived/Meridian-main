@@ -27,6 +27,9 @@ public sealed record LedgerEntry
     /// <summary>Human-readable description of the economic event.</summary>
     public string Description { get; private init; }
 
+    /// <summary>Optional dimensional accounting scope for this specific ledger line.</summary>
+    public LedgerLineDimensionSet? Dimensions { get; private init; }
+
     /// <summary>
     /// Initializes a new <see cref="LedgerEntry"/> with validation.
     /// </summary>
@@ -41,7 +44,8 @@ public sealed record LedgerEntry
         LedgerAccount account,
         decimal debit,
         decimal credit,
-        string description)
+        string description,
+        LedgerLineDimensionSet? dimensions = null)
     {
         ArgumentNullException.ThrowIfNull(account);
         ArgumentNullException.ThrowIfNull(description);
@@ -68,6 +72,7 @@ public sealed record LedgerEntry
         Debit = debit;
         Credit = credit;
         Description = description;
+        Dimensions = dimensions;
     }
 }
 

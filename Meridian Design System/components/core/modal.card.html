@@ -1,0 +1,129 @@
+<!-- @dsCard group="Components" viewport="1000x800" name="Modal System" subtitle="Modal, ModalHeader, ModalBody, ModalFooter, ModalForm — dialogs, confirmations, forms" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modal System</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #ECEFF3); font-family: var(--font-body);">
+  <div style="max-width: 1000px; margin: 0 auto;">
+    <h2 style="margin: 0 0 24px 0; font-size: 22px; color: var(--text-primary, #22272E);">Modal System</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+      <div id="demo-confirm"></div>
+      <div id="demo-form"></div>
+      <div id="demo-alert"></div>
+    </div>
+  </div>
+
+  <script type="text/babel">
+    const { Modal, ModalHeader, ModalBody, ModalFooter, ModalForm, Button } = window.MeridianDesignSystem_4f61be;
+    const { useState } = React;
+
+    // 1. Confirmation Modal
+    function ConfirmDemo() {
+      const [open, setOpen] = useState(false);
+      return (
+        <div>
+          <Button variant="primary" onClick={() => setOpen(true)}>Open Confirm</Button>
+          <Modal open={open} onClose={() => setOpen(false)}>
+            <ModalHeader title="Delete transaction?" onClose={() => setOpen(false)} />
+            <ModalBody>
+              This action cannot be undone. Transaction TXN-1847 will be permanently removed from the ledger.
+            </ModalBody>
+            <ModalFooter>
+              <button className="mdl-btn" onClick={() => setOpen(false)}>Cancel</button>
+              <button className="mdl-btn mdl-btn--primary" onClick={() => setOpen(false)} style={{ background: "var(--red, #BA3F55)", borderColor: "var(--red, #BA3F55)" }}>Delete</button>
+            </ModalFooter>
+          </Modal>
+        </div>
+      );
+    }
+
+    // 2. Form Modal
+    function FormDemo() {
+      const [open, setOpen] = useState(false);
+      const [loading, setLoading] = useState(false);
+      const handleSubmit = async () => {
+        setLoading(true);
+        await new Promise(r => setTimeout(r, 800));
+        setLoading(false);
+        setOpen(false);
+      };
+      return (
+        <div>
+          <Button variant="primary" onClick={() => setOpen(true)}>Open Form</Button>
+          <ModalForm
+            open={open}
+            onClose={() => setOpen(false)}
+            title="Create journal entry"
+            onSubmit={handleSubmit}
+            submitLabel="Post"
+            loading={loading}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.03em", color: "var(--text-muted)" }}>Debit account</span>
+                <input type="text" placeholder="1100 · Cash" style={{ padding: "7px 10px", border: "1px solid var(--border)", borderRadius: 6, fontFamily: "var(--font-data)", fontSize: 13 }} />
+              </label>
+              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.03em", color: "var(--text-muted)" }}>Amount</span>
+                <input type="text" placeholder="0.00" style={{ padding: "7px 10px", border: "1px solid var(--border)", borderRadius: 6, fontFamily: "var(--font-data)", fontSize: 13 }} />
+              </label>
+              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.03em", color: "var(--text-muted)" }}>Credit account</span>
+                <input type="text" placeholder="2100 · Margin payable" style={{ padding: "7px 10px", border: "1px solid var(--border)", borderRadius: 6, fontFamily: "var(--font-data)", fontSize: 13 }} />
+              </label>
+            </div>
+          </ModalForm>
+        </div>
+      );
+    }
+
+    // 3. Alert Modal
+    function AlertDemo() {
+      const [open, setOpen] = useState(false);
+      return (
+        <div>
+          <Button variant="primary" onClick={() => setOpen(true)}>Open Alert</Button>
+          <Modal open={open} onClose={() => setOpen(false)}>
+            <ModalHeader title="Reconciliation complete" onClose={() => setOpen(false)} />
+            <ModalBody>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <p style={{ margin: 0 }}>✓ All 47 items matched</p>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>Cash on hand: $82,440.00</p>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>Ledger balance: $82,440.00</p>
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <button className="mdl-btn mdl-btn--primary" onClick={() => setOpen(false)}>Done</button>
+            </ModalFooter>
+          </Modal>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("demo-confirm")).render(
+      <div>
+        <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Confirmation</h4>
+        <ConfirmDemo />
+      </div>
+    );
+    ReactDOM.createRoot(document.getElementById("demo-form")).render(
+      <div>
+        <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Form</h4>
+        <FormDemo />
+      </div>
+    );
+    ReactDOM.createRoot(document.getElementById("demo-alert")).render(
+      <div>
+        <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Alert</h4>
+        <AlertDemo />
+      </div>
+    );
+  </script>
+</body>
+</html>

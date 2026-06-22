@@ -2,11 +2,11 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-04-21
+**Reviewed:** 2026-06-16
 
-This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, shared workstation delivery, security-master productization, and fund-operations workflows. It is the single home for all visual assets:
+This folder contains committed DOT, PlantUML, PNG, and SVG diagram assets for the Meridian system, updated to reflect the current monolithic runtime, shared workstation delivery, security-master productization, and fund-operations workflows. Registered Mermaid architecture sources live separately in [`docs/architecture/diagrams/`](../architecture/diagrams/) and are indexed through [`docs/source/data/diagram-index.yml`](../source/data/diagram-index.yml).
 
-- **Graphviz DOT diagrams** — C4 context/container/component, data flow, provider and storage architecture (files in this directory)
+- **Graphviz DOT diagrams** — C4 context/container/component, data flow, provider, storage, UI, operations, and reference views
 - **UML diagrams** — Sequence, state, activity, timing, and communication diagrams in [`uml/`](uml/README.md)
 
 ---
@@ -37,7 +37,7 @@ The index below keeps basename references for readability; use the folders above
 | **C4 Level 2: Containers** | High-level container view (apps, services, storage) | `c4-level2-containers.dot` |
 | **C4 Level 3: Components** | Internal component architecture of core collector | `c4-level3-components.dot` |
 | **Data Flow** | End-to-end data flow from sources to export | `data-flow.dot` |
-| **Provider Architecture** | Data provider abstraction and implementation | `provider-architecture.dot` |
+| **Provider Architecture** | Data provider abstraction, manifest-driven setup, sync-run evidence, staging, and reconciliation handoff | `provider-architecture.dot` |
 | **Storage Architecture** | Storage pipeline with WAL, compression, tiering | `storage-architecture.dot` |
 | **Event Pipeline Sequence** | Detailed event processing sequence | `event-pipeline-sequence.dot` |
 | **Resilience Patterns** | Circuit breakers, retry, failover patterns | `resilience-patterns.dot` |
@@ -46,17 +46,20 @@ The index below keeps basename references for readability; use the folders above
 | **CLI Commands** | All CLI flags and commands reference | `cli-commands.dot` |
 | **Project Dependencies** | Project layer dependencies and test coverage | `project-dependencies.dot` |
 | **Runtime Hosts & Startup Modes** | Runnable projects plus the shared startup orchestration behind `src/Meridian` | `runtime-hosts.dot` |
-| **Workstation Delivery** | How WPF shells, governance review surfaces, and desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services | `workstation-delivery.dot` |
+| **Workstation Delivery** | How WPF shells, governance review surfaces, provider-integration handoff routes, and desktop-local API seams converge on shared run, portfolio, ledger, cash-flow, reconciliation, and security-reference services | `workstation-delivery.dot` |
 | **Security Master Lifecycle** | Import, ingest status, grouped conflict triage, projections, cache warmup, and workstation/query consumers | `security-master-lifecycle.dot` |
-| **Fund Ops & Reconciliation** | Accounting workspace review loop across reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
+| **Fund Ops & Reconciliation** | Accounting workspace review loop across provider handoff evidence, reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
 | **UI Navigation Map** | Auto-generated WPF sidebar/workspace navigation map from source code without hand-maintained drift | `ui-navigation-map.dot` |
 | **UI Implementation Flow** | Auto-generated WPF shell/DI/navigation flow from source code without hand-maintained drift | `ui-implementation-flow.dot` |
-| **Backtesting Engine** | Tick-level backtest replay: universe discovery, fill models, portfolio simulation, and metrics | `backtesting-engine.dot` |
-| **Strategy Lifecycle** | Strategy state machine, registration, promotion from backtest to paper to live | `strategy-lifecycle.dot` |
-| **Execution Layer** | Paper trading gateway, order lifecycle state machine, and position tracking | `execution-layer.dot` |
+| **WPF Screen Summary** | Auto-generated WPF workspace summary showing screen counts, section counts, visibility tiers, and launchpad page classes | `ui-wpf-screen-summary.dot` |
+| **WPF Screen Catalog** | Auto-generated WPF screen catalog grouped by workspace and section with route tags, page classes, visibility tiers, and ordering | `ui-wpf-screen-catalog.dot` |
+| **WPF Workspace Screen Diagrams** | Auto-generated per-workspace WPF screen diagrams for Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings | `ui-wpf-screens-*.dot` |
+| **Backtesting Engine** | Tick-level backtest replay evidence: universe discovery, fill models, portfolio simulation, metrics, and paper-readiness handoff | `backtesting-engine.dot` |
+| **Strategy Lifecycle** | Strategy state machine, registration, paper-first promotion evidence, and gated W7 live-readiness | `strategy-lifecycle.dot` |
+| **Execution Layer** | Paper trading gateway, paper-first order lifecycle state machine, and position tracking | `execution-layer.dot` |
 | **Domain Event Model** | MarketEvent hierarchy: all payload types, event type enum, and tier classification | `domain-event-model.dot` |
 | **F# Domain Library** | Railway-oriented validation, type-safe calculations, and C# interop layer | `fsharp-domain.dot` |
-| **Data Quality & Monitoring** | Quality scoring, SLA enforcement, outlier detection, and observability stack | `data-quality-monitoring.dot` |
+| **Data Quality & Monitoring** | Provider sync-run evidence, handoff history, quality scoring, SLA enforcement, outlier detection, and observability stack | `data-quality-monitoring.dot` |
 | **Backfill Workflow** | CLI/REST/scheduled backfill → CompositeProvider → rate limiting → gap detection → WAL + storage | `backfill-workflow.dot` |
 | **MCP Server** | Model Context Protocol server tools, resources, prompts, and Meridian backend integration | `mcp-server.dot` |
 | **Configuration Management** | appsettings.json hierarchy, environment variable overrides, IOptionsMonitor hot-reload | `configuration-management.dot` |
@@ -236,10 +239,10 @@ Shows the currently runnable Meridian hosts and the shared startup path behind `
 Shows how Meridian now delivers workstation features across the desktop shell and retained local API seams:
 
 - **Desktop surface**: `StrategyWorkspaceShellPage`, `TradingWorkspaceShellPage`, `AccountingWorkspaceShellPage`, and `SecurityMasterPage` with its grouped conflict queue and action inspector
-- **API surface**: retained `/api/workstation/*` plus adjacent `/api/portfolio/*`, `/api/strategies/*`, and `/api/security-master/*` routes
+- **API surface**: retained `/api/workstation/*` plus adjacent `/api/portfolio/*`, `/api/strategies/*`, `/api/security-master/*`, and provider-integration handoff/history routes
 - **Shared read models**: `StrategyRunWorkspaceService`, `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, and `CashFlowProjectionService`
 - **Security enrichment**: `SecurityMasterSecurityReferenceLookup` → `ISecurityMasterQueryService`
-- **Governance handoffs**: shared reconciliation break-queue review and cash-flow drill-ins stay visible from the same workstation shell
+- **Governance handoffs**: provider-integration staging rows can be approved into retained reconciliation handoff records without mutating downstream canonical stores; shared reconciliation break-queue review and cash-flow drill-ins stay visible from the same workstation shell
 - **Purpose**: makes the current workstation convergence visible without having to infer it from separate WPF, API, and strategy-service folders
 
 ### Security Master Lifecycle
@@ -258,8 +261,8 @@ Shows the current Security Master path from ingest to workstation consumption:
 Shows the current governance and reconciliation review loop:
 
 - **Workbench surface**: `AccountingWorkspaceShellPage`, `FundLedgerViewModel`, `FundReconciliationWorkbenchService`
-- **API path**: `IWorkstationReconciliationApiClient` → `/api/workstation/reconciliation/*`
-- **Core services**: `ReconciliationRunService`, `ReconciliationProjectionService`, `StrategyRunReadService`, optional `IBankTransactionSource`
+- **API path**: `IWorkstationReconciliationApiClient` → `/api/workstation/reconciliation/*`, with provider-integration handoff evidence coming through `/api/workstation/provider-integrations/*`
+- **Core services**: `ReconciliationRunService`, `ReconciliationProjectionService`, `StrategyRunReadService`, `ProviderIntegrationReconciliationHandoffService`, optional `IBankTransactionSource`
 - **Rule engine + state**: `LedgerInterop.ReconcilePortfolioLedgerChecks`, `IReconciliationRunRepository`, `StrategyRunStore`
 - **Purpose**: makes the fund-ops workflow legible across UI, API, application services, F# reconciliation logic, and persisted review state
 
@@ -280,11 +283,11 @@ Details the tick-level strategy backtesting system:
 Shows the full strategy lifecycle management:
 
 - **SDK** — IStrategyLifecycle interface with Initialize/OnBar.../Finalize callbacks and IBacktestContext injection
-- **Run Types** — RunType enum: Backtest, Paper, Live
+- **Run Types** — RunType enum: Backtest, Paper, and gated Live records; W7 live-readiness remains planned and governance-bound
 - **State Machine** — StrategyStatus: Initialized → Running → Paused → Stopped | Error, with valid transition edges
 - **Lifecycle Manager** — StrategyLifecycleManager: thread-safe registration, activation, pause, stop, error isolation
 - **Portfolio Tracking** — PortfolioReadService, LedgerReadService, StrategyRunReadService, EOD snapshots
-- **Promotion Path** — BacktestToLivePromoter with risk validation gate (Sharpe, drawdown, trade count thresholds)
+- **Promotion Path** — BacktestToLivePromoter gates backtest-to-paper and paper-to-W7-readiness evidence with approval, source-evidence, and governed-reporting requirements; it is not direct live-execution productization
 
 ### Execution Layer
 
@@ -323,6 +326,7 @@ Shows the F# domain library architecture:
 
 Shows data quality scoring and the observability stack:
 
+- **Observed evidence** — provider health, provider-integration sync-run history, durable staging/quarantine counts, handoff history, storage coverage, and workflow state
 - **5-Dimension Scoring** — Completeness (30%), Accuracy (25%), Timeliness (20%), Consistency (15%), Validity (10%)
 - **Grades** — A+ (95-100%) to F (<60%) with automatic alert on grade regression
 - **Outlier Detection** — 4σ Z-score for price and volume, rolling calibration per symbol
@@ -380,8 +384,7 @@ Shows the full symbol search and canonical ID resolution flow:
 
 Shows the current WPF sidebar implementation as it exists in source control:
 
-- **Shell source**: `src/Meridian.Wpf/Views/MainPage.xaml`
-- **Navigation registry**: `src/Meridian.Wpf/Services/NavigationService.cs`
+- **Shell registry source**: `src/Meridian.Wpf/Features/*`, `src/Meridian.Wpf/Models/ShellNavigationCatalog*.cs`, and `src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs`
 - **Coverage**: workspace groups, sidebar-visible pages, and registered-but-hidden routes
 - **Purpose**: makes navigation drift obvious whenever pages are added, moved, or orphaned
 
@@ -392,8 +395,32 @@ Shows how the WPF desktop host wires the UI together:
 - **App composition**: `src/Meridian.Wpf/App.xaml.cs`
 - **Window shell**: `src/Meridian.Wpf/MainWindow.xaml.cs`
 - **Main page shell**: `src/Meridian.Wpf/Views/MainPage.xaml.cs`
-- **Page inventory**: `src/Meridian.Wpf/Views/Pages.cs`
+- **Page inventory**: current shell page descriptors from `ShellPageRegistryBuilder` and feature modules
 - **Purpose**: tracks DI composition, shell responsibilities, and navigation/page inventory as development changes progress while keeping outputs deterministic unless the underlying WPF source changes
+
+### WPF Screen Summary _(auto-generated)_
+
+Shows the current WPF screen estate at workspace level:
+
+- **Source**: `src/Meridian.Wpf/Features/*`, `src/Meridian.Wpf/Models/ShellNavigationCatalog*.cs`, and `src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs`
+- **Coverage**: the seven visible root workspaces, screen counts, section counts, Primary/Secondary/Overflow split, and launchpad page class per workspace
+- **Purpose**: gives a quick screen inventory without reading the full navigation map
+
+### WPF Screen Catalog _(auto-generated)_
+
+Shows every registered WPF shell screen grouped for implementation review:
+
+- **Source**: the same live WPF shell registry used by the navigation map
+- **Coverage**: workspace, section, display title, route tag, page class, visibility tier, and ordering for every registered screen
+- **Purpose**: makes it clear where screens live and which page classes back them before changing WPF navigation, shell composition, or screen ownership
+
+### WPF Workspace Screen Diagrams _(auto-generated)_
+
+Shows each visible WPF workspace in a smaller focused diagram:
+
+- **Files**: `ui-wpf-screens-trading.*`, `ui-wpf-screens-portfolio.*`, `ui-wpf-screens-accounting.*`, `ui-wpf-screens-reporting.*`, `ui-wpf-screens-strategy.*`, `ui-wpf-screens-data.*`, and `ui-wpf-screens-settings.*`
+- **Coverage**: section folders, route tags, page classes, visibility tiers, and order values for one workspace at a time
+- **Purpose**: gives implementation agents a readable screen map before changing an individual WPF workspace
 
 ---
 
@@ -401,7 +428,7 @@ Shows how the WPF desktop host wires the UI together:
 
 ### Prerequisites
 
-The repository can regenerate diagrams with the committed Node-based renderer (recommended) or Graphviz. The Node path also refreshes the auto-generated WPF UI diagrams from source code without hand-maintained drift before rendering.
+The repository can regenerate the auto-generated WPF UI diagrams with the committed Node-based renderer, and it can render other DOT sources with Graphviz or another deterministic DOT renderer. The package script refreshes UI DOT sources from WPF source code before rendering, which keeps the UI diagrams from becoming hand-maintained copies.
 
 Install Node dependencies:
 
@@ -422,7 +449,7 @@ brew install graphviz
 choco install graphviz
 ```
 
-### Generate SVG Images (recommended)
+### Generate UI SVG Images
 
 ```bash
 # From the repository root
@@ -432,12 +459,20 @@ npm run generate-diagrams
 This command:
 
 - refreshes `ui-navigation-map.dot` and `ui-implementation-flow.dot` from the current WPF source files
-- renders the auto-generated UI diagrams to committed `.svg` artifacts
+- renders the auto-generated root UI diagrams to committed `.svg` artifacts
 
-To render every DOT file through the Node pipeline instead, run:
+To render every top-level DOT file in `docs/diagrams/` through the Node UI pipeline, run:
 
 ```bash
 npm run generate-diagrams -- --all
+```
+
+This is currently a top-level UI compatibility pass. It does not recurse into `architecture/`, `workflows/`, `operations/`, `reference/`, `analytics/`, or `uml/`.
+
+Use the existing Node renderer when the top-level UI PNG compatibility artifacts also need to be refreshed:
+
+```bash
+node build/node/generate-diagrams.mjs
 ```
 
 ### Generate with Graphviz manually
@@ -445,7 +480,7 @@ npm run generate-diagrams -- --all
 ```bash
 cd docs/diagrams
 
-# Generate all SVGs
+# Generate top-level SVGs
 for f in *.dot; do
   dot -Tsvg "$f" -o "${f%.dot}.svg"
 done
@@ -541,6 +576,6 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 ---
 
-_Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML._
+_Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML. Registered Mermaid sources live under `docs/architecture/diagrams/`._
 
-_Last Updated: 2026-04-21_
+_Last Updated: 2026-06-16_

@@ -1,4 +1,4 @@
-import type { PriceAlertCondition } from "./types";
+import type { PriceAlertCondition } from "./index";
 
 export interface EvaluationInput {
   condition: PriceAlertCondition;

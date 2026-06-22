@@ -53,6 +53,7 @@ Non-trigger examples:
 
 - Acquisition flow with clear provider reuse and dataset lifecycle.
 - View model states for loading, preview, validation, partial, error, and completed states.
+- Dirty rows and rejected rows handling, including review, cleanup, and retry posture.
 - Tests and validation evidence.
 
 ## Files Likely Affected

@@ -20,4 +20,13 @@ public sealed record LedgerQuery(
     string? FinancialAccountId = null,
     string? CounterpartyAccountId = null,
     string? Institution = null,
-    LedgerAccountType? AccountType = null);
+    LedgerAccountType? AccountType = null,
+    DateOnly? EffectiveDate = null,
+    string? IdempotencyKey = null,
+    string? FundEventId = null,
+    string? FundEventType = null,
+    string? CapitalAccountId = null,
+    string? InvestorId = null,
+    string? PaymentIntentId = null,
+    string? SettlementReference = null,
+    LedgerLineDimensionSet? LineDimensions = null);

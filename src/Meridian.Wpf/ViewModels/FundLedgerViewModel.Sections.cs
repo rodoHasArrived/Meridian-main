@@ -24,14 +24,21 @@ internal sealed class FundLedgerCollectionsSectionViewModel
     public ObservableCollection<string> CashFinancingHighlights { get; } = [];
     public ObservableCollection<FundAuditEntry> AuditTrail { get; } = [];
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; } = [];
+    public ObservableCollection<FundFinancialOperationsQueueRow> FinancialOperationsQueueItems { get; } = [];
     public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories { get; } = [];
+    public ObservableCollection<FundOperationsEvidencePackageRow> OperationsEvidencePackages { get; } = [];
+    public ObservableCollection<FundOperationsReconciliationLaneRow> OperationsReconciliationLanes { get; } = [];
+    public ObservableCollection<FundPrivateCapitalCloseLaneRow> PrivateCapitalCloseLanes { get; } = [];
+    public ObservableCollection<FundPrivateCapitalEvidencePackageRow> PrivateCapitalEvidencePackages { get; } = [];
+    public ObservableCollection<FundPrivateCapitalNavSupportPackageRow> PrivateCapitalNavSupportPackages { get; } = [];
+    public ObservableCollection<FundPrivateCapitalCloseApprovalRow> PrivateCapitalCloseApprovals { get; } = [];
 }
 
 internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
 {
     private string _currentWorkbenchModeText = "Overview Mode";
     private string _currentWorkbenchTitleText = "Overview Workbench";
-    private string _currentWorkbenchSubtitleText = "Fund-wide operating summary, liquidity posture, and exception pressure.";
+    private string _currentWorkbenchSubtitleText = "Fund-wide operating summary, liquidity posture, and review pressure.";
     private string _routeBannerTitleText = string.Empty;
     private string _routeBannerDetailText = string.Empty;
     private bool _hasRouteBanner;
@@ -39,9 +46,20 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     private string _reconciliationSnapshotWarningText = "Queue refresh timing is not confirmed. Refresh before resolving breaks or signing off.";
     private string _reportPackOwnershipText = "Accounting operator sign-off is pending.";
     private string _reportPackSnapshotWarningText = "Report-pack freshness is unknown. Refresh the preview before distributing reporting artifacts.";
+    private string _financialOperationsQueueStatusText = "Queue pending";
+    private string _financialOperationsQueueSummaryText = "Load Operations Continuity and close cockpit evidence to inspect active Financial Operations work items.";
     private string _accountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
     private string _accountingRecordSummaryText = "Load Operations Continuity detail to inspect retained source records, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage.";
     private string _accountingRecordEvidenceText = "0/8 evidence categories complete; 60 sec target not measured";
+    private string _privateCapitalCloseStatusText = "Private-capital close cockpit is waiting for fund context.";
+    private string _privateCapitalCloseSummaryText = "Load the close cockpit to inspect partner capital tie-outs, NAV support, approval history, close-package evidence, and period-lock readiness.";
+    private string _privateCapitalCloseEvidenceText = "0 evidence links";
+    private string _privateCapitalCloseBlockerText = "No source-backed close cockpit has been loaded.";
+    private WorkstationStateModel _reviewedAutomationState = WorkstationStateModel.Empty(
+        "Reviewed automation pending",
+        "Load Operations Continuity detail to inspect shared automation review posture.",
+        "Open Operations Continuity",
+        "OperationsContinuity");
     private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
         "Report pack waiting for fund context",
         "Select a fund profile and refresh the preview before distributing reporting artifacts.",
@@ -52,6 +70,11 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
         "Select a fund profile to inspect retained source, normalized activity, reconciliation, ledger, approval, and report-pack evidence.",
         "Open Operations Continuity",
         "OperationsContinuity");
+    private WorkstationStateModel _privateCapitalCloseReadinessState = WorkstationStateModel.Empty(
+        "Close cockpit waiting for fund context",
+        "Select a fund profile to inspect source-backed private-capital close lanes, evidence packages, NAV support packages, approval history, and period-lock readiness.",
+        "Open Operations Close",
+        "OperationsClose");
     private bool _isReportPackLoading;
     private int _selectedTabIndex;
 
@@ -65,11 +88,19 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     public string ReconciliationSnapshotWarningText { get => _reconciliationSnapshotWarningText; set => SetProperty(ref _reconciliationSnapshotWarningText, value); }
     public string ReportPackOwnershipText { get => _reportPackOwnershipText; set => SetProperty(ref _reportPackOwnershipText, value); }
     public string ReportPackSnapshotWarningText { get => _reportPackSnapshotWarningText; set => SetProperty(ref _reportPackSnapshotWarningText, value); }
+    public string FinancialOperationsQueueStatusText { get => _financialOperationsQueueStatusText; set => SetProperty(ref _financialOperationsQueueStatusText, value); }
+    public string FinancialOperationsQueueSummaryText { get => _financialOperationsQueueSummaryText; set => SetProperty(ref _financialOperationsQueueSummaryText, value); }
     public string AccountingRecordStatusText { get => _accountingRecordStatusText; set => SetProperty(ref _accountingRecordStatusText, value); }
     public string AccountingRecordSummaryText { get => _accountingRecordSummaryText; set => SetProperty(ref _accountingRecordSummaryText, value); }
     public string AccountingRecordEvidenceText { get => _accountingRecordEvidenceText; set => SetProperty(ref _accountingRecordEvidenceText, value); }
+    public string PrivateCapitalCloseStatusText { get => _privateCapitalCloseStatusText; set => SetProperty(ref _privateCapitalCloseStatusText, value); }
+    public string PrivateCapitalCloseSummaryText { get => _privateCapitalCloseSummaryText; set => SetProperty(ref _privateCapitalCloseSummaryText, value); }
+    public string PrivateCapitalCloseEvidenceText { get => _privateCapitalCloseEvidenceText; set => SetProperty(ref _privateCapitalCloseEvidenceText, value); }
+    public string PrivateCapitalCloseBlockerText { get => _privateCapitalCloseBlockerText; set => SetProperty(ref _privateCapitalCloseBlockerText, value); }
+    public WorkstationStateModel ReviewedAutomationState { get => _reviewedAutomationState; set => SetProperty(ref _reviewedAutomationState, value); }
     public WorkstationStateModel ReportPackReadinessState { get => _reportPackReadinessState; set => SetProperty(ref _reportPackReadinessState, value); }
     public WorkstationStateModel AccountingRecordReadinessState { get => _accountingRecordReadinessState; set => SetProperty(ref _accountingRecordReadinessState, value); }
+    public WorkstationStateModel PrivateCapitalCloseReadinessState { get => _privateCapitalCloseReadinessState; set => SetProperty(ref _privateCapitalCloseReadinessState, value); }
     public bool IsReportPackLoading { get => _isReportPackLoading; set => SetProperty(ref _isReportPackLoading, value); }
     public int SelectedTabIndex { get => _selectedTabIndex; set => SetProperty(ref _selectedTabIndex, value); }
 }
@@ -168,7 +199,7 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     private string _operatorText = "desktop-user";
     private string _noteText = string.Empty;
     private string _detailTitle = "Select a break or run";
-    private string _detailSubtitle = "Choose a break queue item or reconciliation run to load exception detail.";
+    private string _detailSubtitle = "Choose a break queue item or reconciliation run to load break detail.";
     private string _detailStatusText = "Awaiting selection";
     private string _detailCoverageText = "Security coverage status appears here when a reconciliation item is selected.";
     private string _detailLifecycleText = "Select a break queue item to see detection, review, decision, and audit posture.";

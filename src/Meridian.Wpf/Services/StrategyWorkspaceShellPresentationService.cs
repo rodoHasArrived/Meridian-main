@@ -451,6 +451,7 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
                     hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
                     operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
                     fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
+                    fundAccountId: WorkstationOperatingContextScopeResolver.ResolveFundAccountIdString(_operatingContextService?.CurrentContext),
                     fundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName,
                     ct: ct)
                 .ConfigureAwait(false);

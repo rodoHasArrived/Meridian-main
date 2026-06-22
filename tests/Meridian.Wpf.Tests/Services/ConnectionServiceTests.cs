@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
@@ -130,6 +131,32 @@ public sealed class ConnectionServiceTests : IDisposable
 
         // Assert
         service.ServiceUrl.Should().Be(newUrl, "ServiceUrl should be updated");
+    }
+
+    [Fact]
+    public void ConfigureServiceUrl_ShouldConfigureRemoteClient()
+    {
+        var remoteClient = new FakeRemoteWorkstationClient();
+        using var service = new ConnectionService(remoteClient);
+
+        service.ConfigureServiceUrl("http://remote.example.com:9000", timeoutSeconds: 17);
+
+        remoteClient.BaseUrl.Should().Be("http://remote.example.com:9000");
+        remoteClient.LastTimeoutSeconds.Should().Be(17);
+        remoteClient.ConfigureCallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ConnectAsync_ShouldUseRemoteHealthEndpoint()
+    {
+        var remoteClient = new FakeRemoteWorkstationClient { HealthEndpointResult = true };
+        using var service = new ConnectionService(remoteClient);
+
+        var result = await service.ConnectAsync("remote-provider");
+
+        result.Should().BeTrue("the injected remote client reported the service as healthy");
+        remoteClient.HealthEndpointCallCount.Should().Be(1);
+        service.State.Should().Be(ConnectionState.Connected);
     }
 
     [Fact]
@@ -336,5 +363,56 @@ public sealed class ConnectionServiceTests : IDisposable
         args.AttemptNumber.Should().Be(3);
         args.DelayMs.Should().Be(5000);
         args.Provider.Should().Be("TestProvider");
+    }
+
+    private sealed class FakeRemoteWorkstationClient : IRemoteWorkstationClient
+    {
+        public string BaseUrl { get; private set; } = "http://localhost:8080";
+        public int ConfigureCallCount { get; private set; }
+        public int HealthEndpointCallCount { get; private set; }
+        public int LastTimeoutSeconds { get; private set; }
+        public bool HealthEndpointResult { get; init; }
+
+        public void Configure(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60)
+        {
+            BaseUrl = serviceUrl;
+            LastTimeoutSeconds = timeoutSeconds;
+            ConfigureCallCount++;
+        }
+
+        public Task<bool> CheckHealthEndpointAsync(CancellationToken ct = default)
+        {
+            HealthEndpointCallCount++;
+            return Task.FromResult(HealthEndpointResult);
+        }
+
+        public Task<ServiceHealthResult> CheckHealthAsync(CancellationToken ct = default)
+            => Task.FromResult(new ServiceHealthResult { IsReachable = HealthEndpointResult });
+
+        public Task<StatusResponse?> GetStatusAsync(CancellationToken ct = default)
+            => Task.FromResult<StatusResponse?>(null);
+
+        public Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default)
+            => Task.FromResult(new ApiResponse<StatusResponse> { Success = HealthEndpointResult });
+
+        public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+            => Task.FromResult<T?>(null);
+
+        public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+            => Task.FromResult(new ApiResponse<T> { Success = false });
+
+        public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
+            => Task.FromResult<T?>(null);
+
+        public Task<ApiResponse<T>> PostWithResponseAsync<T>(string endpoint, object? body = null, CancellationToken ct = default)
+            where T : class
+            => Task.FromResult(new ApiResponse<T> { Success = false });
+
+        public Task<ApiResponse<T>> DeleteWithResponseAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+            => Task.FromResult(new ApiResponse<T> { Success = false });
+
+        public void Dispose()
+        {
+        }
     }
 }

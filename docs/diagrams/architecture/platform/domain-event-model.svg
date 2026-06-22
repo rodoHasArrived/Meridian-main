@@ -10,7 +10,7 @@
 <title>DomainEventModel</title>
 <polygon fill="white" stroke="none" points="-36,36 -36,-805 2547,-805 2547,36 -36,36"/>
 <text xml:space="preserve" text-anchor="middle" x="1255.5" y="-754.2" font-family="Helvetica,sans-Serif" font-size="12.00">Meridian &#45; Domain Event Model</text>
-<text xml:space="preserve" text-anchor="middle" x="1255.5" y="-739.8" font-family="Helvetica,sans-Serif" font-size="12.00">MarketEvent Sealed Record Hierarchy</text>
+<text xml:space="preserve" text-anchor="middle" x="1255.5" y="-739.8" font-family="Helvetica,sans-Serif" font-size="12.00">MarketEvent evidence for operational records</text>
 <g id="clust1" class="cluster">
 <title>cluster_envelope</title>
 <path fill="#faf5ff" stroke="#805ad5" d="M20,-332.2C20,-332.2 270,-332.2 270,-332.2 276,-332.2 282,-338.2 282,-344.2 282,-344.2 282,-712.2 282,-712.2 282,-718.2 276,-724.2 270,-724.2 270,-724.2 20,-724.2 20,-724.2 14,-724.2 8,-718.2 8,-712.2 8,-712.2 8,-344.2 8,-344.2 8,-338.2 14,-332.2 20,-332.2"/>

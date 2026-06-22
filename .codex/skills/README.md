@@ -1,13 +1,13 @@
 # Meridian Codex Skills
 
 This folder contains Meridian's repo-local Codex skills. These are the primary project-scoped
-skills for the current AI workflow and should stay aligned with Meridian's active desktop app
-operator UI direction, retained browser workstation support, fund-management/trading-platform
-scope, W1-W5 operational record baseline, and no-mobile development policy.
+skills for the current AI workflow and should stay aligned with Meridian's active desktop and
+browser operator UI direction, fund-management/trading-platform scope, closed W1-W5 operational
+record baseline, active W5X productization targets, and no-mobile development policy.
 
 Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 `docs/roadmap/generated/ROADMAP_SUMMARY.md`, and `docs/ai/assistant-workflow-contract.md`:
-2026-06-04.
+2026-06-19.
 
 ## Current Skills
 
@@ -18,9 +18,15 @@ Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 | `meridian-brainstorm` | [`SKILL.md`](meridian-brainstorm/SKILL.md) | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | [`SKILL.md`](meridian-browser-workstation/SKILL.md) | Implement and review browser workstation TypeScript/React changes |
 | `meridian-cleanup` | [`SKILL.md`](meridian-cleanup/SKILL.md) | Clean up code and docs without behavior changes |
+| `meridian-code-architecture` | [`SKILL.md`](meridian-code-architecture/SKILL.md) | Review architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review` | [`SKILL.md`](meridian-code-review/SKILL.md) | Review changes for bugs, regressions, and architecture drift |
+| `meridian-contract-governance` | [`SKILL.md`](meridian-contract-governance/SKILL.md) | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-accounting-posting-controls` | [`SKILL.md`](meridian-accounting-posting-controls/SKILL.md) | Review accounting posting gates, approval, period locks, idempotency, and reversal/rebook safeguards |
+| `meridian-event-accounting-architecture` | [`SKILL.md`](meridian-event-accounting-architecture/SKILL.md) | Design event-based accounting architecture, immutable journals, ledger projections, and evidence-backed controls |
+| `meridian-ledger-projection-replay-review` | [`SKILL.md`](meridian-ledger-projection-replay-review/SKILL.md) | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
+| `meridian-codex-skill-builder` | [`SKILL.md`](meridian-codex-skill-builder/SKILL.md) | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | [`SKILL.md`](meridian-docs/SKILL.md) | Maintain Meridian documentation with repo-grounded evidence |
-| `meridian-implementation-assurance` | [`SKILL.md`](meridian-implementation-assurance/SKILL.md) | Implement and verify changes with strict Codex gates, explicit evidence, and docs sync |
+| `meridian-implementation-assurance` | [`SKILL.md`](meridian-implementation-assurance/SKILL.md) | Implement, certify, and improve changes with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
 | `meridian-provider-builder` | [`SKILL.md`](meridian-provider-builder/SKILL.md) | Build and extend provider integrations |
 | `meridian-repo-navigation` | [`SKILL.md`](meridian-repo-navigation/SKILL.md) | Orient large-repo tasks before specialist work |
 | `meridian-roadmap-strategist` | [`SKILL.md`](meridian-roadmap-strategist/SKILL.md) | Refresh roadmap, delivery-plan, and target-state docs |
@@ -47,6 +53,12 @@ different work:
 | Orient | `meridian-repo-navigation` | Route first, name owner files/docs, then exit. |
 | Ideate | `meridian-brainstorm` | Generate options and tradeoffs; do not write specs. |
 | Plan | `meridian-blueprint` | Turn one selected idea into a code-ready design. |
+| Architecture | `meridian-code-architecture` | Check module boundaries, dependency direction, ADR/source-doc alignment, and public seams. |
+| Contract governance | `meridian-contract-governance` | Trace DTO, route, provider-interface, and read-model impact across consumers. |
+| Accounting posting controls | `meridian-accounting-posting-controls` | Review posting gates, approval, period locks, idempotency, double-entry, and reversal/rebook safeguards. |
+| Event accounting architecture | `meridian-event-accounting-architecture` | Design event-based accounting, immutable journals, projection/replay, and evidence-backed posting controls. |
+| Ledger projection replay | `meridian-ledger-projection-replay-review` | Review replay ordering, duplicate handling, projection rebuilds, versioning, drift, and report handoff. |
+| Codex skill builder | `meridian-codex-skill-builder` | Create or audit Codex skill packages with scripts, evals, profiles, catalogs, and routes. |
 | Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence and docs sync. |
 | Review | `meridian-code-review` | Findings first; no implementation unless asked. |
 | Docs | `meridian-docs` | Update docs, guidance, and indexes with current repo evidence. |
@@ -73,10 +85,10 @@ different work:
 - [`_shared/project-context.md`](_shared/project-context.md) — current product framing, solution
   map, key abstractions, and review guardrails
 - [`_shared/codex-execution-contract.md`](_shared/codex-execution-contract.md) — Codex-only
-  execution gates for safe concurrency, narrow validation, cosmetic-churn avoidance, docs sync,
-  AI tooling gates, and final response shape
+  execution gates for workflow disclosure, safe concurrency, narrow validation, cosmetic-churn
+  avoidance, docs sync, AI tooling gates, and final response shape
 - [`docs/ai/codex/quickstart.md`](../../docs/ai/codex/quickstart.md) — first-10-minutes Codex task
-  routing, proof matrix, read budget, and dirty-worktree protocol
+  routing, workflow disclosure startup, proof matrix, read budget, and dirty-worktree protocol
 - [`docs/ai/codex/route-cards.md`](../../docs/ai/codex/route-cards.md) — compact subsystem cards
   for owner projects, first docs, entrypoints, and validation lanes
 - [`docs/ai/codex/README.md`](../../docs/ai/codex/README.md) — Codex-specific AI docs index,
@@ -100,13 +112,16 @@ different work:
 - Every current Codex skill must include lightweight trigger and non-trigger examples so routing
   boundaries remain inspectable without running a full eval harness.
 - Treat `src/Meridian.Wpf/` as the active desktop app operator UI path. Keep
-  `src/Meridian.Ui/dashboard/` and `/workstation/` as retained browser workstation surfaces unless
-  the user explicitly asks for browser workstation work.
-- Keep skill descriptions and product examples centered on the W1-W5 operational record baseline:
-  data confidence, retained source evidence, reconciliation, approvals, accounting records,
-  multi-asset operational coverage, and governed reports. Treat Backtesting Studio, live-readiness,
-  full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and
-  other broad expansion lanes as deferred unless roadmap data moves them into active scope.
+  `src/Meridian.Ui/dashboard/` and `/workstation/` as active browser workstation surfaces.
+- For browser workstation visual or interaction checks, keep package tests as the proof baseline
+  and use the Codex Browser plugin only for scoped unauthenticated local routes or file-backed
+  previews that need rendered-state evidence.
+- Keep skill descriptions and product examples centered on the closed W1-W5 operational record
+  baseline plus active W5X productization targets: shared Financial Record Explorers and the
+  Financial Operations control center. Treat Backtesting Studio, live-readiness, full treasury
+  payment execution, full alternative asset operations, forecasting/scenario engines, enterprise
+  risk, client portal, no-code workflow design, mobile, and other broad expansion lanes as deferred
+  unless roadmap data moves them into active scope.
 - Do not introduce mobile development guidance unless the roadmap or user explicitly reopens that
   lane.
 - Keep `agents/openai.yaml` synchronized with the skill text so Codex UI metadata stays current.
@@ -115,13 +130,25 @@ different work:
 - For Codex-only implementation workflow changes, keep the edit in `.codex/skills/`, preserve
   disjoint-worker ownership, run narrow validation first, skip purposeless cosmetic churn, and keep
   code/doc evidence paired in the final response.
+- Keep workflow disclosure concise and aligned to the canonical AI User Notification template:
+  state phase, intent understood, current action, evidence/source, next gate, and validation intent
+  without emitting full command transcripts unless requested.
+- After selecting the narrowest applicable skill, include the skill selection receipt from
+  `_shared/codex-execution-contract.md` in the first substantive response: selected skill or
+  `none`, mode, reason, and required opening shape in the four-field `Skill Selection` block. For
+  `meridian-brainstorm`, the receipt carries the detected mode and is immediately followed by the
+  compact triage table.
 - Treat `make ai-verify`, `make ai-arch-check`, and the CI `Validate AI contract drift` step as
   required gates for AI/tooling changes. Keep `ai-audit*`, `ai-report`, docs-drift/freshness, and
   archive/maintenance targets as advisory or reporting lanes unless a task explicitly promotes them.
+- Use
+  `python .codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill> --summary`
+  for repo-local Codex package completeness. Use `python build/scripts/docs/validate-skill-packages.py`
+  for portable Agent Skills and Claude mirror packages unless that script is explicitly changed.
 - For source/docs alignment, run `python build/scripts/docs/validate-doc-hashes.py --summary`.
-  Refresh `docs/source/generated/source-hash-manifest.json` with
-  `python build/scripts/docs/validate-doc-hashes.py --write --summary` only after confirming the
-  nearest source README and registries still describe the changed code.
+  Refresh reviewed stale module entries with
+  `python build/scripts/docs/validate-doc-hashes.py --write-module <MODULE_ID> --summary`; reserve
+  broad `--write --summary` for a full accepted-baseline review.
 - When source READMEs need extra context, prefer conditional sections such as plans, end-user value,
   benchmarks/performance, operational evidence, security/credentials, API/contracts, or
   migration/archive notes. Skip empty optional sections.
@@ -132,6 +159,7 @@ different work:
 - Preserve `.agents/skills/` and `.claude/skills/` as host-neutral mirrors. Update them only when
   the changed workflow is shared across hosts, not when the change is Codex-specific structure or
   execution guidance.
+- Keep Codex-only package hardening in `.codex/skills/`: skill-owned evals, scripts, Codex agent profiles, route coverage, and package-audit fixtures are not mirrored into `.agents/skills/` or `.claude/skills/` unless a host-neutral package contract is explicitly introduced.
 
 ## Recommended Flow
 

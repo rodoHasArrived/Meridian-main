@@ -1,13 +1,9 @@
 // Event Pipeline Sequence Diagram
-// Meridian current project state
-// Last Updated: 2026-05-28
+// Meridian current project stance
+// Last Updated: 2026-06-10
 //
-// This diagram shows the sequence of event processing through the pipeline,
-// including the dual-path pipeline, dedup ledger, schema upcasting,
-// dropped event audit trail, and distributed messaging path.
-//
-// Generate: dot -Tpng event-pipeline-sequence.dot -o event-pipeline-sequence.png
-//           dot -Tsvg event-pipeline-sequence.dot -o event-pipeline-sequence.svg
+// The pipeline is shown as durable source-evidence movement into trusted
+// operational records.
 
 digraph EventPipelineSequence {
   rankdir=LR;
@@ -15,261 +11,80 @@ digraph EventPipelineSequence {
   node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
-  // Title
   labelloc="t";
-  label="Meridian - Event Pipeline Sequence\nAsync Producer-Consumer Pattern";
+  label="Meridian - Event Pipeline Sequence\nDurable evidence flow for operational records";
 
-  // Phase 1: Data Source
   subgraph cluster_source {
-    label="1. Data Source";
-    color="#4a90d9";
-    style="rounded";
-    bgcolor="#f0f8ff";
-
-    SOURCE [fillcolor="#bfdbfe",
-            label="Data Provider\n(IB/Alpaca/NYSE)\n\nWebSocket connection\nRaw market data"];
-
-    RAW_EVENT [shape=note, fillcolor="#dbeafe",
-               label="Raw Events:\n• tickPrice\n• tickSize\n• updateMktDepth\n• historicalData"];
-  }
-
-  // Phase 2: Provider Client
-  subgraph cluster_client {
-    label="2. Provider Client";
+    label="1. Source evidence";
     color="#2b6cb0";
     style="rounded";
     bgcolor="#dbeafe";
 
-    CLIENT [fillcolor="#93c5fd",
-            label="IMarketDataClient\n\nNormalize to domain\nValidate structure\nAdd metadata"];
-
-    CALLBACK [fillcolor="#93c5fd",
-              label="IBCallbackRouter /\nWebSocket Handler\n\nRoute by event type"];
-
-    TRANSFORM [shape=note, fillcolor="#bfdbfe",
-               label="Transforms:\n• Raw → MarketTradeUpdate\n• Raw → MarketQuoteUpdate\n• Raw → MarketDepthUpdate"];
+    SOURCE [fillcolor="#93c5fd",
+      label="Provider or import source\nmarket data, bank/custody,\nfund-admin files, documents"];
+    RAW [shape=note, fillcolor="#bfdbfe",
+      label="Raw source payload\nrequest metadata,\nprovider identity,\nchecksum candidate"];
   }
 
-  // Phase 3: Domain Collectors
-  subgraph cluster_collectors {
-    label="3. Domain Collectors";
-    color="#2c7a7b";
-    style="rounded";
-    bgcolor="#d1fae5";
-
-    TRADE_COLL [fillcolor="#6ee7b7",
-                label="TradeDataCollector\n\nSequence validation\nAggressor inference\nOrder flow stats"];
-
-    QUOTE_COLL [fillcolor="#6ee7b7",
-                label="QuoteCollector\n\nBBO state cache\nSpread calculation\nEmit BboQuote"];
-
-    DEPTH_COLL [fillcolor="#6ee7b7",
-                label="MarketDepthCollector\n\nL2 book state\nIntegrity checking\nSnapshot generation"];
-
-    DOMAIN_EVENT [shape=note, fillcolor="#a7f3d0",
-                  label="Domain Events:\n• Trade\n• BboQuote\n• LOBSnapshot\n• IntegrityEvent"];
-  }
-
-  // Phase 4: F# Validation
-  subgraph cluster_validation {
-    label="4. F# Validation";
+  subgraph cluster_normalize {
+    label="2. Normalize and validate";
     color="#2c7a7b";
     style="rounded";
     bgcolor="#e6fffa";
 
-    FSHARP_VAL [fillcolor="#81e6d9",
-                label="Railway-Oriented\nValidation\n\nType-safe checks\nError accumulation"];
-
-    VAL_RULES [shape=note, fillcolor="#b2f5ea",
-               label="Validation Rules:\n• Price > 0\n• Size > 0\n• Valid timestamp\n• Symbol format"];
+    ADAPTER [fillcolor="#a7f3d0",
+      label="Adapter/client\nmaps provider shape\nto Meridian contracts"];
+    VALIDATOR [fillcolor="#9ae6b4",
+      label="Validation and confidence\nschema, freshness,\nsequence, quality checks"];
+    BLOCKED [fillcolor="#fecaca",
+      label="Review-required state\nmissing/stale/invalid evidence"];
   }
 
-  // Phase 4b: Schema Upcasting (optional)
-  subgraph cluster_upcaster {
-    label="4b. Schema Migration (optional)";
-    color="#718096";
-    style="dashed";
-    bgcolor="#f7fafc";
-
-    UPCASTER [fillcolor="#e2e8f0",
-              label="SchemaUpcasterRegistry\n\nSemantic version detection\nAutomatic schema migration\nLegacy event format support\nForward-compatible reads"];
-  }
-
-  // Phase 5: Event Pipeline
   subgraph cluster_pipeline {
-    label="5. Event Pipeline (System.Threading.Channels)";
-    color="#805ad5";
-    style="rounded";
-    bgcolor="#ede9fe";
-
-    CHANNEL [fillcolor="#c4b5fd",
-             label="BoundedChannel<MarketEvent>\n\nCapacity: 100,000\nDropOldest on full\nAsync write/read"];
-
-    subgraph cluster_dual_path {
-      label="DualPathEventPipeline";
-      style="dashed";
-      color="#6b21a8";
-
-      HOT_PATH [fillcolor="#ddd6fe",
-                label="Hot Path\n\nFast lane (no WAL)\nLow-latency dispatch\nMetrics only"];
-
-      SLOW_PATH [fillcolor="#ddd6fe",
-                 label="Slow Path\n\nValidation + WAL\nDedup check\nFull durability"];
-    }
-
-    PIPELINE_READER [fillcolor="#c4b5fd",
-                     label="Pipeline Reader\n\nBackground consumer\nBatch processing\n100 events / 5s flush"];
-
-    DEDUP [fillcolor="#c4b5fd",
-           label="PersistentDedupLedger\n\nCross-run deduplication\nBloom filter (fast path)\nContent hash storage\nPersisted to disk"];
-
-    DROPPED_AUDIT [fillcolor="#ddd6fe",
-                   label="DroppedEventAuditTrail\n\nTrack channel-dropped events\nSymbol + type + timestamp\nRecovery hints\nMetrics counter"];
-
-    CHANNEL_STATS [shape=note, fillcolor="#ddd6fe",
-                   label="Metrics:\n• Channel depth\n• Events/second\n• Drop count\n• Dedup hit rate"];
-
-    // Dual-path routing from channel
-    CHANNEL -> HOT_PATH    [label="hot lane",  fontsize=8];
-    CHANNEL -> SLOW_PATH   [label="slow lane", fontsize=8];
-
-    // Durable path: validation + WAL + dedup into pipeline reader
-    SLOW_PATH -> DEDUP          [label="dedup check", fontsize=8];
-    DEDUP     -> PIPELINE_READER[label="batched read", fontsize=8];
-
-    // Observability: drops and channel metrics
-    CHANNEL -> DROPPED_AUDIT [style=dashed, label="on drop",   fontsize=8];
-    CHANNEL -> CHANNEL_STATS [style=dashed, label="metrics",   fontsize=8];
-  }
-
-  // Phase 6: Composite Publisher
-  subgraph cluster_publisher {
-    label="6. Composite Publisher";
+    label="3. Durable pipeline";
     color="#805ad5";
     style="rounded";
     bgcolor="#faf5ff";
 
-    COMPOSITE [fillcolor="#ddd6fe",
-               label="CompositePublisher\n\nFanout to sinks\nParallel dispatch"];
-
-    subgraph cluster_sinks {
-      label="Configured Sinks";
-      style="dashed";
-      color="#6b21a8";
-
-      LOCAL_SINK [fillcolor="#e9d5ff",
-                  label="PipelinePublisher\n(Local Storage)"];
-      MT_SINK [fillcolor="#e9d5ff",
-               label="MassTransitPublisher\n(Message Bus)"];
-    }
+    CHANNEL [fillcolor="#ddd6fe",
+      label="EventPipeline\nbounded channel,\nbackpressure,\nproducer/consumer flow"];
+    DEDUP [fillcolor="#c4b5fd",
+      label="Dedup and integrity\nsequence checks,\nidempotency, gap events"];
+    WAL [shape=cylinder, fillcolor="#fc8181",
+      label="WriteAheadLog\ncrash-safe append,\nchecksum validation"];
+    STORAGE [shape=cylinder, fillcolor="#fbd38d",
+      label="JSONL / Parquet storage\nretained evidence,\nreplay and lineage"];
   }
 
-  // Phase 7a: Local Storage Path
-  subgraph cluster_storage {
-    label="7a. Local Storage Path";
+  subgraph cluster_consumers {
+    label="4. Operational consumers";
     color="#c53030";
     style="rounded";
-    bgcolor="#fee2e2";
-
-    WAL [fillcolor="#fc8181", fontcolor="white",
-         label="Write-Ahead Log\n\nJournal first\nCrash-safe"];
-
-    JSONL [fillcolor="#fecaca",
-           label="JSONL Sink\n\nAppend event\nFlush buffer"];
-
-    STORAGE_RESULT [shape=note, fillcolor="#feb2b2",
-                    label="Output:\n{symbol}_{type}_{date}.jsonl\n(optionally compressed)"];
-  }
-
-  // Phase 7b: Distributed Path
-  subgraph cluster_messaging {
-    label="7b. Distributed Messaging Path (Optional)";
-    color="#e53e3e";
-    style="dashed";
     bgcolor="#fff5f5";
 
-    MASSTRANSIT [fillcolor="#fc8181", fontcolor="white",
-                 label="MassTransit\n\nSerialize event\nPublish to bus"];
-
-    EXCHANGE [fillcolor="#fecaca",
-              label="RabbitMQ Exchange\n\nFanout to queues"];
-
-    CONSUMERS [fillcolor="#fecaca",
-               label="Microservice\nConsumers\n\n:5001-:5005"];
+    RECON [fillcolor="#fecaca",
+      label="Reconciliation and investigation\nbreak queues,\nsource-to-source checks"];
+    LEDGER [fillcolor="#e53e3e", fontcolor="white",
+      label="Accounting records\njournals, adjustments,\nledger evidence"];
+    REPORTS [fillcolor="#fbd38d",
+      label="Governed reports\nfrozen snapshots,\npublication lineage"];
+    AUDIT [shape=cylinder, fillcolor="#fc8181",
+      label="Audit trail\npayload -> event -> record -> report"];
   }
 
-  // Phase 8: Monitoring
-  subgraph cluster_monitoring {
-    label="8. Observability";
-    color="#38a169";
-    style="rounded";
-    bgcolor="#f0fff4";
-
-    METRICS [fillcolor="#9ae6b4",
-             label="Metrics\n\nmdc_published++\nmdc_events_per_second"];
-
-    TRACES [fillcolor="#9ae6b4",
-            label="OpenTelemetry\n\nSpan per event\nDistributed context"];
-
-    STATUS [fillcolor="#9ae6b4",
-            label="StatusHttpServer\n\n/metrics, /status\n/health"];
-  }
-
-  // Data Flow
-  SOURCE -> CLIENT [color="#4a90d9", penwidth=2, label="1"];
-  RAW_EVENT -> CLIENT [style=dashed];
-  CLIENT -> CALLBACK [color="#2b6cb0"];
-  CALLBACK -> TRANSFORM [style=dashed];
-
-  CALLBACK -> TRADE_COLL [color="#2c7a7b", penwidth=2, label="2a"];
-  CALLBACK -> QUOTE_COLL [color="#2c7a7b", penwidth=2, label="2b"];
-  CALLBACK -> DEPTH_COLL [color="#2c7a7b", penwidth=2, label="2c"];
-
-  TRADE_COLL -> DOMAIN_EVENT [style=dashed];
-  QUOTE_COLL -> DOMAIN_EVENT [style=dashed];
-  DEPTH_COLL -> DOMAIN_EVENT [style=dashed];
-
-  TRADE_COLL -> FSHARP_VAL [color="#2c7a7b", label="3"];
-  QUOTE_COLL -> FSHARP_VAL [color="#2c7a7b"];
-  DEPTH_COLL -> FSHARP_VAL [color="#2c7a7b"];
-  FSHARP_VAL -> VAL_RULES [style=dashed];
-
-  FSHARP_VAL -> UPCASTER [style=dashed, label="4b if legacy"];
-  UPCASTER -> CHANNEL [style=dashed];
-  FSHARP_VAL -> CHANNEL [color="#805ad5", penwidth=2, label="4\nasync write"];
-  CHANNEL -> HOT_PATH  [color="#805ad5", label="hot lane",  fontsize=8];
-  CHANNEL -> SLOW_PATH [color="#805ad5", label="slow lane", fontsize=8];
-  HOT_PATH  -> PIPELINE_READER [color="#805ad5", label="fast dispatch", fontsize=8];
-  SLOW_PATH -> DEDUP           [color="#805ad5", label="dedup check",   fontsize=8];
-  DEDUP     -> PIPELINE_READER [color="#805ad5", label="batched read",  fontsize=8];
-  CHANNEL -> DROPPED_AUDIT [style=dashed, label="on drop",  fontsize=8];
-  CHANNEL -> CHANNEL_STATS [style=dashed, label="metrics",  fontsize=8];
-  PIPELINE_READER -> COMPOSITE [color="#805ad5", penwidth=2];
-
-  COMPOSITE -> LOCAL_SINK [color="#805ad5", label="6a"];
-  COMPOSITE -> MT_SINK [color="#805ad5", style=dashed, label="6b"];
-
-  LOCAL_SINK -> WAL [color="#c53030", penwidth=2, label="7a"];
-  WAL -> JSONL [color="#c53030", penwidth=2];
-  JSONL -> STORAGE_RESULT [style=dashed];
-
-  MT_SINK -> MASSTRANSIT [color="#e53e3e", style=dashed, label="7b"];
-  MASSTRANSIT -> EXCHANGE [color="#e53e3e", style=dashed];
-  EXCHANGE -> CONSUMERS [color="#e53e3e", style=dashed];
-
-  // Monitoring connections
-  PIPELINE_READER -> METRICS [style=dashed, color="#38a169"];
-  COMPOSITE -> TRACES [style=dashed, color="#38a169"];
-  METRICS -> STATUS [style=dashed, color="#38a169"];
-
-  // Legend
-  subgraph cluster_legend {
-    label="Legend";
-    style="rounded";
-    color="#666666";
-    bgcolor="#fafafa";
-
-    LEG [shape=plaintext,
-         label="━━ Synchronous flow\n─ ─ Async/Optional flow\n→ Data transformation point\n\nNumbers indicate processing order"];
-  }
+  SOURCE -> RAW;
+  RAW -> ADAPTER;
+  ADAPTER -> VALIDATOR;
+  VALIDATOR -> BLOCKED [label="not trusted"];
+  VALIDATOR -> CHANNEL [label="trusted"];
+  CHANNEL -> DEDUP;
+  DEDUP -> WAL;
+  WAL -> STORAGE;
+  STORAGE -> RECON;
+  RECON -> LEDGER;
+  LEDGER -> REPORTS;
+  RAW -> AUDIT [style=dashed];
+  WAL -> AUDIT [style=dashed];
+  RECON -> AUDIT [style=dashed];
+  REPORTS -> AUDIT [style=dashed];
 }

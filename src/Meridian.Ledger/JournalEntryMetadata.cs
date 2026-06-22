@@ -19,8 +19,20 @@ public sealed record JournalEntryMetadata(
     string? FinancialAccountId = null,
     string? CounterpartyAccountId = null,
     string? Institution = null,
-    IReadOnlyDictionary<string, string>? Tags = null)
+    DateOnly? EffectiveDate = null,
+    string? IdempotencyKey = null,
+    string? FundEventId = null,
+    string? FundEventType = null,
+    string? CapitalAccountId = null,
+    string? InvestorId = null,
+    string? PaymentIntentId = null,
+    string? SettlementReference = null,
+    IReadOnlyDictionary<string, string>? Tags = null,
+    IReadOnlyList<JournalEvidenceReference>? EvidenceReferences = null)
 {
+    public IReadOnlyList<JournalEvidenceReference> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
     /// <summary>
     /// Returns a normalized copy suitable for durable comparisons and filters.
     /// </summary>
@@ -48,7 +60,15 @@ public sealed record JournalEntryMetadata(
             FinancialAccountId = string.IsNullOrWhiteSpace(FinancialAccountId) ? null : FinancialAccountId.Trim(),
             CounterpartyAccountId = string.IsNullOrWhiteSpace(CounterpartyAccountId) ? null : CounterpartyAccountId.Trim(),
             Institution = string.IsNullOrWhiteSpace(Institution) ? null : Institution.Trim(),
+            IdempotencyKey = string.IsNullOrWhiteSpace(IdempotencyKey) ? null : IdempotencyKey.Trim(),
+            FundEventId = string.IsNullOrWhiteSpace(FundEventId) ? null : FundEventId.Trim(),
+            FundEventType = string.IsNullOrWhiteSpace(FundEventType) ? null : FundEventType.Trim(),
+            CapitalAccountId = string.IsNullOrWhiteSpace(CapitalAccountId) ? null : CapitalAccountId.Trim(),
+            InvestorId = string.IsNullOrWhiteSpace(InvestorId) ? null : InvestorId.Trim(),
+            PaymentIntentId = string.IsNullOrWhiteSpace(PaymentIntentId) ? null : PaymentIntentId.Trim(),
+            SettlementReference = string.IsNullOrWhiteSpace(SettlementReference) ? null : SettlementReference.Trim(),
             Tags = tags,
+            EvidenceReferences = EvidenceReferences.Select(static item => item.Normalize()).ToArray(),
         };
     }
 }

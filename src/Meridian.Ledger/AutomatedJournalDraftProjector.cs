@@ -24,7 +24,10 @@ public static class AutomatedJournalDraftProjector
             Symbol: symbol,
             SecurityId: journalEvent.SecurityId,
             FinancialAccountId: financialAccountId,
-            Tags: BuildTags(journalEvent.SourceEventId));
+            EffectiveDate: journalEvent.EffectiveDate ?? DateOnly.FromDateTime(journalEvent.Timestamp.UtcDateTime),
+            IdempotencyKey: NormalizeOptional(journalEvent.IdempotencyKey),
+            Tags: BuildTags(journalEvent.SourceEventId),
+            EvidenceReferences: journalEvent.EvidenceReferences.Select(static item => item.Normalize()).ToArray());
 
         return new AutomatedJournalDraft(journalEvent with { Symbol = symbol, FinancialAccountId = financialAccountId }, description, lines, metadata);
     }

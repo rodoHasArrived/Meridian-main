@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Workflows;
 
@@ -14,25 +15,29 @@ public sealed class WorkstationWorkflowSummaryService
     private readonly IReconciliationRunService? _reconciliationRunService;
     private readonly Meridian.Application.UI.ConfigStore? _configStore;
     private readonly IWorkflowActionCatalog? _actionCatalog;
+    private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
 
     public WorkstationWorkflowSummaryService(
         StrategyRunReadService runReadService,
         StrategyRunContinuityService? continuityService = null,
         IReconciliationRunService? reconciliationRunService = null,
         Meridian.Application.UI.ConfigStore? configStore = null,
-        IWorkflowActionCatalog? actionCatalog = null)
+        IWorkflowActionCatalog? actionCatalog = null,
+        IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _continuityService = continuityService;
         _reconciliationRunService = reconciliationRunService;
         _configStore = configStore;
         _actionCatalog = actionCatalog;
+        _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
     }
 
     public async Task<OperatorWorkflowHomeSummary> GetAsync(
         bool hasOperatingContext = false,
         string? operatingContextDisplayName = null,
         string? fundProfileId = null,
+        string? fundAccountId = null,
         string? fundDisplayName = null,
         CancellationToken ct = default)
     {
@@ -67,13 +72,15 @@ public sealed class WorkstationWorkflowSummaryService
         var strategyCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForPaper, ct);
         var tradingActiveSnapshotTask = LoadRunSnapshotAsync(activeTradingRun, ct);
         var accountingCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct);
+        var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(contextSelected, fundAccountId, fundProfileId, ct);
 
-        await Task.WhenAll(strategyCandidateSnapshotTask, tradingActiveSnapshotTask, accountingCandidateSnapshotTask)
+        await Task.WhenAll(strategyCandidateSnapshotTask, tradingActiveSnapshotTask, accountingCandidateSnapshotTask, financialOperationsSnapshotTask)
             .ConfigureAwait(false);
 
         var strategyCandidateSnapshot = await strategyCandidateSnapshotTask.ConfigureAwait(false);
         var tradingActiveSnapshot = await tradingActiveSnapshotTask.ConfigureAwait(false);
         var accountingSnapshot = await accountingCandidateSnapshotTask.ConfigureAwait(false);
+        var financialOperationsSnapshot = await financialOperationsSnapshotTask.ConfigureAwait(false);
 
         var workspaces = new WorkspaceWorkflowSummary[]
         {
@@ -86,7 +93,7 @@ public sealed class WorkstationWorkflowSummaryService
                 strategyCandidateSnapshot,
                 relevantRuns),
             BuildPortfolioSummary(contextSelected),
-            BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, accountingSnapshot, governedRuns),
+            BuildAccountingSummary(contextSelected, candidateForLive, latestGovernedRun, accountingSnapshot, governedRuns, financialOperationsSnapshot),
             BuildReportingSummary(contextSelected),
             BuildStrategySummary(candidateForPaper, activeStrategyRun, strategyCandidateSnapshot, strategyRuns),
             BuildDataSummary(),
@@ -472,7 +479,8 @@ public sealed class WorkstationWorkflowSummaryService
         StrategyRunSummary? candidateForLive,
         StrategyRunSummary? latestGovernedRun,
         WorkflowRunSnapshot? accountingSnapshot,
-        IReadOnlyList<StrategyRunSummary> governedRuns)
+        IReadOnlyList<StrategyRunSummary> governedRuns,
+        FinancialOperationsControlSnapshot? financialOperationsSnapshot)
     {
         if (!hasOperatingContext)
         {
@@ -497,6 +505,11 @@ public sealed class WorkstationWorkflowSummaryService
                 [
                     new WorkflowEvidenceBadge("Accounting runs", governedRuns.Count.ToString(), "Neutral")
                 ]);
+        }
+
+        if (financialOperationsSnapshot is not null)
+        {
+            return BuildFinancialOperationsAccountingSummary(financialOperationsSnapshot);
         }
 
         var accountingRun = candidateForLive ?? latestGovernedRun;
@@ -636,6 +649,471 @@ public sealed class WorkstationWorkflowSummaryService
             [
                 new WorkflowEvidenceBadge("Controls", "Available", "Success")
             ]);
+    }
+
+    private WorkspaceWorkflowSummary BuildFinancialOperationsAccountingSummary(FinancialOperationsControlSnapshot snapshot)
+    {
+        var workflow = snapshot.ActiveWorkflow;
+        if (workflow is null)
+        {
+            return new WorkspaceWorkflowSummary(
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                StatusLabel: "Financial operations workflow not started",
+                StatusDetail: $"No operations continuity workflow is recorded for fund account {snapshot.FundAccountId:D}.",
+                StatusTone: "Warning",
+                NextAction: new WorkflowNextAction(
+                    Label: "Receive Activity",
+                    Detail: "Start the governed operations flow before matching, exception resolution, approval, or evidence production.",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewOperationsContinuity, "OperationsContinuity"),
+                    Tone: "Primary"),
+                PrimaryBlocker: CreateBlocker(
+                    code: "financial-operations-not-started",
+                    label: "No source-backed operations workflow",
+                    detail: "Financial operations status is blocked until source activity is received through an operations continuity workflow.",
+                    tone: "Warning",
+                    isBlocking: true),
+                Evidence:
+                [
+                    new WorkflowEvidenceBadge("Fund account", "Scoped", "Success"),
+                    new WorkflowEvidenceBadge("Workflows", snapshot.WorkflowCount.ToString(), "Warning"),
+                    new WorkflowEvidenceBadge("Core flow", "Receive Activity", "Warning"),
+                    new WorkflowEvidenceBadge("Reviewed automation", "No suggestions without intake", "Warning")
+                ]);
+        }
+
+        var unresolvedBreakCount = CountUnresolvedBreaks(workflow);
+        var evidenceCount = CountEvidenceLinks(workflow);
+        var evidencePackageBlocker = ResolveFinancialOperationsEvidencePackageBlocker(workflow);
+        var stage = ResolveFinancialOperationsStage(workflow, unresolvedBreakCount, evidencePackageBlocker);
+
+        if (unresolvedBreakCount > 0)
+        {
+            return new WorkspaceWorkflowSummary(
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                StatusLabel: "Financial operations exceptions require review",
+                StatusDetail: $"Period {workflow.PeriodId} has {unresolvedBreakCount} unresolved exception(s) before approval and evidence production can complete.",
+                StatusTone: "Warning",
+                NextAction: new WorkflowNextAction(
+                    Label: "Resolve Exceptions",
+                    Detail: "Open reconciliation casework, assign breaks, and retain resolution evidence.",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewReconciliation, "FundReconciliation"),
+                    Tone: "Primary"),
+                PrimaryBlocker: CreateBlocker(
+                    code: "financial-operations-exceptions",
+                    label: $"{unresolvedBreakCount} unresolved exception(s)",
+                    detail: "Approval and close evidence remain blocked until every break is matched, resolved, or explicitly closed.",
+                    tone: "Warning",
+                    isBlocking: true),
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
+        }
+
+        if (workflow.ApprovalState is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned ||
+            workflow.Status == OperationsWorkflowStatusDto.ApprovalPending)
+        {
+            var pendingApprovals = workflow.Approvals.Count(static approval =>
+                approval.Status is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned);
+            return new WorkspaceWorkflowSummary(
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                StatusLabel: "Financial operations approval pending",
+                StatusDetail: $"Period {workflow.PeriodId} has matched records and is waiting on {Math.Max(1, pendingApprovals)} approval review(s).",
+                StatusTone: "Warning",
+                NextAction: new WorkflowNextAction(
+                    Label: "Approve Results",
+                    Detail: "Review workflow approvals, rationale, checklist controls, and retained evidence.",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewOperationsContinuity, "OperationsContinuity"),
+                    Tone: "Primary"),
+                PrimaryBlocker: CreateBlocker(
+                    code: "financial-operations-approval-pending",
+                    label: "Approval history is pending",
+                    detail: "The financial operations flow cannot produce final close evidence until approval review is complete.",
+                    tone: "Warning",
+                    isBlocking: true),
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
+        }
+
+        if ((workflow.Status == OperationsWorkflowStatusDto.Closed || workflow.ClosePackage is not null) &&
+            evidencePackageBlocker is not null)
+        {
+            return new WorkspaceWorkflowSummary(
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                StatusLabel: "Financial operations evidence package review required",
+                StatusDetail: $"Period {workflow.PeriodId} has close evidence but {evidencePackageBlocker.Label.ToLowerInvariant()} is {evidencePackageBlocker.Status}.",
+                StatusTone: "Warning",
+                NextAction: new WorkflowNextAction(
+                    Label: "Review Evidence Package",
+                    Detail: evidencePackageBlocker.RequiredActions.FirstOrDefault()
+                        ?? "Review retained evidence-package posture before treating the workflow as close-ready evidence.",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewOperationsContinuity, "OperationsContinuity"),
+                    Tone: "Primary"),
+                PrimaryBlocker: CreateBlocker(
+                    code: "financial-operations-evidence-package",
+                    label: evidencePackageBlocker.Label,
+                    detail: evidencePackageBlocker.Summary,
+                    tone: "Warning",
+                    isBlocking: true),
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
+        }
+
+        if (workflow.Status == OperationsWorkflowStatusDto.Closed || workflow.ClosePackage is not null)
+        {
+            return new WorkspaceWorkflowSummary(
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                StatusLabel: "Financial operations evidence produced",
+                StatusDetail: workflow.ClosePackage is null
+                    ? $"Period {workflow.PeriodId} is closed with retained approval and workflow history."
+                    : $"Period {workflow.PeriodId} produced close package {workflow.ClosePackage.ClosePackageId} with retained manifest evidence.",
+                StatusTone: "Success",
+                NextAction: new WorkflowNextAction(
+                    Label: "Open Evidence Packet",
+                    Detail: "Inspect retained source, reconciliation, approval, close, and reporting evidence.",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.EvidenceOpenPacket, "EvidenceWorkbench"),
+                    Tone: "Primary"),
+                PrimaryBlocker: CreateBlocker(
+                    code: "financial-operations-evidence-produced",
+                    label: "No active financial operations blocker",
+                    detail: "The active operations workflow has produced retained approval and close evidence.",
+                    tone: "Success",
+                    isBlocking: false),
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
+        }
+
+        if ((workflow.Status == OperationsWorkflowStatusDto.ReadyForClose ||
+             workflow.ApprovalState == OperationsApprovalStateDto.Approved) &&
+            workflow.CloseReadiness is { IsReadyToClose: false })
+        {
+            return new WorkspaceWorkflowSummary(
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                StatusLabel: "Financial operations close readiness blocked",
+                StatusDetail: $"Period {workflow.PeriodId} close readiness score is {workflow.CloseReadiness.Score}; review blockers before producing the evidence package.",
+                StatusTone: "Warning",
+                NextAction: new WorkflowNextAction(
+                    Label: "Review Close Readiness",
+                    Detail: "Inspect close checklist controls, report readiness, and recovery actions.",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewCloseReadiness, "OperationsClose"),
+                    Tone: "Primary"),
+                PrimaryBlocker: CreateBlocker(
+                    code: "financial-operations-close-readiness",
+                    label: "Close evidence is incomplete",
+                    detail: workflow.CloseReadiness.Blockers.FirstOrDefault()?.Message
+                        ?? "Close readiness blockers remain before the workflow can produce final evidence.",
+                    tone: "Warning",
+                    isBlocking: true),
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
+        }
+
+        return new WorkspaceWorkflowSummary(
+            WorkspaceId: "accounting",
+            WorkspaceTitle: "Accounting",
+            StatusLabel: "Financial operations control flow active",
+            StatusDetail: $"Period {workflow.PeriodId} is in the {stage} stage with source-backed workflow gates, checklist, and audit trail.",
+            StatusTone: "Info",
+            NextAction: new WorkflowNextAction(
+                Label: stage,
+                Detail: "Open the governed operations continuity workflow and continue the next source-backed control step.",
+                TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewOperationsContinuity, "OperationsContinuity"),
+                Tone: "Primary"),
+            PrimaryBlocker: CreateBlocker(
+                code: "financial-operations-in-progress",
+                label: "Financial operations flow in progress",
+                detail: "Continue the source-backed receive, match, resolve, approve, and evidence workflow before close.",
+                tone: "Info",
+                isBlocking: false),
+            Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
+    }
+
+    private static IReadOnlyList<WorkflowEvidenceBadge> BuildFinancialOperationsEvidence(
+        FinancialOperationsControlSnapshot snapshot,
+        OperationsContinuityWorkflowDto workflow,
+        string stage,
+        int unresolvedBreakCount,
+        int evidenceCount,
+        OperationsEvidencePackageSummaryDto? evidencePackageBlocker)
+    {
+        var closeValue = workflow.ClosePackage is not null
+            ? "Package retained"
+            : workflow.CloseReadiness is null
+                ? "Pending"
+                : $"{workflow.CloseReadiness.Score}";
+
+        return
+        [
+            new WorkflowEvidenceBadge("Core flow", stage, ToneForStage(workflow, unresolvedBreakCount, evidencePackageBlocker)),
+            new WorkflowEvidenceBadge("Workflows", snapshot.WorkflowCount.ToString(), "Neutral"),
+            new WorkflowEvidenceBadge("Breaks", unresolvedBreakCount.ToString(), unresolvedBreakCount > 0 ? "Warning" : "Success"),
+            new WorkflowEvidenceBadge("Approval", workflow.ApprovalState.ToString(), workflow.ApprovalState == OperationsApprovalStateDto.Approved ? "Success" : "Warning"),
+            new WorkflowEvidenceBadge("Evidence", evidenceCount.ToString(), evidenceCount > 0 ? "Success" : "Warning"),
+            new WorkflowEvidenceBadge("Close", closeValue, workflow.ClosePackage is not null ? "Success" : "Info"),
+            BuildEvidencePackageReadinessEvidence(workflow),
+            BuildPeriodLockEvidence(workflow),
+            BuildReviewedAutomationEvidence(workflow)
+        ];
+    }
+
+    private static WorkflowEvidenceBadge BuildEvidencePackageReadinessEvidence(OperationsContinuityWorkflowDto workflow)
+    {
+        if (workflow.EvidencePackages.Count == 0)
+        {
+            return new WorkflowEvidenceBadge("Evidence packages", "Not projected", "Info");
+        }
+
+        var readyCount = workflow.EvidencePackages.Count(static package => IsEvidencePackageReady(package));
+        var totalCount = workflow.EvidencePackages.Count;
+
+        return new WorkflowEvidenceBadge(
+            "Evidence packages",
+            $"{readyCount}/{totalCount}",
+            readyCount == totalCount ? "Success" : "Warning");
+    }
+
+    private static WorkflowEvidenceBadge BuildPeriodLockEvidence(OperationsContinuityWorkflowDto workflow)
+    {
+        var periodLockPackage = FindPeriodLockEvidencePackage(workflow);
+        if (periodLockPackage is null)
+        {
+            return new WorkflowEvidenceBadge("Period lock", "Not projected", "Info");
+        }
+
+        return new WorkflowEvidenceBadge(
+            "Period lock",
+            periodLockPackage.Status.ToString(),
+            ToneForEvidenceStatus(periodLockPackage.Status));
+    }
+
+    private static WorkflowEvidenceBadge BuildReviewedAutomationEvidence(OperationsContinuityWorkflowDto workflow)
+    {
+        if (workflow.ReviewedAutomation is { } reviewedAutomation)
+        {
+            return new WorkflowEvidenceBadge(
+                "Reviewed automation",
+                reviewedAutomation.Stage,
+                ToneForReviewedAutomation(reviewedAutomation));
+        }
+
+        if (workflow.BrokerIntakeState is OperationsBrokerIntakeStateDto.Imported or OperationsBrokerIntakeStateDto.Normalized)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Extraction review", "Warning");
+        }
+
+        if (workflow.ReconciliationState == OperationsReconciliationStateDto.AutoMatched)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Suggested matches require review", "Warning");
+        }
+
+        if (workflow.LedgerPostingState is OperationsLedgerPostingStateDto.Drafted or OperationsLedgerPostingStateDto.Validated)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Journal draft review", "Warning");
+        }
+
+        if (workflow.ApprovalState is OperationsApprovalStateDto.Pending or OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Reviewer approval required", "Warning");
+        }
+
+        if (workflow.Status == OperationsWorkflowStatusDto.Closed || workflow.ClosePackage is not null)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Reviewed evidence retained", "Success");
+        }
+
+        return new WorkflowEvidenceBadge("Reviewed automation", "Suggestions only", "Info");
+    }
+
+    private static string ToneForReviewedAutomation(OperationsReviewedAutomationSummaryDto reviewedAutomation)
+    {
+        if (reviewedAutomation.RequiresHumanReview || reviewedAutomation.Status == EvidenceStatusDto.ReviewRequired)
+        {
+            return "Warning";
+        }
+
+        return reviewedAutomation.Status == EvidenceStatusDto.Ready
+            ? "Success"
+            : "Info";
+    }
+
+    private async Task<FinancialOperationsControlSnapshot?> LoadFinancialOperationsSnapshotAsync(
+        bool hasOperatingContext,
+        string? fundAccountId,
+        string? fundProfileId,
+        CancellationToken ct)
+    {
+        if (!hasOperatingContext || _operationsContinuityWorkflowService is null)
+        {
+            return null;
+        }
+
+        if (!TryResolveFinancialOperationsFundAccountId(fundAccountId, fundProfileId, out var parsedFundAccountId))
+        {
+            return null;
+        }
+
+        var workflows = await _operationsContinuityWorkflowService
+            .ListAsync(parsedFundAccountId, periodId: null, status: null, ct)
+            .ConfigureAwait(false);
+        var active = workflows
+            .OrderBy(static workflow => RankFinancialOperationsWorkflow(workflow.Status))
+            .ThenByDescending(static workflow => workflow.UpdatedAtUtc)
+            .FirstOrDefault();
+        var detail = active is null
+            ? null
+            : await _operationsContinuityWorkflowService.GetAsync(active.WorkflowId, ct).ConfigureAwait(false);
+
+        return new FinancialOperationsControlSnapshot(parsedFundAccountId, workflows.Count, detail);
+    }
+
+    private static bool TryResolveFinancialOperationsFundAccountId(
+        string? fundAccountId,
+        string? fundProfileId,
+        out Guid parsedFundAccountId)
+    {
+        if (Guid.TryParse(fundAccountId, out parsedFundAccountId))
+        {
+            return true;
+        }
+
+        return Guid.TryParse(fundProfileId, out parsedFundAccountId);
+    }
+
+    private static int RankFinancialOperationsWorkflow(OperationsWorkflowStatusDto status) => status switch
+    {
+        OperationsWorkflowStatusDto.Blocked => 0,
+        OperationsWorkflowStatusDto.ReconciliationActive => 1,
+        OperationsWorkflowStatusDto.ApprovalPending => 2,
+        OperationsWorkflowStatusDto.ReadyForClose => 3,
+        OperationsWorkflowStatusDto.CollectingBrokerData => 4,
+        OperationsWorkflowStatusDto.SecurityMasterValidation => 5,
+        OperationsWorkflowStatusDto.LedgerPostingDraft => 6,
+        OperationsWorkflowStatusDto.NotStarted => 7,
+        OperationsWorkflowStatusDto.Closed => 8,
+        _ => 9
+    };
+
+    private static string ResolveFinancialOperationsStage(
+        OperationsContinuityWorkflowDto workflow,
+        int unresolvedBreakCount,
+        OperationsEvidencePackageSummaryDto? evidencePackageBlocker)
+    {
+        if (workflow.BrokerIntakeState is OperationsBrokerIntakeStateDto.Pending or OperationsBrokerIntakeStateDto.Imported or OperationsBrokerIntakeStateDto.Normalized)
+        {
+            return "Receive Activity";
+        }
+
+        if (workflow.ReconciliationState is OperationsReconciliationStateDto.Pending or OperationsReconciliationStateDto.AutoMatched)
+        {
+            return "Match Records";
+        }
+
+        if (unresolvedBreakCount > 0 ||
+            workflow.ReconciliationState is OperationsReconciliationStateDto.ExceptionsOpen or OperationsReconciliationStateDto.InReview)
+        {
+            return "Resolve Exceptions";
+        }
+
+        if (workflow.ApprovalState != OperationsApprovalStateDto.Approved)
+        {
+            return "Approve Results";
+        }
+
+        if (IsFinancialOperationsCloseSupportStage(workflow, evidencePackageBlocker))
+        {
+            return "Close Support";
+        }
+
+        return "Produce Evidence";
+    }
+
+    private static bool IsFinancialOperationsCloseSupportStage(
+        OperationsContinuityWorkflowDto workflow,
+        OperationsEvidencePackageSummaryDto? evidencePackageBlocker)
+    {
+        var isClosedOrPackaged = workflow.Status == OperationsWorkflowStatusDto.Closed ||
+            workflow.ClosePackage is not null;
+        if (isClosedOrPackaged)
+        {
+            return evidencePackageBlocker is not null;
+        }
+
+        return (workflow.Status == OperationsWorkflowStatusDto.ReadyForClose ||
+                workflow.ApprovalState == OperationsApprovalStateDto.Approved) &&
+            workflow.CloseReadiness is { IsReadyToClose: false };
+    }
+
+    private static int CountUnresolvedBreaks(OperationsContinuityWorkflowDto workflow)
+        => workflow.BreakCases.Count(static breakCase => !IsResolvedBreakStatus(breakCase.Status));
+
+    private static bool IsResolvedBreakStatus(string? status)
+        => string.Equals(status, "closed", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(status, "resolved", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(status, "matched", StringComparison.OrdinalIgnoreCase);
+
+    private static int CountEvidenceLinks(OperationsContinuityWorkflowDto workflow)
+        => workflow.EvidenceLinks
+            .Concat(workflow.ReportPackReadiness.EvidenceLinks)
+            .Concat(workflow.ClosePackage?.EvidenceLinks ?? [])
+            .Concat(workflow.EvidencePackages.SelectMany(static package => package.EvidenceLinks))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .Count();
+
+    private static OperationsEvidencePackageSummaryDto? ResolveFinancialOperationsEvidencePackageBlocker(
+        OperationsContinuityWorkflowDto workflow)
+        => workflow.EvidencePackages
+            .Where(static package => !IsEvidencePackageReady(package))
+            .OrderBy(static package => RankEvidencePackageStatus(package.Status))
+            .ThenBy(static package => string.Equals(
+                package.PackageId,
+                "period-lock-reopen",
+                StringComparison.OrdinalIgnoreCase)
+                || package.PackageId.StartsWith("period-lock-reopen:", StringComparison.OrdinalIgnoreCase)
+                    ? 0
+                    : 1)
+            .ThenBy(static package => package.Label, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+    private static OperationsEvidencePackageSummaryDto? FindPeriodLockEvidencePackage(
+        OperationsContinuityWorkflowDto workflow)
+        => workflow.EvidencePackages.FirstOrDefault(static package =>
+            string.Equals(package.PackageId, "period-lock-reopen", StringComparison.OrdinalIgnoreCase) ||
+            package.PackageId.StartsWith("period-lock-reopen:", StringComparison.OrdinalIgnoreCase) ||
+            package.Label.Contains("period lock", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsEvidencePackageReady(OperationsEvidencePackageSummaryDto package)
+        => package.IsReady && package.Status == EvidenceStatusDto.Ready;
+
+    private static int RankEvidencePackageStatus(EvidenceStatusDto status) => status switch
+    {
+        EvidenceStatusDto.Blocked => 0,
+        EvidenceStatusDto.Missing => 1,
+        EvidenceStatusDto.Stale => 2,
+        EvidenceStatusDto.ReviewRequired => 3,
+        EvidenceStatusDto.Unknown => 4,
+        EvidenceStatusDto.Ready => 5,
+        _ => 6
+    };
+
+    private static string ToneForEvidenceStatus(EvidenceStatusDto status) => status switch
+    {
+        EvidenceStatusDto.Ready => "Success",
+        EvidenceStatusDto.Unknown => "Info",
+        _ => "Warning"
+    };
+
+    private static string ToneForStage(
+        OperationsContinuityWorkflowDto workflow,
+        int unresolvedBreakCount,
+        OperationsEvidencePackageSummaryDto? evidencePackageBlocker)
+    {
+        if (unresolvedBreakCount > 0 ||
+            workflow.Status == OperationsWorkflowStatusDto.Blocked ||
+            IsFinancialOperationsCloseSupportStage(workflow, evidencePackageBlocker))
+        {
+            return "Warning";
+        }
+
+        return workflow.Status == OperationsWorkflowStatusDto.Closed ? "Success" : "Info";
     }
 
     private async Task<WorkflowRunSnapshot?> LoadRunSnapshotAsync(StrategyRunSummary? run, CancellationToken ct)
@@ -840,4 +1318,9 @@ public sealed class WorkstationWorkflowSummaryService
         StrategyRunPromotionState PromotionState,
         int SecurityCoverageIssues,
         int AsOfDriftMinutes);
+
+    private sealed record FinancialOperationsControlSnapshot(
+        Guid FundAccountId,
+        int WorkflowCount,
+        OperationsContinuityWorkflowDto? ActiveWorkflow);
 }

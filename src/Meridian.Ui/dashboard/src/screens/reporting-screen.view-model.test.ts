@@ -60,6 +60,25 @@ const reporting: GovernanceReportingSummary = {
     }
   ],
   summary: "2 export profiles available.",
+  accessAudit: {
+    evaluationScope: "CallerScoped",
+    summary: "Reporting access policy hid 4 object(s) outside the caller's user, group, or company scope.",
+    principalScopes: ["user:viewer.user", "group:ops-control", "company:company-alpha"],
+    visibleTemplateCount: 2,
+    hiddenTemplateCount: 1,
+    visibleReportPackCount: 3,
+    hiddenReportPackCount: 1,
+    visibleScheduleCount: 1,
+    hiddenScheduleCount: 0,
+    visibleDeliveryAttemptCount: 2,
+    hiddenDeliveryAttemptCount: 1,
+    visibleStructuredExportCount: 5,
+    hiddenStructuredExportCount: 1,
+    denialReasons: [
+      "Some report templates are private or restricted to other users, groups, or companies.",
+      "Some delivery attempts are hidden because their report pack or template is outside the caller's report access scope."
+    ]
+  },
   templates: [
       {
         templateId: "investor-monthly-statement",
@@ -87,6 +106,20 @@ const reporting: GovernanceReportingSummary = {
       artifacts: ["manifest.json"],
       auditActions: ["RunGenerated", "ApprovalTransition"],
       failureReason: null,
+      generatedReportWriterGrids: [
+        {
+          gridId: "sector-pivot",
+          title: "Sector Pivot",
+          kind: "Pivot",
+          artifact: "report-writer://investor-monthly-statement-20260501/grids/sector-pivot",
+          dimensionCount: 2,
+          metricCount: 2,
+          formulaCount: 1
+        }
+      ],
+      reportWriterDatasetSourceId: "portfolio-reporting-cuts",
+      reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
+      reportWriterDatasetRowCount: 2,
       drilldownLinks: [
         {
           id: "investor-monthly-statement-20260501:evidence",
@@ -181,14 +214,17 @@ const restatedReporting: GovernanceReportingSummary = {
         {
           lineKey: "nav.total",
           sourceKind: "ledger",
-          sourceId: "ledger-entry-1",
-          evidenceId: "ledger-evidence-1",
-          runId: "run-1",
-          ledgerEntryId: "ledger-entry-1",
+          sourceId: "ledger-entry-nav",
+          evidenceId: "evidence-nav-total",
+          runId: "run-restated-1",
+          ledgerEntryId: "ledger-entry-nav",
           reconciliationCaseId: null,
-          reportValue: "1250000",
+          reportValue: "1249500",
           sourceSessionId: null,
-          reconciliationRunId: null
+          reconciliationRunId: null,
+          reconciliationOutcome: "matched",
+          financialRecordExplorerId: "ledger",
+          financialRecordHref: "/api/workstation/financial-record-explorers/ledger?lineKey=nav.total&sourceId=ledger-entry-nav&evidenceId=evidence-nav-total&runId=run-restated-1"
         }
       ],
       publication: {
@@ -199,7 +235,7 @@ const restatedReporting: GovernanceReportingSummary = {
         signedOffAt: "2026-05-28T15:20:00Z",
         evidenceLinks: [
           {
-            evidenceId: "publication-evidence-1",
+            evidenceId: "evidence-nav-total",
             label: "Publication manifest",
             route: "/reporting/manifests/manifest-restated-1",
             source: "reporting",
@@ -284,30 +320,53 @@ describe("useReportingScreenViewModel", () => {
   it("surfaces template metadata and recent run status projections", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
 
-    expect(result.current.templateRows).toEqual([
-      {
-        id: "investor-monthly-statement",
-        name: "Investor Monthly Statement",
-        family: "InvestorStatement",
-        version: "1.0.0",
-        sectionSummary: "2 sections",
-        statusLabel: "Approved",
-        statusVariant: "success",
-        sourceLabel: "Built-in",
-        approvalSummary: "Built-in approved template for InvestorStatement.",
-        authoringHref: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1",
-        actionLabel: "Draft revision",
-        actionAriaLabel: "Draft a revision of Investor Monthly Statement",
-        canRunOnDemand: true,
-        runActionLabel: "Run report",
-        runActionAriaLabel: "Run Investor Monthly Statement report on demand",
-        runDisabledReason: null
-      }
-    ]);
+    expect(result.current.templateRows).toHaveLength(1);
+    expect(result.current.templateRows[0]).toMatchObject({
+      id: "investor-monthly-statement:1.0.0",
+      templateName: "investor-monthly-statement",
+      name: "Investor Monthly Statement",
+      family: "InvestorStatement",
+      version: "1.0.0",
+      versionNumber: 1,
+      sectionSummary: "2 sections",
+      statusLabel: "Approved",
+      statusVariant: "success",
+      sourceLabel: "Built-in",
+      approvalSummary: "Built-in approved template for InvestorStatement.",
+      accessMode: "CompanyWide",
+      accessSummary: "Company-wide access",
+      isAccessible: true,
+      authoringHref: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1",
+      actionLabel: "Draft revision",
+      actionAriaLabel: "Draft a revision of Investor Monthly Statement",
+      canRunOnDemand: true,
+      runActionLabel: "Run report",
+      runActionAriaLabel: "Run Investor Monthly Statement report on demand",
+      runDisabledReason: null,
+      lifecycleActions: [],
+      hasLifecycleActions: false,
+      writerGrids: [],
+      hasWriterGrids: false,
+      writerGridSummary: "No report-writer grids"
+    });
     expect(result.current.runStatusRows[0]).toMatchObject({
       id: "investor-monthly-statement-20260501",
       status: "InReview",
       lineageSummary: "2/2 sections linked",
+      generatedGridLabel: "1 generated grid with 1 formula",
+      generatedGridNames: ["Sector Pivot (Pivot, 2d/2m/1f)"],
+      hasGeneratedGrids: true,
+      generatedGridArtifacts: [
+        expect.objectContaining({
+          label: "Sector Pivot (Pivot)",
+          jsonHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot",
+          csvHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=csv",
+          pdfHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=pdf",
+          xlsHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xls",
+          xlsxHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xlsx"
+        })
+      ],
+      datasetSourceLabel: "Portfolio reporting cuts (2 rows)",
       auditSummary: "RunGenerated → ApprovalTransition",
       hasDrilldownLinks: true,
       hasNextActions: true,
@@ -336,6 +395,236 @@ describe("useReportingScreenViewModel", () => {
       ]
     });
     expect(result.current.hasRunStatusRows).toBe(true);
+  });
+
+  it("surfaces aggregate report access audit posture", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting));
+
+    expect(result.current.accessAudit).toMatchObject({
+      evaluationScope: "CallerScoped",
+      postureLabel: "Scoped",
+      postureVariant: "warning",
+      hiddenTotalLabel: "4 hidden",
+      scopeLabel: "user:viewer.user · group:ops-control · company:company-alpha",
+      hasDenialReasons: true
+    });
+    expect(result.current.accessAudit.countRows).toEqual([
+      expect.objectContaining({ id: "templates", visibleLabel: "2 visible", hiddenLabel: "1 hidden", hasHidden: true }),
+      expect.objectContaining({ id: "report-packs", visibleLabel: "3 visible", hiddenLabel: "1 hidden", hasHidden: true }),
+      expect.objectContaining({ id: "schedules", visibleLabel: "1 visible", hiddenLabel: "0 hidden", hasHidden: false }),
+      expect.objectContaining({ id: "deliveries", visibleLabel: "2 visible", hiddenLabel: "1 hidden", hasHidden: true }),
+      expect.objectContaining({ id: "structured-exports", visibleLabel: "5 visible", hiddenLabel: "1 hidden", hasHidden: true })
+    ]);
+  });
+
+  it("surfaces report-template access posture and disables inaccessible runs", () => {
+    const restrictedReporting: GovernanceReportingSummary = {
+      ...reporting,
+      templates: [
+        {
+          ...reporting.templates![0],
+          accessMode: "Private",
+          accessSummary: "Private user-locked access owned by report.owner.",
+          isAccessible: false
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(restrictedReporting));
+
+    expect(result.current.templateRows[0]).toMatchObject({
+      accessMode: "Private",
+      accessSummary: "Private user-locked access owned by report.owner.",
+      isAccessible: false,
+      canRunOnDemand: false,
+      lifecycleActions: [],
+      hasLifecycleActions: false,
+      runDisabledReason: "Current user does not have access to this report template."
+    });
+  });
+
+  it("summarizes configured reporting schedule delivery targets", () => {
+    const scheduledReporting: GovernanceReportingSummary = {
+      ...reporting,
+      reportWriterDatasetSources: [
+        {
+          sourceId: "portfolio-reporting-cuts",
+          label: "Portfolio reporting cuts",
+          description: "Portfolio source rows.",
+          rowCount: 2,
+          fields: [],
+          rows: [],
+          tags: ["portfolio-cuts"]
+        }
+      ],
+      schedules: [
+        {
+          scheduleId: "sched-investor",
+          templateId: "investor-monthly-statement",
+          cronExpression: "0 8 1 * *",
+          nextAsOfDate: "2026-06-01",
+          dueAtUtc: "2026-06-01T08:00:00Z",
+          maxRetries: 2,
+          requestedBy: "fund-controller",
+          state: "Active",
+          createdAtUtc: "2026-05-01T08:00:00Z",
+          updatedAtUtc: "2026-05-03T08:00:00Z",
+          lastRunAtUtc: null,
+          lastRunId: null,
+          runCount: 0,
+          description: "Monthly investor statement close packet.",
+          datasetSourceId: "portfolio-reporting-cuts",
+          deliveryTargets: [
+            {
+              distributionId: "board-reporting-committee",
+              formats: ["Pdf", "Xlsx", "Csv"],
+              deliveryMode: "SecurePortal",
+              note: "Board package."
+            }
+          ]
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(scheduledReporting));
+
+    expect(result.current.scheduleRows[0]).toMatchObject({
+      id: "sched-investor",
+      deliveryTargetLabel: "board-reporting-committee via SecurePortal (Pdf/Xlsx/Csv)",
+      datasetSourceLabel: "Portfolio reporting cuts (2)",
+      lastRunLabel: "Not run"
+    });
+  });
+
+  it("surfaces lifecycle actions for custom report-template versions", () => {
+    const lifecycleReporting: GovernanceReportingSummary = {
+      ...reporting,
+      templates: [
+        ...(reporting.templates ?? []),
+        {
+          templateId: "custom-exposure-draft",
+          family: "CustomReport",
+          name: "Custom Exposure Draft",
+          version: "2",
+          sections: ["exposures"],
+          lifecycleStatus: "Draft",
+          isBuiltIn: false,
+          isLatestApproved: false,
+          approvalSummary: "Draft by reporting.ops.",
+          authoringRoute: "/api/fund-structure/reporting/templates/custom-exposure-draft/versions/2"
+        },
+        {
+          templateId: "custom-exposure-review",
+          family: "CustomReport",
+          name: "Custom Exposure Review",
+          version: "3",
+          sections: ["exposures"],
+          lifecycleStatus: "InReview",
+          isBuiltIn: false,
+          isLatestApproved: false,
+          approvalSummary: "Submitted by reporting.ops.",
+          authoringRoute: "/api/fund-structure/reporting/templates/custom-exposure-review/versions/3"
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(lifecycleReporting));
+
+    expect(result.current.templateRows.find((row) => row.templateName === "investor-monthly-statement")).toMatchObject({
+      lifecycleActions: [],
+      hasLifecycleActions: false
+    });
+    expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-draft")).toMatchObject({
+      id: "custom-exposure-draft:2",
+      versionNumber: 2,
+      statusLabel: "Draft",
+      lifecycleActions: [
+        expect.objectContaining({
+          kind: "submit",
+          label: "Submit",
+          ariaLabel: "Submit Custom Exposure Draft template version 2 for review",
+          targetStatus: "InReview"
+        })
+      ],
+      hasLifecycleActions: true
+    });
+    expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-review")).toMatchObject({
+      id: "custom-exposure-review:3",
+      versionNumber: 3,
+      statusLabel: "InReview",
+      lifecycleActions: [
+        expect.objectContaining({ kind: "approve", label: "Approve", targetStatus: "Approved" }),
+        expect.objectContaining({ kind: "reject", label: "Reject", targetStatus: "Rejected" })
+      ],
+      hasLifecycleActions: true
+    });
+  });
+
+  it("summarizes report-writer grids on governed template rows", () => {
+    const withGridTemplate: GovernanceReportingSummary = {
+      ...reporting,
+      templates: [
+        ...(reporting.templates ?? []),
+        {
+          templateId: "custom-exposure-grid",
+          family: "CustomReport",
+          name: "Custom Exposure Grid",
+          version: "1",
+          sections: ["exposures"],
+          lifecycleStatus: "Approved",
+          isBuiltIn: false,
+          isLatestApproved: true,
+          approvalSummary: "Approved by controller.admin (APP-GRID-1).",
+          authoringRoute: "/api/fund-structure/reporting/templates/custom-exposure-grid/versions/1",
+          reportWriterGrids: [
+            {
+              gridId: "sector-pivot",
+              title: "Sector Pivot",
+              kind: "Pivot",
+              dimensionCount: 1,
+              metricCount: 2,
+              formulaCount: 1,
+              rowFields: ["sector"],
+              columnFields: [],
+              metrics: [
+                { name: "marketValue", sourceField: "marketValue", function: "Sum", label: "Market value" },
+                { name: "pnl", sourceField: "pnl", function: "Sum", label: "P&L" }
+              ],
+              formulas: [
+                { name: "returnPct", expression: "{pnl} / {marketValue} * 100", label: "Return %" }
+              ],
+              topN: null,
+              sortBy: "pnl",
+              sortDescending: true
+            }
+          ]
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(withGridTemplate));
+
+    expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-grid")).toMatchObject({
+      id: "custom-exposure-grid:1",
+      sectionSummary: "1 section; 1 report-writer grid with 3 metrics",
+      sourceLabel: "Custom",
+      canRunOnDemand: true,
+      runDisabledReason: null,
+      hasWriterGrids: true,
+      writerGridSummary: "1 grid ready for no-code layout"
+    });
+    expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-grid")?.writerGrids[0]).toMatchObject({
+      title: "Sector Pivot",
+      kind: "Pivot",
+      topNLabel: "Pivot",
+      sortLabel: "Descending by pnl",
+      rowFields: [expect.objectContaining({ label: "sector" })],
+      metrics: [
+        expect.objectContaining({ label: "Market value", detail: "Sum(marketValue)" }),
+        expect.objectContaining({ label: "P&L", detail: "Sum(pnl)" })
+      ],
+      formulas: [expect.objectContaining({ label: "Return %", detail: "{pnl} / {marketValue} * 100" })]
+    });
   });
 
   it("builds a route-specific report-pack approval task panel", () => {
@@ -487,13 +776,24 @@ describe("useReportingScreenViewModel", () => {
       statusLabel: "Restated",
       statusVariant: "success",
       summaryText: "manifest-restated-1 signed off by reporting-ops at 2026-05-28T15:20:00Z.",
-      evidenceSummary: "1 evidence link"
+      evidenceSummary: "1 evidence link / 1 provenance line",
+      hasLineProvenance: true
     });
     expect(result.current.workflowTaskPanel?.publicationReview.fields).toEqual(expect.arrayContaining([
       expect.objectContaining({ label: "Signed off by", value: "reporting-ops" }),
       expect.objectContaining({ label: "Evidence hash", value: "sha256:restated123" }),
       expect.objectContaining({ label: "Manifest path", value: "vault/report-packs/manifest-restated-1.json" }),
-      expect.objectContaining({ label: "Publication time", value: "2026-05-28T15:20:00Z" })
+      expect.objectContaining({ label: "Publication time", value: "2026-05-28T15:20:00Z" }),
+      expect.objectContaining({ label: "Line provenance", value: "1" })
+    ]));
+    expect(result.current.workflowTaskPanel?.publicationReview.lineProvenanceRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        lineKey: "nav.total",
+        sourceLabel: "ledger · ledger-entry-nav · ledger=ledger-entry-nav · recon=matched",
+        valueLabel: "value 1249500",
+        evidenceHref: "/reporting/manifests/manifest-restated-1",
+        financialRecordHref: "/api/workstation/financial-record-explorers/ledger?lineKey=nav.total&sourceId=ledger-entry-nav&evidenceId=evidence-nav-total&runId=run-restated-1"
+      })
     ]));
   });
 

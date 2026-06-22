@@ -1,0 +1,130 @@
+<!-- @dsCard group="Components" viewport="1100x600" name="Data Extras" subtitle="Sparkline, EmptyState, ColumnChooser — inline charts, zero-data states, column visibility" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Data Extras</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { Sparkline, EmptyState, ColumnChooser, MetricCard, Button } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+function Section({ title, children }) {
+  return (
+    <div style={{ background:"white", border:"1px solid var(--border)", borderRadius:8, padding:16 }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:12 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const EQ = Array.from({length:40}, (_,i) => 1000 * Math.pow(1.004, i) * (1 + Math.sin(i/3)*0.02));
+const DD = Array.from({length:40}, (_,i) => -Math.abs(Math.sin(i/4)*8));
+const VOL = Array.from({length:20}, (_,i) => 1e6 + Math.abs(Math.sin(i)*2e6));
+
+const COLS = [
+  { key:"date",     label:"Date" },
+  { key:"ref",      label:"Reference" },
+  { key:"memo",     label:"Memo" },
+  { key:"category", label:"Category" },
+  { key:"debit",    label:"Debit" },
+  { key:"credit",   label:"Credit" },
+  { key:"balance",  label:"Balance" },
+];
+
+function Demo() {
+  const [visible, setVisible] = useState(COLS.map(c => c.key));
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+
+      {/* Sparklines in MetricCards */}
+      <Section title="Sparkline · inline mini charts">
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+          <div style={{ border:"1px solid var(--border)", borderRadius:6, padding:"10px 12px",
+            borderLeft:"3px solid var(--green)" }}>
+            <div style={{ fontSize:10, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:4 }}>Equity curve</div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <span style={{ fontFamily:"var(--font-data)", fontSize:18, fontWeight:600, color:"var(--text-primary)" }}>+4.8%</span>
+              <Sparkline points={EQ} width={80} height={28} variant="area" color="var(--chart-equity)" />
+            </div>
+          </div>
+          <div style={{ border:"1px solid var(--border)", borderRadius:6, padding:"10px 12px",
+            borderLeft:"3px solid var(--red)" }}>
+            <div style={{ fontSize:10, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:4 }}>Drawdown</div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <span style={{ fontFamily:"var(--font-data)", fontSize:18, fontWeight:600, color:"var(--red)" }}>−3.2%</span>
+              <Sparkline points={DD} width={80} height={28} variant="area" color="var(--chart-drawdown)" baseline={0} />
+            </div>
+          </div>
+          <div style={{ border:"1px solid var(--border)", borderRadius:6, padding:"10px 12px",
+            borderLeft:"3px solid var(--accent)" }}>
+            <div style={{ fontSize:10, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:4 }}>Volume (line)</div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <span style={{ fontFamily:"var(--font-data)", fontSize:18, fontWeight:600, color:"var(--text-primary)" }}>1.92M</span>
+              <Sparkline points={VOL} width={80} height={28} variant="line" color="var(--accent)" />
+            </div>
+          </div>
+          <div style={{ border:"1px solid var(--border)", borderRadius:6, padding:"10px 12px",
+            borderLeft:"3px solid var(--amber)" }}>
+            <div style={{ fontSize:10, fontVariant:"all-small-caps", color:"var(--text-muted)", marginBottom:4 }}>Volume (bar)</div>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <span style={{ fontFamily:"var(--font-data)", fontSize:18, fontWeight:600, color:"var(--text-primary)" }}>1.92M</span>
+              <Sparkline points={VOL} width={80} height={28} variant="bar" color="var(--amber)" />
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* EmptyState variants */}
+      <Section title="EmptyState · zero-data placeholders">
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+          <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
+            <EmptyState icon="table" title="No transactions" detail="Run a backfill to populate this ledger." action="Run backfill" onAction={() => {}} compact />
+          </div>
+          <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
+            <EmptyState icon="search" title="No results" detail="Try adjusting your search or filters." compact />
+          </div>
+          <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
+            <EmptyState icon="chart" title="No data yet" detail="Strategy hasn't been run." action="Run strategy" onAction={() => {}} compact />
+          </div>
+          <div style={{ border:"1px solid var(--border)", borderRadius:6, overflow:"hidden" }}>
+            <EmptyState icon="inbox" title="Inbox empty" compact />
+          </div>
+        </div>
+      </Section>
+
+      {/* ColumnChooser */}
+      <Section title="ColumnChooser · hide / show columns">
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+          <span style={{ fontSize:12, color:"var(--text-secondary)" }}>
+            Showing {visible.length} of {COLS.length} columns
+          </span>
+          <ColumnChooser columns={COLS} visible={visible} onChange={setVisible} />
+        </div>
+        <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+          {COLS.map(c => (
+            <span key={c.key} style={{
+              padding:"3px 8px", borderRadius:3, fontSize:11,
+              fontFamily:"var(--font-data)", fontVariant:"all-small-caps",
+              background: visible.includes(c.key) ? "var(--bg-active)" : "var(--bg-medium)",
+              color: visible.includes(c.key) ? "var(--accent)" : "var(--text-disabled)",
+              border:"1px solid var(--border)",
+            }}>{c.label}</span>
+          ))}
+        </div>
+      </Section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

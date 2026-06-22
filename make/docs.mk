@@ -2,7 +2,7 @@
 # Documentation
 # =============================================================================
 
-.PHONY: verify-docs docs docs-health docs-stale-mark docs-stale-update docs-hashes-refresh docs-source-readmes-sync docs-source-readmes-tree-check gen-context verify-adrs verify-contracts verify-tooling-metadata \
+.PHONY: verify-docs docs docs-health docs-stale-mark docs-stale-update docs-hashes-refresh docs-source-readmes-sync docs-source-readmes-tree-check gen-context verify-adrs verify-contracts verify-tooling-metadata docs-lint \
         gen-interfaces gen-structure gen-providers gen-workflows gen-workflow-manifest \
         update-claude-md docs-all check-workflow-docs-parity check-status-delivery-claims generate-icons generate-diagrams
 

@@ -780,7 +780,7 @@ public static class DataWorkspacePresentationBuilder
                 Title = "Provider health",
                 Detail = "Demo data mode is using sample provider and queue telemetry. Live provider counts will appear after a configured context connects.",
                 StatusLabel = "Demo data",
-                CountLabel = "Fixture sample",
+                CountLabel = "Sample data",
                 Tone = WorkspaceTone.Info,
                 PrimaryActionId = "ProviderHealth",
                 PrimaryActionLabel = "Provider Health",

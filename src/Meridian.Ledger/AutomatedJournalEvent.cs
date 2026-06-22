@@ -11,5 +11,11 @@ public sealed record AutomatedJournalEvent(
     string? FinancialAccountId = null,
     string? Description = null,
     Guid? SecurityId = null,
-    string? SourceEventId = null);
-
+    string? SourceEventId = null,
+    DateOnly? EffectiveDate = null,
+    string? IdempotencyKey = null,
+    IReadOnlyList<JournalEvidenceReference>? EvidenceReferences = null)
+{
+    public IReadOnlyList<JournalEvidenceReference> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+}

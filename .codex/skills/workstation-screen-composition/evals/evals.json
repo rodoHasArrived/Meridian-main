@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Workstation screen composition package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/workstation_screen_composition_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 5
+        }
+      },
+      "prompt": "Use $workstation-screen-composition to compose a WPF workstation screen from shared shell, command, status, table, inspector, and diagnostics primitives."
+    },
+    {
+      "id": 2,
+      "description": "Screen composition uses shared workstation primitives.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/workstation_screen_composition_check.py",
+        "--scenario",
+        "shared-primitives",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 5
+        }
+      },
+      "prompt": "Use $workstation-screen-composition to preserve shared shell, navigation, command, status, and inspector primitives."
+    },
+    {
+      "id": 3,
+      "description": "Composition guidance hands dense grids and diagnostics to specialist lanes.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/workstation_screen_composition_check.py",
+        "--scenario",
+        "specialist-handoff",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $workstation-screen-composition to hand off dense grid or diagnostics work to the right specialist lane."
+    }
+  ]
+}

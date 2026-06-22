@@ -159,12 +159,18 @@ public sealed class UiApiClient
         Guid? fundAccountId = null,
         string? periodId = null,
         OperationsWorkflowStatusDto? status = null,
+        Guid? ledgerBookId = null,
         CancellationToken ct = default)
     {
-        var query = new List<string>(3);
+        var query = new List<string>(4);
         if (fundAccountId.HasValue)
         {
             query.Add($"fundAccountId={Uri.EscapeDataString(fundAccountId.Value.ToString())}");
+        }
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString())}");
         }
 
         if (!string.IsNullOrWhiteSpace(periodId))

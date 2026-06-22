@@ -17,9 +17,9 @@ public sealed class StartupWindowSmokeTests
         WpfTestThread.Run(() =>
         {
             using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
-                .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+                .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
                 .Set("MDC_USERNAME", null)
-                .Set("MDC_PASSWORD", null)
+                .Set("MDC_PASSWORD_HASH", null)
                 .Set("MDC_AUTH_MODE", null);
 
             RunMatUiAutomationFacade.EnsureApplicationResources();

@@ -7,9 +7,8 @@ namespace Meridian.Identity;
 
 /// <summary>
 /// In-memory session store for username/password authentication with role-based access control.
-/// User accounts are resolved via <see cref="UserProfileRegistry"/> which supports both
-/// the legacy single-user environment variable pattern (MDC_USERNAME / MDC_PASSWORD) and the
-/// multi-user pattern (MDC_USERS JSON array).
+/// User accounts are resolved via <see cref="UserProfileRegistry"/> from the governed account
+/// store or hashed environment bootstrap records.
 /// Authentication defaults to optional in Development/Test and required elsewhere.
 /// Use MDC_AUTH_MODE=optional|required|auto to override the default environment-based mode.
 /// </summary>
@@ -43,9 +42,6 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         _sessions[token] = new SessionEntry(
             profile.Username,
-            profile.Role,
-            profile.PermissionOverride,
-            profile.RoleProfileName,
             DateTimeOffset.UtcNow + SessionDuration);
         PruneExpiredSessions();
         return token;
@@ -60,6 +56,13 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
             return false;
 
         if (entry.ExpiresAt <= DateTimeOffset.UtcNow)
+        {
+            _sessions.TryRemove(token, out _);
+            return false;
+        }
+
+        var profile = profileRegistry.GetProfile(entry.Username);
+        if (profile is null)
         {
             _sessions.TryRemove(token, out _);
             return false;
@@ -83,17 +86,46 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
             return null;
         }
 
-        return new UserProfile(
-            entry.Username,
-            entry.Role,
-            PermissionOverride: entry.PermissionOverride,
-            RoleProfileName: entry.RoleProfileName);
+        var profile = profileRegistry.GetProfile(entry.Username);
+        if (profile is null)
+        {
+            _sessions.TryRemove(token, out _);
+        }
+
+        return profile;
     }
 
     /// <summary>
     /// Removes the session associated with the given token (logout).
     /// </summary>
     public void RemoveSession(string token) => _sessions.TryRemove(token, out _);
+
+    public int RevokeSessionsForUser(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return 0;
+        }
+
+        var removed = 0;
+        foreach (var (token, entry) in _sessions)
+        {
+            if (entry.Username.Equals(username.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                _sessions.TryRemove(token, out _))
+            {
+                removed++;
+            }
+        }
+
+        return removed;
+    }
+
+    public int RevokeAllSessions()
+    {
+        var removed = _sessions.Count;
+        _sessions.Clear();
+        return removed;
+    }
 
     private void PruneExpiredSessions()
     {
@@ -107,8 +139,5 @@ public sealed class LoginSessionService(IHostEnvironment environment, UserProfil
 
     private sealed record SessionEntry(
         string Username,
-        UserRole Role,
-        UserPermission? PermissionOverride,
-        string? RoleProfileName,
         DateTimeOffset ExpiresAt);
 }

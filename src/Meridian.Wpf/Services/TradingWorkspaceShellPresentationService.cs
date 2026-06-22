@@ -224,23 +224,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
             : new TradingPortfolioNavigationTarget("RunPortfolio", PaneDropAction.SplitLeft, activeRun.RunId);
 
     internal static Guid? ResolveFundAccountId(WorkstationOperatingContext? context)
-    {
-        if (context is null)
-        {
-            return null;
-        }
-
-        var accountId = context.AccountId;
-        if (string.IsNullOrWhiteSpace(accountId) &&
-            context.ScopeKind == OperatingContextScopeKind.Account)
-        {
-            accountId = context.ScopeId;
-        }
-
-        return Guid.TryParse(accountId, out var parsed)
-            ? parsed
-            : null;
-    }
+        => WorkstationOperatingContextScopeResolver.ResolveFundAccountId(context);
 
     internal static TradingStatusCardPresentation BuildStatusCardPresentation(TradingWorkspaceSummary summary)
     {
@@ -609,6 +593,7 @@ public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedS
                     hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
                     operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
                     fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
+                    fundAccountId: WorkstationOperatingContextScopeResolver.ResolveFundAccountIdString(_operatingContextService?.CurrentContext),
                     fundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName,
                     ct: ct)
                 .ConfigureAwait(false);

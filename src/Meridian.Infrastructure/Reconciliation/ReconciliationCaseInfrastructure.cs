@@ -164,14 +164,14 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
                 o.Rationale,
                 now,
                 [new ReconciliationCaseHistoryEntry(now, "None", "Open", "Case created from matcher outcome") { EvidenceId = evidenceRef }])
-            {
-                EvidenceReferences = [evidenceRef],
-                DueAtUtc = now.AddDays(2),
-                Priority = "High",
-                LastUpdatedAtUtc = now,
-                LastUpdatedBy = "system",
-                AuditEvents = [new ReconciliationCaseAuditEvent(Guid.NewGuid().ToString("N"), "CaseOpened", now, "system", "Case created from matcher outcome.")]
-            };
+                {
+                    EvidenceReferences = [evidenceRef],
+                    DueAtUtc = now.AddDays(2),
+                    Priority = "High",
+                    LastUpdatedAtUtc = now,
+                    LastUpdatedBy = "system",
+                    AuditEvents = [new ReconciliationCaseAuditEvent(Guid.NewGuid().ToString("N"), "CaseOpened", now, "system", "Case created from matcher outcome.")]
+                };
             })
             .ToList();
         foreach (var c in cases)
@@ -230,7 +230,8 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
     public async Task<ReconciliationCase> AssignAsync(string caseId, string assignee, string note, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(assignee)) throw new ArgumentException("Assignee is required.", nameof(assignee));
+        if (string.IsNullOrWhiteSpace(assignee))
+            throw new ArgumentException("Assignee is required.", nameof(assignee));
         var c = await _store.GetAsync(caseId, ct).ConfigureAwait(false) ?? throw new InvalidOperationException($"Case not found: {caseId}");
         var now = _timeProvider.GetUtcNow();
         var actor = "system";
@@ -248,16 +249,20 @@ public sealed class ReconciliationCaseService : IReconciliationCaseService
     public async Task<ReconciliationCase> AddCommentAsync(string caseId, string subject, string body, string actor, string? parentCommentId = null, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(body)) throw new ArgumentException("Comment body is required.", nameof(body));
-        if (string.IsNullOrWhiteSpace(actor)) throw new ArgumentException("Comment actor is required.", nameof(actor));
+        if (string.IsNullOrWhiteSpace(body))
+            throw new ArgumentException("Comment body is required.", nameof(body));
+        if (string.IsNullOrWhiteSpace(actor))
+            throw new ArgumentException("Comment actor is required.", nameof(actor));
         var c = await _store.GetAsync(caseId, ct).ConfigureAwait(false) ?? throw new InvalidOperationException($"Case not found: {caseId}");
         var now = _timeProvider.GetUtcNow();
         var threads = c.CommentThreads.ToList();
         var threadId = string.IsNullOrWhiteSpace(subject) ? "general" : subject.Trim();
         var idx = threads.FindIndex(t => string.Equals(t.ThreadId, threadId, StringComparison.OrdinalIgnoreCase));
         var comment = new ReconciliationCaseComment(Guid.NewGuid().ToString("N"), body.Trim(), actor.Trim(), now, parentCommentId);
-        if (idx < 0) threads.Add(new ReconciliationCaseCommentThread(threadId, string.IsNullOrWhiteSpace(subject) ? "General" : subject.Trim(), [comment]));
-        else threads[idx] = threads[idx] with { Comments = threads[idx].Comments.Concat([comment]).ToList() };
+        if (idx < 0)
+            threads.Add(new ReconciliationCaseCommentThread(threadId, string.IsNullOrWhiteSpace(subject) ? "General" : subject.Trim(), [comment]));
+        else
+            threads[idx] = threads[idx] with { Comments = threads[idx].Comments.Concat([comment]).ToList() };
         var updated = c with
         {
             CommentThreads = threads,

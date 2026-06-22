@@ -1,0 +1,90 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Posting controls package keeps core gates, handoffs, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/posting_controls_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 12,
+          "required_handoffs": 5
+        }
+      },
+      "prompt": "Use $meridian-accounting-posting-controls to review a journal posting command for source evidence, approval, period lock, idempotency, and double-entry safeguards."
+    },
+    {
+      "id": 2,
+      "description": "Approval and period-gate scenario exposes blocked outputs and disabled reasons.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/posting_controls_check.py",
+        "--scenario",
+        "approval-period-gates",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 6
+        }
+      },
+      "prompt": "Use $meridian-accounting-posting-controls to check approval, reviewer state, period posture, blocked outputs, and disabled reasons before posting."
+    },
+    {
+      "id": 3,
+      "description": "Idempotency and concurrency scenario covers source version, stale-version, and correlation identifiers.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/posting_controls_check.py",
+        "--scenario",
+        "idempotency-concurrency",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 6
+        }
+      },
+      "prompt": "Use $meridian-accounting-posting-controls to review idempotency, stale source versions, correlation and causation ids, and version/concurrency guards."
+    },
+    {
+      "id": 4,
+      "description": "Correction scenario covers reversal/rebook, amendment, restatement, immutability, and audit trail.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/posting_controls_check.py",
+        "--scenario",
+        "reversal-rebook-controls",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 6
+        }
+      },
+      "prompt": "Use $meridian-accounting-posting-controls to review reversal/rebook, amendment, restatement, immutable posted journals, and audit trail controls."
+    }
+  ]
+}

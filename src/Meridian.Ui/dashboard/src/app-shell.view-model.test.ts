@@ -20,7 +20,8 @@ const emptyPayload: AppShellWorkspacePayload = {
   portfolio: null,
   data: null,
   accounting: null,
-  reporting: null
+  reporting: null,
+  workflowSummary: null
 };
 
 const sessionPayload: AppShellWorkspacePayload = {
@@ -773,16 +774,213 @@ describe("app shell view model", () => {
     expect(state.workflowContinuity.title).toBe("Accounting Closeout");
     expect(state.workflowContinuity.contextValue).toBe("Accounting / Match Records");
     expect(state.workflowContinuity.nextActionLabel).toBe("Next: Resolve Exceptions");
-    expect(state.workflowContinuity.summary).toContain("4 steps need operator attention.");
+    expect(state.workflowContinuity.summary).toContain("5 steps need operator attention.");
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
       ["receive-activity", "2 breaks", "review"],
       ["match-records", "Current / 2 breaks", "review"],
       ["resolve-exceptions", "Next / 2 breaks", "review"],
       ["approve-results", "2 breaks", "review"],
-      ["produce-evidence", "1 recipients", "ready"]
+      ["produce-evidence", "1 recipients", "ready"],
+      ["close-support", "Review", "review"]
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "match-records")?.ariaLabel)
       .toBe("Match Records, current workflow step, 2 breaks");
+  });
+
+  it("uses source-backed financial operations summary for accounting closeout steps", () => {
+    const state = buildAppShellViewState({
+      pathname: "/accounting/reconciliation",
+      search: "?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        accounting: {
+          breakQueue: [],
+          reconciliationQueue: []
+        },
+        workflowSummary: {
+          generatedAt: "2026-06-01T12:00:00Z",
+          hasOperatingContext: true,
+          operatingContextLabel: "Northwind Income",
+          fundDisplayName: "Northwind Income",
+          workspaces: [
+            {
+              workspaceId: "accounting",
+              workspaceTitle: "Accounting",
+              statusLabel: "Financial operations exceptions require review",
+              statusDetail: "Period 2026-05 has 1 unresolved exception before approval and evidence production can complete.",
+              statusTone: "Warning",
+              nextAction: {
+                label: "Resolve Exceptions",
+                detail: "Open reconciliation casework, assign breaks, and retain resolution evidence.",
+                targetPageTag: "FundReconciliation",
+                tone: "Primary"
+              },
+              primaryBlocker: {
+                code: "financial-operations-exceptions",
+                label: "1 unresolved exception",
+                detail: "Approval and close evidence remain blocked until every break is matched, resolved, or explicitly closed.",
+                tone: "Warning",
+                isBlocking: true
+              },
+              evidence: [
+                { label: "Core flow", value: "Resolve Exceptions", tone: "Warning" },
+                { label: "Workflows", value: "1", tone: "Neutral" },
+                { label: "Breaks", value: "1", tone: "Warning" },
+                { label: "Approval", value: "Pending", tone: "Warning" },
+                { label: "Evidence", value: "2", tone: "Success" }
+              ]
+            }
+          ]
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
+      ["receive-activity", "Complete", "ready"],
+      ["match-records", "Current / Complete", "ready"],
+      ["resolve-exceptions", "Next / 1 breaks", "review"],
+      ["approve-results", "Waiting", "pending"],
+      ["produce-evidence", "Waiting", "pending"],
+      ["close-support", "Waiting", "pending"]
+    ]);
+    expect(state.workflowContinuity.operatorFocusItems[0]).toMatchObject({
+      label: "1 unresolved exception",
+      route: "/accounting/reconciliation?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      actionLabel: "Resolve Exceptions",
+      tone: "review"
+    });
+  });
+
+  it("maps financial operations close readiness into the Close Support continuity step", () => {
+    const state = buildAppShellViewState({
+      pathname: "/accounting/operations-continuity",
+      search: "?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        accounting: {
+          breakQueue: [],
+          reconciliationQueue: []
+        },
+        workflowSummary: {
+          generatedAt: "2026-06-01T12:00:00Z",
+          hasOperatingContext: true,
+          operatingContextLabel: "Northwind Income",
+          fundDisplayName: "Northwind Income",
+          workspaces: [
+            {
+              workspaceId: "accounting",
+              workspaceTitle: "Accounting",
+              statusLabel: "Financial operations close readiness blocked",
+              statusDetail: "Period 2026-05 close readiness score is 80; review blockers before producing the evidence package.",
+              statusTone: "Warning",
+              nextAction: {
+                label: "Review Close Readiness",
+                detail: "Open close support, review period lock evidence, and retain the evidence package decision.",
+                targetPageTag: "OperationsClose",
+                tone: "Primary"
+              },
+              primaryBlocker: {
+                code: "financial-operations-close-readiness",
+                label: "Close evidence is incomplete",
+                detail: "Close support cannot lock the period until retained evidence and reopen evidence are complete.",
+                tone: "Warning",
+                isBlocking: true
+              },
+              evidence: [
+                { label: "Core flow", value: "Produce Evidence", tone: "Warning" },
+                { label: "Workflows", value: "1", tone: "Neutral" },
+                { label: "Breaks", value: "0", tone: "Success" },
+                { label: "Approval", value: "Approved", tone: "Success" },
+                { label: "Evidence", value: "6", tone: "Success" },
+                { label: "Close", value: "80", tone: "Warning" },
+                { label: "Period lock", value: "Missing", tone: "Warning" }
+              ]
+            }
+          ]
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.contextValue).toBe("Accounting / Scoped workflow");
+    expect(state.workflowContinuity.nextActionLabel).toBe("Stay on Close Support");
+    expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
+      ["receive-activity", "Complete", "ready"],
+      ["match-records", "Complete", "ready"],
+      ["resolve-exceptions", "Complete", "ready"],
+      ["approve-results", "Complete", "ready"],
+      ["produce-evidence", "Complete", "ready"],
+      ["close-support", "Current / Close blocked", "review"]
+    ]);
+    expect(state.workflowContinuity.steps.find((step) => step.id === "close-support")?.href)
+      .toBe("/accounting/operations-continuity?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+  });
+
+  it("surfaces reviewed automation guardrails from the financial operations summary", () => {
+    const state = buildAppShellViewState({
+      pathname: "/accounting/reconciliation",
+      search: "?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        accounting: {
+          breakQueue: [],
+          reconciliationQueue: []
+        },
+        workflowSummary: {
+          generatedAt: "2026-06-01T12:00:00Z",
+          hasOperatingContext: true,
+          operatingContextLabel: "Northwind Income",
+          fundDisplayName: "Northwind Income",
+          workspaces: [
+            {
+              workspaceId: "accounting",
+              workspaceTitle: "Accounting",
+              statusLabel: "Financial operations control flow active",
+              statusDetail: "Period 2026-05 is in the Match Records stage with source-backed workflow gates, checklist, and audit trail.",
+              statusTone: "Info",
+              nextAction: {
+                label: "Match Records",
+                detail: "Open the governed operations continuity workflow and continue the next source-backed control step.",
+                targetPageTag: "OperationsContinuity",
+                tone: "Primary"
+              },
+              primaryBlocker: {
+                code: "financial-operations-in-progress",
+                label: "Financial operations flow in progress",
+                detail: "Continue the source-backed receive, match, resolve, approve, and evidence workflow before close.",
+                tone: "Info",
+                isBlocking: false
+              },
+              evidence: [
+                { label: "Core flow", value: "Match Records", tone: "Info" },
+                { label: "Workflows", value: "1", tone: "Neutral" },
+                { label: "Breaks", value: "0", tone: "Success" },
+                { label: "Approval", value: "Pending", tone: "Warning" },
+                { label: "Evidence", value: "2", tone: "Success" },
+                { label: "Close", value: "Pending", tone: "Info" },
+                { label: "Reviewed automation", value: "Suggested matches require review", tone: "Warning" }
+              ]
+            }
+          ]
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.operatorFocusItems[0]).toMatchObject({
+      label: "Reviewed automation requires operator review",
+      detail: "Suggested matches require review; automation can suggest, classify, extract, match, summarize, draft, and flag, but cannot approve, post, publish, release payments, or erase evidence.",
+      route: "/accounting/operations-continuity?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      actionLabel: "Match Records",
+      tone: "review"
+    });
   });
 
   it("ranks cross-workspace operator focus items for the shell continuity dock", () => {

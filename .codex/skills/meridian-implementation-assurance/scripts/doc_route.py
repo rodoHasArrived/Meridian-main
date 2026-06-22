@@ -5,14 +5,36 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Route:
+    directory: str
+    description: str
+    generated: bool = False
+    legacy_new_docs_discouraged: bool = False
+
 
 ROUTES = {
-    "architecture": "docs/architecture/",
-    "adr": "docs/adr/",
-    "reference": "docs/reference/",
-    "generated": "docs/generated/",
-    "evaluation": "docs/evaluations/",
-    "ai": "docs/ai/",
+    "adr": Route("docs/adr/", "durable architecture decision record"),
+    "ai": Route("docs/ai/", "AI-agent workflow, Codex, prompt, skill, or eval guidance"),
+    "architecture": Route("docs/architecture/", "architecture boundary or system design guidance"),
+    "engineering": Route("docs/engineering/", "developer workflow, validation, build, or test guidance"),
+    "evaluation": Route("docs/evaluations/", "analysis, assessment, option comparison, or eval report"),
+    "evaluations": Route("docs/evaluations/", "analysis, assessment, option comparison, or eval report"),
+    "generated": Route("docs/generated/", "generated documentation output", generated=True),
+    "operations": Route(
+        "docs/operations/",
+        "legacy linked operator material; prefer operators for new operator-facing docs",
+        legacy_new_docs_discouraged=True,
+    ),
+    "operators": Route("docs/operators/", "operator workflow, runbook, provider setup, or recovery guidance"),
+    "product": Route("docs/product/", "product scope, stakeholder framing, or capability context"),
+    "reference": Route("docs/reference/", "stable API, config, command, schema, or lookup reference"),
+    "roadmap": Route("docs/roadmap/", "roadmap registry or generated roadmap workflow"),
+    "source": Route("docs/source/", "source module README, registry, or source/docs hash workflow"),
+    "start": Route("docs/start/", "first-run setup, quickstart, or entrypoint guidance"),
 }
 
 
@@ -22,7 +44,7 @@ def parse_args() -> argparse.Namespace:
         "--kind",
         required=True,
         choices=sorted(ROUTES.keys()),
-        help="Documentation kind.",
+        help="Documentation kind. Use 'operators' for new operator-facing docs.",
     )
     p.add_argument("--topic", required=True, help="Short topic name used for filename suggestion.")
     p.add_argument(
@@ -51,16 +73,23 @@ def slugify(value: str) -> str:
 
 def main() -> int:
     args = parse_args()
-    base = ROUTES[args.kind]
+    route = ROUTES[args.kind]
+    base = route.directory
     suggested = f"{base}{slugify(args.topic)}.md"
     action = "update-existing" if args.existing_doc else "create-new"
+    if route.generated and not args.existing_doc:
+        action = "update-generator"
+    if route.legacy_new_docs_discouraged and not args.existing_doc:
+        action = "prefer-docs-operators-for-new-doc"
 
     payload = {
         "kind": args.kind,
         "target_directory": base,
         "suggested_file": suggested,
         "action": action,
-        "cross_link_required": not args.existing_doc,
+        "description": route.description,
+        "cross_link_required": not args.existing_doc and not route.generated,
+        "nearest_index": f"{base}README.md",
     }
 
     if args.json:
@@ -71,6 +100,8 @@ def main() -> int:
         print(f"- Directory: {payload['target_directory']}")
         print(f"- Suggested file: {payload['suggested_file']}")
         print(f"- Action: {payload['action']}")
+        print(f"- Description: {payload['description']}")
+        print(f"- Nearest index: {payload['nearest_index']}")
         print(f"- Cross-link required: {'yes' if payload['cross_link_required'] else 'no'}")
 
     return 0

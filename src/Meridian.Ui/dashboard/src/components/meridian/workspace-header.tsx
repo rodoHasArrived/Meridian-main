@@ -1,5 +1,6 @@
 import { AlertTriangle, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
 import type { SessionInfo, WorkspaceSummary } from "@/types";
@@ -29,6 +30,7 @@ import type { SessionInfo, WorkspaceSummary } from "@/types";
  * />
  */
 interface WorkspaceHeaderProps {
+  breadcrumbItems?: BreadcrumbItem[];
   workspace: WorkspaceSummary;
   session: SessionInfo | null;
   onRefresh?: () => void;
@@ -36,6 +38,7 @@ interface WorkspaceHeaderProps {
 }
 
 export function WorkspaceHeader({
+  breadcrumbItems = [],
   workspace,
   session,
   onRefresh,
@@ -71,6 +74,7 @@ export function WorkspaceHeader({
       ) : null}
       <div className="workspace-header-shell px-4 py-3 lg:px-6">
         <div className="space-y-3">
+          {breadcrumbItems.length > 0 ? <Breadcrumb items={breadcrumbItems} /> : null}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 flex-col gap-1">
               <div className="flex flex-wrap items-center gap-2">

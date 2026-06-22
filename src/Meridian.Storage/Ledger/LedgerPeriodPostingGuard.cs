@@ -20,6 +20,7 @@ public static class LedgerPeriodPostingGuard
 
         ValidateAdjustmentApprovalMetadata(entry);
         ValidateSecurityMasterLineage(entry);
+        ValidateTreasuryLedgerMetadata(entry, period);
 
         if (string.Equals(period.Status, "Open", StringComparison.Ordinal))
         {
@@ -93,6 +94,54 @@ public static class LedgerPeriodPostingGuard
         {
             throw new LedgerValidationException(
                 $"Journal entry '{entry.Entry.JournalEntryId}' adjustment approval requires a governance case id or evidence link.");
+        }
+    }
+
+    private static void ValidateTreasuryLedgerMetadata(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
+    {
+        var metadata = entry.Entry.Metadata;
+        var hasTreasuryContext =
+            HasText(metadata.IdempotencyKey) ||
+            HasText(metadata.FundEventId) ||
+            HasText(metadata.FundEventType) ||
+            HasText(metadata.CapitalAccountId) ||
+            HasText(metadata.InvestorId) ||
+            HasText(metadata.PaymentIntentId) ||
+            HasText(metadata.SettlementReference);
+
+        if (!hasTreasuryContext)
+        {
+            return;
+        }
+
+        if (metadata.EffectiveDate is not { } effectiveDate)
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{entry.Entry.JournalEntryId}' has treasury ledger metadata without an effective date.");
+        }
+
+        if (effectiveDate < period.StartDate || effectiveDate > period.EndDate)
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{entry.Entry.JournalEntryId}' effective date '{effectiveDate:yyyy-MM-dd}' is outside accounting period '{period.Label}' ({period.StartDate:yyyy-MM-dd} to {period.EndDate:yyyy-MM-dd}).");
+        }
+
+        if (!HasText(metadata.IdempotencyKey))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{entry.Entry.JournalEntryId}' has treasury ledger metadata without an idempotency key.");
+        }
+
+        var hasFundEventContext =
+            HasText(metadata.FundEventId) ||
+            HasText(metadata.FundEventType) ||
+            HasText(metadata.CapitalAccountId) ||
+            HasText(metadata.InvestorId);
+        if (hasFundEventContext)
+        {
+            RequireTreasuryText(metadata.FundEventId, entry.Entry.JournalEntryId, "fund event id");
+            RequireTreasuryText(metadata.FundEventType, entry.Entry.JournalEntryId, "fund event type");
+            RequireTreasuryText(metadata.CapitalAccountId, entry.Entry.JournalEntryId, "capital account id");
         }
     }
 
@@ -393,6 +442,17 @@ public static class LedgerPeriodPostingGuard
         {
             throw new LedgerValidationException(
                 $"Journal entry '{journalEntryId}' adjustment approval requires {fieldName}.");
+        }
+    }
+
+    private static bool HasText(string? value) => !string.IsNullOrWhiteSpace(value);
+
+    private static void RequireTreasuryText(string? value, Guid journalEntryId, string fieldName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new LedgerValidationException(
+                $"Journal entry '{journalEntryId}' treasury ledger metadata requires {fieldName}.");
         }
     }
 }

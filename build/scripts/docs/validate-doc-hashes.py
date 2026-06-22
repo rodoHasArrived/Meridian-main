@@ -6,9 +6,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 
-from common import EXCLUDE_DIRS, Finding, emit_findings, load_data, repo_path, repo_root, sha256_file, sha256_text, write_text_if_changed
+from common import EXCLUDE_DIRS, Finding, emit_findings, load_data, repo_path, repo_root, sha256_file, sha256_manifest_file, sha256_text, write_text_if_changed
 
 HASH_MANIFEST = Path("docs/source/generated/source-hash-manifest.json")
 SOURCE_SUFFIXES = {
@@ -98,7 +99,7 @@ def validate_generated_manifests(root: Path) -> list[Finding]:
                 if not path.exists():
                     findings.append(Finding("error", repo_path(manifest_path, root), f"{section} path is missing: {entry['path']}"))
                     continue
-                actual = sha256_file(path)
+                actual = sha256_manifest_file(path)
                 if actual != entry.get("sha256"):
                     findings.append(Finding("error", entry["path"], f"{section} hash mismatch; rerun the owning renderer"))
     return findings
@@ -123,20 +124,73 @@ def validate_source_hash_manifest(root: Path, actual_manifest: dict) -> list[Fin
     return findings
 
 
+def refresh_source_hash_manifest(root: Path, actual_manifest: dict, module_ids: list[str] | None = None) -> tuple[bool, int]:
+    manifest_path = root / HASH_MANIFEST
+    if not module_ids:
+        return write_text_if_changed(manifest_path, json.dumps(actual_manifest, indent=2, sort_keys=True)), len(actual_manifest.get("modules", []))
+
+    requested = set(module_ids)
+    actual_by_id = {entry["id"]: entry for entry in actual_manifest.get("modules", [])}
+    missing = sorted(requested - set(actual_by_id))
+    if missing:
+        raise ValueError(f"unknown source module id(s): {', '.join(missing)}")
+
+    if manifest_path.exists():
+        next_manifest = load_json(manifest_path)
+    else:
+        next_manifest = {
+            "schema": actual_manifest["schema"],
+            "generator": actual_manifest["generator"],
+            "contract": actual_manifest["contract"],
+            "modules": [],
+        }
+
+    modules = []
+    seen = set()
+    for entry in next_manifest.get("modules", []):
+        module_id = entry.get("id")
+        if module_id in requested:
+            modules.append(actual_by_id[module_id])
+            seen.add(module_id)
+        else:
+            modules.append(entry)
+
+    for module_id in sorted(requested - seen):
+        modules.append(actual_by_id[module_id])
+
+    next_manifest["schema"] = actual_manifest["schema"]
+    next_manifest["generator"] = actual_manifest["generator"]
+    next_manifest["contract"] = actual_manifest["contract"]
+    next_manifest["modules"] = sorted(modules, key=lambda item: item["id"])
+    changed = write_text_if_changed(manifest_path, json.dumps(next_manifest, indent=2, sort_keys=True))
+    return changed, len(requested)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate documentation hash alignment.")
     parser.add_argument("--root", default=str(repo_root()), help="Repository root.")
-    parser.add_argument("--write", action="store_true", help="Refresh docs/source/generated/source-hash-manifest.json.")
+    write_group = parser.add_mutually_exclusive_group()
+    write_group.add_argument("--write", action="store_true", help="Refresh every docs/source/generated/source-hash-manifest.json module entry.")
+    write_group.add_argument(
+        "--write-module",
+        action="append",
+        metavar="MODULE_ID",
+        help="Refresh only the named registered source module hash entry. Repeat for multiple reviewed modules.",
+    )
     parser.add_argument("--summary", action="store_true", help="Print compact summary output.")
     args = parser.parse_args()
 
     root = repo_root(args.root)
     actual_manifest = build_manifest(root)
-    manifest_path = root / HASH_MANIFEST
-    if args.write:
-        changed = write_text_if_changed(manifest_path, json.dumps(actual_manifest, indent=2, sort_keys=True))
+    if args.write or args.write_module:
+        try:
+            changed, refreshed = refresh_source_hash_manifest(root, actual_manifest, args.write_module)
+        except ValueError as error:
+            print(f"ERROR: {error}", file=sys.stderr)
+            return 1
         if args.summary:
-            print(f"doc hash manifest refreshed: {1 if changed else 0} file(s) changed")
+            scope = f"{refreshed} module entr{'y' if refreshed == 1 else 'ies'}" if args.write_module else "all module entries"
+            print(f"doc hash manifest refreshed ({scope}): {1 if changed else 0} file(s) changed")
         return 0
 
     findings = validate_generated_manifests(root)

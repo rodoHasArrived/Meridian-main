@@ -156,6 +156,80 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void ProjectLedgerBook_ConsolidatedReads_ShouldFilterByLineDimensionsAcrossBooks()
+    {
+        var projectLedgers = new ProjectLedgerBook("fund-alpha");
+        var fundBook = projectLedgers.GetOrCreate(new LedgerBookKey("fund-alpha", "Fund", LedgerViewKind.Actual));
+        var sleeveBook = projectLedgers.GetOrCreate(new LedgerBookKey("fund-alpha", "Sleeve:credit", LedgerViewKind.Actual));
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var t1 = DateTimeOffset.Parse("2026-05-28T09:00:00Z");
+        var t2 = t1.AddHours(1);
+        var alphaDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            SleeveId: "sleeve-credit",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var betaDimensions = alphaDimensions with
+        {
+            EntityId = "entity-beta",
+            ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Administration"
+            }
+        };
+
+        fundBook.PostLines(
+            t1,
+            "alpha fund fee",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 100m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        sleeveBook.PostLines(
+            t2,
+            "alpha sleeve fee",
+            new[]
+            {
+                (cash, 25m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 25m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        sleeveBook.PostLines(
+            t2,
+            "beta sleeve fee",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 50m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+
+        var scope = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["department"] = "investments"
+            });
+
+        var trialBalance = projectLedgers.ConsolidatedTrialBalance(lineDimensions: scope);
+        var snapshot = projectLedgers.ConsolidatedSnapshotAsOf(t2, lineDimensions: scope);
+        var summaries = projectLedgers.ConsolidatedAccountSummaries(lineDimensions: scope);
+        var journals = projectLedgers.ConsolidatedJournalEntries(new LedgerQuery(LineDimensions: scope));
+
+        trialBalance[cash].Should().Be(125m);
+        trialBalance[revenue].Should().Be(125m);
+        snapshot.Balances[cash].Should().Be(125m);
+        snapshot.JournalEntryCount.Should().Be(2);
+        snapshot.LedgerEntryCount.Should().Be(4);
+        summaries.Single(summary => summary.Account == cash).Balance.Should().Be(125m);
+        journals.Select(entry => entry.Description).Should().Equal("alpha fund fee", "alpha sleeve fee");
+    }
+
+    [Fact]
     public void ProjectLedgerBook_FilteredSnapshot_FiltersByBookViewAndScenario()
     {
         var projectLedgers = new ProjectLedgerBook("project-alpha");
@@ -226,6 +300,339 @@ public sealed class LedgerIntegrationTests
         consolidated.Should().HaveCount(2);
         consolidated[0].Description.Should().Be("core actual trade");
         consolidated[1].Description.Should().Be("core historical trade");
+    }
+
+    [Fact]
+    public void LedgerQuery_CanFilterPrivateCapitalTreasuryMetadata()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var capital = new LedgerAccount("Capital Contributions", LedgerAccountType.Equity);
+        var effectiveDate = new DateOnly(2026, 6, 30);
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-06-30T20:00:00Z"),
+            "capital call",
+            new[] { (cash, 100m, 0m), (capital, 0m, 100m) },
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: effectiveDate,
+                IdempotencyKey: "capital-call:fund-alpha:20260630",
+                FundEventId: "fund-event:fund-alpha:capital-call:20260630",
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                PaymentIntentId: "payment:fund-alpha:capital-call:20260630",
+                SettlementReference: "settlement:fund-alpha:capital-call:20260630"));
+
+        var filtered = ledger.GetJournalEntries(new LedgerQuery(
+            EffectiveDate: effectiveDate,
+            IdempotencyKey: "capital-call:fund-alpha:20260630",
+            FundEventId: "fund-event:fund-alpha:capital-call:20260630",
+            CapitalAccountId: "capital-account:fund-alpha:lp-1",
+            PaymentIntentId: "payment:fund-alpha:capital-call:20260630"));
+
+        filtered.Should().ContainSingle();
+        filtered[0].Metadata.FundEventType.Should().Be("CapitalCall");
+        filtered[0].Metadata.SettlementReference.Should().Be("settlement:fund-alpha:capital-call:20260630");
+    }
+
+    [Fact]
+    public void AutomatedJournalDraftProjector_PreservesEventAccountingMetadataAndTypedEvidence()
+    {
+        var evidence = new JournalEvidenceReference(
+            "evidence-dividend-1",
+            "evidence://dividend/notice-1",
+            "Source",
+            "Custodian",
+            DateTimeOffset.Parse("2026-05-30T12:00:00Z"),
+            "fund-controller");
+
+        var draft = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(
+            AutomatedJournalEventKind.DividendDeclared,
+            " aapl ",
+            42.50m,
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            FinancialAccountId: " broker-1 ",
+            SourceEventId: "source-event-dividend-1",
+            EffectiveDate: new DateOnly(2026, 5, 31),
+            IdempotencyKey: "dividend:aapl:20260531",
+            EvidenceReferences: [evidence]));
+
+        draft.Metadata.Symbol.Should().Be("AAPL");
+        draft.Metadata.FinancialAccountId.Should().Be("broker-1");
+        draft.Metadata.EffectiveDate.Should().Be(new DateOnly(2026, 5, 31));
+        draft.Metadata.IdempotencyKey.Should().Be("dividend:aapl:20260531");
+        draft.Metadata.Tags.Should().ContainKey("sourceEventId").WhoseValue.Should().Be("source-event-dividend-1");
+        draft.Metadata.EvidenceReferences.Should().ContainSingle(item =>
+            item.EvidenceId == "evidence-dividend-1" &&
+            item.Uri == "evidence://dividend/notice-1" &&
+            item.Kind == "Source");
+    }
+    [Fact]
+    public void PrivateCapitalFundEventLedgerProjector_ProjectsPostedEventWithLedgerCapitalEvidenceApprovalAndReportOutput()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var postedAt = DateTimeOffset.Parse("2026-06-30T20:00:00Z");
+        var periodStart = DateTimeOffset.Parse("2026-06-01T00:00:00Z");
+        var periodEnd = DateTimeOffset.Parse("2026-06-30T23:59:59Z");
+        var approvalId = Guid.Parse("461A7BF7-BC7B-41CC-8E92-4DB732694C83");
+
+        ledger.PostLines(
+            postedAt,
+            "capital call - LP 1",
+            new[]
+            {
+                (LedgerAccounts.CashAccount("fund-alpha-operating"), 250_000m, 0m),
+                (LedgerAccounts.InvestorCapitalFor("investor:lp-1"), 0m, 250_000m),
+            },
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                ProjectId: "fund-alpha",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "capital-call:fund-alpha:lp-1:20260630",
+                FundEventId: "fund-event:fund-alpha:capital-call:20260630:lp-1",
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                PaymentIntentId: "payment:fund-alpha:capital-call:lp-1:20260630",
+                SettlementReference: "settlement:fund-alpha:capital-call:lp-1:20260630",
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["evidenceLinks"] = "source:capital-call-notice:20260630|settlement:wire-confirmation:20260630",
+                    ["automatedJournalApprovalId"] = approvalId.ToString("D"),
+                    ["automatedJournalStatus"] = "Approved",
+                    ["approvedBy"] = "controller"
+                }));
+
+        var reportPack = LedgerReportPackBuilder.Build(
+                ledger,
+                new LedgerReportPackRequest(
+                    "lrp-private-capital-2026-06",
+                    "fund-alpha",
+                    "2026-06",
+                    periodStart,
+                    periodEnd,
+                    periodEnd,
+                    "usd",
+                    "controller",
+                    DateTimeOffset.Parse("2026-07-01T13:00:00Z"),
+                    sourceRunId: "run-private-capital-close-2026-06",
+                    reconciliationEvidenceLinks: ["reconciliation:capital-call:20260630"],
+                    approvalEvidenceLinks: ["approval:capital-call:controller"]))
+            .Validate("controller", DateTimeOffset.Parse("2026-07-01T14:00:00Z"), "capital account totals validated", ["evidence:capital-account-validation"])
+            .Approve("controller", DateTimeOffset.Parse("2026-07-01T15:00:00Z"), "approved investor statement output", ["approval:capital-account-statement"])
+            .Publish("controller", DateTimeOffset.Parse("2026-07-01T16:00:00Z"), "published investor statement output", ["vault:report-pack/lrp-private-capital-2026-06"]);
+
+        var projection = PrivateCapitalFundEventLedgerProjector.Project(ledger, [reportPack]);
+
+        projection.EventCount.Should().Be(1);
+        projection.PostingReadyCount.Should().Be(1);
+        projection.ReportReadyCount.Should().Be(1);
+
+        var fundEvent = projection.Events.Should().ContainSingle().Subject;
+        fundEvent.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:20260630:lp-1");
+        fundEvent.FundEventType.Should().Be("CapitalCall");
+        fundEvent.EffectiveDate.Should().Be(new DateOnly(2026, 6, 30));
+        fundEvent.CapitalAccountId.Should().Be("capital-account:fund-alpha:lp-1");
+        fundEvent.InvestorId.Should().Be("investor:lp-1");
+        fundEvent.PaymentIntentId.Should().Be("payment:fund-alpha:capital-call:lp-1:20260630");
+        fundEvent.SettlementReference.Should().Be("settlement:fund-alpha:capital-call:lp-1:20260630");
+        fundEvent.ApprovalState.Should().Be(PrivateCapitalFundEventApprovalState.Approved);
+        fundEvent.ApprovalId.Should().Be(approvalId.ToString("D"));
+        fundEvent.ApprovedBy.Should().Be("controller");
+        fundEvent.IsPostingReady.Should().BeTrue();
+        fundEvent.IsReportReady.Should().BeTrue();
+        fundEvent.Issues.Should().BeEmpty();
+        fundEvent.EvidenceLinks.Should().BeEquivalentTo(
+        [
+            "source:capital-call-notice:20260630",
+            "settlement:wire-confirmation:20260630"
+        ]);
+
+        var ledgerImpact = fundEvent.LedgerImpacts.Should().ContainSingle().Subject;
+        ledgerImpact.TotalDebits.Should().Be(250_000m);
+        ledgerImpact.TotalCredits.Should().Be(250_000m);
+        ledgerImpact.IsBalanced.Should().BeTrue();
+        ledgerImpact.Lines.Should().Contain(line =>
+            line.AccountName == "Investor Capital" &&
+            line.AccountType == LedgerAccountType.Equity &&
+            line.Credit == 250_000m &&
+            line.NetNormalBalanceImpact == 250_000m);
+
+        var capitalAccount = fundEvent.CapitalAccountImpacts.Should().ContainSingle().Subject;
+        capitalAccount.CapitalAccountId.Should().Be("capital-account:fund-alpha:lp-1");
+        capitalAccount.InvestorId.Should().Be("investor:lp-1");
+        capitalAccount.AccountName.Should().Be("Investor Capital");
+        capitalAccount.NetCapitalAccountImpact.Should().Be(250_000m);
+        capitalAccount.LedgerEntryIds.Should().ContainSingle();
+
+        var reportOutput = fundEvent.ReportOutputs.Should().ContainSingle().Subject;
+        reportOutput.ReportId.Should().Be("lrp-private-capital-2026-06");
+        reportOutput.Status.Should().Be(LedgerReportPackLifecycleStatus.Published);
+        reportOutput.IsPublished.Should().BeTrue();
+        reportOutput.SignatureHash.Should().HaveLength(64);
+        reportOutput.ArtifactNames.Should().Contain("line-provenance.csv");
+        reportOutput.EvidenceLinks.Should().Contain("vault:report-pack/lrp-private-capital-2026-06");
+        reportOutput.EvidenceLinks.Should().Contain(link => link.StartsWith("ledger-entry:", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void PrivateCapitalFundEventLedgerProjector_FlagsIncompletePostedEventContext()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-06-30T20:00:00Z"),
+            "incomplete capital call",
+            new[]
+            {
+                (LedgerAccounts.CashAccount("fund-alpha-operating"), 100m, 0m),
+                (LedgerAccounts.InvestorCapitalFor("investor:lp-1"), 0m, 100m),
+            },
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                FundEventId: "fund-event:fund-alpha:capital-call:incomplete",
+                FundEventType: "CapitalCall"));
+
+        var reportPack = LedgerReportPackBuilder.Build(
+                ledger,
+                new LedgerReportPackRequest(
+                    "lrp-private-capital-incomplete",
+                    "fund-alpha",
+                    "2026-06",
+                    new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+                    "usd",
+                    "controller",
+                    DateTimeOffset.Parse("2026-07-01T13:00:00Z"),
+                    sourceRunId: "run-private-capital-incomplete",
+                    reconciliationEvidenceLinks: ["reconciliation:capital-call:incomplete"],
+                    approvalEvidenceLinks: ["approval:capital-call:incomplete"]))
+            .Validate("controller", DateTimeOffset.Parse("2026-07-01T14:00:00Z"), "incomplete event retained for review", ["evidence:capital-account-review"])
+            .Approve("controller", DateTimeOffset.Parse("2026-07-01T15:00:00Z"), "approved package publication", ["approval:capital-account-review"])
+            .Publish("controller", DateTimeOffset.Parse("2026-07-01T16:00:00Z"), "published package", ["vault:report-pack/lrp-private-capital-incomplete"]);
+
+        var projection = PrivateCapitalFundEventLedgerProjector.Project(ledger, [reportPack]);
+
+        projection.EventCount.Should().Be(1);
+        projection.PostingReadyCount.Should().Be(0);
+        projection.ReportReadyCount.Should().Be(0);
+        var fundEvent = projection.Events.Single();
+        fundEvent.IsPostingReady.Should().BeFalse();
+        fundEvent.IsReportReady.Should().BeFalse();
+        fundEvent.ReportOutputs.Should().ContainSingle(output =>
+            output.IsPublished &&
+            output.ReportId == "lrp-private-capital-incomplete");
+        fundEvent.ApprovalState.Should().Be(PrivateCapitalFundEventApprovalState.Missing);
+        fundEvent.CapitalAccountImpacts.Should().BeEmpty();
+        fundEvent.EvidenceLinks.Should().BeEmpty();
+        fundEvent.Issues.Select(static issue => issue.Code).Should().Contain(
+        [
+            "private-capital.capital-account-missing",
+            "private-capital.effective-date-missing",
+            "private-capital.idempotency-key-missing",
+            "private-capital.evidence-missing",
+            "private-capital.approval-missing",
+            "private-capital.capital-account-impact-missing"
+        ]);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.evidence-missing" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+    }
+
+    [Fact]
+    public void PrivateCapitalFundEventLedgerProjector_BlocksOneFundEventMappedToMultipleCapitalAccounts()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        const string fundEventId = "fund-event:fund-alpha:capital-call:conflicted";
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-06-30T20:00:00Z"),
+            "capital call - LP 1",
+            new[]
+            {
+                (LedgerAccounts.CashAccount("fund-alpha-operating"), 100m, 0m),
+                (LedgerAccounts.InvestorCapitalFor("investor:lp-1"), 0m, 100m),
+            },
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "capital-call:fund-alpha:conflicted:lp-1",
+                FundEventId: fundEventId,
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                PaymentIntentId: "payment:capital-call-conflicted:lp-1",
+                SettlementReference: "settlement:capital-call-conflicted:lp-1",
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["evidenceLinks"] = "source:capital-call-conflicted:lp-1",
+                    ["automatedJournalStatus"] = "Posted",
+                    ["automatedJournalApprovalId"] = "approval:capital-call-conflicted",
+                    ["approvedBy"] = "controller"
+                }));
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-06-30T20:05:00Z"),
+            "capital call - LP 2",
+            new[]
+            {
+                (LedgerAccounts.CashAccount("fund-alpha-operating"), 200m, 0m),
+                (LedgerAccounts.InvestorCapitalFor("investor:lp-2"), 0m, 200m),
+            },
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "capital-call:fund-alpha:conflicted:lp-2",
+                FundEventId: fundEventId,
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-2",
+                InvestorId: "investor:lp-2",
+                PaymentIntentId: "payment:capital-call-conflicted:lp-2",
+                SettlementReference: "settlement:capital-call-conflicted:lp-2",
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["evidenceLinks"] = "source:capital-call-conflicted:lp-2",
+                    ["automatedJournalStatus"] = "Posted",
+                    ["automatedJournalApprovalId"] = "approval:capital-call-conflicted",
+                    ["approvedBy"] = "controller"
+                }));
+
+        var projection = PrivateCapitalFundEventLedgerProjector.Project(ledger);
+
+        projection.EventCount.Should().Be(1);
+        projection.PostingReadyCount.Should().Be(0);
+        projection.ReportReadyCount.Should().Be(0);
+        var fundEvent = projection.Events.Should().ContainSingle().Subject;
+        fundEvent.FundEventId.Should().Be(fundEventId);
+        fundEvent.IsPostingReady.Should().BeFalse();
+        fundEvent.HasCriticalIssues.Should().BeTrue();
+        fundEvent.LedgerImpacts.Should().HaveCount(2);
+        fundEvent.CapitalAccountImpacts.Should().HaveCount(2);
+        fundEvent.CapitalAccountImpacts.Should().Contain(impact =>
+            impact.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            impact.InvestorId == "investor:lp-1" &&
+            impact.NetCapitalAccountImpact == 100m);
+        fundEvent.CapitalAccountImpacts.Should().Contain(impact =>
+            impact.CapitalAccountId == "capital-account:fund-alpha:lp-2" &&
+            impact.InvestorId == "investor:lp-2" &&
+            impact.NetCapitalAccountImpact == 200m);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.capital-account-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.investor-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.idempotency-key-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.payment-intent-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.settlement-reference-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
     }
 
     [Fact]
@@ -637,6 +1044,53 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void FundLedgerBook_ReconciliationSnapshot_ShouldFilterByLineDimensionsAcrossSubLedgers()
+    {
+        var fund = new FundLedgerBook("fund-alpha");
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var equity = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity);
+        var asOf = DateTimeOffset.Parse("2026-05-31T23:59:59Z");
+        var entityAlpha = new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-alpha");
+        var entityBeta = new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-beta");
+
+        fund.FundLedger.PostLines(
+            asOf.AddHours(-2),
+            "fund alpha capital",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)entityAlpha),
+                (equity, 0m, 100m, (LedgerLineDimensionSet?)entityAlpha),
+            });
+        fund.EntityLedger("entity-alpha").PostLines(
+            asOf.AddHours(-1),
+            "entity alpha capital",
+            new[]
+            {
+                (cash, 25m, 0m, (LedgerLineDimensionSet?)entityAlpha),
+                (equity, 0m, 25m, (LedgerLineDimensionSet?)entityAlpha),
+            });
+        fund.EntityLedger("entity-beta").PostLines(
+            asOf,
+            "entity beta capital",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)entityBeta),
+                (equity, 0m, 50m, (LedgerLineDimensionSet?)entityBeta),
+            });
+
+        var snapshot = fund.ReconciliationSnapshot(
+            asOf,
+            new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-alpha"));
+
+        snapshot.Consolidated.Balances[cash].Should().Be(125m);
+        snapshot.Consolidated.JournalEntryCount.Should().Be(2);
+        snapshot.Entities["entity-alpha"].Balances[cash].Should().Be(25m);
+        snapshot.Entities["entity-alpha"].JournalEntryCount.Should().Be(1);
+        snapshot.Entities["entity-beta"].JournalEntryCount.Should().Be(0);
+        snapshot.Entities["entity-beta"].Balances.Should().BeEmpty();
+    }
+
+    [Fact]
     public void FundLedgerBook_EntitySnapshotsAsOf_KeyedByEntityId()
     {
         var fund = new FundLedgerBook("fund-abc");
@@ -839,6 +1293,150 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void LedgerQuery_CanFilterJournalEntriesByLineDimensions()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var alphaDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            StrategyId: "strategy-income",
+            CostCenterId: "cost-center-ops",
+            CounterpartyId: "counterparty-custodian",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var betaDimensions = alphaDimensions with
+        {
+            EntityId = "entity-beta",
+            CostCenterId = "cost-center-admin",
+            ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Administration"
+            }
+        };
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T09:00:00Z"),
+            "alpha fee accrual",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 100m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T10:00:00Z"),
+            "beta fee accrual",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 50m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+
+        var filtered = ledger.GetJournalEntries(new LedgerQuery(
+            LineDimensions: new LedgerLineDimensionSet(
+                FundId: "fund-alpha",
+                EntityId: "ENTITY-ALPHA",
+                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["department"] = "investments"
+                })));
+
+        filtered.Should().ContainSingle();
+        filtered[0].Description.Should().Be("alpha fee accrual");
+    }
+
+    [Fact]
+    public void Ledger_TrialBalance_ShouldFilterByLineDimensions()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var alphaDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            InstrumentId: Guid.Parse("4D2AE42D-38DC-4B62-A8FD-7306C8627764"),
+            CounterpartyId: "counterparty-custodian");
+        var betaDimensions = alphaDimensions with { EntityId = "entity-beta" };
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T09:00:00Z"),
+            "alpha fee accrual",
+            new[]
+            {
+                (cash, 100m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 100m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-05-28T10:00:00Z"),
+            "beta fee accrual",
+            new[]
+            {
+                (cash, 50m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 50m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+
+        var trialBalance = ledger.TrialBalance(lineDimensions: new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            InstrumentId: alphaDimensions.InstrumentId));
+
+        trialBalance[cash].Should().Be(100m);
+        trialBalance[revenue].Should().Be(100m);
+    }
+
+    [Fact]
+    public void LedgerFinancialStatementBuilder_BuildAsOf_ShouldFilterByLineDimensions()
+    {
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var capital = new LedgerAccount("Equity:Capital", LedgerAccountType.Equity);
+        var revenue = new LedgerAccount("Revenue:Fees", LedgerAccountType.Revenue);
+        var ledger = new Meridian.Ledger.Ledger();
+        var t1 = DateTimeOffset.Parse("2026-05-28T09:00:00Z");
+        var t2 = t1.AddHours(1);
+        var alphaDimensions = new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-alpha");
+        var betaDimensions = new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-beta");
+
+        ledger.PostLines(
+            t1,
+            "alpha capital contribution",
+            new[]
+            {
+                (cash, 500m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (capital, 0m, 500m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            t1.AddMinutes(30),
+            "alpha fee accrual",
+            new[]
+            {
+                (cash, 40m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 40m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            t2,
+            "beta fee accrual",
+            new[]
+            {
+                (cash, 25m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 25m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+
+        var statements = LedgerFinancialStatementBuilder.BuildAsOf(
+            ledger,
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-alpha"));
+
+        statements.TotalAssets.Should().Be(540m);
+        statements.TotalEquity.Should().Be(500m);
+        statements.TotalRevenue.Should().Be(40m);
+        statements.NetIncome.Should().Be(40m);
+        statements.AccountingEquationVariance.Should().Be(0m);
+    }
+
+    [Fact]
     public void LedgerReportPackBuilder_BuildsSignedArtifactsForLockedPeriodStatements()
     {
         var chart = new ChartOfAccounts();
@@ -957,6 +1555,107 @@ public sealed class LedgerIntegrationTests
         pack.Signature.Algorithm.Should().Be("SHA256");
         pack.Signature.PayloadChecksumSha256.Should().HaveLength(64);
         pack.Signature.SignedBy.Should().Be("controller");
+    }
+
+    [Fact]
+    public void LedgerReportPackBuilder_Build_ShouldFilterStatementsAndProvenanceByLineDimensions()
+    {
+        var chart = new ChartOfAccounts();
+        var cash = chart.Register("Assets:Cash", LedgerAccountType.Asset);
+        var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
+        var revenue = chart.Register("Revenue:Fees", LedgerAccountType.Revenue);
+        var ledger = new Meridian.Ledger.Ledger();
+        var periodStart = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
+        var periodEnd = DateTimeOffset.Parse("2026-05-31T23:59:59Z");
+        var alphaDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var betaDimensions = alphaDimensions with
+        {
+            EntityId = "entity-beta",
+            ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Administration"
+            }
+        };
+
+        ledger.PostLines(
+            periodStart.AddDays(1),
+            "alpha capital",
+            new[]
+            {
+                (cash, 500m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (capital, 0m, 500m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            periodStart.AddDays(2),
+            "alpha fee",
+            new[]
+            {
+                (cash, 40m, 0m, (LedgerLineDimensionSet?)alphaDimensions),
+                (revenue, 0m, 40m, (LedgerLineDimensionSet?)alphaDimensions),
+            });
+        ledger.PostLines(
+            periodStart.AddDays(3),
+            "beta fee",
+            new[]
+            {
+                (cash, 25m, 0m, (LedgerLineDimensionSet?)betaDimensions),
+                (revenue, 0m, 25m, (LedgerLineDimensionSet?)betaDimensions),
+            });
+        var betaLedgerEntryIds = ledger.Journal
+            .Single(entry => entry.Description == "beta fee")
+            .Lines
+            .Select(static line => line.EntryId)
+            .ToArray();
+
+        var request = new LedgerReportPackRequest(
+            "lrp-entity-alpha-2026-05",
+            "fund-alpha",
+            "2026-05",
+            periodStart,
+            periodEnd,
+            periodEnd,
+            "usd",
+            "controller",
+            DateTimeOffset.Parse("2026-06-01T13:00:00Z"),
+            sourceRunId: "run-alpha-close",
+            reconciliationEvidenceLinks: ["reconciliation:alpha"],
+            approvalEvidenceLinks: ["approval:alpha"],
+            lineDimensions: new LedgerLineDimensionSet(
+                FundId: "fund-alpha",
+                EntityId: "ENTITY-ALPHA",
+                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["department"] = "investments"
+                }));
+
+        var pack = LedgerReportPackBuilder.Build(ledger, request, chart);
+
+        pack.Statements.TotalAssets.Should().Be(540m);
+        pack.Statements.TotalEquity.Should().Be(500m);
+        pack.Statements.TotalRevenue.Should().Be(40m);
+        pack.Statements.NetIncome.Should().Be(40m);
+        pack.Request.LineDimensions.Should().NotBeNull();
+        pack.LineProvenance.Should().Contain(row =>
+            row.ArtifactName == "trial-balance.csv" &&
+            row.RowKey == "Assets:Cash" &&
+            row.LedgerEntryIds.Count == 2 &&
+            !row.LedgerEntryIds.Intersect(betaLedgerEntryIds).Any());
+
+        var manifest = pack.Artifacts.Single(artifact => artifact.Name == "manifest.csv");
+        manifest.Content.Should().Contain("dimension-scope,entityId=ENTITY-ALPHA;externalGl.department=investments;fundId=fund-alpha");
+        var statementsArtifact = pack.Artifacts.Single(artifact => artifact.Name == "financial-statements.json");
+        statementsArtifact.Content.Should().Contain("\"dimensionScope\": {");
+        statementsArtifact.Content.Should().Contain("\"entityId\": \"ENTITY-ALPHA\"");
+        statementsArtifact.Content.Should().Contain("\"externalGl.department\": \"investments\"");
+        var provenanceArtifact = pack.Artifacts.Single(artifact => artifact.Name == "line-provenance.csv");
+        foreach (var betaLedgerEntryId in betaLedgerEntryIds)
+            provenanceArtifact.Content.Should().NotContain(betaLedgerEntryId.ToString("D"));
     }
 
     [Fact]
@@ -1080,6 +1779,13 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void LedgerReportScheduledExport_CreatesReportPackRequest()
     {
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
         var schedule = new LedgerReportSchedule(
             "reg-pack",
             "fund-alpha",
@@ -1091,7 +1797,8 @@ public sealed class LedgerIntegrationTests
             [LedgerReportExportFormat.Csv],
             ["regulator@example.com"],
             "controller",
-            DateTimeOffset.Parse("2026-04-15T12:00:00Z"));
+            DateTimeOffset.Parse("2026-04-15T12:00:00Z"),
+            lineDimensions: dimensions);
         var scheduledExport = LedgerReportSchedulePlanner.Project(schedule, occurrenceCount: 1).Single();
         var lockPeriod = new LockedAccountingPeriod(
             new LedgerBookKey("fund-alpha", "official", LedgerViewKind.Actual),
@@ -1113,6 +1820,7 @@ public sealed class LedgerIntegrationTests
         request.BaseCurrency.Should().Be("USD");
         request.AsOf.Should().Be(lockPeriod.EndsAtInclusive);
         request.LockedPeriod.Should().BeSameAs(lockPeriod);
+        request.LineDimensions.Should().BeSameAs(dimensions);
     }
 
     [Fact]
@@ -1122,10 +1830,20 @@ public sealed class LedgerIntegrationTests
         var cash = chart.Register("Assets:Cash", LedgerAccountType.Asset);
         var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
         var ledger = new Meridian.Ledger.Ledger();
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
         ledger.PostLines(
             new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),
             "capital contribution",
-            [(cash, 1_000m, 0m), (capital, 0m, 1_000m)]);
+            [
+                (cash, 1_000m, 0m, (LedgerLineDimensionSet?)dimensions),
+                (capital, 0m, 1_000m, (LedgerLineDimensionSet?)dimensions),
+            ]);
         var schedule = new LedgerReportSchedule(
             "reg-pack",
             "fund-alpha",
@@ -1137,7 +1855,8 @@ public sealed class LedgerIntegrationTests
             [LedgerReportExportFormat.Csv, LedgerReportExportFormat.RegulatoryXml],
             ["regulator@example.com", "controller@example.com"],
             "controller",
-            DateTimeOffset.Parse("2026-04-15T12:00:00Z"));
+            DateTimeOffset.Parse("2026-04-15T12:00:00Z"),
+            lineDimensions: dimensions);
         var scheduledExport = LedgerReportSchedulePlanner.Project(schedule, occurrenceCount: 1).Single();
         var request = scheduledExport.ToReportPackRequest(
             "controller",
@@ -1152,12 +1871,16 @@ public sealed class LedgerIntegrationTests
         var manifest = artifacts.Single(artifact => artifact.Name == "scheduled-export-manifest.csv");
         manifest.Content.Should().Contain("ledger-scheduled-export-manifest-v1");
         manifest.Content.Should().Contain("formats,Csv|RegulatoryXml");
+        manifest.Content.Should().Contain("dimension-scope,EntityId=entity-alpha;ExternalGl_Department=Investments;FundId=fund-alpha");
         manifest.Content.Should().Contain("recipients,controller@example.com|regulator@example.com");
         manifest.Content.Should().Contain("report-pack-signature,");
         manifest.Content.Should().Contain("financial-statements.json,application/json,");
         var regulatoryXml = artifacts.Single(artifact => artifact.Name == "regulatory-summary.xml");
         regulatoryXml.Content.Should().Contain("schema=\"ledger-regulatory-summary-v1\"");
         regulatoryXml.Content.Should().Contain("<FundId>fund-alpha</FundId>");
+        regulatoryXml.Content.Should().Contain("<DimensionScope>");
+        regulatoryXml.Content.Should().Contain("<EntityId>entity-alpha</EntityId>");
+        regulatoryXml.Content.Should().Contain("<ExternalGl_Department>Investments</ExternalGl_Department>");
         regulatoryXml.Content.Should().Contain("<TotalAssets>1000</TotalAssets>");
         regulatoryXml.Content.Should().Contain("<AccountingEquationVariance>0</AccountingEquationVariance>");
         regulatoryXml.Content.Should().Contain("<Recipient>regulator@example.com</Recipient>");

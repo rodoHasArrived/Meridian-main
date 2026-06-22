@@ -1,0 +1,52 @@
+<!-- @dsCard group="Components" viewport="1200x600" name="FilteredDataTable" subtitle="Compound component: search + sort + filter + export in one UI" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FilteredDataTable</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #ECEFF3); font-family: var(--font-body);">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <h2 style="margin: 0 0 24px 0; font-size: 22px; color: var(--text-primary, #22272E);">FilteredDataTable</h2>
+
+    <div id="demo"></div>
+  </div>
+
+  <script type="text/babel">
+    const { FilteredDataTable } = window.MeridianDesignSystem_4f61be;
+
+    // Sample transaction data
+    const sampleTransactions = [
+      { id: "TXN001", date: "2026-06-15", ref: "ACH-042", memo: "Payroll deposit", category: "Income", amount: "18,500.00" },
+      { id: "TXN002", date: "2026-06-14", ref: "CHK-1847", memo: "Office supplies", category: "Expense", amount: "(234.50)" },
+      { id: "TXN003", date: "2026-06-14", ref: "WIRE-18", memo: "Client refund", category: "Liability", amount: "(1,250.00)" },
+      { id: "TXN004", date: "2026-06-13", ref: "DEP-003", memo: "Client receivable", category: "Income", amount: "3,875.25" },
+      { id: "TXN005", date: "2026-06-13", ref: "ACH-041", memo: "Vendor payment", category: "Expense", amount: "(892.00)" },
+      { id: "TXN006", date: "2026-06-12", ref: "CHK-1846", memo: "Utilities", category: "Expense", amount: "(156.73)" },
+      { id: "TXN007", date: "2026-06-12", ref: "DEP-002", memo: "Interest income", category: "Income", amount: "45.12" },
+      { id: "TXN008", date: "2026-06-11", ref: "WIRE-17", memo: "Equipment lease", category: "Expense", amount: "(2,500.00)" },
+    ];
+
+    const columns = [
+      { key: "date", label: "Date", sortable: true },
+      { key: "ref", label: "Reference", sortable: true },
+      { key: "memo", label: "Memo", sortable: true },
+      { key: "category", label: "Category", sortable: true, filterable: true },
+      { key: "amount", label: "Amount", align: "right", sortable: true },
+    ];
+
+    ReactDOM.render(
+      <FilteredDataTable
+        data={sampleTransactions}
+        columns={columns}
+        title="General Ledger Transactions"
+        localStorageKey="gl-transactions"
+      />,
+      document.getElementById("demo")
+    );
+  </script>
+</body>
+</html>

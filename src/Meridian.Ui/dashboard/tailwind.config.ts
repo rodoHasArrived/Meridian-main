@@ -2,18 +2,15 @@ import type { Config } from "tailwindcss";
 
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
-  // Cash-flow-factor-sch uses [data-appearance="dark"]; Meridian is dark-first
-  // so class-based dark mode is used — toggle by adding/removing "dark" on <html>.
+  // The workstation is light-first. Class dark mode stays available for local
+  // experiments, but the production visual contract is token-driven in CSS.
   darkMode: ["class"],
   theme: {
     extend: {
       fontFamily: {
-        // Inter is the primary sans-serif, aligned with cash-flow-factor-sch.
-        // IBM Plex Sans retained as secondary / fallback display face.
-        sans: ["Inter", "IBM Plex Sans", "ui-sans-serif", "system-ui"],
-        // JetBrains Mono added to match cash-flow-factor-sch; IBM Plex Mono as fallback.
-        mono: ["JetBrains Mono", "IBM Plex Mono", "ui-monospace", "SFMono-Regular"],
-        display: ["Space Grotesk", "IBM Plex Sans", "ui-sans-serif"]
+        sans: ["Segoe UI Variable Text", "Segoe UI", "system-ui", "ui-sans-serif"],
+        mono: ["Cascadia Mono", "JetBrains Mono", "Consolas", "ui-monospace", "SFMono-Regular"],
+        display: ["Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", "system-ui", "ui-sans-serif"]
       },
       colors: {
         border: "hsl(var(--border) / <alpha-value>)",
@@ -56,8 +53,7 @@ export default {
         "panel-strong": "hsl(var(--panel-strong) / <alpha-value>)",
         "panel-soft": "hsl(var(--panel-soft) / <alpha-value>)",
         "surface-raise": "hsl(var(--surface-raise) / <alpha-value>)",
-        // Sidebar tokens — aligned with cash-flow-factor-sch token contract.
-        // Maps to the operator rail and navigation surface.
+        // Sidebar tokens map to the light institutional operator rail.
         sidebar: {
           DEFAULT: "hsl(var(--sidebar) / <alpha-value>)",
           foreground: "hsl(var(--sidebar-foreground) / <alpha-value>)",
@@ -68,8 +64,7 @@ export default {
           border: "hsl(var(--sidebar-border) / <alpha-value>)",
           ring: "hsl(var(--sidebar-ring) / <alpha-value>)"
         },
-        // Chart tokens — named chart-1...5 per cash-flow-factor-sch convention.
-        // Semantic: cyan / green / red / amber / blue.
+        // Chart tokens retain the chart-1...5 contract with Meridian semantic colors.
         chart: {
           "1": "hsl(var(--chart-1) / <alpha-value>)",
           "2": "hsl(var(--chart-2) / <alpha-value>)",
@@ -89,7 +84,7 @@ export default {
         workstation: "var(--shadow-workstation)",
         panel: "var(--shadow-panel)",
         float: "var(--shadow-float)",
-        // Flat hard-offset shadow aligned with cash-flow-factor-sch's shadow system.
+        // Flat is retained as a compatibility key, now backed by a hairline shadow.
         flat: "var(--shadow-offset-x) var(--shadow-offset-y) var(--shadow-blur) var(--shadow-spread) hsl(var(--shadow-color) / var(--shadow-opacity))"
       }
     }

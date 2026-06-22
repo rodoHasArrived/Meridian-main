@@ -48,6 +48,8 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().NotContain("AutomationProperties.AutomationId=\"DataOperationsWorkspaceShellPage\"");
         xaml.Should().Contain("Style=\"{StaticResource WorkstationPageBandStyle}\"");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceFilterBar\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataIntegrationWorkflowStatusChip\"");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"DataIntegrationWorkflowInlineState\"");
         xaml.Should().Contain("Style=\"{StaticResource WorkstationFilterBarStyle}\"");
         xaml.Should().Contain("Style=\"{StaticResource WorkstationFilterChipStyle}\"");
         xaml.Should().Contain("Style=\"{StaticResource WorkstationTablePanelStyle}\"");
@@ -69,6 +71,13 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("OperationsHeroPrimaryActionButton");
         xaml.Should().Contain("OperationsHeroSecondaryActionButton");
         xaml.Should().Contain("OperationsHeroTargetText");
+        xaml.Should().Contain("DataIntegrationWorkflowStatusText");
+        xaml.Should().Contain("DataIntegrationWorkflowInlineText");
+        xaml.Should().Contain("Text=\"{Binding IntegrationWorkflowStateText}\"");
+        xaml.Should().Contain("Text=\"{Binding IntegrationWorkflowStateDetail}\"");
+        xaml.Should().NotContain("AutomationProperties.AutomationId=\"DataIntegrationWorkflowCard\"");
+        xaml.Should().NotContain("AutomationProperties.AutomationId=\"DataIntegrationWorkflowStepsList\"");
+        xaml.Should().NotContain("IntegrationWorkflowStepTemplate");
         xaml.IndexOf("DataWorkspaceFilterBar", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("Operational Queues", StringComparison.Ordinal));
         xaml.IndexOf("OperationsHeroSummaryText", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("DataWorkspaceFilterBar", StringComparison.Ordinal));
         xaml.IndexOf("DataWorkspaceQueuePanel", StringComparison.Ordinal).Should().BeLessThan(xaml.IndexOf("WorkspaceInspectorHostData", StringComparison.Ordinal));
@@ -94,6 +103,8 @@ public sealed class DataWorkspaceShellSmokeTests
         viewModel.Should().Contain("HeroState = presentation.HeroState;");
         viewModel.Should().Contain("HeroState = DataHeroState.Error();");
         viewModel.Should().Contain("HeroMetrics = DataHeroMetric.ErrorMetrics();");
+        viewModel.Should().Contain("CurrentIntegrationWorkflowStep = ResolveCurrentIntegrationWorkflowStep(steps);");
+        viewModel.Should().Contain("IntegrationWorkflowStateText");
         snapshotService.Should().Contain("LoadAsync(CancellationToken cancellationToken = default)");
         snapshotService.Should().Contain("WorkspaceCopyCatalog.Data.DefaultScopeLabel");
         snapshotService.Should().NotContain("WorkspaceCopyCatalog.DataOperations.");

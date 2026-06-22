@@ -1,0 +1,131 @@
+<!-- @template name="Charting Workstation" description="Light charting workstation — OHLC, studies, crosshair readout" -->
+<!-- @dsCard group="PlotTool" viewport="1440x820" name="PlotTool workstation" subtitle="Light charting workstation — OHLC, studies, crosshair readout" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — PlotTool</title>
+<script src="./ds-base.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); font-family: var(--font-body); color: var(--text-secondary); font-size: 13px; }
+  #root { height: 100vh; display: flex; flex-direction: column; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {
+  WorkstationTopbar, StatusBar, PanelSurface, Eyebrow, Button, Badge, KeyValueGrid, CandleChart, ChartCard
+} = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+// deterministic pseudo-OHLC
+const BARS = (() => {
+  let p = 182; const out = [];
+  for (let i = 0; i < 64; i++) {
+    const drift = Math.sin(i / 5) * 6 + (i / 64) * 22;
+    const o = p; const c = 178 + drift + (i % 3 - 1) * 2.4; const hi = Math.max(o, c) + 1.8; const lo = Math.min(o, c) - 1.8;
+    const hh = String(9 + Math.floor(i / 7)).padStart(2, "0");
+    out.push({ t: `${hh}:30`, o, h: hi, l: lo, c, v: 1.1e6 + Math.abs(Math.sin(i)) * 2.6e6 }); p = c;
+  }
+  return out;
+})();
+const studies = [
+  { id: "ma20", label: "MA(20)", on: true, color: "var(--accent)" },
+  { id: "ma50", label: "MA(50)", on: true, color: "var(--orange)" },
+  { id: "vwap", label: "VWAP", on: false, color: "var(--purple)" },
+  { id: "bb", label: "Bollinger(20,2)", on: false, color: "var(--chart-secondary)" },
+  { id: "rsi", label: "RSI(14)", on: true, color: "var(--green)" },
+];
+
+function App() {
+  const [tf, setTf] = useState("1D");
+  const [studyState, setStudyState] = useState(studies);
+  const cross = 44;
+  const toggle = (id) => setStudyState(s => s.map(x => x.id === id ? { ...x, on: !x.on } : x));
+  const bar = BARS[cross];
+  const overlays = studyState.filter(s => s.win && s.on).map(s => ({ label: s.label, color: s.color, win: s.win }));
+  const chg = bar.c - BARS[cross - 1].c;
+  return (
+    <React.Fragment>
+      <WorkstationTopbar moduleLabel="PlotTool" environment="RESEARCH" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+        <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", padding: 16, gap: 12 }}>
+          <ChartCard
+            title="AAPL · 1D" subtitle="Apple Inc." style={{ flex: 1, minHeight: 0 }} height={undefined}
+            readout={[
+              { label: "Last", value: bar.c.toFixed(2), color: chg >= 0 ? "var(--chart-equity)" : "var(--chart-drawdown)" },
+              { label: "Chg", value: (chg >= 0 ? "+" : "") + chg.toFixed(2), color: chg >= 0 ? "var(--chart-equity)" : "var(--chart-drawdown)" },
+              { label: "O", value: bar.o.toFixed(2) },
+              { label: "H", value: bar.h.toFixed(2), color: "var(--chart-equity)" },
+              { label: "L", value: bar.l.toFixed(2), color: "var(--chart-drawdown)" },
+              { label: "Vol", value: "1.92M" },
+            ]}
+            actions={
+              <div style={{ display: "flex", gap: 4 }}>
+                {["1m", "5m", "1H", "1D", "1W"].map(t => (
+                  <Button key={t} variant={t === tf ? "primary" : "ghost"} size="sm" onClick={() => setTf(t)}>{t}</Button>
+                ))}
+              </div>
+            }
+          >
+            <CandleChart bars={BARS} overlays={overlays} crosshairIndex={cross} />
+          </ChartCard>
+        </main>
+
+        <aside style={{ width: 280, flexShrink: 0, borderLeft: "1px solid var(--border)", background: "var(--bg-medium)", overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <Eyebrow>Crosshair</Eyebrow>
+            <div style={{ marginTop: 8 }}>
+              <KeyValueGrid columns={2} items={[
+                { label: "Time", value: bar.t + "Z" },
+                { label: "Last", value: bar.c.toFixed(2) },
+                { label: "Open", value: bar.o.toFixed(2) },
+                { label: "High", value: bar.h.toFixed(2) },
+                { label: "Low", value: bar.l.toFixed(2) },
+                { label: "Vol", value: "1.92M" },
+              ]} />
+            </div>
+          </div>
+          <div style={{ height: 1, background: "var(--border)" }}></div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Eyebrow>Studies</Eyebrow>
+              <Button variant="link">Add</Button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
+              {studyState.map(s => (
+                <button key={s.id} onClick={() => toggle(s.id)} style={{
+                  display: "flex", alignItems: "center", gap: 9, padding: "7px 10px",
+                  border: "1px solid var(--border)", borderRadius: 6, cursor: "pointer",
+                  background: s.on ? "var(--bg-light)" : "transparent", textAlign: "left",
+                  fontFamily: "var(--font-data)", fontSize: 12, color: "var(--text-primary)"
+                }}>
+                  <span style={{ width: 10, height: 3, borderRadius: 2, background: s.color, opacity: s.on ? 1 : 0.25 }}></span>
+                  <span style={{ flex: 1 }}>{s.label}</span>
+                  <span style={{ fontSize: 10, fontVariant: "all-small-caps", color: s.on ? "var(--accent)" : "var(--text-muted)" }}>{s.on ? "on" : "off"}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+      <StatusBar items={[
+        { status: "ok", label: "Feed", value: "Polygon · realtime" },
+        { label: "Bars", value: "64 · 1D" },
+        { label: "Studies", value: studyState.filter(s => s.on).length + " active" },
+        { status: "ok", label: "Render", value: "60fps", push: true },
+      ]} />
+    </React.Fragment>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

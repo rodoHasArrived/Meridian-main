@@ -140,86 +140,57 @@
                 </Border>
             </UniformGrid>
 
-            <Grid Grid.Row="2"
-                  AutomationProperties.AutomationId="AccountPortfolioWorkbench"
-                  AutomationProperties.Name="Account Portfolio Workbench">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.35*" />
-                    <ColumnDefinition Width="18" />
-                    <ColumnDefinition Width="0.95*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                            <TextBlock Text="Account Positions"
-                                       Style="{StaticResource CardHeaderStyle}"
-                                       Margin="0,0,0,4" />
-                            <TextBlock Text="Current retained brokerage position rows for the selected account."
-                                       Style="{StaticResource CardDescriptionStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
-
-                        <workstation:DenseDataGridControl Grid.Row="1"
+            <workstation:WorkstationTableInspectorControl Grid.Row="2"
                                                           Table="{Binding PositionsTable}"
                                                           SelectedItem="{Binding SelectedPosition, Mode=TwoWay}"
-                                                          Height="420"
+                                                          Inspector="{Binding SelectedPositionInspector}"
+                                                          HeaderText="Account Positions"
+                                                          DetailText="Current retained brokerage position rows for the selected account."
                                                           GridAutomationId="AccountPortfolioPositionsGrid"
                                                           EmptyAutomationId="AccountPortfolioPositionsTableEmptyState"
-                                                          Visibility="{Binding IsPositionsGridVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                          AutomationProperties.Name="Account portfolio positions table" />
+                                                          InspectorAutomationId="AccountPortfolioSelectionInspector"
+                                                          ControlAutomationId="AccountPortfolioWorkbench">
+                <workstation:WorkstationTableInspectorControl.EmptyContent>
+                    <Border MinHeight="300"
+                            Padding="28"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Visibility="{Binding IsPositionsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="AccountPositionsEmptyStatePanel"
+                            AutomationProperties.Name="{Binding PositionsEmptyStateTitle}">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    MaxWidth="460">
+                            <TextBlock Text="{Binding PositionsEmptyStateTitle}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="AccountPositionsEmptyStateTitle" />
+                            <TextBlock Margin="0,8,0,16"
+                                       Text="{Binding PositionsEmptyStateDetail}"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       AutomationProperties.AutomationId="AccountPositionsEmptyStateDetail" />
+                            <Button Content="Refresh Account"
+                                    Command="{Binding RefreshCommand}"
+                                    IsEnabled="{Binding CanRefreshAccount}"
+                                    ToolTip="{Binding RefreshTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    HorizontalAlignment="Center"
+                                    MinWidth="132"
+                                    AutomationProperties.AutomationId="AccountPositionsEmptyStateRefreshButton" />
+                        </StackPanel>
+                    </Border>
+                </workstation:WorkstationTableInspectorControl.EmptyContent>
 
-                        <Border x:Name="AccountPositionsEmptyStatePanel"
-                                Grid.Row="1"
-                                MinHeight="300"
-                                Padding="28"
-                                Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Visibility="{Binding IsPositionsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                AutomationProperties.Name="{Binding PositionsEmptyStateTitle}">
-                            <StackPanel HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        MaxWidth="460">
-                                <TextBlock x:Name="AccountPositionsEmptyStateTitle"
-                                           Text="{Binding PositionsEmptyStateTitle}"
-                                           FontSize="16"
-                                           FontWeight="SemiBold"
-                                           TextAlignment="Center"
-                                           TextWrapping="Wrap"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock x:Name="AccountPositionsEmptyStateDetail"
-                                           Margin="0,8,0,16"
-                                           Text="{Binding PositionsEmptyStateDetail}"
-                                           TextWrapping="Wrap"
-                                           TextAlignment="Center"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                <Button x:Name="AccountPositionsEmptyStateRefreshButton"
-                                        Content="Refresh Account"
-                                        Command="{Binding RefreshCommand}"
-                                        IsEnabled="{Binding CanRefreshAccount}"
-                                        ToolTip="{Binding RefreshTooltip}"
-                                        ToolTipService.ShowOnDisabled="True"
-                                        HorizontalAlignment="Center"
-                                        MinWidth="132" />
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </Border>
-
-                <StackPanel Grid.Column="2">
-                    <workstation:InspectorPanelControl Panel="{Binding SelectedPositionInspector}"
-                                                       AutomationProperties.AutomationId="AccountPortfolioSelectionInspector" />
-
+                <workstation:WorkstationTableInspectorControl.InspectorContent>
                     <Border Style="{StaticResource CardStyle}"
                             Padding="16"
-                            Margin="0,12,0,0"
                             AutomationProperties.AutomationId="AccountPortfolioActionInspector"
                             AutomationProperties.Name="Account Portfolio Actions">
                         <StackPanel>
@@ -249,8 +220,8 @@
                             </WrapPanel>
                         </StackPanel>
                     </Border>
-                </StackPanel>
-            </Grid>
+                </workstation:WorkstationTableInspectorControl.InspectorContent>
+            </workstation:WorkstationTableInspectorControl>
         </Grid>
     </ScrollViewer>
 </Page>

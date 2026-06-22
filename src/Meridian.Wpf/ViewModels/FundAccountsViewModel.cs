@@ -7,7 +7,9 @@ using Meridian.Contracts.Workstation;
 using Meridian.ProviderSdk;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Wpf.ViewModels;
@@ -35,6 +37,20 @@ public sealed partial class FundAccountsViewModel : BindableBase
         _providerManagementService = providerManagementService;
         _brokerageSync = brokerageSync;
         _logger = logger;
+
+        AccountQueueTable = new WorkstationTableModel<AccountSummaryDto>(
+            Accounts,
+            [
+                new("Account", nameof(AccountSummaryDto.DisplayName), 220),
+                new("Type", nameof(AccountSummaryDto.AccountType), 110),
+                new("Currency", nameof(AccountSummaryDto.BaseCurrency), 90),
+                new("Institution", nameof(AccountSummaryDto.Institution), 170),
+                new("Active", nameof(AccountSummaryDto.IsActive), 70),
+                new("Effective", nameof(AccountSummaryDto.EffectiveFrom), 130, "{0:MMM dd yyyy}")
+            ],
+            "Fund accounts",
+            "No accounts loaded",
+            "Select a fund profile or ingest account records before reconciliation review.");
 
         LoadFundAccountsCommand = new AsyncRelayCommand(LoadFundAccountsAsync);
         CreateAccountCommand = new AsyncRelayCommand(CreateAccountAsync);
@@ -185,9 +201,19 @@ public sealed partial class FundAccountsViewModel : BindableBase
     public ObservableCollection<AccountSummaryDto> BankAccounts { get; } = [];
     public ObservableCollection<AccountSummaryDto> BrokerageAccounts { get; } = [];
     public ObservableCollection<AccountSummaryDto> OtherAccounts { get; } = [];
+    public ObservableCollection<AccountSummaryDto> Accounts { get; } = [];
     public ObservableCollection<AccountBalanceSnapshotDto> BalanceHistory { get; } = [];
     public ObservableCollection<FundAccountProviderBindingItem> ProviderBindings { get; } = [];
     public ObservableCollection<FundAccountRoutePreviewItem> RoutePreviews { get; } = [];
+
+    public WorkstationTableModel<AccountSummaryDto> AccountQueueTable { get; }
+
+    private InspectorPanelModel _selectedAccountInspector = BuildSelectedAccountInspector(null);
+    public InspectorPanelModel SelectedAccountInspector
+    {
+        get => _selectedAccountInspector;
+        private set => SetProperty(ref _selectedAccountInspector, value);
+    }
 
     private int TotalAccountCount => BrokerageAccounts.Count + CustodianAccounts.Count + BankAccounts.Count + OtherAccounts.Count;
 
@@ -207,6 +233,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 ReconcileCommand.NotifyCanExecuteChanged();
                 RefreshProviderRoutingCommand.NotifyCanExecuteChanged();
                 InspectSelectedAccountCommand.NotifyCanExecuteChanged();
+                SelectedAccountInspector = BuildSelectedAccountInspector(value);
                 RaisePropertyChanged(nameof(SelectedAccountSummary));
                 RaiseSelectedAccountInspectorProperties();
                 RaiseAccountBriefingProperties();
@@ -443,6 +470,12 @@ public sealed partial class FundAccountsViewModel : BindableBase
             ReplaceCollection(BankAccounts, dto.BankAccounts);
             ReplaceCollection(BrokerageAccounts, dto.BrokerageAccounts);
             ReplaceCollection(OtherAccounts, dto.OtherAccounts);
+            ReplaceCollection(
+                Accounts,
+                dto.BrokerageAccounts
+                    .Concat(dto.CustodianAccounts)
+                    .Concat(dto.BankAccounts)
+                    .Concat(dto.OtherAccounts));
 
             SelectedAccount ??= BrokerageAccounts.FirstOrDefault()
                 ?? CustodianAccounts.FirstOrDefault()
@@ -733,6 +766,40 @@ public sealed partial class FundAccountsViewModel : BindableBase
         RaisePropertyChanged(nameof(SelectedAccountBackfillText));
         RaisePropertyChanged(nameof(BrokerageSyncStatusText));
         RaiseBalanceEvidenceProperties();
+    }
+
+    internal static InspectorPanelModel BuildSelectedAccountInspector(AccountSummaryDto? selected)
+    {
+        if (selected is null)
+        {
+            return new InspectorPanelModel
+            {
+                Title = "No account selected",
+                Subtitle = "Fund account inspector",
+                Detail = "Select an account row to inspect lifecycle, accounting scope, workflow links, and shared-data access before refreshing route evidence."
+            };
+        }
+
+        return new InspectorPanelModel
+        {
+            Title = selected.DisplayName,
+            Subtitle = $"{selected.AccountType} account",
+            Detail = "Review fund account scope, lifecycle, institution, and linked workflow references before routing reconciliation or balance evidence work.",
+            Badge = new WorkstationBadgeModel(
+                "State",
+                selected.IsActive ? "Active" : "Inactive",
+                "\uE8D4",
+                selected.IsActive ? WorkspaceTone.Success : WorkspaceTone.Warning),
+            Facts =
+            [
+                new("Code", selected.AccountCode),
+                new("Currency", selected.BaseCurrency),
+                new("Institution", selected.Institution ?? "Not set"),
+                new("Effective from", selected.EffectiveFrom.ToString("MMM dd yyyy")),
+                new("Accounting scope", BuildSelectedAccountScopeText(selected)),
+                new("Workflow links", BuildSelectedAccountWorkflowLinkText(selected))
+            ]
+        };
     }
 
     private void RaiseBalanceEvidenceProperties()

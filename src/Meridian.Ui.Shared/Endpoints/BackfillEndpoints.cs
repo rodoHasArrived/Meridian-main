@@ -6,6 +6,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -171,10 +172,12 @@ public static class BackfillEndpoints
         .Produces<Meridian.Contracts.Configuration.BackfillDryRunPlanDto>(200)
         .Produces(400);
 
-        // Get audit log (stub — desktop persists locally, server returns empty)
-        group.MapGet(UiApiRoutes.BackfillProviderConfigAudit, () =>
+        // Get provider configuration audit log when the host registers an audit reader.
+        group.MapGet(UiApiRoutes.BackfillProviderConfigAudit, (IServiceProvider services) =>
         {
-            return Results.Json(Array.Empty<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto>());
+            var auditReader = services.GetService<IBackfillProviderConfigAuditReader>();
+            var entries = auditReader?.GetAuditLog() ?? Array.Empty<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto>();
+            return Results.Json(entries, jsonOptions);
         })
         .WithName("GetBackfillProviderConfigAudit")
         .WithDescription("Returns the audit trail of provider configuration changes.")

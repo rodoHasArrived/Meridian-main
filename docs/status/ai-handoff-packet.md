@@ -1,7 +1,7 @@
 # AI Handoff Packet
 
 ## Scope
-- Requested: Provider integration execution
+- Requested: Docs automation generated handoff packet
 - Excluded: No explicit exclusions recorded.
 
 ## Route
@@ -10,22 +10,22 @@
 - Mode: Deep Review
 - Model route: governance-research
 - Matched rule: provider-integration
-- Confidence: 1.0
+- Confidence: 0.875
 - Rationale: Provider changes need adapter-specific validation, telemetry capture, and readiness evidence.
 
 ## Route outcome
 - Final status: partial
-- Route assessment: possible-misroute
-- Inferred lanes from changes: docs
+- Route assessment: unknown
+- Inferred lanes from changes: (none)
 
 ## Telemetry
 - route_id: provider-integration
 - model_route_id: governance-research
-- selected_model: gpt-4.1
-- input_tokens: 1200
-- output_tokens: 450
-- estimated_cost_usd: 0.09
-- latency_ms: 920
+- selected_model: docs-automation-profile
+- input_tokens: 1
+- output_tokens: 1
+- estimated_cost_usd: 0.0
+- latency_ms: 1
 - error_class: None
 - handoff_path: docs/status/ai-handoff-packet.md
 
@@ -34,7 +34,7 @@
 - git diff: Changed-file evidence for handoff packet.
 
 ## Changes made
-- build/scripts/docs/prompt-route-linter.py: Touched in current git diff.
+- (none): Git diff evidence suppressed for deterministic docs automation.
 
 ## Validation
 - [pass] python build/scripts/docs/prompt-route-linter.py --summary

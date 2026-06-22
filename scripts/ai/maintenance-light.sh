@@ -55,6 +55,11 @@ run_step() {
     fi
 }
 
+has_make_target() {
+    local target="$1"
+    grep -qE "^[[:space:]]*${target}:" Makefile make/*.mk 2>/dev/null
+}
+
 DOTNET_AVAILABLE=false
 NODE_AVAILABLE=false
 PYTHON_AVAILABLE=false
@@ -75,11 +80,11 @@ if [[ "$NODE_AVAILABLE" == true && -f package-lock.json ]]; then
 fi
 
 if [[ "$MAKE_AVAILABLE" == true && -f Makefile ]]; then
-    grep -qE '^[[:space:]]*ai-audit:' Makefile 2>/dev/null && \
+    has_make_target "ai-audit" && \
         run_step "ai-audit" make ai-audit
-    grep -qE '^[[:space:]]*ai-docs-drift:' Makefile 2>/dev/null && \
+    has_make_target "ai-docs-drift" && \
         run_step "ai-docs-drift" make ai-docs-drift
-    grep -qE '^[[:space:]]*verify-adrs:' Makefile 2>/dev/null && \
+    has_make_target "verify-adrs" && \
         run_step "verify-adrs" make verify-adrs
 fi
 

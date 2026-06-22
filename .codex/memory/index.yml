@@ -1,0 +1,438 @@
+version: 1
+memory_root: .codex/memory
+schema:
+  id: meridian.codex-memory-index
+  version: 1
+  required_fields:
+    - id
+    - tier
+    - scope
+    - file
+    - tags
+    - load_when
+    - confidence
+    - freshness
+    - source_refs
+    - review_after
+    - invalidates_when
+  active_tiers:
+    - session
+    - branch
+    - task
+    - repo
+    - archive
+  disabled_tiers:
+    - user
+    - global
+  allowed_confidence:
+    - low
+    - medium
+    - high
+  allowed_freshness:
+    - fresh
+    - review-soon
+    - stale
+    - unknown
+  load_when_fields:
+    - skills
+    - paths
+    - intents
+    - branches
+    - tags
+    - task
+  load_when_task_fields:
+    - ids
+    - work_modes
+    - intents
+    - paths
+  exclude_when_fields:
+    - skills
+    - paths
+    - intents
+    - branches
+    - tags
+    - task_ids
+areas:
+  repo:
+    path: .codex/memory/repo
+    purpose: Stable repository-level facts sourced from canonical Meridian and Codex guidance.
+  tasks:
+    path: .codex/memory/tasks
+    purpose: Task-scoped memory that is not yet durable repository guidance.
+  goals:
+    path: .codex/memory/goals
+    purpose: Long-running Codex goal inventories that track progress and point to the active task descriptor.
+  branches:
+    path: .codex/memory/branches
+    purpose: Branch-specific context, assumptions, and handoff notes.
+  sessions:
+    path: .codex/memory/sessions
+    purpose: Session-local observations and continuation breadcrumbs.
+  archive:
+    path: .codex/memory/archive
+    purpose: Retired memory retained for auditability.
+entries:
+  - id: repo:validation
+    tier: repo
+    scope: repo
+    file: .codex/memory/repo/validation.md
+    tags:
+      - validation
+      - commands
+      - ai-tooling
+      - codex
+    load_when:
+      skills:
+        - meridian-docs
+        - meridian-implementation-assurance
+      paths:
+        - build/scripts/docs/**
+        - docs/**
+        - .codex/**
+        - make/**
+      intents:
+        - validation
+        - documentation
+        - ai-tooling
+      branches: []
+      tags:
+        - validation
+        - ai-tooling
+      task:
+        ids: []
+        work_modes:
+          - implementation
+          - validation
+        intents:
+          - validation
+          - ai-tooling
+        paths:
+          - .codex/memory/**
+          - build/scripts/docs/**
+    confidence: high
+    freshness: fresh
+    source_refs:
+      - AGENTS.md
+      - .codex/AGENTS.md
+      - .codex/skills/_shared/project-context.md
+      - .codex/skills/_shared/codex-execution-contract.md
+      - docs/ai/codex/quickstart.md
+      - docs/ai/tooling/README.md
+    review_after: 2026-09-19
+    invalidates_when:
+      - AI tooling validation commands change.
+      - Codex execution contract validation gates change.
+      - GitHub-hosted targeted-test workflow input contract changes.
+  - id: repo:architecture
+    tier: repo
+    scope: repo
+    file: .codex/memory/repo/architecture.md
+    tags:
+      - architecture
+      - product-scope
+      - surfaces
+      - mdif
+    load_when:
+      skills:
+        - meridian-blueprint
+        - meridian-code-architecture
+        - meridian-implementation-assurance
+      paths:
+        - docs/architecture/**
+        - docs/domain/**
+        - docs/ai/context/**
+        - src/Meridian.Wpf/**
+        - src/Meridian.Ui/dashboard/**
+        - src/Meridian.Ui.Shared/**
+        - src/Meridian.Ui.Services/**
+      intents:
+        - architecture
+        - implementation
+        - desktop-ui
+        - browser-workstation
+      branches: []
+      tags:
+        - architecture
+        - mdif
+      task:
+        ids: []
+        work_modes:
+          - planning
+          - implementation
+        intents:
+          - architecture
+          - desktop-ui
+          - browser-workstation
+        paths:
+          - docs/architecture/**
+          - docs/domain/**
+          - docs/ai/context/**
+          - src/Meridian.Wpf/**
+          - src/Meridian.Ui/dashboard/**
+          - src/Meridian.Ui.Shared/**
+          - src/Meridian.Ui.Services/**
+    exclude_when:
+      intents:
+        - ai-tooling
+        - skill-routing
+    confidence: high
+    freshness: fresh
+    source_refs:
+      - AGENTS.md
+      - .codex/skills/_shared/project-context.md
+      - docs/product/meridian-design-document.md
+      - docs/architecture/meridian-development-intelligence-framework.md
+      - docs/architecture/module-map.md
+    review_after: 2026-09-19
+    invalidates_when:
+      - Product scope or W5X target docs change materially.
+      - Active operator UI surfaces change.
+      - MDIF context-loading rules change.
+  - id: repo:ai-guidance
+    tier: repo
+    scope: repo
+    file: .codex/memory/repo/ai-guidance.md
+    tags:
+      - ai-guidance
+      - codex
+      - workflow
+      - skills
+    load_when:
+      skills:
+        - meridian-docs
+        - meridian-implementation-assurance
+        - meridian-codex-skill-builder
+      paths:
+        - AGENTS.md
+        - docs/ai/**
+        - .codex/**
+        - build/scripts/docs/**
+        - make/ai.mk
+      intents:
+        - ai-guidance
+        - ai-tooling
+        - documentation
+        - skill-routing
+      branches: []
+      tags:
+        - ai-guidance
+        - codex
+        - skills
+      task:
+        ids: []
+        work_modes:
+          - planning
+          - implementation
+          - validation
+        intents:
+          - ai-guidance
+          - ai-tooling
+          - skill-routing
+        paths:
+          - AGENTS.md
+          - docs/ai/**
+          - .codex/**
+          - build/scripts/docs/**
+    confidence: high
+    freshness: fresh
+    source_refs:
+      - AGENTS.md
+      - .codex/AGENTS.md
+      - .codex/skills/_shared/project-context.md
+      - .codex/skills/_shared/codex-execution-contract.md
+      - docs/ai/assistant-workflow-contract.md
+      - docs/ai/codex/README.md
+      - docs/ai/codex/quickstart.md
+    review_after: 2026-09-19
+    invalidates_when:
+      - Codex skill routing changes.
+      - Shared AI workflow contract changes.
+      - Codex quickstart or execution contract changes.
+  - id: repo:accounting-workflows
+    tier: repo
+    scope: repo
+    file: .codex/memory/repo/accounting-workflows.md
+    tags:
+      - accounting
+      - financial-operations
+      - reconciliation
+      - ledger
+      - workstation
+    load_when:
+      skills:
+        - meridian-blueprint
+        - meridian-code-architecture
+        - meridian-implementation-assurance
+        - meridian-docs
+        - modular-desktop-mvvm
+        - dense-data-grid-inspector-panel
+        - workstation-screen-composition
+      paths:
+        - docs/product/**
+        - docs/roadmap/**
+        - docs/ai/context/accounting-context.md
+        - src/Meridian.Contracts/**
+        - src/Meridian.FinancialOperations/**
+        - src/Meridian.Ledger/**
+        - src/Meridian.Ui.Shared/**
+        - src/Meridian.Ui.Services/**
+        - src/Meridian.Ui/dashboard/**
+        - src/Meridian.Wpf/**
+        - tests/Meridian.Tests/**
+        - tests/Meridian.Wpf.Tests/**
+      intents:
+        - accounting
+        - financial-operations
+        - reconciliation
+        - ledger
+        - desktop-ui
+        - browser-workstation
+        - implementation
+        - documentation
+      branches: []
+      tags:
+        - accounting
+        - financial-operations
+        - reconciliation
+        - ledger
+      task:
+        ids: []
+        work_modes:
+          - planning
+          - implementation
+          - validation
+        intents:
+          - accounting
+          - financial-operations
+          - reconciliation
+          - ledger
+          - desktop-ui
+          - browser-workstation
+        paths:
+          - src/Meridian.Contracts/**
+          - src/Meridian.FinancialOperations/**
+          - src/Meridian.Ledger/**
+          - src/Meridian.Ui.Shared/**
+          - src/Meridian.Ui.Services/**
+          - src/Meridian.Ui/dashboard/**
+          - src/Meridian.Wpf/**
+          - tests/Meridian.Tests/**
+          - tests/Meridian.Wpf.Tests/**
+    exclude_when:
+      intents:
+        - ai-tooling
+        - skill-routing
+    confidence: high
+    freshness: fresh
+    source_refs:
+      - docs/product/README.md
+      - docs/roadmap/data/roadmap-items.yml
+      - docs/ai/context/accounting-context.md
+      - src/Meridian.Contracts/README.md
+      - src/Meridian.Ui.Shared/README.md
+      - src/Meridian.Ui.Services/README.md
+      - src/Meridian.Ui/dashboard/README.md
+      - src/Meridian.Wpf/README.md
+      - src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs
+      - src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs
+      - tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs
+      - tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs
+    review_after: 2026-09-20
+    invalidates_when:
+      - W5X Financial Operations product scope changes materially.
+      - Accounting route ownership moves out of shared contracts or shared services.
+      - Live external GL posting, live payment execution, or automation-origin governed mutations are explicitly enabled.
+      - Operations Continuity close or reconciliation endpoint contracts change materially.
+  - id: repo:financial-record-explorers
+    tier: repo
+    scope: repo
+    file: .codex/memory/repo/financial-record-explorers.md
+    tags:
+      - financial-record-explorer
+      - accounting
+      - reporting
+      - workstation
+      - saved-views
+    load_when:
+      skills:
+        - meridian-blueprint
+        - meridian-code-architecture
+        - meridian-implementation-assurance
+        - meridian-docs
+        - modular-desktop-mvvm
+        - dense-data-grid-inspector-panel
+        - workstation-screen-composition
+      paths:
+        - src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs
+        - src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs
+        - src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs
+        - src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs
+        - src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.tsx
+        - src/Meridian.Ui/dashboard/src/screens/accounting-screen*
+        - src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs
+        - src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml*
+        - tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs
+        - tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs
+      intents:
+        - financial-record-explorer
+        - accounting
+        - reporting
+        - desktop-ui
+        - browser-workstation
+        - implementation
+        - validation
+      branches: []
+      tags:
+        - financial-record-explorer
+        - saved-views
+        - accounting
+        - reporting
+      task:
+        ids: []
+        work_modes:
+          - planning
+          - implementation
+          - validation
+        intents:
+          - financial-record-explorer
+          - accounting
+          - reporting
+          - desktop-ui
+          - browser-workstation
+        paths:
+          - src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs
+          - src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs
+          - src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs
+          - src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs
+          - src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.tsx
+          - src/Meridian.Ui/dashboard/src/screens/accounting-screen*
+          - src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs
+          - src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml*
+          - tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs
+          - tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs
+    exclude_when:
+      intents:
+        - ai-tooling
+        - skill-routing
+    confidence: high
+    freshness: fresh
+    source_refs:
+      - docs/product/README.md
+      - docs/roadmap/data/roadmap-items.yml
+      - src/Meridian.Contracts/README.md
+      - src/Meridian.Ui.Shared/README.md
+      - src/Meridian.Ui/dashboard/README.md
+      - src/Meridian.Wpf/README.md
+      - src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs
+      - src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs
+      - src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs
+      - src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.tsx
+      - src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs
+      - tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs
+      - tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs
+    review_after: 2026-09-20
+    invalidates_when:
+      - Financial Record Explorer DTO shape or endpoint routes change materially.
+      - Saved-view partitioning or tenant scoping changes.
+      - Browser or WPF stops consuming the shared explorer DTO.
+      - W5X Financial Record Explorer product scope changes materially.

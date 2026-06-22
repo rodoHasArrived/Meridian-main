@@ -32,7 +32,8 @@ public sealed record LedgerReportScheduledExport(
             Schedule.BaseCurrency,
             generatedBy,
             generatedAtUtc,
-            lockedPeriod);
+            lockedPeriod,
+            lineDimensions: Schedule.LineDimensions);
     }
 
     private static DateTimeOffset EndOfDayUtc(DateOnly date)

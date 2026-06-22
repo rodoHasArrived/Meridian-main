@@ -11,12 +11,15 @@ import config, {
 import type { ProxyOptions, UserConfig } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
+  AUTH_API_ENDPOINTS,
   COVERED_CALL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
+  PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
   RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
+  RISK_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
   STRATEGY_ENGINE_API_ENDPOINTS,
@@ -28,12 +31,24 @@ import {
   marketDataQuoteEndpoint,
   marketDataQuotesSnapshotEndpoint,
   promotionEvaluateEndpoint,
+  riskRuleConfigEndpoint,
   securityMasterCorporateActionsEndpoint,
+  securityMasterAssetProfilesEndpoint,
   securityMasterOperatorOverridesEndpoint,
   securityMasterTradingParametersEndpoint,
   workstationEvidenceExportManifestEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
+  workstationProviderIntegrationConnectionMonitorEndpoint,
+  workstationProviderIntegrationConnectionSyncPlanEndpoint,
+  workstationProviderIntegrationConnectionSyncRunsEndpoint,
+  workstationProviderIntegrationIdentityResolutionEndpoint,
+  workstationProviderIntegrationPromotionReadinessEndpoint,
+  workstationProviderIntegrationQuarantineReviewEndpoint,
+  workstationProviderIntegrationReconciliationHandoffHistoryEndpoint,
+  workstationProviderIntegrationStagingReviewEndpoint,
+  workstationFinancialRecordExplorerEndpoint,
+  workstationWorkflowSummaryEndpoint,
   workstationOperatorInboxEndpoint,
   workstationSecurityMasterIdentityEndpoint,
   workstationSecurityMasterSearchEndpoint
@@ -204,6 +219,188 @@ describe("Vite Meridian API proxy", () => {
         expect.objectContaining({ symbol: "AAPL", lastPrice: 188.06 }),
         expect.objectContaining({ symbol: "MSFT", lastPrice: 421.15 })
       ]
+    });
+  });
+
+  it("serves first-render Accounting and Portfolio shared fixtures in no-host mode", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const portfolioExplorerResponse = new FakeResponse();
+    const ledgerExplorerResponse = new FakeResponse();
+    const securityExplorerResponse = new FakeResponse();
+    const accountingConfigurationResponse = new FakeResponse();
+    const statementRunsResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: workstationFinancialRecordExplorerEndpoint("portfolio"), headers: { accept: "application/json" } } as IncomingMessage,
+      portfolioExplorerResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: workstationFinancialRecordExplorerEndpoint("ledger"), headers: { accept: "application/json" } } as IncomingMessage,
+      ledgerExplorerResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: workstationFinancialRecordExplorerEndpoint("security-instrument"), headers: { accept: "application/json" } } as IncomingMessage,
+      securityExplorerResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: WORKSTATION_API_ENDPOINTS.accountingConfiguration, headers: { accept: "application/json" } } as IncomingMessage,
+      accountingConfigurationResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: RECONCILIATION_API_ENDPOINTS.statementRuns, headers: { accept: "application/json" } } as IncomingMessage,
+      statementRunsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    for (const response of [
+      portfolioExplorerResponse,
+      ledgerExplorerResponse,
+      securityExplorerResponse,
+      accountingConfigurationResponse,
+      statementRunsResponse
+    ]) {
+      expect(response.statusCode).toBe(200);
+      expect(response.headers.get(meridianDevFixtureHeader)).toBe("true");
+    }
+
+    expect(JSON.parse(portfolioExplorerResponse.body)).toMatchObject({
+      explorerId: "portfolio",
+      rows: expect.arrayContaining([expect.objectContaining({ recordId: "portfolio:portfolio-run-dev-1:AAPL" })])
+    });
+    expect(JSON.parse(ledgerExplorerResponse.body)).toMatchObject({
+      explorerId: "ledger",
+      rows: expect.arrayContaining([expect.objectContaining({ recordId: "ledger:run-42:cash" })])
+    });
+    expect(JSON.parse(securityExplorerResponse.body)).toMatchObject({
+      explorerId: "security-instrument",
+      rows: expect.arrayContaining([expect.objectContaining({ recordId: "security-instrument:sec-dev-001" })])
+    });
+    expect(JSON.parse(accountingConfigurationResponse.body)).toMatchObject({
+      fundProfileId: "default-fund",
+      status: "Active",
+      ledgerBooks: [expect.objectContaining({ ledgerBookId: "ledger-book-default" })]
+    });
+    expect(JSON.parse(statementRunsResponse.body)).toEqual([
+      expect.objectContaining({ runId: "stmt-run-42", openExceptionCount: 1 })
+    ]);
+  });
+
+  it("covers first-run workstation support endpoints with no-host fixtures", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const endpoints = [
+      PROVIDER_ROUTING_API_ENDPOINTS.connections,
+      PROVIDER_ROUTING_API_ENDPOINTS.bindings,
+      PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots,
+      securityMasterAssetProfilesEndpoint(),
+      workstationWorkflowSummaryEndpoint({ hasOperatingContext: false }),
+      WORKSTATION_API_ENDPOINTS.featureCapabilities,
+      AUTH_API_ENDPOINTS.accessAssignments,
+      workstationProviderIntegrationConnectionMonitorEndpoint("databento", 5),
+      workstationProviderIntegrationConnectionSyncRunsEndpoint("databento", 5),
+      workstationProviderIntegrationConnectionSyncPlanEndpoint("databento", "2026-06-16T12:35:00Z"),
+      workstationProviderIntegrationStagingReviewEndpoint("databento", 5),
+      workstationProviderIntegrationIdentityResolutionEndpoint("databento", 5),
+      workstationProviderIntegrationPromotionReadinessEndpoint("databento", 5),
+      workstationProviderIntegrationReconciliationHandoffHistoryEndpoint("databento"),
+      workstationProviderIntegrationQuarantineReviewEndpoint("databento", 5),
+      RISK_API_ENDPOINTS.rules,
+      riskRuleConfigEndpoint("DrawdownCircuitBreaker")
+    ];
+
+    const responses = await Promise.all(
+      endpoints.map(async (endpoint) => {
+        const response = new FakeResponse();
+
+        await bypass(
+          { method: "GET", url: endpoint, headers: { accept: "application/json" } } as IncomingMessage,
+          response as unknown as ServerResponse,
+          {} as ProxyOptions
+        );
+
+        return response;
+      })
+    );
+
+    for (const response of responses) {
+      expect(response.statusCode).toBe(200);
+      expect(response.headers.get(meridianDevFixtureHeader)).toBe("true");
+    }
+
+    expect(JSON.parse(responses[0]?.body ?? "[]")).toEqual([
+      expect.objectContaining({ connectionId: "provider-alpaca-paper", productionReady: false }),
+      expect.objectContaining({ connectionId: "provider-reference", productionReady: false })
+    ]);
+    expect(JSON.parse(responses[1]?.body ?? "[]")).toEqual([
+      expect.objectContaining({ bindingId: "provider-alpaca-paper-RealtimeMarketData" }),
+      expect.objectContaining({ bindingId: "provider-reference-ReferenceData" })
+    ]);
+    expect(JSON.parse(responses[2]?.body ?? "[]")).toEqual([
+      expect.objectContaining({ connectionId: "provider-alpaca-paper", isProductionReady: false }),
+      expect.objectContaining({ connectionId: "provider-reference", isProductionReady: false })
+    ]);
+    expect(JSON.parse(responses[3]?.body ?? "[]")).toEqual([
+      expect.objectContaining({ profileId: "fixture-public-equity", status: "Approved" })
+    ]);
+    expect(JSON.parse(responses[4]?.body ?? "{}")).toMatchObject({
+      hasOperatingContext: false,
+      operatingContextLabel: "No-host fixture workspace"
+    });
+    expect(JSON.parse(responses[5]?.body ?? "{}")).toMatchObject({
+      capabilities: expect.arrayContaining([
+        expect.objectContaining({
+          capabilityKey: "desktop.settings.provider-connection-center-inline-management",
+          isEnabled: true
+        })
+      ])
+    });
+    expect(JSON.parse(responses[6]?.body ?? "[]")).toEqual([]);
+    expect(JSON.parse(responses[7]?.body ?? "{}")).toMatchObject({
+      connectionId: "databento",
+      recentRecordsQuarantined: 2
+    });
+    expect(JSON.parse(responses[8]?.body ?? "{}")).toMatchObject({
+      connectionId: "databento",
+      totalSyncRuns: 1
+    });
+    expect(JSON.parse(responses[9]?.body ?? "{}")).toMatchObject({
+      connectionId: "databento",
+      dueCount: 1
+    });
+    expect(JSON.parse(responses[10]?.body ?? "{}")).toMatchObject({
+      connectionId: "databento",
+      totalStagedRecords: 1
+    });
+    expect(JSON.parse(responses[11]?.body ?? "{}")).toMatchObject({
+      connectionId: "databento",
+      totalRows: 1
+    });
+    expect(JSON.parse(responses[12]?.body ?? "{}")).toMatchObject({
+      connectionId: "databento",
+      readyForReconciliationCount: 1
+    });
+    expect(JSON.parse(responses[13]?.body ?? "{}")).toMatchObject({
+      connectionId: "databento",
+      handoffCount: 1
+    });
+    expect(JSON.parse(responses[14]?.body ?? "{}")).toMatchObject({
+      connectionId: "databento",
+      totalQuarantinedRecords: 1
+    });
+    expect(JSON.parse(responses[15]?.body ?? "[]")).toEqual([
+      expect.objectContaining({ ruleName: "DrawdownCircuitBreaker", state: "Observe" }),
+      expect.objectContaining({ ruleName: "PositionLimit", state: "Healthy" })
+    ]);
+    expect(JSON.parse(responses[16]?.body ?? "{}")).toMatchObject({
+      ruleName: "DrawdownCircuitBreaker",
+      maxDrawdownPercent: 8
     });
   });
 

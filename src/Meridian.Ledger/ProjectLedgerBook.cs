@@ -75,13 +75,14 @@ public sealed class ProjectLedgerBook
         string? ledgerBook = null,
         LedgerViewKind? ledgerView = null,
         string? scenarioId = null,
-        string? financialAccountId = null)
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         var balances = new Dictionary<LedgerAccount, decimal>();
 
         foreach (var (_, ledger) in FilterLedgers(ledgerBook, ledgerView, scenarioId))
         {
-            foreach (var (account, amount) in ledger.TrialBalance(financialAccountId))
+            foreach (var (account, amount) in ledger.TrialBalance(financialAccountId, lineDimensions))
             {
                 balances.TryGetValue(account, out var current);
                 balances[account] = current + amount;
@@ -99,7 +100,8 @@ public sealed class ProjectLedgerBook
         string? ledgerBook = null,
         LedgerViewKind? ledgerView = null,
         string? scenarioId = null,
-        string? financialAccountId = null)
+        string? financialAccountId = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         var balances = new Dictionary<LedgerAccount, decimal>();
         var journalCount = 0;
@@ -107,7 +109,7 @@ public sealed class ProjectLedgerBook
 
         foreach (var (_, ledger) in FilterLedgers(ledgerBook, ledgerView, scenarioId))
         {
-            var snapshot = ledger.SnapshotAsOf(timestamp, financialAccountId);
+            var snapshot = ledger.SnapshotAsOf(timestamp, financialAccountId, lineDimensions);
             foreach (var (account, amount) in snapshot.Balances)
             {
                 balances.TryGetValue(account, out var current);
@@ -147,13 +149,14 @@ public sealed class ProjectLedgerBook
         string? financialAccountId = null,
         string? ledgerBook = null,
         LedgerViewKind? ledgerView = null,
-        string? scenarioId = null)
+        string? scenarioId = null,
+        LedgerLineDimensionSet? lineDimensions = null)
     {
         var summaries = new Dictionary<LedgerAccount, (decimal Debits, decimal Credits, int EntryCount, DateTimeOffset? FirstPostedAt, DateTimeOffset? LastPostedAt)>();
 
         foreach (var (_, ledger) in FilterLedgers(ledgerBook, ledgerView, scenarioId))
         {
-            foreach (var summary in ledger.SummarizeAccounts(accountType, financialAccountId))
+            foreach (var summary in ledger.SummarizeAccounts(accountType, financialAccountId, lineDimensions))
             {
                 summaries.TryGetValue(summary.Account, out var current);
 

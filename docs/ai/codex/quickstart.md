@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-06-16
 
 Use this page for the first 10 minutes of a Codex task in Meridian. It compresses the shared
 workflow into a task routing checklist, proof matrix, and dirty-worktree protocol. Shared policy
@@ -13,48 +13,105 @@ still lives in `../assistant-workflow-contract.md`.
 1. Run `git status --short` and separate existing user-owned changes from the task.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
-3. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
-4. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
-5. Read the narrowest relevant Codex skill in `.codex/skills/`.
-6. For source edits under `src/**`, read the nearest `README.md` and identify the module in
+3. Disclose the working mode, intended scope, and first evidence source before deeper exploration.
+   Use the canonical AI User Notification template in `../assistant-workflow-contract.md`, adding
+   Codex-specific skill or workflow metadata only when it helps route the task.
+4. Treat root `AGENTS.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, and
+   `.codex/skills/_shared/codex-execution-contract.md` as the Codex-loaded development baseline.
+   When a shared development, validation, workflow, prompt, skill, or agent rule changes, also
+   inspect and synchronize `.github/copilot-instructions.md`,
+   `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`,
+   `docs/engineering/README.md`, `docs/start/README.md`,
+   `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
+   For memory-aware tasks, inspect `.codex/memory/index.yml`; when the work has a named scope, use
+   a `.codex/memory/tasks/<task-id>.yml` descriptor and load only entries selected by the descriptor,
+   current intent, skill, changed paths, branch, or explicit tags. For very long goals, also use a
+   `.codex/memory/goals/<goal-id>.yml` progress inventory. Include a compact memory receipt for
+   selected IDs, match reasons, stale warnings, goal progress, and task/branch scope skips.
+5. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
+6. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
+7. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, and the relevant pack in `../context/README.md`.
+8. Read the narrowest relevant Codex skill in `.codex/skills/`.
+9. In the first substantive response after skill routing, include the skill selection receipt from
+   `.codex/skills/_shared/codex-execution-contract.md` as a four-field `Skill Selection` block:
+   selected skill or `none`, mode, reason, and required opening shape. For `meridian-brainstorm`,
+   put the detected mode in that receipt, then start with the compact triage table.
+10. Before loading a new context family, invoking a meaningful tool, or widening the task scope,
+   include the context update notice from the execution contract so the user can see why context is
+   expanding and whether edits are still in scope.
+11. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
-7. Choose the smallest validation lane from the task-to-proof matrix before editing.
-8. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
+12. Choose the smallest validation lane from the task-to-proof matrix before editing.
+   For local .NET tests, prefer
+   `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
+   so agent-triggered validation uses isolated outputs and avoids parallel test collisions.
+   If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
+   the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
+   project under `tests/` plus filter.
+13. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
 
-9. If more than one subsystem or AI surface is in scope, initialize
+14. If more than one subsystem or AI surface is in scope, initialize
    [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) first and keep
    each lane scoped to a unique file set.
-10. For AI/documentation updates:
+15. For parallel implementation or concurrent codebase changes, initialize the task-local working
+    memory ledger from [`../working-memory.md`](../working-memory.md) and keep active claims,
+    inspected files, assumptions, merge order, and validation reuse current.
+16. For AI/documentation updates:
     1) update `assistant-workflow-contract.md` when shared rules change,
     2) run `check-ai-inventory.py` / `check-codex-skills.py`,
     3) run `validate-docs-structure.py --top-level ai --summary` for narrow AI-doc metadata/structure proof,
     4) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
-11. For AI tooling or validator changes, read [`../tooling/README.md`](../tooling/README.md)
+17. For AI tooling or validator changes, read [`../tooling/README.md`](../tooling/README.md)
     before choosing scripts or broader maintenance lanes.
-12. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
-13. For deterministic lane preflight (pilot), run:
+18. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
+19. For deterministic lane preflight (pilot), run:
     `python3 build/scripts/docs/prompt-route-linter.py --prompt "<user prompt>"`.
-14. For deterministic lane handoff packets (pilot), run:
+20. For deterministic lane handoff packets (pilot), run:
     `python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "<scope>" --next-lane "<lane>"`.
-15. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
+21. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
     `docs/status/ai-handoff-packet.json` as the canonical local evidence artifacts. The route
     artifact must include `modelRouteId`, validation requirements, required telemetry, and
     escalation triggers.
+22. For Codex lifecycle hooks, use [`advanced-configuration.md`](advanced-configuration.md) as the
+    canonical reference. Keep hooks enabled with `[features].hooks = true`, but add executable
+    project hooks only after script review, repository-relative path checks, and Codex `/hooks`
+    trust review. Hooks may flag missing intent or ambiguity, but clarification should be a concise
+    model question with two or three concrete options instead of a hidden hook decision.
 
 ## Read Budget
 
 Load only enough context to route and validate the task.
+Progress updates should use the canonical AI User Notification template in
+`../assistant-workflow-contract.md`: phase, intent understood, current action, evidence/source, next
+gate, and validation intent. Summarize discoveries, next actions, blockers, and validation intent;
+do not paste raw file contents or broad command output unless the user asks for a trace.
 
 | Task state | Read first | Avoid until needed |
 | --- | --- | --- |
 | Unknown subsystem | `../navigation/README.md`, `../generated/repo-navigation.md` | Full repo scans and broad plan families |
+| Broad generation or architecture-sensitive work | `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, `../context/README.md` | Full feature packs or generated exports until scope is clear |
 | Source change | Nearest `src/**/README.md`, `docs/source/data/source-modules.yml` | Generated source docs unless a generator is in scope |
 | AI docs change | `../assistant-workflow-contract.md`, this page, `README.md` | Host-specific mirrors unless shared policy changes |
+| Codex memory change | `memory-system.md`, `.codex/memory/index.yml`, matching indexed entries, relevant `tasks/*.yml` descriptor, relevant `goals/*.yml` inventory | User/global memory tiers unless explicitly opted in by a future design |
+| Codex hook config | `advanced-configuration.md`, `.codex/config.toml` | Executable hook scripts before trust and validation ownership are defined |
+| Parallel or concurrent implementation | `../working-memory.md`, `../parallel-task-manifest-template.md`, `../agent-handoff-checklist.md` | Broad logs, overlapping writes, and stale validation reuse |
 | WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
-| Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests | WPF validation unless shared contracts changed |
+| Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests; Codex Browser plugin for unauthenticated rendered-route inspection when the task is visual or interactive | WPF validation unless shared contracts changed; signed-in browser flows or secret entry |
 
-AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
+AI-doc proof lane defaults: `python3 build/scripts/docs/check-codex-memory.py --summary`,
+`python3 build/scripts/docs/check-ai-inventory.py --summary`,
+`python3 build/scripts/docs/check-codex-skills.py --summary`,
+`python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`,
+`python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
+
+Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
+with a `tests/` `dotnet_project` and `dotnet_filter` when local resources are the blocker.
+
+Local .NET proof lane default: use `python build/python/cli/buildctl.py test` instead of raw
+`dotnet test` when another agent, shell, WPF validation, or desktop launch may be active. The
+runner writes `.ai/validation-runs/<run-id>.json`, serializes through `.ai/locks/validation.lock`,
+and uses `MeridianBuildIsolationKey` output roots by default.
 
 ## Dirty Worktree Protocol
 
@@ -76,9 +133,16 @@ AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --
 ## AI Contract Coverage
 
 - Repo navigation: `../navigation/README.md`, `../generated/repo-navigation.md`
-- Agent edit rules: `../assistant-workflow-contract.md`, `.codex/skills/_shared/project-context.md`, `.codex/skills/_shared/codex-execution-contract.md`
+- MDIF grounding: `../../architecture/meridian-development-intelligence-framework.md`, `../../domain/README.md`, `../context/README.md`, and generated snapshots in `../exports/`
+- Agent edit rules: `../assistant-workflow-contract.md`, including the canonical AI User Notification template, plus `.codex/skills/_shared/project-context.md` and `.codex/skills/_shared/codex-execution-contract.md` for Codex-specific gates
 - Generated-file handling: run generator commands for `docs/ai/generated` and `docs/generated` updates; do not hand-edit generated outputs.
 - Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
+- Working memory: use `../working-memory.md` to track task-local active claims, inspected files,
+  assumptions, codebase drift, merge order, and validation reuse during concurrent changes.
+- Codex memory: use `.codex/memory/index.yml` only as a selective repo-local memory catalog; use
+  task descriptors plus `--explain` for scoped memory routing; use goal inventories for long-running
+  progress tracking; follow `memory-system.md` for promotion, staleness, and disabled user/global
+  tiers.
 - Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
 - Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
 - Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
@@ -92,6 +156,7 @@ AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --
 | Prompt-routed handoff packet generation | `docs/ai/agent-handoff-checklist.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`; `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`; `git diff --check -- <paths>` |
 | Scoped repository text rewrite | `docs/ai/codex/quickstart.md`, `src/Meridian.Mcp/README.md` when MCP exposure changes | `python -m unittest build.scripts.ai.tests.test_ai_edit_tool`; `dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj`; `git diff --check -- build/scripts/ai src/Meridian.Mcp docs/ai/codex/quickstart.md` |
 | Codex skill, prompt, checklist, or AI index | `docs/ai/codex/README.md`, `.codex/skills/README.md`, nearest skill or prompt index | `python build/scripts/docs/check-codex-skills.py --summary`; `python build/scripts/docs/check-ai-inventory.py --summary`; `git diff --check -- <paths>` |
+| Codex memory index, entry, descriptor, goal inventory, or promotion workflow | `docs/ai/codex/memory-system.md`, `.codex/memory/README.md` | `python build/scripts/docs/check-codex-memory.py --summary`; `python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary`; `python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary`; `python -m unittest build.scripts.docs.tests.test_check_codex_memory`; `git diff --check -- <paths>` |
 | Shared AI policy | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, affected host index | `python build/scripts/docs/check-ai-inventory.py --summary`; contract-drift check when policy JSON changes |
 | Repo navigation or MCP routing | `docs/ai/navigation/README.md`, generated navigation inputs | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary`; `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |
 | Browser workstation | `src/Meridian.Ui/dashboard/README.md` when present, related screen docs | `npm --prefix src/Meridian.Ui/dashboard run test`; targeted Vitest file when the change is narrow; `npm --prefix src/Meridian.Ui/dashboard run build` for build-facing changes |
@@ -138,6 +203,9 @@ browser workstation, or product UI code.
 
 ## Final Response Checklist
 
+- Skill selection receipt with selected skill, mode, reason, and required opening shape.
+- Memory receipt from `--receipt` when `.codex/memory/index.yml`, a task descriptor, or a goal
+  inventory matched the task, plus any `--record-goal-progress` update made during the run.
 - Files changed and why.
 - Validation commands with pass/fail results.
 - Unrelated dirty-worktree changes explicitly excluded.

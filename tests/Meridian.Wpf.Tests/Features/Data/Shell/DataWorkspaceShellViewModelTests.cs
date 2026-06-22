@@ -87,6 +87,9 @@ public sealed class DataWorkspaceShellViewModelTests
         viewModel.HeroMetrics.Should().HaveCount(1);
         viewModel.IntegrationWorkflowSteps.Should().ContainSingle()
             .Which.StatusLabel.Should().Be("Connected");
+        viewModel.CurrentIntegrationWorkflowStep.StatusLabel.Should().Be("Connected");
+        viewModel.IntegrationWorkflowStateText.Should().Be("Connect Source: Connected");
+        viewModel.IntegrationWorkflowStateDetail.Should().Be("Provider ready.");
         viewModel.QueueSummaryText.Should().Be("Provider and storage queues are ready.");
         viewModel.ProviderQueueItems.Should().ContainSingle().Which.Should().BeSameAs(providerQueueItem);
         viewModel.ProviderQueueListVisibility.Should().Be(Visibility.Visible);
@@ -142,6 +145,41 @@ public sealed class DataWorkspaceShellViewModelTests
         request.Should().NotBeNull();
         request!.Kind.Should().Be(DataWorkspaceShellActionKind.Navigate);
         request.ActionId.Should().Be("ProviderHealth");
+    }
+
+    [Fact]
+    public void ResolveCurrentIntegrationWorkflowStep_ShouldPreferCurrentThenPendingThenLatestComplete()
+    {
+        var complete = new DataIntegrationWorkflowStep
+        {
+            Label = "Connect Source",
+            Status = WorkflowStepStatus.Complete,
+            StatusLabel = "Connected",
+            Tone = WorkspaceTone.Success
+        };
+        var current = new DataIntegrationWorkflowStep
+        {
+            Label = "Acquire Data",
+            Status = WorkflowStepStatus.Current,
+            StatusLabel = "In progress",
+            Tone = WorkspaceTone.Warning
+        };
+        var pending = new DataIntegrationWorkflowStep
+        {
+            Label = "Validate Data",
+            Status = WorkflowStepStatus.Pending,
+            StatusLabel = "Pending",
+            Tone = WorkspaceTone.Neutral
+        };
+
+        DataWorkspaceShellViewModel.ResolveCurrentIntegrationWorkflowStep([complete, current, pending])
+            .Should().BeSameAs(current);
+        DataWorkspaceShellViewModel.ResolveCurrentIntegrationWorkflowStep([complete, pending])
+            .Should().BeSameAs(pending);
+        DataWorkspaceShellViewModel.ResolveCurrentIntegrationWorkflowStep([complete])
+            .Should().BeSameAs(complete);
+        DataWorkspaceShellViewModel.ResolveCurrentIntegrationWorkflowStep([])
+            .StatusLabel.Should().Be("Refreshing");
     }
 
     private sealed class StubSnapshotService : IDataWorkspaceShellSnapshotService

@@ -7,6 +7,7 @@ param(
   [string]$Framework,
   [string]$ExeName,
   [string]$OutputDir,
+  [string]$OutputRoot,
   [switch]$SkipBuild,
   [switch]$KeepAppOpen
 )
@@ -30,12 +31,20 @@ else {
   'docs/screenshots/desktop'
 }
 
+$workflowArtifactRoot = if ($PSBoundParameters.ContainsKey('OutputRoot') -and -not [string]::IsNullOrWhiteSpace($OutputRoot)) {
+  $OutputRoot
+}
+else {
+  $runStamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+  Join-Path 'artifacts/desktop-workflows' ("capture-{0}-{1}" -f $runStamp, $PID)
+}
+
 $runnerArgs = @(
   '-File', $workflowRunner,
   '-Workflow', $workflowName,
   '-Profile', $workflowName,
   '-ProfileRoot', $ProfileRoot,
-  '-OutputRoot', 'artifacts/desktop-workflows',
+  '-OutputRoot', $workflowArtifactRoot,
   '-ScreenshotDirectory', $screenshotDirectory
 )
 
@@ -65,6 +74,7 @@ if ($KeepAppOpen) {
 
 Write-Host "Routing desktop screenshot capture through shared workflow runner '$workflowName'."
 Write-Host "Screenshot output directory: $screenshotDirectory"
+Write-Host "Workflow artifact root: $workflowArtifactRoot"
 
 & pwsh -NoProfile @runnerArgs
 exit $LASTEXITCODE

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -57,7 +58,7 @@ public sealed class ReportTemplateRegistryService
     {
         ArgumentNullException.ThrowIfNull(definition);
 
-        var normalized = NormalizeDefinition(definition);
+        var normalized = NormalizeDefinition(definition, "legacy-register");
         var now = DateTimeOffset.UtcNow;
         var validationIssues = ValidateDefinition(normalized);
         var record = new ReportTemplateGovernanceRecordDto(
@@ -93,7 +94,11 @@ public sealed class ReportTemplateRegistryService
             .ThenByDescending(record => record.Definition.TemplateId.Version)
             .ToArray();
 
-    public ReportTemplateGovernanceRecordDto CreateDraft(ReportTemplateDraftRequestDto request, string actor)
+    public ReportTemplateGovernanceRecordDto CreateDraft(
+        ReportTemplateDraftRequestDto request,
+        string actor,
+        string? companyId = null,
+        IReadOnlyList<string>? reportGroupPrincipalIds = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
@@ -114,7 +119,12 @@ public sealed class ReportTemplateRegistryService
             new VersionedReportTemplateIdDto(name, nextVersion),
             request.DisplayName,
             request.Parameters,
-            request.Sections));
+            request.Sections,
+            request.Grids,
+            request.AccessPolicy),
+            actor,
+            companyId,
+            reportGroupPrincipalIds);
         var now = DateTimeOffset.UtcNow;
         var record = new ReportTemplateGovernanceRecordDto(
             definition,
@@ -226,8 +236,20 @@ public sealed class ReportTemplateRegistryService
         var sections = template.Sections is { Count: > 0 }
             ? string.Join(',', template.Sections)
             : "sections:not-configured";
-        var rendered = $"template:{template.TemplateId.Name}@v{template.TemplateId.Version};sections={sections};" + string.Join(';', request.Parameters.OrderBy(k => k.Key).Select(kvp => $"{kvp.Key}={kvp.Value}"));
-        return new RenderReportTemplateResponseDto(template.TemplateId, rendered, missing);
+        var gridDefinitions = request.Grids ?? template.Grids;
+        var grids = ReportWriterGridEngine.RenderGrids(gridDefinitions, request.DatasetRows);
+        var gridSummary = grids.Count > 0
+            ? $";grids={string.Join(',', grids.Select(static grid => $"{grid.GridId}:{grid.Rows.Count}r"))}"
+            : ";grids=0";
+        var rendered = $"template:{template.TemplateId.Name}@v{template.TemplateId.Version};sections={sections}{gridSummary};" + string.Join(';', request.Parameters.OrderBy(k => k.Key).Select(kvp => $"{kvp.Key}={kvp.Value}"));
+        var warnings = grids.SelectMany(static grid => grid.Warnings).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        return new RenderReportTemplateResponseDto(template.TemplateId, rendered, missing, grids, warnings);
+    }
+
+    public bool CanAccess(VersionedReportTemplateIdDto id, ReportAccessQueryContext? context)
+    {
+        var template = Get(id);
+        return template is not null && ReportAccessPolicyEvaluator.Evaluate(template.AccessPolicy, context).IsAccessible;
     }
 
     private static string ToKey(VersionedReportTemplateIdDto id) => $"{id.Name}:{id.Version}";
@@ -244,7 +266,11 @@ public sealed class ReportTemplateRegistryService
         return value.Trim().ToLowerInvariant();
     }
 
-    private static ReportTemplateDefinitionDto NormalizeDefinition(ReportTemplateDefinitionDto definition)
+    private static ReportTemplateDefinitionDto NormalizeDefinition(
+        ReportTemplateDefinitionDto definition,
+        string? defaultOwnerPrincipalId = null,
+        string? defaultCompanyId = null,
+        IReadOnlyList<string>? defaultReportGroupPrincipalIds = null)
     {
         var id = new VersionedReportTemplateIdDto(
             NormalizeIdentifier(definition.TemplateId.Name),
@@ -267,15 +293,140 @@ public sealed class ReportTemplateRegistryService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static section => section, StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
+        var grids = NormalizeGrids(definition.Grids);
 
         return definition with
         {
             TemplateId = id,
             DisplayName = string.IsNullOrWhiteSpace(definition.DisplayName) ? string.Empty : definition.DisplayName.Trim(),
             Parameters = parameters,
-            Sections = sections
+            Sections = sections,
+            Grids = grids,
+            AccessPolicy = NormalizeAccessPolicyForCaller(
+                definition.AccessPolicy,
+                defaultOwnerPrincipalId,
+                defaultCompanyId,
+                defaultReportGroupPrincipalIds)
         };
     }
+
+    private static ReportAccessPolicyDto NormalizeAccessPolicyForCaller(
+        ReportAccessPolicyDto? policy,
+        string? defaultOwnerPrincipalId,
+        string? defaultCompanyId,
+        IReadOnlyList<string>? defaultReportGroupPrincipalIds)
+    {
+        var normalized = ReportAccessPolicyEvaluator.Normalize(policy, defaultOwnerPrincipalId);
+        var companyId = string.IsNullOrWhiteSpace(normalized.CompanyId)
+            ? NormalizeOptional(defaultCompanyId)
+            : normalized.CompanyId;
+
+        if (normalized.Mode == ReportAccessModeDto.Restricted
+            && (normalized.Principals is null || normalized.Principals.Count == 0))
+        {
+            var groupPrincipals = NormalizeStringList(defaultReportGroupPrincipalIds)
+                .Select(static group => new ReportAccessPrincipalDto(
+                    ReportAccessPrincipalKindDto.Group,
+                    group,
+                    group))
+                .ToArray();
+
+            if (groupPrincipals.Length > 0)
+            {
+                return ReportAccessPolicyEvaluator.Normalize(normalized with
+                {
+                    CompanyId = companyId,
+                    Principals = groupPrincipals
+                }, defaultOwnerPrincipalId);
+            }
+        }
+
+        return normalized with { CompanyId = companyId };
+    }
+
+    private static IReadOnlyList<ReportWriterGridDefinitionDto> NormalizeGrids(IReadOnlyList<ReportWriterGridDefinitionDto>? grids) =>
+        grids?
+            .Where(static grid => grid is not null)
+            .Select(static grid => grid with
+            {
+                GridId = string.IsNullOrWhiteSpace(grid.GridId) ? string.Empty : grid.GridId.Trim(),
+                Title = string.IsNullOrWhiteSpace(grid.Title) ? string.Empty : grid.Title.Trim(),
+                RowFields = NormalizeStringList(grid.RowFields),
+                ColumnFields = NormalizeStringList(grid.ColumnFields),
+                Metrics = NormalizeGridMetrics(grid.Metrics),
+                Formulas = NormalizeGridFormulas(grid.Formulas),
+                SortBy = string.IsNullOrWhiteSpace(grid.SortBy) ? null : grid.SortBy.Trim(),
+                Filters = NormalizeGridFilters(grid.Filters)
+            })
+            .ToArray() ?? [];
+
+    private static IReadOnlyList<string> NormalizeStringList(IReadOnlyList<string>? values)
+    {
+        if (values is null || values.Count == 0)
+        {
+            return [];
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var normalized = new List<string>(values.Count);
+        foreach (var value in values)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            var trimmed = value.Trim();
+            if (seen.Add(trimmed))
+            {
+                normalized.Add(trimmed);
+            }
+        }
+
+        return normalized;
+    }
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static IReadOnlyList<ReportWriterMetricDefinitionDto> NormalizeGridMetrics(IReadOnlyList<ReportWriterMetricDefinitionDto>? metrics) =>
+        metrics?
+            .Where(static metric => metric is not null)
+            .Select(static metric => metric with
+            {
+                Name = string.IsNullOrWhiteSpace(metric.Name) ? string.Empty : metric.Name.Trim(),
+                SourceField = string.IsNullOrWhiteSpace(metric.SourceField) ? string.Empty : metric.SourceField.Trim(),
+                Label = string.IsNullOrWhiteSpace(metric.Label) ? null : metric.Label.Trim()
+            })
+            .GroupBy(static metric => metric.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .ToArray() ?? [];
+
+    private static IReadOnlyList<ReportWriterFormulaDefinitionDto> NormalizeGridFormulas(IReadOnlyList<ReportWriterFormulaDefinitionDto>? formulas) =>
+        formulas?
+            .Where(static formula => formula is not null)
+            .Select(static formula => formula with
+            {
+                Name = string.IsNullOrWhiteSpace(formula.Name) ? string.Empty : formula.Name.Trim(),
+                Expression = string.IsNullOrWhiteSpace(formula.Expression) ? string.Empty : formula.Expression.Trim(),
+                Label = string.IsNullOrWhiteSpace(formula.Label) ? null : formula.Label.Trim()
+            })
+            .GroupBy(static formula => formula.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .ToArray() ?? [];
+
+    private static IReadOnlyList<ReportWriterFilterDefinitionDto> NormalizeGridFilters(IReadOnlyList<ReportWriterFilterDefinitionDto>? filters) =>
+        filters?
+            .Where(static filter => filter is not null && !string.IsNullOrWhiteSpace(filter.Field))
+            .Select(static filter => filter with
+            {
+                Field = filter.Field.Trim(),
+                Value = string.IsNullOrWhiteSpace(filter.Value) ? null : filter.Value.Trim(),
+                Label = string.IsNullOrWhiteSpace(filter.Label) ? null : filter.Label.Trim()
+            })
+            .GroupBy(static filter => $"{filter.Field}:{filter.Operator}:{filter.Value}", StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .ToArray() ?? [];
 
     private static IReadOnlyList<string> ValidateDefinition(ReportTemplateDefinitionDto definition)
     {
@@ -295,9 +446,12 @@ public sealed class ReportTemplateRegistryService
             issues.Add("Display name is required.");
         }
 
-        if (definition.Sections is null || definition.Sections.Count == 0)
+        issues.AddRange(ReportAccessPolicyEvaluator.Validate(definition.AccessPolicy));
+
+        var grids = definition.Grids ?? [];
+        if ((definition.Sections is null || definition.Sections.Count == 0) && grids.Count == 0)
         {
-            issues.Add("At least one report section is required.");
+            issues.Add("At least one report section or report writer grid is required.");
         }
 
         var duplicateParameters = definition.Parameters
@@ -311,8 +465,412 @@ public sealed class ReportTemplateRegistryService
             issues.Add($"Parameter names must be unique: {string.Join(", ", duplicateParameters)}.");
         }
 
+        var duplicateGridIds = grids
+            .Where(static grid => !string.IsNullOrWhiteSpace(grid.GridId))
+            .GroupBy(static grid => grid.GridId.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() > 1)
+            .Select(static group => group.Key)
+            .ToArray();
+        if (duplicateGridIds.Length > 0)
+        {
+            issues.Add($"Report writer grid ids must be unique: {string.Join(", ", duplicateGridIds)}.");
+        }
+
+        foreach (var grid in grids)
+        {
+            if (string.IsNullOrWhiteSpace(grid.GridId))
+            {
+                issues.Add("Report writer grid id is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(grid.Title))
+            {
+                issues.Add($"Report writer grid '{grid.GridId}' requires a title.");
+            }
+
+            if (grid.Kind is ReportWriterGridKindDto.Pivot or ReportWriterGridKindDto.TopN or ReportWriterGridKindDto.Contribution
+                && (grid.Metrics is null || grid.Metrics.Count == 0))
+            {
+                issues.Add($"Report writer grid '{grid.GridId}' requires at least one metric.");
+            }
+
+            if (grid.Kind == ReportWriterGridKindDto.TopN && grid.TopN is <= 0)
+            {
+                issues.Add($"Report writer grid '{grid.GridId}' Top-N limit must be greater than zero.");
+            }
+
+            var duplicateMetricNames = (grid.Metrics ?? [])
+                .Where(static metric => !string.IsNullOrWhiteSpace(metric.Name))
+                .GroupBy(static metric => metric.Name.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Where(static group => group.Count() > 1)
+                .Select(static group => group.Key)
+                .ToArray();
+            if (duplicateMetricNames.Length > 0)
+            {
+                issues.Add($"Report writer grid '{grid.GridId}' metric names must be unique: {string.Join(", ", duplicateMetricNames)}.");
+            }
+
+            if (grid.Kind == ReportWriterGridKindDto.Contribution)
+            {
+                var reservedContributionFields = ContributionGeneratedFields;
+                foreach (var metric in grid.Metrics ?? [])
+                {
+                    if (!string.IsNullOrWhiteSpace(metric.Name) && reservedContributionFields.Contains(metric.Name.Trim()))
+                    {
+                        issues.Add($"Report writer grid '{grid.GridId}' metric '{metric.Name}' uses reserved contribution field '{metric.Name.Trim()}'.");
+                    }
+                }
+
+                foreach (var formula in grid.Formulas ?? [])
+                {
+                    if (!string.IsNullOrWhiteSpace(formula.Name) && reservedContributionFields.Contains(formula.Name.Trim()))
+                    {
+                        issues.Add($"Report writer grid '{grid.GridId}' formula '{formula.Name}' uses reserved contribution field '{formula.Name.Trim()}'.");
+                    }
+                }
+            }
+
+            foreach (var metric in grid.Metrics ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(metric.Name))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' metric name is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(metric.SourceField))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' metric '{metric.Name}' requires a source field.");
+                }
+            }
+
+            foreach (var formula in grid.Formulas ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(formula.Name))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' formula name is required.");
+                }
+
+                if (string.IsNullOrWhiteSpace(formula.Expression))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' formula '{formula.Name}' requires an expression.");
+                }
+            }
+
+            issues.AddRange(ValidateGridFormulas(grid));
+
+            foreach (var filter in grid.Filters ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(filter.Field))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' filter field is required.");
+                }
+
+                if (filter.Operator is not (ReportWriterFilterOperatorDto.IsBlank or ReportWriterFilterOperatorDto.IsNotBlank)
+                    && string.IsNullOrWhiteSpace(filter.Value))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' filter '{filter.Field}' requires a value.");
+                }
+            }
+        }
+
         return issues;
     }
+
+    private static IReadOnlyList<string> ValidateGridFormulas(ReportWriterGridDefinitionDto grid)
+    {
+        var formulas = (grid.Formulas ?? [])
+            .Where(static formula => !string.IsNullOrWhiteSpace(formula.Name) && !string.IsNullOrWhiteSpace(formula.Expression))
+            .ToArray();
+        if (formulas.Length == 0)
+        {
+            return [];
+        }
+
+        var issues = new List<string>();
+        var metricNames = (grid.Metrics ?? [])
+            .Where(static metric => !string.IsNullOrWhiteSpace(metric.Name))
+            .Select(static metric => metric.Name.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var totalFields = (grid.Metrics ?? [])
+            .Where(static metric => !string.IsNullOrWhiteSpace(metric.Name))
+            .Select(static metric => metric.Name.Trim())
+            .Concat((grid.Metrics ?? [])
+                .Where(static metric => !string.IsNullOrWhiteSpace(metric.SourceField))
+                .Select(static metric => metric.SourceField.Trim()))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var formulaIndexes = formulas
+            .Select((formula, index) => (formula.Name, Index: index))
+            .ToDictionary(static item => item.Name.Trim(), static item => item.Index, StringComparer.OrdinalIgnoreCase);
+        var availableRowReferences = metricNames
+            .Concat(formulaIndexes.Keys)
+            .Concat(ResolveGeneratedFormulaReferences(grid))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var generatedField in ResolveGeneratedFormulaReferences(grid))
+        {
+            totalFields.Add(generatedField);
+        }
+        var dependencies = formulas.ToDictionary(
+            static formula => formula.Name.Trim(),
+            static _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var formula in formulas)
+        {
+            var formulaName = formula.Name.Trim();
+            var references = ExtractFormulaReferences(formula.Expression);
+            foreach (var reference in references.RowReferences)
+            {
+                if (!availableRowReferences.Contains(reference))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' formula '{formulaName}' references unknown metric or formula '{reference}'.");
+                    continue;
+                }
+
+                if (formulaIndexes.TryGetValue(reference, out var referencedFormulaIndex))
+                {
+                    dependencies[formulaName].Add(reference);
+                    if (string.Equals(reference, formulaName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        issues.Add($"Report writer grid '{grid.GridId}' formula '{formulaName}' cannot reference itself.");
+                    }
+                    else if (referencedFormulaIndex > formulaIndexes[formulaName])
+                    {
+                        issues.Add($"Report writer grid '{grid.GridId}' formula '{formulaName}' references formula '{reference}' before it is evaluated.");
+                    }
+                }
+            }
+
+            foreach (var reference in references.TotalReferences)
+            {
+                if (!totalFields.Contains(reference))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' formula '{formulaName}' total field '{reference}' is not a configured metric or metric source field.");
+                }
+            }
+        }
+
+        foreach (var cycle in FindFormulaCycles(dependencies))
+        {
+            issues.Add($"Report writer grid '{grid.GridId}' formula dependencies cannot be circular: {cycle}.");
+        }
+
+        return issues
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static readonly IReadOnlySet<string> ContributionGeneratedFields = new HashSet<string>(
+        ["contributionPercent", "contributionAbsPercent"],
+        StringComparer.OrdinalIgnoreCase);
+
+    private static IEnumerable<string> ResolveGeneratedFormulaReferences(ReportWriterGridDefinitionDto grid) =>
+        grid.Kind == ReportWriterGridKindDto.Contribution ? ContributionGeneratedFields : [];
+
+    private static FormulaReferenceSet ExtractFormulaReferences(string expression)
+    {
+        var rowReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var totalReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var position = 0;
+        while (position < expression.Length)
+        {
+            var current = expression[position];
+            if (current == '{')
+            {
+                if (TryReadBraceReference(expression, position, out var reference, out var next))
+                {
+                    rowReferences.Add(reference);
+                    position = next;
+                    continue;
+                }
+
+                position++;
+                continue;
+            }
+
+            if (!IsIdentifierStart(current))
+            {
+                position++;
+                continue;
+            }
+
+            var identifierStart = position;
+            var identifier = ReadIdentifier(expression, ref position);
+            var nextToken = SkipWhitespace(expression, position);
+            if (string.Equals(identifier, "total", StringComparison.OrdinalIgnoreCase)
+                && nextToken < expression.Length
+                && expression[nextToken] == '(')
+            {
+                if (TryReadTotalArgument(expression, nextToken + 1, out var totalReference, out var afterTotal))
+                {
+                    totalReferences.Add(totalReference);
+                    position = afterTotal;
+                    continue;
+                }
+
+                position = identifierStart + identifier.Length;
+                continue;
+            }
+
+            if (IsFormulaFunctionIdentifier(identifier)
+                && nextToken < expression.Length
+                && expression[nextToken] == '(')
+            {
+                position = nextToken + 1;
+                continue;
+            }
+
+            rowReferences.Add(identifier);
+        }
+
+        return new FormulaReferenceSet(rowReferences.ToArray(), totalReferences.ToArray());
+    }
+
+    private static bool TryReadBraceReference(
+        string expression,
+        int openBracePosition,
+        out string reference,
+        out int nextPosition)
+    {
+        reference = string.Empty;
+        nextPosition = openBracePosition + 1;
+        var close = expression.IndexOf('}', openBracePosition + 1);
+        if (close < 0)
+        {
+            return false;
+        }
+
+        reference = expression[(openBracePosition + 1)..close].Trim();
+        nextPosition = close + 1;
+        return reference.Length > 0;
+    }
+
+    private static bool TryReadTotalArgument(
+        string expression,
+        int argumentStart,
+        out string reference,
+        out int nextPosition)
+    {
+        reference = string.Empty;
+        nextPosition = argumentStart;
+        var start = SkipWhitespace(expression, argumentStart);
+        if (start >= expression.Length)
+        {
+            return false;
+        }
+
+        if (expression[start] == '{')
+        {
+            if (!TryReadBraceReference(expression, start, out reference, out var afterBrace))
+            {
+                return false;
+            }
+
+            nextPosition = SkipWhitespace(expression, afterBrace);
+            if (nextPosition < expression.Length && expression[nextPosition] == ')')
+            {
+                nextPosition++;
+                return true;
+            }
+
+            return false;
+        }
+
+        var close = expression.IndexOf(')', start);
+        if (close < 0)
+        {
+            return false;
+        }
+
+        reference = expression[start..close].Trim();
+        nextPosition = close + 1;
+        return reference.Length > 0;
+    }
+
+    private static string ReadIdentifier(string expression, ref int position)
+    {
+        var start = position;
+        while (position < expression.Length && IsIdentifierPart(expression[position]))
+        {
+            position++;
+        }
+
+        return expression[start..position];
+    }
+
+    private static int SkipWhitespace(string expression, int position)
+    {
+        while (position < expression.Length && char.IsWhiteSpace(expression[position]))
+        {
+            position++;
+        }
+
+        return position;
+    }
+
+    private static bool IsIdentifierStart(char value) =>
+        char.IsLetter(value) || value == '_';
+
+    private static bool IsIdentifierPart(char value) =>
+        char.IsLetterOrDigit(value) || value is '_' or '-' or '.';
+
+    private static bool IsFormulaFunctionIdentifier(string identifier) =>
+        string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "basisPoints", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "round", StringComparison.OrdinalIgnoreCase);
+
+    private static IReadOnlyList<string> FindFormulaCycles(IReadOnlyDictionary<string, HashSet<string>> dependencies)
+    {
+        var cycles = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var formula in dependencies.Keys)
+        {
+            Visit(formula, formula, [], dependencies, cycles);
+        }
+
+        return cycles.ToArray();
+    }
+
+    private static void Visit(
+        string root,
+        string current,
+        IReadOnlyList<string> path,
+        IReadOnlyDictionary<string, HashSet<string>> dependencies,
+        ISet<string> cycles)
+    {
+        var nextPath = path.Append(current).ToArray();
+        if (!dependencies.TryGetValue(current, out var next))
+        {
+            return;
+        }
+
+        foreach (var dependency in next)
+        {
+            if (!dependencies.ContainsKey(dependency))
+            {
+                continue;
+            }
+
+            if (string.Equals(dependency, root, StringComparison.OrdinalIgnoreCase))
+            {
+                cycles.Add(string.Join(" -> ", nextPath.Append(root)));
+                continue;
+            }
+
+            if (nextPath.Contains(dependency, StringComparer.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            Visit(root, dependency, nextPath, dependencies, cycles);
+        }
+    }
+
+    private sealed record FormulaReferenceSet(
+        IReadOnlyList<string> RowReferences,
+        IReadOnlyList<string> TotalReferences);
 
     private ReportTemplateGovernanceRecordDto GetRecord(VersionedReportTemplateIdDto id) =>
         _templates.TryGetValue(ToKey(id), out var record)
@@ -528,6 +1086,10 @@ public sealed class FileReportPackWorkflowRecordStore : IReportPackWorkflowRecor
 
 public sealed class ReportPackWorkflowService
 {
+    private const string LedgerFinancialRecordExplorerId = "ledger";
+    private const string PortfolioFinancialRecordExplorerId = "portfolio";
+    private const string SecurityInstrumentFinancialRecordExplorerId = "security-instrument";
+
     private static readonly IReadOnlyDictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]> AllowedTransitions =
         new Dictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]>
         {
@@ -560,14 +1122,23 @@ public sealed class ReportPackWorkflowService
         string period,
         VersionedReportTemplateIdDto templateId,
         string actor,
-        IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance = null)
+        IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance = null,
+        ReportAccessPolicyDto? accessPolicy = null)
     {
+        var accessIssues = ReportAccessPolicyEvaluator.Validate(accessPolicy);
+        if (accessIssues.Count > 0)
+        {
+            throw new ArgumentException($"Report pack access policy is invalid: {string.Join("; ", accessIssues)}.");
+        }
+
         var id = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
+        var normalizedAccessPolicy = ReportAccessPolicyEvaluator.Normalize(accessPolicy, actor);
         var record = new ReportPackWorkflowRecordDto(id, fundProfileId, fundAccountId, period, templateId, ReportPackWorkflowStateDto.Draft, 1, now, actor, now,
             [new ReportPackAuditEventDto(now, actor, "create", ReportPackWorkflowStateDto.Draft, ReportPackWorkflowStateDto.Draft)]
             , null,
-            NormalizeLineProvenance(lineProvenance));
+            NormalizeLineProvenance(lineProvenance),
+            AccessPolicy: normalizedAccessPolicy);
         _records[id] = record;
         PersistRecords();
         return record;
@@ -576,21 +1147,30 @@ public sealed class ReportPackWorkflowService
     public ReportPackWorkflowRecordDto Submit(Guid reportId, string actor, string role, string? note = null) =>
         TransitionCore(reportId, ReportPackWorkflowStateDto.InReview, actor, role, note);
 
-    public ReportPackWorkflowRecordDto Transition(Guid reportId, ReportPackWorkflowStateDto target, string actor, string role, string? note = null)
+    public ReportPackWorkflowRecordDto Transition(
+        Guid reportId,
+        ReportPackWorkflowStateDto target,
+        string actor,
+        string role,
+        string? note = null,
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
     {
         if (target == ReportPackWorkflowStateDto.Published)
         {
             throw new InvalidOperationException("Report pack publication requires sign-off, evidence hash, and retained manifest metadata.");
         }
 
+        EnsureHumanOriginForMaterialTransition(target, actionOrigin);
         return TransitionCore(reportId, target, actor, role, note);
     }
 
     private ReportPackWorkflowRecordDto TransitionCore(Guid reportId, ReportPackWorkflowStateDto target, string actor, string role, string? note = null)
     {
-        if (!_records.TryGetValue(reportId, out var record)) throw new KeyNotFoundException("report pack not found");
+        if (!_records.TryGetValue(reportId, out var record))
+            throw new KeyNotFoundException("report pack not found");
         EnsureRole(target, role);
-        if (!AllowedTransitions[record.State].Contains(target)) throw new InvalidOperationException($"invalid transition {record.State} -> {target}");
+        if (!AllowedTransitions[record.State].Contains(target))
+            throw new InvalidOperationException($"invalid transition {record.State} -> {target}");
         var now = DateTimeOffset.UtcNow;
         var next = record with
         {
@@ -631,10 +1211,21 @@ public sealed class ReportPackWorkflowService
         return Reject(reportId, request.Reason, request.Actor, request.ActorRole, request.EvidenceLinks);
     }
 
-    public ReportPackWorkflowRecordDto Restate(Guid reportId, string actor, string role, string reasonCode, string approver, Guid priorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> changedLines)
+    public ReportPackWorkflowRecordDto Restate(
+        Guid reportId,
+        string actor,
+        string role,
+        string reasonCode,
+        string approver,
+        Guid priorVersionReportId,
+        IReadOnlyList<ReportPackChangedLineDto> changedLines,
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
     {
-        if (string.IsNullOrWhiteSpace(reasonCode)) throw new ArgumentException("reasonCode is required");
-        if (changedLines.Count == 0) throw new ArgumentException("changedLines are required");
+        EnsureHumanOrigin(actionOrigin, "restate reports");
+        if (string.IsNullOrWhiteSpace(reasonCode))
+            throw new ArgumentException("reasonCode is required");
+        if (changedLines.Count == 0)
+            throw new ArgumentException("changedLines are required");
         var linesWithoutEvidence = changedLines
             .Where(static line => line.EvidenceLinks is null || line.EvidenceLinks.Count == 0 || line.EvidenceLinks.All(static link => string.IsNullOrWhiteSpace(link.EvidenceId)))
             .Select(static line => line.LineKey)
@@ -669,8 +1260,11 @@ public sealed class ReportPackWorkflowService
         string manifestId,
         string retainedManifestPath,
         IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks,
-        string? note = null)
+        string? note = null,
+        ReportBrandingThemeDto? brandingTheme = null,
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
     {
+        EnsureHumanOrigin(actionOrigin, "publish reports");
         ArgumentException.ThrowIfNullOrWhiteSpace(signedOffBy);
         ArgumentException.ThrowIfNullOrWhiteSpace(evidenceHash);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
@@ -697,11 +1291,39 @@ public sealed class ReportPackWorkflowService
                 evidenceHash.Trim(),
                 signedOffBy.Trim(),
                 DateTimeOffset.UtcNow,
-                NormalizeEvidenceLinks(evidenceLinks))
+                NormalizeEvidenceLinks(evidenceLinks),
+                NormalizePublicationBrandingTheme(brandingTheme))
         };
         _records[reportId] = next;
         PersistRecords();
         return next;
+    }
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new InvalidOperationException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
+    }
+
+    private static void EnsureHumanOriginForMaterialTransition(
+        ReportPackWorkflowStateDto target,
+        OperationsActionOriginDto actionOrigin)
+    {
+        switch (target)
+        {
+            case ReportPackWorkflowStateDto.Approved:
+                EnsureHumanOrigin(actionOrigin, "approve reports");
+                break;
+            case ReportPackWorkflowStateDto.Restated:
+                EnsureHumanOrigin(actionOrigin, "restate reports");
+                break;
+            case ReportPackWorkflowStateDto.Archived:
+                EnsureHumanOrigin(actionOrigin, "archive reports");
+                break;
+        }
     }
 
     public IReadOnlyList<ReportPackWorkflowRecordDto> GetHistory(string period, string fundAccountId) =>
@@ -733,15 +1355,16 @@ public sealed class ReportPackWorkflowService
             target == ReportPackWorkflowStateDto.PendingApproval
                 ? normalized is "operator" or "reviewer" or "validator" or "admin"
                 : target switch
-        {
-            ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
-            ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
-            ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
-            ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",
-            ReportPackWorkflowStateDto.Archived => normalized is "admin" or "records-manager",
-            _ => true
-        };
-        if (!allowed) throw new UnauthorizedAccessException($"Role '{role}' cannot transition to {target}.");
+                {
+                    ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
+                    ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
+                    ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
+                    ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",
+                    ReportPackWorkflowStateDto.Archived => normalized is "admin" or "records-manager",
+                    _ => true
+                };
+        if (!allowed)
+            throw new UnauthorizedAccessException($"Role '{role}' cannot transition to {target}.");
     }
 
     private static IReadOnlyList<ReportPackLineProvenanceDto> NormalizeLineProvenance(IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance) =>
@@ -751,25 +1374,107 @@ public sealed class ReportPackWorkflowService
                 !string.IsNullOrWhiteSpace(item.SourceKind) &&
                 !string.IsNullOrWhiteSpace(item.SourceId) &&
                 !string.IsNullOrWhiteSpace(item.EvidenceId))
-            .Select(static item => item with
-            {
-                LineKey = item.LineKey.Trim(),
-                SourceKind = item.SourceKind.Trim(),
-                SourceId = item.SourceId.Trim(),
-                EvidenceId = item.EvidenceId.Trim(),
-                RunId = string.IsNullOrWhiteSpace(item.RunId) ? null : item.RunId.Trim(),
-                LedgerEntryId = string.IsNullOrWhiteSpace(item.LedgerEntryId) ? null : item.LedgerEntryId.Trim(),
-                ReconciliationCaseId = string.IsNullOrWhiteSpace(item.ReconciliationCaseId) ? null : item.ReconciliationCaseId.Trim(),
-                ReportValue = string.IsNullOrWhiteSpace(item.ReportValue) ? null : item.ReportValue.Trim(),
-                SourceSessionId = string.IsNullOrWhiteSpace(item.SourceSessionId) ? null : item.SourceSessionId.Trim(),
-                ReconciliationRunId = string.IsNullOrWhiteSpace(item.ReconciliationRunId) ? null : item.ReconciliationRunId.Trim(),
-                ProviderEventId = string.IsNullOrWhiteSpace(item.ProviderEventId) ? null : item.ProviderEventId.Trim(),
-                SecurityMasterId = string.IsNullOrWhiteSpace(item.SecurityMasterId) ? null : item.SecurityMasterId.Trim(),
-                SecurityDefinitionId = string.IsNullOrWhiteSpace(item.SecurityDefinitionId) ? null : item.SecurityDefinitionId.Trim(),
-                ReconciliationOutcome = string.IsNullOrWhiteSpace(item.ReconciliationOutcome) ? null : item.ReconciliationOutcome.Trim(),
-                ApprovalId = string.IsNullOrWhiteSpace(item.ApprovalId) ? null : item.ApprovalId.Trim()
-            })
+            .Select(NormalizeLineProvenanceItem)
             .ToArray() ?? [];
+
+    private static ReportPackLineProvenanceDto NormalizeLineProvenanceItem(ReportPackLineProvenanceDto item)
+    {
+        var normalized = item with
+        {
+            LineKey = item.LineKey.Trim(),
+            SourceKind = item.SourceKind.Trim(),
+            SourceId = item.SourceId.Trim(),
+            EvidenceId = item.EvidenceId.Trim(),
+            RunId = NormalizeNullable(item.RunId),
+            LedgerEntryId = NormalizeNullable(item.LedgerEntryId),
+            ReconciliationCaseId = NormalizeNullable(item.ReconciliationCaseId),
+            ReportValue = NormalizeNullable(item.ReportValue),
+            SourceSessionId = NormalizeNullable(item.SourceSessionId),
+            ReconciliationRunId = NormalizeNullable(item.ReconciliationRunId),
+            ProviderEventId = NormalizeNullable(item.ProviderEventId),
+            SecurityMasterId = NormalizeNullable(item.SecurityMasterId),
+            SecurityDefinitionId = NormalizeNullable(item.SecurityDefinitionId),
+            ReconciliationOutcome = NormalizeNullable(item.ReconciliationOutcome),
+            ApprovalId = NormalizeNullable(item.ApprovalId),
+            FinancialRecordExplorerId = NormalizeFinancialRecordExplorerId(item.FinancialRecordExplorerId),
+            FinancialRecordHref = NormalizeNullable(item.FinancialRecordHref)
+        };
+
+        var explorerId = normalized.FinancialRecordExplorerId ?? ResolveFinancialRecordExplorerId(normalized);
+        return normalized with
+        {
+            FinancialRecordExplorerId = explorerId,
+            FinancialRecordHref = normalized.FinancialRecordHref ?? BuildFinancialRecordHref(explorerId, normalized)
+        };
+    }
+
+    private static string ResolveFinancialRecordExplorerId(ReportPackLineProvenanceDto item)
+    {
+        if (ContainsToken(item.SourceKind, "portfolio") ||
+            ContainsToken(item.LineKey, "position") ||
+            ContainsToken(item.SourceId, "position"))
+        {
+            return PortfolioFinancialRecordExplorerId;
+        }
+
+        if (ContainsToken(item.SourceKind, "ledger") ||
+            !string.IsNullOrWhiteSpace(item.LedgerEntryId) ||
+            !string.IsNullOrWhiteSpace(item.RunId) ||
+            !string.IsNullOrWhiteSpace(item.SourceSessionId) ||
+            !string.IsNullOrWhiteSpace(item.ReconciliationRunId) ||
+            !string.IsNullOrWhiteSpace(item.ReconciliationCaseId))
+        {
+            return LedgerFinancialRecordExplorerId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(item.SecurityMasterId) ||
+            !string.IsNullOrWhiteSpace(item.SecurityDefinitionId) ||
+            ContainsToken(item.SourceKind, "security"))
+        {
+            return SecurityInstrumentFinancialRecordExplorerId;
+        }
+
+        return LedgerFinancialRecordExplorerId;
+    }
+
+    private static string? NormalizeFinancialRecordExplorerId(string? value)
+    {
+        var normalized = NormalizeNullable(value);
+        if (normalized is null)
+        {
+            return null;
+        }
+
+        return normalized.Equals(PortfolioFinancialRecordExplorerId, StringComparison.OrdinalIgnoreCase)
+            ? PortfolioFinancialRecordExplorerId
+            : normalized.Equals(SecurityInstrumentFinancialRecordExplorerId, StringComparison.OrdinalIgnoreCase)
+                ? SecurityInstrumentFinancialRecordExplorerId
+                : LedgerFinancialRecordExplorerId;
+    }
+
+    private static string BuildFinancialRecordHref(string explorerId, ReportPackLineProvenanceDto line)
+    {
+        var route = UiApiRoutes.WithParam(
+            UiApiRoutes.WorkstationFinancialRecordExplorer,
+            "explorerId",
+            explorerId);
+        var queryParts = new List<string>
+        {
+            $"lineKey={Uri.EscapeDataString(line.LineKey)}",
+            $"sourceId={Uri.EscapeDataString(line.SourceId)}",
+            $"evidenceId={Uri.EscapeDataString(line.EvidenceId)}"
+        };
+        if (!string.IsNullOrWhiteSpace(line.RunId))
+        {
+            queryParts.Add($"runId={Uri.EscapeDataString(line.RunId)}");
+        }
+
+        return UiApiRoutes.WithQuery(route, string.Join("&", queryParts));
+    }
+
+    private static bool ContainsToken(string? value, string token) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Contains(token, StringComparison.OrdinalIgnoreCase);
 
     private static IReadOnlyList<ReportPackEvidenceLinkDto> NormalizeEvidenceLinks(IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks) =>
         evidenceLinks
@@ -787,6 +1492,36 @@ public sealed class ReportPackWorkflowService
                 };
             })
             .ToArray();
+
+    private static ReportBrandingThemeDto? NormalizePublicationBrandingTheme(ReportBrandingThemeDto? theme)
+    {
+        if (theme is null)
+        {
+            return null;
+        }
+
+        return new ReportBrandingThemeDto(
+            NormalizeRequired(theme.ThemeId, nameof(theme.ThemeId)),
+            NormalizeRequired(theme.Name, nameof(theme.Name)),
+            NormalizeRequired(theme.FirmName, nameof(theme.FirmName)),
+            NormalizeRequired(theme.PrimaryColor, nameof(theme.PrimaryColor)),
+            NormalizeRequired(theme.AccentColor, nameof(theme.AccentColor)),
+            NormalizeRequired(theme.TextColor, nameof(theme.TextColor)),
+            NormalizeRequired(theme.BackgroundColor, nameof(theme.BackgroundColor)),
+            NormalizeNullable(theme.LogoUri),
+            NormalizeNullable(theme.FooterText),
+            NormalizeNullable(theme.Disclaimer),
+            theme.IsBuiltIn);
+    }
+
+    private static string NormalizeRequired(string value, string parameterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        return value.Trim();
+    }
+
+    private static string? NormalizeNullable(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void EnsureLineProvenanceTraceable(IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance)
     {

@@ -1,59 +1,13 @@
 ---
-name: meridian-design-system
-description: Meridian is a trading, portfolio, accounting, reporting, strategy, data, and settings operator workstation. Institutional Ops aesthetic: quiet dark navy (#08101A), restrained sky-cyan primary (#2AB2D4), amber warning (#D69E38), tight workstation radii, shallow shadows, dense data tables, masthead plus left rail. Three fonts: Space Grotesk (display), IBM Plex Sans (UI), IBM Plex Mono (data). Sentence case, no emoji, monospace for every identifier/number/timestamp. Use `colors_and_type.css`, `VISUAL_FOUNDATIONS.md`, and `ui_kits/dashboard/`.
+name: meridian-design
+description: Use this skill to generate well-branded interfaces and assets for Meridian (trading / market-data / research workstation platform), either for production or throwaway prototypes/mocks/etc. Contains essential design guidelines, colors, type, fonts, assets, and UI kit components for prototyping.
+user-invocable: true
 ---
 
-# Meridian — skill guide
+Read the README.md file within this skill, and explore the other available files.
+If creating visual artifacts (slides, mocks, throwaway prototypes, etc), copy assets out and create static HTML files for the user to view. If working on production code, you can copy assets and read the rules here to become an expert in designing with this brand.
+If the user invokes this skill without any other guidance, ask them what they want to build or design, ask some questions, and act as an expert designer who outputs HTML artifacts _or_ production code, depending on the need.
 
-Use this skill when a user asks to design, extend, or mock UI for **Meridian** or references its
-workspaces (`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`).
+Key files: `README.md` (guide + index), `tokens/` (the "Institutional Ops" light palette, type ramp, elevation — lifted from the desktop app `src/Meridian.Wpf/Styles`), `guidelines/` (brand/content/visual/iconography docs + specimen cards), `assets/` (brand marks + 47 line module icons), `components/` (React primitives), `ui_kits/` (full light workstation screens to copy from).
 
-## Start here
-1. `colors_and_type.css` — drop into the page first. All tokens + typography classes live here.
-2. `VISUAL_FOUNDATIONS.md` — rules for surfaces, borders, shadows, motion.
-3. `CONTENT_FUNDAMENTALS.md` — voice, casing, numerals, banned phrases.
-4. `INSPIRATION_BRIEF.md` — image-derived structure for dense workstation pages.
-5. `preview/component-state-matrix.html` — expected state behavior across reusable components.
-6. `preview/screen-recipes.html` — workspace-level recipes for implementation handoff.
-7. `preview/reference-workbench.html` — Security Master and cash-flow/factor schedule workbench rules.
-8. `preview/chart-table-standards.html` — evidence chart, dense-table, schedule-table, and row-detail rules.
-9. `ICONOGRAPHY.md` — line-icon rules. Use `assets/icons/*.svg` (47 glyphs, currentColor).
-
-## Fast rules (Institutional Ops)
-- Background: `bg-app`. Keep ambient light faint and static.
-- Surfaces stack: `bg-card` → `bg-panel` → `bg-soft` → `bg-raise`. Darker is deeper.
-- One primary CTA per screen (`#2AB2D4`). One accent (`#D69E38`) at most alongside.
-- Data is monospace (`var(--font-mono)`), prose is sans. Never mix.
-- Titles use `--font-display` (Space Grotesk), 700, negative letter‑spacing.
-- Numbers are tabular, signed when directional: `+$100K`, `−2.41%`, `0%`.
-- Tight radii: 10 / 8 / 6 / 4 / 3px.
-- Borders precise: `#1F344C` default, `#2A4566` for selected and active frames.
-- Shadows are shallow inset + 1-2px depth only. No hard-offset shadows or glow-heavy buttons.
-- Use masthead + left rail + toolbar strip for workstation pages.
-- Pair KPI cards with chart/table evidence and selected-record details.
-- Security Master and reference-data screens use a command deck, searchable master table,
-  persistent selected-security detail, dense schedule tables, controls, notes, and attached audit.
-- No emoji. No exclamation marks. No marketing copy.
-
-## Components available
-- `preview/components-*.html` — live, styled reference cards for buttons, badges, inputs, metrics, table, nav, banners.
-- `preview/institutional-workstation.html` — image-inspired workstation frame and dense table preview.
-- `preview/component-state-matrix.html` — badges, banners, KPI tiles, toolbar chips, nav rows, dense-table rows, inputs, buttons, and entity fields in all supported states.
-- `preview/screen-recipes.html` — recipes for Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings.
-- `preview/reference-workbench.html` — canonical Security Master/security-detail reference workbench.
-- `preview/chart-table-standards.html` — projection/fan, scatter, order-book, dense-table, schedule-table, status-window, and row-detail standards.
-- `ui_kits/dashboard/` — React components if building the web dashboard.
-- `ui_kits/security_master*.html` — static Security Master master/detail, company, and print packet references.
-- `scripts/check_design_system_governance.py` — run before finalizing design-system edits.
-
-## Copy tone (paste‑safe examples)
-- "Working and partially filled orders remain visible in real time."
-- "Paper thresholds, drawdown limits, and buying‑power constraints are evaluated on every order submission."
-- "No paper sessions active. Create one above to start tracking execution."
-
-## When in doubt
-- Match the real dashboard: see `/projects/<meridian-repo>/src/Meridian.Ui/dashboard/src/screens/*.tsx` if the user has it linked.
-- Use uploaded images as structural inspiration only; never copy third-party brands, marks, labels, or proprietary layouts.
-- Use line icons from `assets/icons/`, not lucide knockoffs.
-- If you need a new color, express it as `hsl(var(--primary) / 0.12)` — never invent a hex.
-- Run `python "Meridian Design System/scripts/check_design_system_governance.py"` before handoff.
+Meridian is a **light** institutional workstation: paper canvas, white cards, near-black chrome bars, one muted teal-blue accent, desaturated semantic washes, Segoe UI + Cascadia Mono, hairline structure — no gradients, no glow.

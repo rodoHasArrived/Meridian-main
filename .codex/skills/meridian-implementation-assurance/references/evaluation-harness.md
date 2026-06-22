@@ -16,6 +16,7 @@ complete, correct, and operationally safe.
 - Use `scripts/score_eval.py` to enforce rubric key coverage, compute totals, and emit a report block.
 - Use `scripts/doc_route.py` before documentation edits when placement is unclear.
 - Use `scripts/run_evals.py` to run deterministic checks against `evals/evals.json` cases and compare against `evals/benchmark_baseline.json`.
+- Use `scripts/skill_script_advisor.py audit --skill <skill> --summary` before and after adding or optimizing bundled skill scripts.
 
 ## Prompt-Based Eval Infrastructure
 
@@ -30,7 +31,7 @@ skill name or description do not break invocation.
 Validate CSV structure without invoking Codex:
 
 ```bash
-python3 scripts/run_evals.py --all --dry-run
+python scripts/run_evals.py --all --dry-run
 ```
 
 Negative controls (`should_trigger=false`) catch false positives such as prompts that should route
@@ -43,8 +44,13 @@ skill completes.
 
 ### Deterministic Runner (`scripts/run_evals.py`)
 
-Runs each case in `evals/evals.json` through `codex exec --json --full-auto`, saves JSONL traces
-to `evals/artifacts/`, and applies deterministic checks:
+Dry-run is the normal local validation lane. It validates eval fixtures without invoking Codex or
+writing live task changes. Live runs require `--live-run` so an agent does not accidentally execute
+mutating prompts in the main checkout. Use live runs only from an isolated worktree or scratch clone.
+
+When `--live-run` is passed, the runner sends each case in `evals/evals.json` through
+`codex exec --json --full-auto`, saves JSONL traces to `evals/artifacts/`, and applies deterministic
+checks:
 
 | Check | Description |
 |---|---|
@@ -56,16 +62,16 @@ to `evals/artifacts/`, and applies deterministic checks:
 
 ```bash
 # Validate infrastructure without running Codex
-python3 scripts/run_evals.py --all --dry-run
+python scripts/run_evals.py --all --dry-run
 
-# Run all cases and check regressions vs baseline
-python3 scripts/run_evals.py --all --summary
+# Run all cases and check regressions vs baseline from an isolated worktree or scratch clone
+python scripts/run_evals.py --all --summary --live-run
 
-# Run a single case
-python3 scripts/run_evals.py --eval-id 3
+# Run a single live case from an isolated worktree or scratch clone
+python scripts/run_evals.py --eval-id 3 --live-run
 
-# Machine-readable output for CI
-python3 scripts/run_evals.py --all --summary --json
+# Machine-readable dry-run output for CI
+python scripts/run_evals.py --all --dry-run --summary --json
 ```
 
 ### Baseline Management (`evals/benchmark_baseline.json`)
@@ -76,7 +82,8 @@ regression warning.
 
 After intentionally improving the skill, update the baseline:
 
-1. Run `python3 scripts/run_evals.py --all --summary --json` and inspect output quality.
+1. Run `python scripts/run_evals.py --all --summary --json --live-run` from an isolated worktree or
+   scratch clone and inspect output quality.
 2. Update `accepted_pass_rate` values in `benchmark_baseline.json` to match the verified run.
 3. Update `_last_updated`.
 

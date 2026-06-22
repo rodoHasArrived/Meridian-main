@@ -448,6 +448,8 @@ public sealed class PilotAcceptanceHarnessTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "pilot.operator";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.AdminMaintenance;
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "pilot-acceptance-tenant";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "pilot-acceptance-tenant";
             await next();
         });
         app.MapWorkstationEndpoints(ServerJsonOptions);

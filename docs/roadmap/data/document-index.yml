@@ -25,6 +25,8 @@ documents:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W5X-FREX-001
+      - W5X-FINOPS-001
   - id: DOC-AI-CONTRACT
     path: docs/ai/assistant-workflow-contract.md
     title: Assistant workflow contract

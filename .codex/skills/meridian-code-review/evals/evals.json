@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Meridian code review package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/code_review_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 3
+        }
+      },
+      "prompt": "Use $meridian-code-review to review a Meridian dashboard change for regressions, missing tests, and architecture drift."
+    },
+    {
+      "id": 2,
+      "description": "Review output keeps findings before summary with severity and file evidence.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/code_review_check.py",
+        "--scenario",
+        "findings-first-output",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-code-review and return findings first with severity order, file and line references, and residual risk."
+    },
+    {
+      "id": 3,
+      "description": "Review output reports static-only or skipped validation risk.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/code_review_check.py",
+        "--scenario",
+        "validation-risk",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $meridian-code-review to report validation gaps when review is static-only and narrow tests were not run."
+    }
+  ]
+}

@@ -131,6 +131,299 @@ public sealed record FundReportingProfileDto(
     bool DataDictionary);
 
 /// <summary>
+/// Branding and styling options applied to governed report-pack documents.
+/// </summary>
+public sealed record ReportBrandingThemeDto(
+    string ThemeId,
+    string Name,
+    string FirmName,
+    string PrimaryColor,
+    string AccentColor,
+    string TextColor,
+    string BackgroundColor,
+    string? LogoUri = null,
+    string? FooterText = null,
+    string? Disclaimer = null,
+    bool IsBuiltIn = true);
+
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingCutKindDto>))]
+public enum PortfolioReportingCutKindDto
+{
+    Fund = 0,
+    Strategy = 1,
+    UserTag = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingLiveViewStateDto>))]
+public enum PortfolioReportingLiveViewStateDto
+{
+    LiveLinked = 0,
+    SourceBacked = 1,
+    Stale = 2,
+    Blocked = 3
+}
+
+/// <summary>
+/// Portfolio reporting row for exposure, cash, P&amp;L, and shadow-NAV cuts.
+/// </summary>
+public sealed record PortfolioReportingCutDto(
+    string CutId,
+    string Label,
+    PortfolioReportingCutKindDto Kind,
+    string Currency,
+    decimal GrossExposure,
+    decimal NetExposure,
+    decimal LongMarketValue,
+    decimal ShortMarketValue,
+    decimal TotalCash,
+    decimal PendingSettlement,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    decimal TotalPnl,
+    decimal ShadowNav,
+    decimal ShadowNavVariance,
+    int SourceCount,
+    IReadOnlyList<string> Tags,
+    DateTimeOffset AsOf,
+    string? EvidenceRoute = null,
+    string? ShadowNavNote = null,
+    string? VersionStamp = null);
+
+/// <summary>
+/// Server-owned freshness policy evidence for a portfolio reporting live view.
+/// </summary>
+public sealed record PortfolioReportingLiveViewFreshnessPolicyDto(
+    string PolicyName,
+    DateTimeOffset EvaluatedAtUtc,
+    int? SourceAgeSeconds,
+    int LiveLinkWindowSeconds,
+    int StaleWindowSeconds,
+    bool IsWithinLiveLinkWindow,
+    bool IsBeyondStaleWindow,
+    string Reason);
+
+/// <summary>
+/// Reporting-owned pointer to live portfolio summary, liquidity, and cash-ladder evidence.
+/// </summary>
+public sealed record PortfolioReportingLiveViewDto(
+    string ViewId,
+    string Label,
+    PortfolioReportingCutKindDto Kind,
+    PortfolioReportingLiveViewStateDto State,
+    string Currency,
+    decimal GrossExposure,
+    decimal NetExposure,
+    decimal TotalCash,
+    decimal PendingSettlement,
+    decimal TotalPnl,
+    decimal ShadowNav,
+    DateTimeOffset AsOf,
+    DateTimeOffset? SourceAsOfUtc,
+    int SourceCount,
+    string Route,
+    string LiquiditySummary,
+    string CashLadderSummary,
+    string TelemetrySummary,
+    IReadOnlyList<string> Tags,
+    string? CashLadderRoute = null,
+    string? VersionStamp = null,
+    IReadOnlyList<string>? ReadinessBlockers = null,
+    DateTimeOffset? MarketTickAsOfUtc = null,
+    int? MarketTickAgeSeconds = null,
+    long? MarketTickSequence = null,
+    string? MarketDataProvider = null,
+    string? TickFreshnessSummary = null,
+    bool IsMarketTickLinked = false,
+    PortfolioReportingLiveViewFreshnessPolicyDto? FreshnessPolicy = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingPnlSlicePeriodDto>))]
+public enum PortfolioReportingPnlSlicePeriodDto
+{
+    Daily = 0,
+    Weekly = 1,
+    Monthly = 2,
+    Yearly = 3
+}
+
+/// <summary>
+/// Period-scoped P&amp;L row derived from retained portfolio run timestamps.
+/// </summary>
+public sealed record PortfolioReportingPnlSliceDto(
+    string SliceId,
+    PortfolioReportingPnlSlicePeriodDto Period,
+    string Label,
+    string Currency,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    decimal TotalPnl,
+    decimal PriorTotalPnl,
+    decimal PnlChange,
+    int SourceCount,
+    DateTimeOffset AsOf,
+    string Route,
+    string ReadinessSummary,
+    IReadOnlyList<string> Tags,
+    string? VersionStamp = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingAnalyticsKindDto>))]
+public enum PortfolioReportingAnalyticsKindDto
+{
+    TopWinner = 0,
+    TopLaggard = 1,
+    Contribution = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingAnalyticsScopeDto>))]
+public enum PortfolioReportingAnalyticsScopeDto
+{
+    Security = 0,
+    Strategy = 1,
+    AssetClass = 2
+}
+
+/// <summary>
+/// Top-N and contribution analytics row derived from retained portfolio P&amp;L sources.
+/// </summary>
+public sealed record PortfolioReportingAnalyticsRowDto(
+    string AnalyticsId,
+    PortfolioReportingAnalyticsKindDto Kind,
+    PortfolioReportingAnalyticsScopeDto Scope,
+    int Rank,
+    string Label,
+    string? Symbol,
+    string? Classification,
+    string Currency,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    decimal TotalPnl,
+    decimal ContributionPercent,
+    decimal HeatMapIntensity,
+    int SourceCount,
+    DateTimeOffset AsOf,
+    string Route,
+    string ReadinessSummary,
+    IReadOnlyList<string> Tags,
+    string? VersionStamp = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<CrossFundReportingConsolidationScopeDto>))]
+public enum CrossFundReportingConsolidationScopeDto
+{
+    Company = 0,
+    Fund = 1,
+    Entity = 2
+}
+
+/// <summary>
+/// Cross-fund Reporting consolidation row for aggregated exposures and metrics.
+/// </summary>
+public sealed record CrossFundReportingConsolidationDto(
+    string ConsolidationId,
+    string Label,
+    CrossFundReportingConsolidationScopeDto Scope,
+    string Currency,
+    bool IsReady,
+    int FundCount,
+    int EntityCount,
+    int AccountCount,
+    int RunCount,
+    decimal GrossExposure,
+    decimal NetExposure,
+    decimal LongMarketValue,
+    decimal ShortMarketValue,
+    decimal TotalCash,
+    decimal PendingSettlement,
+    decimal TotalPnl,
+    decimal ShadowNav,
+    decimal ShadowNavVariance,
+    int SourceCount,
+    DateTimeOffset AsOf,
+    string Route,
+    string ReadinessSummary,
+    IReadOnlyList<string> Tags,
+    string? VersionStamp = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<StructuredReportingExportPurposeDto>))]
+public enum StructuredReportingExportPurposeDto
+{
+    Regulatory = 0,
+    DataWarehouse = 1,
+    InvestmentDecision = 2
+}
+
+/// <summary>
+/// Structured export descriptor for governed downstream reporting consumers.
+/// </summary>
+public sealed record StructuredReportingExportDto(
+    string ExportId,
+    string Label,
+    StructuredReportingExportPurposeDto Purpose,
+    GovernanceReportArtifactFormatDto Format,
+    string Dataset,
+    string Consumer,
+    int SchemaVersion,
+    int RowCount,
+    int FieldCount,
+    int SourceCount,
+    string Currency,
+    DateTimeOffset AsOf,
+    bool IsReady,
+    string RetainedPath,
+    string Route,
+    string? DataDictionaryRoute = null,
+    string? ValidationSummary = null,
+    string? EvidenceRoute = null,
+    string? VersionStamp = null,
+    IReadOnlyList<string>? Tags = null,
+    IReadOnlyList<string>? ReadinessBlockers = null,
+    string? RetainedManifestPath = null,
+    string? IntegrityHashSha256 = null,
+    string? IntegritySummary = null,
+    int? RowLineageCount = null);
+
+public sealed record StructuredReportingExportColumnDto(
+    string Name,
+    string DataType,
+    string? Description = null);
+
+public sealed record StructuredReportingExportDataDictionaryFieldDto(
+    string Name,
+    string DataType,
+    string? Description,
+    int Ordinal,
+    bool Required = true);
+
+public sealed record StructuredReportingExportValidationCheckDto(
+    string CheckId,
+    string Status,
+    string Detail);
+
+public sealed record StructuredReportingExportRowLineageDto(
+    int RowNumber,
+    string RowKey,
+    string RowHashSha256);
+
+public sealed record StructuredReportingExportPayloadDto(
+    StructuredReportingExportDto Export,
+    IReadOnlyList<StructuredReportingExportColumnDto> Columns,
+    IReadOnlyList<IReadOnlyDictionary<string, string?>> Rows,
+    IReadOnlyList<string> Warnings,
+    DateTimeOffset GeneratedAtUtc,
+    IReadOnlyList<StructuredReportingExportDataDictionaryFieldDto>? DataDictionary = null,
+    IReadOnlyList<StructuredReportingExportValidationCheckDto>? ValidationChecks = null,
+    string? GeneratedByPrincipalId = null,
+    string? GeneratedForCompanyId = null,
+    IReadOnlyList<string>? GeneratedForGroupPrincipalIds = null,
+    IReadOnlyList<StructuredReportingExportRowLineageDto>? RowLineage = null);
+
+public sealed record StructuredReportingExportRequestDto(
+    string FundProfileId,
+    string ExportId,
+    DateTimeOffset? AsOf = null,
+    string? Currency = null);
+
+/// <summary>
 /// Report/export posture for the Accounting workspace.
 /// </summary>
 public sealed record FundReportingSummaryDto(
@@ -141,7 +434,19 @@ public sealed record FundReportingSummaryDto(
     string Summary,
     IReadOnlyList<ReportPackWorkflowRecordDto>? WorkflowRecords = null,
     IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null,
-    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null);
+    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null,
+    IReadOnlyList<PortfolioReportingCutDto>? PortfolioCuts = null,
+    IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null,
+    IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
+    IReadOnlyList<PortfolioReportingLiveViewDto>? LivePortfolioViews = null,
+    IReadOnlyList<CrossFundReportingConsolidationDto>? CrossFundConsolidations = null,
+    IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null,
+    IReadOnlyList<PortfolioReportingAnalyticsRowDto>? AnalyticsRows = null,
+    string? FundProfileId = null,
+    IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null,
+    FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null,
+    IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null,
+    WorkstationReportAccessAuditSummaryDto? AccessAudit = null);
 
 /// <summary>
 /// Shared Accounting workspace payload combining ledger, banking, cash, reconciliation,
@@ -172,7 +477,9 @@ public sealed record FundReportPackPreviewRequestDto(
     string FundProfileId,
     GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance,
     DateTimeOffset? AsOf = null,
-    string? Currency = null);
+    string? Currency = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingThemeOverride = null);
 
 /// <summary>
 /// Asset-class total included in a report-pack preview.
@@ -213,7 +520,8 @@ public sealed record FundReportPackPreviewDto(
     decimal TotalNetAssets,
     int TrialBalanceLineCount,
     int AssetClassSectionCount,
-    IReadOnlyList<FundReportAssetClassSectionDto> AssetClassSections);
+    IReadOnlyList<FundReportAssetClassSectionDto> AssetClassSections,
+    ReportBrandingThemeDto? BrandingTheme = null);
 
 /// <summary>
 /// Request to generate and persist an immutable governed report pack.
@@ -227,7 +535,9 @@ public sealed record FundReportPackGenerateRequestDto(
     string? CorrelationId = null,
     string? DecisionRationale = null,
     IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
-    int? ExpectedSchemaVersion = null);
+    int? ExpectedSchemaVersion = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingThemeOverride = null);
 
 /// <summary>
 /// One persisted report-pack artifact and its integrity metadata.
@@ -428,7 +738,8 @@ public sealed record FundReportPackSnapshotDto(
     IReadOnlyList<FundReportPackArtifactDto> Artifacts,
     IReadOnlyList<string> Warnings,
     string ContractName = GovernanceReportPackContract.ContractName,
-    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion)
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion,
+    ReportBrandingThemeDto? BrandingTheme = null)
 {
     public GovernanceReportPackStatusDto Status { get; init; } = GovernanceReportPackStatusDto.Unknown;
 
@@ -517,6 +828,134 @@ public enum ReportPackDeliveryStateDto
     Blocked = 4
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ReportPackDeliveryModeDto>))]
+public enum ReportPackDeliveryModeDto
+{
+    EmailLink = 0,
+    SecurePortal = 1,
+    EvidenceVault = 2,
+    InternalRoute = 3
+}
+
+public sealed record ReportPackDeliveryArtifactDto(
+    GovernanceReportArtifactFormatDto Format,
+    string ArtifactName,
+    string ContentType,
+    string RetainedPath,
+    long ByteSize,
+    string EvidenceId,
+    string ChecksumSha256 = "",
+    string VersionStamp = "",
+    string? DownloadRoute = null);
+
+public sealed record ReportPackDeliveryAccessLinkDto(
+    string Kind,
+    string Label,
+    string Href,
+    bool RequiresToken,
+    DateTimeOffset? ExpiresAtUtc = null,
+    string? Description = null);
+
+public sealed record ReportPackDeliveryNotificationDto(
+    string NotificationId,
+    string Channel,
+    string Recipient,
+    string RecipientRole,
+    ReportPackDeliveryModeDto DeliveryMode,
+    string Subject,
+    string Body,
+    string Href,
+    bool RequiresToken,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset? ExpiresAtUtc = null,
+    string Status = "Ready");
+
+public sealed record ReportPackDeliveryRecipientDto(
+    string DistributionId,
+    string Recipient,
+    string RecipientRole,
+    string Channel);
+
+public sealed record ReportPackDeliveryApprovalStepDto(
+    DateTimeOffset At,
+    string Actor,
+    string Action,
+    ReportPackWorkflowStateDto FromState,
+    ReportPackWorkflowStateDto ToState,
+    string? Note = null);
+
+public sealed record ReportPackDeliveryEvidencePacketDto(
+    string PacketId,
+    string PacketKind,
+    string PackageId,
+    Guid ReportId,
+    string FundProfileId,
+    string FundAccountId,
+    string Period,
+    IReadOnlyList<string> PackageContents,
+    IReadOnlyList<string> SupportEvidenceIds,
+    IReadOnlyList<ReportPackDeliveryRecipientDto> RecipientList,
+    string EntitlementScope,
+    IReadOnlyList<ReportPackDeliveryApprovalStepDto> ApprovalChain,
+    string DatasetVersion,
+    string TemplateVersion,
+    string DeliveryChannel,
+    DateTimeOffset DeliveredAtUtc,
+    IReadOnlyList<ReportPackEvidenceLinkDto> DeliveryEvidence,
+    IReadOnlyList<string> RequestHistory,
+    string? AmendmentReason = null,
+    string? RestatementLineage = null,
+    IReadOnlyList<string>? AuditEventReferences = null,
+    IReadOnlyList<string>? BlockedDownstreamOutputs = null);
+
+public sealed record ReportPackDeliveryPackageDto(
+    string PackageId,
+    Guid ReportId,
+    string DistributionId,
+    ReportPackDeliveryModeDto DeliveryMode,
+    string SecureLink,
+    string PortalRoute,
+    IReadOnlyList<GovernanceReportArtifactFormatDto> Formats,
+    IReadOnlyList<ReportPackDeliveryArtifactDto> Artifacts,
+    DateTimeOffset CreatedAtUtc,
+    string RetainedManifestPath,
+    string? PublicationEvidenceHash = null,
+    string? IntegritySummary = null,
+    string? ReportingRunId = null,
+    string? ReportingTemplateId = null,
+    string? ReportingScheduleId = null,
+    IReadOnlyList<string>? SourceArtifacts = null,
+    string? PublicationManifestId = null,
+    string? PublicationRetainedManifestPath = null,
+    string? PublicationSignedOffBy = null,
+    DateTimeOffset? PublicationSignedOffAtUtc = null,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? PublicationEvidenceLinks = null,
+    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
+    string? RestatementReasonCode = null,
+    Guid? RestatementPriorVersionReportId = null,
+    string? RestatementApprover = null,
+    IReadOnlyList<ReportPackChangedLineDto>? RestatementChangedLines = null,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? RestatementEvidenceLinks = null,
+    ReportPackDeliveryEvidencePacketDto? DeliveryEvidencePacket = null,
+    ReportBrandingThemeDto? BrandingTheme = null,
+    string? ReportingRunAsOfDate = null,
+    string? ReportingRunStatus = null,
+    string? ReportingRunTrigger = null,
+    int? ReportingRunAttemptCount = null,
+    int? ReportingRunSectionCount = null,
+    int? ReportingRunLineageLinkedSections = null,
+    string? DeliveryAccessSummary = null,
+    string? DeliveryChannelSummary = null,
+    string? DownloadSummary = null,
+    DateTimeOffset? AccessExpiresAtUtc = null,
+    IReadOnlyList<ReportPackDeliveryAccessLinkDto>? AccessLinks = null,
+    IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null,
+    IReadOnlyList<ReportWriterGridRenderDto>? RenderedReportWriterGrids = null,
+    IReadOnlyList<ReportPackDeliveryNotificationDto>? Notifications = null,
+    string? ReportWriterDatasetSourceId = null,
+    string? ReportWriterDatasetSourceLabel = null,
+    int? ReportWriterDatasetRowCount = null);
+
 public sealed record ReportPackDeliveryAttemptDto(
     Guid AttemptId,
     Guid ReportId,
@@ -531,14 +970,18 @@ public sealed record ReportPackDeliveryAttemptDto(
     string DeliveryReference,
     string? Note = null,
     string? FailureReason = null,
-    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null,
+    ReportPackDeliveryPackageDto? Package = null);
 
 public sealed record ReportPackDeliveryRequestDto(
     string DistributionId,
     string? Actor = null,
     string? DeliveryReference = null,
     string? Note = null,
-    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
+    ReportPackDeliveryModeDto? DeliveryMode = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record ReportPackDeliveryFailureRequestDto(
     string DistributionId,
@@ -546,11 +989,59 @@ public sealed record ReportPackDeliveryFailureRequestDto(
     string? Actor = null,
     string? DeliveryReference = null,
     string? Note = null,
-    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record ReportPackDeliveryHistoryDto(
     Guid ReportId,
     IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
+
+public sealed record ReportingScheduleDeliveryTargetDto(
+    string DistributionId,
+    IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
+    ReportPackDeliveryModeDto? DeliveryMode = null,
+    string? Note = null);
+
+public sealed record ReportingScheduleDeliveryPlanDto(
+    string PlanId,
+    string ScheduleId,
+    string TemplateId,
+    string DistributionId,
+    string Recipient,
+    string RecipientRole,
+    string Channel,
+    ReportPackDeliveryModeDto DeliveryMode,
+    IReadOnlyList<GovernanceReportArtifactFormatDto> Formats,
+    bool IsReady,
+    string ReadinessSummary,
+    string Route,
+    DateTimeOffset DueAtUtc,
+    DateOnly NextAsOfDate,
+    string Owner,
+    string? Note = null,
+    Guid? LastDeliveryAttemptId = null,
+    ReportPackDeliveryStateDto? LastDeliveryState = null,
+    DateTimeOffset? LastDeliveryAtUtc = null,
+    string? LastDeliveryPackageRoute = null,
+    string? LastDeliverySecureLink = null,
+    IReadOnlyList<ReportPackDeliveryAccessLinkDto>? LastDeliveryAccessLinks = null,
+    DateTimeOffset? LastDeliveryAccessExpiresAtUtc = null,
+    string? LastDeliveryAccessSummary = null,
+    string? LastDeliveryChannelSummary = null,
+    string? LastDeliveryDownloadSummary = null,
+    int LastDeliveryNotificationCount = 0,
+    string? LastDeliveryNotificationSummary = null,
+    int LastDeliveryGeneratedReportWriterGridCount = 0,
+    int LastDeliveryRenderedReportWriterGridCount = 0,
+    string? LastDeliveryReportWriterDatasetSummary = null,
+    string? LastDeliveryReportWriterGridSummary = null,
+    string? VersionStamp = null,
+    int LastDeliveryArtifactCount = 0,
+    string? LastDeliveryIntegritySummary = null,
+    IReadOnlyList<string>? ReadinessBlockers = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingTheme = null,
+    string? LastDeliveryEntitlementScope = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduleStateDto>))]
 public enum ReportingScheduleStateDto
@@ -574,7 +1065,12 @@ public sealed record ReportingScheduleRecordDto(
     DateTimeOffset? LastRunAtUtc = null,
     string? LastRunId = null,
     int RunCount = 0,
-    string? Description = null);
+    string? Description = null,
+    IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null,
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    string? DatasetSourceId = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingThemeOverride = null);
 
 public sealed record ReportingScheduleUpsertRequestDto(
     string ScheduleId,
@@ -585,11 +1081,18 @@ public sealed record ReportingScheduleUpsertRequestDto(
     int MaxRetries,
     string RequestedBy,
     string? Description = null,
-    ReportingScheduleStateDto State = ReportingScheduleStateDto.Active);
+    ReportingScheduleStateDto State = ReportingScheduleStateDto.Active,
+    IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null,
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    string? DatasetSourceId = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingThemeOverride = null);
 
 public sealed record ReportingScheduleRunResultDto(
     ReportingScheduleRecordDto Schedule,
-    WorkstationReportingRunPayload Run);
+    WorkstationReportingRunPayload Run,
+    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null,
+    IReadOnlyList<string>? DeliveryWarnings = null);
 
 public sealed record ReportingDueScheduleRunResultDto(
     DateTimeOffset EvaluatedAtUtc,
@@ -600,10 +1103,31 @@ public sealed record ReportingRunRequestDto(
     DateOnly? AsOfDate = null,
     int MaxRetries = 0,
     string? JobId = null,
-    string? RequestedBy = null);
+    string? RequestedBy = null,
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    string? DatasetSourceId = null);
 
 public sealed record ReportingRunResultDto(
     WorkstationReportingRunPayload Run);
+
+public sealed record ReportingRunAuditEntryDto(
+    string RunId,
+    DateTimeOffset TimestampUtc,
+    string Action,
+    string Actor,
+    string Notes);
+
+public sealed record ReportingRunAuditTrailDto(
+    string RunId,
+    string TemplateId,
+    string AsOfDate,
+    string Status,
+    string Trigger,
+    int AttemptCount,
+    IReadOnlyList<ReportingRunAuditEntryDto> Entries,
+    string? ReportWriterDatasetSourceId = null,
+    string? ReportWriterDatasetSourceLabel = null,
+    int? ReportWriterDatasetRowCount = null);
 
 /// <summary>
 /// Shared governed report-pack workflow states. The W4 happy-path lifecycle is
@@ -628,13 +1152,182 @@ public enum ReportPackWorkflowStateDto
 
 public sealed record VersionedReportTemplateIdDto(string Name, int Version);
 public sealed record ReportTemplateParameterDefinitionDto(string Name, bool Required);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterGridKindDto>))]
+public enum ReportWriterGridKindDto
+{
+    Detail = 0,
+    Pivot = 1,
+    TopN = 2,
+    Contribution = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterAggregateFunctionDto>))]
+public enum ReportWriterAggregateFunctionDto
+{
+    Sum = 0,
+    Count = 1,
+    Average = 2,
+    Min = 3,
+    Max = 4
+}
+
+public sealed record ReportWriterMetricDefinitionDto(
+    string Name,
+    string SourceField,
+    ReportWriterAggregateFunctionDto Function = ReportWriterAggregateFunctionDto.Sum,
+    string? Label = null);
+
+public sealed record ReportWriterFormulaDefinitionDto(
+    string Name,
+    string Expression,
+    string? Label = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterFilterOperatorDto>))]
+public enum ReportWriterFilterOperatorDto
+{
+    Equals = 0,
+    NotEquals = 1,
+    Contains = 2,
+    StartsWith = 3,
+    EndsWith = 4,
+    GreaterThan = 5,
+    GreaterThanOrEqual = 6,
+    LessThan = 7,
+    LessThanOrEqual = 8,
+    IsBlank = 9,
+    IsNotBlank = 10
+}
+
+public sealed record ReportWriterFilterDefinitionDto(
+    string Field,
+    ReportWriterFilterOperatorDto Operator = ReportWriterFilterOperatorDto.Equals,
+    string? Value = null,
+    string? Label = null);
+
+public sealed record ReportWriterGridDefinitionDto(
+    string GridId,
+    string Title,
+    ReportWriterGridKindDto Kind,
+    IReadOnlyList<string>? RowFields = null,
+    IReadOnlyList<string>? ColumnFields = null,
+    IReadOnlyList<ReportWriterMetricDefinitionDto>? Metrics = null,
+    IReadOnlyList<ReportWriterFormulaDefinitionDto>? Formulas = null,
+    int? TopN = null,
+    string? SortBy = null,
+    bool SortDescending = true,
+    IReadOnlyList<ReportWriterFilterDefinitionDto>? Filters = null);
+
+public sealed record ReportWriterGridColumnDto(
+    string Key,
+    string Label,
+    string Role);
+
+public sealed record ReportWriterGridRowDto(
+    string RowKey,
+    IReadOnlyDictionary<string, string> Values);
+
+public sealed record ReportWriterMetricLineageDto(
+    string Name,
+    string SourceField,
+    string Function);
+
+public sealed record ReportWriterFormulaLineageDto(
+    string Name,
+    string Expression,
+    IReadOnlyList<string> SourceFields);
+
+public sealed record ReportWriterFilterLineageDto(
+    string Field,
+    string Operator,
+    string? Value,
+    string? Label = null);
+
+public sealed record ReportWriterGridDataDictionaryFieldDto(
+    string Key,
+    string Label,
+    string Role,
+    string SourceField,
+    string DataType,
+    bool IsGenerated,
+    string Description);
+
+public sealed record ReportWriterGridValidationCheckDto(
+    string CheckId,
+    string Status,
+    string Detail);
+
+public sealed record ReportWriterGridLineageDto(
+    int InputRowCount,
+    int OutputRowCount,
+    IReadOnlyList<string> SourceFields,
+    IReadOnlyList<ReportWriterMetricLineageDto> Metrics,
+    IReadOnlyList<ReportWriterFormulaLineageDto> Formulas,
+    int? FilteredInputRowCount = null,
+    IReadOnlyList<ReportWriterFilterLineageDto>? Filters = null);
+
+public sealed record ReportWriterGridRenderDto(
+    string GridId,
+    string Title,
+    ReportWriterGridKindDto Kind,
+    IReadOnlyList<ReportWriterGridColumnDto> Columns,
+    IReadOnlyList<ReportWriterGridRowDto> Rows,
+    IReadOnlyList<string> Warnings,
+    ReportWriterGridLineageDto? Lineage = null,
+    IReadOnlyList<ReportWriterGridDataDictionaryFieldDto>? DataDictionary = null,
+    IReadOnlyList<ReportWriterGridValidationCheckDto>? ValidationChecks = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportAccessModeDto>))]
+public enum ReportAccessModeDto
+{
+    Private = 0,
+    Restricted = 1,
+    CompanyWide = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportAccessPrincipalKindDto>))]
+public enum ReportAccessPrincipalKindDto
+{
+    User = 0,
+    Group = 1,
+    Company = 2
+}
+
+public sealed record ReportAccessPrincipalDto(
+    ReportAccessPrincipalKindDto Kind,
+    string PrincipalId,
+    string? DisplayName = null);
+
+public sealed record ReportAccessPolicyDto(
+    ReportAccessModeDto Mode = ReportAccessModeDto.CompanyWide,
+    string? OwnerPrincipalId = null,
+    IReadOnlyList<ReportAccessPrincipalDto>? Principals = null,
+    string? CompanyId = null,
+    bool AllowOwnerAccess = true);
+
+public sealed record ReportAccessEvaluationDto(
+    bool IsAccessible,
+    string Reason,
+    IReadOnlyList<ReportAccessPrincipalDto> MatchedPrincipals);
+
 public sealed record ReportTemplateDefinitionDto(
     VersionedReportTemplateIdDto TemplateId,
     string DisplayName,
     IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters,
-    IReadOnlyList<string>? Sections = null);
-public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters);
-public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters);
+    IReadOnlyList<string>? Sections = null,
+    IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
+public sealed record RenderReportTemplateRequestDto(
+    VersionedReportTemplateIdDto TemplateId,
+    IReadOnlyDictionary<string, string> Parameters,
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null);
+public sealed record RenderReportTemplateResponseDto(
+    VersionedReportTemplateIdDto TemplateId,
+    string RenderedContent,
+    IReadOnlyList<string> MissingRequiredParameters,
+    IReadOnlyList<ReportWriterGridRenderDto>? Grids = null,
+    IReadOnlyList<string>? Warnings = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportTemplateLifecycleStatusDto>))]
 public enum ReportTemplateLifecycleStatusDto
@@ -683,7 +1376,9 @@ public sealed record ReportTemplateDraftRequestDto(
     IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters,
     string? Family = null,
     int? BasedOnVersion = null,
-    string? Rationale = null);
+    string? Rationale = null,
+    IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 
 public sealed record ReportTemplateDecisionRequestDto(
     string Rationale,
@@ -707,14 +1402,17 @@ public sealed record ReportPackLineProvenanceDto(
     string? SecurityMasterId = null,
     string? SecurityDefinitionId = null,
     string? ReconciliationOutcome = null,
-    string? ApprovalId = null);
+    string? ApprovalId = null,
+    string? FinancialRecordExplorerId = null,
+    string? FinancialRecordHref = null);
 public sealed record ReportPackPublicationManifestDto(
     string ManifestId,
     string RetainedManifestPath,
     string EvidenceHash,
     string SignedOffBy,
     DateTimeOffset SignedOffAt,
-    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
+    ReportBrandingThemeDto? BrandingTheme = null);
 /// <summary>Request payload for publishing an approved report pack into retained evidence storage.</summary>
 public sealed record ReportPackPublishRequestDto(
     string SignedOffBy,
@@ -722,7 +1420,12 @@ public sealed record ReportPackPublishRequestDto(
     string ManifestId,
     string RetainedManifestPath,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
-    string? Note = null);
+    string? Note = null,
+    ReportBrandingThemeDto? BrandingTheme = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+/// <summary>Optional action-origin metadata for report-pack workflow commands that historically used an empty body.</summary>
+public sealed record ReportPackWorkflowActionRequestDto(
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 /// <summary>Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.</summary>
 public sealed record ReportPackRejectRequestDto(
     string Reason,
@@ -734,7 +1437,8 @@ public sealed record ReportPackCreateRequestDto(
     string FundAccountId,
     string Period,
     VersionedReportTemplateIdDto TemplateId,
-    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null);
+    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 /// <summary>Durable metadata captured when a published report pack is restated.</summary>
 public sealed record ReportPackRestatementMetadataDto(
     string ReasonCode,
@@ -753,7 +1457,8 @@ public sealed record ReportPackRestateRequestDto(
     string ReasonCode,
     Guid PriorVersionReportId,
     IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
-    string? Approver = null);
+    string? Approver = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 public sealed record ReportPackWorkflowRecordDto(
     Guid ReportId,
     string FundProfileId,
@@ -769,4 +1474,5 @@ public sealed record ReportPackWorkflowRecordDto(
     ReportPackRestatementMetadataDto? Restatement,
     IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
     ReportPackPublicationManifestDto? Publication = null,
-    ReportPackRejectionMetadataDto? Rejection = null);
+    ReportPackRejectionMetadataDto? Rejection = null,
+    ReportAccessPolicyDto? AccessPolicy = null);

@@ -15,7 +15,9 @@ import type {
   DataProviderRecord,
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
+  OperatorWorkflowHomeSummary,
   ReportingWorkspaceResponse,
+  WorkspaceWorkflowSummary,
   OperatorWorkItem,
   PortfolioWorkspaceResponse,
   ReconciliationBreakQueueItem,
@@ -306,6 +308,7 @@ export interface AppShellWorkspacePayload {
   data: DataWorkspaceResponse | null;
   accounting: AccountingWorkspaceResponse | null;
   reporting: ReportingWorkspaceResponse | null;
+  workflowSummary: OperatorWorkflowHomeSummary | null;
 }
 
 export type WorkspaceErrorMap = Partial<Record<WorkspaceKey, string>>;
@@ -355,7 +358,16 @@ export function buildAppShellViewState({
 }: BuildAppShellViewStateOptions): AppShellViewState {
   const activeWorkspace = getWorkspaceForPath(pathname);
   const failedItems = buildShellFailureItems(workspaceErrors, workflowError);
-  const hasAnyPayload = Object.values(payload).some(Boolean);
+  const hasAnyPayload = Boolean(
+    payload.session
+    || payload.overview
+    || payload.strategy
+    || payload.trading
+    || payload.portfolio
+    || payload.data
+    || payload.accounting
+    || payload.reporting
+  );
   const bootstrapFailed = !loading && !hasAnyPayload;
   const canRenderRoutes = !bootstrapFailed && (!loading || activeWorkspace.key === "accounting");
 
@@ -1064,7 +1076,8 @@ const emptyWorkflowContinuityStatusContext: WorkflowContinuityStatusContext = {
     portfolio: null,
     data: null,
     accounting: null,
-    reporting: null
+    reporting: null,
+    workflowSummary: null
   }
 };
 
@@ -1244,6 +1257,13 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         description: "Package approved accounting evidence into retained audit packets and report-ready outputs.",
         href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+      },
+      {
+        id: "close-support",
+        label: "Close Support",
+        description: "Review close checklists, period locks, governed reopen evidence, and retained close packages.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
       }
     ]
   }
@@ -1354,6 +1374,11 @@ function buildWorkflowContinuityStepStatus(
     return { label: "Loading", tone: "pending" };
   }
 
+  const financialOperationsStatus = buildFinancialOperationsWorkflowStepStatus(stepId, context);
+  if (financialOperationsStatus) {
+    return financialOperationsStatus;
+  }
+
   switch (stepId) {
     case "watchlist":
     case "quotes":
@@ -1384,6 +1409,8 @@ function buildWorkflowContinuityStepStatus(
     case "ledger":
     case "reconciliation":
       return buildReconciliationContinuityStatus(context);
+    case "close-support":
+      return buildCloseSupportContinuityStatus(context);
     case "produce-evidence":
     case "evidence":
     case "evidence-review":
@@ -1427,6 +1454,151 @@ const workflowContinuityWorkspaceErrors: Record<string, WorkspaceKey[]> = {
   "report-packs": ["reporting"],
   "governed-report": ["reporting"]
 };
+
+const financialOperationsStepOrder: Record<string, number> = {
+  "receive-activity": 0,
+  "match-records": 1,
+  "resolve-exceptions": 2,
+  "approve-results": 3,
+  "produce-evidence": 4,
+  "close-support": 5
+};
+
+function buildFinancialOperationsWorkflowStepStatus(
+  stepId: string,
+  context: WorkflowContinuityStatusContext
+): WorkflowContinuityStepStatus | null {
+  const stepIndex = financialOperationsStepOrder[stepId];
+  if (stepIndex === undefined) {
+    return null;
+  }
+
+  const summary = getAccountingWorkflowSummary(context.payload.workflowSummary);
+  if (!summary || !isFinancialOperationsWorkflowSummary(summary)) {
+    return null;
+  }
+
+  if (isFinancialOperationsEvidenceProduced(summary)) {
+    return {
+      label: stepId === "produce-evidence" ? "Produced" : "Complete",
+      tone: "ready"
+    };
+  }
+
+  const activeIndex = resolveFinancialOperationsActiveStepIndex(summary);
+  if (stepIndex < activeIndex) {
+    return { label: "Complete", tone: "ready" };
+  }
+
+  if (stepIndex > activeIndex) {
+    return { label: "Waiting", tone: "pending" };
+  }
+
+  return {
+    label: buildFinancialOperationsActiveStepLabel(stepId, summary),
+    tone: workflowSummaryToneToContinuityTone(summary.statusTone, summary.primaryBlocker)
+  };
+}
+
+function getAccountingWorkflowSummary(summary: OperatorWorkflowHomeSummary | null | undefined): WorkspaceWorkflowSummary | null {
+  return summary?.workspaces?.find((workspace) => workspace.workspaceId.toLowerCase() === "accounting") ?? null;
+}
+
+function isFinancialOperationsWorkflowSummary(summary: WorkspaceWorkflowSummary): boolean {
+  const sourceText = [
+    summary.statusLabel,
+    summary.statusDetail,
+    summary.nextAction?.label,
+    summary.primaryBlocker?.code,
+    summary.primaryBlocker?.label,
+    ...((summary.evidence ?? []).map((badge) => `${badge.label} ${badge.value}`))
+  ].join(" ").toLowerCase();
+
+  return sourceText.includes("financial operations") || sourceText.includes("core flow");
+}
+
+function isFinancialOperationsEvidenceProduced(summary: WorkspaceWorkflowSummary): boolean {
+  return normalizeWorkflowText(summary.primaryBlocker?.code).includes("evidence-produced")
+    || normalizeWorkflowText(summary.statusLabel).includes("evidence produced")
+    || normalizeWorkflowText(summary.nextAction?.label).includes("open evidence packet");
+}
+
+function resolveFinancialOperationsActiveStepIndex(summary: WorkspaceWorkflowSummary): number {
+  const nextAction = normalizeWorkflowText(summary.nextAction?.label);
+  if (nextAction.includes("receive activity")) return 0;
+  if (nextAction.includes("match records")) return 1;
+  if (nextAction.includes("resolve exceptions")) return 2;
+  if (nextAction.includes("approve results")) return 3;
+  if (nextAction.includes("close support") || nextAction.includes("close readiness") || nextAction.includes("evidence package")) return 5;
+  if (nextAction.includes("evidence packet") || nextAction.includes("produce evidence")) return 4;
+
+  const coreFlow = normalizeWorkflowText(getWorkflowEvidenceValue(summary, "Core flow"));
+  if (coreFlow.includes("receive activity")) return 0;
+  if (coreFlow.includes("match records")) return 1;
+  if (coreFlow.includes("resolve exceptions")) return 2;
+  if (coreFlow.includes("approve results")) return 3;
+  if (coreFlow.includes("produce evidence")) return 4;
+  if (coreFlow.includes("close support")) return 5;
+
+  const status = normalizeWorkflowText(summary.statusLabel);
+  if (status.includes("not started")) return 0;
+  if (status.includes("exception")) return 2;
+  if (status.includes("approval")) return 3;
+  if (status.includes("close readiness") || status.includes("evidence package")) return 5;
+  return 1;
+}
+
+function buildFinancialOperationsActiveStepLabel(stepId: string, summary: WorkspaceWorkflowSummary): string {
+  switch (stepId) {
+    case "receive-activity":
+      return normalizeWorkflowText(summary.statusLabel).includes("not started") ? "Start" : "Received";
+    case "match-records":
+      return "Match";
+    case "resolve-exceptions": {
+      const breakCount = getWorkflowEvidenceValue(summary, "Breaks");
+      return breakCount && breakCount !== "0" ? `${breakCount} breaks` : "Resolve";
+    }
+    case "approve-results": {
+      const approval = getWorkflowEvidenceValue(summary, "Approval");
+      return approval && approval !== "Approved" ? "Approval pending" : "Approve";
+    }
+    case "produce-evidence":
+      return "Evidence";
+    case "close-support": {
+      const status = normalizeWorkflowText(summary.statusLabel);
+      if (status.includes("evidence package")) return "Package review";
+      if (status.includes("close readiness")) return "Close blocked";
+
+      const periodLock = getWorkflowEvidenceValue(summary, "Period lock");
+      if (periodLock && periodLock !== "Not projected") return periodLock;
+
+      const close = getWorkflowEvidenceValue(summary, "Close");
+      return close && close !== "Pending" ? close : "Close review";
+    }
+    default:
+      return summary.nextAction?.label ?? "Review";
+  }
+}
+
+function getWorkflowEvidenceValue(summary: WorkspaceWorkflowSummary, label: string): string | null {
+  return summary.evidence?.find((badge) => badge.label.toLowerCase() === label.toLowerCase())?.value ?? null;
+}
+
+function normalizeWorkflowText(value: string | null | undefined): string {
+  return value?.trim().toLowerCase() ?? "";
+}
+
+function workflowSummaryToneToContinuityTone(
+  statusTone: string | null | undefined,
+  blocker: WorkspaceWorkflowSummary["primaryBlocker"]
+): AppShellWorkflowContinuityStatusTone {
+  const normalizedTone = normalizeWorkflowText(statusTone);
+  if (normalizedTone.includes("success")) return "ready";
+  if (normalizedTone.includes("danger") || normalizedTone.includes("error")) return "blocked";
+  if (blocker?.isBlocking && normalizedTone.includes("warning")) return "review";
+  if (normalizedTone.includes("warning") || normalizedTone.includes("info")) return "review";
+  return blocker?.isBlocking ? "review" : "pending";
+}
 
 function buildTrustedDataContinuityStatus({ payload }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
   const data = payload.data;
@@ -1540,6 +1712,12 @@ function buildGovernedReportContinuityStatus({ payload }: WorkflowContinuityStat
   return distributions.length > 0
     ? { label: pendingCount > 0 ? `${pendingCount} pending` : `${distributions.length} recipients`, tone: pendingCount > 0 ? "review" : "ready" }
     : { label: "Needs recipient", tone: "review" };
+}
+
+function buildCloseSupportContinuityStatus({ payload }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
+  return payload.accounting
+    ? { label: "Review", tone: "review" }
+    : { label: "Waiting", tone: "pending" };
 }
 
 interface OperatorFocusCandidate extends AppShellOperatorFocusItem {
@@ -1929,17 +2107,19 @@ function buildPortfolioFocusItems({ payload }: WorkflowContinuityStatusContext):
   })];
 }
 
-function buildAccountingFocusItems({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
+function buildAccountingFocusItems(context: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {
+  const { payload } = context;
   const accounting = payload.accounting;
-  if (!accounting) {
-    return [];
-  }
+  const workflowSummaryItem = buildAccountingWorkflowSummaryFocusItem(context);
+  const reviewedAutomationItem = buildReviewedAutomationFocusItem(context);
 
   return [
-    ...(accounting.breakQueue ?? [])
+    workflowSummaryItem,
+    reviewedAutomationItem,
+    ...((accounting?.breakQueue ?? [])
       .map((item, index) => buildOperatorFocusCandidateFromBreak(item, index))
-      .filter((item): item is OperatorFocusCandidate => Boolean(item)),
-    ...(accounting.reconciliationQueue ?? [])
+      .filter((item): item is OperatorFocusCandidate => Boolean(item))),
+    ...((accounting?.reconciliationQueue ?? [])
       .filter((row) => row.openBreakCount > 0)
       .map((row, index) => buildOperatorFocusCandidate({
         id: `reconciliation-run:${row.runId}`,
@@ -1951,8 +2131,8 @@ function buildAccountingFocusItems({ payload }: WorkflowContinuityStatusContext)
         tone: row.reconciliationStatus === "SecurityCoverageOpen" ? "blocked" : "review",
         sourcePriority: 13,
         sourceIndex: index
-      })),
-    accounting.cashFlow?.tone === "danger" || accounting.cashFlow?.tone === "warning"
+      }))),
+    accounting?.cashFlow?.tone === "danger" || accounting?.cashFlow?.tone === "warning"
       ? buildOperatorFocusCandidate({
           id: "cash-flow-variance",
           label: "Cash-flow variance open",
@@ -1966,6 +2146,54 @@ function buildAccountingFocusItems({ payload }: WorkflowContinuityStatusContext)
         })
       : null
   ].filter((item): item is OperatorFocusCandidate => Boolean(item));
+}
+
+function buildAccountingWorkflowSummaryFocusItem({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate | null {
+  const summary = getAccountingWorkflowSummary(payload.workflowSummary);
+  if (!summary || !isFinancialOperationsWorkflowSummary(summary) || !summary.primaryBlocker?.isBlocking) {
+    return null;
+  }
+
+  return buildOperatorFocusCandidate({
+    id: `financial-operations:${summary.primaryBlocker.code}`,
+    label: summary.primaryBlocker.label,
+    detail: summary.primaryBlocker.detail || summary.statusDetail,
+    route: workflowTargetPath(summary.nextAction?.targetPageTag, summary.workspaceId) ?? WORKSTATION_ROUTE_CATALOG.accounting,
+    workspaceLabel: summary.workspaceTitle || "Accounting",
+    actionLabel: summary.nextAction?.label || "Open Accounting",
+    tone: workflowSummaryToneToContinuityTone(summary.statusTone, summary.primaryBlocker),
+    sourcePriority: 11,
+    sourceIndex: 0
+  });
+}
+
+function buildReviewedAutomationFocusItem({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate | null {
+  const summary = getAccountingWorkflowSummary(payload.workflowSummary);
+  if (!summary || !isFinancialOperationsWorkflowSummary(summary) || summary.primaryBlocker?.isBlocking) {
+    return null;
+  }
+
+  const automation = summary.evidence?.find((badge) => normalizeWorkflowText(badge.label) === "reviewed automation");
+  if (!automation || !isReviewTone(automation.tone)) {
+    return null;
+  }
+
+  return buildOperatorFocusCandidate({
+    id: "financial-operations:reviewed-automation",
+    label: "Reviewed automation requires operator review",
+    detail: `${automation.value}; automation can suggest, classify, extract, match, summarize, draft, and flag, but cannot approve, post, publish, release payments, or erase evidence.`,
+    route: workflowTargetPath(summary.nextAction?.targetPageTag, summary.workspaceId) ?? WORKSTATION_ROUTE_CATALOG.accounting,
+    workspaceLabel: summary.workspaceTitle || "Accounting",
+    actionLabel: summary.nextAction?.label || "Review automation",
+    tone: "review",
+    sourcePriority: 12,
+    sourceIndex: 0
+  });
+}
+
+function isReviewTone(tone: string | null | undefined): boolean {
+  const normalized = normalizeWorkflowText(tone);
+  return normalized === "warning" || normalized === "review" || normalized === "reviewrequired";
 }
 
 function buildReportingFocusItems({ payload }: WorkflowContinuityStatusContext): OperatorFocusCandidate[] {

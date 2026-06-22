@@ -70,6 +70,17 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_manifest_file(path: Path) -> str:
+    content = path.read_bytes()
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        return hashlib.sha256(content).hexdigest()
+
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -249,11 +260,14 @@ def generated_header(generator: str, schema_versions: Sequence[str], inputs: Seq
 
 
 def write_manifest(path: Path, generator: str, inputs: Sequence[Path], outputs: Sequence[Path], root: Path) -> bool:
+    def sort_key(item: Path) -> str:
+        return repo_path(item, root)
+
     payload = {
         "schema": {"id": "meridian.generated-manifest", "version": "1.0.0"},
         "generator": {"name": normalize_path(generator), "version": "1.0.0"},
-        "inputs": [{"path": repo_path(item, root), "sha256": sha256_file(item)} for item in sorted(inputs)],
-        "outputs": [{"path": repo_path(item, root), "sha256": sha256_file(item)} for item in sorted(outputs) if item.exists()],
+        "inputs": [{"path": repo_path(item, root), "sha256": sha256_manifest_file(item)} for item in sorted(inputs, key=sort_key)],
+        "outputs": [{"path": repo_path(item, root), "sha256": sha256_manifest_file(item)} for item in sorted(outputs, key=sort_key) if item.exists()],
     }
     return write_text_if_changed(path, json.dumps(payload, indent=2, sort_keys=True))
 

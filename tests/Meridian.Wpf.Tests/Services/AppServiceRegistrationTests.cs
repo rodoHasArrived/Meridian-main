@@ -1,11 +1,14 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Models;
@@ -43,6 +46,8 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
             serviceProvider.GetRequiredService<WorkspaceStateTokenStore>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ConnectionService>().Should().BeSameAs(ConnectionService.Instance);
+            serviceProvider.GetRequiredService<IRemoteWorkstationClient>().Should().BeSameAs(WpfRemoteWorkstationClient.Instance);
+            serviceProvider.GetRequiredService<WpfRemoteWorkstationClient>().Should().BeSameAs(WpfRemoteWorkstationClient.Instance);
             serviceProvider.GetRequiredService<LoggingService>().Should().BeSameAs(LoggingService.Instance);
             serviceProvider.GetRequiredService<StatusService>().Should().BeSameAs(StatusService.Instance);
             serviceProvider.GetRequiredService<StrategyRunWorkspaceService>().Should().NotBeNull();
@@ -74,8 +79,11 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<ReconciliationReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ISecurityAssetProfileWorkflowClient>()
                 .Should().BeOfType<SecurityAssetProfileWorkflowClient>();
+            serviceProvider.GetRequiredService<IOperationsControlCenterClient>()
+                .Should().BeOfType<OperationsControlCenterClient>();
             serviceProvider.GetRequiredService<FundOperationsWorkspaceReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<IAccountingProjectionQueryService>().Should().BeOfType<AccountingProjectionQueryService>();
+            serviceProvider.GetRequiredService<IPrivateCapitalCloseCockpitService>().Should().BeOfType<PrivateCapitalCloseCockpitService>();
             serviceProvider.GetRequiredService<AccountingCloseViewModel>().Should().NotBeNull();
         });
     }
@@ -256,6 +264,21 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<ITradingParametersBackfillService>().Should().BeOfType<TradingParametersBackfillService>();
             ResolveRequired<SecurityMasterPage>(serviceProvider).Should().NotBeNull();
         });
+    }
+
+    [Fact]
+    public void AppStartup_ShouldStartGenericHostServicesBeforeWpfBackgroundScheduler()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\App.xaml.cs"));
+
+        source.Should().Contain("await StartHostServicesAsync(ct);");
+        source.Should().Contain("await _host.StartAsync(ct).ConfigureAwait(false);");
+        source.Should().Contain("WPF hosted services started");
+        source.IndexOf("await StartHostServicesAsync(ct);", StringComparison.Ordinal)
+            .Should().BeLessThan(
+                source.IndexOf("await InitializeBackgroundServicesAsync();", StringComparison.Ordinal),
+                "DI-hosted database workers should start before WPF-local scheduler services");
+        source.Should().Contain("host.StopAsync(cts.Token)");
     }
 
     private static ServiceProvider BuildServiceProvider()

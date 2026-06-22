@@ -3,10 +3,24 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
+  AccountingMigrationRunArtifactList,
+  AccountingProductionCertificationProfile,
+  AccountingProductionCertificationProfileUpsertRequest,
+  AccountingProductionReadiness,
+  AccountingProductionReadinessRequest,
+  AccountingTenantAdministrationProfile,
+  AccountingTenantAdministrationProfileUpsertRequest,
+  AccountingSystemExportPackageRequest,
   AccountingSystemImportDetail,
   AccountingSystemImportRequest,
+  AccountingSystemMappingProfileUpsertRequest,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
+  AccountingReportPackageBundle,
+  AccountingReportPackageRequest,
+  CertifyAccountingReportPackageRequest,
+  CertifyAccountingSystemExportPackageRequest,
+  ReportExportArtifactManifest,
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   CellExecuteRequest,
@@ -21,7 +35,13 @@ import type {
   ChiefOfStaffSessionQuery,
   ChiefOfStaffSessionSummary,
   ChiefOfStaffTraceExportRequest,
+  ClosePeriodPlan,
   CorporateAction,
+  CreateLateAdjustmentRequest,
+  ReviewLateAdjustmentRequest,
+  ExternalGlExportPackage,
+  ExternalGlExportPackageManifest,
+  ExternalGlMappingProfile,
   DataFetchRequest,
   DataFetchResult,
   DataUploadPreviewResult,
@@ -37,12 +57,22 @@ import type {
   EvidenceTemplate,
   EvidenceVaultIdentity,
   EvidenceVaultLookupRequest,
+  EvidenceVaultRequestListEntry,
+  EvidenceVaultRequestListQuery,
+  ExtensibilityActivationReadiness,
+  ExtensibilityCatalog,
+  FinancialRecordExplorerDto,
+  FinancialRecordExplorerId,
+  FinancialRecordExplorerSavedViewDto,
+  FinancialRecordExplorerSavedViewSaveRequestDto,
+  FinancialRecordExplorerSelectedRecordDto,
   ExportAnalysisResult,
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
   AccountingWorkspaceResponse,
   AssetOperationsDetail,
   ReportingWorkspaceResponse,
+  SignOffCloseTaskRequest,
   InvestmentAccountingTransactionLabPreview,
   InvestmentAccountingTransactionLabRequest,
   InstrumentPassport,
@@ -55,6 +85,9 @@ import type {
   OperatorInbox,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  OperationsAssignBreakCaseRequest,
+  OperationsBreakCase,
+  OperatorWorkflowHomeSummary,
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
@@ -70,6 +103,36 @@ import type {
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
+  ManualCsvProviderIntegrationDryRunRequest,
+  ProviderIntegrationActivationReadiness,
+  ProviderIntegrationActivationRequest,
+  ProviderIntegrationActivationResult,
+  ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationDryRunResult,
+  ProviderIntegrationManifest,
+  ProviderIntegrationOpenApiImportRequest,
+  ProviderIntegrationOpenApiImportResult,
+  ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantineReplayRequest,
+  ProviderIntegrationQuarantineReplayResult,
+  ProviderIntegrationQuarantineResolutionRequest,
+  ProviderIntegrationQuarantineResolutionResult,
+  ProviderIntegrationQuarantineReview,
+  ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationReconciliationHandoffRequest,
+  ProviderIntegrationReconciliationHandoffResult,
+  ProviderIntegrationRestDryRunRequest,
+  ProviderIntegrationRunDueSyncRequest,
+  ProviderIntegrationRunDueSyncResult,
+  ProviderIntegrationSchemaDriftCheckRequest,
+  ProviderIntegrationSchemaDriftCheckResult,
+  ProviderIntegrationSetupSaveRequest,
+  ProviderIntegrationSetupSaveResult,
+  ProviderIntegrationStagingIdentityResolutionPreview,
+  ProviderIntegrationStagingReview,
+  ProviderIntegrationSyncPlan,
+  ProviderIntegrationSyncRunHistory,
+  ProviderIntegrationTemplateCatalogEntry,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -86,6 +149,9 @@ import type {
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
+  TenantTemplateActivationRequest,
+  TenantTemplateActivationResult,
+  TenantTemplateConfigurationBundle,
   StrategyBriefingResponse,
   StrategyRunSummaryApiRecord,
   StrategyWorkspaceResponse,
@@ -141,10 +207,28 @@ import type {
   OperationsApprovalPolicyMatrix,
   OperationsApprovalPolicyRuleUpsertRequest,
   OperationsApprovalPolicyRuleUpsertResult,
+  OperationsChecklistAcknowledgeRequest,
   OperationsCloseCalendar,
   OperationsCloseCalendarItemUpsertRequest,
   OperationsCloseCalendarItemUpsertResult,
+  OperationsCloseChecklistTask,
+  OperationsCloseReadiness,
+  OperationsCloseWorkflowRequest,
+  OperationsGatePostureRequest,
+  OperationsLedgerDraftRequest,
+  OperationsLedgerPostRequest,
+  OperationsLedgerPreview,
+  OperationsLedgerValidationRequest,
+  OperationsReconciliationRunRequest,
+  OperationsReopenWorkflowRequest,
   OperationsRejectWorkflowRequest,
+  OperationsResolveBreakCaseRequest,
+  OperationsSecurityMasterOverrideApprovalRequest,
+  OperationsSecurityMasterResolveRequest,
+  OperationsStartWorkflowRequest,
+  OperationsSubmitApprovalRequest,
+  OperationsTimelineEntry,
+  OperationsTransitionRequest,
   OperationsTransitionResult,
   PlaidLinkTokenRequest,
   PlaidLinkTokenResponse,
@@ -154,12 +238,44 @@ import type {
   RolePermissionCatalog,
   RolePermissionProfileUpsertRequest,
   RolePermissionProfileUpsertResult,
+  UserAccount,
+  UserAccountAuditEvent,
+  UserAccountDisableRequest,
+  UserAccountMutationResult,
+  UserAccountUpsertRequest,
+  UserAccessAssignment,
+  UserAccessAssignmentCreateRequest,
+  UserAccessAssignmentMutationResult,
+  UserAccessAssignmentQuery,
+  UserAccessAssignmentRevokeRequest,
+  UserPasswordResetRequest,
+  UserSessionRevokeRequest,
+  UserSessionRevokeResult,
+  AttachManualJournalEntryEvidenceRequest,
+  JournalEntryLifecycleActionRequest,
+  JournalEntryLifecycleActionResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
+  CapitalAccountWorkbench,
+  PrivateCapitalActivityProjection,
+  PrivateCapitalCapitalAccountSubledger,
+  PrivateCapitalCloseCockpit,
+  PrivateCapitalFundEventCommandCenter,
+  PrivateCapitalFundEventLedgerRecord,
+  PrivateCapitalReportOutput,
+  FundReportPackGenerateRequest,
+  FundReportPackPreview,
+  FundReportPackPreviewRequest,
+  FundReportPackSnapshot,
   ReportPackDeliveryAttempt,
   ReportPackDeliveryFailureRequest,
   ReportPackDeliveryHistory,
   ReportPackDeliveryRequest,
+  ReportTemplateDecisionRequest,
+  ReportTemplateDraftRequest,
+  ReportTemplateGovernanceRecord,
+  RenderReportTemplateRequest,
+  RenderReportTemplateResponse,
   ReportingDueScheduleRunResult,
   ReportingRunRequest,
   ReportingRunResult,
@@ -168,10 +284,40 @@ import type {
   ReportingScheduleUpsertRequest,
   SaveManualJournalEntryDraftRequest,
   SubmitManualJournalEntryApprovalRequest,
-  ValidateManualJournalEntryDraftRequest
+  ValidateManualJournalEntryDraftRequest,
+  AdminCleanupExecuteResponse,
+  AdminCleanupPreviewResponse,
+  AdminErrorCodesResponse,
+  AdminMaintenanceHistoryResponse,
+  AdminMaintenanceRunRequest,
+  AdminMaintenanceScheduleResponse,
+  AdminQuickCheckResponse,
+  AdminRetentionResponse,
+  AdminSelfTestResponse,
+  AdminShowConfigResponse,
+  AdminStoragePermissionsResponse,
+  AdminStorageTiersResponse,
+  AdminStorageUsageResponse,
+  DataPackageContentsResponse,
+  DataPackageCreateRequest,
+  DataPackageListResponse,
+  DataPackageResult,
+  DataPackageValidateRequest,
+  DataPackageValidationResponse,
+  MaintenanceExecution,
+  MaintenanceScheduleHistoryResponse,
+  MaintenanceSchedulesResponse
 } from "@/types";
 import {
   AUTH_API_ENDPOINTS,
+  ADMIN_OPERATIONS_API_ENDPOINTS,
+  DIAGNOSTICS_API_ENDPOINTS,
+  MAINTENANCE_API_ENDPOINTS,
+  PACKAGING_API_ENDPOINTS,
+  adminMaintenanceHistoryEndpoint,
+  adminMaintenanceRunEndpoint,
+  adminRetentionDeleteEndpoint,
+  adminStorageMigrateEndpoint,
   ACCOUNTING_SYSTEM_API_ENDPOINTS,
   BACKFILL_API_ENDPOINTS,
   EXECUTION_API_ENDPOINTS,
@@ -180,6 +326,7 @@ import {
   PORTFOLIO_API_ENDPOINTS,
   PLAID_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
+  PROVIDER_INTEGRATION_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUALITY_API_ENDPOINTS,
@@ -190,6 +337,7 @@ import {
   SYMBOL_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
+  buildReferenceDataWorkbenchEndpoints,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -212,8 +360,26 @@ import {
   portfolioRunCashFlowsEndpoint,
   portfolioSymbolExposureEndpoint,
   promotionEvaluateEndpoint,
+  packagingContentsEndpoint,
+  packagingListEndpoint,
   providerCredentialEndpoint,
   providerVerifyEndpoint,
+  maintenanceScheduleDisableEndpoint,
+  maintenanceScheduleEnableEndpoint,
+  maintenanceScheduleEndpoint,
+  maintenanceScheduleHistoryEndpoint,
+  maintenanceScheduleRunEndpoint,
+  workstationProviderIntegrationConnectionMonitorEndpoint,
+  workstationProviderIntegrationConnectionRunDueSyncEndpoint,
+  workstationProviderIntegrationConnectionSyncPlanEndpoint,
+  workstationProviderIntegrationConnectionSyncRunsEndpoint,
+  workstationProviderIntegrationIdentityResolutionEndpoint,
+  workstationProviderIntegrationPromotionReadinessEndpoint,
+  workstationProviderIntegrationQuarantineReviewEndpoint,
+  workstationProviderIntegrationReadinessEndpoint,
+  workstationProviderIntegrationReconciliationHandoffHistoryEndpoint,
+  workstationProviderIntegrationStagingReviewEndpoint,
+  workstationProviderIntegrationTemplateEndpoint,
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
@@ -241,6 +407,9 @@ import {
   replaySessionActionEndpoint,
   reportingPackDeliveriesEndpoint,
   reportingPackDeliveryFailuresEndpoint,
+  reportingTemplateApproveEndpoint,
+  reportingTemplateRejectEndpoint,
+  reportingTemplateSubmitEndpoint,
   reportingSchedulePauseEndpoint,
   reportingScheduleResumeEndpoint,
   reportingScheduleRunNowEndpoint,
@@ -267,13 +436,41 @@ import {
   workstationEvidenceGraphEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
+  workstationExtensibilityTenantTemplateActivateEndpoint,
+  workstationExtensibilityTenantTemplateActivationsEndpoint,
+  workstationExtensibilityTenantTemplateEndpoint,
+  workstationExtensibilityTenantTemplateReadinessEndpoint,
   workstationAssetOperationsEndpoint,
+  workstationFinancialRecordExplorerEndpoint,
+  workstationFinancialRecordExplorerRecordEndpoint,
+  workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
+  workstationOperationsContinuityApprovalSubmitEndpoint,
+  workstationOperationsContinuityBrokerImportEndpoint,
+  workstationOperationsContinuityBrokerNormalizeEndpoint,
+  workstationOperationsContinuityBreakAssignEndpoint,
+  workstationOperationsContinuityBreakResolveEndpoint,
+  workstationOperationsContinuityBreaksEndpoint,
+  workstationOperationsContinuityChecklistEndpoint,
+  workstationOperationsContinuityChecklistAcknowledgeEndpoint,
+  workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
   workstationOperationsContinuityCloseCalendarEndpoint,
+  workstationOperationsContinuityCloseReadinessEndpoint,
+  workstationOperationsContinuityLedgerDraftEndpoint,
+  workstationOperationsContinuityLedgerPostEndpoint,
+  workstationOperationsPrivateCapitalCloseCockpitEndpoint,
+  workstationOperationsContinuityLedgerPreviewEndpoint,
+  workstationOperationsContinuityLedgerValidateEndpoint,
+  workstationOperationsContinuityPostureRefreshEndpoint,
+  workstationOperationsContinuityReconciliationRunEndpoint,
+  workstationOperationsContinuityReopenEndpoint,
+  workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint,
+  workstationOperationsContinuitySecurityMasterResolveEndpoint,
+  workstationOperationsContinuityTimelineEndpoint,
   workstationChiefOfStaffDecisionEndpoint,
   workstationChiefOfStaffHealthEndpoint,
   workstationChiefOfStaffSessionEndpoint,
@@ -306,9 +503,13 @@ import {
   workstationWorkflowSummaryEndpoint,
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
-  workstationWorkflowPresetUsedEndpoint
+  workstationWorkflowPresetUsedEndpoint,
+  type LedgerJournalQueryOptions,
+  type LedgerTrialBalanceQueryOptions,
+  type ReferenceDataEndpointDefinition,
+  type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
-import { createApiErrorFromResponseBody } from "@/lib/api-errors";
+import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
 const csrfCookieName = "mdc-csrf";
@@ -326,6 +527,175 @@ export function resetDevelopmentFixtureUsage() {
 
 export function hasDevelopmentFixtureUsage() {
   return developmentFixtureUsage;
+}
+
+export type ReferenceDataEndpointProbeStatus = "Ready" | "Empty" | "Missing" | "Blocked" | "Error" | "Deferred";
+
+export interface ReferenceDataEndpointProbeResult extends ReferenceDataEndpointDefinition {
+  status: ReferenceDataEndpointProbeStatus;
+  statusCode: number | null;
+  durationMs: number | null;
+  responseCount: number | null;
+  responseSummary: string;
+  responsePreview: string | null;
+  errorSummary: string | null;
+  errorDetails: string[];
+}
+
+export interface ReferenceDataWorkbenchCoverage {
+  requestedAtUtc: string;
+  endpoints: ReferenceDataEndpointProbeResult[];
+}
+
+export async function getReferenceDataWorkbenchCoverage(
+  seed: ReferenceDataWorkbenchEndpointSeed,
+  options: ApiRequestOptions = {}
+): Promise<ReferenceDataWorkbenchCoverage> {
+  const endpoints = buildReferenceDataWorkbenchEndpoints(seed);
+  const results = await Promise.all(endpoints.map((endpoint) => probeReferenceDataEndpoint(endpoint, options)));
+
+  return {
+    requestedAtUtc: new Date().toISOString(),
+    endpoints: results
+  };
+}
+
+async function probeReferenceDataEndpoint(
+  endpoint: ReferenceDataEndpointDefinition,
+  options: ApiRequestOptions
+): Promise<ReferenceDataEndpointProbeResult> {
+  if (!endpoint.probe) {
+    return {
+      ...endpoint,
+      status: "Deferred",
+      statusCode: null,
+      durationMs: null,
+      responseCount: null,
+      responseSummary: endpoint.requestLabel,
+      responsePreview: null,
+      errorSummary: null,
+      errorDetails: []
+    };
+  }
+
+  const startedAt = Date.now();
+  try {
+    const payload = await getJson<unknown>(endpoint.path, options);
+    const summary = summarizeReferenceDataPayload(payload);
+
+    return {
+      ...endpoint,
+      status: summary.count > 0 ? "Ready" : "Empty",
+      statusCode: 200,
+      durationMs: Date.now() - startedAt,
+      responseCount: summary.count,
+      responseSummary: summary.summary,
+      responsePreview: previewReferenceDataPayload(payload),
+      errorSummary: null,
+      errorDetails: []
+    };
+  } catch (error) {
+    const durationMs = Date.now() - startedAt;
+    if (isApiError(error)) {
+      return {
+        ...endpoint,
+        status: classifyReferenceDataApiError(error.status),
+        statusCode: error.status,
+        durationMs,
+        responseCount: null,
+        responseSummary: `Endpoint returned ${error.status}.`,
+        responsePreview: null,
+        errorSummary: error.detail || error.title || `Endpoint returned ${error.status}`,
+        errorDetails: buildReferenceDataApiErrorDetails(error)
+      };
+    }
+
+    const message = error instanceof Error && error.message.trim() ? error.message : "Reference endpoint probe failed.";
+    return {
+      ...endpoint,
+      status: "Error",
+      statusCode: null,
+      durationMs,
+      responseCount: null,
+      responseSummary: message,
+      responsePreview: null,
+      errorSummary: message,
+      errorDetails: []
+    };
+  }
+}
+
+function summarizeReferenceDataPayload(payload: unknown): { count: number; summary: string } {
+  if (payload === null || payload === undefined) {
+    return { count: 0, summary: "No payload returned." };
+  }
+
+  if (Array.isArray(payload)) {
+    return {
+      count: payload.length,
+      summary: payload.length > 0 ? `${payload.length} records returned.` : "No records returned."
+    };
+  }
+
+  if (typeof payload === "object") {
+    const keys = Object.keys(payload as Record<string, unknown>);
+    return {
+      count: keys.length > 0 ? 1 : 0,
+      summary: keys.length > 0 ? `${keys.length} fields returned.` : "Empty object returned."
+    };
+  }
+
+  return { count: 1, summary: "Scalar response returned." };
+}
+
+function previewReferenceDataPayload(payload: unknown): string | null {
+  if (payload === null || payload === undefined) {
+    return null;
+  }
+
+  const previewPayload = Array.isArray(payload) ? payload.slice(0, 3) : payload;
+  try {
+    const preview = JSON.stringify(previewPayload, null, 2);
+    return preview.length > 1600 ? `${preview.slice(0, 1600)}...` : preview;
+  } catch {
+    return String(previewPayload).slice(0, 1600);
+  }
+}
+
+function classifyReferenceDataApiError(status: number): ReferenceDataEndpointProbeStatus {
+  if (status === 401 || status === 403) {
+    return "Blocked";
+  }
+
+  if (status === 404) {
+    return "Missing";
+  }
+
+  return "Error";
+}
+
+function buildReferenceDataApiErrorDetails(error: { path: string; status: number; title: string | null; detail: string | null; responseBody: string | null; validationIssues: Array<{ label: string; messages: string[] }> }): string[] {
+  const details: string[] = [`Endpoint returned ${error.status} for ${error.path}.`];
+
+  if (error.title && error.title !== error.detail) {
+    details.push(error.title);
+  }
+
+  if (error.detail) {
+    details.push(error.detail);
+  }
+
+  for (const issue of error.validationIssues) {
+    for (const message of issue.messages) {
+      details.push(`${issue.label}: ${message}`);
+    }
+  }
+
+  if (details.length === 1 && error.responseBody) {
+    details.push(error.responseBody);
+  }
+
+  return details;
 }
 
 async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -565,6 +935,117 @@ async function getDevelopmentSearchFallback(query: string, take: number, activeO
   return searchDevSecurityMasterEntries(query, take, activeOnly);
 }
 
+export function getAdminMaintenanceSchedule(options: ApiRequestOptions = {}) {
+  return getJson<AdminMaintenanceScheduleResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.maintenanceSchedule, options);
+}
+
+export function runAdminMaintenance(request: AdminMaintenanceRunRequest = {}, options: ApiRequestOptions = {}) {
+  return postJson<MaintenanceExecution>(ADMIN_OPERATIONS_API_ENDPOINTS.maintenanceRun, request, options);
+}
+
+export function getAdminMaintenanceRun(runId: string, options: ApiRequestOptions = {}) {
+  return getJson<MaintenanceExecution>(adminMaintenanceRunEndpoint(runId), options);
+}
+
+export function getAdminMaintenanceHistory(limit = 20, options: ApiRequestOptions = {}) {
+  return getJson<AdminMaintenanceHistoryResponse>(adminMaintenanceHistoryEndpoint(limit), options);
+}
+
+export function getAdminStorageTiers(options: ApiRequestOptions = {}) {
+  return getJson<AdminStorageTiersResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.storageTiers, options);
+}
+
+export function migrateAdminStorage(targetTier: string, options: ApiRequestOptions = {}) {
+  return postJson<{ targetTier: string; plan: Record<string, unknown>; timestamp?: string }>(adminStorageMigrateEndpoint(targetTier), undefined, options);
+}
+
+export function getAdminStorageUsage(options: ApiRequestOptions = {}) {
+  return getJson<AdminStorageUsageResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.storageUsage, options);
+}
+
+export function getAdminRetention(options: ApiRequestOptions = {}) {
+  return getJson<AdminRetentionResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.retention, options);
+}
+
+export function deleteAdminRetentionPolicy(policyId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<{ policyId: string; deleted: boolean; timestamp?: string }>(adminRetentionDeleteEndpoint(policyId), options);
+}
+
+export function applyAdminRetention(options: ApiRequestOptions = {}) {
+  return postJson<Record<string, unknown>>(ADMIN_OPERATIONS_API_ENDPOINTS.retentionApply, undefined, options);
+}
+
+export function getAdminCleanupPreview(options: ApiRequestOptions = {}) {
+  return getJson<AdminCleanupPreviewResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.cleanupPreview, options);
+}
+
+export function executeAdminCleanup(options: ApiRequestOptions = {}) {
+  return postJson<AdminCleanupExecuteResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.cleanupExecute, undefined, options);
+}
+
+export function getAdminStoragePermissions(options: ApiRequestOptions = {}) {
+  return getJson<AdminStoragePermissionsResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.storagePermissions, options);
+}
+
+export function runAdminSelftest(options: ApiRequestOptions = {}) {
+  return postJson<AdminSelfTestResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.selftest, undefined, options);
+}
+
+export function getAdminErrorCodes(options: ApiRequestOptions = {}) {
+  return getJson<AdminErrorCodesResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.errorCodes, options);
+}
+
+export function getAdminShowConfig(options: ApiRequestOptions = {}) {
+  return getJson<AdminShowConfigResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.showConfig, options);
+}
+
+export function getAdminQuickCheck(options: ApiRequestOptions = {}) {
+  return getJson<AdminQuickCheckResponse>(ADMIN_OPERATIONS_API_ENDPOINTS.quickCheck, options);
+}
+
+export function getDiagnosticsQuickCheck(options: ApiRequestOptions = {}) {
+  return getJson<AdminQuickCheckResponse>(DIAGNOSTICS_API_ENDPOINTS.quickCheck, options);
+}
+
+export function getMaintenanceSchedules(options: ApiRequestOptions = {}) {
+  return getJson<MaintenanceSchedulesResponse>(MAINTENANCE_API_ENDPOINTS.schedules, options);
+}
+
+export function getMaintenanceSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return getJson<MaintenanceSchedulesResponse>(maintenanceScheduleEndpoint(scheduleId), options);
+}
+
+export function enableMaintenanceSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<MaintenanceSchedulesResponse>(maintenanceScheduleEnableEndpoint(scheduleId), undefined, options);
+}
+
+export function disableMaintenanceSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<MaintenanceSchedulesResponse>(maintenanceScheduleDisableEndpoint(scheduleId), undefined, options);
+}
+
+export function runMaintenanceSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<MaintenanceExecution>(maintenanceScheduleRunEndpoint(scheduleId), undefined, options);
+}
+
+export function getMaintenanceScheduleHistory(scheduleId: string, limit = 20, options: ApiRequestOptions = {}) {
+  return getJson<MaintenanceScheduleHistoryResponse>(maintenanceScheduleHistoryEndpoint(scheduleId, limit), options);
+}
+
+export function listDataPackages(directory?: string | null, options: ApiRequestOptions = {}) {
+  return getJson<DataPackageListResponse>(packagingListEndpoint(directory), options);
+}
+
+export function createDataPackage(request: DataPackageCreateRequest, options: ApiRequestOptions = {}) {
+  return postJson<DataPackageResult>(PACKAGING_API_ENDPOINTS.create, request, options);
+}
+
+export function validateDataPackage(request: DataPackageValidateRequest, options: ApiRequestOptions = {}) {
+  return postJson<DataPackageValidationResponse>(PACKAGING_API_ENDPOINTS.validate, request, options);
+}
+
+export function getDataPackageContents(packagePath: string, options: ApiRequestOptions = {}) {
+  return getJson<DataPackageContentsResponse>(packagingContentsEndpoint(packagePath), options);
+}
 export function getSession(options: ApiRequestOptions = {}) {
   return getJson<SessionInfo>(WORKSTATION_API_ENDPOINTS.session, options);
 }
@@ -590,13 +1071,15 @@ export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOpti
   return getJson<OperatorInbox>(workstationOperatorInboxEndpoint(fundAccountId), options);
 }
 
-export function getWorkstationWorkflowSummary(options: {
+export function getWorkstationWorkflowSummary(options: ApiRequestOptions & {
   hasOperatingContext?: boolean;
   operatingContext?: string;
   fundProfileId?: string;
+  fundAccountId?: string;
   fundDisplayName?: string;
 } = {}) {
-  return getJson<unknown>(workstationWorkflowSummaryEndpoint(options));
+  const { signal, ...queryOptions } = options;
+  return getJson<OperatorWorkflowHomeSummary>(workstationWorkflowSummaryEndpoint(queryOptions), { signal });
 }
 
 export function getWorkflowLibrary(options: ApiRequestOptions = {}) {
@@ -611,6 +1094,51 @@ export function getFeatureCapabilities(options: ApiRequestOptions = {}) {
   return getJson<FeatureCapabilitySettingsResponse>(WORKSTATION_API_ENDPOINTS.featureCapabilities, options);
 }
 
+export function getExtensibilityCatalog(options: ApiRequestOptions = {}) {
+  return getJson<ExtensibilityCatalog>(WORKSTATION_API_ENDPOINTS.extensibilityCatalog, options);
+}
+
+export function listExtensibilityTenantTemplates(options: ApiRequestOptions = {}) {
+  return getJson<TenantTemplateConfigurationBundle[]>(WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplates, options);
+}
+
+export function saveExtensibilityTenantTemplate(
+  tenantTemplate: TenantTemplateConfigurationBundle,
+  options: ApiRequestOptions = {}
+) {
+  return putJson<TenantTemplateConfigurationBundle>(
+    workstationExtensibilityTenantTemplateEndpoint(tenantTemplate.tenantTemplateId),
+    tenantTemplate,
+    options
+  );
+}
+
+export function activateExtensibilityTenantTemplate(
+  tenantTemplateId: string,
+  request: TenantTemplateActivationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<TenantTemplateActivationResult>(
+    workstationExtensibilityTenantTemplateActivateEndpoint(tenantTemplateId),
+    request,
+    options
+  );
+}
+
+export function listExtensibilityTenantTemplateActivations(tenantTemplateId: string, options: ApiRequestOptions = {}) {
+  return getJson<TenantTemplateActivationResult[]>(
+    workstationExtensibilityTenantTemplateActivationsEndpoint(tenantTemplateId),
+    options
+  );
+}
+
+export function getExtensibilityTenantTemplateReadiness(tenantTemplateId: string, options: ApiRequestOptions = {}) {
+  return getJson<ExtensibilityActivationReadiness>(
+    workstationExtensibilityTenantTemplateReadinessEndpoint(tenantTemplateId),
+    options
+  );
+}
+
 export function getRolePermissionCatalog(options: ApiRequestOptions = {}) {
   return getJson<RolePermissionCatalog>(AUTH_API_ENDPOINTS.roles, options);
 }
@@ -620,6 +1148,92 @@ export function createRolePermissionProfile(
   options: ApiRequestOptions = {}
 ) {
   return postJson<RolePermissionProfileUpsertResult>(AUTH_API_ENDPOINTS.roleProfiles, request, options);
+}
+
+export function getUserAccounts(options: ApiRequestOptions = {}) {
+  return getJson<UserAccount[]>(AUTH_API_ENDPOINTS.accounts, options);
+}
+
+export function upsertUserAccount(request: UserAccountUpsertRequest, options: ApiRequestOptions = {}) {
+  return putJson<UserAccountMutationResult>(authAccountEndpoint(request.username), request, options);
+}
+
+export function resetUserPassword(request: UserPasswordResetRequest, options: ApiRequestOptions = {}) {
+  return postJson<UserAccountMutationResult>(authAccountPasswordResetEndpoint(request.username), request, options);
+}
+
+export function setUserAccountDisabled(request: UserAccountDisableRequest, options: ApiRequestOptions = {}) {
+  return postJson<UserAccountMutationResult>(authAccountDisableEndpoint(request.username), request, options);
+}
+
+export function revokeUserSessions(request: UserSessionRevokeRequest, options: ApiRequestOptions = {}) {
+  return postJson<UserSessionRevokeResult>(AUTH_API_ENDPOINTS.sessionsRevoke, request, options);
+}
+
+export function getUserAccountAudit(options: ApiRequestOptions = {}) {
+  return getJson<UserAccountAuditEvent[]>(AUTH_API_ENDPOINTS.audit, options);
+}
+
+export function listScopedAccessAssignments(
+  query: UserAccessAssignmentQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.principalId) {
+    params.set("principalId", query.principalId);
+  }
+
+  if (query.scopeKind) {
+    params.set("scopeKind", query.scopeKind);
+  }
+
+  if (query.scopeId) {
+    params.set("scopeId", query.scopeId);
+  }
+
+  if (query.includeRevoked) {
+    params.set("includeRevoked", "true");
+  }
+
+  const suffix = params.toString();
+  return getJson<UserAccessAssignment[]>(
+    suffix ? `${AUTH_API_ENDPOINTS.accessAssignments}?${suffix}` : AUTH_API_ENDPOINTS.accessAssignments,
+    options
+  );
+}
+
+export function createScopedAccessAssignment(
+  request: UserAccessAssignmentCreateRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<UserAccessAssignmentMutationResult>(AUTH_API_ENDPOINTS.accessAssignments, request, options);
+}
+
+export function revokeScopedAccessAssignment(
+  request: UserAccessAssignmentRevokeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<UserAccessAssignmentMutationResult>(
+    authAccessAssignmentRevokeEndpoint(request.assignmentId),
+    request,
+    options
+  );
+}
+
+function authAccountEndpoint(username: string) {
+  return AUTH_API_ENDPOINTS.accountByUsername.replace("{username}", encodeURIComponent(username));
+}
+
+function authAccountPasswordResetEndpoint(username: string) {
+  return AUTH_API_ENDPOINTS.accountPasswordReset.replace("{username}", encodeURIComponent(username));
+}
+
+function authAccountDisableEndpoint(username: string) {
+  return AUTH_API_ENDPOINTS.accountDisable.replace("{username}", encodeURIComponent(username));
+}
+
+function authAccessAssignmentRevokeEndpoint(assignmentId: string) {
+  return AUTH_API_ENDPOINTS.accessAssignmentRevoke.replace("{assignmentId}", encodeURIComponent(assignmentId));
 }
 
 export function getSecurityAssetProfiles(options: ApiRequestOptions = {}) {
@@ -683,7 +1297,7 @@ export function setFeatureCapability(capabilityKey: string, isEnabled: boolean, 
 }
 
 export function getOperationsContinuityWorkflows(
-  filters: { fundAccountId?: string; periodId?: string; status?: string } = {},
+  filters: { fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } = {},
   options: ApiRequestOptions = {}
 ) {
   return getJson<OperationsContinuityWorkflowSummary[]>(workstationOperationsContinuityEndpoint(filters), options);
@@ -691,6 +1305,193 @@ export function getOperationsContinuityWorkflows(
 
 export function getOperationsContinuityWorkflow(workflowId: string, options: ApiRequestOptions = {}) {
   return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityTimeline(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsTimelineEntry[]>(workstationOperationsContinuityTimelineEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityBreaks(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsBreakCase[]>(workstationOperationsContinuityBreaksEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityLedgerPreview(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsLedgerPreview | null>(workstationOperationsContinuityLedgerPreviewEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityChecklist(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsCloseChecklistTask[]>(workstationOperationsContinuityChecklistEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityCloseReadiness(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsCloseReadiness>(workstationOperationsContinuityCloseReadinessEndpoint(workflowId), options);
+}
+
+export function startOperationsContinuityWorkflow(
+  request: OperationsStartWorkflowRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(workstationOperationsContinuityEndpoint(), request, options);
+}
+
+export function importOperationsContinuityBrokerData(
+  workflowId: string,
+  request: OperationsTransitionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBrokerImportEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function normalizeOperationsContinuityBrokerTransactions(
+  workflowId: string,
+  request: OperationsTransitionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBrokerNormalizeEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function refreshOperationsContinuityGatePosture(
+  workflowId: string,
+  request: OperationsGatePostureRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityPostureRefreshEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function resolveOperationsContinuitySecurityMasterMappings(
+  workflowId: string,
+  request: OperationsSecurityMasterResolveRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuitySecurityMasterResolveEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function approveOperationsContinuitySecurityMasterOverride(
+  workflowId: string,
+  overrideId: string,
+  request: OperationsSecurityMasterOverrideApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint(workflowId, overrideId),
+    request,
+    options
+  );
+}
+
+export function draftOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerDraftRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerDraftEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function validateOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerValidationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerValidateEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function postOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerPostRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerPostEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function runOperationsContinuityReconciliation(
+  workflowId: string,
+  request: OperationsReconciliationRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityReconciliationRunEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function assignOperationsContinuityBreakCase(
+  workflowId: string,
+  breakId: string,
+  request: OperationsAssignBreakCaseRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBreakAssignEndpoint(workflowId, breakId),
+    request,
+    options
+  );
+}
+
+export function resolveOperationsContinuityBreakCase(
+  workflowId: string,
+  breakId: string,
+  request: OperationsResolveBreakCaseRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBreakResolveEndpoint(workflowId, breakId),
+    request,
+    options
+  );
+}
+
+export function acknowledgeOperationsContinuityChecklistTask(
+  workflowId: string,
+  taskId: string,
+  request: OperationsChecklistAcknowledgeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityChecklistAcknowledgeEndpoint(workflowId, taskId),
+    request,
+    options
+  );
+}
+
+export function submitOperationsContinuityApproval(
+  workflowId: string,
+  request: OperationsSubmitApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityApprovalSubmitEndpoint(workflowId),
+    request,
+    options
+  );
 }
 
 export function approveOperationsContinuityWorkflow(
@@ -717,6 +1518,30 @@ export function rejectOperationsContinuityWorkflow(
   );
 }
 
+export function closeOperationsContinuityWorkflow(
+  workflowId: string,
+  request: OperationsCloseWorkflowRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityCloseEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function reopenOperationsContinuityWorkflow(
+  workflowId: string,
+  request: OperationsReopenWorkflowRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityReopenEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
 export function getOperationsApprovalPolicyMatrix(options: ApiRequestOptions = {}) {
   return getJson<OperationsApprovalPolicyMatrix>(WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix, options);
 }
@@ -737,6 +1562,30 @@ export function getOperationsCloseCalendar(
   options: ApiRequestOptions = {}
 ) {
   return getJson<OperationsCloseCalendar>(workstationOperationsContinuityCloseCalendarEndpoint(filters), options);
+}
+
+export interface PrivateCapitalCloseCockpitQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundAccountId?: string | null;
+  periodId?: string | null;
+  entityId?: string | null;
+}
+
+export function getPrivateCapitalCloseCockpit(
+  query: PrivateCapitalCloseCockpitQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<PrivateCapitalCloseCockpit>(
+    workstationOperationsPrivateCapitalCloseCockpitEndpoint({
+      fundProfileId: query.fundProfileId ?? undefined,
+      ledgerBookId: query.ledgerBookId ?? undefined,
+      fundAccountId: query.fundAccountId ?? undefined,
+      periodId: query.periodId ?? undefined,
+      entityId: query.entityId ?? undefined
+    }),
+    options
+  );
 }
 
 export function upsertOperationsCloseCalendarItem(
@@ -807,6 +1656,46 @@ export function searchEvidenceVault(request: EvidenceVaultLookupRequest, options
   return postJson<EvidenceVaultIdentity[]>(WORKSTATION_API_ENDPOINTS.evidenceVaultSearch, request, options);
 }
 
+export function listEvidenceVaultRequestLists(
+  query: EvidenceVaultRequestListQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.requestListKind) {
+    params.set("requestListKind", query.requestListKind);
+  }
+
+  if (query.targetKind) {
+    params.set("targetKind", query.targetKind);
+  }
+
+  if (query.targetId) {
+    params.set("targetId", query.targetId);
+  }
+
+  if (query.status) {
+    params.set("status", query.status);
+  }
+
+  if (query.subjectKind) {
+    params.set("subjectKind", query.subjectKind);
+  }
+
+  if (query.subjectId) {
+    params.set("subjectId", query.subjectId);
+  }
+
+  if (query.maxResults !== undefined && query.maxResults !== null) {
+    params.set("maxResults", String(query.maxResults));
+  }
+
+  const suffix = params.toString();
+  return getJson<EvidenceVaultRequestListEntry[]>(
+    suffix ? `${WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists}?${suffix}` : WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists,
+    options
+  );
+}
+
 export function getEvidenceTemplates(options: ApiRequestOptions = {}) {
   return getJson<EvidenceTemplate[]>(WORKSTATION_API_ENDPOINTS.evidenceTemplates, options);
 }
@@ -857,12 +1746,221 @@ export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<AccountingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
 }
 
+export function getFinancialRecordExplorer(
+  explorerId: FinancialRecordExplorerId,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<FinancialRecordExplorerDto>(workstationFinancialRecordExplorerEndpoint(explorerId), options);
+}
+
+export function getFinancialRecordExplorerRecord(
+  explorerId: FinancialRecordExplorerId,
+  recordId: string,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<FinancialRecordExplorerSelectedRecordDto>(
+    workstationFinancialRecordExplorerRecordEndpoint(explorerId, recordId),
+    options
+  );
+}
+
+export function saveFinancialRecordExplorerView(
+  explorerId: FinancialRecordExplorerId,
+  request: FinancialRecordExplorerSavedViewSaveRequestDto,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<FinancialRecordExplorerSavedViewDto>(
+    workstationFinancialRecordExplorerSavedViewsEndpoint(explorerId),
+    request,
+    options
+  );
+}
+
 export function getAccountingConfiguration(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfiguration, options);
 }
 
-export function getManualJournalEntryWorkbench(options: ApiRequestOptions = {}) {
-  return getJson<ManualJournalEntryWorkbench>(WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench, options);
+export function createLedgerBook(
+  request: import("@/types").CreateLedgerBookRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").LedgerBook>(WORKSTATION_API_ENDPOINTS.ledgerBooks, request, options);
+}
+
+export interface ManualJournalEntryWorkbenchQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+}
+
+export function getManualJournalEntryWorkbench(
+  query: ManualJournalEntryWorkbenchQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  return getJson<ManualJournalEntryWorkbench>(
+    `${WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench}${suffix ? `?${suffix}` : ""}`,
+    options
+  );
+}
+
+export interface PrivateCapitalActivityQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundEventId?: string | null;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+}
+
+export function getPrivateCapitalActivity(
+  query: PrivateCapitalActivityQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const suffix = params.toString();
+  return getJson<PrivateCapitalActivityProjection>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalActivity}${suffix ? `?${suffix}` : ""}`,
+    options
+  );
+}
+
+export interface PrivateCapitalFundEventRecordQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundEventId: string;
+}
+
+export function getPrivateCapitalFundEventRecord(
+  query: PrivateCapitalFundEventRecordQuery,
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  return getJson<PrivateCapitalFundEventLedgerRecord>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventRecord}?${params.toString()}`,
+    options
+  );
+}
+
+export interface PrivateCapitalFundEventCommandCenterQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundEventId: string;
+}
+
+export function getPrivateCapitalFundEventCommandCenter(
+  query: PrivateCapitalFundEventCommandCenterQuery,
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  return getJson<PrivateCapitalFundEventCommandCenter>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventCommandCenter}?${params.toString()}`,
+    options
+  );
+}
+
+export interface PrivateCapitalCapitalAccountSubledgerQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  capitalAccountId: string;
+  investorId?: string | null;
+  currency?: string | null;
+}
+
+export function getPrivateCapitalCapitalAccountSubledger(
+  query: PrivateCapitalCapitalAccountSubledgerQuery,
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  return getJson<PrivateCapitalCapitalAccountSubledger>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalCapitalAccountSubledger}?${params.toString()}`,
+    options
+  );
+}
+
+export interface PrivateCapitalReportOutputQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  reportOutputId?: string | null;
+  reportPackId?: string | null;
+  fundEventId?: string | null;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+}
+
+export function getPrivateCapitalReportOutput(
+  query: PrivateCapitalReportOutputQuery,
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  return getJson<PrivateCapitalReportOutput>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalReportOutput}?${params.toString()}`,
+    options
+  );
+}
+
+export interface CapitalAccountWorkbenchQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundEventId?: string | null;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+  currency?: string | null;
+}
+
+export function getCapitalAccountWorkbench(
+  query: CapitalAccountWorkbenchQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const suffix = params.toString();
+  return getJson<CapitalAccountWorkbench>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalCapitalAccountWorkbench}${suffix ? `?${suffix}` : ""}`,
+    options
+  );
 }
 
 export function saveManualJournalEntryDraft(
@@ -886,8 +1984,109 @@ export function submitManualJournalEntryApproval(
   return postJson<ManualJournalEntryDraft>(WORKSTATION_API_ENDPOINTS.manualJournalEntrySubmitApproval, request, options);
 }
 
+export function attachManualJournalEntryEvidence(
+  request: AttachManualJournalEntryEvidenceRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ManualJournalEntryDraft>(WORKSTATION_API_ENDPOINTS.manualJournalEntryEvidence, request, options);
+}
+
+export function applyManualJournalEntryLifecycleAction(
+  request: JournalEntryLifecycleActionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<JournalEntryLifecycleActionResult>(WORKSTATION_API_ENDPOINTS.manualJournalEntryLifecycleAction, request, options);
+}
+
 export function getAccountingSystemProviders(options: ApiRequestOptions = {}) {
   return getJson<AccountingSystemProvider[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.providers, options);
+}
+
+export function assessAccountingProductionReadiness(
+  request: AccountingProductionReadinessRequest = {},
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingProductionReadiness>(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness, request, options);
+}
+
+export function getAccountingMigrationRunArtifacts(
+  query: { fundProfileId?: string | null; ledgerBookId?: string | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts;
+  return getJson<AccountingMigrationRunArtifactList>(route, options);
+}
+
+export function getAccountingTenantAdministrationProfile(
+  query: { tenantId?: string | null; companyId?: string | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.companyId) {
+    params.set("companyId", query.companyId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix
+    ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile}?${suffix}`
+    : ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile;
+  return getJson<AccountingTenantAdministrationProfile>(route, options);
+}
+
+export function upsertAccountingTenantAdministrationProfile(
+  request: AccountingTenantAdministrationProfileUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingTenantAdministrationProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile, request, options);
+}
+
+export function getAccountingProductionCertificationProfile(
+  query: { tenantId?: string | null; companyId?: string | null; fundProfileId?: string | null; ledgerBookId?: string | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.companyId) {
+    params.set("companyId", query.companyId);
+  }
+
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix
+    ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.productionCertificationProfile}?${suffix}`
+    : ACCOUNTING_SYSTEM_API_ENDPOINTS.productionCertificationProfile;
+  return getJson<AccountingProductionCertificationProfile>(route, options);
+}
+
+export function upsertAccountingProductionCertificationProfile(
+  request: AccountingProductionCertificationProfileUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingProductionCertificationProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionCertificationProfile, request, options);
 }
 
 export function previewAccountingSystemImport(
@@ -903,6 +2102,162 @@ export function getLatestAccountingSystemImport(options: ApiRequestOptions = {})
 
 export function getLatestAccountingSystemReconciliation(options: ApiRequestOptions = {}) {
   return getJson<AccountingSystemReconciliationSummary>(ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest, options);
+}
+
+export function getAccountingSystemMappingProfiles(options: ApiRequestOptions = {}) {
+  return getJson<ExternalGlMappingProfile[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles, options);
+}
+
+export function upsertAccountingSystemMappingProfile(
+  request: AccountingSystemMappingProfileUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ExternalGlMappingProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles, request, options);
+}
+
+export function listAccountingSystemExportPackages(
+  query: {
+    providerId?: string | null;
+    fundProfileId?: string | null;
+    ledgerBookId?: string | null;
+    certificationState?: string | null;
+    tenantId?: string | null;
+    companyId?: string | null;
+  } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.providerId) {
+    params.set("providerId", query.providerId);
+  }
+
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  if (query.certificationState) {
+    params.set("certificationState", query.certificationState);
+  }
+
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.companyId) {
+    params.set("companyId", query.companyId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix
+    ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages}?${suffix}`
+    : ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages;
+  return getJson<ExternalGlExportPackage[]>(route, options);
+}
+
+export function createAccountingSystemExportPackage(
+  request: AccountingSystemExportPackageRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ExternalGlExportPackage>(ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages, request, options);
+}
+
+export function getAccountingSystemExportPackageManifest(
+  exportPackageId: string,
+  options: ApiRequestOptions = {}
+) {
+  const route = ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackageManifest
+    .replace("{exportPackageId}", encodeURIComponent(exportPackageId));
+  return getJson<ExternalGlExportPackageManifest>(route, options);
+}
+
+export function certifyAccountingSystemExportPackage(
+  request: CertifyAccountingSystemExportPackageRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ExternalGlExportPackage>(ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackageCertification, request, options);
+}
+
+export function getLedgerCloseManagementPeriodPlan(workflowId: string, options: ApiRequestOptions = {}) {
+  const endpoint = WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan.replace("{workflowId:guid}", workflowId);
+  return getJson<ClosePeriodPlan>(endpoint, options);
+}
+
+export function createLedgerCloseManagementLateAdjustment(
+  request: CreateLateAdjustmentRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementLateAdjustments, request, options);
+}
+
+export function reviewLedgerCloseManagementLateAdjustment(
+  request: ReviewLateAdjustmentRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementLateAdjustmentReview, request, options);
+}
+
+export function signOffLedgerCloseManagementTask(
+  request: SignOffCloseTaskRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementTaskSignOffs, request, options);
+}
+
+export function buildLedgerAccountingReportPackage(
+  request: AccountingReportPackageRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingReportPackageBundle>(WORKSTATION_API_ENDPOINTS.accountingReportPackage, request, options);
+}
+
+export function certifyLedgerAccountingReportPackage(
+  request: CertifyAccountingReportPackageRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingReportPackageBundle>(
+    WORKSTATION_API_ENDPOINTS.accountingReportPackageCertification,
+    request,
+    options
+  );
+}
+
+export interface AccountingReportPackageHistoryQuery {
+  fundProfileId?: string | null;
+  periodId?: string | null;
+  ledgerBookId?: string | null;
+}
+
+export function listLedgerAccountingReportPackages(
+  query: AccountingReportPackageHistoryQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const suffix = params.toString();
+  return getJson<AccountingReportPackageBundle[]>(
+    `${WORKSTATION_API_ENDPOINTS.accountingReportPackages}${suffix ? `?${suffix}` : ""}`,
+    options
+  );
+}
+
+export function getLedgerAccountingReportPackageExport(
+  packageId: string,
+  artifactId: string,
+  options: ApiRequestOptions = {}
+) {
+  const route = WORKSTATION_API_ENDPOINTS.accountingReportPackageExport
+    .replace("{packageId}", encodeURIComponent(packageId))
+    .replace("{artifactId}", encodeURIComponent(artifactId));
+  return getJson<ReportExportArtifactManifest>(route, options);
 }
 
 export function previewAccountingConfigurationTemplate(
@@ -933,6 +2288,49 @@ export function upsertAccountingConfigurationPostingRule(
   return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRules, request, options);
 }
 
+export function approveAccountingConfigurationPostingRulePromotion(
+  request: import("@/types").ApprovePostingRulePromotionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(
+    WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRulePromotionApprovals,
+    request,
+    options
+  );
+}
+
+export function dryRunAccountingConfigurationPostingRule(
+  request: import("@/types").RuleDryRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").RuleDryRunResult>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun, request, options);
+}
+
+export function buildAccountingPostingRuleJournalCandidate(
+  request: import("@/types").PostingRuleJournalCandidateRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").PostingRuleJournalCandidateResult>(
+    WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleCandidates,
+    request,
+    options
+  );
+}
+
+export function executeAccountingConfigurationPostingRuleTests(
+  request: import("@/types").ExecuteAccountingRuleTestCasesRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingRuleTestSuiteResult>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleTests, request, options);
+}
+
+export function upsertAccountingConfigurationPostingRuleTestCase(
+  request: import("@/types").UpsertAccountingRuleTestCaseRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleTestCases, request, options);
+}
+
 export function activateAccountingConfiguration(
   request: import("@/types").ActivateAccountingConfigurationRequest,
   options: ApiRequestOptions = {}
@@ -950,6 +2348,69 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
 
 export function runReportingNow(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
+}
+
+export function previewReportPack(request: FundReportPackPreviewRequest, options: ApiRequestOptions = {}) {
+  return postJson<FundReportPackPreview>(FUND_STRUCTURE_API_ENDPOINTS.reportPackPreview, request, options);
+}
+
+export function generateReportPack(request: FundReportPackGenerateRequest, options: ApiRequestOptions = {}) {
+  return postJson<FundReportPackSnapshot>(FUND_STRUCTURE_API_ENDPOINTS.reportPacks, request, options);
+}
+
+export function createReportTemplateDraft(request: ReportTemplateDraftRequest, options: ApiRequestOptions = {}) {
+  return postJson<ReportTemplateGovernanceRecord>(
+    FUND_STRUCTURE_API_ENDPOINTS.reportingTemplateDrafts,
+    request,
+    options
+  );
+}
+
+export function renderReportTemplate(request: RenderReportTemplateRequest, options: ApiRequestOptions = {}) {
+  return postJson<RenderReportTemplateResponse>(
+    FUND_STRUCTURE_API_ENDPOINTS.reportingTemplateRender,
+    request,
+    options
+  );
+}
+
+export function submitReportTemplateDraft(
+  templateName: string,
+  version: number,
+  request: ReportTemplateDecisionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ReportTemplateGovernanceRecord>(
+    reportingTemplateSubmitEndpoint(templateName, version),
+    request,
+    options
+  );
+}
+
+export function approveReportTemplateDraft(
+  templateName: string,
+  version: number,
+  request: ReportTemplateDecisionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ReportTemplateGovernanceRecord>(
+    reportingTemplateApproveEndpoint(templateName, version),
+    request,
+    options
+  );
+}
+
+export function rejectReportTemplateDraft(
+  templateName: string,
+  version: number,
+  request: ReportTemplateDecisionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ReportTemplateGovernanceRecord>(
+    reportingTemplateRejectEndpoint(templateName, version),
+    request,
+    options
+  );
 }
 
 export function deliverReportPack(
@@ -1213,11 +2674,11 @@ export function getRunLedger(runId: string) {
   return getJson<LedgerSummary>(workstationRunLedgerEndpoint(runId));
 }
 
-export function getRunTrialBalance(runId: string, accountType?: string) {
-  return getJson<LedgerTrialBalanceLine[]>(workstationRunLedgerTrialBalanceEndpoint(runId, accountType));
+export function getRunTrialBalance(runId: string, accountTypeOrOptions?: string | LedgerTrialBalanceQueryOptions) {
+  return getJson<LedgerTrialBalanceLine[]>(workstationRunLedgerTrialBalanceEndpoint(runId, accountTypeOrOptions));
 }
 
-export function getRunLedgerJournal(runId: string, options: { from?: string; to?: string } = {}) {
+export function getRunLedgerJournal(runId: string, options: LedgerJournalQueryOptions = {}) {
   return getJson<LedgerJournalLine[]>(workstationRunLedgerJournalEndpoint(runId, options));
 }
 
@@ -1500,6 +2961,211 @@ export function getProviderRoutingTrustSnapshots(options: ApiRequestOptions = {}
 
 export function previewProviderRoute(request: ProviderRoutePreviewRequest, options: ApiRequestOptions = {}) {
   return postJson<ProviderRoutePreviewResponse>(PROVIDER_ROUTING_API_ENDPOINTS.preview, request, options);
+}
+
+export function getProviderIntegrationTemplates(options: ApiRequestOptions = {}) {
+  return getJson<ProviderIntegrationTemplateCatalogEntry[]>(PROVIDER_INTEGRATION_API_ENDPOINTS.templates, options);
+}
+
+export function getProviderIntegrationTemplate(manifestId: string, options: ApiRequestOptions = {}) {
+  return getJson<ProviderIntegrationManifest>(workstationProviderIntegrationTemplateEndpoint(manifestId), options);
+}
+
+export function importProviderIntegrationOpenApi(
+  request: ProviderIntegrationOpenApiImportRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationOpenApiImportResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.openApiImport,
+    request,
+    options
+  );
+}
+
+export function saveProviderIntegrationSetup(
+  request: ProviderIntegrationSetupSaveRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationSetupSaveResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.setupSave, request, options);
+}
+
+export function getProviderIntegrationReadiness(
+  manifestId: string,
+  connectionId?: string | null,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationActivationReadiness>(
+    workstationProviderIntegrationReadinessEndpoint(manifestId, connectionId),
+    options
+  );
+}
+
+export function runManualCsvProviderIntegrationDryRun(
+  request: ManualCsvProviderIntegrationDryRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationDryRunResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.manualCsvDryRun,
+    request,
+    options
+  );
+}
+
+export function runRestProviderIntegrationDryRun(
+  request: ProviderIntegrationRestDryRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationDryRunResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.restDryRun, request, options);
+}
+
+export function activateProviderIntegration(
+  request: ProviderIntegrationActivationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationActivationResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.activate, request, options);
+}
+
+export function getProviderIntegrationConnectionMonitor(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationConnectionMonitor>(
+    workstationProviderIntegrationConnectionMonitorEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationConnectionSyncRuns(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationSyncRunHistory>(
+    workstationProviderIntegrationConnectionSyncRunsEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationConnectionSyncPlan(
+  connectionId: string,
+  evaluatedAt?: string | null,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationSyncPlan>(
+    workstationProviderIntegrationConnectionSyncPlanEndpoint(connectionId, evaluatedAt),
+    options
+  );
+}
+
+export function runDueProviderIntegrationSync(
+  connectionId: string,
+  request: ProviderIntegrationRunDueSyncRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationRunDueSyncResult>(
+    workstationProviderIntegrationConnectionRunDueSyncEndpoint(connectionId),
+    request,
+    options
+  );
+}
+
+export function checkProviderIntegrationSchemaDrift(
+  request: ProviderIntegrationSchemaDriftCheckRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationSchemaDriftCheckResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.schemaDriftCheck,
+    request,
+    options
+  );
+}
+
+export function getProviderIntegrationStagingReview(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationStagingReview>(
+    workstationProviderIntegrationStagingReviewEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationIdentityResolution(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationStagingIdentityResolutionPreview>(
+    workstationProviderIntegrationIdentityResolutionEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationPromotionReadiness(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationPromotionReadinessPreview>(
+    workstationProviderIntegrationPromotionReadinessEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationReconciliationHandoffHistory(
+  connectionId: string,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationReconciliationHandoffHistory>(
+    workstationProviderIntegrationReconciliationHandoffHistoryEndpoint(connectionId),
+    options
+  );
+}
+
+export function createProviderIntegrationReconciliationHandoff(
+  request: ProviderIntegrationReconciliationHandoffRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationReconciliationHandoffResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.reconciliationHandoff,
+    request,
+    options
+  );
+}
+
+export function getProviderIntegrationQuarantineReview(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationQuarantineReview>(
+    workstationProviderIntegrationQuarantineReviewEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function resolveProviderIntegrationQuarantineRecord(
+  request: ProviderIntegrationQuarantineResolutionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationQuarantineResolutionResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.quarantineResolve,
+    request,
+    options
+  );
+}
+
+export function replayProviderIntegrationQuarantineRecords(
+  request: ProviderIntegrationQuarantineReplayRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationQuarantineReplayResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.quarantineReplay,
+    request,
+    options
+  );
 }
 
 export function removeProvider(providerId: string) {

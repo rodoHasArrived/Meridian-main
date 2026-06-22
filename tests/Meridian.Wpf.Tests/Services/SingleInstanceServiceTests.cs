@@ -49,4 +49,16 @@ public sealed class SingleInstanceServiceTests
         var payload = await readTask.WaitAsync(TimeSpan.FromSeconds(5));
         payload.Should().Be("--page=ResearchShell\n--start-collector");
     }
+
+    [Fact]
+    public void DesktopLaunchArguments_WhenScreenshotIsRequested_ShouldRequireShell()
+    {
+        var request = DesktopLaunchArguments.Parse(["--screenshot=C:\\tmp\\meridian-screen.png"]);
+
+        request.HasActions.Should().BeTrue();
+        request.RequiresShell.Should().BeTrue();
+        request.HasScreenshotRequest.Should().BeTrue();
+        request.ScreenshotPath.Should().Be("C:\\tmp\\meridian-screen.png");
+        request.HasPageNavigation.Should().BeFalse();
+    }
 }

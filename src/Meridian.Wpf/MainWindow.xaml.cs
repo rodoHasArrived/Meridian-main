@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Contracts;
@@ -687,13 +690,80 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (request.HasPageNavigation)
+        if (request.RequiresShell)
         {
             await EnsureMainPageShellReadyAsync(ct);
         }
 
         _launchRouter.Apply(args, _viewModel);
         EnsureShellVisibleOnStartup();
+
+        if (request.HasScreenshotRequest)
+        {
+            await CaptureMainWindowScreenshotAsync(request.ScreenshotPath!, ct);
+        }
+    }
+
+    private async Task CaptureMainWindowScreenshotAsync(string path, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        await EnsureMainPageShellReadyAsync(ct);
+        await Dispatcher.InvokeAsync(UpdateLayout, DispatcherPriority.Render).Task;
+        await Task.Delay(250, ct);
+        await Dispatcher.InvokeAsync(() => SaveMainWindowScreenshot(path), DispatcherPriority.ApplicationIdle).Task;
+    }
+
+    private void SaveMainWindowScreenshot(string path)
+    {
+        var targetPath = Path.GetFullPath(path);
+        var directory = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        EnsureShellVisibleOnStartup();
+        UpdateLayout();
+
+        var visualWidth = ActualWidth;
+        var visualHeight = ActualHeight;
+        if (visualWidth < 200 || visualHeight < 200)
+        {
+            throw new InvalidOperationException(
+                $"Main window bounds are too small for automation screenshot capture ({visualWidth:N0}x{visualHeight:N0}).");
+        }
+
+        var dpi = VisualTreeHelper.GetDpi(this);
+        var pixelWidth = Math.Max(1, (int)Math.Ceiling(visualWidth * dpi.DpiScaleX));
+        var pixelHeight = Math.Max(1, (int)Math.Ceiling(visualHeight * dpi.DpiScaleY));
+        var renderTarget = new RenderTargetBitmap(
+            pixelWidth,
+            pixelHeight,
+            96 * dpi.DpiScaleX,
+            96 * dpi.DpiScaleY,
+            PixelFormats.Pbgra32);
+
+        var visual = new DrawingVisual();
+        using (var context = visual.RenderOpen())
+        {
+            context.DrawRectangle(
+                new VisualBrush(this),
+                null,
+                new Rect(new Point(0, 0), new Size(visualWidth, visualHeight)));
+        }
+
+        renderTarget.Render(visual);
+
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(renderTarget));
+        using var stream = File.Create(targetPath);
+        encoder.Save(stream);
+
+        Meridian.Wpf.Services.LoggingService.Instance.LogInfo($"Saved automation screenshot to '{targetPath}'.");
     }
 
     private async Task EnsureMainPageShellReadyAsync(CancellationToken ct = default)

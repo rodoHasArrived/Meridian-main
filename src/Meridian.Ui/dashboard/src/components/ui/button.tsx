@@ -77,7 +77,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   }, ref) => {
     const vm = buildButtonCommandViewModel({ disabled, busy, busyLabel, disabledReason, title });
     const classes = cn(
-      "inline-flex items-center justify-center gap-2 rounded-sm border font-semibold transition-[background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:translate-x-px active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:active:translate-x-0 disabled:active:translate-y-0",
+      "inline-flex items-center justify-center gap-2 rounded-[var(--radius-button,0.375rem)] border font-semibold transition-[background-color,border-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none",
       variantClasses[variant],
       sizeClasses[size],
       vm.disabled && asChild && "pointer-events-none opacity-50",

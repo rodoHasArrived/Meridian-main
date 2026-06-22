@@ -177,7 +177,7 @@ public partial class WorkspaceDeepPageHostPage : Page
                 PrimaryScopeValue = _workspace.Title,
                 AsOfValue = DateTimeOffset.Now.ToString("MMM dd yyyy HH:mm"),
                 FreshnessValue = _presentationMode == WorkspaceChromePresentationMode.Docked
-                    ? "Docked shell host"
+                    ? "Docked workspace panel"
                     : $"{_descriptor.SectionLabel} workflow active",
                 ReviewStateLabel = "Reachability",
                 ReviewStateValue = ToVisibilityLabel(_descriptor.VisibilityTier),

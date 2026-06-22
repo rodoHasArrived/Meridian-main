@@ -3,6 +3,10 @@ using Meridian.Strategies.Models;
 namespace Meridian.Strategies.Services;
 
 internal sealed record StrategyRunScopeMetadata(
+    string? FundId,
+    string? StrategyId,
+    string? PortfolioId,
+    string? BookId,
     string? AccountId,
     string? AccountDisplayName,
     string? EntityId,
@@ -10,7 +14,12 @@ internal sealed record StrategyRunScopeMetadata(
     string? SleeveId,
     string? SleeveDisplayName,
     string? VehicleId,
-    string? VehicleDisplayName);
+    string? VehicleDisplayName,
+    string? OrganizationId,
+    string? CustomerId,
+    string? VendorId,
+    string? ProjectId,
+    IReadOnlyDictionary<string, string> ExternalGlDimensions);
 
 internal static class StrategyRunScopeMetadataResolver
 {
@@ -32,6 +41,10 @@ internal static class StrategyRunScopeMetadataResolver
         }
 
         return new StrategyRunScopeMetadata(
+            FundId: entry.FundProfileId,
+            StrategyId: entry.StrategyId,
+            PortfolioId: entry.PortfolioId,
+            BookId: ReadScopeValue(entry, "ledgerBookId", "bookId", "ledgerBookScopeId", "bookScopeId"),
             AccountId: accountId,
             AccountDisplayName: accountDisplayName,
             EntityId: ReadScopeValue(entry, "entityScopeId", "entityId"),
@@ -39,7 +52,12 @@ internal static class StrategyRunScopeMetadataResolver
             SleeveId: ReadScopeValue(entry, "sleeveScopeId", "sleeveId"),
             SleeveDisplayName: ReadScopeValue(entry, "sleeveScopeDisplayName", "sleeveDisplayName", "sleeveName"),
             VehicleId: ReadScopeValue(entry, "vehicleScopeId", "vehicleId"),
-            VehicleDisplayName: ReadScopeValue(entry, "vehicleScopeDisplayName", "vehicleDisplayName", "vehicleName"));
+            VehicleDisplayName: ReadScopeValue(entry, "vehicleScopeDisplayName", "vehicleDisplayName", "vehicleName"),
+            OrganizationId: ReadScopeValue(entry, "organizationScopeId", "organizationId"),
+            CustomerId: ReadScopeValue(entry, "customerScopeId", "customerId"),
+            VendorId: ReadScopeValue(entry, "vendorScopeId", "vendorId"),
+            ProjectId: ReadScopeValue(entry, "projectScopeId", "projectId"),
+            ExternalGlDimensions: ReadExternalGlDimensions(entry));
     }
 
     private static string? ReadScopeValue(StrategyRunEntry entry, params string[] keys)
@@ -58,6 +76,32 @@ internal static class StrategyRunScopeMetadataResolver
         }
 
         return null;
+    }
+
+    private static IReadOnlyDictionary<string, string> ReadExternalGlDimensions(StrategyRunEntry entry)
+    {
+        if (entry.ParameterSet is null || entry.ParameterSet.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var dimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in entry.ParameterSet)
+        {
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            const string prefix = "externalGl.";
+            if (key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                key.Length > prefix.Length)
+            {
+                dimensions[key[prefix.Length..].Trim()] = value.Trim();
+            }
+        }
+
+        return dimensions;
     }
 
     private static string? InferAccountIdFromFills(StrategyRunEntry entry)

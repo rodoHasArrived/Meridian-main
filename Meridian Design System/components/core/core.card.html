@@ -1,0 +1,229 @@
+<!-- @dsCard group="Components" viewport="1200x800" name="Core primitives" subtitle="Buttons, inputs, cells, selection" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meridian Core Components</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+  <style>
+    body {
+      background: var(--bg);
+      padding: 24px;
+      font-family: var(--font-body);
+      color: var(--text-primary);
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    .section h2 {
+      font-size: var(--type-section);
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .demo-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+    }
+    .demo-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--bg-medium);
+    }
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <!-- EditableCell Demo -->
+  <div class="section">
+    <h2>EditableCell — inline table editing</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13px;">
+      Click any value to edit inline. Press Enter to save, Escape to cancel.
+    </p>
+    <div class="demo-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="editable-table">
+          <tr>
+            <td><span id="cell-name">John Doe</span></td>
+            <td><span id="cell-amount">12,500.00</span></td>
+            <td><span id="cell-status">Pending</span></td>
+            <td><span id="cell-date">2024-01-15</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 12px; font-size: 11px; color: var(--text-muted); font-style: italic;">
+        → In a real app, each cell would mount an EditableCell component on click.
+      </p>
+    </div>
+  </div>
+
+  <!-- MultiSelect Demo -->
+  <div class="section">
+    <h2>MultiSelect — batch selection toolbar</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13px;">
+      Click checkboxes to select rows. Toolbar shows actions and selection count.
+    </p>
+    <div class="demo-card">
+      <div id="multiselect-toolbar" style="margin-bottom: 16px;"></div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;"><input type="checkbox" id="select-all" /></th>
+            <th>Transaction</th>
+            <th>Amount</th>
+            <th>Account</th>
+          </tr>
+        </thead>
+        <tbody id="selection-table">
+          <tr data-id="1">
+            <td><input type="checkbox" class="row-checkbox" /></td>
+            <td>Wire Transfer</td>
+            <td style="text-align: right; font-family: var(--font-data);">$45,000.00</td>
+            <td>US-001</td>
+          </tr>
+          <tr data-id="2">
+            <td><input type="checkbox" class="row-checkbox" /></td>
+            <td>ACH Debit</td>
+            <td style="text-align: right; font-family: var(--font-data);">$8,250.50</td>
+            <td>US-002</td>
+          </tr>
+          <tr data-id="3">
+            <td><input type="checkbox" class="row-checkbox" /></td>
+            <td>Check Deposit</td>
+            <td style="text-align: right; font-family: var(--font-data);">$15,000.00</td>
+            <td>US-001</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 12px; font-size: 11px; color: var(--text-muted); font-style: italic;">
+        → Wire the MultiSelect toolbar above the table and SelectCheckbox into the first column.
+      </p>
+    </div>
+  </div>
+
+  <!-- Existing Core Components (quick ref) -->
+  <div class="section">
+    <h2>Also in Core</h2>
+    <div class="demo-grid">
+      <div class="demo-card">
+        <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">Button</div>
+        <button style="padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 2px; cursor: pointer; font-size: 13px;">
+          Primary
+        </button>
+        <button style="padding: 8px 16px; background: transparent; color: var(--accent); border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 13px; margin-left: 8px;">
+          Ghost
+        </button>
+      </div>
+      <div class="demo-card">
+        <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">Input</div>
+        <input type="text" placeholder="Enter text…" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 2px; font-size: 13px; font-family: var(--font-body);" />
+      </div>
+      <div class="demo-card">
+        <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">Badge</div>
+        <span style="display: inline-block; padding: 4px 8px; background: var(--green-a20); color: var(--green-dim); border-radius: 2px; font-size: 11px; font-weight: 500;">
+          Success
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Demo: MultiSelect state management
+    const selected = new Set();
+    const rows = document.querySelectorAll('#selection-table tr');
+    const selectAllCheckbox = document.getElementById('select-all');
+
+    function updateToolbar() {
+      const toolbar = document.getElementById('multiselect-toolbar');
+      if (selected.size === 0) {
+        toolbar.innerHTML = '';
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+        return;
+      }
+
+      const isAll = selected.size === rows.length;
+      selectAllCheckbox.checked = isAll;
+      selectAllCheckbox.indeterminate = !isAll && selected.size > 0;
+
+      toolbar.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--blue-a10);">
+          <span style="font-size: 12px; font-weight: 500; color: var(--text-secondary);">${selected.size} selected</span>
+          <button onclick="alert('Delete ' + ${selected.size} + ' items')" style="padding: 6px 12px; font-size: 12px; color: var(--red); background: transparent; border: 1px solid var(--red-a20); border-radius: 2px; cursor: pointer;">
+            🗑️ Delete
+          </button>
+          <button onclick="alert('Export ' + ${selected.size} + ' items')" style="padding: 6px 12px; font-size: 12px; color: var(--accent); background: transparent; border: 1px solid var(--border); border-radius: 2px; cursor: pointer;">
+            ⬇️ Export
+          </button>
+          <button onclick="selected.clear(); updateToolbar(); rows.forEach(r => r.querySelector('input').checked = false);" style="margin-left: auto; padding: 4px 8px; font-size: 11px; color: var(--text-muted); background: transparent; border: none; cursor: pointer; text-decoration: underline;">
+            Clear
+          </button>
+        </div>
+      `;
+    }
+
+    rows.forEach((row) => {
+      const checkbox = row.querySelector('input[type="checkbox"]');
+      const id = row.getAttribute('data-id');
+      checkbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          selected.add(id);
+        } else {
+          selected.delete(id);
+        }
+        updateToolbar();
+      });
+    });
+
+    selectAllCheckbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        rows.forEach((row) => {
+          const id = row.getAttribute('data-id');
+          selected.add(id);
+          row.querySelector('input[type="checkbox"]').checked = true;
+        });
+      } else {
+        selected.clear();
+        rows.forEach((row) => {
+          row.querySelector('input[type="checkbox"]').checked = false;
+        });
+      }
+      updateToolbar();
+    });
+  </script>
+</body>
+</html>

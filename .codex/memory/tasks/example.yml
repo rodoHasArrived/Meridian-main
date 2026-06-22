@@ -1,0 +1,17 @@
+version: 1
+task_id: codex-memory-routing-example
+intent: ai-tooling
+selected_skill: meridian-implementation-assurance
+work_mode: implementation
+branch: main
+planned_paths:
+  - docs/ai/codex/**
+  - .codex/memory/**
+  - build/scripts/docs/**
+memory_tags:
+  - ai-guidance
+  - validation
+success_criteria:
+  - Explain selected and skipped memory entries before loading them.
+  - Keep task memory scoped to the active task descriptor.
+promotion_candidates: []

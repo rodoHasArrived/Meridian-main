@@ -44,11 +44,20 @@ public sealed class AccountingWorkspaceShellSmokeTests
         xaml.Should().NotContain("AutomationProperties.AutomationId=\"GovernanceWorkspaceShellPage\"");
         xaml.Should().Contain("AccountingHeroActionTitleText");
         xaml.Should().Contain("AccountingHeroPrimaryActionButton");
+        xaml.Should().Contain("IsCompact=\"True\"");
         xaml.Should().Contain("Text=\"Accounting\"");
         xaml.Should().Contain("Accounting work queues for operations, accounting, reconciliation, reporting, and audit review.");
-        xaml.Should().Contain("FinancialOperationsWorkflowStepsList");
-        xaml.Should().Contain("Financial Operations Workflow");
-        xaml.Should().Contain("Receive Activity -> Match Records -> Resolve Exceptions -> Approve Results -> Produce Evidence");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"FinancialOperationsWorkflowCheckpoint\"");
+        xaml.Should().Contain("FinancialOperationsWorkflowStatusText");
+        xaml.Should().Contain("FinancialOperationsWorkflowDetailText");
+        xaml.Should().Contain("FinancialOperationsWorkflowActionButton");
+        xaml.Should().Contain("Financial Operations Checkpoint");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"FinancialOperationsEvidenceBadges\"");
+        xaml.Should().Contain("FinancialOperationsEvidenceBadgesList");
+        xaml.Should().Contain("FinancialOperationsPrimaryBlockerText");
+        xaml.Should().NotContain("FinancialOperationsWorkflowStepsList");
+        xaml.Should().NotContain("FinancialOperationsWorkflowStepTemplate");
+        xaml.Should().NotContain("Receive Activity -> Match Records -> Resolve Exceptions -> Approve Results -> Produce Evidence");
         xaml.Should().Contain("Accounting is locked until a fund-linked context is selected.");
         xaml.Should().Contain("Text=\"Active Accounting Context\"");
         xaml.Should().Contain("Text=\"Recent Accounting Work\"");
@@ -80,8 +89,12 @@ public sealed class AccountingWorkspaceShellSmokeTests
         xaml.Should().Contain("QueueAutomationId=\"AccountingAuditDecisionQueue\"");
         xaml.Should().Contain("DecisionInvoked=\"OnAccountingDecisionInvoked\"");
         xaml.Should().NotContain("QueueItemTemplate");
+        xaml.IndexOf("x:Name=\"ContextStrip\"", StringComparison.Ordinal)
+            .Should()
+            .BeGreaterThan(xaml.IndexOf("AutomationProperties.Name=\"Accounting Dock Manager\"", StringComparison.Ordinal));
 
         code.Should().Contain("GetAccountingWorkflowSummaryAsync");
+        code.Should().Contain("fundAccountId: WorkstationOperatingContextScopeResolver.ResolveFundAccountIdString");
         code.Should().Contain("AccountingWorkspaceShellStateProvider");
         code.Should().Contain("AccountingWorkspaceShellViewModel");
         code.Should().NotContain("GovernanceWorkspaceShellStateProvider");
@@ -90,6 +103,11 @@ public sealed class AccountingWorkspaceShellSmokeTests
         code.Should().Contain("UpdateAccountingHero();");
         code.Should().Contain("BuildLaneHeroState(");
         code.Should().Contain("BuildFinancialOperationsWorkflowSteps(");
+        code.Should().Contain("ApplyFinancialOperationsWorkflowCheckpoint(");
+        code.Should().Contain("ResolveCurrentFinancialOperationsWorkflowStep(steps)");
+        code.Should().Contain("FinancialOperationsEvidenceBadgesList.ItemsSource = workflow?.Evidence");
+        code.Should().Contain("FinancialOperationsPrimaryBlockerText.Text = workflow is null");
+        code.Should().Contain("workflow.PrimaryBlocker.Label");
         code.Should().Contain("SetLaneSummary(AccountingLaneSummaryText");
         code.Should().Contain("Switch context to unlock accounting queues");
         code.Should().Contain("Accounting Scope");

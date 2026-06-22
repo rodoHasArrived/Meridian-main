@@ -152,7 +152,7 @@ Summaries archive:
 Reference archive:
 
 - [reference migration index](reference/README.md)
-- [provider matrix migrations](../providers/README.md) — historical lookup notes retained where migration is ongoing
+- [provider matrix migrations](providers/README.md) — historical lookup notes retained where migration is ongoing
 
 Design archive:
 

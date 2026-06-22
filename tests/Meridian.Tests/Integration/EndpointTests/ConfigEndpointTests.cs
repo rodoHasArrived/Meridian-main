@@ -16,6 +16,8 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Collection("Endpoint")]
 public sealed class ConfigEndpointTests : IDisposable
 {
+    private const string ConfigPasswordHash = "pbkdf2-sha256$210000$MZbfWqYODb9fl/pT/2g2Wg==$hsDcSOJ5uPYBFGsUp2lD6DhaPQAeWDEc5+j0D/gk3RA=";
+
     private readonly HttpClient _client;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
@@ -185,9 +187,9 @@ public sealed class ConfigEndpointTests : IDisposable
     public async Task UpdateDataSource_WithCookieAuth_RequiresCsrfHeader()
     {
         var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
-        var originalPassword = Environment.GetEnvironmentVariable("MDC_PASSWORD");
+        var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
         Environment.SetEnvironmentVariable("MDC_USERNAME", "config-admin");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD", "config-password");
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", ConfigPasswordHash);
 
         try
         {
@@ -229,7 +231,7 @@ public sealed class ConfigEndpointTests : IDisposable
         finally
         {
             Environment.SetEnvironmentVariable("MDC_USERNAME", originalUsername);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD", originalPassword);
+            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", originalPasswordHash);
         }
     }
 

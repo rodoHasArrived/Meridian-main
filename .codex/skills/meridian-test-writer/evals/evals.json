@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Meridian test writer package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/test_writer_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 3
+        }
+      },
+      "prompt": "Use $meridian-test-writer to add scenario-first regression tests for a feed interruption."
+    },
+    {
+      "id": 2,
+      "description": "Test guidance keeps scenario, full path, outcome, and project selection visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/test_writer_check.py",
+        "--scenario",
+        "market-scenario-path",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-test-writer to name the market scenario, full code path, correct project, and business-observable assertion."
+    },
+    {
+      "id": 3,
+      "description": "Async and cleanup scenario includes cancellation and disposal guardrails.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/test_writer_check.py",
+        "--scenario",
+        "async-cleanup",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $meridian-test-writer to cover async Task, CancellationTokenSource, await using disposal, and Task.Delay risk."
+    }
+  ]
+}

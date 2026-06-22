@@ -1,6 +1,6 @@
-using Meridian.Ledger;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
 using Npgsql;
 
 namespace Meridian.Storage.Ledger;
@@ -8,6 +8,12 @@ namespace Meridian.Storage.Ledger;
 public interface ILedgerJournalStore
 {
     Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);
+
+    Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+        LedgerJournalEntryQuery query,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerJournalEntryRecord>>(
+            new NotSupportedException("This ledger journal store does not support scoped journal queries."));
 
     Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default);
 
@@ -87,7 +93,18 @@ public sealed record LedgerJournalEntryWrite(
     Guid? SourceEventId = null,
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
-    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null);
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    AccountingPostingCommandDto? PostingCommand = null,
+    Guid? LedgerBookId = null);
+
+public sealed record LedgerJournalEntryQuery(
+    Guid? LedgerBookId = null,
+    Guid? PeriodId = null,
+    Guid? AggregateId = null,
+    LedgerLineDimensionSet? LineDimensions = null,
+    string? AccountName = null,
+    DateTimeOffset? OccurredFrom = null,
+    DateTimeOffset? OccurredTo = null);
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,

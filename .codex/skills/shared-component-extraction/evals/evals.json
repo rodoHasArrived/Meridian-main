@@ -1,0 +1,68 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "description": "Shared component extraction package keeps core guidance, handoffs, route coverage, and context links visible.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/shared_component_extraction_check.py",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "required_terms": 8,
+          "required_handoffs": 5
+        }
+      },
+      "prompt": "Use $shared-component-extraction to extract repeated WPF patterns into reusable components without behavior drift."
+    },
+    {
+      "id": 2,
+      "description": "Component extraction proves reuse, owners, and consumers.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/shared_component_extraction_check.py",
+        "--scenario",
+        "reuse-ownership",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 4
+        }
+      },
+      "prompt": "Use $shared-component-extraction to prove duplicate behavior, ownership, and consumers before extraction."
+    },
+    {
+      "id": 3,
+      "description": "Extraction guidance prevents behavior drift with tests and rollback.",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/shared_component_extraction_check.py",
+        "--scenario",
+        "behavior-drift",
+        "--json"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "scenario.status": "pass"
+        },
+        "json_min": {
+          "scenario.required_terms": 3
+        }
+      },
+      "prompt": "Use $shared-component-extraction to prevent behavior drift with focused tests and rollback posture."
+    }
+  ]
+}
