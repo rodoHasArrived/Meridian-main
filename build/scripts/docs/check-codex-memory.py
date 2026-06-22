@@ -346,6 +346,104 @@ def validate_source_refs(root: Path, entry: dict[str, Any], path: str) -> list[F
     return findings
 
 
+def is_current_repo_source_ref(root: Path, source_ref: str) -> bool:
+    if "://" in source_ref or source_ref.startswith("#"):
+        return False
+    source_path, findings = safe_repo_relative_path(root, source_ref, INDEX_REL)
+    if findings or source_path is None or not source_path.exists():
+        return False
+    rel_path = normalize_path(rel(root, source_path))
+    scoped_memory_prefixes = (
+        ".codex/memory/tasks/",
+        ".codex/memory/branches/",
+        ".codex/memory/sessions/",
+        ".codex/memory/archive/",
+    )
+    return not rel_path.startswith(scoped_memory_prefixes)
+
+
+def validate_promotion_hygiene(root: Path, entry: dict[str, Any], path: str) -> list[Finding]:
+    findings: list[Finding] = []
+    tier = entry.get("tier")
+    if tier != "repo":
+        return findings
+
+    source_refs = string_values(entry.get("source_refs"))
+    current_source_refs = [source_ref for source_ref in source_refs if is_current_repo_source_ref(root, source_ref)]
+    if not current_source_refs:
+        findings.append(
+            Finding(
+                "error",
+                path,
+                "repo-tier memory requires at least one current repo-local source_ref outside task, branch, session, or archive memory.",
+            )
+        )
+
+    task_ids = load_when_task_list(entry, "ids")
+    if task_ids:
+        findings.append(Finding("error", path, "repo-tier memory must not use load_when.task.ids; keep task-only claims in task memory."))
+
+    task_paths = load_when_task_list(entry, "paths")
+    if any(normalize_path(task_path).startswith(".codex/memory/tasks/") for task_path in task_paths):
+        findings.append(Finding("error", path, "repo-tier memory must not route only through task descriptor paths."))
+
+    scoped_only_refs = [
+        source_ref
+        for source_ref in source_refs
+        if normalize_path(source_ref).startswith((".codex/memory/tasks/", ".codex/memory/branches/", ".codex/memory/sessions/"))
+    ]
+    if scoped_only_refs and not current_source_refs:
+        findings.append(Finding("error", path, "repo-tier memory cannot be supported only by task, branch, or session memory refs."))
+    return findings
+
+
+def validate_promotion_candidates(value: Any, path: str) -> list[Finding]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        return [Finding("error", path, "promotion_candidates must be a list when present.")]
+    findings: list[Finding] = []
+    required = {
+        "source_refs",
+        "confidence",
+        "freshness",
+        "review_after",
+        "invalidates_when",
+        "reason",
+        "conflicting_memory_entries_reviewed",
+    }
+    for index, item in enumerate(value):
+        item_path = f"{path}#promotion_candidates[{index}]"
+        if isinstance(item, str):
+            findings.append(Finding("warning", item_path, "String promotion candidates cannot record required promotion evidence."))
+            continue
+        if not isinstance(item, dict):
+            findings.append(Finding("error", item_path, "Promotion candidate must be a mapping or string."))
+            continue
+        for field in sorted(required - set(item)):
+            findings.append(Finding("error", item_path, f"Promotion candidate is missing {field}."))
+        findings.extend(validate_string_list(item.get("source_refs"), "source_refs", item_path) if "source_refs" in item else [])
+        findings.extend(validate_string_list(item.get("invalidates_when"), "invalidates_when", item_path) if "invalidates_when" in item else [])
+        findings.extend(
+            validate_string_list(
+                item.get("conflicting_memory_entries_reviewed"),
+                "conflicting_memory_entries_reviewed",
+                item_path,
+            )
+            if "conflicting_memory_entries_reviewed" in item
+            else []
+        )
+        if item.get("confidence") not in ALLOWED_CONFIDENCE and "confidence" in item:
+            findings.append(Finding("error", item_path, f"Unknown confidence: {item.get('confidence')}"))
+        if item.get("freshness") not in ALLOWED_FRESHNESS and "freshness" in item:
+            findings.append(Finding("error", item_path, f"Unknown freshness: {item.get('freshness')}"))
+        if "review_after" in item:
+            findings.extend(validate_review_after(item.get("review_after"), item_path))
+        if "reason" in item and (not isinstance(item.get("reason"), str) or not item["reason"].strip()):
+            findings.append(Finding("error", item_path, "reason must be a non-empty string."))
+    return findings
+
+
 def validate_load_when(entry: dict[str, Any], path: str) -> list[Finding]:
     load_when = entry.get("load_when")
     if not isinstance(load_when, dict):
@@ -551,6 +649,7 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     findings.extend(validate_load_when(entry, finding_path))
     findings.extend(validate_exclude_when(entry, finding_path))
     findings.extend(validate_source_refs(root, entry, finding_path))
+    findings.extend(validate_promotion_hygiene(root, entry, finding_path))
     findings.extend(validate_review_after(entry.get("review_after"), finding_path))
 
     if entry.get("confidence") not in ALLOWED_CONFIDENCE:
@@ -662,11 +761,7 @@ def validate_task_descriptor(
         _, path_findings = safe_repo_relative_path(root, planned_path, display_path)
         findings.extend(path_findings)
 
-    promotion_candidates = descriptor.get("promotion_candidates", [])
-    if not isinstance(promotion_candidates, list):
-        findings.append(Finding("error", display_path, "promotion_candidates must be a list when present."))
-    elif any(not isinstance(item, (dict, str)) for item in promotion_candidates):
-        findings.append(Finding("error", display_path, "promotion_candidates must contain mappings or strings."))
+    findings.extend(validate_promotion_candidates(descriptor.get("promotion_candidates", []), display_path))
     return descriptor, findings
 
 
@@ -773,11 +868,7 @@ def validate_goal_inventory(root: Path, goal: Any, display_path: str) -> tuple[d
         for index, item in enumerate(progress_inventory):
             findings.extend(validate_goal_progress_item(root, item, display_path, index))
 
-    promotion_candidates = goal.get("promotion_candidates", [])
-    if not isinstance(promotion_candidates, list):
-        findings.append(Finding("error", display_path, "promotion_candidates must be a list when present."))
-    elif any(not isinstance(item, (dict, str)) for item in promotion_candidates):
-        findings.append(Finding("error", display_path, "promotion_candidates must contain mappings or strings."))
+    findings.extend(validate_promotion_candidates(goal.get("promotion_candidates", []), display_path))
     return goal, findings
 
 
@@ -1613,14 +1704,24 @@ def promote_session(root: Path, args: argparse.Namespace) -> int:
             print(f"{finding.severity}: {finding.path}: {finding.message}", file=sys.stderr)
         return 1
 
+    promotion_review = {
+        "reason": args.promote_reason,
+        "conflicting_memory_entries_reviewed": list_arg(args.promote_conflicting_entry),
+    }
     if not args.apply:
-        print(json.dumps({"status": "dry-run", "candidate": entry}, indent=2))
+        print(json.dumps({"status": "dry-run", "candidate": entry, "promotion_review": promotion_review}, indent=2))
         return 0
 
     target_path = (root / entry["file"]).resolve()
     text = source_path.read_text(encoding="utf-8")
     body = markdown_body(text)
-    write_text_if_changed(target_path, f"---\n{dump_yaml(entry).rstrip()}\n---\n\n{body.rstrip()}\n")
+    review_body = (
+        "\n\n## Promotion Review\n\n"
+        f"- Reason for broader persistence: {args.promote_reason}\n"
+        "- Conflicting memory entries reviewed:\n"
+        + "".join(f"  - {item}\n" for item in list_arg(args.promote_conflicting_entry))
+    )
+    write_text_if_changed(target_path, f"---\n{dump_yaml(entry).rstrip()}\n---\n\n{body.rstrip()}{review_body}")
     data["entries"].append(entry)
     if args.archive_source:
         archive_entry = archive_entry_for(root, data, source_path, entry)
@@ -1806,7 +1907,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--stub-review-after")
 
     parser.add_argument("--promote-session", metavar="FILE", help="Promote a session memory file.")
-    parser.add_argument("--promote-tier", choices=sorted(ACTIVE_TIERS - {"session", "archive"}), default="task")
+    parser.add_argument("--promote-tier", choices=["branch", "task"], default="task")
     parser.add_argument("--promote-id")
     parser.add_argument("--promote-scope")
     parser.add_argument("--promote-file")
@@ -1824,6 +1925,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--promote-invalidates-when", action="append", default=[])
     parser.add_argument("--promote-confidence", default="medium", choices=sorted(ALLOWED_CONFIDENCE))
     parser.add_argument("--promote-review-after")
+    parser.add_argument("--promote-reason", help="Reason the session observation deserves the broader target tier.")
+    parser.add_argument("--promote-conflicting-entry", action="append", default=[], help="Memory ID reviewed for conflict, or 'none found'.")
     parser.add_argument("--apply", action="store_true", help="Apply --promote-session. Without this, promotion is dry-run.")
     parser.add_argument("--archive-source", action="store_true", help="Archive the source session file after applied promotion.")
 
@@ -1862,6 +1965,12 @@ def validate_write_args(args: argparse.Namespace) -> int:
             return 1
         if not args.promote_invalidates_when:
             print("error: --promote-session requires --promote-invalidates-when.", file=sys.stderr)
+            return 1
+        if not args.promote_reason:
+            print("error: --promote-session requires --promote-reason.", file=sys.stderr)
+            return 1
+        if not args.promote_conflicting_entry:
+            print("error: --promote-session requires --promote-conflicting-entry (use 'none found' when applicable).", file=sys.stderr)
             return 1
     if args.record_goal_progress:
         if not args.goal:
