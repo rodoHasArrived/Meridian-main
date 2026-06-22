@@ -10,10 +10,12 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 - Choose the smallest safe task scope that satisfies the request.
 - For implementation tasks, identify whether docs, tests, catalogs, or generated metadata must
   move with the code change before editing.
-- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` and, when a scoped task is known,
-  route through a `.codex/memory/tasks/<task-id>.yml` descriptor. Load only entries selected by the
-  current task descriptor, intent, skill, changed paths, branch, or explicit tags. Canonical docs
-  and selected skills remain authoritative when memory disagrees. Use
+- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable memory.
+  When the work has a named scope, issue, prompt family, or planned-path boundary, route through a
+  `.codex/memory/tasks/<task-id>.yml` descriptor. Load only entries selected by the descriptor,
+  current intent, selected skill, changed paths, branch, or explicit tags; never bulk-load the
+  memory store. Canonical docs, source code, tests, scripts, applicable `AGENTS.md` files, and
+  selected `SKILL.md` files remain authoritative when memory disagrees. Use
   `python build/scripts/docs/check-codex-memory.py --task <descriptor> --receipt --summary` or the
   corresponding `--goal <inventory> --receipt --summary` command to produce the user-visible
   reference/dereference receipt.

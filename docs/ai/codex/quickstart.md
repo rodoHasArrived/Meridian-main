@@ -23,11 +23,13 @@ still lives in `../assistant-workflow-contract.md`.
    `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`,
    `docs/engineering/README.md`, `docs/start/README.md`,
    `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
-   For memory-aware tasks, inspect `.codex/memory/index.yml`; when the work has a named scope, use
-   a `.codex/memory/tasks/<task-id>.yml` descriptor and load only entries selected by the descriptor,
-   current intent, skill, changed paths, branch, or explicit tags. For very long goals, also use a
-   `.codex/memory/goals/<goal-id>.yml` progress inventory. Include a compact memory receipt for
-   selected IDs, match reasons, stale warnings, goal progress, and task/branch scope skips.
+   For memory-aware tasks, inspect `.codex/memory/index.yml` before loading durable memory; when
+   the work has a named scope, use a `.codex/memory/tasks/<task-id>.yml` descriptor and load only
+   entries selected by the descriptor, current intent, skill, changed paths, branch, or explicit
+   tags. For very long goals, also use a `.codex/memory/goals/<goal-id>.yml` progress inventory.
+   Include a compact memory receipt for selected IDs, match reasons, stale warnings, goal progress,
+   and task/branch scope skips. Prefer canonical docs, source, tests, scripts, scoped `AGENTS.md`,
+   and selected `SKILL.md` files when memory disagrees.
 5. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
 6. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
 7. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, and the relevant pack in `../context/README.md`.
@@ -139,9 +141,10 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 - Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
 - Working memory: use `../working-memory.md` to track task-local active claims, inspected files,
   assumptions, codebase drift, merge order, and validation reuse during concurrent changes.
-- Codex memory: use `.codex/memory/index.yml` only as a selective repo-local memory catalog; use
-  task descriptors plus `--explain` for scoped memory routing; use goal inventories for long-running
-  progress tracking; follow `memory-system.md` for promotion, staleness, and disabled user/global
+- Codex memory: inspect `.codex/memory/index.yml` only as a selective repo-local memory catalog;
+  use task descriptors plus `--receipt` for scoped memory routing; use goal inventories for
+  long-running progress tracking; load only selected entries; follow `memory-system.md` for
+  promotion, staleness, disabled user/global tiers, and canonical-doc precedence over memory
   tiers.
 - Receipt example:
 

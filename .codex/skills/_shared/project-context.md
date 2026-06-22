@@ -52,6 +52,8 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 - `.codex/skills/_shared/codex-execution-contract.md`
 - `docs/ai/codex/memory-system.md`
 - `.codex/memory/index.yml`
+- `.codex/memory/tasks/*.yml`
+- `.codex/memory/goals/*.yml`
 - `.github/copilot-instructions.md`
 - `.github/agents/implementation-assurance-agent.md`
 - `.github/workflows/README.md`
@@ -76,6 +78,25 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 - `docs/prompts/repo-maintenance-prompts.md`
 - `docs/roadmap/README.md`
 - `docs/roadmap/data/roadmap-items.yml`
+
+## Codex Memory Routing
+
+- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable memory.
+- Use `.codex/memory/tasks/<task-id>.yml` descriptors when the task has a named scope, prompt
+  family, issue, or planned-path boundary; use `.codex/memory/goals/<goal-id>.yml` inventories for
+  long-running goals that need progress, evidence, blockers, next actions, and promotion candidates
+  across compaction or continuation.
+- Load only memory entries selected by the descriptor, current intent, selected skill, changed
+  paths, branch, or explicit tags. Do not load the full memory store as startup context.
+- Canonical docs, source code, tests, scripts, applicable `AGENTS.md` files, and selected
+  `SKILL.md` files remain authoritative when memory is stale or conflicts.
+- When memory routing is used, include a compact receipt with selected memory IDs, match reasons,
+  stale warnings, active-goal progress count, and task or branch entries skipped because scope did
+  not match.
+- After changing `.codex/memory/index.yml`, indexed Markdown entries, task descriptors, goal
+  inventories, or memory validation tooling, run `python build/scripts/docs/check-codex-memory.py
+  --summary`; use `--task <descriptor> --receipt --summary` or `--goal <inventory> --receipt
+  --summary` when validating task or goal routing.
 
 ## Source Documentation Mesh
 
