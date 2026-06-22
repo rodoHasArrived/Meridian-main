@@ -811,6 +811,43 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleProjectionSets, async (AccountingBasisProjectionSetRequestDto request, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingBasisProjectionSetService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service
+                    .BuildProjectionSetAsync(request with
+                    {
+                        Actor = ResolveMutationActor(context, request.Actor),
+                        TenantId = tenantContext.TenantId ?? request.TenantId,
+                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    }, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("BuildAccountingConfigurationPostingRuleProjectionSet")
+        .Produces<AccountingBasisProjectionSetDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests, async (ExecuteAccountingRuleTestCasesRequestDto request, HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -1767,6 +1804,9 @@ public static class LedgerEndpoints
 
     private static IAccountingPostingCandidateService? ResolveAccountingPostingCandidateService(HttpContext context)
         => context.RequestServices.GetService<IAccountingPostingCandidateService>();
+
+    private static IAccountingBasisProjectionSetService? ResolveAccountingBasisProjectionSetService(HttpContext context)
+        => context.RequestServices.GetService<IAccountingBasisProjectionSetService>();
 
     private static IManualJournalEntryWorkbenchService? ResolveManualJournalEntryWorkbenchService(HttpContext context)
     {

@@ -61,7 +61,8 @@ public sealed partial class WorkstationEndpointsTests
         UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster,
         UserRole? currentUserRole = null,
         string? currentUserRoleProfileName = null,
-        string? currentUserCompanyId = "tenant-test")
+        string? currentUserCompanyId = "tenant-test",
+        string currentUserName = "ops-user")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -77,7 +78,11 @@ public sealed partial class WorkstationEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
+            var actor = context.Request.Headers.TryGetValue("X-Meridian-Test-User", out var testActor) &&
+                !string.IsNullOrWhiteSpace(testActor.ToString())
+                    ? testActor.ToString().Trim()
+                    : currentUserName;
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
             if (currentUserRole.HasValue)
             {

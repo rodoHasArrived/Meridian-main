@@ -702,6 +702,7 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPreview = "/api/ledger/accounting-configuration/preview";
     public const string LedgerAccountingConfigurationPostingRuleDryRun = "/api/ledger/accounting-configuration/posting-rules/dry-run";
     public const string LedgerAccountingConfigurationPostingRuleCandidates = "/api/ledger/accounting-configuration/posting-rules/candidates";
+    public const string LedgerAccountingConfigurationPostingRuleProjectionSets = "/api/ledger/accounting-configuration/posting-rules/projection-sets";
     public const string LedgerAccountingConfigurationPostingRuleTests = "/api/ledger/accounting-configuration/posting-rules/tests";
     public const string LedgerAccountingConfigurationPostingRuleTestCases = "/api/ledger/accounting-configuration/posting-rules/test-cases";
     public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";

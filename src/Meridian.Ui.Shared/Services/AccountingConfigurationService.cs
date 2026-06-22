@@ -460,7 +460,9 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             actor,
             promotionTestCases,
             workspace.LedgerBookId,
-            request.CorrelationId), ct).ConfigureAwait(false);
+            request.CorrelationId,
+            request.TenantId,
+            request.CompanyId), ct).ConfigureAwait(false);
         if (promotionSuite.Results.Any(static result => !result.Passed))
         {
             throw new InvalidOperationException("Posting rule promotion approval requires all saved regression tests for the current rule version to pass.");
