@@ -338,29 +338,47 @@ Memory receipt:
 Promotion is a review step, not an automatic dump.
 
 During work, Codex may keep temporary session notes. At task end, reusable observations should be
-classified as `discard`, `session only`, `branch`, `task`, or `repo`.
+classified as `discard`, `session only`, `branch`, `task`, `repo`, or `archive`. Promotion is only
+allowed through the paths below:
 
-Promote session memory to task memory when:
+| Promotion | Allowed When | Notes |
+| --- | --- | --- |
+| `session` to `task` | The observation belongs to a named task, issue, roadmap item, or accepted plan and will likely help a later session on the same task. | Keep `scope` and `load_when.task.ids` tied to that task. |
+| `session` to `branch` | The observation is tied to the current Git branch, such as temporary migration state, integration order, branch-only failures, or compatibility decisions. | Include branch selectors and branch invalidation triggers. |
+| `task` to `repo` | A task-scoped observation has become a stable repository convention, durable environment limit, repeatable validation rule, or accepted workflow. | Remove task-only selectors and prove current repo relevance with canonical source references. |
+| `branch` to `repo` | A branch-scoped observation remains true after branch integration or review and now describes durable repository behavior. | Remove branch-only selectors unless they are routing hints for active branches. |
+| active entry to `archive` | The entry is superseded, expired, contradicted by current sources, or no longer useful as active guidance but retains audit value. | The archive entry must name the archival reason or replacement guidance. |
 
-- It belongs to a named task, issue, roadmap item, or accepted plan.
-- It will likely be useful in a later session for the same task.
-- It is supported by source references or validation output.
-- It is too specific for branch or repo memory.
+Do not promote directly from `session` to `repo`. First stabilize the observation in a task or
+branch entry, then promote that reviewed task or branch entry to `repo` if it proves durable. Do not
+promote `archive` entries back to active tiers without creating a new reviewed active entry.
 
-Promote session memory to branch memory when:
+Every promotion review must record this evidence before the index and Markdown entry are updated:
 
-- It is tied to the current Git branch rather than long-term repository behavior.
-- It describes temporary migration state, integration order, branch-only failures, or compatibility
-  decisions.
-- It should expire on branch merge, deletion, abandonment, or scope change.
+- Source references: exact repo paths, canonical docs, source files, scripts, tests, or validation
+  evidence that currently support the claim. Repo-tier entries require at least one current
+  repo-local source reference outside `.codex/memory/tasks/`, `.codex/memory/branches/`, and
+  `.codex/memory/sessions/`.
+- Confidence value: `low`, `medium`, or `high`, matching the indexed `confidence` field.
+- Freshness value: `fresh`, `review-soon`, `stale`, or `unknown`, matching the indexed `freshness`
+  field. New active promotions should normally be `fresh`; use `review-soon` when evidence is
+  current but expected to age quickly.
+- Review date: the `review_after` date that tells future agents when to re-check the memory.
+- Invalidation triggers: concrete `invalidates_when` conditions that make the memory unsafe until
+  reviewed.
+- Reason for broader persistence: why the memory belongs in the broader target tier instead of
+  staying in the source tier or being discarded.
+- Conflicting memory entries reviewed: IDs of related or potentially conflicting memory entries, or
+  an explicit `none found` note after checking the index.
 
-Promote session memory to repo memory only when:
+Promotion target rules:
 
-- It describes a stable convention, durable environment limit, repeatable validation rule, or
-  accepted repository workflow.
-- It is supported by canonical docs, source files, scripts, or repeated validation evidence.
-- It has no narrower task or branch owner.
-- It does not duplicate or contradict existing canonical guidance.
+- Use `task` for claims whose truth depends on one task descriptor, plan, issue, or prompt family.
+- Use `branch` for claims whose truth depends on one Git branch lifecycle.
+- Use `repo` only when the claim is stable beyond one task or branch and can be supported by current
+  source references. A repo entry must not encode task-only claims with `load_when.task.ids`,
+  task-specific scopes, or source evidence that only lives under task/session/branch memory.
+- Use `archive` when an active entry should no longer guide routing or implementation.
 
 Promotion hygiene:
 
@@ -369,12 +387,12 @@ Promotion hygiene:
   guidance.
 - Include exact `source_refs`, `review_after`, and concrete `invalidates_when` triggers.
 - Prefer concise entries and link to canonical docs instead of restating long instructions.
-- Record `promotion_candidates` in session or task notes only as reviewed candidates with target
-  tier, source evidence, and reason; keep promotion explicit through `--promote-session`.
+- Record `promotion_candidates` in session, task, or goal notes only as reviewed candidates with
+  target tier, source evidence, reason for broader persistence, and conflicting entries reviewed;
+  keep promotion explicit through `--promote-session` or a direct reviewed index/entry update.
 - In a goal inventory, use `promotion_candidates` only as a queue of candidate observations to
   review later; do not treat it as a write instruction.
-- Repo-level promotion requires source references. User/global promotion requires explicit user
-  approval and a future opt-in mechanism.
+- User/global promotion requires explicit user approval and a future opt-in mechanism.
 
 ## Staleness, Invalidation, And Conflict Rules
 
@@ -442,6 +460,11 @@ The checker validates that:
   metadata, and point to an existing active task descriptor.
 - IDs are unique.
 - `source_refs` for repo-local source paths exist.
+- Repo-tier entries have at least one current repo-local source reference outside scoped memory.
+- Repo-tier entries do not carry task-only routing such as `load_when.task.ids` or task descriptor
+  path selectors.
+- `promotion_candidates` include source references, confidence, freshness, review date, invalidation
+  triggers, reason for broader persistence, and conflicting entries reviewed.
 - `review_after` values are valid ISO dates.
 - Expired entries are visible as stale warnings.
 - Unknown active tiers, disabled tiers, and invalid scopes are rejected.
