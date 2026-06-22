@@ -139,16 +139,40 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         prefix = " " * indent
         if isinstance(data, dict):
             for key, value in data.items():
-                if isinstance(value, (dict, list)):
+                if value == []:
+                    lines.append(f"{prefix}{key}: []")
+                elif value == {}:
+                    lines.append(f"{prefix}{key}: {{}}")
+                elif isinstance(value, (dict, list)):
                     lines.append(f"{prefix}{key}:")
                     lines.append(dump_yaml(value, indent + 2).rstrip())
                 else:
                     lines.append(f"{prefix}{key}: {format_scalar(value)}")
         elif isinstance(data, list):
             for item in data:
-                if isinstance(item, (dict, list)):
-                    lines.append(f"{prefix}-")
-                    lines.append(dump_yaml(item, indent + 2).rstrip())
+                if isinstance(item, dict):
+                    if not item:
+                        lines.append(f"{prefix}- {{}}")
+                        continue
+                    first = True
+                    for key, value in item.items():
+                        item_prefix = f"{prefix}- " if first else f"{prefix}  "
+                        if value == []:
+                            lines.append(f"{item_prefix}{key}: []")
+                        elif value == {}:
+                            lines.append(f"{item_prefix}{key}: {{}}")
+                        elif isinstance(value, (dict, list)):
+                            lines.append(f"{item_prefix}{key}:")
+                            lines.append(dump_yaml(value, indent + 4).rstrip())
+                        else:
+                            lines.append(f"{item_prefix}{key}: {format_scalar(value)}")
+                        first = False
+                elif isinstance(item, list):
+                    if not item:
+                        lines.append(f"{prefix}- []")
+                    else:
+                        lines.append(f"{prefix}-")
+                        lines.append(dump_yaml(item, indent + 2).rstrip())
                 else:
                     lines.append(f"{prefix}- {format_scalar(item)}")
         else:
@@ -1035,6 +1059,8 @@ def receipt_entry(decision: RoutingDecision, reason: str) -> dict[str, Any]:
         "scope": decision.scope,
         "file": decision.file,
         "reason": reason,
+        "match_reasons": list(decision.reasons),
+        "skip_reasons": list(decision.skipped_reasons),
         "warnings": list(decision.warnings),
     }
 
@@ -1043,29 +1069,49 @@ def build_memory_receipt(
     decisions: Sequence[RoutingDecision],
     task_descriptor: dict[str, Any] | None,
     goal_inventory: dict[str, Any] | None,
+    context: RoutingContext,
+    task_descriptor_path: str | None = None,
+    goal_inventory_path: str | None = None,
 ) -> dict[str, Any]:
-    referenced: list[dict[str, Any]] = []
-    dereferenced: list[dict[str, Any]] = []
+    selected: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
     stale_warnings: list[dict[str, str]] = []
 
     for decision in decisions:
         if decision.selected:
             item = receipt_entry(decision, primary_text(decision.reasons))
-            referenced.append(item)
+            selected.append(item)
         else:
             item = receipt_entry(decision, primary_text(decision.skipped_reasons))
-            dereferenced.append(item)
+            skipped.append(item)
         for warning in decision.warnings:
             stale_warnings.append({"id": decision.id, "warning": warning})
 
+    selectors = {
+        "paths": list(context.paths),
+        "explicit_tags": list(context.explicit_tags),
+        "descriptor_tags": list(context.descriptor_tags),
+        "skills": list(context.skills),
+        "intents": list(context.intents),
+        "branches": list(context.branches),
+        "task_id": context.task_id,
+        "work_mode": context.work_mode,
+    }
     return {
         "task_id": task_descriptor.get("task_id") if task_descriptor else None,
         "goal_id": goal_inventory.get("goal_id") if goal_inventory else None,
-        "referenced_count": len(referenced),
-        "dereferenced_count": len(dereferenced),
+        "task_descriptor_path": task_descriptor_path,
+        "goal_inventory_path": goal_inventory_path,
+        "selectors": selectors,
+        "selected_count": len(selected),
+        "skipped_count": len(skipped),
+        "referenced_count": len(selected),
+        "dereferenced_count": len(skipped),
         "stale_warning_count": len(stale_warnings),
-        "referenced": referenced,
-        "dereferenced": dereferenced,
+        "selected_memory": selected,
+        "skipped_memory": skipped,
+        "referenced": selected,
+        "dereferenced": skipped,
         "stale_warnings": stale_warnings,
     }
 
@@ -1078,6 +1124,9 @@ def build_payload(
     decisions: Sequence[RoutingDecision] | None = None,
     task_descriptor: dict[str, Any] | None = None,
     goal_inventory: dict[str, Any] | None = None,
+    context: RoutingContext | None = None,
+    task_descriptor_path: str | None = None,
+    goal_inventory_path: str | None = None,
 ) -> dict[str, Any]:
     errors = [finding for finding in findings if finding.severity == "error"]
     warnings = [finding for finding in findings if finding.severity == "warning"]
@@ -1105,7 +1154,14 @@ def build_payload(
         "routing_conflicts": [
             asdict(decision) for decision in decisions or [] if decision.task_scope_conflict
         ],
-        "memory_receipt": build_memory_receipt(decisions or [], task_descriptor, goal_inventory),
+        "memory_receipt": build_memory_receipt(
+            decisions or [],
+            task_descriptor,
+            goal_inventory,
+            context or RoutingContext(),
+            task_descriptor_path,
+            goal_inventory_path,
+        ),
         "task_descriptor": task_descriptor_summary(task_descriptor),
         "goal_inventory": goal_inventory_summary(goal_inventory),
         "findings": [asdict(finding) for finding in findings],
@@ -1148,28 +1204,39 @@ def print_summary(payload: dict[str, Any], explain: bool = False) -> None:
 def print_receipt(payload: dict[str, Any]) -> None:
     receipt = payload.get("memory_receipt", {})
     print("Memory receipt:")
+    if receipt.get("task_descriptor_path"):
+        print(f"task_descriptor_path: {receipt['task_descriptor_path']}")
+    if receipt.get("goal_inventory_path"):
+        print(f"goal_inventory_path: {receipt['goal_inventory_path']}")
     if receipt.get("goal_id"):
         print(f"goal: {receipt['goal_id']}")
     if receipt.get("task_id"):
         print(f"task: {receipt['task_id']}")
+    selectors = receipt.get("selectors", {})
+    if selectors:
+        branches = selectors.get("branches") or []
+        paths = selectors.get("paths") or []
+        print(f"selectors: branches={branches or ['<none>']}; paths={paths or ['<none>']}")
 
-    referenced = receipt.get("referenced", [])
-    if referenced:
-        for entry in referenced:
-            print(f"referenced: {entry['id']} -> {entry['file']} ({entry['reason']})")
+    selected = receipt.get("selected_memory", receipt.get("referenced", []))
+    if selected:
+        for entry in selected:
+            reasons = "; ".join(entry.get("match_reasons") or [entry.get("reason", "no reason recorded")])
+            print(f"selected: {entry['id']} -> {entry['file']} ({reasons})")
     else:
-        print("referenced: none")
+        print("selected: none")
 
-    dereferenced = receipt.get("dereferenced", [])
+    skipped = receipt.get("skipped_memory", receipt.get("dereferenced", []))
     display_limit = 12
-    if dereferenced:
-        for entry in dereferenced[:display_limit]:
-            print(f"dereferenced: {entry['id']} -> {entry['file']} ({entry['reason']})")
-        hidden_count = len(dereferenced) - display_limit
+    if skipped:
+        for entry in skipped[:display_limit]:
+            reasons = "; ".join(entry.get("skip_reasons") or [entry.get("reason", "no reason recorded")])
+            print(f"skipped: {entry['id']} -> {entry['file']} ({reasons})")
+        hidden_count = len(skipped) - display_limit
         if hidden_count > 0:
-            print(f"dereferenced: {hidden_count} additional entrie(s); use --explain or --json-output for details")
+            print(f"skipped: {hidden_count} additional entrie(s); use --explain or --json-output for details")
     else:
-        print("dereferenced: none")
+        print("skipped: none")
 
     for warning in receipt.get("stale_warnings", []):
         print(f"stale-warning: {warning['id']}: {warning['warning']}")
@@ -1686,7 +1753,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         branches=args.branches,
     )
     selected, decisions = route_entries(entries, context, args.stale_only)
-    payload = build_payload(root, findings, entries, selected, decisions, task_descriptor, goal_inventory)
+    payload = build_payload(
+        root,
+        findings,
+        entries,
+        selected,
+        decisions,
+        task_descriptor,
+        goal_inventory,
+        context,
+        task_path,
+        args.goal,
+    )
 
     if args.json_output:
         output_path = args.json_output

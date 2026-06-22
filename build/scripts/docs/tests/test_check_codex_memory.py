@@ -431,7 +431,7 @@ entries:
             self.assertEqual("task-a", payload["task_descriptor"]["task_id"])
             self.assertEqual(["repo:validation"], [entry["id"] for entry in payload["selected_entries"]])
 
-    def test_receipt_reports_referenced_and_dereferenced_entries(self) -> None:
+    def test_receipt_reports_selected_and_skipped_entries_with_selectors(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_valid_memory_tree(root)
@@ -458,14 +458,20 @@ entries:
 
             self.assertEqual(0, status)
             output = stdout.getvalue()
-            self.assertIn("referenced: repo:validation", output)
-            self.assertIn("dereferenced: repo:generic-tag", output)
+            self.assertIn("task_descriptor_path: .codex/memory/tasks/task-a.yml", output)
+            self.assertIn("selectors: branches=['feature/task-a']", output)
+            self.assertIn("selected: repo:validation", output)
+            self.assertIn("skipped: repo:generic-tag", output)
             payload = json.loads(json_path.read_text(encoding="utf-8"))
             receipt = payload["memory_receipt"]
-            self.assertEqual(1, receipt["referenced_count"])
-            self.assertEqual(1, receipt["dereferenced_count"])
-            self.assertEqual(["repo:validation"], [entry["id"] for entry in receipt["referenced"]])
-            self.assertEqual(["repo:generic-tag"], [entry["id"] for entry in receipt["dereferenced"]])
+            self.assertEqual(".codex/memory/tasks/task-a.yml", receipt["task_descriptor_path"])
+            self.assertEqual(["feature/task-a"], receipt["selectors"]["branches"])
+            self.assertEqual(1, receipt["selected_count"])
+            self.assertEqual(1, receipt["skipped_count"])
+            self.assertEqual(["repo:validation"], [entry["id"] for entry in receipt["selected_memory"]])
+            self.assertEqual(["repo:generic-tag"], [entry["id"] for entry in receipt["skipped_memory"]])
+            self.assertIn("match_reasons", receipt["selected_memory"][0])
+            self.assertIn("skip_reasons", receipt["skipped_memory"][0])
 
     def test_goal_inventory_rejects_unknown_progress_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
