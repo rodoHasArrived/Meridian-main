@@ -121,7 +121,9 @@ locally.
 tenant, company, fund profile, and ledger book. The shared accounting endpoints stamp the resolved
 tenant/company context on chart, template, posting-rule, rule-test, promotion, activation, read,
 dry-run, execution, and audit requests so browser and WPF clients cannot spoof a different
-configuration workspace through request body fields. Posting-rule journal candidate requests use
+configuration workspace through request body fields. Configuration audit history is filtered by the
+resolved tenant plus company when those scopes are present, so same-company events from another
+tenant remain audit context only for that tenant. Posting-rule journal candidate requests use
 the same resolved tenant/company scope before invoking Financial Operations so generated
 source-event drafts dry-run against, and resolve chart paths from, the authenticated workspace.
 The shared composition also registers the accounting-basis projection-set service so browser and

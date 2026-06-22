@@ -123,6 +123,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 after_hash,
                 validation_issues,
                 evidence_links,
+                tenant_id,
                 company_id,
                 report_group_principal_ids)
             values (
@@ -137,6 +138,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 @after_hash,
                 @validation_issues,
                 @evidence_links,
+                @tenant_id,
                 @company_id,
                 @report_group_principal_ids);
             """;
@@ -151,6 +153,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AddTextOrNull(command, "after_hash", auditEvent.AfterHash);
         AddJson(command, "validation_issues", auditEvent.ValidationIssues);
         AddJson(command, "evidence_links", auditEvent.EvidenceLinks);
+        AddTextOrNull(command, "tenant_id", auditEvent.TenantId);
         AddTextOrNull(command, "company_id", auditEvent.CompanyId);
         AddJson(command, "report_group_principal_ids", auditEvent.ReportGroupPrincipalIds ?? []);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
@@ -179,6 +182,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                    after_hash,
                    validation_issues,
                    evidence_links,
+                   tenant_id,
                    company_id,
                    report_group_principal_ids
             from {Qualified("accounting_action_audit_events")}
@@ -195,6 +199,12 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         {
             command.CommandText += " and ledger_book_id = @ledger_book_id";
             command.Parameters.AddWithValue("ledger_book_id", ledgerBookId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(tenantId))
+        {
+            command.CommandText += " and tenant_id = @tenant_id";
+            command.Parameters.AddWithValue("tenant_id", tenantId.Trim());
         }
 
         if (!string.IsNullOrWhiteSpace(companyId))
@@ -221,8 +231,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 reader.GetString(8),
                 Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(9)) ?? [],
                 Deserialize<IReadOnlyList<string>>(reader.GetString(10)) ?? [],
-                reader.IsDBNull(11) ? null : reader.GetString(11),
-                Deserialize<IReadOnlyList<string>>(reader.GetString(12)) ?? []));
+                reader.IsDBNull(12) ? null : reader.GetString(12),
+                Deserialize<IReadOnlyList<string>>(reader.GetString(13)) ?? [],
+                reader.IsDBNull(11) ? null : reader.GetString(11)));
         }
 
         return events;

@@ -56,6 +56,44 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task AccountingConfigurationService_IsolatesAuditByTenantAndCompanyScope()
+    {
+        var store = new InMemoryAccountingConfigurationStore();
+        var auditStore = new InMemoryAccountingActionAuditStore();
+        var service = new AccountingConfigurationService(store, auditStore);
+
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto("cash-tenant-alpha", "Assets:Cash", "Tenant Alpha Cash", "Asset"),
+            "controller-alpha",
+            CompanyId: "company-shared",
+            TenantId: "tenant-alpha"));
+
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto("cash-tenant-beta", "Assets:Cash", "Tenant Beta Cash", "Asset"),
+            "controller-beta",
+            CompanyId: "company-shared",
+            TenantId: "tenant-beta"));
+
+        var alphaAudit = await service.ListAuditAsync("fund-alpha", tenantId: "tenant-alpha", companyId: "company-shared");
+        var betaAudit = await service.ListAuditAsync("fund-alpha", tenantId: "tenant-beta", companyId: "company-shared");
+        var companyAudit = await service.ListAuditAsync("fund-alpha", companyId: "company-shared");
+
+        alphaAudit.Should().ContainSingle(item =>
+            item.Actor == "controller-alpha" &&
+            item.TenantId == "tenant-alpha" &&
+            item.CompanyId == "company-shared");
+        alphaAudit.Should().NotContain(item => item.TenantId == "tenant-beta");
+        betaAudit.Should().ContainSingle(item =>
+            item.Actor == "controller-beta" &&
+            item.TenantId == "tenant-beta" &&
+            item.CompanyId == "company-shared");
+        betaAudit.Should().NotContain(item => item.TenantId == "tenant-alpha");
+        companyAudit.Should().HaveCount(2);
+    }
+
+    [Fact]
     public void PrivateCapitalActivityProjection_NormalizesOmittedFundEventRecordsToEmptyList()
     {
         var projection = new PrivateCapitalActivityProjectionDto(

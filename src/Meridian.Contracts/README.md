@@ -893,7 +893,9 @@ remain contract-visible. Chart, template, posting-rule, regression-test, and pro
 requests can carry `LedgerBookId`, `TenantId`, and `CompanyId`, and
 `IAccountingConfigurationStore.GetAsync` accepts the same tenant/company/fund/book scope so clients
 can address tenant-isolated fund-level and ledger-book-specific rule studios without sharing one
-fund-wide workspace by accident. Dry-run generation expands positive static
+fund-wide workspace by accident. Accounting configuration audit events also retain optional
+tenant/company scope so browser, WPF, and admin review surfaces can list mutation history without
+blending same-company events across tenants. Dry-run generation expands positive static
 or formula-backed allocation weights into generated posting lines, preserves balance through
 residual rounding, and merges allocation target dimensions into the preview payload. Generated
 posting-rule predicates can evaluate dimensional fields and external GL dimensions through the

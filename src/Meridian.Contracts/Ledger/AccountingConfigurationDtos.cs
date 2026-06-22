@@ -494,7 +494,8 @@ public sealed record AccountingActionAuditEventDto(
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
     IReadOnlyList<string> EvidenceLinks,
     string? CompanyId = null,
-    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null,
+    string? TenantId = null);
 
 public sealed record AccountingRulesStudioSummaryDto(
     int TotalRules,

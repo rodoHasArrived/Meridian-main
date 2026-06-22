@@ -35,6 +35,17 @@ public sealed class AccountingConfigurationPostgresStoreTests
         sql.Should().Contain("on __SCHEMA__.accounting_configuration_posting_rules(tenant_id, company_id, fund_profile_id, configuration_scope_id, template_id)");
     }
 
+    [Fact]
+    public void AccountingConfigurationAuditTenantScopeMigration_DefinesReRunnableAuditScope()
+    {
+        var sql = ReadMigration("V_ledger_017__accounting_configuration_audit_tenant_scope.sql");
+
+        sql.Should().Contain("add column if not exists tenant_id text null");
+        sql.Should().Contain("set tenant_id = workspace.tenant_id");
+        sql.Should().Contain("ix_accounting_action_audit_events_tenant_company");
+        sql.Should().Contain("tenant_id, company_id, recorded_at_utc desc");
+    }
+
     [LedgerDatabaseFact]
     public async Task Migration_CreatesAccountingConfigurationTables()
     {
@@ -256,7 +267,8 @@ public sealed class AccountingConfigurationPostgresStoreTests
             ValidationIssues: [],
             EvidenceLinks: ["wpf://accounting/configure"],
             CompanyId: "company-alpha",
-            ReportGroupPrincipalIds: ["Accounting", "reporting-ops"]);
+            ReportGroupPrincipalIds: ["Accounting", "reporting-ops"],
+            TenantId: "tenant-alpha");
 
         await database.AccountingConfigurationStore.AppendAsync(auditEvent);
 
@@ -267,7 +279,68 @@ public sealed class AccountingConfigurationPostgresStoreTests
         loaded[0].CorrelationId.Should().Be("postgres-audit-test");
         loaded[0].EvidenceLinks.Should().Contain("wpf://accounting/configure");
         loaded[0].CompanyId.Should().Be("company-alpha");
+        loaded[0].TenantId.Should().Be("tenant-alpha");
         loaded[0].ReportGroupPrincipalIds.Should().BeEquivalentTo(["Accounting", "reporting-ops"]);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AuditStore_FiltersAccountingActionEventsByTenantAndCompany()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+
+        await database.AccountingConfigurationStore.AppendAsync(new AccountingActionAuditEventDto(
+            AuditEventId: Guid.NewGuid(),
+            RecordedAtUtc: DateTimeOffset.Parse("2026-06-01T12:00:00Z"),
+            Actor: "tenant-alpha-controller",
+            Action: "chart.upsert",
+            FundProfileId: "fund-alpha",
+            LedgerBookId: null,
+            CorrelationId: "tenant-alpha-audit",
+            BeforeHash: "before-alpha",
+            AfterHash: "after-alpha",
+            ValidationIssues: [],
+            EvidenceLinks: ["evidence://tenant-alpha/configuration"],
+            CompanyId: "company-shared",
+            TenantId: "tenant-alpha"));
+
+        await database.AccountingConfigurationStore.AppendAsync(new AccountingActionAuditEventDto(
+            AuditEventId: Guid.NewGuid(),
+            RecordedAtUtc: DateTimeOffset.Parse("2026-06-01T12:01:00Z"),
+            Actor: "tenant-beta-controller",
+            Action: "chart.upsert",
+            FundProfileId: "fund-alpha",
+            LedgerBookId: null,
+            CorrelationId: "tenant-beta-audit",
+            BeforeHash: "before-beta",
+            AfterHash: "after-beta",
+            ValidationIssues: [],
+            EvidenceLinks: ["evidence://tenant-beta/configuration"],
+            CompanyId: "company-shared",
+            TenantId: "tenant-beta"));
+
+        var alpha = await database.AccountingConfigurationStore.ListAsync(
+            "fund-alpha",
+            tenantId: "tenant-alpha",
+            companyId: "company-shared");
+        var beta = await database.AccountingConfigurationStore.ListAsync(
+            "fund-alpha",
+            tenantId: "tenant-beta",
+            companyId: "company-shared");
+        var company = await database.AccountingConfigurationStore.ListAsync(
+            "fund-alpha",
+            companyId: "company-shared");
+
+        alpha.Should().ContainSingle(item =>
+            item.Actor == "tenant-alpha-controller" &&
+            item.TenantId == "tenant-alpha" &&
+            item.CompanyId == "company-shared");
+        alpha.Should().NotContain(item => item.TenantId == "tenant-beta");
+        beta.Should().ContainSingle(item =>
+            item.Actor == "tenant-beta-controller" &&
+            item.TenantId == "tenant-beta" &&
+            item.CompanyId == "company-shared");
+        beta.Should().NotContain(item => item.TenantId == "tenant-alpha");
+        company.Should().HaveCount(2);
     }
 
     private static AccountingConfigurationWorkspaceDto BuildScopedWorkspace(

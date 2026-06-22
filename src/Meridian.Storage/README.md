@@ -210,8 +210,9 @@ workspace foreign keys before rebuilding composite keys, keeping migration repla
 operational schema validation.
 PostgreSQL accounting configuration workspaces are now keyed by tenant, company, fund profile, and
 configuration scope, and chart/template/rule/test-case child rows use the same composite scope.
-Audit reads filter by retained `company_id` when a shared endpoint supplies authenticated company
-context, keeping Postgres-backed Rules Studio workspaces isolated across tenant/company boundaries.
+Audit reads filter by retained `tenant_id` and `company_id` when shared endpoints supply
+authenticated tenant/company context, keeping Postgres-backed Rules Studio audit history isolated
+across tenant/company boundaries.
 
 ## Glossary
 

@@ -66,10 +66,12 @@ public sealed class InMemoryAccountingActionAuditStore : IAccountingActionAuditS
         string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
+        var normalizedTenantId = NormalizeOptional(tenantId);
         var normalizedCompanyId = NormalizeOptional(companyId);
         var events = _events
             .Where(item => string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(item.FundProfileId, fundProfileId.Trim(), StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
+            .Where(item => normalizedTenantId is null || string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase))
             .Where(item => normalizedCompanyId is null || string.Equals(item.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(item => item.RecordedAtUtc)
             .ThenBy(item => item.AuditEventId)
@@ -185,12 +187,15 @@ public sealed class FileAccountingConfigurationStore : IAccountingConfigurationS
         string? companyId = null)
     {
         var normalizedFundProfileId = NormalizeOptional(fundProfileId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
         var normalizedCompanyId = NormalizeOptional(companyId);
         var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
         return snapshot.AuditEvents
             .Where(item => string.IsNullOrWhiteSpace(normalizedFundProfileId) ||
                            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
+            .Where(item => normalizedTenantId is null ||
+                           string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase))
             .Where(item => normalizedCompanyId is null || string.Equals(item.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(item => item.RecordedAtUtc)
             .ThenBy(item => item.AuditEventId)
@@ -901,7 +906,8 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 validation,
                 evidenceLinks ?? [],
                 NormalizeOptional(companyId),
-                NormalizePrincipalIds(reportGroupPrincipalIds)),
+                NormalizePrincipalIds(reportGroupPrincipalIds),
+                NormalizeOptional(tenantId)),
             ct).ConfigureAwait(false);
 
         return await GetWorkspaceAsync(finalWorkspace.FundProfileId, ledgerBookId ?? finalWorkspace.LedgerBookId, ct, finalWorkspace.TenantId, finalWorkspace.CompanyId).ConfigureAwait(false);
