@@ -1069,7 +1069,33 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
             link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase) &&
             EvidenceReferencesReportLedgerBook(package, link) &&
+            EvidenceReferencesReportTenantCompanyScope(package, link) &&
             EvidenceReferencesReportDimensionScope(package, link));
+
+    private static bool EvidenceReferencesReportTenantCompanyScope(
+        AccountingReportPackageBundleDto package,
+        string evidenceLink)
+        => ReferencesOptionalScope(evidenceLink, "tenant", "tenantId", package.TenantId) &&
+           ReferencesOptionalScope(evidenceLink, "company", "companyId", package.CompanyId);
+
+    private static bool ReferencesOptionalScope(
+        string evidenceLink,
+        string pathToken,
+        string queryToken,
+        string? scopeValue)
+    {
+        var normalized = NormalizeOptional(scopeValue);
+        if (normalized is null)
+        {
+            return true;
+        }
+
+        return evidenceLink.Contains($"{pathToken}:{normalized}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"{pathToken}/{normalized}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"{queryToken}={normalized}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"{queryToken}:{normalized}", StringComparison.OrdinalIgnoreCase) ||
+               evidenceLink.Contains($"{queryToken}/{normalized}", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static bool EvidenceReferencesReportLedgerBook(
         AccountingReportPackageBundleDto package,

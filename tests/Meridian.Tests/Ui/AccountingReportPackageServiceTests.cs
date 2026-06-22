@@ -425,6 +425,45 @@ public sealed class AccountingReportPackageServiceTests
     }
 
     [Fact]
+    public async Task CertifyPackageAsync_RequiresTenantCompanyScopedEvidenceForTenantPackages()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var ready = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        var bookScopedOnly = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification without retained tenant/company proof.",
+            [CertificationEvidence(ready)]));
+
+        await bookScopedOnly.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var tenantScopedEvidence =
+            $"evidence:report-certification:controller-approval:tenant/tenant-alpha/company/company-alpha:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}";
+        var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified the retained tenant-scoped report package.",
+            [tenantScopedEvidence],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        certified.Should().NotBeNull();
+        certified!.TenantId.Should().Be("tenant-alpha");
+        certified.CompanyId.Should().Be("company-alpha");
+        certified.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.Certification.EvidenceLinks.Should().Contain(tenantScopedEvidence);
+    }
+
+    [Fact]
     public async Task CertifyPackageAsync_BlocksStandalonePackageWithoutCloseWorkflow()
     {
         var service = new AccountingReportPackageService();

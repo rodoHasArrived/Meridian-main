@@ -1045,7 +1045,7 @@ public sealed class AccountingConfigurationServiceTests
             TenantId: "tenant-alpha",
             CompanyId: "company-shared"));
         await bookScopedOnly.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
         var tenantScopedEvidence =
             $"/api/workstation/evidence/subjects/accounting-record/approval/tenant/tenant-alpha/company/company-shared/ledger-book/{submitted.LedgerBookId:D}/{submitted.PeriodId}";
@@ -4565,7 +4565,7 @@ public sealed class AccountingConfigurationServiceTests
                 "/api/workstation/evidence/subjects/accounting-record/approval/generic-review"
             ]));
         await splitApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
         var wrongBookApprovalEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             submitted.JournalEntryId,
@@ -4579,7 +4579,7 @@ public sealed class AccountingConfigurationServiceTests
                 $"/api/workstation/evidence/subjects/accounting-record/approval/ledger-book/{Guid.NewGuid():D}/{submitted.PeriodId}"
             ]));
         await wrongBookApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
         var approvalEvidence = ManualJournalApprovalEvidence(submitted);
         var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
@@ -4633,7 +4633,7 @@ public sealed class AccountingConfigurationServiceTests
                 "/api/workstation/evidence/subjects/accounting-record/posting/generic-review"
             ]));
         await splitPostEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Manual journal posting evidence must reference posting intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            .WithMessage("Manual journal posting evidence must reference posting intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
         var postingEvidence = ManualJournalPostingEvidence(approved.JournalEntry);
         var posted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
@@ -4683,7 +4683,7 @@ public sealed class AccountingConfigurationServiceTests
             Notes: "Lock after close package review",
             EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-close/close-package/fund-alpha-2026-07"]));
         await wrongPeriodCloseLockEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            .WithMessage("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
         var splitCloseLockEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             posted.JournalEntry.JournalEntryId,
@@ -4698,7 +4698,7 @@ public sealed class AccountingConfigurationServiceTests
                 "/api/workstation/evidence/subjects/accounting-close/close-package/generic-review"
             ]));
         await splitCloseLockEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            .WithMessage("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
         var missingReason = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             posted.JournalEntry.JournalEntryId,
@@ -4740,7 +4740,7 @@ public sealed class AccountingConfigurationServiceTests
             Notes: "Reverse after close review",
             EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal/2026-07"]));
         await wrongPeriodCorrectionEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            .WithMessage("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
         var splitCorrectionEvidence = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             posted.JournalEntry.JournalEntryId,
@@ -4755,7 +4755,7 @@ public sealed class AccountingConfigurationServiceTests
                 "/api/workstation/evidence/subjects/accounting-record/reversal/generic-review"
             ]));
         await splitCorrectionEvidence.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            .WithMessage("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
         var reversalEvidence = $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{posted.JournalEntry.LedgerBookId:D}/{posted.JournalEntry.PeriodId}";
         var reversal = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(

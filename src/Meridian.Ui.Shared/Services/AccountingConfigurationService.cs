@@ -4280,7 +4280,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         if (!HasManualJournalCorrectionEvidenceWithProvenance(posted, request.EvidenceLinks))
         {
-            throw new InvalidOperationException("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            throw new InvalidOperationException("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
         }
 
         EnsureLifecycleActorIndependentFromPreparer(posted, request);
@@ -4511,7 +4511,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         if (!HasManualJournalApprovalEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
         {
-            throw new InvalidOperationException("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            throw new InvalidOperationException("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
         }
 
         return request;
@@ -4533,7 +4533,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         if (!HasManualJournalPostingEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
         {
-            throw new InvalidOperationException("Manual journal posting evidence must reference posting intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            throw new InvalidOperationException("Manual journal posting evidence must reference posting intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
         }
 
         return request;
@@ -4555,7 +4555,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         if (!HasManualJournalCloseLockEvidenceWithProvenance(journalEntry, request.EvidenceLinks))
         {
-            throw new InvalidOperationException("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, and the scoped ledger book on the same evidence artifact.");
+            throw new InvalidOperationException("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
         }
 
         return request;
