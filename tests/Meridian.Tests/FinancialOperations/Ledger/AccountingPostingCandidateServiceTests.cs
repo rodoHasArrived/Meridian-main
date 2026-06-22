@@ -753,6 +753,34 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task PostCandidateAsync_SameActorAsCandidatePreparerBlocksAppend()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                ledgerBookId,
+                periodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1"),
+            "controller@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*approval by an operator independent from the candidate preparer*");
+        store.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task PostCandidateAsync_WithoutLedgerStoreFailsClosed()
     {
         var ledgerBookId = Guid.NewGuid();

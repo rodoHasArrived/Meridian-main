@@ -359,7 +359,8 @@ surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,
 ledger book, and source event on the same artifact, plus tenant and company when the request is
 enterprise-scoped, so generic workpaper links cannot approve a different book or company by
-association.
+association. The approving operator must also be independent from the source-event candidate
+preparer before the append gate can move a generated candidate into the Meridian ledger.
 Production certification profiles also fail closed before persistence when a retained profile marks
 posting rules, journal lifecycle, close/reporting, external GL, reconciliation, direct lending,
 strategy ledger reads, or dimensional reporting controls as certified without evidence that names

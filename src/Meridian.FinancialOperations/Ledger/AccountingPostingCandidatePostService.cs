@@ -41,6 +41,12 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         var journalStore = _journalStore
             ?? throw new InvalidOperationException("Generated accounting posting candidates cannot be posted because no Postgres-backed ledger journal store is configured.");
         var actor = RequireText(request.Actor, nameof(request.Actor));
+        var preparer = RequireText(request.Candidate.Actor, nameof(request.Candidate.Actor));
+        if (string.Equals(actor, preparer, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Generated accounting posting candidates require approval by an operator independent from the candidate preparer.");
+        }
+
         var approvalId = RequireText(request.ApprovalId, nameof(request.ApprovalId));
         var ledgerBookId = request.Candidate.LedgerBookId
             ?? throw new ArgumentException("Generated accounting posting candidates require a ledger book id.", nameof(request));

@@ -72,8 +72,8 @@
       "id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
       "path": "src/Meridian.FinancialOperations",
       "readme": "src/Meridian.FinancialOperations/README.md",
-      "readme_hash": "99117657870785354924ea1ae4d016bd4c1b6843f67ffae6b13e2826aab28602",
-      "source_hash": "a6cb7ca5fbba21ee401a4dbf6216bcd476367a14135d52dcf7f0ea3da92a5b31"
+      "readme_hash": "2c852c9ba04f9a177a3f8c199295d719f299fac57d6f5ba85143a3070d923cc7",
+      "source_hash": "78b890708c28704ae6a240e5ae7032754d3faa88423a804ad8029abde4444eb2"
     },
     {
       "id": "SRC-DESIGN-IDENTITY",
