@@ -351,6 +351,15 @@ class CheckCodexMemoryTests(unittest.TestCase):
 
             self.assertTrue(any("Disabled tier" in finding.message for finding in findings))
 
+    def test_invalid_review_after_date_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root, review_after="not-a-date")
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(any("review_after is not a valid ISO date" in finding.message for finding in findings))
+
     def test_missing_source_ref_file_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -571,15 +580,57 @@ entries:
 
             self.assertTrue(any("Unknown progress status" in finding.message for finding in findings))
 
+
+    def test_collect_findings_validates_task_descriptors_under_memory_tasks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            invalid_task = task_descriptor("task-a").replace("selected_skill: meridian-docs", "selected_skill: ")
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", invalid_task)
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(any("selected_skill must be a non-empty string" in finding.message for finding in findings))
+
+    def test_collect_findings_validates_goal_inventories_under_memory_goals(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+            invalid_goal = goal_inventory().replace("status: active", "status: paused")
+            write(root / ".codex" / "memory" / "goals" / "goal-a.yml", invalid_goal)
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(any("Unknown goal status" in finding.message for finding in findings))
+
+    def test_archive_entries_are_not_selected_as_active_guidance(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            archive_entry = valid_entry().replace("id: repo:validation", "id: archive:validation", 1)
+            archive_entry = archive_entry.replace("tier: repo", "tier: archive", 1)
+            archive_entry = archive_entry.replace("scope: repo", "scope: archive", 1)
+            archive_entry = archive_entry.replace("file: .codex/memory/repo/validation.md", "file: .codex/memory/archive/validation.md", 1)
+            write(root / ".codex" / "memory" / "index.yml", valid_index() + index_entry(archive_entry))
+            write(root / ".codex" / "memory" / "archive" / "validation.md", memory_file_from_entry(archive_entry, "Archived"))
+
+            findings, entries = check_codex_memory.collect_findings(root)
+            selected = check_codex_memory.select_entries(entries, ["docs/ai/codex/quickstart.md"], [], False)
+
+            self.assertEqual([], findings)
+            self.assertNotIn("archive:validation", [entry["id"] for entry in selected])
+
     def test_goal_inventory_yaml_is_not_reported_as_unindexed_memory(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
             write(root / ".codex" / "memory" / "goals" / "goal-a.yml", goal_inventory())
 
             findings, _ = check_codex_memory.collect_findings(root)
 
-            self.assertFalse(any(".codex/memory/goals/goal-a.yml" in finding.path for finding in findings))
+            self.assertFalse(any("not listed" in finding.message for finding in findings))
 
     def test_record_goal_progress_creates_inventory_item(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

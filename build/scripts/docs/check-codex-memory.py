@@ -635,7 +635,11 @@ def load_index(root: Path) -> tuple[dict[str, Any] | None, Path, list[Finding]]:
     return data, index_path, []
 
 
-def validate_task_descriptor(descriptor: Any, display_path: str) -> tuple[dict[str, Any] | None, list[Finding]]:
+def validate_task_descriptor(
+    descriptor: Any,
+    display_path: str,
+    root: Path = REPO_ROOT,
+) -> tuple[dict[str, Any] | None, list[Finding]]:
     findings: list[Finding] = []
     if not isinstance(descriptor, dict):
         return None, [Finding("error", display_path, "Task descriptor must be a YAML mapping.")]
@@ -654,6 +658,9 @@ def validate_task_descriptor(descriptor: Any, display_path: str) -> tuple[dict[s
             findings.append(Finding("error", display_path, f"{field} must be a non-empty string."))
     for field in ("planned_paths", "memory_tags", "success_criteria"):
         findings.extend(validate_string_list(descriptor.get(field), field, display_path))
+    for planned_path in string_values(descriptor.get("planned_paths")):
+        _, path_findings = safe_repo_relative_path(root, planned_path, display_path)
+        findings.extend(path_findings)
 
     promotion_candidates = descriptor.get("promotion_candidates", [])
     if not isinstance(promotion_candidates, list):
@@ -684,7 +691,18 @@ def load_task_descriptor(root: Path, raw_path: str) -> tuple[dict[str, Any] | No
     except Exception as exc:
         findings.append(Finding("error", rel(root, descriptor_path), f"Unable to parse task descriptor: {exc}"))
         return None, findings
-    return validate_task_descriptor(descriptor, rel(root, descriptor_path))
+    return validate_task_descriptor(descriptor, rel(root, descriptor_path), root)
+
+
+def validate_task_descriptors(root: Path) -> list[Finding]:
+    tasks_root = root / MEMORY_ROOT_REL / "tasks"
+    if not tasks_root.exists():
+        return []
+    findings: list[Finding] = []
+    for path in sorted(tasks_root.glob("*.yml")) + sorted(tasks_root.glob("*.yaml")):
+        _, task_findings = load_task_descriptor(root, rel(root, path))
+        findings.extend(task_findings)
+    return findings
 
 
 def validate_goal_progress_item(root: Path, item: Any, display_path: str, index: int) -> list[Finding]:
@@ -787,6 +805,17 @@ def load_goal_inventory(root: Path, raw_path: str) -> tuple[dict[str, Any] | Non
     return validate_goal_inventory(root, goal, rel(root, goal_path))
 
 
+def validate_goal_inventories(root: Path) -> list[Finding]:
+    goals_root = root / MEMORY_ROOT_REL / "goals"
+    if not goals_root.exists():
+        return []
+    findings: list[Finding] = []
+    for path in sorted(goals_root.glob("*.yml")) + sorted(goals_root.glob("*.yaml")):
+        _, goal_findings = load_goal_inventory(root, rel(root, path))
+        findings.extend(goal_findings)
+    return findings
+
+
 def collect_unindexed_files(root: Path, entries: Sequence[dict[str, Any]]) -> list[Finding]:
     memory_root = root / MEMORY_ROOT_REL
     if not memory_root.exists():
@@ -804,7 +833,7 @@ def collect_unindexed_files(root: Path, entries: Sequence[dict[str, Any]]) -> li
             continue
         if path.parent.resolve() == (memory_root / "goals").resolve() and path.suffix.lower() in {".yml", ".yaml"}:
             continue
-        if normalize_path(rel_path) not in indexed:
+        if path.suffix.lower() == ".md" and normalize_path(rel_path) not in indexed:
             findings.append(Finding("error", rel_path, "Memory file is not listed in .codex/memory/index.yml."))
     return findings
 
@@ -832,6 +861,8 @@ def collect_findings(root: Path) -> tuple[list[Finding], list[dict[str, Any]]]:
             entries.append(entry)
 
     findings.extend(collect_unindexed_files(root, entries))
+    findings.extend(validate_task_descriptors(root))
+    findings.extend(validate_goal_inventories(root))
     return sorted(findings, key=lambda finding: (finding.severity, finding.path, finding.message)), entries
 
 
