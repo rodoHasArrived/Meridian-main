@@ -1942,6 +1942,65 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ExportPackages_StampLedgerBookScopeIntoRetainedPackageIdentity()
+    {
+        var primaryBookId = ExternalGlLedgerBookId;
+        var gaapBookId = Guid.Parse("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");
+        var service = CreateService();
+        var profile = CertifiedQuickBooksMappingProfile();
+
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: primaryBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile with { ProfileId = "qbo-default-fund-certified-gaap" },
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: gaapBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified-gaap"]));
+
+        var primary = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: primaryBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(primaryBookId)]));
+        var gaap = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: gaapBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: "qbo-default-fund-certified-gaap",
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(gaapBookId)]));
+        var primaryManifest = await service.GetExportPackageManifestAsync(primary.ExportPackageId);
+        var gaapManifest = await service.GetExportPackageManifestAsync(gaap.ExportPackageId);
+
+        primary.ExportPackageId.Should().Contain($"book-{primaryBookId:N}");
+        gaap.ExportPackageId.Should().Contain($"book-{gaapBookId:N}");
+        primary.ExportPackageId.Should().NotBe(gaap.ExportPackageId);
+        primary.LedgerBookId.Should().Be(primaryBookId);
+        gaap.LedgerBookId.Should().Be(gaapBookId);
+        primaryManifest.Should().NotBeNull();
+        gaapManifest.Should().NotBeNull();
+        primaryManifest!.LedgerBookId.Should().Be(primaryBookId);
+        gaapManifest!.LedgerBookId.Should().Be(gaapBookId);
+        primaryManifest.Payload.Should().Contain(primaryBookId.ToString("D"));
+        gaapManifest.Payload.Should().Contain(gaapBookId.ToString("D"));
+        primaryManifest.ExternalPostingAllowed.Should().BeFalse();
+        gaapManifest.ExternalPostingAllowed.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task CreateExportPackageAsync_RequiresExplicitLedgerBookScopeBeforeReview()
     {
         var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());

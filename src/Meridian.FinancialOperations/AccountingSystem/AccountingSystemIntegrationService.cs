@@ -215,7 +215,7 @@ public sealed class AccountingSystemIntegrationService
             evidenceLinks);
 
         var package = new ExternalGlExportPackageDto(
-            BuildExportPackageId(providerId, fundProfileId, periodEnd, tenantId, companyId),
+            BuildExportPackageId(providerId, fundProfileId, request.LedgerBookId, periodEnd, tenantId, companyId),
             providerId,
             fundProfileId,
             request.LedgerBookId,
@@ -1472,7 +1472,7 @@ public sealed class AccountingSystemIntegrationService
             HasExportCertificationEvidence([link]) &&
             link.Contains(package.ExportPackageId, StringComparison.OrdinalIgnoreCase) &&
             link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
-            HasLedgerBookEvidence(link, package.LedgerBookId) &&
+            HasExplicitLedgerBookEvidence(link, package.LedgerBookId) &&
             ((link.Contains(periodStart, StringComparison.OrdinalIgnoreCase) &&
               link.Contains(periodEnd, StringComparison.OrdinalIgnoreCase)) ||
              (link.Contains(compactPeriodStart, StringComparison.OrdinalIgnoreCase) &&
@@ -1534,6 +1534,23 @@ public sealed class AccountingSystemIntegrationService
             link.Contains(scopedLedgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool HasExplicitLedgerBookEvidence(string link, Guid? ledgerBookId)
+    {
+        if (ledgerBookId is not Guid scopedLedgerBookId)
+        {
+            return true;
+        }
+
+        var ledgerBookIdText = scopedLedgerBookId.ToString("D");
+        var ledgerBookIdCompact = scopedLedgerBookId.ToString("N");
+        return link.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               link.Contains($"ledger-book/{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               link.Contains($"book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
+               link.Contains($"ledger-book:{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase) ||
+               link.Contains($"ledger-book/{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase) ||
+               link.Contains($"book:{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase);
+    }
+
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
@@ -1579,12 +1596,14 @@ public sealed class AccountingSystemIntegrationService
     private static string BuildExportPackageId(
         string providerId,
         string fundProfileId,
+        Guid? ledgerBookId,
         DateOnly periodEnd,
         string? tenantId,
         string? companyId)
     {
         var tenantScope = BuildTenantPackageScope(tenantId, companyId);
-        var baseId = $"external-gl-export-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{periodEnd:yyyyMMdd}";
+        var bookScope = ledgerBookId.HasValue ? $"-book-{ledgerBookId.Value:N}" : string.Empty;
+        var baseId = $"external-gl-export-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}{bookScope}-{periodEnd:yyyyMMdd}";
         return string.IsNullOrWhiteSpace(tenantScope)
             ? $"{baseId}-{Guid.NewGuid():N}"
             : $"{baseId}-{tenantScope}-{Guid.NewGuid():N}";
