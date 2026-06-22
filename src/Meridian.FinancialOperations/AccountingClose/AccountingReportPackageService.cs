@@ -140,7 +140,14 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         var dimensionScope = BuildReportDimensionScope(packageDimensions, fundProfileId, ledgerBookId);
         validationIssues.AddRange(BuildReportDimensionScopeIssues(request, fundProfileId, ledgerBookId, packageDimensions));
         validationIssues.AddRange(BuildReportCertificationEvidenceIssues(periodId, evidenceLinks));
-        validationIssues.AddRange(BuildRestatementCertificationIssues(request, fundProfileId, periodId, evidenceLinks, ReadPackages()));
+        validationIssues.AddRange(BuildRestatementCertificationIssues(
+            request,
+            fundProfileId,
+            periodId,
+            ledgerBookId,
+            packageDimensions,
+            evidenceLinks,
+            ReadPackages()));
 
         var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         var state = hasCritical ? AccountingCertificationStateDto.Draft : AccountingCertificationStateDto.ReadyForReview;
@@ -649,6 +656,8 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         AccountingReportPackageRequestDto request,
         string fundProfileId,
         string periodId,
+        Guid? ledgerBookId,
+        LedgerDimensionSetDto packageDimensions,
         IReadOnlyList<string> evidenceLinks,
         IReadOnlyList<AccountingReportPackageBundleDto> retainedPackages)
     {
@@ -695,6 +704,27 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                         $"Restatement package for fund '{fundProfileId}' references prior package '{priorPackageId}' for fund '{priorPackage.FinancialStatements.FundProfileId}'.",
                         priorPackageId,
                         "Select a prior certified report package for the same fund before restatement certification."));
+                }
+
+                if (ledgerBookId.HasValue &&
+                    priorPackage.FinancialStatements.LedgerBookId != ledgerBookId.Value)
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "RestatementPriorPackageLedgerBookMismatch",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Restatement package for ledger book '{ledgerBookId.Value:D}' references prior package '{priorPackageId}' for ledger book '{priorPackage.FinancialStatements.LedgerBookId?.ToString("D") ?? "unscoped"}'.",
+                        priorPackageId,
+                        "Select a prior certified report package for the same ledger book before restatement certification."));
+                }
+
+                if (!MatchesExactDimensionScope(priorPackage.FinancialStatements.Dimensions, packageDimensions))
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "RestatementPriorPackageDimensionScopeMismatch",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Restatement package for period '{periodId}' references prior package '{priorPackageId}' with a different retained dimension scope.",
+                        priorPackageId,
+                        "Select a prior certified report package with the same fund, ledger book, investor, capital-account, entity, strategy, cost-center, counterparty, instrument, tax-lot, and external-GL dimension scope before restatement certification."));
                 }
 
                 if (priorPackage.Certification.State != AccountingCertificationStateDto.Certified)
@@ -1733,6 +1763,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                && MatchesDimensionValue(normalized.ProjectId, filter.ProjectId)
                && MatchesExternalGlDimensions(normalized.ExternalGlDimensions, filter.ExternalGlDimensions);
     }
+
+    private static bool MatchesExactDimensionScope(
+        LedgerDimensionSetDto? left,
+        LedgerDimensionSetDto? right)
+        => MatchesDimensionScope(left, right) && MatchesDimensionScope(right, left);
 
     private static bool MatchesDimensionValue(string? actual, string? expected)
     {

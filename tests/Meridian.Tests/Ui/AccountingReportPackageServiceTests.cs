@@ -549,6 +549,96 @@ public sealed class AccountingReportPackageServiceTests
     }
 
     [Fact]
+    public async Task BuildPackageAsync_BlocksRestatementAgainstPriorPackageFromDifferentLedgerBook()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var prior = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: DefaultLedgerBookId));
+        var certifiedPrior = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            prior.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified the prior primary-book report package.",
+            [CertificationEvidence(prior)]));
+
+        var restatement = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-04",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: AlternateLedgerBookId,
+            RestatementReasonCode: "nav-correction",
+            PriorPackageId: certifiedPrior!.FinancialStatements.PackageId,
+            EvidenceLinks:
+            [
+                $"evidence:ledger:trial-balance:2027-04:book:{AlternateLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{AlternateLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{AlternateLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{AlternateLedgerBookId:D}",
+                "evidence:restatement:nav-correction:2027-04",
+                "evidence:prior-package:lineage:2027-03"
+            ]));
+
+        restatement.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        restatement.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "RestatementPriorPackageLedgerBookMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == certifiedPrior.FinancialStatements.PackageId);
+    }
+
+    [Fact]
+    public async Task BuildPackageAsync_BlocksRestatementAgainstPriorPackageFromDifferentDimensionScope()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var service = new AccountingReportPackageService(new StubCloseManagementService(
+            BuildSignedOffClosePlan(workflowId, isPeriodLocked: true, ledgerBookId: DefaultLedgerBookId)));
+        var prior = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-03",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: DefaultLedgerBookId,
+            Dimensions: new LedgerDimensionSetDto(
+                EntityId: "entity-alpha",
+                CapitalAccountId: "capital-account-lp-1",
+                BookId: DefaultLedgerBookId.ToString("D"))));
+        var certifiedPrior = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            prior.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified the prior entity-scoped report package.",
+            [CertificationEvidence(prior)]));
+
+        var restatement = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-04",
+            CloseWorkflowId: workflowId,
+            LedgerBookId: DefaultLedgerBookId,
+            RestatementReasonCode: "nav-correction",
+            PriorPackageId: certifiedPrior!.FinancialStatements.PackageId,
+            Dimensions: new LedgerDimensionSetDto(
+                EntityId: "entity-beta",
+                CapitalAccountId: "capital-account-lp-2",
+                BookId: DefaultLedgerBookId.ToString("D")),
+            EvidenceLinks:
+            [
+                $"evidence:ledger:trial-balance:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{DefaultLedgerBookId:D}",
+                "evidence:restatement:nav-correction:2027-04",
+                "evidence:prior-package:lineage:2027-03"
+            ]));
+
+        restatement.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        restatement.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "RestatementPriorPackageDimensionScopeMismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == certifiedPrior.FinancialStatements.PackageId);
+    }
+
+    [Fact]
     public async Task BuildPackageAsync_DoesNotReplaceCertifiedPackageEvidence()
     {
         var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
