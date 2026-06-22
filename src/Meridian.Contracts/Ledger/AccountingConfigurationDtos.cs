@@ -1739,6 +1739,15 @@ public sealed record ExternalGlExportLineDto(
         EvidenceLinks ?? [];
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ExternalGlExportReconciliationSafeguardStateDto>))]
+public enum ExternalGlExportReconciliationSafeguardStateDto
+{
+    MissingEvidence = 0,
+    Blocked = 1,
+    Ready = 2,
+    Certified = 3
+}
+
 public sealed record ExternalGlExportPackageDto(
     string ExportPackageId,
     string ProviderId,
@@ -1758,6 +1767,8 @@ public sealed record ExternalGlExportPackageDto(
     string? MappingProfileId = null,
     string? ReconciliationId = null,
     bool RequireBalancedReconciliation = false,
+    ExternalGlExportReconciliationSafeguardStateDto ReconciliationSafeguardState = ExternalGlExportReconciliationSafeguardStateDto.MissingEvidence,
+    IReadOnlyList<string>? ReconciliationSafeguardIssueCodes = null,
     string? TenantId = null,
     string? CompanyId = null,
     string? ReconciliationSnapshotHash = null)
@@ -1767,6 +1778,9 @@ public sealed record ExternalGlExportPackageDto(
 
     public IReadOnlyList<ExternalGlExportLineDto> GeneratedLines { get; init; } =
         GeneratedLines ?? [];
+
+    public IReadOnlyList<string> ReconciliationSafeguardIssueCodes { get; init; } =
+        ReconciliationSafeguardIssueCodes ?? [];
 }
 
 public sealed record ExternalGlExportPackageManifestDto(
@@ -1790,6 +1804,8 @@ public sealed record ExternalGlExportPackageManifestDto(
     string? MappingProfileId = null,
     string? ReconciliationId = null,
     bool RequireBalancedReconciliation = false,
+    ExternalGlExportReconciliationSafeguardStateDto ReconciliationSafeguardState = ExternalGlExportReconciliationSafeguardStateDto.MissingEvidence,
+    IReadOnlyList<string>? ReconciliationSafeguardIssueCodes = null,
     string? TenantId = null,
     string? CompanyId = null,
     string? ReconciliationSnapshotHash = null)
@@ -1802,6 +1818,9 @@ public sealed record ExternalGlExportPackageManifestDto(
 
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
+
+    public IReadOnlyList<string> ReconciliationSafeguardIssueCodes { get; init; } =
+        ReconciliationSafeguardIssueCodes ?? [];
 }
 
 public sealed record CloseDependencyDto(

@@ -1778,6 +1778,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         package.PostingDisabledReason.Should().Contain("Guarded export package only");
         package.Certification.Should().NotBeNull();
         package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Ready);
+        package.ReconciliationSafeguardIssueCodes.Should().BeEmpty();
         package.ValidationIssues.Should().ContainSingle(issue => issue.Code == "LiveExternalPostingDisabled" && issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
         package.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         package.EvidenceLinks.Should().Contain("external-gl-mapping-profile:qbo-default-fund-certified");
@@ -1803,7 +1805,9 @@ public sealed class AccountingSystemIntegrationServiceTests
             "accounting-ops",
             FundProfileId: "default-fund",
             LedgerBookId: ExternalGlLedgerBookId,
-            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
         var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
             "accounting-ops",
             ProviderId: "quickbooks-fixture",
@@ -2493,6 +2497,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         certified.PostingDisabledReason.Should().Contain("live external GL posting remains disabled");
         certified.Certification.Should().NotBeNull();
         certified.Certification!.State.Should().Be(AccountingCertificationStateDto.Certified);
+        certified.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Certified);
+        certified.ReconciliationSafeguardIssueCodes.Should().BeEmpty();
         certified.Certification.Actor.Should().Be("controller");
         certified.Certification.Summary.Should().Be("Controller certified the guarded external GL export package.");
         certified.Certification.EvidenceLinks.Should().Contain(certificationEvidence);
@@ -2513,10 +2519,13 @@ public sealed class AccountingSystemIntegrationServiceTests
         manifest.ReconciliationId.Should().Be(package.ReconciliationId);
         manifest.ReconciliationSnapshotHash.Should().Be(package.ReconciliationSnapshotHash);
         manifest.RequireBalancedReconciliation.Should().BeFalse();
+        manifest.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Certified);
+        manifest.ReconciliationSafeguardIssueCodes.Should().BeEmpty();
         manifest.EvidenceLinks.Should().Contain(certificationEvidence);
         manifest.Payload.Should().Contain(certified.ExportPackageId);
         manifest.Payload.Should().Contain(certificationEvidence);
         manifest.Payload.Should().Contain(package.ReconciliationSnapshotHash);
+        manifest.Payload.Should().Contain("\"reconciliationSafeguardState\": \"Certified\"");
 
         var changedLedgerBookId = Guid.Parse("99999999-9999-4999-9999-999999999999");
         RetainExportPackage(service, certified with { LedgerBookId = changedLedgerBookId });
@@ -2959,6 +2968,9 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Code == "ExternalGlReconciliationLedgerBookMismatch" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.TargetId == package.ReconciliationId);
+        package.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Blocked);
+        package.ReconciliationSafeguardIssueCodes.Should().Contain("ExternalGlReconciliationLedgerBookMismatch");
+        package.ReconciliationSafeguardIssueCodes.Should().Contain("MissingGeneratedExternalGlExportLines");
     }
 
     [Fact]
@@ -3069,6 +3081,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         manifest.MappingProfileId.Should().Be("qbo-default-fund-certified");
         manifest.ReconciliationId.Should().Be(exportPackage.ReconciliationId);
         manifest.RequireBalancedReconciliation.Should().BeFalse();
+        manifest.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Certified);
+        manifest.ReconciliationSafeguardIssueCodes.Should().BeEmpty();
         manifest.GeneratedLines.Should().Contain(line =>
             line.MeridianAccountCode == "Assets:Cash:Operating" &&
             line.ExternalAccountId == "qbo-1000");

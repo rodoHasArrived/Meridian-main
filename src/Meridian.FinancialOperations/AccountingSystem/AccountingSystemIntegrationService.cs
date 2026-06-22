@@ -41,6 +41,15 @@ public sealed class AccountingSystemIntegrationService
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() }
     };
+    private static readonly HashSet<string> ExternalGlReconciliationSafeguardIssueCodes =
+    [
+        "MissingExternalGlReconciliation",
+        "ExternalGlReconciliationLedgerBookMismatch",
+        "ExternalGlReconciliationPeriodMismatch",
+        "ExternalGlReconciliationSnapshotChanged",
+        "UnresolvedExternalGlBreaks",
+        "MissingGeneratedExternalGlExportLines"
+    ];
 
     private readonly IReadOnlyList<IAccountingSystemProvider> _providers;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
@@ -189,6 +198,12 @@ public sealed class AccountingSystemIntegrationService
         var certificationState = hasCritical
             ? AccountingCertificationStateDto.Draft
             : AccountingCertificationStateDto.ReadyForReview;
+        var safeguardIssueCodes = BuildReconciliationSafeguardIssueCodes(validationIssues);
+        var safeguardState = ResolveReconciliationSafeguardState(
+            reconciliation?.ReconciliationId,
+            reconciliationSnapshotHash,
+            safeguardIssueCodes,
+            certificationState);
         var certification = new ExternalGlExportCertificationDto(
             $"external-gl-export-cert-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
             certificationState,
@@ -218,6 +233,8 @@ public sealed class AccountingSystemIntegrationService
             mappingProfile?.Profile.ProfileId,
             reconciliation?.ReconciliationId,
             request.RequireBalancedReconciliation,
+            safeguardState,
+            safeguardIssueCodes,
             tenantId,
             companyId,
             reconciliationSnapshotHash);
@@ -313,7 +330,12 @@ public sealed class AccountingSystemIntegrationService
             PostingEnabled = false,
             PostingDisabledReason = "Certified guarded export artifact only; live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries.",
             EvidenceLinks = mergedEvidenceLinks,
-            Certification = certification
+            Certification = certification,
+            ReconciliationSafeguardState = ResolveReconciliationSafeguardState(
+                package.ReconciliationId,
+                package.ReconciliationSnapshotHash,
+                package.ReconciliationSafeguardIssueCodes,
+                certification.State)
         };
         _exportPackages[certified.ExportPackageId] = certified;
         return certified;
@@ -796,6 +818,38 @@ public sealed class AccountingSystemIntegrationService
         return issues;
     }
 
+    private static IReadOnlyList<string> BuildReconciliationSafeguardIssueCodes(
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues)
+        => validationIssues
+            .Where(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(static issue => issue.Code)
+            .Where(static code => ExternalGlReconciliationSafeguardIssueCodes.Contains(code))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static ExternalGlExportReconciliationSafeguardStateDto ResolveReconciliationSafeguardState(
+        string? reconciliationId,
+        string? reconciliationSnapshotHash,
+        IReadOnlyList<string> safeguardIssueCodes,
+        AccountingCertificationStateDto certificationState)
+    {
+        if (string.IsNullOrWhiteSpace(reconciliationId) ||
+            string.IsNullOrWhiteSpace(reconciliationSnapshotHash))
+        {
+            return ExternalGlExportReconciliationSafeguardStateDto.MissingEvidence;
+        }
+
+        if (safeguardIssueCodes.Count > 0)
+        {
+            return ExternalGlExportReconciliationSafeguardStateDto.Blocked;
+        }
+
+        return certificationState == AccountingCertificationStateDto.Certified
+            ? ExternalGlExportReconciliationSafeguardStateDto.Certified
+            : ExternalGlExportReconciliationSafeguardStateDto.Ready;
+    }
+
     private static bool HasRequiredDimensionScope(LedgerDimensionSetDto? dimensions)
         => !string.IsNullOrWhiteSpace(dimensions?.FundId) &&
            !string.IsNullOrWhiteSpace(dimensions.EntityId);
@@ -901,6 +955,8 @@ public sealed class AccountingSystemIntegrationService
                 package.ReconciliationId,
                 package.ReconciliationSnapshotHash,
                 package.RequireBalancedReconciliation,
+                package.ReconciliationSafeguardState,
+                package.ReconciliationSafeguardIssueCodes,
                 certificationState,
                 package.PostingEnabled,
                 package.PostingDisabledReason,
@@ -932,6 +988,8 @@ public sealed class AccountingSystemIntegrationService
             package.MappingProfileId,
             package.ReconciliationId,
             package.RequireBalancedReconciliation,
+            package.ReconciliationSafeguardState,
+            package.ReconciliationSafeguardIssueCodes,
             package.TenantId,
             package.CompanyId,
             package.ReconciliationSnapshotHash);
@@ -995,6 +1053,8 @@ public sealed class AccountingSystemIntegrationService
             package.ReconciliationId ?? string.Empty,
             package.ReconciliationSnapshotHash ?? string.Empty,
             package.RequireBalancedReconciliation,
+            package.ReconciliationSafeguardState,
+            string.Join(",", package.ReconciliationSafeguardIssueCodes.Order(StringComparer.OrdinalIgnoreCase)),
             certificationState,
             package.PostingEnabled,
             package.PostingDisabledReason,

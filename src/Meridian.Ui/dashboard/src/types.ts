@@ -2565,6 +2565,7 @@ export type AccountingSystemReconciliationStatus =
   | "ReviewRequired";
 export type AccountingSystemEvidencePackageStatus = "Ready" | "ReviewRequired" | "Missing";
 export type AccountingCertificationState = "Draft" | "ReadyForReview" | "Certified" | "Rejected" | "Superseded";
+export type ExternalGlExportReconciliationSafeguardState = "MissingEvidence" | "Blocked" | "Ready" | "Certified";
 
 export interface LedgerDimensionSet {
   fundId?: string | null;
@@ -2683,6 +2684,8 @@ export interface CertifyAccountingSystemExportPackageRequest {
     mappingProfileId?: string | null;
     reconciliationId?: string | null;
     requireBalancedReconciliation?: boolean;
+    reconciliationSafeguardState?: ExternalGlExportReconciliationSafeguardState;
+    reconciliationSafeguardIssueCodes?: string[];
   }
 
   export interface ExternalGlExportPackageManifest {
@@ -2706,6 +2709,8 @@ export interface CertifyAccountingSystemExportPackageRequest {
     mappingProfileId?: string | null;
     reconciliationId?: string | null;
     requireBalancedReconciliation?: boolean;
+    reconciliationSafeguardState?: ExternalGlExportReconciliationSafeguardState;
+    reconciliationSafeguardIssueCodes?: string[];
   }
 
 export type CloseTaskStatus = "NotStarted" | "WaitingOnDependency" | "InProgress" | "ReadyForSignOff" | "SignedOff" | "Blocked";
