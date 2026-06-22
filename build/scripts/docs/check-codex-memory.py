@@ -35,6 +35,19 @@ REQUIRED_FIELDS = {
     "review_after",
     "invalidates_when",
 }
+FRONT_MATTER_REQUIRED_FIELDS = {
+    "id",
+    "tier",
+    "scope",
+    "file",
+    "tags",
+    "confidence",
+    "freshness",
+    "source_refs",
+    "review_after",
+    "invalidates_when",
+}
+FRONT_MATTER_MATCH_FIELDS = FRONT_MATTER_REQUIRED_FIELDS
 LOAD_WHEN_LIST_FIELDS = {"skills", "paths", "intents", "branches", "tags"}
 LOAD_WHEN_TASK_FIELDS = {"ids", "work_modes", "intents", "paths"}
 EXCLUDE_WHEN_FIELDS = {"skills", "paths", "intents", "branches", "tags", "task_ids"}
@@ -63,6 +76,7 @@ GOAL_INVENTORY_REQUIRED_FIELDS = {
 GOAL_PROGRESS_REQUIRED_FIELDS = {"id", "status", "summary", "evidence_refs", "updated_at"}
 ACTIVE_TIERS = {"session", "branch", "task", "repo", "archive"}
 DISABLED_TIERS = {"user", "global"}
+SUPPORTED_TIERS = ACTIVE_TIERS | DISABLED_TIERS
 ALLOWED_CONFIDENCE = {"low", "medium", "high"}
 ALLOWED_FRESHNESS = {"fresh", "review-soon", "stale", "unknown"}
 ALLOWED_GOAL_STATUS = {"active", "blocked", "complete", "abandoned"}
@@ -139,9 +153,9 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         prefix = " " * indent
         if isinstance(data, dict):
             for key, value in data.items():
-                if value == []:
+                if isinstance(value, list) and not value:
                     lines.append(f"{prefix}{key}: []")
-                elif value == {}:
+                elif isinstance(value, dict) and not value:
                     lines.append(f"{prefix}{key}: {{}}")
                 elif isinstance(value, (dict, list)):
                     lines.append(f"{prefix}{key}:")
@@ -151,28 +165,19 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         elif isinstance(data, list):
             for item in data:
                 if isinstance(item, dict):
-                    if not item:
+                    item_lines = dump_yaml(item, indent + 2).rstrip().splitlines()
+                    if not item_lines:
                         lines.append(f"{prefix}- {{}}")
-                        continue
-                    first = True
-                    for key, value in item.items():
-                        item_prefix = f"{prefix}- " if first else f"{prefix}  "
-                        if value == []:
-                            lines.append(f"{item_prefix}{key}: []")
-                        elif value == {}:
-                            lines.append(f"{item_prefix}{key}: {{}}")
-                        elif isinstance(value, (dict, list)):
-                            lines.append(f"{item_prefix}{key}:")
-                            lines.append(dump_yaml(value, indent + 4).rstrip())
-                        else:
-                            lines.append(f"{item_prefix}{key}: {format_scalar(value)}")
-                        first = False
-                elif isinstance(item, list):
-                    if not item:
-                        lines.append(f"{prefix}- []")
                     else:
-                        lines.append(f"{prefix}-")
-                        lines.append(dump_yaml(item, indent + 2).rstrip())
+                        first = item_lines[0]
+                        child_prefix = " " * (indent + 2)
+                        if first.startswith(child_prefix):
+                            first = first[len(child_prefix):]
+                        lines.append(f"{prefix}- {first}")
+                        lines.extend(item_lines[1:])
+                elif isinstance(item, list):
+                    lines.append(f"{prefix}-")
+                    lines.append(dump_yaml(item, indent + 2).rstrip())
                 else:
                     lines.append(f"{prefix}- {format_scalar(item)}")
         else:
@@ -328,6 +333,8 @@ def validate_source_refs(root: Path, entry: dict[str, Any], path: str) -> list[F
     if findings:
         return findings
     assert isinstance(source_refs, list)
+    if not source_refs:
+        return [Finding("error", path, "source_refs must include at least one source reference.")]
 
     for source_ref in source_refs:
         if "://" in source_ref or source_ref.startswith("#"):
@@ -395,6 +402,125 @@ def validate_exclude_when(entry: dict[str, Any], path: str) -> list[Finding]:
     return findings
 
 
+def has_repo_local_source_ref(root: Path, source_refs: Sequence[str]) -> bool:
+    for source_ref in source_refs:
+        if not isinstance(source_ref, str) or not source_ref.strip():
+            continue
+        if "://" in source_ref or source_ref.startswith("#"):
+            continue
+        source_path, path_findings = safe_repo_relative_path(root, source_ref, INDEX_REL)
+        if not path_findings and source_path is not None and source_path.exists():
+            return True
+    return False
+
+
+def tier_folder_for(tier: str) -> str:
+    if tier == "repo":
+        return "repo"
+    if tier == "task":
+        return "tasks"
+    if tier == "branch":
+        return "branches"
+    if tier == "session":
+        return "sessions"
+    if tier == "archive":
+        return "archive"
+    return tier
+
+
+def validate_tier_contract(root: Path, entry: dict[str, Any], path: str) -> list[Finding]:
+    findings: list[Finding] = []
+    tier = entry.get("tier")
+    if tier in DISABLED_TIERS:
+        findings.append(Finding("error", path, f"Disabled tier is not enabled for repo-local memory: {tier}"))
+        return findings
+    if tier not in ACTIVE_TIERS:
+        known = ", ".join(sorted(SUPPORTED_TIERS))
+        findings.append(
+            Finding("error", path, f"Unknown memory tier: {tier}; supported schema tiers are {known}.")
+        )
+        return findings
+
+    raw_file = entry.get("file")
+    if isinstance(raw_file, str):
+        expected_prefix = f"{MEMORY_ROOT_REL}/{tier_folder_for(str(tier))}/"
+        if not normalize_path(raw_file).startswith(expected_prefix):
+            findings.append(Finding("error", path, f"{tier}-tier memory file must live under {expected_prefix}"))
+
+    source_refs = entry.get("source_refs")
+    if tier == "repo" and isinstance(source_refs, list) and not has_repo_local_source_ref(root, source_refs):
+        findings.append(
+            Finding("error", path, "repo-tier memory requires at least one stable existing repo-local source_ref.")
+        )
+
+    if tier == "task":
+        scope_id = task_scope_id(entry)
+        task_ids = load_when_task_list(entry, "ids")
+        if not scope_id and not task_ids:
+            findings.append(
+                Finding("error", path, "task-tier memory requires a task scope or load_when.task.ids descriptor binding.")
+            )
+
+    invalidates = [item.lower() for item in string_values(entry.get("invalidates_when"))]
+    if tier == "branch" and not any(
+        keyword in item for item in invalidates for keyword in ("merge", "abandon", "delete", "branch", "scope", "review")
+    ):
+        findings.append(
+            Finding(
+                "error",
+                path,
+                "branch-tier memory requires branch invalidation rules such as merge, abandonment, deletion, "
+                "review expiry, or scope change.",
+            )
+        )
+
+    load_when = entry.get("load_when")
+    if tier == "session":
+        if not any(keyword in item for item in invalidates for keyword in ("session", "compaction", "promot")):
+            findings.append(
+                Finding("error", path, "session-tier memory must invalidate at session end, compaction, or promotion.")
+            )
+        if isinstance(load_when, dict):
+            broad_selectors = []
+            for field in LOAD_WHEN_LIST_FIELDS:
+                if string_values(load_when.get(field)):
+                    broad_selectors.append(f"load_when.{field}")
+            task_selectors = load_when.get("task")
+            if isinstance(task_selectors, dict):
+                for field in LOAD_WHEN_TASK_FIELDS:
+                    if field != "ids" and string_values(task_selectors.get(field)):
+                        broad_selectors.append(f"load_when.task.{field}")
+            if broad_selectors:
+                findings.append(
+                    Finding(
+                        "error",
+                        path,
+                        "session-tier memory must not be indexed as durable guidance; "
+                        "clear broad selectors until promoted: " + ", ".join(sorted(broad_selectors)),
+                    )
+                )
+
+    if tier == "archive" and isinstance(load_when, dict):
+        active_selectors = []
+        for field in LOAD_WHEN_LIST_FIELDS:
+            if string_values(load_when.get(field)):
+                active_selectors.append(f"load_when.{field}")
+        task_selectors = load_when.get("task")
+        if isinstance(task_selectors, dict):
+            for field in LOAD_WHEN_TASK_FIELDS:
+                if string_values(task_selectors.get(field)):
+                    active_selectors.append(f"load_when.task.{field}")
+        if active_selectors:
+            findings.append(
+                Finding(
+                    "error",
+                    path,
+                    "archive-tier memory must not load as active guidance; clear selectors: "
+                    + ", ".join(sorted(active_selectors)),
+                )
+            )
+    return findings
+
 def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set[str]) -> tuple[dict[str, Any] | None, list[Finding]]:
     path = rel(root, index_path)
     findings: list[Finding] = []
@@ -417,11 +543,7 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     else:
         seen_ids.add(entry["id"])
 
-    tier = entry.get("tier")
-    if tier in DISABLED_TIERS:
-        findings.append(Finding("error", finding_path, f"Disabled tier is not enabled for repo-local memory: {tier}"))
-    elif tier not in ACTIVE_TIERS:
-        findings.append(Finding("error", finding_path, f"Unknown memory tier: {tier}"))
+    findings.extend(validate_tier_contract(root, entry, finding_path))
 
     findings.extend(validate_scope(entry, finding_path))
     findings.extend(validate_string_list(entry.get("tags"), "tags", finding_path))
@@ -458,17 +580,34 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     if front_findings:
         return entry, findings
 
-    for field in REQUIRED_FIELDS:
+    memory_display_path = rel(root, memory_file)
+    for field in sorted(FRONT_MATTER_REQUIRED_FIELDS):
         if field not in front_matter:
-            findings.append(Finding("error", rel(root, memory_file), f"Memory front matter is missing {field}."))
-    for field in ("id", "tier", "scope", "file", "confidence", "freshness", "review_after"):
+            findings.append(Finding("error", memory_display_path, f"Memory front matter is missing {field}."))
+
+    if "source_refs" in front_matter:
+        findings.extend(validate_source_refs(root, front_matter, memory_display_path))
+    if "confidence" in front_matter and front_matter.get("confidence") not in ALLOWED_CONFIDENCE:
+        findings.append(
+            Finding("error", memory_display_path, f"Unknown front matter confidence: {front_matter.get('confidence')}")
+        )
+    if "freshness" in front_matter and front_matter.get("freshness") not in ALLOWED_FRESHNESS:
+        findings.append(
+            Finding("error", memory_display_path, f"Unknown front matter freshness: {front_matter.get('freshness')}")
+        )
+    if "review_after" in front_matter:
+        findings.extend(validate_review_after(front_matter.get("review_after"), memory_display_path))
+
+    for field in sorted(FRONT_MATTER_MATCH_FIELDS):
+        if field not in front_matter:
+            continue
         front_value = normalize_metadata_value(front_matter.get(field))
         entry_value = normalize_metadata_value(entry.get(field))
-        if field in front_matter and front_value != entry_value:
+        if front_value != entry_value:
             findings.append(
                 Finding(
                     "error",
-                    rel(root, memory_file),
+                    memory_display_path,
                     f"Front matter {field} does not match index value {entry_value!r}.",
                 )
             )
@@ -496,7 +635,11 @@ def load_index(root: Path) -> tuple[dict[str, Any] | None, Path, list[Finding]]:
     return data, index_path, []
 
 
-def validate_task_descriptor(descriptor: Any, display_path: str) -> tuple[dict[str, Any] | None, list[Finding]]:
+def validate_task_descriptor(
+    descriptor: Any,
+    display_path: str,
+    root: Path = REPO_ROOT,
+) -> tuple[dict[str, Any] | None, list[Finding]]:
     findings: list[Finding] = []
     if not isinstance(descriptor, dict):
         return None, [Finding("error", display_path, "Task descriptor must be a YAML mapping.")]
@@ -515,6 +658,9 @@ def validate_task_descriptor(descriptor: Any, display_path: str) -> tuple[dict[s
             findings.append(Finding("error", display_path, f"{field} must be a non-empty string."))
     for field in ("planned_paths", "memory_tags", "success_criteria"):
         findings.extend(validate_string_list(descriptor.get(field), field, display_path))
+    for planned_path in string_values(descriptor.get("planned_paths")):
+        _, path_findings = safe_repo_relative_path(root, planned_path, display_path)
+        findings.extend(path_findings)
 
     promotion_candidates = descriptor.get("promotion_candidates", [])
     if not isinstance(promotion_candidates, list):
@@ -545,7 +691,18 @@ def load_task_descriptor(root: Path, raw_path: str) -> tuple[dict[str, Any] | No
     except Exception as exc:
         findings.append(Finding("error", rel(root, descriptor_path), f"Unable to parse task descriptor: {exc}"))
         return None, findings
-    return validate_task_descriptor(descriptor, rel(root, descriptor_path))
+    return validate_task_descriptor(descriptor, rel(root, descriptor_path), root)
+
+
+def validate_task_descriptors(root: Path) -> list[Finding]:
+    tasks_root = root / MEMORY_ROOT_REL / "tasks"
+    if not tasks_root.exists():
+        return []
+    findings: list[Finding] = []
+    for path in sorted(tasks_root.glob("*.yml")) + sorted(tasks_root.glob("*.yaml")):
+        _, task_findings = load_task_descriptor(root, rel(root, path))
+        findings.extend(task_findings)
+    return findings
 
 
 def validate_goal_progress_item(root: Path, item: Any, display_path: str, index: int) -> list[Finding]:
@@ -648,6 +805,17 @@ def load_goal_inventory(root: Path, raw_path: str) -> tuple[dict[str, Any] | Non
     return validate_goal_inventory(root, goal, rel(root, goal_path))
 
 
+def validate_goal_inventories(root: Path) -> list[Finding]:
+    goals_root = root / MEMORY_ROOT_REL / "goals"
+    if not goals_root.exists():
+        return []
+    findings: list[Finding] = []
+    for path in sorted(goals_root.glob("*.yml")) + sorted(goals_root.glob("*.yaml")):
+        _, goal_findings = load_goal_inventory(root, rel(root, path))
+        findings.extend(goal_findings)
+    return findings
+
+
 def collect_unindexed_files(root: Path, entries: Sequence[dict[str, Any]]) -> list[Finding]:
     memory_root = root / MEMORY_ROOT_REL
     if not memory_root.exists():
@@ -665,7 +833,7 @@ def collect_unindexed_files(root: Path, entries: Sequence[dict[str, Any]]) -> li
             continue
         if path.parent.resolve() == (memory_root / "goals").resolve() and path.suffix.lower() in {".yml", ".yaml"}:
             continue
-        if normalize_path(rel_path) not in indexed:
+        if path.suffix.lower() == ".md" and normalize_path(rel_path) not in indexed:
             findings.append(Finding("error", rel_path, "Memory file is not listed in .codex/memory/index.yml."))
     return findings
 
@@ -693,6 +861,8 @@ def collect_findings(root: Path) -> tuple[list[Finding], list[dict[str, Any]]]:
             entries.append(entry)
 
     findings.extend(collect_unindexed_files(root, entries))
+    findings.extend(validate_task_descriptors(root))
+    findings.extend(validate_goal_inventories(root))
     return sorted(findings, key=lambda finding: (finding.severity, finding.path, finding.message)), entries
 
 
@@ -923,8 +1093,10 @@ def decide_entry(entry: dict[str, Any], context: RoutingContext, stale_only: boo
     elif stale_only:
         skipped.append("entry is not stale")
 
-    if tier == "archive" and context_has_routing_filters(context):
+    if tier == "archive":
         skipped.append("archive entries are audit-only")
+    if tier == "session" and not context.task_id:
+        skipped.append("session-tier entry requires explicit task/session routing and promotion review")
 
     scope_id = task_scope_id(entry)
     task_ids = load_when_task_list(entry, "ids")
@@ -1324,8 +1496,7 @@ def validate_stub_request(root: Path, data: dict[str, Any], entry: dict[str, Any
         findings.append(Finding("error", INDEX_REL, f"Memory id already exists: {entry['id']}"))
     if entry["tier"] == "repo" and not entry["source_refs"]:
         findings.append(Finding("error", INDEX_REL, "Repo-tier stubs require at least one --stub-source-ref."))
-    if entry["tier"] not in ACTIVE_TIERS:
-        findings.append(Finding("error", INDEX_REL, f"Unknown active tier: {entry['tier']}"))
+    findings.extend(validate_tier_contract(root, entry, INDEX_REL))
     memory_file, path_findings = safe_memory_path(root, entry["file"], INDEX_REL)
     findings.extend(path_findings)
     if memory_file is not None and memory_file.exists():

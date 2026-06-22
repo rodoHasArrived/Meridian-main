@@ -918,11 +918,26 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         genericEvidence.TenantAdministration.Should().NotBeNull();
         genericEvidence.TenantAdministration!.CompletedControlCount.Should().Be(23);
-        genericEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "tenant-admin.ledger-book-administration-studio-book-evidence-missing" &&
-            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
-            issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"));
+        var bookScopedIssueCodes = new[]
+        {
+            "tenant-admin.chart-administration-studio-book-evidence-missing",
+            "tenant-admin.rule-test-promotion-studio-book-evidence-missing",
+            "tenant-admin.close-setup-studio-book-evidence-missing",
+            "tenant-admin.provider-mapping-studio-book-evidence-missing",
+            "tenant-admin.ledger-book-administration-studio-book-evidence-missing",
+            "tenant-admin.posting-rule-authoring-studio-book-evidence-missing",
+            "tenant-admin.approval-queue-studio-book-evidence-missing",
+            "tenant-admin.dimension-mapping-studio-book-evidence-missing",
+            "tenant-admin.implementation-sandbox-book-evidence-missing"
+        };
+        genericEvidence.Issues
+            .Where(issue => bookScopedIssueCodes.Contains(issue.Code, StringComparer.OrdinalIgnoreCase))
+            .Should()
+            .HaveCount(bookScopedIssueCodes.Length)
+            .And.OnlyContain(issue =>
+                issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+                issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+                issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"));
         genericEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
@@ -963,7 +978,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         scopedEvidence.TenantAdministration.Should().NotBeNull();
         scopedEvidence.TenantAdministration!.CompletedControlCount.Should().Be(23);
         scopedEvidence.Issues.Should().NotContain(issue =>
-            issue.Code == "tenant-admin.ledger-book-administration-studio-book-evidence-missing");
+            bookScopedIssueCodes.Contains(issue.Code, StringComparer.OrdinalIgnoreCase));
     }
 
     [Fact]

@@ -52,6 +52,66 @@ schema:
     - branches
     - tags
     - task_ids
+  task_descriptor_fields:
+    - task_id
+    - selected_skill
+    - intent
+    - work_mode
+    - branch
+    - planned_paths
+    - memory_tags
+  routing_selectors:
+    skills:
+      source_fields:
+        - load_when.skills
+        - exclude_when.skills
+      descriptor_fields:
+        - selected_skill
+      match: exact skill name match.
+    paths:
+      source_fields:
+        - load_when.paths
+        - load_when.task.paths
+        - exclude_when.paths
+      descriptor_fields:
+        - planned_paths
+      match: fnmatch-style repo-relative glob.
+    intents:
+      source_fields:
+        - load_when.intents
+        - load_when.task.intents
+        - exclude_when.intents
+      descriptor_fields:
+        - intent
+      match: exact intent label match.
+    branches:
+      source_fields:
+        - load_when.branches
+        - exclude_when.branches
+      descriptor_fields:
+        - branch
+      match: exact branch name match; branch-tier entries must include their branch scope.
+    tags:
+      source_fields:
+        - tags
+        - load_when.tags
+        - exclude_when.tags
+      descriptor_fields:
+        - memory_tags
+      match: exact tag match across entry tags and explicit routing tags.
+    task_descriptor:
+      source_fields:
+        - load_when.task.ids
+        - load_when.task.work_modes
+        - load_when.task.intents
+        - load_when.task.paths
+        - exclude_when.task_ids
+      descriptor_fields:
+        - task_id
+        - work_mode
+        - intent
+        - planned_paths
+      match: exact task id, exact work mode, exact intent, or planned-path glob.
 areas:
   repo:
     path: .codex/memory/repo
