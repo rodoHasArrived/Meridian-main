@@ -96,6 +96,63 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task AccountingConfigurationPostingRuleCandidatePostEndpoint_ForwardsTrustedActorAndTenantScope()
+    {
+        var postService = new CapturingAccountingPostingCandidatePostService();
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IAccountingPostingCandidatePostService>(postService),
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+        var sourceEventId = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb");
+        var ledgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var periodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts,
+            new PostPostingRuleJournalCandidateRequestDto(
+                new PostingRuleJournalCandidateRequestDto(
+                    FundProfileId: "fund-alpha",
+                    SourceEventType: "CustodianInterestAccrual",
+                    EventAmount: 125.44m,
+                    Currency: "usd",
+                    EffectiveDate: new DateOnly(2026, 5, 31),
+                    Actor: "browser-user",
+                    AggregateId: ledgerBookId,
+                    PeriodId: periodId,
+                    AccountingTimestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+                    Description: "Accrue custodian interest from retained source event",
+                    AccountingBasis: AccountingBasisKindDto.Gaap,
+                    LedgerBookId: ledgerBookId,
+                    CorrelationId: Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                    SourceEventId: sourceEventId,
+                    PolicyId: "gaap-accrual-v1",
+                    TreatmentKind: AccountingTreatmentKindDto.Accrual,
+                    EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"],
+                    TenantId: "client-tenant",
+                    CompanyId: "client-company"),
+                Actor: "browser-user",
+                ApprovalId: "approval-generated-interest-202605",
+                EvidenceLinks: ["approval://workpaper/generated-interest-202605"],
+                TenantId: "client-tenant",
+                CompanyId: "client-company"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var posted = await response.Content.ReadFromJsonAsync<PostedPostingRuleJournalCandidateResultDto>(ServerJsonOptions);
+        posted.Should().NotBeNull();
+        posted!.PostedJournal.LedgerBookId.Should().Be(ledgerBookId);
+        postService.Requests.Should().ContainSingle();
+        var forwarded = postService.Requests.Single();
+        forwarded.Actor.Should().Be("ops-user");
+        forwarded.TenantId.Should().Be("company-alpha");
+        forwarded.CompanyId.Should().Be("company-alpha");
+        forwarded.Candidate.Actor.Should().Be("browser-user");
+        forwarded.Candidate.TenantId.Should().Be("client-tenant");
+        forwarded.Candidate.CompanyId.Should().Be("client-company");
+    }
+
+    [Fact]
     public async Task AccountingConfigurationPostingRulePromotionApproval_RequiresAdminMaintenance()
     {
         await using var app = await CreateAppAsync(
@@ -1924,6 +1981,11 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.AddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
         services.AddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
+        services.AddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.AddSingleton<IAccountingPostingCandidatePostService>(sp =>
+            new AccountingPostingCandidatePostService(
+                sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
+                sp.GetService<ILedgerJournalStore>()));
         services.AddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.AddSingleton<IManualJournalEntryDraftStore, InMemoryManualJournalEntryDraftStore>();
         services.AddSingleton<IManualJournalEntryWorkbenchService, ManualJournalEntryWorkbenchService>();
@@ -1987,6 +2049,77 @@ public sealed partial class WorkstationEndpointsTests
                 SourceEventType: request.SourceEventType,
                 ApprovalState: AccountingPostingApprovalStateDto.Pending,
                 LedgerBookId: target.LedgerBookId);
+
+            return new PostingRuleJournalCandidateResultDto(
+                dryRun,
+                "posting.interest-accrual",
+                "v1",
+                [],
+                command,
+                Guid.NewGuid(),
+                request.EventAmount,
+                request.EventAmount,
+                0m,
+                true,
+                false,
+                true,
+                false,
+                request.EvidenceLinks,
+                []);
+        }
+    }
+
+    private sealed class CapturingAccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
+    {
+        public List<PostPostingRuleJournalCandidateRequestDto> Requests { get; } = [];
+
+        public Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
+            PostPostingRuleJournalCandidateRequestDto request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            Requests.Add(request);
+            var candidate = BuildCandidate(request.Candidate);
+            return Task.FromResult(new PostedPostingRuleJournalCandidateResultDto(
+                candidate,
+                new PostedLedgerJournalEntryResultDto(
+                    candidate.JournalEntryId ?? Guid.NewGuid(),
+                    request.Candidate.LedgerBookId ?? request.Candidate.AggregateId,
+                    request.Candidate.AccountingBasis,
+                    request.Candidate.PeriodId,
+                    request.Candidate.AggregateId,
+                    candidate.PostingCommand?.CommandId,
+                    request.Candidate.SourceEventId,
+                    request.Candidate.CorrelationId)));
+        }
+
+        private static PostingRuleJournalCandidateResultDto BuildCandidate(PostingRuleJournalCandidateRequestDto request)
+        {
+            var dryRun = new RuleDryRunResultDto(
+                request.FundProfileId,
+                request.LedgerBookId,
+                request.SourceEventType,
+                request.EffectiveDate,
+                request.EventAmount,
+                request.Currency,
+                IsPostingBalanced: true,
+                SelectedRuleId: "posting.interest-accrual",
+                RuleMatches: [],
+                GeneratedLines: [],
+                ValidationIssues: [],
+                GeneratedPostingLines: []);
+            var command = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                request.AggregateId,
+                request.PeriodId,
+                request.EffectiveDate,
+                request.AccountingTimestamp,
+                $"candidate-post:{request.AggregateId:N}:{request.SourceEventId:N}",
+                SourceEventId: request.SourceEventId,
+                CorrelationId: request.CorrelationId,
+                SourceEventType: request.SourceEventType,
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                LedgerBookId: request.LedgerBookId);
 
             return new PostingRuleJournalCandidateResultDto(
                 dryRun,

@@ -2,6 +2,7 @@ using Meridian.Core.Config;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -68,6 +69,7 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddTransient<QualityArchivePage>();
         services.AddTransient<ClusterStatusPage>();
         services.AddSingleton<BackfillProviderConfigService>(_ => BackfillProviderConfigService.Instance);
+        services.AddSingleton<IBackfillProviderConfigAuditReader>(sp => sp.GetRequiredService<BackfillProviderConfigService>());
         services.AddSingleton<BackfillCheckpointService>(_ => BackfillCheckpointService.Instance);
         services.AddSingleton<BackfillApiService>();
         services.AddSingleton<CollectionSessionService>(_ => CollectionSessionService.Instance);

@@ -329,6 +329,11 @@ public static class WorkstationServiceCollectionExtensions
                 : sp.GetRequiredService<FileAccountingConfigurationStore>());
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
+            new AccountingPostingCandidatePostService(
+                sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
+                sp.GetService<ILedgerJournalStore>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(

@@ -895,6 +895,26 @@ public sealed record PostingRuleJournalCandidateResultDto(
         Issues ?? [];
 }
 
+public sealed record PostPostingRuleJournalCandidateRequestDto(
+    PostingRuleJournalCandidateRequestDto Candidate,
+    string Actor,
+    string ApprovalId,
+    string? ApprovalNotes = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    string? TenantId = null,
+    string? CompanyId = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record PostedPostingRuleJournalCandidateResultDto(
+    PostingRuleJournalCandidateResultDto Candidate,
+    PostedLedgerJournalEntryResultDto PostedJournal,
+    bool WasReplay = false);
+
 public sealed record AccountingBasisProjectionTargetDto(
     AccountingBasisKindDto AccountingBasis,
     Guid LedgerBookId,

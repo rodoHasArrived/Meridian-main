@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Configuration;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Ui.Services;
 
@@ -12,7 +13,7 @@ namespace Meridian.Ui.Services;
 /// Provides metadata descriptors, fallback chain preview, dry-run planning,
 /// and audit trail for provider configuration changes.
 /// </summary>
-public sealed class BackfillProviderConfigService
+public sealed class BackfillProviderConfigService : IBackfillProviderConfigAuditReader
 {
     private static readonly Lazy<BackfillProviderConfigService> _instance = new(() => new BackfillProviderConfigService());
     private readonly ApiClientService _apiClient;
@@ -378,7 +379,7 @@ public sealed class BackfillProviderConfigService
     /// <summary>
     /// Gets the audit log of provider configuration changes.
     /// </summary>
-    public List<ProviderConfigAuditEntryDto> GetAuditLog(int maxEntries = 100)
+    public IReadOnlyList<ProviderConfigAuditEntryDto> GetAuditLog(int maxEntries = 100)
     {
         lock (_auditLock)
         {

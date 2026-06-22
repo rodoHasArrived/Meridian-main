@@ -101,6 +101,11 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
+            new AccountingPostingCandidatePostService(
+                sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
+                sp.GetService<ILedgerJournalStore>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IAccountingTenantAdministrationProfileStore>(sp =>
             new FileAccountingTenantAdministrationProfileStore(

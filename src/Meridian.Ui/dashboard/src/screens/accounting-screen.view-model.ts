@@ -65,6 +65,7 @@ import {
 } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import { formatReportPackRecipientList, getReportPackDistributions } from "@/lib/reporting-distributions";
+import { formatBytes, formatCount, formatCurrency, formatCurrencyWithCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import {
   buildCalibrationSummaryViewState,
   type CalibrationProfileDetailViewModel,
@@ -13103,72 +13104,6 @@ function buildTransactionLabPreviewRequest(
   };
 }
 
-function formatCount(count: number, singular: string): string {
-  return `${count} ${singular}${count === 1 ? "" : "s"}`;
-}
-
-function formatBytes(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) {
-    return "0 B";
-  }
-
-  const units = ["B", "KB", "MB", "GB"];
-  let size = value;
-  let unitIndex = 0;
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex += 1;
-  }
-
-  const formatted = size >= 10 || unitIndex === 0
-    ? size.toFixed(0)
-    : size.toFixed(1).replace(/\.0$/, "");
-  return `${formatted} ${units[unitIndex]}`;
-}
-
-function formatCurrency(value: number) {
-  const prefix = value >= 0 ? "$" : "-$";
-  return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-}
-
-function formatCurrencyWithCode(value: number, currency: string, signed = false): string {
-  const amount = signed ? formatSignedCurrency(value) : formatCurrency(value);
-  const code = currency.trim();
-  return code ? `${amount} ${code}` : amount;
-}
-
-function formatSignedCurrency(value: number): string {
-  if (value === 0) {
-    return "$0";
-  }
-
-  const sign = value > 0 ? "+" : "-";
-  return `${sign}$${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`;
-}
-
-function formatDateTimeLabel(value: string | null | undefined): string {
-  if (!value) {
-    return "Not recorded";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
-}
-
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function toDomId(value: string): string {
-  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
-  return normalized || "profile";
-}
 
 function buildSecurityConflictAction(
   conflict: SecurityMasterConflict,

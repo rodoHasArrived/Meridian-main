@@ -408,7 +408,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             NotificationType.Success);
     }
 
-    // ── M3: Stub-action methods — notifications belong in the ViewModel, not code-behind ──
+    // ── Backfill page delegated actions ───────────────────────────────────────
 
     public void HandleValidateData() =>
         _notificationService.ShowNotification("Data Validation", "Starting data validation...", NotificationType.Info);

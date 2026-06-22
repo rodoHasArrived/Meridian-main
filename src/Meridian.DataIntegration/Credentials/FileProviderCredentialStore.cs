@@ -519,7 +519,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         var envelope = JsonSerializer.Deserialize<ProtectedVaultEnvelope>(envelopeJson, JsonOptions)
             ?? throw new InvalidOperationException("Provider credential vault envelope is invalid.");
         var protectedBytes = Convert.FromBase64String(envelope.CipherText);
-        var plainBytes = Unprotect(envelope.Protection, protectedBytes, ct);
+        var plainBytes = await UnprotectAsync(envelope.Protection, protectedBytes, ct).ConfigureAwait(false);
         var vaultJson = Encoding.UTF8.GetString(plainBytes);
         var vault = JsonSerializer.Deserialize<ProviderCredentialVault>(vaultJson, JsonOptions);
         return vault ?? new ProviderCredentialVault();
@@ -533,13 +533,13 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         var vaultJson = JsonSerializer.Serialize(vault, JsonOptions);
         var plainBytes = Encoding.UTF8.GetBytes(vaultJson);
-        var (protection, protectedBytes) = Protect(plainBytes, ct);
+        var (protection, protectedBytes) = await ProtectAsync(plainBytes, ct).ConfigureAwait(false);
         var envelope = new ProtectedVaultEnvelope(VaultVersion, protection, Convert.ToBase64String(protectedBytes));
         var envelopeJson = JsonSerializer.Serialize(envelope, JsonOptions);
         await AtomicFileWriter.WriteAsync(VaultPath, envelopeJson, ct).ConfigureAwait(false);
     }
 
-    private (string Protection, byte[] ProtectedBytes) Protect(byte[] plainBytes, CancellationToken ct)
+    private async Task<(string Protection, byte[] ProtectedBytes)> ProtectAsync(byte[] plainBytes, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         if (OperatingSystem.IsWindows())
@@ -547,17 +547,17 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             return ("dpapi-current-user", ProtectWithDpapi(plainBytes));
         }
 
-        return ("local-aes-gcm", ProtectWithLocalKey(plainBytes, ct));
+        return ("local-aes-gcm", await ProtectWithLocalKeyAsync(plainBytes, ct).ConfigureAwait(false));
     }
 
-    private byte[] Unprotect(string protection, byte[] protectedBytes, CancellationToken ct)
+    private async Task<byte[]> UnprotectAsync(string protection, byte[] protectedBytes, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         return protection switch
         {
             "dpapi-current-user" when OperatingSystem.IsWindows() => UnprotectWithDpapi(protectedBytes),
             "dpapi-current-user" => throw new PlatformNotSupportedException("DPAPI protected credential vaults can only be opened by the Windows user profile that created them."),
-            "local-aes-gcm" => UnprotectWithLocalKey(protectedBytes, ct),
+            "local-aes-gcm" => await UnprotectWithLocalKeyAsync(protectedBytes, ct).ConfigureAwait(false),
             _ => throw new InvalidOperationException($"Unsupported provider credential vault protection '{protection}'.")
         };
     }
@@ -570,9 +570,9 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     private static byte[] UnprotectWithDpapi(byte[] protectedBytes)
         => ProtectedData.Unprotect(protectedBytes, Entropy, DataProtectionScope.CurrentUser);
 
-    private byte[] ProtectWithLocalKey(byte[] plainBytes, CancellationToken ct)
+    private async Task<byte[]> ProtectWithLocalKeyAsync(byte[] plainBytes, CancellationToken ct)
     {
-        var key = GetOrCreateLocalKey(ct);
+        var key = await GetOrCreateLocalKeyAsync(ct).ConfigureAwait(false);
         var nonce = RandomNumberGenerator.GetBytes(12);
         var tag = new byte[16];
         var cipher = new byte[plainBytes.Length];
@@ -586,14 +586,14 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return output;
     }
 
-    private byte[] UnprotectWithLocalKey(byte[] protectedBytes, CancellationToken ct)
+    private async Task<byte[]> UnprotectWithLocalKeyAsync(byte[] protectedBytes, CancellationToken ct)
     {
         if (protectedBytes.Length < 28)
         {
             throw new InvalidOperationException("Provider credential vault payload is truncated.");
         }
 
-        var key = GetOrCreateLocalKey(ct);
+        var key = await GetOrCreateLocalKeyAsync(ct).ConfigureAwait(false);
         var nonce = protectedBytes.AsSpan(0, 12).ToArray();
         var tag = protectedBytes.AsSpan(12, 16).ToArray();
         var cipher = protectedBytes.AsSpan(28).ToArray();
@@ -603,16 +603,16 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         return plainBytes;
     }
 
-    private byte[] GetOrCreateLocalKey(CancellationToken ct)
+    private async Task<byte[]> GetOrCreateLocalKeyAsync(CancellationToken ct)
     {
         Directory.CreateDirectory(_directoryPath);
         if (File.Exists(_keyPath))
         {
-            return File.ReadAllBytes(_keyPath);
+            return await File.ReadAllBytesAsync(_keyPath, ct).ConfigureAwait(false);
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
-        AtomicFileWriter.WriteAsync(_keyPath, key, ct).GetAwaiter().GetResult();
+        await AtomicFileWriter.WriteAsync(_keyPath, key, ct).ConfigureAwait(false);
         TrySetHidden(_keyPath);
         return key;
     }

@@ -8,7 +8,6 @@ namespace Meridian.Contracts.Workstation;
 // These records replace the anonymous-object returns in WorkstationEndpoints.cs,
 // giving the bootstrap API surface a stable, testable, and governance-ready shape.
 // Follow the positional-record pattern used in StrategyBriefingDtos.cs.
-// Sub-objects that are still complex/in-flight use object? as a migration placeholder.
 
 // ---------------------------------------------------------------------------
 // Shared building blocks
@@ -23,6 +22,80 @@ public sealed record WorkstationMetricCard(
     string Value,
     string Delta = "0%",
     string Tone = "default");
+/// <summary>
+/// Shared drill-in links attached to strategy, trading, and accounting run records.
+/// </summary>
+public sealed record WorkstationRunDrillInLinks(
+    string EquityCurve,
+    string Fills,
+    string Attribution,
+    string? Ledger,
+    string CashFlows,
+    string Continuity,
+    string Comparison);
+
+public sealed record WorkstationSecurityCoverageReferencePayload(
+    string Source,
+    string Symbol,
+    string? AccountName,
+    string? SecurityId,
+    string DisplayName,
+    string? AssetClass,
+    string? SubType,
+    string? Currency,
+    string? Status,
+    string? PrimaryIdentifier,
+    string CoverageStatus,
+    string? CoverageReason,
+    string? MatchedIdentifierKind,
+    string? MatchedIdentifierValue,
+    string? MatchedProvider);
+
+public sealed record WorkstationSecurityCoverageGapPayload(
+    string Source,
+    string Symbol,
+    string? AccountName,
+    string Reason);
+
+public sealed record WorkstationSecurityCoveragePayload(
+    int PortfolioResolved,
+    int PortfolioMissing,
+    int LedgerResolved,
+    int LedgerMissing,
+    bool HasIssues,
+    string Tone,
+    string Summary,
+    IReadOnlyList<WorkstationSecurityCoverageReferencePayload> ResolvedReferences,
+    IReadOnlyList<WorkstationSecurityCoverageGapPayload> MissingReferences);
+
+public sealed record WorkstationStrategyRunCard(
+    string Id,
+    string StrategyName,
+    string Engine,
+    string Mode,
+    string Status,
+    string Dataset,
+    string Window,
+    string Pnl,
+    string Sharpe,
+    string LastUpdated,
+    string Notes,
+    string? PromotionState,
+    string? LedgerReference,
+    string? PortfolioId,
+    decimal? NetPnl,
+    decimal? TotalReturn,
+    decimal? FinalEquity,
+    WorkstationSecurityCoveragePayload SecurityCoverage,
+    WorkstationRunDrillInLinks DrillIn);
+
+public sealed record WorkstationModeComparisonRun(
+    string RunId,
+    string Mode,
+    string Status,
+    decimal? NetPnl,
+    decimal? TotalReturn,
+    WorkstationRunDrillInLinks DrillIn);
 
 /// <summary>
 /// Minimal run digest attached to session and strategy payloads.
@@ -36,14 +109,14 @@ public sealed record WorkstationRunDigest(
     string LastUpdated,
     bool HasLedger,
     bool HasPortfolio,
-    object? SecurityCoverage = null);
+    WorkstationSecurityCoveragePayload SecurityCoverage);
 
 /// <summary>
 /// Per-strategy cross-mode comparison group used by strategy and trading surfaces.
 /// </summary>
 public sealed record WorkstationModeComparisonGroup(
     string StrategyName,
-    IReadOnlyList<object> Modes);
+    IReadOnlyList<WorkstationModeComparisonRun> Modes);
 
 /// <summary>
 /// Single entry in a run timeline strip.
@@ -118,20 +191,124 @@ public sealed record WorkstationPlotToolTabState(
 /// <summary>
 /// PlotTool workspace/statistics payload embedded in strategy responses.
 /// </summary>
+public sealed record WorkstationPlotToolTickPayload(
+    int Value,
+    string Label);
+
+public sealed record WorkstationPlotToolPointPayload(
+    int X,
+    int Y,
+    bool Emphasis);
+
+public sealed record WorkstationPlotToolSummaryItemPayload(
+    string Id,
+    string Label,
+    string Value);
+
+public sealed record WorkstationPlotToolLegendItemPayload(
+    string Id,
+    string Label,
+    string Detail,
+    string Tone);
+
+public sealed record WorkstationPlotToolFocusPointPayload(
+    string Label,
+    string XValueText,
+    string YValueText,
+    string Detail);
+
+public sealed record WorkstationPlotToolSignalCardPayload(
+    string Id,
+    string Label,
+    string Value,
+    string Detail,
+    string Tone);
+
+public sealed record WorkstationPlotToolWorkspacePayload(
+    string Eyebrow,
+    string Title,
+    string Description,
+    string StatusBadgeLabel,
+    string StatusBadgeVariant,
+    string Expression,
+    IReadOnlyList<string> ToolbarPills,
+    IReadOnlyList<string> MetaItems,
+    string XAxisLabel,
+    string YAxisLabel,
+    IReadOnlyList<WorkstationPlotToolTickPayload> XTicks,
+    IReadOnlyList<WorkstationPlotToolTickPayload> YTicks,
+    IReadOnlyList<WorkstationPlotToolPointPayload> Points,
+    IReadOnlyList<WorkstationPlotToolSummaryItemPayload> StudySummary,
+    IReadOnlyList<WorkstationPlotToolLegendItemPayload> LegendItems,
+    WorkstationPlotToolFocusPointPayload FocusPoint,
+    IReadOnlyList<WorkstationPlotToolSignalCardPayload> SignalCards,
+    string ConsoleTitle,
+    string ConsoleBody,
+    string OverlayTitle,
+    IReadOnlyList<string> OverlayItems);
+
+public sealed record WorkstationPlotToolSummaryTilePayload(
+    string Id,
+    string Label,
+    string Value,
+    string Detail,
+    string Tone);
+
+public sealed record WorkstationPlotToolMomentPayload(
+    string Id,
+    string Label,
+    string Value,
+    string Benchmark);
+
+public sealed record WorkstationPlotToolRegressionPayload(
+    string Equation,
+    IReadOnlyList<string> DetailItems);
+
+public sealed record WorkstationPlotToolSampleRowPayload(
+    string Id,
+    string Timestamp,
+    string SpreadText,
+    string ImpliedVolText,
+    string ZScoreText,
+    string SignalText,
+    string Tone);
+
+public sealed record WorkstationPlotToolStatisticsPayload(
+    string Eyebrow,
+    string Title,
+    string Description,
+    IReadOnlyList<WorkstationPlotToolSummaryTilePayload> SummaryTiles,
+    IReadOnlyList<int> DistributionBars,
+    string DistributionSummary,
+    string DistributionFootnote,
+    IReadOnlyList<WorkstationPlotToolMomentPayload> Moments,
+    WorkstationPlotToolRegressionPayload Regression,
+    IReadOnlyList<WorkstationPlotToolSampleRowPayload> SampleRows);
+
+public sealed record WorkstationPlotToolStudyPayload(
+    string Id,
+    string Title,
+    string Subtitle,
+    string StatusText,
+    string StatusBadgeLabel,
+    string StatusBadgeVariant,
+    string MetricText,
+    string NoteText,
+    bool IsActive);
+
 public sealed record WorkstationPlotToolPayload(
-    object Workspace,
-    object Statistics,
-    IReadOnlyList<object> Studies,
+    WorkstationPlotToolWorkspacePayload Workspace,
+    WorkstationPlotToolStatisticsPayload Statistics,
+    IReadOnlyList<WorkstationPlotToolStudyPayload> Studies,
     IReadOnlyList<WorkstationPlotToolTabState> Tabs,
     string ActiveView = "workspace");
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/strategy</c>.
-/// Run cards and comparisons retain <c>object</c> pending their own DTO evolution.
 /// </summary>
 public sealed record WorkstationStrategyPayload(
     IReadOnlyList<WorkstationMetricCard> Metrics,
-    IReadOnlyList<object> Runs,
+    IReadOnlyList<WorkstationStrategyRunCard> Runs,
     IReadOnlyList<WorkstationModeComparisonGroup> Comparisons,
     IReadOnlyList<WorkstationTimelineCard> Timeline,
     WorkstationStrategyWorkspaceSummary Workspace,
@@ -219,9 +396,9 @@ public sealed record WorkstationTradingPayload(
     IReadOnlyList<WorkstationTradingFillRow> Fills,
     WorkstationTradingRiskState Risk,
     WorkstationTradingBrokerageState Brokerage,
-    object Readiness,
+    TradingOperatorReadinessDto Readiness,
     IReadOnlyList<WorkstationModeComparisonGroup> Comparisons,
-    object? DrillIn);
+    WorkstationRunDrillInLinks? DrillIn);
 
 // ---------------------------------------------------------------------------
 // /api/workstation/accounting and /api/workstation/reporting (legacy alias: /api/workstation/governance)
@@ -464,21 +641,160 @@ public sealed record WorkstationReportingPayload(
     WorkstationReportAccessAuditSummaryDto? AccessAudit = null);
 
 /// <summary>
+/// Accounting run-card governance details linked to strategy evidence.
+/// </summary>
+public sealed record WorkstationAccountingRunGovernancePayload(
+    bool HasAuditTrail,
+    bool HasPortfolio,
+    bool HasLedger,
+    string? DatasetReference,
+    string? FeedReference);
+
+public sealed record WorkstationAccountingRunReconciliationPayload(
+    string? ReconciliationRunId,
+    int BreakCount,
+    int OpenBreakCount,
+    int MatchCount,
+    bool HasTimingDrift,
+    int SecurityIssueCount,
+    bool HasSecurityCoverageIssues,
+    string? LastUpdated,
+    string Tone);
+
+public sealed record WorkstationAccountingRunCashFlowPayload(
+    decimal CashBalance,
+    decimal LedgerCashBalance,
+    decimal CashVariance,
+    decimal Financing,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    int JournalEntryCount,
+    string Tone,
+    string Summary);
+
+public sealed record WorkstationAccountingCashFlowSummaryPayload(
+    decimal TotalCash,
+    decimal TotalLedgerCash,
+    decimal NetVariance,
+    decimal TotalFinancing,
+    int RunsWithCashSignals,
+    int RunsWithCashVariance,
+    string Tone,
+    string Summary);
+
+public sealed record WorkstationAccountingRunRecord(
+    string RunId,
+    string StrategyName,
+    string Mode,
+    string Status,
+    string LastUpdated,
+    string? AuditReference,
+    string? LedgerReference,
+    string? PortfolioId,
+    int BreakCount,
+    int OpenBreakCount,
+    string ReconciliationStatus,
+    WorkstationAccountingRunGovernancePayload Governance,
+    WorkstationSecurityCoveragePayload SecurityCoverage,
+    WorkstationAccountingRunCashFlowPayload CashFlow,
+    WorkstationAccountingRunReconciliationPayload? LatestReconciliation,
+    WorkstationKernelObservabilityPayload? KernelObservability = null);
+
+public sealed record WorkstationAccountingSeverityCountPayload(
+    string Severity,
+    int Count);
+
+public sealed record WorkstationAccountingAgingBucketPayload(
+    string Bucket,
+    int Count);
+
+public sealed record WorkstationAccountingOwnerWorkloadPayload(
+    string Owner,
+    int OpenCount);
+
+public sealed record WorkstationAccountingTrendSnapshotPayload(
+    string Metric,
+    int Value,
+    string Trend);
+
+public sealed record WorkstationAccountingDrillLinkPayload(
+    string Label,
+    string Href);
+
+public sealed record WorkstationAccountingAlertPayload(
+    string Tone,
+    string Message);
+
+public sealed record WorkstationAccountingControlCenterPayload(
+    string CloseReadiness,
+    IReadOnlyList<string> PortfolioFilterOptions,
+    IReadOnlyList<string> AccountFilterOptions,
+    IReadOnlyList<WorkstationAccountingSeverityCountPayload> BlockerSeverityDistribution,
+    IReadOnlyList<WorkstationAccountingAgingBucketPayload> AgingCurves,
+    IReadOnlyList<WorkstationAccountingOwnerWorkloadPayload> OwnerWorkload,
+    int SlaBreachCount,
+    IReadOnlyList<WorkstationAccountingTrendSnapshotPayload> TrendSnapshots,
+    IReadOnlyList<WorkstationAccountingDrillLinkPayload> DrillLinks,
+    IReadOnlyList<WorkstationAccountingAlertPayload> Alerts);
+
+public sealed record WorkstationKernelLatencyPayload(
+    double P50,
+    double P95,
+    double P99);
+
+public sealed record WorkstationKernelDriftPayload(
+    double Score,
+    double Severity,
+    string Methodology);
+
+public sealed record WorkstationKernelAlertThresholdsPayload(
+    int MinimumSampleCount,
+    double MinimumShortRate,
+    double ZeroBaselineShortRate,
+    double RelativeMultiplier,
+    double AbsoluteIncrease);
+
+public sealed record WorkstationKernelCriticalSeverityRatePayload(
+    double ShortWindow,
+    double LongWindow,
+    int ShortWindowSamples,
+    int LongWindowSamples,
+    bool JumpAlertActive,
+    int JumpAlertCount,
+    WorkstationKernelAlertThresholdsPayload AlertThresholds);
+
+public sealed record WorkstationKernelDomainPayload(
+    string Domain,
+    long Evaluations,
+    double ThroughputPerMinute,
+    WorkstationKernelLatencyPayload LatencyMs,
+    double ReasonCoveragePercent,
+    WorkstationKernelDriftPayload Drift,
+    WorkstationKernelCriticalSeverityRatePayload CriticalSeverityRate,
+    long DeterminismMismatches,
+    DateTimeOffset LastUpdatedUtc);
+
+public sealed record WorkstationKernelObservabilityPayload(
+    DateTimeOffset? UpdatedAtUtc,
+    bool DeterminismChecksEnabled,
+    int ActiveAlerts,
+    int TotalAlerts,
+    int Alerts,
+    IReadOnlyList<WorkstationKernelDomainPayload> Domains);
+
+/// <summary>
 /// Typed payload returned by <c>GET /api/workstation/accounting</c> and
 /// <c>GET /api/workstation/reporting</c>.
-/// <c>ReconciliationQueue</c>, <c>BreakQueue</c>, <c>CashFlow</c>, and
-/// <c>KernelObservability</c> are kept as <c>object</c> / <c>IReadOnlyList&lt;object&gt;</c>
-/// pending their own DTO evolution in a follow-on PR.
 /// </summary>
 public sealed record WorkstationAccountingPayload(
     IReadOnlyList<WorkstationMetricCard> Metrics,
-    IReadOnlyList<object> ReconciliationQueue,
-    IReadOnlyList<object> BreakQueue,
+    IReadOnlyList<WorkstationAccountingRunRecord> ReconciliationQueue,
+    IReadOnlyList<ReconciliationBreakQueueItem> BreakQueue,
     WorkstationAccountingWorkspaceSummary Workspace,
-    object CashFlow,
+    WorkstationAccountingCashFlowSummaryPayload CashFlow,
     WorkstationReportingPayload Reporting,
-    object ControlCenter,
-    object KernelObservability,
+    WorkstationAccountingControlCenterPayload ControlCenter,
+    WorkstationKernelObservabilityPayload KernelObservability,
     ManualJournalEntryWorkbenchDto? ManualJournalWorkbench = null);
 
 // ---------------------------------------------------------------------------
@@ -514,7 +830,7 @@ public sealed record WorkstationPortfolioPayload(
     WorkstationTradingRiskState Risk,
     WorkstationTradingBrokerageState Brokerage,
     IReadOnlyList<WorkstationPortfolioRunRow> Runs,
-    object? CashFlow);
+    WorkstationAccountingCashFlowSummaryPayload? CashFlow);
 
 
 
@@ -676,4 +992,4 @@ public sealed record WorkstationDataPayload(
     IReadOnlyList<WorkstationDataBackfillRecord> Backfills,
     IReadOnlyList<WorkstationDataExportRecord> Exports,
     DataUploadTemplateCatalogDto UploadTemplates,
-    object KernelObservability);
+    WorkstationKernelObservabilityPayload KernelObservability);

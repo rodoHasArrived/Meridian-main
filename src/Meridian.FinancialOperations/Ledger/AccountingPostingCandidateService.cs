@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -10,7 +11,18 @@ public interface IAccountingPostingCandidateService
         CancellationToken ct = default);
 }
 
-public sealed class AccountingPostingCandidateService : IAccountingPostingCandidateService
+public interface IAccountingPostingCandidateWriteBuilder
+{
+    Task<AccountingPostingCandidateWriteResult> BuildCandidateWriteAsync(
+        PostingRuleJournalCandidateRequestDto request,
+        CancellationToken ct = default);
+}
+
+public sealed record AccountingPostingCandidateWriteResult(
+    PostingRuleJournalCandidateResultDto Candidate,
+    LedgerJournalEntryWrite? Write);
+
+public sealed class AccountingPostingCandidateService : IAccountingPostingCandidateService, IAccountingPostingCandidateWriteBuilder
 {
     private readonly IAccountingConfigurationService _configurationService;
     private readonly IAccountingJournalDraftService _journalDraftService;
@@ -24,6 +36,11 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
     }
 
     public async Task<PostingRuleJournalCandidateResultDto> BuildCandidateAsync(
+        PostingRuleJournalCandidateRequestDto request,
+        CancellationToken ct = default)
+        => (await BuildCandidateWriteAsync(request, ct).ConfigureAwait(false)).Candidate;
+
+    public async Task<AccountingPostingCandidateWriteResult> BuildCandidateWriteAsync(
         PostingRuleJournalCandidateRequestDto request,
         CancellationToken ct = default)
     {
@@ -90,7 +107,9 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
 
         if (issues.Any(static issue => issue.BlocksCandidate))
         {
-            return BuildBlockedResult(request, dryRun, selectedRuleVersion, issues);
+            return new AccountingPostingCandidateWriteResult(
+                BuildBlockedResult(request, dryRun, selectedRuleVersion, issues),
+                Write: null);
         }
 
         var workspace = await _configurationService.GetWorkspaceAsync(request.FundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId)
@@ -163,7 +182,9 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
 
         if (issues.Any(static issue => issue.BlocksCandidate))
         {
-            return BuildBlockedResult(request, dryRun, selectedRuleVersion, issues);
+            return new AccountingPostingCandidateWriteResult(
+                BuildBlockedResult(request, dryRun, selectedRuleVersion, issues),
+                Write: null);
         }
 
         var draft = await _journalDraftService.BuildDraftAsync(
@@ -195,24 +216,26 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
 
         issues.AddRange(draft.ValidationIssues.Select(ToCandidateIssue));
 
-        return new PostingRuleJournalCandidateResultDto(
-            dryRun,
-            dryRun.SelectedRuleId,
-            selectedRuleVersion,
-            dryRun.GeneratedPostingLines,
-            draft.Write?.PostingCommand,
-            draft.DraftEntry?.JournalEntryId,
-            draft.TotalDebits,
-            draft.TotalCredits,
-            draft.Imbalance,
-            draft.IsBalanced,
-            issues.Any(static issue => issue.BlocksCandidate),
-            draft.CanSubmitForApproval,
-            draft.CanPostWithoutAdditionalApproval,
-            draft.EvidenceLinks,
-            issues.OrderByDescending(static issue => issue.Severity)
-                .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
-                .ToArray());
+        return new AccountingPostingCandidateWriteResult(
+            new PostingRuleJournalCandidateResultDto(
+                dryRun,
+                dryRun.SelectedRuleId,
+                selectedRuleVersion,
+                dryRun.GeneratedPostingLines,
+                draft.Write?.PostingCommand,
+                draft.DraftEntry?.JournalEntryId,
+                draft.TotalDebits,
+                draft.TotalCredits,
+                draft.Imbalance,
+                draft.IsBalanced,
+                issues.Any(static issue => issue.BlocksCandidate),
+                draft.CanSubmitForApproval,
+                draft.CanPostWithoutAdditionalApproval,
+                draft.EvidenceLinks,
+                issues.OrderByDescending(static issue => issue.Severity)
+                    .ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+                    .ToArray()),
+            draft.Write);
     }
 
     private static PostingRuleJournalCandidateResultDto BuildBlockedResult(

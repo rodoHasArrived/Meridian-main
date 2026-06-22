@@ -1,5 +1,4 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,22 +52,7 @@ public partial class BackfillPage : Page
 
     // ── ViewModel property sync ──────────────────────────────────────────────
 
-    // ── Data loading helpers ─────────────────────────────────────────────────
 
-    private async Task LoadScheduledJobsAsync(CancellationToken ct = default)
-    {
-        await _viewModel.LoadScheduledJobsAsync();
-    }
-
-    private async Task LoadResumableJobsAsync(CancellationToken ct = default)
-    {
-        await _viewModel.LoadResumableJobsAsync();
-    }
-
-    private async Task RefreshStatusFromApiAsync(CancellationToken ct = default)
-    {
-        await _viewModel.RefreshStatusFromApiAsync();
-    }
 
     // ── Resume / dismiss ─────────────────────────────────────────────────────
 
@@ -310,7 +294,6 @@ public partial class BackfillPage : Page
         SymbolsBox.Text = preset.SymbolsText;
         RefreshStartSetupState();
 
-        // M3: notification belongs in ViewModel.
         _viewModel.HandleUpdateToLatest();
     }
 
@@ -368,9 +351,8 @@ public partial class BackfillPage : Page
 
     private async void RefreshStatus_Click(object sender, RoutedEventArgs e)
     {
-        await RefreshStatusFromApiAsync();
+        await _viewModel.RefreshStatusFromApiAsync();
 
-        // M3: notification belongs in ViewModel.
         _viewModel.HandleRefreshStatusNotification();
     }
 
@@ -378,13 +360,11 @@ public partial class BackfillPage : Page
 
     private void ValidateData_Click(object sender, RoutedEventArgs e)
     {
-        // M3: stub notification belongs in ViewModel.
         _viewModel.HandleValidateData();
     }
 
     private void RepairGaps_Click(object sender, RoutedEventArgs e)
     {
-        // M3: stub notification belongs in ViewModel.
         _viewModel.HandleRepairGaps();
     }
 
@@ -395,7 +375,6 @@ public partial class BackfillPage : Page
 
     private void FillAllGaps_Click(object sender, RoutedEventArgs e)
     {
-        // M3: stub notification belongs in ViewModel.
         _viewModel.HandleFillAllGaps();
     }
 
@@ -457,7 +436,6 @@ public partial class BackfillPage : Page
         }
 
         SymbolsBox.Text = string.Join(", ", symbolsWithGaps);
-        // M3: notification belongs in ViewModel.
         _viewModel.HandleAutoFillGapsNotification(symbolsWithGaps);
     }
 
@@ -471,7 +449,6 @@ public partial class BackfillPage : Page
 
     private void SaveSchedule_Click(object sender, RoutedEventArgs e)
     {
-        // M3: stub notification belongs in ViewModel.
         _viewModel.HandleSaveSchedule();
     }
 

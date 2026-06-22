@@ -1,5 +1,6 @@
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -37,6 +38,11 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
+            new AccountingPostingCandidatePostService(
+                sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
+                sp.GetService<ILedgerJournalStore>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
 
         return services;

@@ -194,7 +194,9 @@ studio read model instead of recomputing approval, regression-test, promotion, o
 locally.
 Accounting-basis projection-set DTOs let shared clients request one retained source event across
 multiple accounting bases, ledger books, periods, policies, and dimension scopes, returning the
-governed posting candidate for each target without creating posted ledger facts.
+governed posting candidate for each target without creating posted ledger facts. Approved generated
+candidate posting uses a separate request/result contract so clients cannot confuse preview with
+durable append.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.
@@ -907,6 +909,11 @@ the dry-run and chart resolution path uses the same isolated Rules Studio worksp
 configuration. `UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates` exposes that shape
 as the shared browser/WPF preview route. The candidate contract is non-posting by design; browser
 and WPF clients must treat it as review input for the JE lifecycle, not as a ledger append.
+`PostPostingRuleJournalCandidateRequestDto` and `PostedPostingRuleJournalCandidateResultDto` publish
+the approved generated-candidate append contract behind
+`UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts`; that route requires the
+candidate aggregate to be the target `LedgerBookId` while `SourceEventId` remains the economic event
+identity, allowing one event to post separately into GAAP, cash, tax, statutory, or primary books.
 posting and allocation formula references are fail-closed contract concerns: duplicate formula ids,
 missing formula references, and formula-backed allocation weights that resolve non-positive surface
 as critical validation issues in workspace validation and dry-run previews. Rules sharing source

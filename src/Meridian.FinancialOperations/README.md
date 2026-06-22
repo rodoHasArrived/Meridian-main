@@ -326,6 +326,15 @@ now require explicit ledger-book scope and fail closed before draft/write creati
 is unscoped, and tenant-scoped candidates cannot fall back to another company's workspace, so Rules
 Studio dry-run output cannot become a governed posting candidate through a fund-level fallback
 configuration.
+`AccountingPostingCandidatePostService` is the separate append gate for approved generated
+candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
+origin, retained source-event identity, approval evidence, an aggregate id equal to the target
+ledger book, a matching ledger book/accounting basis, and a period owned by that book before calling
+the journal store. Replays for the same `(ledger book aggregate, source event)` return the existing
+journal, while the same economic event may still produce separate GAAP, cash, tax, statutory, or
+primary postings because each basis uses its own ledger-book aggregate. External accounting-system
+providers remain read-only import, reconciliation, and export-package surfaces; this service appends
+only Meridian-owned ledger facts.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid
@@ -385,10 +394,12 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 `IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and transactional audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService`, `IAccountingBasisProjectionService`, and `IAccountingBasisProjectionSetService` publish accounting-basis policy lookup, ledger write metadata projection, and one-source-event-to-many-book projection candidates for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval records, direct payment lookup, explicit bank-evidence recording, and bank-transaction evidence workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
 `IAccountingPostingCandidateService` consumes `PostingRuleJournalCandidateRequestDto` and returns
 `PostingRuleJournalCandidateResultDto` from the shared ledger contract surface so browser and WPF
-can later call the same source-event-to-draft candidate path without owning posting-rule execution
-or ledger-posting semantics. Requests carry tenant/company/fund/ledger-book scope through dry-run,
-chart resolution, and candidate metadata so the execution bridge follows the same isolated
-configuration workspace as the Rules Studio store.
+can call the same source-event-to-draft candidate path without owning posting-rule execution or
+ledger-posting semantics. `IAccountingPostingCandidatePostService` consumes the approved post
+request and appends the candidate write through storage only after the ledger-book aggregate,
+source-event, approval, period, and basis checks pass. Requests carry tenant/company/fund/ledger-book
+scope through dry-run, chart resolution, candidate metadata, and post execution so the bridge follows
+the same isolated configuration workspace as the Rules Studio store.
 
 ### Migration and archive notes
 

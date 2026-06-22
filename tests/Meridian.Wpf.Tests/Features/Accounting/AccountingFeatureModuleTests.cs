@@ -82,6 +82,8 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingBasisProjectionService, AccountingBasisProjectionService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingJournalDraftService, AccountingJournalDraftService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateService, AccountingPostingCandidateService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPostingCandidatePostService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>(services, ServiceLifetime.Singleton);
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IAccountingSystemProvider) && descriptor.ImplementationType == typeof(QuickBooksFixtureAccountingProvider) && descriptor.Lifetime == ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingSystemIntegrationService>(services, ServiceLifetime.Singleton);

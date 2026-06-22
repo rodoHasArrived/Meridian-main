@@ -126,7 +126,9 @@ the same resolved tenant/company scope before invoking Financial Operations so g
 source-event drafts dry-run against, and resolve chart paths from, the authenticated workspace.
 The shared composition also registers the accounting-basis projection-set service so browser and
 desktop hosts can ask Financial Operations to produce per-basis, per-ledger-book posting candidates
-for a single source event while keeping ledger posting behind journal lifecycle approval.
+for a single source event while keeping ledger posting behind explicit approval. The generated
+candidate append endpoint is separate from preview/projection, requires `AdminMaintenance`, stamps
+the trusted tenant/company/actor context, and delegates durable append to Financial Operations.
 Accounting production-readiness assessment also treats tenant administration evidence as
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
@@ -417,7 +419,11 @@ reconstruct dimensional accounting context locally. Text rule predicates without
 comparison values fail closed as validation issues during dry-run preview and activation so
 incomplete operator predicates cannot accidentally select a posting rule. Rule staging, dry-run
 preview, and saved regression execution remain available to ledger operators, while posting-rule
-promotion approval is a governed release gate that requires `AdminMaintenance`. Private-capital entry types require shared treasury ledger context before
+promotion approval is a governed release gate that requires `AdminMaintenance`. Approved generated
+posting candidates can be posted through
+`/api/ledger/accounting-configuration/posting-rules/candidates/post` only when Financial Operations
+can append to the configured ledger journal store; preview and projection endpoints remain read-only
+and do not create GL facts. Private-capital entry types require shared treasury ledger context before
 approval submission: effective date, idempotency key, fund-event type/id, and capital account
 context, with optional investor, payment-intent, and settlement references. Stronger host
 registrations can still replace those stores, but browser and WPF clients should consume the shared

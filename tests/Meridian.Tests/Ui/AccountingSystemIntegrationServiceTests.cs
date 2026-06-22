@@ -3371,13 +3371,13 @@ public sealed class AccountingSystemIntegrationServiceTests
                     Dimensions: FullProductionDimensions(ledgerBookId),
                     TenantId: "spoofed-tenant",
                     CompanyId: "spoofed-company"),
-                "controller",
+                "spoofed-browser-user",
                 CorrelationId: "dimensional-backfill-default-fund",
                 EvidenceLinks: ["approval:dimensional-backfill:default-fund"])));
 
         upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var upserted = await ReadAsync<AccountingMigrationRunArtifactDto>(upsertResponse);
-        upserted.Actor.Should().Be("controller");
+        upserted.Actor.Should().Be("controller.admin");
         upserted.FundProfileId.Should().Be("default-fund");
         upserted.TenantId.Should().Be("company-alpha");
         upserted.CompanyId.Should().Be("company-alpha");
@@ -3399,7 +3399,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     EvidenceReferences: ["evidence://migration/dimensional-backfill/default-fund/unscoped"],
                     FundProfileId: "default-fund",
                     Summary: "Legacy fund-level dimensional backfill retained without a book scope."),
-                "controller",
+                "spoofed-browser-user",
                 CorrelationId: "dimensional-backfill-unscoped")));
 
         unscopedResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -3470,9 +3470,9 @@ public sealed class AccountingSystemIntegrationServiceTests
                     DimensionMappingStudioConfigured: true,
                     ImplementationSandboxConfigured: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
-                    UpdatedBy: "controller",
+                    UpdatedBy: "spoofed-profile-updater",
                     EvidenceReferences: ["evidence://tenant-admin/company-alpha/tenant-admin/full"]),
-                "controller",
+                "spoofed-browser-user",
                 CorrelationId: "tenant-admin-company-alpha",
                 EvidenceLinks: ["approval:tenant-admin:company-alpha"])));
 
@@ -3480,6 +3480,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         var upserted = await ReadAsync<AccountingTenantAdministrationProfileDto>(upsertResponse);
         upserted.TenantId.Should().Be("company-alpha");
         upserted.CompanyId.Should().Be("company-alpha");
+        upserted.UpdatedBy.Should().Be("controller.admin");
         upserted.EvidenceReferences.Should().Contain("approval:tenant-admin:company-alpha");
 
         var getResponse = await client.GetAsync(UiApiRoutes.AccountingSystemTenantAdministrationProfile);
@@ -3536,9 +3537,9 @@ public sealed class AccountingSystemIntegrationServiceTests
                     DimensionMappingStudioConfigured: true,
                     ImplementationSandboxConfigured: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
-                    UpdatedBy: "controller",
+                    UpdatedBy: "spoofed-profile-updater",
                     EvidenceReferences: ["evidence://tenant-admin/tenant-spoof/setup-certified"]),
-                "controller",
+                "spoofed-browser-user",
                 CorrelationId: "tenant-admin-spoof",
                 EvidenceLinks: ["approval:tenant-admin:tenant-spoof"])));
 
@@ -3546,6 +3547,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         var upserted = await ReadAsync<AccountingTenantAdministrationProfileDto>(upsertResponse);
         upserted.TenantId.Should().Be("company-alpha");
         upserted.CompanyId.Should().Be("company-alpha");
+        upserted.UpdatedBy.Should().Be("controller.admin");
 
         var getResponse = await client.GetAsync(
             $"{UiApiRoutes.AccountingSystemTenantAdministrationProfile}?tenantId=tenant-spoof&companyId=company-spoof");
@@ -3586,7 +3588,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     LedgerLineDimensionsPersistedCertified: true,
                     TrialBalanceDimensionFiltersCertified: true,
                     ReportPackageDimensionProvenanceCertified: true),
-                "controller",
+                "spoofed-browser-user",
                 CorrelationId: "production-certification-default-fund",
                 EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"])));
 
@@ -3596,6 +3598,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         upserted.LedgerBookId.Should().Be(ExternalGlLedgerBookId);
         upserted.TenantId.Should().Be("company-alpha");
         upserted.CompanyId.Should().Be("company-alpha");
+        upserted.UpdatedBy.Should().Be("controller.admin");
         upserted.EvidenceReferences.Should().Contain($"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification");
 
         var getResponse = await client.GetAsync(

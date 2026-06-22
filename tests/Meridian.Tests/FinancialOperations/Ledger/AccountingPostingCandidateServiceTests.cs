@@ -1,6 +1,9 @@
 using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.FinancialOperations.Ledger;
@@ -393,33 +396,197 @@ public sealed class AccountingPostingCandidateServiceTests
             issue.BlocksCandidate);
     }
 
+    [Fact]
+    public async Task PostCandidateAsync_ApprovedGeneratedCandidateAppendsDurableLedgerWrite()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+
+        var result = await service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                ledgerBookId,
+                periodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1"),
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            "Reviewed retained custodian source event.",
+            EvidenceLinks: ["approval://workpaper/generated-interest-202605"]));
+
+        result.WasReplay.Should().BeFalse();
+        result.Candidate.PostingCommand.Should().NotBeNull();
+        result.Candidate.PostingCommand!.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Approved);
+        result.PostedJournal.LedgerBookId.Should().Be(ledgerBookId);
+        result.PostedJournal.AggregateId.Should().Be(ledgerBookId);
+        result.PostedJournal.SourceEventId.Should().Be(sourceEventId);
+        store.Appended.Should().ContainSingle();
+        var appended = store.Appended.Single();
+        appended.AggregateId.Should().Be(ledgerBookId);
+        appended.LedgerBookId.Should().Be(ledgerBookId);
+        appended.SourceEventId.Should().Be(sourceEventId);
+        appended.PostingCommand.Should().NotBeNull();
+        appended.PostingCommand!.AggregateId.Should().Be(ledgerBookId);
+        appended.PostingCommand.LedgerBookId.Should().Be(ledgerBookId);
+        appended.PostingCommand.SourceEventId.Should().Be(sourceEventId);
+        appended.PostingCommand.ApprovalState.Should().Be(AccountingPostingApprovalStateDto.Approved);
+        appended.PostingCommand.Evidence.Should().Contain(evidence =>
+            evidence.Kind == AccountingPostingEvidenceKindDto.Approval &&
+            evidence.EvidenceId == "approval-generated-interest-202605");
+    }
+
+    [Fact]
+    public async Task PostCandidateAsync_SameEconomicEventCanPostSeparateBasisLedgerBooks()
+    {
+        var gaapLedgerBookId = Guid.NewGuid();
+        var cashLedgerBookId = Guid.NewGuid();
+        var gaapPeriodId = Guid.NewGuid();
+        var cashPeriodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceForBooksAsync(
+            [gaapLedgerBookId, cashLedgerBookId],
+            [AccountingBasisKindDto.Gaap, AccountingBasisKindDto.Cash]);
+        var store = new RecordingLedgerJournalStore(
+            [
+                BuildLedgerBook(gaapLedgerBookId, AccountingBasisKindDto.Gaap),
+                BuildLedgerBook(cashLedgerBookId, AccountingBasisKindDto.Cash)
+            ],
+            [
+                BuildPeriod(gaapPeriodId, gaapLedgerBookId),
+                BuildPeriod(cashPeriodId, cashLedgerBookId)
+            ]);
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+
+        var gaap = await service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                gaapLedgerBookId,
+                gaapPeriodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1"),
+            "reviewer@meridian.local",
+            "approval-gaap-interest-202605",
+            EvidenceLinks: ["approval://workpaper/gaap-interest-202605"]));
+        var cash = await service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                cashLedgerBookId,
+                cashPeriodId,
+                sourceEventId,
+                AccountingBasisKindDto.Cash,
+                "cash-accrual-v1"),
+            "reviewer@meridian.local",
+            "approval-cash-interest-202605",
+            EvidenceLinks: ["approval://workpaper/cash-interest-202605"]));
+
+        gaap.PostedJournal.SourceEventId.Should().Be(sourceEventId);
+        cash.PostedJournal.SourceEventId.Should().Be(sourceEventId);
+        gaap.PostedJournal.LedgerBookId.Should().Be(gaapLedgerBookId);
+        cash.PostedJournal.LedgerBookId.Should().Be(cashLedgerBookId);
+        gaap.PostedJournal.AggregateId.Should().Be(gaapLedgerBookId);
+        cash.PostedJournal.AggregateId.Should().Be(cashLedgerBookId);
+        store.Appended.Should().HaveCount(2);
+        store.Appended.Select(static write => write.AggregateId).Should().BeEquivalentTo([gaapLedgerBookId, cashLedgerBookId]);
+        store.Appended.Should().OnlyContain(write => write.SourceEventId == sourceEventId);
+    }
+
+    [Fact]
+    public async Task PostCandidateAsync_ReplayedSourceEventForSameBookReturnsExistingJournal()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+        var request = new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                ledgerBookId,
+                periodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1"),
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: ["approval://workpaper/generated-interest-202605"]);
+
+        var first = await service.PostCandidateAsync(request);
+        var second = await service.PostCandidateAsync(request);
+
+        second.WasReplay.Should().BeTrue();
+        second.PostedJournal.JournalEntryId.Should().Be(first.PostedJournal.JournalEntryId);
+        second.PostedJournal.SourceEventId.Should().Be(sourceEventId);
+        store.Appended.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task PostCandidateAsync_AggregateMustEqualLedgerBook()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+        var request = BuildCandidateRequest(
+            ledgerBookId,
+            periodId,
+            sourceEventId,
+            AccountingBasisKindDto.Gaap,
+            "gaap-accrual-v1") with
+            {
+                AggregateId = sourceEventId
+            };
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            request,
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*aggregate id must equal the target ledger book id*");
+        store.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostCandidateAsync_WithoutLedgerStoreFailsClosed()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var service = new AccountingPostingCandidatePostService(candidateService);
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                ledgerBookId,
+                periodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1"),
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Postgres-backed ledger journal store*");
+    }
+
     private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceAsync(
         string incomeAccountType = "Revenue",
         decimal? creditAmount = null,
         Guid? ledgerBookId = null)
     {
         var configurationService = await CreateSeededConfigurationServiceAsync(incomeAccountType, creditAmount, ledgerBookId);
-        var policyService = new AccountingPolicyService();
-        await policyService.CreatePolicyAsync(new CreateAccountingPolicyRequest(
-            AccountingBasisKindDto.Gaap,
-            PolicyId: "gaap-accrual-v1",
-            Version: "v1",
-            DisplayName: "GAAP accrual treatment",
-            EffectiveFrom: new DateOnly(2026, 1, 1),
-            RulePack: new AccountingPolicyRulePackDto(
-                "gaap-accrual-rules",
-                "v1",
-                [
-                    new AccountingPolicyRuleDto(
-                        "accrual.interest-income",
-                        AccountingTreatmentKindDto.Accrual,
-                        RuleVersion: "v1",
-                        SourceEventType: "CustodianInterestAccrual",
-                        RequiresEvidence: true,
-                        RequiresApproval: true,
-                        AllowsAutoPosting: false,
-                        Description: "Accrue custodian interest income from retained source evidence.")
-                ])));
+        var policyService = await CreatePolicyServiceAsync([AccountingBasisKindDto.Gaap]);
 
         return new AccountingPostingCandidateService(
             configurationService,
@@ -427,6 +594,67 @@ public sealed class AccountingPostingCandidateServiceTests
                 policyService,
                 new AccountingBasisProjectionService(policyService)));
     }
+
+    private static async Task<AccountingPostingCandidateService> CreateSeededCandidateServiceForBooksAsync(
+        IReadOnlyList<Guid> ledgerBookIds,
+        IReadOnlyList<AccountingBasisKindDto> policyBases)
+    {
+        var configurationService = new AccountingConfigurationService(
+            new InMemoryAccountingConfigurationStore(),
+            new InMemoryAccountingActionAuditStore());
+        foreach (var ledgerBookId in ledgerBookIds)
+        {
+            await SeedCandidateConfigurationAsync(configurationService, ledgerBookId);
+        }
+
+        var policyService = await CreatePolicyServiceAsync(policyBases);
+        return new AccountingPostingCandidateService(
+            configurationService,
+            new AccountingJournalDraftService(
+                policyService,
+                new AccountingBasisProjectionService(policyService)));
+    }
+
+    private static async Task<AccountingPolicyService> CreatePolicyServiceAsync(
+        IReadOnlyList<AccountingBasisKindDto> policyBases)
+    {
+        var policyService = new AccountingPolicyService();
+        foreach (var basis in policyBases.Distinct())
+        {
+            await policyService.CreatePolicyAsync(new CreateAccountingPolicyRequest(
+                basis,
+                PolicyId: PolicyIdForBasis(basis),
+                Version: "v1",
+                DisplayName: $"{basis} accrual treatment",
+                EffectiveFrom: new DateOnly(2026, 1, 1),
+                RulePack: new AccountingPolicyRulePackDto(
+                    $"{basis.ToString().ToLowerInvariant()}-accrual-rules",
+                    "v1",
+                    [
+                        new AccountingPolicyRuleDto(
+                            $"accrual.interest-income.{basis.ToString().ToLowerInvariant()}",
+                            AccountingTreatmentKindDto.Accrual,
+                            RuleVersion: "v1",
+                            SourceEventType: "CustodianInterestAccrual",
+                            RequiresEvidence: true,
+                            RequiresApproval: true,
+                            AllowsAutoPosting: false,
+                            Description: "Accrue custodian interest income from retained source evidence.")
+                    ])));
+        }
+
+        return policyService;
+    }
+
+    private static string PolicyIdForBasis(AccountingBasisKindDto basis)
+        => basis switch
+        {
+            AccountingBasisKindDto.Gaap => "gaap-accrual-v1",
+            AccountingBasisKindDto.Cash => "cash-accrual-v1",
+            AccountingBasisKindDto.Tax => "tax-accrual-v1",
+            AccountingBasisKindDto.Statutory => "statutory-accrual-v1",
+            _ => "primary-accrual-v1"
+        };
 
     private static async Task<AccountingConfigurationService> CreateSeededConfigurationServiceAsync(
         string incomeAccountType = "Revenue",
@@ -536,6 +764,70 @@ public sealed class AccountingPostingCandidateServiceTests
             TenantId: tenantId));
     }
 
+    private static PostingRuleJournalCandidateRequestDto BuildCandidateRequest(
+        Guid ledgerBookId,
+        Guid periodId,
+        Guid sourceEventId,
+        AccountingBasisKindDto accountingBasis,
+        string policyId)
+        => new(
+            "fund-alpha",
+            "CustodianInterestAccrual",
+            125.44m,
+            "USD",
+            new DateOnly(2026, 5, 31),
+            "controller@meridian.local",
+            ledgerBookId,
+            periodId,
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Accrue custodian interest from retained source event",
+            AccountingBasis: accountingBasis,
+            LedgerBookId: ledgerBookId,
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+            CounterpartyId: "custodian-bny",
+            CorrelationId: Guid.NewGuid(),
+            SourceEventId: sourceEventId,
+            PolicyId: policyId,
+            TreatmentKind: AccountingTreatmentKindDto.Accrual,
+            TreasuryContext: new TreasuryLedgerContextDto(
+                EffectiveDate: new DateOnly(2026, 5, 31),
+                IdempotencyKey: $"custodian-interest:{ledgerBookId:N}:{sourceEventId:N}",
+                FundEventId: $"fund-event:fund-alpha:interest-accrual:{sourceEventId:N}",
+                FundEventType: "InterestAccrual",
+                CapitalAccountId: "capital-account:fund-alpha:master",
+                InvestorId: "investor:fund-alpha:master",
+                PaymentIntentId: $"payment:fund-alpha:interest-accrual:{sourceEventId:N}",
+                SettlementReference: $"settlement:fund-alpha:interest-accrual:{sourceEventId:N}"),
+            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]);
+
+    private static LedgerBookRecord BuildLedgerBook(Guid ledgerBookId, AccountingBasisKindDto accountingBasis)
+        => new(
+            ledgerBookId,
+            "fund-alpha",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            $"{accountingBasis} ledger",
+            "USD",
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-01-01T00:00:00Z"),
+            AccountingBasis: accountingBasis,
+            AccountingPolicyId: PolicyIdForBasis(accountingBasis),
+            AccountingPolicyVersion: "v1");
+
+    private static LedgerAccountingPeriod BuildPeriod(Guid periodId, Guid ledgerBookId)
+        => new(
+            periodId,
+            ledgerBookId,
+            2026,
+            5,
+            "May 2026",
+            new DateOnly(2026, 5, 1),
+            new DateOnly(2026, 5, 31),
+            "Open",
+            DateTimeOffset.Parse("2026-05-01T00:00:00Z"),
+            ClosedAt: null,
+            Version: 1);
+
     private sealed class CapturingJournalDraftService : IAccountingJournalDraftService
     {
         public AccountingJournalDraftRequest? CapturedRequest { get; private set; }
@@ -573,6 +865,131 @@ public sealed class AccountingPostingCandidateServiceTests
                 CanPostWithoutAdditionalApproval: false,
                 request.EvidenceLinks ?? [],
                 ValidationIssues: []));
+        }
+    }
+
+    private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
+    {
+        private readonly Dictionary<Guid, LedgerBookRecord> _books;
+        private readonly Dictionary<Guid, LedgerAccountingPeriod> _periods;
+        private readonly List<LedgerJournalEntryRecord> _records = [];
+        private long _sequence;
+
+        public RecordingLedgerJournalStore(
+            LedgerBookRecord book,
+            LedgerAccountingPeriod period)
+            : this([book], [period])
+        {
+        }
+
+        public RecordingLedgerJournalStore(
+            IReadOnlyList<LedgerBookRecord> books,
+            IReadOnlyList<LedgerAccountingPeriod> periods)
+        {
+            _books = books.ToDictionary(static book => book.LedgerBookId);
+            _periods = periods.ToDictionary(static period => period.PeriodId);
+        }
+
+        public List<LedgerJournalEntryWrite> Appended { get; } = [];
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
+            if (!normalized.LedgerBookId.HasValue || !_books.TryGetValue(normalized.LedgerBookId.Value, out var book))
+            {
+                throw new InvalidOperationException("Ledger book was not found.");
+            }
+
+            if (!_periods.TryGetValue(normalized.PeriodId, out var period))
+            {
+                throw new InvalidOperationException("Ledger period was not found.");
+            }
+
+            if (period.LedgerBookId != book.LedgerBookId)
+            {
+                throw new InvalidOperationException("Ledger period does not belong to the ledger book.");
+            }
+
+            if (book.AccountingBasis != normalized.AccountingBasis)
+            {
+                throw new InvalidOperationException("Journal basis does not match ledger book basis.");
+            }
+
+            if (_records.Any(record =>
+                    record.AggregateId == normalized.AggregateId &&
+                    record.SourceEventId == normalized.SourceEventId &&
+                    normalized.SourceEventId.HasValue))
+            {
+                throw new InvalidOperationException("Duplicate source event posting.");
+            }
+
+            Appended.Add(normalized);
+            _records.Add(new LedgerJournalEntryRecord(
+                normalized.Entry,
+                normalized.AggregateId,
+                normalized.PeriodId,
+                normalized.CommandId,
+                normalized.CorrelationId,
+                ++_sequence,
+                DateTimeOffset.UtcNow,
+                normalized.AccountingBasis,
+                normalized.AccountingPolicyId,
+                normalized.AccountingPolicyVersion,
+                normalized.RuleId,
+                normalized.RuleVersion,
+                normalized.SourceEventId,
+                normalized.SourceJournalEntryId,
+                normalized.PostingKind,
+                normalized.AdjustmentApproval));
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(_records.Where(record => record.PeriodId == periodId).ToArray());
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(_records.Where(record => record.AggregateId == aggregateId).ToArray());
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+            => Task.FromResult(_periods.GetValueOrDefault(periodId));
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(_periods.Values
+                .Where(period => !ledgerBookId.HasValue || period.LedgerBookId == ledgerBookId)
+                .ToArray());
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default)
+        {
+            _periods[period.PeriodId] = period;
+            return Task.FromResult(period);
+        }
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+            => Task.FromResult(_books.GetValueOrDefault(ledgerBookId));
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<LedgerBookRecord>>(_books.Values
+                .Where(book => string.IsNullOrWhiteSpace(fundProfileId) || book.FundProfileId == fundProfileId)
+                .ToArray());
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
+        {
+            _books[book.LedgerBookId] = book;
+            return Task.FromResult(book);
         }
     }
 }

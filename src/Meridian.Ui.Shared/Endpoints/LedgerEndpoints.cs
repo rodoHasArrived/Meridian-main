@@ -811,6 +811,49 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts, async (PostPostingRuleJournalCandidateRequestDto request, HttpContext context) =>
+        {
+            if (!HasLedgerCertificationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingPostingCandidatePostService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service
+                    .PostCandidateAsync(request with
+                    {
+                        Actor = ResolveMutationActor(context, request.Actor),
+                        TenantId = tenantContext.TenantId ?? request.TenantId,
+                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    }, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("PostAccountingConfigurationPostingRuleCandidate")
+        .Produces<PostedPostingRuleJournalCandidateResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleProjectionSets, async (AccountingBasisProjectionSetRequestDto request, HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -1804,6 +1847,9 @@ public static class LedgerEndpoints
 
     private static IAccountingPostingCandidateService? ResolveAccountingPostingCandidateService(HttpContext context)
         => context.RequestServices.GetService<IAccountingPostingCandidateService>();
+
+    private static IAccountingPostingCandidatePostService? ResolveAccountingPostingCandidatePostService(HttpContext context)
+        => context.RequestServices.GetService<IAccountingPostingCandidatePostService>();
 
     private static IAccountingBasisProjectionSetService? ResolveAccountingBasisProjectionSetService(HttpContext context)
         => context.RequestServices.GetService<IAccountingBasisProjectionSetService>();

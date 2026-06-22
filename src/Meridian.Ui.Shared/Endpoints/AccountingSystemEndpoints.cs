@@ -94,7 +94,11 @@ public static class AccountingSystemEndpoints
                 TenantId = tenantContext.TenantId ?? request.Profile.TenantId,
                 CompanyId = tenantContext.CompanyId ?? request.Profile.CompanyId
             };
-            var trustedRequest = request with { Profile = trustedProfile };
+            var trustedRequest = request with
+            {
+                Profile = trustedProfile,
+                Actor = ResolveMutationActor(context, request.Actor)
+            };
             try
             {
                 var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
@@ -156,7 +160,11 @@ public static class AccountingSystemEndpoints
                 TenantId = tenantContext.TenantId ?? request.Profile.TenantId ?? string.Empty,
                 CompanyId = tenantContext.CompanyId ?? request.Profile.CompanyId ?? string.Empty
             };
-            var trustedRequest = request with { Profile = trustedProfile };
+            var trustedRequest = request with
+            {
+                Profile = trustedProfile,
+                Actor = ResolveMutationActor(context, request.Actor)
+            };
             try
             {
                 var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
@@ -221,7 +229,11 @@ public static class AccountingSystemEndpoints
                     TenantId = tenantContext.TenantId ?? request.Artifact.TenantId,
                     CompanyId = tenantContext.CompanyId ?? request.Artifact.CompanyId
                 };
-                var trustedRequest = request with { Artifact = trustedArtifact };
+                var trustedRequest = request with
+                {
+                    Artifact = trustedArtifact,
+                    Actor = ResolveMutationActor(context, request.Actor)
+                };
                 var result = await store.UpsertAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -480,4 +492,11 @@ public static class AccountingSystemEndpoints
 
     private static bool HasAccountingCertificationAccess(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
+
+    private static string ResolveMutationActor(HttpContext context, string suppliedActor)
+        => context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserKey, out var user) &&
+           user is string currentUser &&
+           !string.IsNullOrWhiteSpace(currentUser)
+            ? currentUser.Trim()
+            : suppliedActor;
 }

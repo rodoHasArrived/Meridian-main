@@ -124,12 +124,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
                 Schema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA") ?? "identity_access"
             });
+            services.TryAddSingleton<PostgresScopedAccessAssignmentStore>(sp =>
+                new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>()));
             services.TryAddSingleton<IScopedAccessAssignmentStore>(sp =>
-            {
-                var store = new PostgresScopedAccessAssignmentStore(sp.GetRequiredService<ScopedAccessStoreOptions>());
-                store.EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
-                return store;
-            });
+                sp.GetRequiredService<PostgresScopedAccessAssignmentStore>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ScopedAccessAssignmentStoreMigrationHostedService>());
         }
         else
         {
@@ -160,15 +159,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<StorageCatalogService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var catalog = new StorageCatalogService(storageOptions.RootPath, storageOptions);
-
-            // Keep the shared catalog ready for ETL and workstation endpoints without requiring
-            // each consumer to perform its own first-use initialization.
-            Task.Run(() => catalog.InitializeAsync()).GetAwaiter().GetResult();
-
-            return catalog;
+            return new StorageCatalogService(storageOptions.RootPath, storageOptions);
         });
         services.TryAddSingleton<IStorageCatalogService>(sp => sp.GetRequiredService<StorageCatalogService>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, StorageCatalogInitializationHostedService>());
         services.AddSingleton<IFileMaintenanceService, FileMaintenanceService>();
         services.AddSingleton<IQualityTrendStore, FileQualityTrendStore>();
         services.AddSingleton<IDataQualityService, DataQualityService>();
@@ -176,16 +170,13 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<ITierMigrationService, TierMigrationService>();
         services.AddSingleton<IAuditChainService, AuditChainService>();
         services.AddSingleton<StorageChecksumService>(sp => new StorageChecksumService(null, sp.GetRequiredService<IAuditChainService>()));
-        services.AddSingleton<ISymbolRegistryService>(sp =>
+        services.TryAddSingleton<SymbolRegistryService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var registry = new SymbolRegistryService(storageOptions.RootPath);
-
-            // Run on the thread pool so a captured SynchronizationContext cannot cause a deadlock.
-            Task.Run(() => registry.InitializeAsync()).GetAwaiter().GetResult();
-
-            return registry;
+            return new SymbolRegistryService(storageOptions.RootPath);
         });
+        services.TryAddSingleton<ISymbolRegistryService>(sp => sp.GetRequiredService<SymbolRegistryService>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, SymbolRegistryInitializationHostedService>());
 
         // Position snapshot store — files land under {StorageRoot}/portfolios/ so the
         // LifecyclePolicyEngine governs retention automatically (ADR-002 / ADR-007).
@@ -579,4 +570,45 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
     private static bool ParseBool(string name, bool defaultValue)
         => bool.TryParse(Environment.GetEnvironmentVariable(name), out var value) ? value : defaultValue;
+    private sealed class ScopedAccessAssignmentStoreMigrationHostedService : IHostedService
+    {
+        private readonly PostgresScopedAccessAssignmentStore _store;
+
+        public ScopedAccessAssignmentStoreMigrationHostedService(PostgresScopedAccessAssignmentStore store)
+            => _store = store;
+
+        public Task StartAsync(CancellationToken cancellationToken)
+            => _store.EnsureMigratedAsync(cancellationToken);
+
+        public Task StopAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+    }
+
+    private sealed class StorageCatalogInitializationHostedService : IHostedService
+    {
+        private readonly StorageCatalogService _catalog;
+
+        public StorageCatalogInitializationHostedService(StorageCatalogService catalog)
+            => _catalog = catalog;
+
+        public Task StartAsync(CancellationToken cancellationToken)
+            => _catalog.InitializeAsync(cancellationToken);
+
+        public Task StopAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+    }
+
+    private sealed class SymbolRegistryInitializationHostedService : IHostedService
+    {
+        private readonly SymbolRegistryService _registry;
+
+        public SymbolRegistryInitializationHostedService(SymbolRegistryService registry)
+            => _registry = registry;
+
+        public Task StartAsync(CancellationToken cancellationToken)
+            => _registry.InitializeAsync(cancellationToken);
+
+        public Task StopAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+    }
 }
