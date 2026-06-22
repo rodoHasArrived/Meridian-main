@@ -137,6 +137,10 @@ Accounting production-readiness assessment also treats tenant administration evi
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
 the shared control plane counts those enterprise setup controls as complete.
+Production certification profile persistence fails closed with the same scope posture: profiles that
+certify ledger-book-native workflows or dimensional reporting controls must retain evidence naming
+the selected tenant, company, fund profile, and ledger book before browser or WPF clients can save
+the certification.
 Shared reporting run projections also carry the manifest or workflow as-of date with run id,
 template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
 actions, plus structured generated report-writer grid metadata when a run retained

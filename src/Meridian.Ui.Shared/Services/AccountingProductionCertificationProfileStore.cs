@@ -142,6 +142,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             .Select(static item => item!.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        EnsureRolloutScopedEvidence(request.Profile, tenantId, companyId, fundProfileId, evidence);
 
         return request.Profile with
         {
@@ -209,6 +210,75 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
 
     private static string? TrimOrNull(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static void EnsureRolloutScopedEvidence(
+        AccountingProductionCertificationProfileDto profile,
+        string tenantId,
+        string companyId,
+        string fundProfileId,
+        IReadOnlyList<string> evidenceReferences)
+    {
+        if (!DeclaresProductionCertification(profile))
+        {
+            return;
+        }
+
+        if (evidenceReferences.Count == 0)
+        {
+            throw new ArgumentException("Accounting production certification evidence is required.");
+        }
+
+        if (!evidenceReferences.Any(reference =>
+                ReferencesScope(reference, tenantId) &&
+                ReferencesScope(reference, companyId) &&
+                ReferencesScope(reference, fundProfileId) &&
+                ReferencesLedgerBook(reference, profile.LedgerBookId)))
+        {
+            throw new ArgumentException("Accounting production certification evidence must identify the selected tenant, company, fund profile, and ledger book.");
+        }
+    }
+
+    private static bool DeclaresProductionCertification(AccountingProductionCertificationProfileDto profile)
+        => profile.PostingRulesLedgerBookNativeCertified ||
+           profile.JournalLifecycleLedgerBookNativeCertified ||
+           profile.CloseReportingLedgerBookNativeCertified ||
+           profile.ExternalGlLedgerBookNativeCertified ||
+           profile.PeriodReportDimensionQueriesCertified ||
+           profile.CrossPeriodReportDimensionQueriesCertified ||
+           profile.JournalQueryDimensionFiltersCertified ||
+           profile.ExternalExportDimensionMappingCertified ||
+           profile.ReconciliationLedgerBookNativeCertified ||
+           profile.DirectLendingLedgerBookNativeCertified ||
+           profile.StrategyLedgerReadLedgerBookNativeCertified ||
+           profile.LedgerLineDimensionsPersistedCertified ||
+           profile.TrialBalanceDimensionFiltersCertified ||
+           profile.ReportPackageDimensionProvenanceCertified;
+
+    private static bool ReferencesScope(string? reference, string value)
+        => !string.IsNullOrWhiteSpace(reference) &&
+           reference.Contains(value, StringComparison.OrdinalIgnoreCase);
+
+    private static bool ReferencesLedgerBook(string? reference, Guid? ledgerBookId)
+    {
+        if (!ledgerBookId.HasValue)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return false;
+        }
+
+        var ledgerBookText = ledgerBookId.Value.ToString("D");
+        var compactLedgerBookText = ledgerBookId.Value.ToString("N");
+        return reference.Contains($"ledger-book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"ledger-book/{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
+               reference.Contains($"book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {

@@ -22,6 +22,7 @@ using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -1134,7 +1135,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ExternalExportDimensionMappingCertified: true,
                 UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                 UpdatedBy: "controller",
-                EvidenceReferences: [$"evidence://ledger-book/{ExternalGlLedgerBookId:D}/production-certification/tenant-alpha"],
+                EvidenceReferences: [$"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production"],
                 TenantId: "tenant-alpha",
                 CompanyId: "company-alpha",
                 ReconciliationLedgerBookNativeCertified: true,
@@ -1145,7 +1146,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ReportPackageDimensionProvenanceCertified: true),
             "controller",
             CorrelationId: "production-certification-tenant-alpha",
-            EvidenceLinks: [$"approval:ledger-book:{ExternalGlLedgerBookId:D}:production-certification:tenant-alpha"]));
+            EvidenceLinks: [$"approval:tenant:tenant-alpha:company:company-alpha:fund:default-fund:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"]));
 
         var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
@@ -3969,22 +3970,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-mismatched-rollout")));
 
-        upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var readinessResponse = await client.PostAsync(
-            UiApiRoutes.AccountingSystemProductionReadiness,
-            JsonContent(new AccountingProductionReadinessRequestDto(
-                FundProfileId: "default-fund",
-                LedgerBookId: ExternalGlLedgerBookId)));
-
-        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
-        readiness.Issues.Should().Contain(issue =>
-            issue.Code == "ledger-books.workflow-evidence-rollout-scope-mismatch" &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
-        readiness.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.reporting-evidence-rollout-scope-mismatch" &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
+        problem.Errors.Should().ContainKey("request");
+        problem.Errors["request"].Should().Contain(error =>
+            error.Contains("selected tenant, company, fund profile, and ledger book", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
