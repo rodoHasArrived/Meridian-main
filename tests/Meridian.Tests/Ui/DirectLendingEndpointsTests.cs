@@ -50,7 +50,7 @@ public sealed class DirectLendingEndpointsTests
         accrualResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var penaltyResponse = await client.PostAsJsonAsync(
-            $"/api/loans/{created.LoanId}/prepayment-penalty",
+            $"/api/loans/{created.LoanId}/prepayment-penalties",
             new ChargePrepaymentPenaltyRequest(200_000m, new DateOnly(2026, 3, 24), "prepay-rebuild"));
         penaltyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -82,7 +82,7 @@ public sealed class DirectLendingEndpointsTests
 
         var projectedRevisions = await client.GetFromJsonAsync<List<ServicingRevisionDto>>($"/api/loans/{created.LoanId}/projections/revisions");
         projectedRevisions.Should().NotBeNull();
-        projectedRevisions!.Should().HaveCount(2);
+        projectedRevisions!.Should().HaveCount(3);
 
         var projectedAccruals = await client.GetFromJsonAsync<List<DailyAccrualEntryDto>>($"/api/loans/{created.LoanId}/projections/accruals");
         projectedAccruals.Should().NotBeNull();
@@ -216,5 +216,6 @@ public sealed class DirectLendingEndpointsTests
                 CommitmentFeeRate: 0.03m,
                 DefaultRateSpreadBps: 200m,
                 PrepaymentAllowed: true,
-                CovenantsJson: "{\"interestCoverage\": \">= 2.0x\"}"));
+                CovenantsJson: "{\"interestCoverage\": \">= 2.0x\"}",
+                PrepaymentPenaltyRate: 0.02m));
 }
