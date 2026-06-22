@@ -388,6 +388,36 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
             yield return "counterparty";
         }
 
+        if (string.IsNullOrWhiteSpace(dimensions.OrganizationId))
+        {
+            yield return "organization";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.PortfolioId))
+        {
+            yield return "portfolio";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.AccountId))
+        {
+            yield return "account";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CustomerId))
+        {
+            yield return "customer";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.VendorId))
+        {
+            yield return "vendor";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.ProjectId))
+        {
+            yield return "project";
+        }
+
         if (dimensions.ExternalGlDimensions.Count == 0 ||
             dimensions.ExternalGlDimensions.Any(static pair =>
                 string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value)))

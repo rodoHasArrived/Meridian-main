@@ -749,41 +749,47 @@ public sealed class LedgerBookServiceTests
         var trialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
             UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString()),
             ServerJsonOptions);
+        const string investmentOpsDimensionFilter =
+            "dimensionEntityId=entity-master&dimensionCostCenterId=cost-center-investment-ops&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps";
+        const string missingInvestmentOpsDimensionFilter =
+            "dimensionEntityId=entity-master&dimensionCostCenterId=missing-cost-center&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps";
+        const string missingFundAccountingDimensionFilter =
+            "dimensionEntityId=entity-master&dimensionCostCenterId=missing-cost-center&externalGlDimensionKey=Department&externalGlDimensionValue=FundAccounting";
         var filteredPeriodTrialBalance = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodTrialBalanceLineDto>>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalance, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
             ServerJsonOptions);
         var filteredPeriodTrialBalanceReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
             ServerJsonOptions);
         var emptyInvestmentOpsReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=missing-cost-center&externalGl.Department=InvestmentOps",
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?{missingInvestmentOpsDimensionFilter}",
             ServerJsonOptions);
         var emptyFundAccountingReport = await client.GetFromJsonAsync<LedgerTrialBalanceReportDto>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=missing-cost-center&externalGl.Department=FundAccounting",
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodTrialBalanceReport, "periodId", period.PeriodId.ToString())}?{missingFundAccountingDimensionFilter}",
             ServerJsonOptions);
         var filteredPeriodPnl = await client.GetFromJsonAsync<LedgerPeriodPnlSummaryDto>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodPnlSummary, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodPnlSummary, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
             ServerJsonOptions);
         var journalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
             UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString()),
             ServerJsonOptions);
         var filteredJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString())}?entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
             ServerJsonOptions);
         var aggregateJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
             $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerAggregateJournalEntries, "aggregateId", aggregateId.ToString())}?ledgerBookId={book.LedgerBookId:D}",
             ServerJsonOptions);
         var filteredAggregateJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
-            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerAggregateJournalEntries, "aggregateId", aggregateId.ToString())}?ledgerBookId={book.LedgerBookId:D}&entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerAggregateJournalEntries, "aggregateId", aggregateId.ToString())}?ledgerBookId={book.LedgerBookId:D}&{investmentOpsDimensionFilter}",
             ServerJsonOptions);
         var crossPeriodReport = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
             $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30",
             ServerJsonOptions);
         var filteredCrossPeriodReport = await client.GetFromJsonAsync<LedgerCrossPeriodTrialBalanceReportDto>(
-            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30&entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30&{investmentOpsDimensionFilter}",
             ServerJsonOptions);
         var filteredPnlReport = await client.GetFromJsonAsync<LedgerCrossPeriodPnlReportDto>(
-            $"{UiApiRoutes.LedgerReportsPnlSummary}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30&entityId=entity-master&costCenterId=cost-center-investment-ops&externalGl.Department=InvestmentOps",
+            $"{UiApiRoutes.LedgerReportsPnlSummary}?ledgerBookId={book.LedgerBookId:D}&accountingBasis=Gaap&startDate=2026-06-01&endDate=2026-06-30&{investmentOpsDimensionFilter}",
             ServerJsonOptions);
 
         trialBalance.Should().NotBeNull();

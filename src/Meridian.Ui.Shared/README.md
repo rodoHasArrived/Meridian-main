@@ -292,9 +292,10 @@ dimension set used by the query, report, or export path.
 Certification flags without retained
 certified migration run artifacts remain blocked, certified dimensional backfill artifacts must
 retain canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
-tax-lot, cost-center, counterparty, and external-GL dimension coverage before production readiness
-treats them as valid dimensional accounting evidence, and book-scoped readiness only loads retained
-tenant/company-scoped migration artifacts for the exact requested ledger book. Fund-level,
+tax-lot, cost-center, counterparty, organization, portfolio, account, customer, vendor, project,
+and external-GL dimension coverage before production readiness treats them as valid dimensional
+accounting evidence, and book-scoped readiness only loads retained tenant/company-scoped
+migration artifacts for the exact requested ledger book. Fund-level,
 other-book, or other-company migration artifacts cannot satisfy certification controls for a
 selected ledger-book rollout. Migration rollout readiness also blocks when the assessment has no
 tenant or company scope, so historical backfill, dimensional backfill, configuration promotion, and
@@ -318,9 +319,10 @@ persistence unless they carry tenant, company, fund, ledger-book, completion, cl
 retained evidence scope; at least one retained evidence reference must identify the same tenant,
 company, fund profile, and ledger book as the certified artifact. Certified dimensional-backfill artifacts must additionally retain
 canonical fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument,
-tax-lot, cost-center, counterparty, and external-GL dimensions matching the certified book. Planned,
-running, completed, and failed artifacts can still be retained as operator evidence without being
-treated as certified rollout proof.
+tax-lot, cost-center, counterparty, organization, portfolio, account, customer, vendor, project,
+and external-GL dimensions matching the certified book. Planned, running, completed, and failed
+artifacts can still be retained as operator evidence without being treated as certified rollout
+proof.
 Dimensional accounting readiness also fails closed until period report filters, cross-period
 report filters, journal dimension filters, posted ledger-line dimensions, trial-balance filters,
 report-package provenance, and external-export dimension mappings are certified

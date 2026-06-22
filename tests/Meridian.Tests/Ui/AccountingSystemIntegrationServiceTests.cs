@@ -1643,6 +1643,11 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Message.Contains("sleeve", StringComparison.OrdinalIgnoreCase) &&
             issue.Message.Contains("capital account", StringComparison.OrdinalIgnoreCase) &&
             issue.Message.Contains("tax lot", StringComparison.OrdinalIgnoreCase) &&
+            issue.Message.Contains("organization", StringComparison.OrdinalIgnoreCase) &&
+            issue.Message.Contains("portfolio", StringComparison.OrdinalIgnoreCase) &&
+            issue.Message.Contains("customer", StringComparison.OrdinalIgnoreCase) &&
+            issue.Message.Contains("vendor", StringComparison.OrdinalIgnoreCase) &&
+            issue.Message.Contains("project", StringComparison.OrdinalIgnoreCase) &&
             issue.EvidenceReferences.Contains("evidence://migration/dimensional-backfill/default-fund/certified"));
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.MigrationRollout &&
@@ -4036,6 +4041,11 @@ public sealed class AccountingSystemIntegrationServiceTests
         body.Should().Contain("canonical production dimension coverage");
         body.Should().Contain("capital account");
         body.Should().Contain("tax lot");
+        body.Should().Contain("organization");
+        body.Should().Contain("portfolio");
+        body.Should().Contain("customer");
+        body.Should().Contain("vendor");
+        body.Should().Contain("project");
     }
 
     [Fact]
@@ -4649,7 +4659,13 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ["department"] = "fund-accounting",
                 ["class"] = "default-fund"
             },
-            BookId: ledgerBookId.ToString("D"));
+            OrganizationId: "org-meridian",
+            PortfolioId: "portfolio-default-fund",
+            BookId: ledgerBookId.ToString("D"),
+            AccountId: "account-operating-cash",
+            CustomerId: "customer-investor-services",
+            VendorId: "vendor-administrator",
+            ProjectId: "project-month-end-close");
 
     private static readonly Guid ExternalGlDimensionInstrumentId = Guid.Parse("22222222-3333-4444-5555-666666666666");
 

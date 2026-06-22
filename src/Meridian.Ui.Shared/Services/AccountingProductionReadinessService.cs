@@ -2206,7 +2206,7 @@ public sealed class AccountingProductionReadinessService
                 AccountingProductionReadinessAreaDto.MigrationRollout,
                 AccountingConfigurationValidationSeverityDto.Critical,
                 $"Dimensional backfill certified artifacts are missing canonical production dimension coverage: {string.Join(", ", missingCanonicalDimensions)}.",
-                "Re-run or re-certify the dimensional backfill with retained fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL dimension coverage before production reporting certification.",
+                "Re-run or re-certify the dimensional backfill with retained fund, ledger-book, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, organization, portfolio, account, customer, vendor, project, and external-GL dimension coverage before production reporting certification.",
                 scopedEvidenceReferences));
             return;
         }
@@ -2275,6 +2275,36 @@ public sealed class AccountingProductionReadinessService
         if (string.IsNullOrWhiteSpace(dimensions.CounterpartyId))
         {
             yield return "counterparty";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.OrganizationId))
+        {
+            yield return "organization";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.PortfolioId))
+        {
+            yield return "portfolio";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.AccountId))
+        {
+            yield return "account";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.CustomerId))
+        {
+            yield return "customer";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.VendorId))
+        {
+            yield return "vendor";
+        }
+
+        if (string.IsNullOrWhiteSpace(dimensions.ProjectId))
+        {
+            yield return "project";
         }
 
         if (dimensions.ExternalGlDimensions.Count == 0 ||
