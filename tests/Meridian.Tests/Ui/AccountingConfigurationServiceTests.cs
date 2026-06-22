@@ -3097,6 +3097,9 @@ public sealed class AccountingConfigurationServiceTests
                         0m,
                         Dimensions: new LedgerDimensionSetDto(
                             CostCenterId: "cost-center-interest",
+                            AccountId: "account-cash-operating",
+                            VendorId: "vendor-bank",
+                            ProjectId: "project-accrual",
                             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                             {
                                 ["Book"] = "Accrual"
@@ -3109,6 +3112,9 @@ public sealed class AccountingConfigurationServiceTests
                         0m,
                         Dimensions: new LedgerDimensionSetDto(
                             CostCenterId: "cost-center-interest",
+                            AccountId: "account-interest-income",
+                            VendorId: "vendor-bank",
+                            ProjectId: "project-accrual",
                             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                             {
                                 ["Book"] = "Accrual"
@@ -3129,6 +3135,10 @@ public sealed class AccountingConfigurationServiceTests
                 SleeveId: "sleeve-income",
                 InstrumentId: instrumentId,
                 TaxLotId: "tax-lot-2026-06",
+                OrganizationId: "organization-alpha",
+                PortfolioId: "portfolio-credit",
+                BookId: "book-gaap",
+                CustomerId: "customer-borrower",
                 ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["Department"] = "Treasury",
@@ -3148,6 +3158,13 @@ public sealed class AccountingConfigurationServiceTests
             line.Dimensions.TaxLotId == "tax-lot-2026-06" &&
             line.Dimensions.CostCenterId == "cost-center-interest" &&
             line.Dimensions.CounterpartyId == "counterparty-bank" &&
+            line.Dimensions.OrganizationId == "organization-alpha" &&
+            line.Dimensions.PortfolioId == "portfolio-credit" &&
+            line.Dimensions.BookId == "book-gaap" &&
+            line.Dimensions.CustomerId == "customer-borrower" &&
+            line.Dimensions.VendorId == "vendor-bank" &&
+            line.Dimensions.ProjectId == "project-accrual" &&
+            !string.IsNullOrWhiteSpace(line.Dimensions.AccountId) &&
             line.Dimensions.ExternalGlDimensions["Department"] == "Treasury" &&
             line.Dimensions.ExternalGlDimensions["Region"] == "US" &&
             line.Dimensions.ExternalGlDimensions["Book"] == "Accrual");
@@ -4126,6 +4143,13 @@ public sealed class AccountingConfigurationServiceTests
             FundId: "fund-alpha",
             EntityId: "entity-master",
             CounterpartyId: "counterparty-bank",
+            OrganizationId: "organization-alpha",
+            PortfolioId: "portfolio-credit",
+            BookId: "book-gaap",
+            AccountId: "account-interest",
+            CustomerId: "customer-borrower",
+            VendorId: "vendor-bank",
+            ProjectId: "project-accrual",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Department"] = "Fund Ops"

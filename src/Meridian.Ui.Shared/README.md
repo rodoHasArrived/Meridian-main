@@ -408,6 +408,10 @@ reports.
 one operational aggregate, with optional `ledgerBookId` plus the same dimensional filters, so
 operator drill-through can stay book-native even when the entry point is an event or aggregate id
 rather than a closed period.
+Rules Studio dry-run generated postings merge and retain the full shared dimension set, including
+fund/private-capital dimensions plus organization, portfolio, book, account, customer, vendor,
+project, and external GL dimensions, so saved rule regression cases can detect dimensional drift
+before generated postings become governed journal draft candidates.
 Accounting report-package certification follows the same release-gate posture: direct-lending
 operators may build retained ready-for-review report packages, while final certification requires
 `AdminMaintenance`.

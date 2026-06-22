@@ -1870,7 +1870,14 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             TaxLotId: FirstText(overlay.TaxLotId, baseDimensions?.TaxLotId),
             CostCenterId: FirstText(overlay.CostCenterId, baseDimensions?.CostCenterId),
             CounterpartyId: FirstText(overlay.CounterpartyId, baseDimensions?.CounterpartyId),
-            ExternalGlDimensions: externalGlDimensions);
+            ExternalGlDimensions: externalGlDimensions,
+            OrganizationId: FirstText(overlay.OrganizationId, baseDimensions?.OrganizationId),
+            PortfolioId: FirstText(overlay.PortfolioId, baseDimensions?.PortfolioId),
+            BookId: FirstText(overlay.BookId, baseDimensions?.BookId),
+            AccountId: FirstText(overlay.AccountId, baseDimensions?.AccountId),
+            CustomerId: FirstText(overlay.CustomerId, baseDimensions?.CustomerId),
+            VendorId: FirstText(overlay.VendorId, baseDimensions?.VendorId),
+            ProjectId: FirstText(overlay.ProjectId, baseDimensions?.ProjectId));
     }
 
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> EvaluateRuleTestCaseAssertions(
@@ -2028,6 +2035,13 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                string.Equals(NormalizeOptional(expected.TaxLotId), NormalizeOptional(actual.TaxLotId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeOptional(expected.CostCenterId), NormalizeOptional(actual.CostCenterId), StringComparison.OrdinalIgnoreCase) &&
                string.Equals(NormalizeOptional(expected.CounterpartyId), NormalizeOptional(actual.CounterpartyId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.OrganizationId), NormalizeOptional(actual.OrganizationId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.PortfolioId), NormalizeOptional(actual.PortfolioId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.BookId), NormalizeOptional(actual.BookId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.AccountId), NormalizeOptional(actual.AccountId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.CustomerId), NormalizeOptional(actual.CustomerId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.VendorId), NormalizeOptional(actual.VendorId), StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(NormalizeOptional(expected.ProjectId), NormalizeOptional(actual.ProjectId), StringComparison.OrdinalIgnoreCase) &&
                DictionaryMatches(expected.ExternalGlDimensions, actual.ExternalGlDimensions);
     }
 
