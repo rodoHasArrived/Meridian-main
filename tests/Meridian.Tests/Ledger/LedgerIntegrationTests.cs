@@ -1570,6 +1570,13 @@ public sealed class LedgerIntegrationTests
         var alphaDimensions = new LedgerLineDimensionSet(
             FundId: "fund-alpha",
             EntityId: "entity-alpha",
+            OrganizationId: "tenant-alpha",
+            PortfolioId: "portfolio-income",
+            BookId: "book-gaap",
+            AccountId: "account-cash",
+            CustomerId: "customer-alpha",
+            VendorId: "vendor-bank",
+            ProjectId: "project-close",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Department"] = "Investments"
@@ -1577,6 +1584,11 @@ public sealed class LedgerIntegrationTests
         var betaDimensions = alphaDimensions with
         {
             EntityId = "entity-beta",
+            BookId = "book-tax",
+            AccountId = "account-admin",
+            CustomerId = "customer-beta",
+            VendorId = "vendor-admin",
+            ProjectId = "project-admin",
             ExternalGlDimensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Department"] = "Administration"
@@ -1629,6 +1641,13 @@ public sealed class LedgerIntegrationTests
             lineDimensions: new LedgerLineDimensionSet(
                 FundId: "fund-alpha",
                 EntityId: "ENTITY-ALPHA",
+                OrganizationId: "TENANT-ALPHA",
+                PortfolioId: "PORTFOLIO-INCOME",
+                BookId: "BOOK-GAAP",
+                AccountId: "ACCOUNT-CASH",
+                CustomerId: "CUSTOMER-ALPHA",
+                VendorId: "VENDOR-BANK",
+                ProjectId: "PROJECT-CLOSE",
                 ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["department"] = "investments"
@@ -1648,11 +1667,27 @@ public sealed class LedgerIntegrationTests
             !row.LedgerEntryIds.Intersect(betaLedgerEntryIds).Any());
 
         var manifest = pack.Artifacts.Single(artifact => artifact.Name == "manifest.csv");
-        manifest.Content.Should().Contain("dimension-scope,entityId=ENTITY-ALPHA;externalGl.department=investments;fundId=fund-alpha");
+        manifest.Content.Should().Contain("accountId=ACCOUNT-CASH");
+        manifest.Content.Should().Contain("bookId=BOOK-GAAP");
+        manifest.Content.Should().Contain("customerId=CUSTOMER-ALPHA");
+        manifest.Content.Should().Contain("entityId=ENTITY-ALPHA");
+        manifest.Content.Should().Contain("externalGl.department=investments");
+        manifest.Content.Should().Contain("fundId=fund-alpha");
+        manifest.Content.Should().Contain("organizationId=TENANT-ALPHA");
+        manifest.Content.Should().Contain("portfolioId=PORTFOLIO-INCOME");
+        manifest.Content.Should().Contain("projectId=PROJECT-CLOSE");
+        manifest.Content.Should().Contain("vendorId=VENDOR-BANK");
         var statementsArtifact = pack.Artifacts.Single(artifact => artifact.Name == "financial-statements.json");
         statementsArtifact.Content.Should().Contain("\"dimensionScope\": {");
+        statementsArtifact.Content.Should().Contain("\"accountId\": \"ACCOUNT-CASH\"");
+        statementsArtifact.Content.Should().Contain("\"bookId\": \"BOOK-GAAP\"");
+        statementsArtifact.Content.Should().Contain("\"customerId\": \"CUSTOMER-ALPHA\"");
         statementsArtifact.Content.Should().Contain("\"entityId\": \"ENTITY-ALPHA\"");
         statementsArtifact.Content.Should().Contain("\"externalGl.department\": \"investments\"");
+        statementsArtifact.Content.Should().Contain("\"organizationId\": \"TENANT-ALPHA\"");
+        statementsArtifact.Content.Should().Contain("\"portfolioId\": \"PORTFOLIO-INCOME\"");
+        statementsArtifact.Content.Should().Contain("\"projectId\": \"PROJECT-CLOSE\"");
+        statementsArtifact.Content.Should().Contain("\"vendorId\": \"VENDOR-BANK\"");
         var provenanceArtifact = pack.Artifacts.Single(artifact => artifact.Name == "line-provenance.csv");
         foreach (var betaLedgerEntryId in betaLedgerEntryIds)
             provenanceArtifact.Content.Should().NotContain(betaLedgerEntryId.ToString("D"));
@@ -1782,6 +1817,13 @@ public sealed class LedgerIntegrationTests
         var dimensions = new LedgerLineDimensionSet(
             FundId: "fund-alpha",
             EntityId: "entity-alpha",
+            OrganizationId: "tenant-alpha",
+            PortfolioId: "portfolio-income",
+            BookId: "book-gaap",
+            AccountId: "account-cash",
+            CustomerId: "customer-alpha",
+            VendorId: "vendor-bank",
+            ProjectId: "project-close",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Department"] = "Investments"
@@ -1833,6 +1875,13 @@ public sealed class LedgerIntegrationTests
         var dimensions = new LedgerLineDimensionSet(
             FundId: "fund-alpha",
             EntityId: "entity-alpha",
+            OrganizationId: "tenant-alpha",
+            PortfolioId: "portfolio-income",
+            BookId: "book-gaap",
+            AccountId: "account-cash",
+            CustomerId: "customer-alpha",
+            VendorId: "vendor-bank",
+            ProjectId: "project-close",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Department"] = "Investments"
@@ -1871,7 +1920,16 @@ public sealed class LedgerIntegrationTests
         var manifest = artifacts.Single(artifact => artifact.Name == "scheduled-export-manifest.csv");
         manifest.Content.Should().Contain("ledger-scheduled-export-manifest-v1");
         manifest.Content.Should().Contain("formats,Csv|RegulatoryXml");
-        manifest.Content.Should().Contain("dimension-scope,EntityId=entity-alpha;ExternalGl_Department=Investments;FundId=fund-alpha");
+        manifest.Content.Should().Contain("AccountId=account-cash");
+        manifest.Content.Should().Contain("BookId=book-gaap");
+        manifest.Content.Should().Contain("CustomerId=customer-alpha");
+        manifest.Content.Should().Contain("EntityId=entity-alpha");
+        manifest.Content.Should().Contain("ExternalGl_Department=Investments");
+        manifest.Content.Should().Contain("FundId=fund-alpha");
+        manifest.Content.Should().Contain("OrganizationId=tenant-alpha");
+        manifest.Content.Should().Contain("PortfolioId=portfolio-income");
+        manifest.Content.Should().Contain("ProjectId=project-close");
+        manifest.Content.Should().Contain("VendorId=vendor-bank");
         manifest.Content.Should().Contain("recipients,controller@example.com|regulator@example.com");
         manifest.Content.Should().Contain("report-pack-signature,");
         manifest.Content.Should().Contain("financial-statements.json,application/json,");
@@ -1879,8 +1937,15 @@ public sealed class LedgerIntegrationTests
         regulatoryXml.Content.Should().Contain("schema=\"ledger-regulatory-summary-v1\"");
         regulatoryXml.Content.Should().Contain("<FundId>fund-alpha</FundId>");
         regulatoryXml.Content.Should().Contain("<DimensionScope>");
+        regulatoryXml.Content.Should().Contain("<AccountId>account-cash</AccountId>");
+        regulatoryXml.Content.Should().Contain("<BookId>book-gaap</BookId>");
+        regulatoryXml.Content.Should().Contain("<CustomerId>customer-alpha</CustomerId>");
         regulatoryXml.Content.Should().Contain("<EntityId>entity-alpha</EntityId>");
         regulatoryXml.Content.Should().Contain("<ExternalGl_Department>Investments</ExternalGl_Department>");
+        regulatoryXml.Content.Should().Contain("<OrganizationId>tenant-alpha</OrganizationId>");
+        regulatoryXml.Content.Should().Contain("<PortfolioId>portfolio-income</PortfolioId>");
+        regulatoryXml.Content.Should().Contain("<ProjectId>project-close</ProjectId>");
+        regulatoryXml.Content.Should().Contain("<VendorId>vendor-bank</VendorId>");
         regulatoryXml.Content.Should().Contain("<TotalAssets>1000</TotalAssets>");
         regulatoryXml.Content.Should().Contain("<AccountingEquationVariance>0</AccountingEquationVariance>");
         regulatoryXml.Content.Should().Contain("<Recipient>regulator@example.com</Recipient>");

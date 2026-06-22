@@ -72,7 +72,8 @@ lifecycle events, restatement approvals, changed-line keys, and evidence links s
 can be traced back to ledger entries, source runs/sessions, reconciliation or approval evidence,
 and supplied realized-gain tax-lot projections. `LedgerReportPackRequest` can carry a
 `LedgerLineDimensionSet` so generated statements, manifests, and line-provenance artifacts remain
-fund/entity/sleeve/external-GL scoped instead of emitting all same-account ledger entries.
+fund/entity/sleeve plus organization, portfolio, book, account, customer, vendor, project, and
+external-GL scoped instead of emitting all same-account ledger entries.
 `LedgerReportSchedulePlanner` projects monthly, quarterly, or annual report schedules into
 period-bounded export occurrences and dimension-scoped report-pack requests for regulatory,
 investor, or internal stakeholder delivery workflows.
@@ -92,12 +93,13 @@ instead of only in journal-level metadata. Storage and reporting surfaces should
 line-level dimension set when present and use metadata-derived dimensions only as legacy fallback.
 `LedgerQuery`, `TrialBalance`, `TrialBalanceAsOf`, and `LedgerFinancialStatementBuilder` accept
 optional `LedgerLineDimensionSet` filters so core journal, trial-balance, and statement reads can be
-scoped by fund/entity/strategy/instrument/counterparty and external-GL dimensions without building a
-UI- or storage-specific reporting fork.
+scoped by fund/entity/strategy/instrument/counterparty, organization, portfolio, book, account,
+customer, vendor, project, and external-GL dimensions without building a UI- or storage-specific
+reporting fork.
 `ProjectLedgerBook` and `FundLedgerBook` propagate the same line-dimension scope through
 consolidated trial balances, point-in-time snapshots, reconciliation snapshots, account summaries,
 and consolidated journals so multi-book reporting can stay ledger-book-native without dropping
-fund/entity/sleeve or external-GL dimensional filters.
+fund/entity/sleeve, neutral operational, or external-GL dimensional filters.
 `PrivateCapitalFundEventLedgerProjector` reconstructs a posted Fund Event Ledger view from those
 journal entries and optional ledger report packs. It groups private-capital journal entries by fund
 event, exposes balanced ledger impact rows, capital-account subledger impact, retained evidence,
