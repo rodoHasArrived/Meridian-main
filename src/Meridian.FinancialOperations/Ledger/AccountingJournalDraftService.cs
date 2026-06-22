@@ -251,6 +251,17 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 "Resolve the open accounting period before building the draft.");
         }
 
+        if (!request.LedgerBookId.HasValue || request.LedgerBookId.Value == Guid.Empty)
+        {
+            AddIssue(
+                issues,
+                "JOURNAL_DRAFT_LEDGER_BOOK_REQUIRED",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Draft ledger-book scope is required.",
+                "ledgerBookId",
+                "Select the primary, GAAP, tax, statutory, cash, or other target ledger book before building a governed journal draft.");
+        }
+
         if (string.IsNullOrWhiteSpace(request.Description))
         {
             AddIssue(
@@ -287,6 +298,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
 
         var journalEntryId = Guid.NewGuid();
         var lines = new List<LedgerEntry>(request.Lines.Count);
+        var lineDimensionScopes = new List<(Guid EntryId, LedgerDimensionSetDto? Dimensions)>(request.Lines.Count);
         var totalDebits = 0m;
         var totalCredits = 0m;
         var description = request.Description?.Trim() ?? string.Empty;
@@ -344,6 +356,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 line.Credit,
                 description,
                 ToLedgerLineDimensions(line.Dimensions)));
+            lineDimensionScopes.Add((lineEntryId, line.Dimensions));
         }
 
         if (lines.Count == 0)
@@ -359,7 +372,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                     request.AccountingTimestamp,
                     description,
                     lines,
-                    BuildJournalEntryMetadata(request, lines, evidenceLinks, treasuryContext)),
+                    BuildJournalEntryMetadata(request, lineDimensionScopes, evidenceLinks, treasuryContext)),
                 totalDebits,
                 totalCredits);
         }
@@ -378,7 +391,7 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
 
     private static JournalEntryMetadata BuildJournalEntryMetadata(
         AccountingJournalDraftRequest request,
-        IReadOnlyList<LedgerEntry> lines,
+        IReadOnlyList<(Guid EntryId, LedgerDimensionSetDto? Dimensions)> lineDimensionScopes,
         IReadOnlyList<string> evidenceLinks,
         TreasuryLedgerContextDto? treasuryContext)
     {
@@ -400,9 +413,9 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         AddTag(tags, "postingRuleVersion", request.PostingRuleVersion);
         AddTag(tags, "dryRunCorrelationId", request.DryRunCorrelationId);
 
-        for (var index = 0; index < request.Lines.Count && index < lines.Count; index++)
+        foreach (var (entryId, dimensions) in lineDimensionScopes)
         {
-            AppendLineDimensionTags(tags, lines[index].EntryId, request.Lines[index].Dimensions);
+            AppendLineDimensionTags(tags, entryId, dimensions);
         }
 
         return new JournalEntryMetadata(
