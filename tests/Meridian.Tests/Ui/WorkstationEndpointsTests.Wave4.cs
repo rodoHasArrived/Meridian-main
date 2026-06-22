@@ -110,9 +110,13 @@ public sealed partial class WorkstationEndpointsTests
             {
                 ["Department"] = "InvestmentOps"
             },
+            OrganizationId: "org-operations",
             PortfolioId: "portfolio-credit",
             BookId: "book-gaap",
-            AccountId: "acct-investments");
+            AccountId: "acct-investments",
+            CustomerId: "customer-investor-services",
+            VendorId: "vendor-custodian",
+            ProjectId: "project-close");
         var summary = new LedgerPeriodSummaryDto(
             periodId,
             ledgerBookId,
@@ -156,7 +160,7 @@ public sealed partial class WorkstationEndpointsTests
         var client = app.GetTestClient();
 
         using var response = await client.GetAsync(
-            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={ledgerBookId:D}&fundId=fund-alpha&entityId=entity-master&dimensionBookId=book-gaap&taxLotId=taxlot-2026-001&costCenterId=cc-investments&counterpartyId=counterparty-bank&externalGl.Department=InvestmentOps");
+            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={ledgerBookId:D}&dimensionFundId=fund-alpha&dimensionEntityId=entity-master&dimensionSleeveId=sleeve-alpha&dimensionStrategyId=strategy-credit&dimensionInvestorId=investor-lp-1&dimensionCapitalAccountId=capital-lp-1&dimensionInstrumentId={instrumentId:D}&dimensionBookId=book-gaap&dimensionOrganizationId=org-operations&dimensionPortfolioId=portfolio-credit&dimensionAccountId=acct-investments&dimensionCustomerId=customer-investor-services&dimensionVendorId=vendor-custodian&dimensionProjectId=project-close&dimensionTaxLotId=taxlot-2026-001&dimensionCostCenterId=cc-investments&dimensionCounterpartyId=counterparty-bank&externalGlDimensionKey=Department&externalGlDimensionValue=InvestmentOps");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         using var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
@@ -167,14 +171,25 @@ public sealed partial class WorkstationEndpointsTests
         var returnedDimensions = line.GetProperty("dimensions");
         returnedDimensions.GetProperty("fundId").GetString().Should().Be("fund-alpha");
         returnedDimensions.GetProperty("entityId").GetString().Should().Be("entity-master");
+        returnedDimensions.GetProperty("sleeveId").GetString().Should().Be("sleeve-alpha");
+        returnedDimensions.GetProperty("strategyId").GetString().Should().Be("strategy-credit");
+        returnedDimensions.GetProperty("investorId").GetString().Should().Be("investor-lp-1");
+        returnedDimensions.GetProperty("capitalAccountId").GetString().Should().Be("capital-lp-1");
+        returnedDimensions.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
         returnedDimensions.GetProperty("bookId").GetString().Should().Be("book-gaap");
+        returnedDimensions.GetProperty("organizationId").GetString().Should().Be("org-operations");
+        returnedDimensions.GetProperty("portfolioId").GetString().Should().Be("portfolio-credit");
+        returnedDimensions.GetProperty("accountId").GetString().Should().Be("acct-investments");
+        returnedDimensions.GetProperty("customerId").GetString().Should().Be("customer-investor-services");
+        returnedDimensions.GetProperty("vendorId").GetString().Should().Be("vendor-custodian");
+        returnedDimensions.GetProperty("projectId").GetString().Should().Be("project-close");
         returnedDimensions.GetProperty("taxLotId").GetString().Should().Be("taxlot-2026-001");
         returnedDimensions.GetProperty("costCenterId").GetString().Should().Be("cc-investments");
         returnedDimensions.GetProperty("counterpartyId").GetString().Should().Be("counterparty-bank");
         returnedDimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
 
         using var mismatchResponse = await client.GetAsync(
-            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={ledgerBookId:D}&fundId=fund-missing&dimensionBookId=book-gaap");
+            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={ledgerBookId:D}&dimensionFundId=fund-missing&dimensionBookId=book-gaap");
 
         mismatchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         using var mismatchDocument = await JsonDocument.ParseAsync(await mismatchResponse.Content.ReadAsStreamAsync());

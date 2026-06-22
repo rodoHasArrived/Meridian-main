@@ -1520,7 +1520,13 @@ so browser and WPF reporting surfaces can request fund/entity/cost-center/extern
 ledger slices without recomputing dimensional accounting totals locally. Fund and book dimensions
 also accept the canonical aliases used by workstation drilldowns, including `fundId`,
 `fundProfileId`, `dimensionFundId`, `bookId`, `dimensionBookId`, and `ledgerBookDimensionId`, while
-the selected report `ledgerBookId` remains the Meridian ledger-book scope. They also fail closed
+the remaining ledger dimensions accept matching `dimension*` aliases such as `dimensionEntityId`,
+`dimensionSleeveId`, `dimensionStrategyId`, `dimensionInvestorId`,
+`dimensionCapitalAccountId`, `dimensionInstrumentId`, `dimensionTaxLotId`,
+`dimensionCostCenterId`, `dimensionCounterpartyId`, `dimensionOrganizationId`,
+`dimensionPortfolioId`, `dimensionAccountId`, `dimensionCustomerId`, `dimensionVendorId`, and
+`dimensionProjectId`. The selected report
+`ledgerBookId` remains the Meridian ledger-book scope. They also fail closed
 when a retained closed-period summary is scoped to a different ledger book than the period metadata,
 preventing stale summary drift from leaking another book's totals into a selected-book report.
 Period and aggregate journal-entry routes use the shared ledger journal query seam for ledger-book
