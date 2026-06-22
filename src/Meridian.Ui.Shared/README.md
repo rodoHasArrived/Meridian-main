@@ -486,8 +486,9 @@ state. Shared ledger endpoints now stamp the authenticated tenant/company scope 
 workbench reads and mutations; draft storage, chart validation, posting chart resolution, and
 `manual-je.*` audit rows use that retained scope so same-company accounting workflows do not blend
 across tenants. Approval, rejection, posting, close-lock, reversal, and rebook
-lifecycle evidence for book-scoped manual journals must also identify the same ledger book on the
-retained artifact, not just the journal entry or accounting period. Manual journal evidence attachment is exposed through
+lifecycle evidence for book-scoped manual journals must also identify the same ledger book and,
+when retained on the draft, the same tenant/company scope on the retained artifact, not just the
+journal entry or accounting period. Manual journal evidence attachment is exposed through
 `/api/ledger/journal-entry-workbench/evidence`; it requires the current draft version, validates
 line-scoped attachments, writes `manual-je.attach-evidence` audit, and refuses posted, reversed,
 rebooked, or close-locked entries so evidence changes happen before posting or through correction

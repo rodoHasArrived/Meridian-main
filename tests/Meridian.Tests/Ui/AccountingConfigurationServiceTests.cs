@@ -934,7 +934,8 @@ public sealed class AccountingConfigurationServiceTests
             saved.JournalEntryId,
             saved.FundProfileId,
             "controller",
-            saved.Version));
+            saved.Version,
+            LedgerBookId: ManualJournalLedgerBookId));
 
         saved.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
         saved.TotalDebits.Should().Be(100m);
@@ -1711,13 +1712,15 @@ public sealed class AccountingConfigurationServiceTests
             saved.JournalEntryId,
             saved.FundProfileId,
             "controller",
-            saved.Version));
+            saved.Version,
+            LedgerBookId: ManualJournalLedgerBookId));
         var lockedApprove = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             submitted.JournalEntryId,
             submitted.FundProfileId,
             JournalEntryLifecycleActionDto.Approve,
             "controller",
             submitted.Version,
+            LedgerBookId: submitted.LedgerBookId,
             PeriodIsLocked: true));
         await lockedApprove.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal entry lifecycle action is blocked because the accounting period is locked after close.");
@@ -1728,6 +1731,7 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Validate,
             "controller",
             submitted.Version,
+            LedgerBookId: submitted.LedgerBookId,
             PeriodIsLocked: true));
         lifecycleValidate.JournalEntry.ValidationIssues.Should().ContainSingle(issue =>
             issue.Code == "manual-je.period-locked" &&
@@ -4521,13 +4525,15 @@ public sealed class AccountingConfigurationServiceTests
             saved.JournalEntryId,
             saved.FundProfileId,
             "controller",
-            saved.Version));
+            saved.Version,
+            LedgerBookId: ManualJournalLedgerBookId));
         var missingApprovalNotes = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             submitted.JournalEntryId,
             submitted.FundProfileId,
             JournalEntryLifecycleActionDto.Approve,
             "controller",
-            submitted.Version));
+            submitted.Version,
+            LedgerBookId: submitted.LedgerBookId));
         await missingApprovalNotes.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal approval and rejection actions require reviewer notes.");
 
@@ -4537,7 +4543,8 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Approve,
             "controller",
             submitted.Version,
-            Notes: "Approved by fund controller"));
+            Notes: "Approved by fund controller",
+            LedgerBookId: submitted.LedgerBookId));
         await missingApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal approval and rejection actions require retained reviewer evidence.");
 
@@ -4548,7 +4555,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             submitted.Version,
             Notes: "Approved by fund controller",
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"]));
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"],
+            LedgerBookId: submitted.LedgerBookId));
         await weakApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal approval and rejection actions require retained approval, rejection, sign-off, or review evidence.");
 
@@ -4563,7 +4571,8 @@ public sealed class AccountingConfigurationServiceTests
             [
                 $"/api/workstation/evidence/subjects/accounting-record/support-packet/{submitted.PeriodId}",
                 "/api/workstation/evidence/subjects/accounting-record/approval/generic-review"
-            ]));
+            ],
+            LedgerBookId: submitted.LedgerBookId));
         await splitApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
@@ -4577,7 +4586,8 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks:
             [
                 $"/api/workstation/evidence/subjects/accounting-record/approval/ledger-book/{Guid.NewGuid():D}/{submitted.PeriodId}"
-            ]));
+            ],
+            LedgerBookId: submitted.LedgerBookId));
         await wrongBookApprovalEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal approval and rejection evidence must reference reviewer intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
@@ -4589,13 +4599,15 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             submitted.Version,
             Notes: "Approved by fund controller",
-            EvidenceLinks: [approvalEvidence]));
+            EvidenceLinks: [approvalEvidence],
+            LedgerBookId: submitted.LedgerBookId));
         var missingPostNotes = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             approved.JournalEntry.JournalEntryId,
             approved.JournalEntry.FundProfileId,
             JournalEntryLifecycleActionDto.Post,
             "controller",
-            approved.JournalEntry.Version));
+            approved.JournalEntry.Version,
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
         await missingPostNotes.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal posting and close-lock actions require operator notes.");
 
@@ -4605,7 +4617,8 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Post,
             "controller",
             approved.JournalEntry.Version,
-            Notes: "Posted after approval"));
+            Notes: "Posted after approval",
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
         await missingPostEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal posting actions require retained posting evidence.");
 
@@ -4616,7 +4629,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             approved.JournalEntry.Version,
             Notes: "Posted after approval",
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"]));
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"],
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
         await weakPostEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal posting actions require retained posting, approval, certification, sign-off, or review evidence.");
 
@@ -4631,7 +4645,8 @@ public sealed class AccountingConfigurationServiceTests
             [
                 $"/api/workstation/evidence/subjects/accounting-record/support-packet/{approved.JournalEntry.PeriodId}",
                 "/api/workstation/evidence/subjects/accounting-record/posting/generic-review"
-            ]));
+            ],
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
         await splitPostEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal posting evidence must reference posting intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
@@ -4643,13 +4658,15 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             approved.JournalEntry.Version,
             Notes: "Posted after approval",
-            EvidenceLinks: [postingEvidence]));
+            EvidenceLinks: [postingEvidence],
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
         var missingCloseLockNotes = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             posted.JournalEntry.JournalEntryId,
             posted.JournalEntry.FundProfileId,
             JournalEntryLifecycleActionDto.LockAfterClose,
             "controller",
-            posted.JournalEntry.Version));
+            posted.JournalEntry.Version,
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await missingCloseLockNotes.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal posting and close-lock actions require operator notes.");
 
@@ -4659,7 +4676,8 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.LockAfterClose,
             "controller",
             posted.JournalEntry.Version,
-            Notes: "Lock after close package review"));
+            Notes: "Lock after close package review",
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await missingCloseLockEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal close-lock actions require retained close evidence.");
 
@@ -4670,7 +4688,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             posted.JournalEntry.Version,
             Notes: "Lock after close package review",
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"]));
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"],
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await weakCloseLockEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal close-lock actions require retained close, period-lock, sign-off, certification, approval, or review evidence.");
 
@@ -4681,7 +4700,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             posted.JournalEntry.Version,
             Notes: "Lock after close package review",
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-close/close-package/fund-alpha-2026-07"]));
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-close/close-package/fund-alpha-2026-07"],
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await wrongPeriodCloseLockEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
@@ -4696,7 +4716,8 @@ public sealed class AccountingConfigurationServiceTests
             [
                 $"/api/workstation/evidence/subjects/accounting-record/support-packet/{posted.JournalEntry.PeriodId}",
                 "/api/workstation/evidence/subjects/accounting-close/close-package/generic-review"
-            ]));
+            ],
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await splitCloseLockEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal close-lock evidence must reference close-lock intent, the journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
@@ -4706,7 +4727,8 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Reverse,
             "controller",
             posted.JournalEntry.Version,
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"]));
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"],
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await missingReason.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal reversal and rebook actions require a correction reason.");
 
@@ -4716,7 +4738,8 @@ public sealed class AccountingConfigurationServiceTests
             JournalEntryLifecycleActionDto.Rebook,
             "controller",
             posted.JournalEntry.Version,
-            Notes: "Rebook after close review"));
+            Notes: "Rebook after close review",
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await missingEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal reversal and rebook actions require retained correction evidence.");
 
@@ -4727,7 +4750,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             posted.JournalEntry.Version,
             Notes: "Reverse after close review",
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"]));
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/support-packet"],
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await genericCorrectionEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal reversal and rebook actions require retained reversal, rebook, correction, approval, or review evidence.");
 
@@ -4738,7 +4762,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             posted.JournalEntry.Version,
             Notes: "Reverse after close review",
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal/2026-07"]));
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal/2026-07"],
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await wrongPeriodCorrectionEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
@@ -4753,7 +4778,8 @@ public sealed class AccountingConfigurationServiceTests
             [
                 $"/api/workstation/evidence/subjects/accounting-record/support-packet/{posted.JournalEntry.PeriodId}",
                 "/api/workstation/evidence/subjects/accounting-record/reversal/generic-review"
-            ]));
+            ],
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
         await splitCorrectionEvidence.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal reversal and rebook evidence must reference correction intent, the posted journal entry or accounting period, the scoped ledger book, and any retained tenant/company scope on the same evidence artifact.");
 
@@ -4765,7 +4791,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             posted.JournalEntry.Version,
             Notes: "Reverse after close review",
-            EvidenceLinks: [reversalEvidence]));
+            EvidenceLinks: [reversalEvidence],
+            LedgerBookId: posted.JournalEntry.LedgerBookId));
 
         approved.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Approved);
         approved.Transition.EvidenceLinks.Should().Contain(approvalEvidence);
@@ -4802,7 +4829,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             reversal.JournalEntry.Version,
             Notes: "Duplicate correction attempt",
-            EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-record/rebook/{reversal.JournalEntry.PeriodId}"]));
+            EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-record/rebook/{reversal.JournalEntry.PeriodId}"],
+            LedgerBookId: reversal.JournalEntry.LedgerBookId));
         await duplicateCorrection.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal entry lifecycle action 'Rebook' requires a posted journal entry.");
 
@@ -4811,7 +4839,8 @@ public sealed class AccountingConfigurationServiceTests
             rebookSaved.JournalEntryId,
             rebookSaved.FundProfileId,
             "controller",
-            rebookSaved.Version));
+            rebookSaved.Version,
+            LedgerBookId: rebookSaved.LedgerBookId));
         var rebookApproved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             rebookSubmitted.JournalEntryId,
             rebookSubmitted.FundProfileId,
@@ -4819,7 +4848,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             rebookSubmitted.Version,
             Notes: "Controller approved the rebook source entry.",
-            EvidenceLinks: [ManualJournalApprovalEvidence(rebookSubmitted)]));
+            EvidenceLinks: [ManualJournalApprovalEvidence(rebookSubmitted)],
+            LedgerBookId: rebookSubmitted.LedgerBookId));
         var rebookPosted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             rebookApproved.JournalEntry.JournalEntryId,
             rebookApproved.JournalEntry.FundProfileId,
@@ -4827,7 +4857,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             rebookApproved.JournalEntry.Version,
             Notes: "Posted before rebook",
-            EvidenceLinks: [ManualJournalPostingEvidence(rebookApproved.JournalEntry)]));
+            EvidenceLinks: [ManualJournalPostingEvidence(rebookApproved.JournalEntry)],
+            LedgerBookId: rebookApproved.JournalEntry.LedgerBookId));
         var invalidRebook = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             rebookPosted.JournalEntry.JournalEntryId,
             rebookPosted.JournalEntry.FundProfileId,
@@ -4840,7 +4871,8 @@ public sealed class AccountingConfigurationServiceTests
             [
                 new ManualJournalEntryLineDto("rebook-debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash"),
                 new ManualJournalEntryLineDto("rebook-credit-interest", AccountingTemplateLineSideDto.Credit, 90m, "USD", "Income:Interest")
-            ]));
+            ],
+            LedgerBookId: rebookPosted.JournalEntry.LedgerBookId));
         await invalidRebook.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal reversal and rebook actions cannot transition the posted entry while the generated correction draft has critical validation issues.");
         var afterInvalidRebook = await service.GetWorkbenchAsync("fund-alpha");
@@ -4864,7 +4896,8 @@ public sealed class AccountingConfigurationServiceTests
             [
                 new ManualJournalEntryLineDto("rebook-debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash"),
                 new ManualJournalEntryLineDto("rebook-credit-interest", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Income:Interest")
-            ]));
+            ],
+            LedgerBookId: rebookPosted.JournalEntry.LedgerBookId));
         var rebookDraft = rebook.GeneratedJournalEntries.Should().ContainSingle().Subject;
         rebook.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Rebooked);
         rebook.Transition.FromStatus.Should().Be(ManualJournalEntryStatusDto.Posted);
@@ -4889,7 +4922,8 @@ public sealed class AccountingConfigurationServiceTests
             lockSaved.JournalEntryId,
             lockSaved.FundProfileId,
             "controller",
-            lockSaved.Version));
+            lockSaved.Version,
+            LedgerBookId: lockSaved.LedgerBookId));
         var lockApproved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             lockSubmitted.JournalEntryId,
             lockSubmitted.FundProfileId,
@@ -4897,7 +4931,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             lockSubmitted.Version,
             Notes: "Controller approved the close-lock source entry.",
-            EvidenceLinks: [ManualJournalApprovalEvidence(lockSubmitted)]));
+            EvidenceLinks: [ManualJournalApprovalEvidence(lockSubmitted)],
+            LedgerBookId: lockSubmitted.LedgerBookId));
         var lockPosted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             lockApproved.JournalEntry.JournalEntryId,
             lockApproved.JournalEntry.FundProfileId,
@@ -4905,7 +4940,10 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             lockApproved.JournalEntry.Version,
             Notes: "Posted before close lock.",
-            EvidenceLinks: [ManualJournalPostingEvidence(lockApproved.JournalEntry)]));
+            EvidenceLinks: [ManualJournalPostingEvidence(lockApproved.JournalEntry)],
+            LedgerBookId: lockApproved.JournalEntry.LedgerBookId));
+        var closeLockEvidence =
+            $"/api/workstation/evidence/subjects/accounting-close/close-package/ledger-book/{lockPosted.JournalEntry.LedgerBookId:D}/{lockPosted.JournalEntry.PeriodId}";
         var closeLocked = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             lockPosted.JournalEntry.JournalEntryId,
             lockPosted.JournalEntry.FundProfileId,
@@ -4913,11 +4951,12 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             lockPosted.JournalEntry.Version,
             Notes: "Lock after close package approval.",
-            EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-close/close-package/ledger-book/{lockPosted.JournalEntry.LedgerBookId:D}/fund-alpha-2026-06"]));
+            EvidenceLinks: [closeLockEvidence],
+            LedgerBookId: lockPosted.JournalEntry.LedgerBookId));
         closeLocked.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.CloseLocked);
         closeLocked.Transition.FromStatus.Should().Be(ManualJournalEntryStatusDto.Posted);
         closeLocked.Transition.ToStatus.Should().Be(ManualJournalEntryStatusDto.CloseLocked);
-        closeLocked.JournalEntry.EvidenceLinks.Should().Contain($"/api/workstation/evidence/subjects/accounting-close/close-package/ledger-book/{lockPosted.JournalEntry.LedgerBookId:D}/fund-alpha-2026-06");
+        closeLocked.JournalEntry.EvidenceLinks.Should().Contain(closeLockEvidence);
         var reverseCloseLocked = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             closeLocked.JournalEntry.JournalEntryId,
             closeLocked.JournalEntry.FundProfileId,
@@ -4925,7 +4964,8 @@ public sealed class AccountingConfigurationServiceTests
             "controller",
             closeLocked.JournalEntry.Version,
             Notes: "Attempt to reverse after close lock.",
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"]));
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"],
+            LedgerBookId: closeLocked.JournalEntry.LedgerBookId));
         await reverseCloseLocked.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*cannot change a close-locked journal entry*late-adjustment or restatement workflows*");
         var afterCloseLockedReverseAttempt = await service.GetWorkbenchAsync("fund-alpha");
