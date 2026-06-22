@@ -152,8 +152,9 @@ tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, app
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
 the shared control plane counts those enterprise setup controls as complete.
 Tenant administration profile persistence fails closed with the same scope posture: configured
-enterprise setup controls must retain evidence naming the selected tenant and company before
-browser or WPF clients can save the profile.
+enterprise setup controls must retain evidence naming the selected tenant, company, and configured
+control family on the same retained artifact, or retain a full tenant-admin certification artifact,
+before browser or WPF clients can save the profile.
 Production certification profile persistence fails closed with the same scope posture: profiles that
 certify ledger-book-native workflows or dimensional reporting controls must retain evidence naming
 the selected tenant, company, fund profile, and ledger book, including route/query markers such as

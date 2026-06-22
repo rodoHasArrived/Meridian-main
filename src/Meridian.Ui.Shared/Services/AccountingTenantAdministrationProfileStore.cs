@@ -53,6 +53,31 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
         WriteIndented = true
     };
 
+    private static readonly TenantAdministrationEvidenceRequirement[] EvidenceRequirements =
+    [
+        new("tenant scope", profile => profile.TenantScopeConfigured, "tenant-scope", "tenant-storage", "tenant-ledger", "tenant-provider"),
+        new("admin role profile", profile => profile.AdminRoleProfileConfigured, "admin-role", "role-profile", "accounting-admin-role"),
+        new("scoped access policy", profile => profile.ScopedAccessPoliciesConfigured, "scoped-access", "access-policy", "entitlement"),
+        new("reporting group", profile => profile.ReportingGroupsConfigured, "reporting-group", "report-group", "delivery-group"),
+        new("accounting admin surface", profile => profile.AccountingAdminSurfaceConfigured, "accounting-admin-surface", "operator-surface", "admin-studio", "setup-surface"),
+        new("browser accounting admin surface", profile => profile.BrowserAccountingAdminSurfaceConfigured, "browser-admin-studio", "browser-accounting-admin", "browser-setup"),
+        new("WPF accounting admin surface", profile => profile.WpfAccountingAdminSurfaceConfigured, "wpf-admin-studio", "desktop-accounting-admin", "wpf-setup"),
+        new("chart administration studio", profile => profile.ChartAdministrationStudioConfigured, "chart-admin", "chart-administration", "chart-of-accounts", "ledger-book-chart"),
+        new("rule test promotion studio", profile => profile.RuleTestPromotionStudioConfigured, "rule-test-promotion", "rules-studio", "rule-tests", "promotion-queue"),
+        new("close setup studio", profile => profile.CloseSetupStudioConfigured, "close-setup", "close-checklist", "close-calendar", "materiality-policy"),
+        new("provider mapping studio", profile => profile.ProviderMappingStudioConfigured, "provider-mapping", "external-gl-mapping", "gl-mapping", "mapping-profile"),
+        new("tenant company report group setup studio", profile => profile.TenantCompanyReportGroupSetupStudioConfigured, "tenant-company-report-group", "tenant-company-setup", "report-group-setup", "company-report-group"),
+        new("audit review tooling", profile => profile.AuditReviewToolingConfigured, "audit-review", "audit-tooling", "audit-workbench", "evidence-review"),
+        new("bulk import/export safeguard", profile => profile.BulkImportExportSafeguardsConfigured, "bulk-import-export", "bulk-import", "bulk-export", "import-export-safeguard"),
+        new("performance validation", profile => profile.PerformanceValidationConfigured, "performance-validation", "performance-test", "load-test", "capacity-validation"),
+        new("disaster recovery runbook", profile => profile.DisasterRecoveryRunbookConfigured, "disaster-recovery", "dr-runbook", "operating-runbook", "recovery-validation"),
+        new("ledger book administration studio", profile => profile.LedgerBookAdministrationStudioConfigured, "ledger-book-admin", "ledger-book-administration", "book-administration", "ledger-book-setup"),
+        new("posting rule authoring studio", profile => profile.PostingRuleAuthoringStudioConfigured, "posting-rule-authoring", "posting-rule-studio", "rule-authoring", "posting-rule-setup"),
+        new("approval queue studio", profile => profile.ApprovalQueueStudioConfigured, "approval-queue", "promotion-approval", "je-approval", "configuration-approval"),
+        new("dimension mapping studio", profile => profile.DimensionMappingStudioConfigured, "dimension-mapping", "dimension-map", "external-dimension-mapping", "gl-dimension-mapping"),
+        new("implementation sandbox", profile => profile.ImplementationSandboxConfigured, "implementation-sandbox", "sandbox-validation", "fixture-validation", "implementation-fixture")
+    ];
+
     private readonly string _snapshotPath;
     private readonly ILogger<FileAccountingTenantAdministrationProfileStore> _logger;
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -228,6 +253,44 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
         {
             throw new ArgumentException("Accounting tenant administration evidence must identify the selected tenant and company.");
         }
+
+        EnsureDeclaredControlEvidence(profile, tenantId, companyId, evidenceReferences);
+    }
+
+    private static void EnsureDeclaredControlEvidence(
+        AccountingTenantAdministrationProfileDto profile,
+        string tenantId,
+        string companyId,
+        IReadOnlyList<string> evidenceReferences)
+    {
+        foreach (var requirement in EvidenceRequirements)
+        {
+            EnsureControlEvidence(requirement, profile, tenantId, companyId, evidenceReferences);
+        }
+    }
+
+    private static void EnsureControlEvidence(
+        TenantAdministrationEvidenceRequirement requirement,
+        AccountingTenantAdministrationProfileDto profile,
+        string tenantId,
+        string companyId,
+        IReadOnlyList<string> evidenceReferences)
+    {
+        if (!requirement.IsConfigured(profile))
+        {
+            return;
+        }
+
+        if (!evidenceReferences.Any(reference =>
+                ReferencesScope(reference, tenantId) &&
+                ReferencesScope(reference, companyId) &&
+                reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) &&
+                (reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase) ||
+                 reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
+                 requirement.Aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase)))))
+        {
+            throw new ArgumentException($"Accounting tenant administration evidence must include retained {requirement.Label} evidence.");
+        }
     }
 
     private static bool DeclaresTenantAdministrationCertification(AccountingTenantAdministrationProfileDto profile)
@@ -256,6 +319,11 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
     private static bool ReferencesScope(string? reference, string value)
         => !string.IsNullOrWhiteSpace(reference) &&
            reference.Contains(value, StringComparison.OrdinalIgnoreCase);
+
+    private sealed record TenantAdministrationEvidenceRequirement(
+        string Label,
+        Func<AccountingTenantAdministrationProfileDto, bool> IsConfigured,
+        params string[] Aliases);
 
     private sealed record AccountingTenantAdministrationProfileSnapshot(
         IReadOnlyList<AccountingTenantAdministrationProfileDto> Profiles);

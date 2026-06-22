@@ -4140,7 +4140,7 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ImplementationSandboxConfigured: true,
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "spoofed-profile-updater",
-                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/setup-certified"]),
+                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/tenant-admin/full"]),
                 "spoofed-browser-user",
                 CorrelationId: "tenant-admin-company-alpha",
                 EvidenceLinks: ["approval:tenant-admin:company-alpha"])));
@@ -4159,6 +4159,35 @@ public sealed class AccountingSystemIntegrationServiceTests
         retained.TenantId.Should().Be("company-alpha");
         retained.CompanyId.Should().Be("company-alpha");
         retained.EvidenceReferences.Should().Contain("correlation:tenant-admin-company-alpha");
+    }
+
+    [Fact]
+    public async Task AccountingSystemTenantAdministrationProfileEndpoint_BlocksMissingConfiguredControlEvidence()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemTenantAdministrationProfile,
+            JsonContent(new AccountingTenantAdministrationProfileUpsertRequestDto(
+                new AccountingTenantAdministrationProfileDto(
+                    "company-alpha",
+                    "company-alpha",
+                    true,
+                    true,
+                    false,
+                    false,
+                    false,
+                    DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    "spoofed-profile-updater",
+                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/company-alpha/tenant-scope/setup-certified"]),
+                "spoofed-browser-user",
+                CorrelationId: "tenant-admin-company-alpha",
+                EvidenceLinks: ["approval:tenant-admin:company-alpha"])));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await upsertResponse.Content.ReadAsStringAsync();
+        body.Should().Contain("admin role profile evidence");
     }
 
     [Fact]
@@ -4513,13 +4542,13 @@ public sealed class AccountingSystemIntegrationServiceTests
                 new AccountingTenantAdministrationProfileDto(
                     "company-alpha",
                     "company-alpha",
-                    TenantScopeConfigured: true,
-                    AdminRoleProfileConfigured: true,
-                    ScopedAccessPoliciesConfigured: true,
-                    ReportingGroupsConfigured: true,
-                    AccountingAdminSurfaceConfigured: true,
-                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
-                    UpdatedBy: "assistant",
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    "assistant",
                     EvidenceReferences: ["evidence://tenant-admin/company-alpha/assistant"]),
                 "assistant",
                 CorrelationId: "assistant-tenant-admin",
