@@ -29,6 +29,11 @@ public sealed record FinancialRecordExplorerDto(
     IReadOnlyList<FinancialRecordExplorerProofActionDto> ProofActions,
     FinancialRecordExplorerRecordGraphDto RecordGraph);
 
+public sealed record FinancialRecordExplorerQueryDto(
+    string ViewId = "",
+    string SearchText = "",
+    IReadOnlyList<FinancialRecordExplorerFilterDto>? Filters = null);
+
 public sealed record FinancialRecordExplorerScopeItemDto(
     string Label,
     string Value,

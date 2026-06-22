@@ -83,7 +83,11 @@ delivery history, evidence, reconciliation, reporting, and audit projections int
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
 portfolio, book, account, investor, capital-account, instrument, tax-lot, cost-center,
-counterparty, and external-GL context without re-inferring accounting scope from display text.
+counterparty, and external-GL context without re-inferring accounting scope from display text. The
+shared Financial Record Explorer route also accepts server-applied `viewId`, `searchText`, and
+`filter=<filterId>:<value>` query scope, so saved views and dimension chips can return a scoped
+payload with matching rows, selected record, summary counts, and proof graph before browser or WPF
+presentation code renders it.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
 reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the

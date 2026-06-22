@@ -59,15 +59,22 @@ public sealed class FinancialRecordExplorerReadService
         string explorerId,
         string tenantId,
         CancellationToken ct = default)
+        => await GetExplorerAsync(explorerId, tenantId, query: null, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerDto?> GetExplorerAsync(
+        string explorerId,
+        string tenantId,
+        FinancialRecordExplorerQueryDto? query,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         var normalized = NormalizeExplorerId(explorerId);
         return normalized switch
         {
-            LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, ct).ConfigureAwait(false),
-            PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, ct).ConfigureAwait(false),
-            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, ct).ConfigureAwait(false),
-            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, ct).ConfigureAwait(false),
+            LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
+            PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
+            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
+            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, query, ct).ConfigureAwait(false),
             _ => null
         };
     }
@@ -138,7 +145,10 @@ public sealed class FinancialRecordExplorerReadService
         return await _savedViewStore.SaveAsync(tenantId, normalized, view, ct).ConfigureAwait(false);
     }
 
-    private async Task<FinancialRecordExplorerDto> BuildLedgerExplorerAsync(string tenantId, CancellationToken ct)
+    private async Task<FinancialRecordExplorerDto> BuildLedgerExplorerAsync(
+        string tenantId,
+        FinancialRecordExplorerQueryDto? query,
+        CancellationToken ct)
     {
         var readService = _runReadService;
         if (readService is null)
@@ -195,10 +205,14 @@ public sealed class FinancialRecordExplorerReadService
             rows,
             BuildExplorerProofActions(run, UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", run.RunId)),
             tenantId,
+            query,
             ct).ConfigureAwait(false);
     }
 
-    private async Task<FinancialRecordExplorerDto> BuildPortfolioExplorerAsync(string tenantId, CancellationToken ct)
+    private async Task<FinancialRecordExplorerDto> BuildPortfolioExplorerAsync(
+        string tenantId,
+        FinancialRecordExplorerQueryDto? query,
+        CancellationToken ct)
     {
         var readService = _runReadService;
         if (readService is null)
@@ -252,10 +266,14 @@ public sealed class FinancialRecordExplorerReadService
             rows,
             BuildExplorerProofActions(run, UiApiRoutes.WithParam(UiApiRoutes.WorkstationPortfolio, "runId", run.RunId)),
             tenantId,
+            query,
             ct).ConfigureAwait(false);
     }
 
-    private async Task<FinancialRecordExplorerDto> BuildSecurityInstrumentExplorerAsync(string tenantId, CancellationToken ct)
+    private async Task<FinancialRecordExplorerDto> BuildSecurityInstrumentExplorerAsync(
+        string tenantId,
+        FinancialRecordExplorerQueryDto? query,
+        CancellationToken ct)
     {
         var readService = _runReadService;
         if (readService is null)
@@ -346,10 +364,14 @@ public sealed class FinancialRecordExplorerReadService
             rows,
             BuildExplorerProofActions(run, UiApiRoutes.WorkstationSecurityMasterSearch),
             tenantId,
+            query,
             ct).ConfigureAwait(false);
     }
 
-    private async Task<FinancialRecordExplorerDto> BuildReportLineProvenanceExplorerAsync(string tenantId, CancellationToken ct)
+    private async Task<FinancialRecordExplorerDto> BuildReportLineProvenanceExplorerAsync(
+        string tenantId,
+        FinancialRecordExplorerQueryDto? query,
+        CancellationToken ct)
     {
         var workflowService = _reportPackWorkflowService;
         if (workflowService is null)
@@ -367,10 +389,11 @@ public sealed class FinancialRecordExplorerReadService
             "Governed report lines with retained source provenance.");
         var savedViews = await LoadSavedViewsAsync(tenantId, ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
         var deliveryService = _reportPackDeliveryService;
-        return BuildReportLineProvenanceExplorer(
+        var explorer = BuildReportLineProvenanceExplorer(
             workflowService.ListRecords(200),
             deliveryService?.ListAttempts(500),
             savedViews);
+        return ApplyExplorerQuery(explorer, query);
     }
 
     public static FinancialRecordExplorerDto BuildReportLineProvenanceExplorer(
@@ -462,9 +485,11 @@ public sealed class FinancialRecordExplorerReadService
         IReadOnlyList<FinancialRecordExplorerRowDto> rows,
         IReadOnlyList<FinancialRecordExplorerProofActionDto> proofActions,
         string tenantId,
+        FinancialRecordExplorerQueryDto? query,
         CancellationToken ct)
     {
         var savedViews = await LoadSavedViewsAsync(tenantId, explorerId, systemViews, ct).ConfigureAwait(false);
+        var scoped = ApplyExplorerQuery(savedViews, summaryItems, rows, query);
         return new FinancialRecordExplorerDto(
             explorerId,
             title,
@@ -473,15 +498,181 @@ public sealed class FinancialRecordExplorerReadService
             IsBlocked: false,
             BlockedReason: string.Empty,
             scopeItems,
-            savedViews,
-            summaryItems,
+            scoped.SavedViews,
+            scoped.SummaryItems,
             filters,
             columns,
-            rows,
-            rows.FirstOrDefault()?.Detail,
+            scoped.Rows,
+            scoped.Rows.FirstOrDefault()?.Detail,
             proofActions,
-            BuildGraph(rows));
+            BuildGraph(scoped.Rows));
     }
+
+    private static FinancialRecordExplorerDto ApplyExplorerQuery(
+        FinancialRecordExplorerDto explorer,
+        FinancialRecordExplorerQueryDto? query)
+    {
+        var scoped = ApplyExplorerQuery(explorer.SavedViews, explorer.SummaryItems, explorer.Rows, query);
+        return explorer with
+        {
+            SavedViews = scoped.SavedViews,
+            SummaryItems = scoped.SummaryItems,
+            Rows = scoped.Rows,
+            SelectedRecord = scoped.Rows.FirstOrDefault()?.Detail,
+            RecordGraph = string.Equals(explorer.ExplorerId, ReportLineProvenanceExplorerId, StringComparison.OrdinalIgnoreCase)
+                ? BuildReportLineProvenanceGraph(scoped.Rows)
+                : BuildGraph(scoped.Rows)
+        };
+    }
+
+    private static (
+        IReadOnlyList<FinancialRecordExplorerSavedViewDto> SavedViews,
+        IReadOnlyList<FinancialRecordExplorerSummaryItemDto> SummaryItems,
+        IReadOnlyList<FinancialRecordExplorerRowDto> Rows) ApplyExplorerQuery(
+            IReadOnlyList<FinancialRecordExplorerSavedViewDto> savedViews,
+            IReadOnlyList<FinancialRecordExplorerSummaryItemDto> summaryItems,
+            IReadOnlyList<FinancialRecordExplorerRowDto> rows,
+            FinancialRecordExplorerQueryDto? query)
+    {
+        if (query is null)
+        {
+            return (savedViews, summaryItems, rows);
+        }
+
+        var requestedViewId = query.ViewId?.Trim() ?? string.Empty;
+        var selectedView = string.IsNullOrWhiteSpace(requestedViewId)
+            ? null
+            : savedViews.FirstOrDefault(view => string.Equals(view.ViewId, requestedViewId, StringComparison.OrdinalIgnoreCase));
+        var filters = NormalizeFilters(query.Filters)
+            .Concat(selectedView?.Filters ?? [])
+            .ToArray();
+        var searchText = string.Join(
+            " ",
+            new[] { selectedView?.SearchText, query.SearchText }
+                .Where(static text => !string.IsNullOrWhiteSpace(text))
+                .Select(static text => text!.Trim()));
+
+        if (selectedView is null && string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
+        {
+            return (savedViews, summaryItems, rows);
+        }
+
+        var activeSavedViews = string.IsNullOrWhiteSpace(requestedViewId)
+            ? savedViews
+            : savedViews
+                .Select(view => view with
+                {
+                    IsActive = string.Equals(view.ViewId, requestedViewId, StringComparison.OrdinalIgnoreCase)
+                })
+                .ToArray();
+        var scopedRows = selectedView is null && !string.IsNullOrWhiteSpace(requestedViewId)
+            ? []
+            : rows
+                .Where(row => RowMatchesFilters(row, filters) && RowMatchesSearch(row, searchText))
+                .ToArray();
+        var scopedSummary = BuildScopedSummary(summaryItems, rows.Count, scopedRows.Length, requestedViewId, searchText, filters);
+        return (activeSavedViews, scopedSummary, scopedRows);
+    }
+
+    private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildScopedSummary(
+        IReadOnlyList<FinancialRecordExplorerSummaryItemDto> summaryItems,
+        int totalRows,
+        int visibleRows,
+        string requestedViewId,
+        string searchText,
+        IReadOnlyList<FinancialRecordExplorerFilterDto> filters)
+    {
+        var detailParts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(requestedViewId))
+        {
+            detailParts.Add($"view {requestedViewId}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchText))
+        {
+            detailParts.Add($"search '{searchText}'");
+        }
+
+        if (filters.Count > 0)
+        {
+            detailParts.Add($"{filters.Count} filter(s)");
+        }
+
+        return
+        [
+            new(
+                "Visible records",
+                visibleRows.ToString(CultureInfo.InvariantCulture),
+                detailParts.Count == 0
+                    ? $"Showing {visibleRows:N0} of {totalRows:N0} records."
+                    : $"Showing {visibleRows:N0} of {totalRows:N0} records after {string.Join(", ", detailParts)}.",
+                visibleRows == 0 && totalRows > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Info),
+            .. summaryItems
+        ];
+    }
+
+    private static bool RowMatchesFilters(
+        FinancialRecordExplorerRowDto row,
+        IReadOnlyList<FinancialRecordExplorerFilterDto> filters)
+        => filters.Count == 0 || filters.All(filter =>
+        {
+            var expected = NormalizeSearchToken(filter.Value);
+            if (string.IsNullOrWhiteSpace(expected))
+            {
+                return true;
+            }
+
+            var filterId = NormalizeSearchToken(filter.FilterId);
+            var directCell = string.IsNullOrWhiteSpace(filterId)
+                ? null
+                : row.Cells.FirstOrDefault(cell => string.Equals(NormalizeSearchToken(cell.ColumnId), filterId, StringComparison.Ordinal));
+            return directCell is not null
+                ? CellMatchesToken(directCell, expected)
+                : RowMatchesSearch(row, expected);
+        });
+
+    private static bool RowMatchesSearch(FinancialRecordExplorerRowDto row, string? searchText)
+    {
+        var token = NormalizeSearchToken(searchText);
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return true;
+        }
+
+        return RowTextValues(row).Any(value => NormalizeSearchToken(value).Contains(token, StringComparison.Ordinal));
+    }
+
+    private static IEnumerable<string?> RowTextValues(FinancialRecordExplorerRowDto row)
+    {
+        yield return row.RecordId;
+        yield return row.RecordType;
+        yield return row.Label;
+        yield return row.Source;
+        yield return row.Status;
+        foreach (var cell in row.Cells)
+        {
+            yield return cell.DisplayValue;
+            yield return cell.RawValue;
+        }
+
+        foreach (var field in row.Detail.Fields)
+        {
+            yield return field.Label;
+            yield return field.Value;
+            yield return field.Detail;
+        }
+    }
+
+    private static bool CellMatchesToken(FinancialRecordExplorerCellDto cell, string token)
+        => NormalizeSearchToken(cell.DisplayValue).Contains(token, StringComparison.Ordinal) ||
+           NormalizeSearchToken(cell.RawValue).Contains(token, StringComparison.Ordinal);
+
+    private static string NormalizeSearchToken(string? value)
+        => new((value ?? string.Empty)
+            .Trim()
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToLowerInvariant)
+            .ToArray());
 
     private async Task<FinancialRecordExplorerDto> CreateEmptyExplorerAsync(
         string explorerId,

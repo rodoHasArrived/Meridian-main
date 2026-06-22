@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -344,6 +345,89 @@ public sealed partial class WorkstationEndpointsTests
             view.GetProperty("label").GetString() == "Material trial-balance view" &&
             !view.GetProperty("isSystem").GetBoolean() &&
             view.GetProperty("columnIds").EnumerateArray().Select(column => column.GetString()).SequenceEqual(new[] { "accountName", "balance" }));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplySavedViewOnServer()
+    {
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-saved-view-query", withBreaks: false));
+
+        var full = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger",
+            ServerJsonOptions);
+        full.Should().NotBeNull();
+        full!.Rows.Should().HaveCountGreaterThan(1);
+
+        var saveResponse = await client.PostAsJsonAsync(
+            "/api/workstation/financial-record-explorers/ledger/saved-views",
+            new FinancialRecordExplorerSavedViewSaveRequestDto(
+                "Cash-only ledger view",
+                "Server-applied saved view for cash ledger rows.",
+                "Cash",
+                [new("account-type", "Account Type", "Asset")],
+                ["accountName", "balance"]),
+            ServerJsonOptions);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<FinancialRecordExplorerSavedViewDto>(ServerJsonOptions);
+        saved.Should().NotBeNull();
+
+        var scoped = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?viewId={Uri.EscapeDataString(saved!.ViewId)}",
+            ServerJsonOptions);
+
+        scoped.Should().NotBeNull();
+        scoped!.Rows.Should().NotBeEmpty();
+        scoped.Rows.Should().OnlyContain(row =>
+            row.Cells.Any(cell => cell.ColumnId == "accountName" && cell.DisplayValue.Contains("Cash", StringComparison.OrdinalIgnoreCase)));
+        scoped.Rows.Should().HaveCountLessThan(full.Rows.Count);
+        scoped.SelectedRecord!.RecordId.Should().Be(scoped.Rows[0].RecordId);
+        scoped.SavedViews.Single(view => view.ViewId == saved.ViewId).IsActive.Should().BeTrue();
+        scoped.SummaryItems.Should().Contain(item =>
+            item.Label == "Visible records" &&
+            item.Value == scoped.Rows.Count.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplyDimensionFilterOnServer()
+    {
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-dimension-query", withBreaks: false) with
+        {
+            FundProfileId = "fund-core",
+            ParameterSet = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["accountScopeId"] = "acct-ops",
+                ["entityScopeId"] = "entity-book",
+                ["ledgerBookId"] = "book-gaap"
+            }
+        });
+
+        var matching = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger?filter=fundId:fund-core&filter=bookId:book-gaap",
+            ServerJsonOptions);
+
+        matching.Should().NotBeNull();
+        matching!.Rows.Should().NotBeEmpty();
+        matching.Rows.Should().OnlyContain(row =>
+            row.Cells.Any(cell => cell.ColumnId == "fundId" && cell.RawValue == "fund-core") &&
+            row.Cells.Any(cell => cell.ColumnId == "bookId" && cell.RawValue == "book-gaap"));
+
+        var missing = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger?filter=fundId:fund-missing",
+            ServerJsonOptions);
+
+        missing.Should().NotBeNull();
+        missing!.Rows.Should().BeEmpty();
+        missing.SelectedRecord.Should().BeNull();
+        missing.SummaryItems.Should().Contain(item =>
+            item.Label == "Visible records" &&
+            item.Value == "0" &&
+            item.Tone == FinancialRecordExplorerTone.Warning);
     }
 
     [Fact]
