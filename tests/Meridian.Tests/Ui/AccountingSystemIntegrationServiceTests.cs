@@ -3392,6 +3392,78 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task CreateExportPackageAsync_RequiresCustomerVendorAndProjectDimensionMappingCoverage()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var meridianDimensions = CertifiedExternalGlMeridianDimensions(ExternalGlLedgerBookId) with
+        {
+            CustomerId = null,
+            VendorId = null,
+            ProjectId = null
+        };
+        var providerDimensions = CertifiedExternalGlProviderDimensions(
+            ExternalGlLedgerBookId,
+            "quickbooks-fixture",
+            "Class:DefaultFund",
+            "Location:Main",
+            "Account:qbo-1000",
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Class"] = "DefaultFund",
+                ["Location"] = "Main",
+                ["Department"] = "FundAccounting"
+            }) with
+            {
+                CustomerId = null,
+                VendorId = null,
+                ProjectId = null
+            };
+        var profile = CertifiedQuickBooksMappingProfile() with
+        {
+            ProfileId = "qbo-default-fund-missing-relationship-dimensions",
+            DimensionMappings =
+            [
+                new DimensionMappingProfileDto(
+                    "qbo-default-fund-missing-relationship-dimensions",
+                    "Missing customer vendor project dimensions",
+                    "quickbooks-fixture",
+                    meridianDimensions,
+                    providerDimensions,
+                    AccountingCertificationStateDto.Certified)
+            ]
+        };
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-missing-relationship-dimensions"]));
+
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
+
+        package.GeneratedLines.Should().BeEmpty();
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "IncompleteExternalGlDimensionMapping" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Message.Contains("dimensional scope", StringComparison.OrdinalIgnoreCase) &&
+            issue.SuggestedAction!.Contains("customer, vendor, project", StringComparison.OrdinalIgnoreCase));
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "MissingGeneratedExternalGlExportLines" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
     public async Task CreateExportPackageAsync_BlocksReconciliationLedgerBookMismatch()
     {
         var exportLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -4728,7 +4800,10 @@ public sealed class AccountingSystemIntegrationServiceTests
             OrganizationId: "org-meridian",
             PortfolioId: "portfolio-default-fund",
             BookId: ledgerBookId.ToString("D"),
-            AccountId: "account-operating-cash");
+            AccountId: "account-operating-cash",
+            CustomerId: "customer-investor-services",
+            VendorId: "vendor-administrator",
+            ProjectId: "project-month-end-close");
 
     private static LedgerDimensionSetDto CertifiedExternalGlProviderDimensions(
         Guid ledgerBookId,
@@ -4752,7 +4827,10 @@ public sealed class AccountingSystemIntegrationServiceTests
             OrganizationId: $"{providerId}:Organization:Meridian",
             PortfolioId: $"{providerId}:Portfolio:DefaultFund",
             BookId: $"Book:{ledgerBookId:D}",
-            AccountId: accountDimension);
+            AccountId: accountDimension,
+            CustomerId: $"{providerId}:Customer:InvestorServices",
+            VendorId: $"{providerId}:Vendor:Administrator",
+            ProjectId: $"{providerId}:Project:MonthEndClose");
 
     private sealed class PostingCapableAccountingSystemProvider : IAccountingSystemProvider
     {

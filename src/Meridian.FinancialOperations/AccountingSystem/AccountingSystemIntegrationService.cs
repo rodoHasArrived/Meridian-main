@@ -776,7 +776,7 @@ public sealed class AccountingSystemIntegrationService
                         AccountingConfigurationValidationSeverityDto.Critical,
                         $"External GL dimension mapping '{mapping.ProfileId}' is missing canonical accounting or external GL dimensional scope.",
                         mapping.ProfileId,
-                        "Map fund, entity, ledger book, operating/investment dimensions, and external GL dimensions on both sides before export certification."));
+                        "Map fund, entity, ledger book, operating/investment dimensions, customer, vendor, project, and external GL dimensions on both sides before export certification."));
                 }
             }
         }
@@ -921,6 +921,9 @@ public sealed class AccountingSystemIntegrationService
            !string.IsNullOrWhiteSpace(dimensions.PortfolioId) &&
            !string.IsNullOrWhiteSpace(dimensions.BookId) &&
            !string.IsNullOrWhiteSpace(dimensions.AccountId) &&
+           !string.IsNullOrWhiteSpace(dimensions.CustomerId) &&
+           !string.IsNullOrWhiteSpace(dimensions.VendorId) &&
+           !string.IsNullOrWhiteSpace(dimensions.ProjectId) &&
            dimensions.ExternalGlDimensions.Count > 0 &&
            dimensions.ExternalGlDimensions.All(static pair =>
                !string.IsNullOrWhiteSpace(pair.Key) &&
