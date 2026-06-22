@@ -370,15 +370,58 @@ Negative guards:
 Memory receipt:
 
 - At startup or route changes, report selected memory IDs, the reason they matched, stale warnings,
-  and task/branch entries skipped because their scope did not match.
+  skipped memory IDs, skip reasons, task descriptor path, goal inventory path, and the branch or
+  path selectors used for routing.
 - Use `--receipt` to print the same reference/dereference summary the JSON payload exposes as
   `memory_receipt`.
-- Treat `referenced` entries as eligible context to read; treat `dereferenced` entries as explicitly
-  skipped for the current task, branch, goal, path, or tag route.
+- Treat `selected_memory` entries as eligible context to read; treat `skipped_memory` entries as
+  explicitly skipped for the current task, branch, goal, path, or tag route. The JSON payload keeps
+  `referenced` and `dereferenced` aliases for older consumers.
 - Keep the receipt compact and inside the existing Codex workflow disclosure shape; it is context
   provenance, not a separate audit log.
 
-## Promotion
+Example task-scoped receipt:
+
+```text
+$ python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+Codex memory status: pass; 5 entrie(s), 2 selected, 0 error(s), 0 warning(s).
+selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md
+selected: repo:validation -> .codex/memory/repo/validation.md
+
+Memory receipt:
+task_descriptor_path: .codex/memory/tasks/example.yml
+task: codex-memory-routing-example
+selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+skipped: repo:accounting-workflows -> .codex/memory/repo/accounting-workflows.md (excluded by intent ai-tooling)
+skipped: repo:financial-record-explorers -> .codex/memory/repo/financial-record-explorers.md (excluded by intent ai-tooling)
+```
+
+Example goal-scoped receipt:
+
+```text
+$ python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+Codex memory status: pass; 5 entrie(s), 2 selected, 0 error(s), 0 warning(s).
+goal: codex-memory-long-goal-example (active); 2/3 progress item(s) completed; active task .codex/memory/tasks/example.yml
+selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md
+selected: repo:validation -> .codex/memory/repo/validation.md
+
+Memory receipt:
+task_descriptor_path: .codex/memory/tasks/example.yml
+goal_inventory_path: .codex/memory/goals/example.yml
+goal: codex-memory-long-goal-example
+task: codex-memory-routing-example
+selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+skipped: repo:accounting-workflows -> .codex/memory/repo/accounting-workflows.md (excluded by intent ai-tooling)
+skipped: repo:financial-record-explorers -> .codex/memory/repo/financial-record-explorers.md (excluded by intent ai-tooling)
+```
+
+## Promotion And Compaction
 
 Promotion is a review step, not an automatic dump. Compaction may create short-lived session notes,
 but it must not promote them automatically.

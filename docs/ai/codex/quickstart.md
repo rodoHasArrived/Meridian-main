@@ -143,6 +143,34 @@ and uses `MeridianBuildIsolationKey` output roots by default.
   task descriptors plus `--explain` for scoped memory routing; use goal inventories for long-running
   progress tracking; follow `memory-system.md` for promotion, staleness, and disabled user/global
   tiers.
+- Receipt example:
+
+  ```text
+  $ python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+  Codex memory status: pass; 5 entrie(s), 2 selected, 0 error(s), 0 warning(s).
+  selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md
+  selected: repo:validation -> .codex/memory/repo/validation.md
+
+  Memory receipt:
+  task_descriptor_path: .codex/memory/tasks/example.yml
+  task: codex-memory-routing-example
+  selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+  selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+  selected: repo:ai-guidance -> .codex/memory/repo/ai-guidance.md (task work mode matches implementation; task intent matches ai-tooling; ...)
+  skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+  ```
+
+  ```text
+  $ python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+  Memory receipt:
+  task_descriptor_path: .codex/memory/tasks/example.yml
+  goal_inventory_path: .codex/memory/goals/example.yml
+  goal: codex-memory-long-goal-example
+  task: codex-memory-routing-example
+  selectors: branches=['main']; paths=['docs/ai/codex/**', '.codex/memory/**', 'build/scripts/docs/**']
+  selected: repo:validation -> .codex/memory/repo/validation.md (task work mode matches implementation; ...)
+  skipped: repo:architecture -> .codex/memory/repo/architecture.md (excluded by intent ai-tooling)
+  ```
 - Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
 - Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
 - Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
