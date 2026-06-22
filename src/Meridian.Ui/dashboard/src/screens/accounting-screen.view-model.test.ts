@@ -3345,6 +3345,20 @@ describe("accounting-screen view model", () => {
     act(() => {
       result.current.productionCertificationProfile.updateControl("close-reporting-book", true);
       result.current.productionCertificationProfile.updateControl("cross-period-dimensions", true);
+      result.current.productionCertificationProfile.updateEvidence("   ");
+    });
+
+    expect(result.current.productionCertificationProfile.canSave).toBe(false);
+    expect(result.current.productionCertificationProfile.saveDisabledReason).toBe("Retained evidence is required before saving production certification controls.");
+
+    await act(async () => {
+      await result.current.productionCertificationProfile.save();
+    });
+
+    expect(services.upsertProductionCertificationProfile).not.toHaveBeenCalled();
+    expect(result.current.productionCertificationProfile.statusText).toBe("Retained evidence is required before saving production certification controls.");
+
+    act(() => {
       result.current.productionCertificationProfile.updateEvidence("evidence://ledger-book/book-primary/workflow-certification\nevidence://ledger-book/book-primary/close-reporting");
     });
 

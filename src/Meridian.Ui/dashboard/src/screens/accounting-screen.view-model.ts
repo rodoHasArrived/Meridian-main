@@ -205,6 +205,8 @@ export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
 export type SecurityConflictResolution = ResolveConflictRequest["resolution"];
 
+const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Retained evidence is required before saving production certification controls.";
+
 export interface SecurityMasterServices {
   search: (query: string) => Promise<SecurityMasterEntry[]>;
   getIdentity: (securityId: string) => Promise<SecurityIdentityDrillIn>;
@@ -3480,8 +3482,18 @@ export function useAccountingConfigurationViewModel(
     }
 
     const correlationId = `browser-accounting-production-certification-${Date.now()}`;
+    const retainedEvidenceReferences = splitAccountingEvidenceReferences(productionCertificationDraft.evidenceText);
+    if (retainedEvidenceReferences.length === 0) {
+      setProductionCertificationProfileSaveError({
+        summary: PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED,
+        details: []
+      });
+      setProductionCertificationProfileSaveMessage(null);
+      return;
+    }
+
     const evidenceReferences = withProductionCertificationControlEvidence(
-      splitAccountingEvidenceReferences(productionCertificationDraft.evidenceText),
+      retainedEvidenceReferences,
       productionCertificationProfile,
       productionCertificationDraft
     );
@@ -5338,7 +5350,7 @@ function buildAccountingProductionCertificationProfileEditorViewModel(
     : !hasFundScope
       ? "Fund scope is required before saving production certification controls."
       : missingEvidence
-        ? "Retained evidence is required before saving production certification controls."
+        ? PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED
         : null;
 
   return {

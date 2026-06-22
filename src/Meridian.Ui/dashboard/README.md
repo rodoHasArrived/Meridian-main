@@ -248,7 +248,7 @@ workflow controls, including reconciliation, direct-lending, and strategy-ledger
 certification, plus dimensional ledger-line, trial-balance, reporting, provenance, and export
 controls, preserving tenant/company/fund/book
 scope plus retained evidence through the shared Accounting System store rather than request-only
-flags. When checked controls are saved, the browser augments the operator's retained evidence with
+flags. After the operator supplies retained evidence, checked-control saves augment that evidence with
 scoped per-control markers for posting candidates, journal lifecycle, close/reporting, external GL,
 reconciliation, direct lending, strategy ledger reads, and dimensional query/export coverage so the
 shared store can enforce category-specific certification evidence. It also lists retained migration run artifacts from
