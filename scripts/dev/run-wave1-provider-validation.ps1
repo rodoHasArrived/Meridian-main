@@ -368,6 +368,17 @@ $failedResults = @($results | Where-Object status -eq "failed")
 $jsonPath = Join-Path $summaryDir "wave1-validation-summary.json"
 $mdPath = Join-Path $summaryDir "wave1-validation-summary.md"
 
+$signoffMetadataPath = ""
+if (-not [string]::IsNullOrWhiteSpace($OperatorSignoffPath)) {
+    $resolvedSignoffPath = [System.IO.Path]::GetFullPath($OperatorSignoffPath)
+    if ($resolvedSignoffPath.StartsWith($repoRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $signoffMetadataPath = $resolvedSignoffPath.Substring($repoRoot.Length + 1).Replace('\', '/')
+    }
+    else {
+        $signoffMetadataPath = $resolvedSignoffPath.Replace('\', '/')
+    }
+}
+
 $evidenceSchema = [ordered]@{
     version = "1.0"
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("O")
@@ -375,7 +386,7 @@ $evidenceSchema = [ordered]@{
     summaryMarkdownPath = $mdPath.Substring($repoRoot.Length + 1).Replace('\', '/')
     packetJsonPath = (Join-Path $summaryDir "dk1-pilot-parity-packet.json").Substring($repoRoot.Length + 1).Replace('\', '/')
     packetMarkdownPath = (Join-Path $summaryDir "dk1-pilot-parity-packet.md").Substring($repoRoot.Length + 1).Replace('\', '/')
-    signoffMetadataPath = if ([string]::IsNullOrWhiteSpace($OperatorSignoffPath)) { "" } else { [System.IO.Path]::GetFullPath($OperatorSignoffPath).Substring($repoRoot.Length + 1).Replace('\', '/') }
+    signoffMetadataPath = $signoffMetadataPath
 }
 
 $summary = [ordered]@{
