@@ -35,6 +35,19 @@ REQUIRED_FIELDS = {
     "review_after",
     "invalidates_when",
 }
+FRONT_MATTER_REQUIRED_FIELDS = {
+    "id",
+    "tier",
+    "scope",
+    "file",
+    "tags",
+    "confidence",
+    "freshness",
+    "source_refs",
+    "review_after",
+    "invalidates_when",
+}
+FRONT_MATTER_MATCH_FIELDS = FRONT_MATTER_REQUIRED_FIELDS
 LOAD_WHEN_LIST_FIELDS = {"skills", "paths", "intents", "branches", "tags"}
 LOAD_WHEN_TASK_FIELDS = {"ids", "work_modes", "intents", "paths"}
 EXCLUDE_WHEN_FIELDS = {"skills", "paths", "intents", "branches", "tags", "task_ids"}
@@ -139,14 +152,29 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         prefix = " " * indent
         if isinstance(data, dict):
             for key, value in data.items():
-                if isinstance(value, (dict, list)):
+                if isinstance(value, list) and not value:
+                    lines.append(f"{prefix}{key}: []")
+                elif isinstance(value, dict) and not value:
+                    lines.append(f"{prefix}{key}: {{}}")
+                elif isinstance(value, (dict, list)):
                     lines.append(f"{prefix}{key}:")
                     lines.append(dump_yaml(value, indent + 2).rstrip())
                 else:
                     lines.append(f"{prefix}{key}: {format_scalar(value)}")
         elif isinstance(data, list):
             for item in data:
-                if isinstance(item, (dict, list)):
+                if isinstance(item, dict):
+                    item_lines = dump_yaml(item, indent + 2).rstrip().splitlines()
+                    if not item_lines:
+                        lines.append(f"{prefix}- {{}}")
+                    else:
+                        first = item_lines[0]
+                        child_prefix = " " * (indent + 2)
+                        if first.startswith(child_prefix):
+                            first = first[len(child_prefix):]
+                        lines.append(f"{prefix}- {first}")
+                        lines.extend(item_lines[1:])
+                elif isinstance(item, list):
                     lines.append(f"{prefix}-")
                     lines.append(dump_yaml(item, indent + 2).rstrip())
                 else:
@@ -304,6 +332,8 @@ def validate_source_refs(root: Path, entry: dict[str, Any], path: str) -> list[F
     if findings:
         return findings
     assert isinstance(source_refs, list)
+    if not source_refs:
+        return [Finding("error", path, "source_refs must include at least one source reference.")]
 
     for source_ref in source_refs:
         if "://" in source_ref or source_ref.startswith("#"):
@@ -434,17 +464,34 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     if front_findings:
         return entry, findings
 
-    for field in REQUIRED_FIELDS:
+    memory_display_path = rel(root, memory_file)
+    for field in sorted(FRONT_MATTER_REQUIRED_FIELDS):
         if field not in front_matter:
-            findings.append(Finding("error", rel(root, memory_file), f"Memory front matter is missing {field}."))
-    for field in ("id", "tier", "scope", "file", "confidence", "freshness", "review_after"):
+            findings.append(Finding("error", memory_display_path, f"Memory front matter is missing {field}."))
+
+    if "source_refs" in front_matter:
+        findings.extend(validate_source_refs(root, front_matter, memory_display_path))
+    if "confidence" in front_matter and front_matter.get("confidence") not in ALLOWED_CONFIDENCE:
+        findings.append(
+            Finding("error", memory_display_path, f"Unknown front matter confidence: {front_matter.get('confidence')}")
+        )
+    if "freshness" in front_matter and front_matter.get("freshness") not in ALLOWED_FRESHNESS:
+        findings.append(
+            Finding("error", memory_display_path, f"Unknown front matter freshness: {front_matter.get('freshness')}")
+        )
+    if "review_after" in front_matter:
+        findings.extend(validate_review_after(front_matter.get("review_after"), memory_display_path))
+
+    for field in sorted(FRONT_MATTER_MATCH_FIELDS):
+        if field not in front_matter:
+            continue
         front_value = normalize_metadata_value(front_matter.get(field))
         entry_value = normalize_metadata_value(entry.get(field))
-        if field in front_matter and front_value != entry_value:
+        if front_value != entry_value:
             findings.append(
                 Finding(
                     "error",
-                    rel(root, memory_file),
+                    memory_display_path,
                     f"Front matter {field} does not match index value {entry_value!r}.",
                 )
             )
