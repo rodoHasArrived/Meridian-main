@@ -101,7 +101,10 @@ do not paste raw file contents or broad command output unless the user asks for 
 | WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
 | Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests; Codex Browser plugin for unauthenticated rendered-route inspection when the task is visual or interactive | WPF validation unless shared contracts changed; signed-in browser flows or secret entry |
 
-AI-doc proof lane defaults: `python3 build/scripts/docs/check-codex-memory.py --summary`,
+AI-doc proof lane defaults: `python build/scripts/docs/check-codex-memory.py --summary`,
+`python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary`,
+`python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary`,
+`python -m unittest build.scripts.docs.tests.test_check_codex_memory`,
 `python3 build/scripts/docs/check-ai-inventory.py --summary`,
 `python3 build/scripts/docs/check-codex-skills.py --summary`,
 `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`,
@@ -176,7 +179,7 @@ and uses `MeridianBuildIsolationKey` output roots by default.
   ```
 - Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
 - Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
-- Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
+- Validation procedures: `python build/scripts/docs/check-codex-memory.py --summary`, scoped Codex memory receipt checks when memory changes, `python -m unittest build.scripts.docs.tests.test_check_codex_memory`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
 - Documentation ownership: `../../documentation-ownership.md`, `../assistant-workflow-contract.md`
 
 ## Task-To-Proof Matrix

@@ -153,9 +153,9 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
         prefix = " " * indent
         if isinstance(data, dict):
             for key, value in data.items():
-                if isinstance(value, list) and not value:
+                if value == []:
                     lines.append(f"{prefix}{key}: []")
-                elif isinstance(value, dict) and not value:
+                elif value == {}:
                     lines.append(f"{prefix}{key}: {{}}")
                 elif isinstance(value, (dict, list)):
                     lines.append(f"{prefix}{key}:")
@@ -164,20 +164,15 @@ def dump_yaml(data: Any, indent: int = 0) -> str:
                     lines.append(f"{prefix}{key}: {format_scalar(value)}")
         elif isinstance(data, list):
             for item in data:
-                if isinstance(item, dict):
-                    item_lines = dump_yaml(item, indent + 2).rstrip().splitlines()
-                    if not item_lines:
-                        lines.append(f"{prefix}- {{}}")
+                if isinstance(item, (dict, list)):
+                    if isinstance(item, dict) and item:
+                        nested_lines = dump_yaml(item, indent + 2).rstrip().splitlines()
+                        first_line = nested_lines[0].lstrip()
+                        lines.append(f"{prefix}- {first_line}")
+                        lines.extend(nested_lines[1:])
                     else:
-                        first = item_lines[0]
-                        child_prefix = " " * (indent + 2)
-                        if first.startswith(child_prefix):
-                            first = first[len(child_prefix):]
-                        lines.append(f"{prefix}- {first}")
-                        lines.extend(item_lines[1:])
-                elif isinstance(item, list):
-                    lines.append(f"{prefix}-")
-                    lines.append(dump_yaml(item, indent + 2).rstrip())
+                        lines.append(f"{prefix}-")
+                        lines.append(dump_yaml(item, indent + 2).rstrip())
                 else:
                     lines.append(f"{prefix}- {format_scalar(item)}")
         else:

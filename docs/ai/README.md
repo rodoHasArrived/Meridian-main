@@ -122,7 +122,10 @@ Before changing any AI/helping-agent guidance:
 Validate AI catalog consistency with:
 
 ```bash
-python3 build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --receipt --summary
+python build/scripts/docs/check-codex-memory.py --goal .codex/memory/goals/example.yml --receipt --summary
+python -m unittest build.scripts.docs.tests.test_check_codex_memory
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
