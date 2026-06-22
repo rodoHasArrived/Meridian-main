@@ -725,10 +725,58 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     }
 
     [Fact]
+    public async Task AuthAccounts_DelegatedManageUsersCannotGrantUnheldAdminPermissions()
+    {
+        var username = $"delegated-admin-{Guid.NewGuid():N}";
+        using var delegatedClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+
+        var createResponse = await delegatedClient.PutAsJsonAsync(
+            $"/api/auth/accounts/{username}",
+            new UserAccountUpsertRequestDto(
+                Username: username,
+                Role: nameof(UserRole.Admin),
+                RoleProfileName: null,
+                PermissionNames: null,
+                NewPassword: "initial-pass",
+                PasswordHash: null,
+                IsDisabled: false,
+                PasswordResetRequired: false,
+                RequestedBy: "delegated-account-admin",
+                Rationale: "Attempt to grant full admin from delegated user administration.",
+                CorrelationId: "auth-account-admin-escalation"));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task AuthAccounts_DelegatedManageUsersCannotGrantExplicitUnheldPermissions()
+    {
+        var username = $"delegated-trader-{Guid.NewGuid():N}";
+        using var delegatedClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+
+        var createResponse = await delegatedClient.PutAsJsonAsync(
+            $"/api/auth/accounts/{username}",
+            new UserAccountUpsertRequestDto(
+                Username: username,
+                Role: nameof(UserRole.TradeDesk),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ExecuteTrades)],
+                NewPassword: "initial-pass",
+                PasswordHash: null,
+                IsDisabled: false,
+                PasswordResetRequired: false,
+                RequestedBy: "delegated-account-admin",
+                Rationale: "Attempt to grant trading authority from delegated user administration.",
+                CorrelationId: "auth-account-trade-escalation"));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task AuthAccounts_WithManageUsers_AdministersAccountLifecycleAndRevokesSessions()
     {
         var username = $"ops-{Guid.NewGuid():N}";
-        using var adminClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+        using var adminClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers, UserPermission.ViewTrades);
 
         var createResponse = await adminClient.PutAsJsonAsync(
             $"/api/auth/accounts/{username}",

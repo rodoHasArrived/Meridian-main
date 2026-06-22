@@ -37,7 +37,9 @@ Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` requi
 
 Auth endpoints expose governed user-account administration, password reset, account disable, session
 revocation, account audit, role-profile administration, and scoped access assignment administration from
-the shared workstation host while delegating identity state to `Meridian.Identity`. `EndpointAuthorization`
+the shared workstation host while delegating identity state to `Meridian.Identity`. Account upserts require
+`ManageUsers` and may only grant permissions already held by the current caller, including permissions
+expanded from a requested built-in role when the request omits an explicit permission override. `EndpointAuthorization`
 keeps the existing global role checks for compatibility and adds scoped authorization helpers so
 governance-core routes can require a permission on a specific organization, fund, portfolio, legal
 entity, or account.

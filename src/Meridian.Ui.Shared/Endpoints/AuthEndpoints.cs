@@ -216,6 +216,15 @@ public static class AuthEndpoints
                         return ToAuthorizationFailure(auth.StatusCode.Value);
                     }
 
+                    var accountGrantFailure = ValidateAssignableAccountMutation(
+                        request.Role,
+                        request.PermissionNames,
+                        auth.Permissions);
+                    if (accountGrantFailure is not null)
+                    {
+                        return accountGrantFailure;
+                    }
+
                     try
                     {
                         var result = await accountStore.UpsertAsync(request, auth.Actor, ct).ConfigureAwait(false);
@@ -646,15 +655,48 @@ public static class AuthEndpoints
         }
         else
         {
-            return new ManageUsersActor(string.Empty, StatusCodes.Status401Unauthorized);
+            return new ManageUsersActor(string.Empty, StatusCodes.Status401Unauthorized, UserPermission.None);
         }
 
         if ((currentPermissions & UserPermission.ManageUsers) != UserPermission.ManageUsers)
         {
-            return new ManageUsersActor(actor ?? requestedBy, StatusCodes.Status403Forbidden);
+            return new ManageUsersActor(actor ?? requestedBy, StatusCodes.Status403Forbidden, currentPermissions);
         }
 
-        return new ManageUsersActor(actor ?? requestedBy, null);
+        return new ManageUsersActor(actor ?? requestedBy, null, currentPermissions);
+    }
+
+    private static IResult? ValidateAssignableAccountMutation(
+        string role,
+        IReadOnlyList<string>? permissionNames,
+        UserPermission actorPermissions)
+    {
+        if (!Enum.TryParse<UserRole>(role?.Trim(), ignoreCase: true, out var parsedRole))
+        {
+            return Results.BadRequest(new { error = $"Unknown role '{role}'." });
+        }
+
+        UserPermission requestedPermissions;
+        if (permissionNames is { Count: > 0 })
+        {
+            if (!RolePermissions.TryParsePermissionNames(permissionNames, out requestedPermissions, out var invalid)
+                || invalid.Count > 0)
+            {
+                return Results.BadRequest(new { error = $"Unknown permissions: {string.Join(", ", invalid)}." });
+            }
+        }
+        else
+        {
+            requestedPermissions = RolePermissions.For(parsedRole);
+        }
+
+        var ungrantablePermissions = requestedPermissions & ~actorPermissions;
+        if (ungrantablePermissions != UserPermission.None)
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        return null;
     }
 
     private static IResult ToAuthorizationFailure(int statusCode)
@@ -662,7 +704,7 @@ public static class AuthEndpoints
             ? Results.Unauthorized()
             : EndpointHelpers.Forbidden();
 
-    private sealed record ManageUsersActor(string Actor, int? StatusCode);
+    private sealed record ManageUsersActor(string Actor, int? StatusCode, UserPermission Permissions);
 }
 
 /// <summary>Login request body for JSON clients.</summary>
