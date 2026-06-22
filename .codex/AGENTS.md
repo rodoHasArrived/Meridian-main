@@ -19,9 +19,18 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
   domain modeling, workflow design, or architecture-sensitive implementation.
 - Read `.codex/skills/_shared/codex-execution-contract.md` before changing skills, agents,
   prompts, hooks, config, or automation guidance.
+- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable memory.
+  Use a matching `.codex/memory/tasks/<task-id>.yml` descriptor for named scopes and a
+  `.codex/memory/goals/<goal-id>.yml` inventory for long-running work that spans compaction,
+  continuation, or multiple implementation passes. Load only entries selected by the descriptor,
+  current intent, selected skill, changed paths, branch, or explicit tags; prefer canonical docs,
+  source, tests, scripts, scoped `AGENTS.md`, and selected `SKILL.md` files over memory if they
+  disagree.
 - Read `docs/ai/codex/memory-system.md`, `.codex/memory/index.yml`, and relevant
   `.codex/memory/tasks/*.yml` descriptors or `.codex/memory/goals/*.yml` inventories before
-  changing Codex memory entries, routing metadata, or memory validation tooling.
+  changing Codex memory entries, routing metadata, or memory validation tooling. Emit compact
+  memory receipts with selected IDs, match reasons, stale warnings, active-goal progress count, and
+  task or branch scope skips when memory routing is used.
 - When changing Codex development behavior or validation workflow, keep the Codex-loaded baseline
   and mirrored assistant surfaces synchronized: root `AGENTS.md`, `CLAUDE.md`,
   `docs/ai/codex/quickstart.md`, `.codex/skills/_shared/*`,

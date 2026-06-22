@@ -49,12 +49,21 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 6. Use the narrowest validation command that covers the files changed.
 7. If local machine capacity, restore, or MSBuild locks block validation, push the branch and use the manual GitHub-hosted `Targeted Test` workflow with a repo-relative test project under `tests/` plus `dotnet_filter` before retrying broad local scripts.
 8. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
-9. For Codex memory changes, update `.codex/memory/index.yml` plus the indexed Markdown entry, task
-   descriptor, or goal inventory, keep user/global tiers disabled unless explicitly opted in, use
-   `--receipt` when routing memory for a task or long goal, and run
+9. For memory-aware Codex tasks, inspect `.codex/memory/index.yml` before loading durable
+   memory. If the work has a named scope, route through the matching
+   `.codex/memory/tasks/<task-id>.yml` descriptor; if it is long-running, use the relevant
+   `.codex/memory/goals/<goal-id>.yml` inventory for progress, evidence, next actions, blockers,
+   and promotion candidates. Load only the selected entries that match the descriptor, current
+   intent, selected skill, changed paths, branch, or explicit tags; prefer canonical docs, source,
+   tests, scripts, scoped `AGENTS.md`, and selected `SKILL.md` files when memory disagrees.
+10. Emit compact memory receipts when memory routing is used: selected IDs, match reasons, stale
+   warnings, active-goal progress count, and task or branch entries skipped because scope did not
+   match. For Codex memory changes, update `.codex/memory/index.yml` plus the indexed Markdown
+   entry, task descriptor, or goal inventory, keep user/global tiers disabled unless explicitly opted
+   in, use `--receipt` for task or goal routing, and run
    `python build/scripts/docs/check-codex-memory.py --summary`.
-10. For Codex development workflow changes, keep `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`, `.codex/skills/_shared/*`, `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md` synchronized when they teach the same rule.
-11. For documentation rebuild work, update the new canonical audience path first, then archive or redirect older hand-authored material in reviewable batches.
+11. For Codex development workflow changes, keep `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`, `.codex/skills/_shared/*`, `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md` synchronized when they teach the same rule.
+12. For documentation rebuild work, update the new canonical audience path first, then archive or redirect older hand-authored material in reviewable batches.
 
 ## Command Discovery
 

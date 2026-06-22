@@ -247,6 +247,99 @@ class CheckCodexMemoryTests(unittest.TestCase):
 
             self.assertTrue(any("missing YAML front matter" in finding.message for finding in findings))
 
+    def test_front_matter_missing_required_metadata_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            entry = valid_entry().replace("source_refs:\n  - docs/ai/tooling/README.md\n", "")
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(
+                any("Memory front matter is missing source_refs" in finding.message for finding in findings)
+            )
+
+    def test_front_matter_mismatched_id_and_file_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            entry = valid_entry().replace("id: repo:validation", "id: repo:other", 1).replace(
+                "file: .codex/memory/repo/validation.md",
+                "file: .codex/memory/repo/other.md",
+                1,
+            )
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+            messages = finding_messages(findings)
+
+            self.assertTrue(
+                any("Front matter id does not match index value 'repo:validation'" in message for message in messages)
+            )
+            self.assertTrue(
+                any(
+                    "Front matter file does not match index value '.codex/memory/repo/validation.md'" in message
+                    for message in messages
+                )
+            )
+
+    def test_front_matter_mismatched_list_metadata_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / "docs" / "ai" / "other.md", "# Other source\n")
+            entry = valid_entry().replace("  - validation", "  - other", 1).replace(
+                "  - docs/ai/tooling/README.md",
+                "  - docs/ai/other.md",
+                1,
+            ).replace("  - Validation commands change.", "  - Other commands change.", 1)
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+            messages = finding_messages(findings)
+
+            self.assertTrue(any("Front matter tags does not match index value" in message for message in messages))
+            self.assertTrue(
+                any("Front matter source_refs does not match index value" in message for message in messages)
+            )
+            self.assertTrue(
+                any("Front matter invalidates_when does not match index value" in message for message in messages)
+            )
+
+    def test_empty_source_refs_fail_for_index_and_front_matter(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            index = valid_index().replace(
+                "source_refs:\n      - docs/ai/tooling/README.md", "source_refs: []"
+            )
+            entry = valid_entry().replace("source_refs:\n  - docs/ai/tooling/README.md", "source_refs: []")
+            write(root / ".codex" / "memory" / "index.yml", index)
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(
+                any("source_refs must include at least one source reference" in finding.message for finding in findings)
+            )
+
+    def test_front_matter_invalid_confidence_freshness_and_review_date_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            entry = valid_entry().replace("confidence: high", "confidence: certain", 1).replace(
+                "freshness: fresh", "freshness: ancient", 1
+            ).replace("review_after: 2999-01-01", "review_after: soon", 1)
+            write(root / ".codex" / "memory" / "repo" / "validation.md", memory_file_from_entry(entry))
+
+            findings, _ = check_codex_memory.collect_findings(root)
+            messages = finding_messages(findings)
+
+            self.assertTrue(any("Unknown front matter confidence: certain" in message for message in messages))
+            self.assertTrue(any("Unknown front matter freshness: ancient" in message for message in messages))
+            self.assertTrue(any("review_after is not a valid ISO date: soon" in message for message in messages))
+
     def test_unknown_tier_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -257,6 +350,15 @@ class CheckCodexMemoryTests(unittest.TestCase):
             findings, _ = check_codex_memory.collect_findings(root)
 
             self.assertTrue(any("Disabled tier" in finding.message for finding in findings))
+
+    def test_invalid_review_after_date_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root, review_after="not-a-date")
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(any("review_after is not a valid ISO date" in finding.message for finding in findings))
 
     def test_missing_source_ref_file_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -431,7 +533,7 @@ entries:
             self.assertEqual("task-a", payload["task_descriptor"]["task_id"])
             self.assertEqual(["repo:validation"], [entry["id"] for entry in payload["selected_entries"]])
 
-    def test_receipt_reports_referenced_and_dereferenced_entries(self) -> None:
+    def test_receipt_reports_selected_and_skipped_entries_with_selectors(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_valid_memory_tree(root)
@@ -458,14 +560,20 @@ entries:
 
             self.assertEqual(0, status)
             output = stdout.getvalue()
-            self.assertIn("referenced: repo:validation", output)
-            self.assertIn("dereferenced: repo:generic-tag", output)
+            self.assertIn("task_descriptor_path: .codex/memory/tasks/task-a.yml", output)
+            self.assertIn("selectors: branches=['feature/task-a']", output)
+            self.assertIn("selected: repo:validation", output)
+            self.assertIn("skipped: repo:generic-tag", output)
             payload = json.loads(json_path.read_text(encoding="utf-8"))
             receipt = payload["memory_receipt"]
-            self.assertEqual(1, receipt["referenced_count"])
-            self.assertEqual(1, receipt["dereferenced_count"])
-            self.assertEqual(["repo:validation"], [entry["id"] for entry in receipt["referenced"]])
-            self.assertEqual(["repo:generic-tag"], [entry["id"] for entry in receipt["dereferenced"]])
+            self.assertEqual(".codex/memory/tasks/task-a.yml", receipt["task_descriptor_path"])
+            self.assertEqual(["feature/task-a"], receipt["selectors"]["branches"])
+            self.assertEqual(1, receipt["selected_count"])
+            self.assertEqual(1, receipt["skipped_count"])
+            self.assertEqual(["repo:validation"], [entry["id"] for entry in receipt["selected_memory"]])
+            self.assertEqual(["repo:generic-tag"], [entry["id"] for entry in receipt["skipped_memory"]])
+            self.assertIn("match_reasons", receipt["selected_memory"][0])
+            self.assertIn("skip_reasons", receipt["skipped_memory"][0])
 
     def test_goal_inventory_rejects_unknown_progress_status(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -478,15 +586,57 @@ entries:
 
             self.assertTrue(any("Unknown progress status" in finding.message for finding in findings))
 
+
+    def test_collect_findings_validates_task_descriptors_under_memory_tasks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            invalid_task = task_descriptor("task-a").replace("selected_skill: meridian-docs", "selected_skill: ")
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", invalid_task)
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(any("selected_skill must be a non-empty string" in finding.message for finding in findings))
+
+    def test_collect_findings_validates_goal_inventories_under_memory_goals(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+            invalid_goal = goal_inventory().replace("status: active", "status: paused")
+            write(root / ".codex" / "memory" / "goals" / "goal-a.yml", invalid_goal)
+
+            findings, _ = check_codex_memory.collect_findings(root)
+
+            self.assertTrue(any("Unknown goal status" in finding.message for finding in findings))
+
+    def test_archive_entries_are_not_selected_as_active_guidance(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            archive_entry = valid_entry().replace("id: repo:validation", "id: archive:validation", 1)
+            archive_entry = archive_entry.replace("tier: repo", "tier: archive", 1)
+            archive_entry = archive_entry.replace("scope: repo", "scope: archive", 1)
+            archive_entry = archive_entry.replace("file: .codex/memory/repo/validation.md", "file: .codex/memory/archive/validation.md", 1)
+            write(root / ".codex" / "memory" / "index.yml", valid_index() + index_entry(archive_entry))
+            write(root / ".codex" / "memory" / "archive" / "validation.md", memory_file_from_entry(archive_entry, "Archived"))
+
+            findings, entries = check_codex_memory.collect_findings(root)
+            selected = check_codex_memory.select_entries(entries, ["docs/ai/codex/quickstart.md"], [], False)
+
+            self.assertEqual([], findings)
+            self.assertNotIn("archive:validation", [entry["id"] for entry in selected])
+
     def test_goal_inventory_yaml_is_not_reported_as_unindexed_memory(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
             write(root / ".codex" / "memory" / "goals" / "goal-a.yml", goal_inventory())
 
             findings, _ = check_codex_memory.collect_findings(root)
 
-            self.assertFalse(any(".codex/memory/goals/goal-a.yml" in finding.path for finding in findings))
+            self.assertFalse(any("not listed" in finding.message for finding in findings))
 
     def test_record_goal_progress_creates_inventory_item(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
