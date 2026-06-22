@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
+using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Services;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;

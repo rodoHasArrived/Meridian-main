@@ -597,6 +597,70 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task PostCandidateAsync_JournalMetadataLedgerBookMismatchBlocksAppend()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var wrongLedgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var request = BuildCandidateRequest(
+            ledgerBookId,
+            periodId,
+            sourceEventId,
+            AccountingBasisKindDto.Gaap,
+            "gaap-accrual-v1");
+        var builder = new FixedCandidateWriteBuilder(BuildCandidateWrite(
+            request,
+            journalMetadataLedgerBookId: wrongLedgerBookId,
+            lineDimensionBookId: ledgerBookId));
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(builder, store);
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            request,
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605"));
+
+        await act.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*journal metadata ledger book*does not match approved ledger book*");
+        store.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostCandidateAsync_LineDimensionLedgerBookMismatchBlocksAppend()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var wrongLedgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var request = BuildCandidateRequest(
+            ledgerBookId,
+            periodId,
+            sourceEventId,
+            AccountingBasisKindDto.Gaap,
+            "gaap-accrual-v1");
+        var builder = new FixedCandidateWriteBuilder(BuildCandidateWrite(
+            request,
+            journalMetadataLedgerBookId: ledgerBookId,
+            lineDimensionBookId: wrongLedgerBookId));
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(builder, store);
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            request,
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605"));
+
+        await act.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*dimension book*does not match approved ledger book*");
+        store.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task PostCandidateAsync_HardClosedPeriodBlocksGeneratedPostingBeforeAppend()
     {
         var ledgerBookId = Guid.NewGuid();
@@ -906,6 +970,121 @@ public sealed class AccountingPostingCandidateServiceTests
                 : DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
             Version: 1);
 
+    private static AccountingPostingCandidateWriteResult BuildCandidateWrite(
+        PostingRuleJournalCandidateRequestDto request,
+        Guid journalMetadataLedgerBookId,
+        Guid lineDimensionBookId)
+    {
+        var journalEntryId = Guid.NewGuid();
+        var lineDimensions = new LedgerLineDimensionSet(
+            FundId: "fund-alpha",
+            EntityId: "entity-master",
+            BookId: lineDimensionBookId.ToString("D"));
+        var entry = new JournalEntry(
+            journalEntryId,
+            request.AccountingTimestamp,
+            request.Description,
+            [
+                new LedgerEntry(
+                    Guid.NewGuid(),
+                    journalEntryId,
+                    request.AccountingTimestamp,
+                    new LedgerAccount("Accrued Interest Receivable", LedgerAccountType.Asset),
+                    125.44m,
+                    0m,
+                    request.Description,
+                    lineDimensions),
+                new LedgerEntry(
+                    Guid.NewGuid(),
+                    journalEntryId,
+                    request.AccountingTimestamp,
+                    new LedgerAccount("Interest Income", LedgerAccountType.Revenue),
+                    0m,
+                    125.44m,
+                    request.Description,
+                    lineDimensions)
+            ],
+            new JournalEntryMetadata(
+                ActivityType: request.SourceEventType,
+                LedgerBook: journalMetadataLedgerBookId.ToString("D"),
+                EffectiveDate: request.EffectiveDate,
+                IdempotencyKey: request.TreasuryContext?.IdempotencyKey));
+        var command = new AccountingPostingCommandDto(
+            Guid.NewGuid(),
+            request.AggregateId,
+            request.PeriodId,
+            request.EffectiveDate,
+            request.AccountingTimestamp,
+            request.TreasuryContext?.IdempotencyKey ?? $"candidate:{request.SourceEventId:N}",
+            SourceEventId: request.SourceEventId,
+            CorrelationId: request.CorrelationId,
+            SourceEventType: request.SourceEventType,
+            TreasuryContext: request.TreasuryContext,
+            LedgerBookId: request.LedgerBookId);
+        var write = new LedgerJournalEntryWrite(
+            entry,
+            request.AggregateId,
+            request.PeriodId,
+            Guid.NewGuid(),
+            request.CorrelationId,
+            request.AccountingBasis,
+            request.PolicyId ?? "gaap-accrual-v1",
+            "v1",
+            "accrual.interest-income",
+            "v1",
+            request.SourceEventId,
+            request.SourceJournalEntryId,
+            request.PostingKind,
+            request.AdjustmentApproval,
+            command,
+            request.LedgerBookId);
+        return new AccountingPostingCandidateWriteResult(BuildCandidateResult(request, command), write);
+    }
+
+    private static PostingRuleJournalCandidateResultDto BuildCandidateResult(
+        PostingRuleJournalCandidateRequestDto request,
+        AccountingPostingCommandDto command)
+    {
+        var dryRun = new RuleDryRunResultDto(
+            request.FundProfileId,
+            request.LedgerBookId,
+            request.SourceEventType,
+            request.EffectiveDate,
+            request.EventAmount,
+            request.Currency,
+            IsPostingBalanced: true,
+            SelectedRuleId: "posting.alpha-interest",
+            RuleMatches:
+            [
+                new AccountingRuleDryRunMatchDto(
+                    "posting.alpha-interest",
+                    "Alpha interest accrual",
+                    "v1",
+                    100,
+                    IsMatched: true,
+                    Explanations: ["matched"],
+                    ValidationIssues: [])
+            ],
+            GeneratedLines: [],
+            ValidationIssues: []);
+        return new PostingRuleJournalCandidateResultDto(
+            dryRun,
+            "posting.alpha-interest",
+            "v1",
+            GeneratedPostingLines: [],
+            command,
+            JournalEntryId: Guid.NewGuid(),
+            TotalDebits: request.EventAmount,
+            TotalCredits: request.EventAmount,
+            Imbalance: 0m,
+            IsBalanced: true,
+            HasBlockingIssues: false,
+            CanSubmitForApproval: true,
+            CanPostWithoutAdditionalApproval: false,
+            request.EvidenceLinks,
+            Issues: []);
+    }
+
     private sealed class CapturingJournalDraftService : IAccountingJournalDraftService
     {
         public AccountingJournalDraftRequest? CapturedRequest { get; private set; }
@@ -943,6 +1122,18 @@ public sealed class AccountingPostingCandidateServiceTests
                 CanPostWithoutAdditionalApproval: false,
                 request.EvidenceLinks ?? [],
                 ValidationIssues: []));
+        }
+    }
+
+    private sealed class FixedCandidateWriteBuilder(AccountingPostingCandidateWriteResult result)
+        : IAccountingPostingCandidateWriteBuilder
+    {
+        public Task<AccountingPostingCandidateWriteResult> BuildCandidateWriteAsync(
+            PostingRuleJournalCandidateRequestDto request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(result);
         }
     }
 

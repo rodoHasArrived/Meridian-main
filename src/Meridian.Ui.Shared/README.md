@@ -89,7 +89,7 @@ from `FinancialRecordExplorerReadService` for instrument identity, provider evid
 AssetOperations readiness, ledger impact, and report usage instead of asking browser or WPF clients
 to rebuild those relationships locally. Corporate-action mutations posted through shared Security
 Master endpoints delegate validation and append auditing to the application-owned
-`ICorporateActionCommandService`.
+`ISecurityMasterCorporateActionCommandService`.
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
 portfolio, book, account, investor, capital-account, instrument, tax-lot, cost-center,

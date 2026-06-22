@@ -233,9 +233,9 @@ and UI presentation concerns in their owning layers.
   with storage-root persisted drafts, approvals, rollback-created versions, and audit lineage.
   Security Master validation messages use operator-review wording for override audit remediation so
   application-layer guidance does not expose legacy Governance workspace language. Corporate-action
-  appends are routed through `CorporateActionCommandService` so HTTP endpoints, imports, provider
-  backfills, and future UI commands share the same validation, append, and structured audit path
-  before the event store is touched.
+  appends are routed through `SecurityMasterCorporateActionCommandService` so HTTP endpoints,
+  imports, provider backfills, and future UI commands share the same validation, append, and
+  structured audit path before the event store is touched.
   `SecurityMasterOperationalReadinessService` layers operational readiness on top of the shared
   asset-class catalog, validator registry, and governed profile catalog for equities, options,
   futures, FX, fixed income, direct loans, structured/private `CustomAsset`, and `OtherSecurity`

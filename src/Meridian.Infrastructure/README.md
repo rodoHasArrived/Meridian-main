@@ -48,6 +48,10 @@ Read-only normalized brokerage adapters can also pass through provider corporate
 events in activity snapshots, allowing downstream reconciliation to retain split, dividend,
 amortization, paydown, and factor evidence without storing provider credentials or rebuilding
 vendor-specific payloads in the workstation layer.
+Provider corporate-action backfill adapters, including Polygon, append retained actions through the
+Contracts-owned `ISecurityMasterCorporateActionCommandService` seam so Infrastructure keeps vendor
+transport concerns here while Application owns validation, append ordering, and structured audit
+metadata.
 The Plaid adapter family owns only vendor transport and file-backed connection persistence:
 link-token, public-token exchange, balances, transaction sync, investments, identity, webhooks,
 and sandbox-transfer calls are mapped into contract DTOs before shared workstation services attach

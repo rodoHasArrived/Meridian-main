@@ -104,6 +104,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             throw new InvalidOperationException("Rejected accounting posting candidates cannot be appended.");
         }
 
+        EnsureWriteLedgerBookScope(write, ledgerBookId);
+
         var period = await journalStore.GetPeriodAsync(write.PeriodId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Ledger period '{write.PeriodId:D}' was not found.");
         if (period.LedgerBookId.HasValue && period.LedgerBookId.Value != ledgerBookId)
@@ -183,6 +185,32 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
         throw new LedgerValidationException(
             $"Accounting period '{period.Label}' has unsupported status '{period.Status}'.");
+    }
+
+    private static void EnsureWriteLedgerBookScope(
+        LedgerJournalEntryWrite write,
+        Guid ledgerBookId)
+    {
+        if (write.LedgerBookId.HasValue && write.LedgerBookId.Value != ledgerBookId)
+        {
+            throw new LedgerValidationException(
+                $"Generated accounting posting candidate write targets ledger book '{write.LedgerBookId.Value:D}', not approved ledger book '{ledgerBookId:D}'.");
+        }
+
+        if (!string.Equals(write.Entry.Metadata.LedgerBook, ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new LedgerValidationException(
+                $"Generated accounting posting candidate journal metadata ledger book '{write.Entry.Metadata.LedgerBook ?? "missing"}' does not match approved ledger book '{ledgerBookId:D}'.");
+        }
+
+        foreach (var line in write.Entry.Lines)
+        {
+            if (!string.Equals(line.Dimensions?.BookId, ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new LedgerValidationException(
+                    $"Generated accounting posting candidate line '{line.EntryId:D}' dimension book '{line.Dimensions?.BookId ?? "missing"}' does not match approved ledger book '{ledgerBookId:D}'.");
+            }
+        }
     }
 
     private static PostingRuleJournalCandidateRequestDto WithPostingContext(

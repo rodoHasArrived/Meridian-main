@@ -27,6 +27,9 @@ or provider implementations.
 - `Workstation/` - workstation and operator workflow DTOs.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   and query/command service contracts.
+- `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
+  append requests, append results, structured audit metadata, and the injectable command service
+  contract used by HTTP endpoints, imports, provider backfills, and workstation commands.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
   published under `Meridian.Contracts.Backfill`.
 - `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
