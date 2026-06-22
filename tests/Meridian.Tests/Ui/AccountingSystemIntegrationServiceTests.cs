@@ -3019,7 +3019,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             UiApiRoutes.AccountingSystemExportPackageCertification,
             JsonContent(new CertifyAccountingSystemExportPackageRequestDto(
                 exportPackage.ExportPackageId,
-                "endpoint-controller",
+                "spoofed-endpoint-controller",
                 "Endpoint controller certified the guarded export package.",
                 [ExportCertificationEvidence(exportPackage)],
                 TenantId: "spoofed-tenant",
@@ -3032,7 +3032,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         certifiedExportPackage.Certification!.State.Should().Be(AccountingCertificationStateDto.Certified);
         certifiedExportPackage.TenantId.Should().Be("company-alpha");
         certifiedExportPackage.CompanyId.Should().Be("company-alpha");
-        certifiedExportPackage.Certification.Actor.Should().Be("endpoint-controller");
+        certifiedExportPackage.Certification.Actor.Should().Be("controller.admin");
         certifiedExportPackage.Certification.EvidenceLinks.Should().Contain(ExportCertificationEvidence(exportPackage));
 
         var manifestResponse = await app.GetTestClient().GetAsync(

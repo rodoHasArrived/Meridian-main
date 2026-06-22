@@ -455,6 +455,7 @@ public static class AccountingSystemEndpoints
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var trustedRequest = request with
                 {
+                    Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId ?? request.TenantId,
                     CompanyId = tenantContext.CompanyId ?? request.CompanyId
                 };
