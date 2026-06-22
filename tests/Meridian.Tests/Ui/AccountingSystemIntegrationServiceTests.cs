@@ -3627,6 +3627,83 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemGovernedSetupEndpoints_RejectAssistantOriginMutations()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var migrationResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRunArtifacts,
+            JsonContent(new AccountingMigrationRunArtifactUpsertRequestDto(
+                new AccountingMigrationRunArtifactDto(
+                    "assistant-migration-run",
+                    AccountingMigrationRunKindDto.LedgerBookScope,
+                    AccountingMigrationRunStatusDto.Certified,
+                    DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    CompletedAtUtc: DateTimeOffset.Parse("2026-06-01T00:05:00Z"),
+                    Actor: "assistant",
+                    MigratedRecordCount: 1,
+                    IssueCount: 0,
+                    EvidenceReferences: ["evidence://migration/ledger-book-scope/default-fund/assistant"],
+                    FundProfileId: "default-fund",
+                    LedgerBookId: ledgerBookId,
+                    Summary: "Assistant drafted migration artifact."),
+                "assistant",
+                CorrelationId: "assistant-migration",
+                EvidenceLinks: ["approval:assistant-migration"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft)));
+
+        var tenantAdministrationResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemTenantAdministrationProfile,
+            JsonContent(new AccountingTenantAdministrationProfileUpsertRequestDto(
+                new AccountingTenantAdministrationProfileDto(
+                    "company-alpha",
+                    "company-alpha",
+                    TenantScopeConfigured: true,
+                    AdminRoleProfileConfigured: true,
+                    ScopedAccessPoliciesConfigured: true,
+                    ReportingGroupsConfigured: true,
+                    AccountingAdminSurfaceConfigured: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "assistant",
+                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/assistant"]),
+                "assistant",
+                CorrelationId: "assistant-tenant-admin",
+                EvidenceLinks: ["approval:assistant-tenant-admin"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft)));
+
+        var productionCertificationResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    ledgerBookId,
+                    PostingRulesLedgerBookNativeCertified: true,
+                    JournalLifecycleLedgerBookNativeCertified: true,
+                    CloseReportingLedgerBookNativeCertified: true,
+                    ExternalGlLedgerBookNativeCertified: true,
+                    PeriodReportDimensionQueriesCertified: true,
+                    CrossPeriodReportDimensionQueriesCertified: true,
+                    JournalQueryDimensionFiltersCertified: true,
+                    ExternalExportDimensionMappingCertified: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "assistant",
+                    EvidenceReferences: [$"evidence://ledger-book/{ledgerBookId:D}/assistant-production-certification"]),
+                "assistant",
+                CorrelationId: "assistant-production-certification",
+                EvidenceLinks: [$"approval:ledger-book:{ledgerBookId:D}:assistant-production-certification"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft)));
+
+        foreach (var response in new[] { migrationResponse, tenantAdministrationResponse, productionCertificationResponse })
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().Contain("human operator");
+        }
+    }
+
+    [Fact]
     public async Task AccountingSystemEndpoints_WithoutAccountingAccess_ReturnForbidden()
     {
         await using var app = await CreateAppAsync(UserPermission.ViewMarketData);

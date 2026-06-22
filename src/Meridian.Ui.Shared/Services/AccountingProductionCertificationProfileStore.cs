@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
@@ -127,6 +128,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Profile);
+        EnsureHumanOrigin(request.ActionOrigin);
         var tenantId = RequireText(request.Profile.TenantId, "tenant id");
         var companyId = RequireText(request.Profile.CompanyId, "company id");
         var fundProfileId = RequireText(request.Profile.FundProfileId, "fund profile id");
@@ -207,6 +209,14 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
 
     private static string? TrimOrNull(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new ArgumentException("Only a human operator can certify accounting production readiness profiles.", nameof(actionOrigin));
+        }
+    }
 
     private sealed record AccountingProductionCertificationProfileSnapshot(
         IReadOnlyList<AccountingProductionCertificationProfileDto> Profiles);

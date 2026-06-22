@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
@@ -119,6 +120,7 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Profile);
+        EnsureHumanOrigin(request.ActionOrigin);
         var tenantId = RequireText(request.Profile.TenantId, "tenant id");
         var companyId = RequireText(request.Profile.CompanyId, "company id");
         var actor = string.IsNullOrWhiteSpace(request.Actor)
@@ -194,6 +196,14 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
 
     private static string? TrimOrNull(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new ArgumentException("Only a human operator can certify accounting tenant administration profiles.", nameof(actionOrigin));
+        }
+    }
 
     private sealed record AccountingTenantAdministrationProfileSnapshot(
         IReadOnlyList<AccountingTenantAdministrationProfileDto> Profiles);

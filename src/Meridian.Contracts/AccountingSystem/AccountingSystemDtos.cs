@@ -144,7 +144,8 @@ public sealed record AccountingMigrationRunArtifactUpsertRequestDto(
     AccountingMigrationRunArtifactDto Artifact,
     string Actor,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -187,7 +188,8 @@ public sealed record AccountingTenantAdministrationProfileUpsertRequestDto(
     AccountingTenantAdministrationProfileDto Profile,
     string Actor,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -225,7 +227,8 @@ public sealed record AccountingProductionCertificationProfileUpsertRequestDto(
     AccountingProductionCertificationProfileDto Profile,
     string Actor,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

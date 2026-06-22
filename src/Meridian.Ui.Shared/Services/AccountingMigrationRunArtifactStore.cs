@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
@@ -150,6 +151,7 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Artifact);
+        EnsureHumanOrigin(request.ActionOrigin);
         if (string.IsNullOrWhiteSpace(request.Artifact.RunId))
         {
             throw new ArgumentException("Migration run artifact run id is required.", nameof(request));
@@ -234,6 +236,14 @@ public sealed class FileAccountingMigrationRunArtifactStore : IAccountingMigrati
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new ArgumentException("Only a human operator can retain accounting migration run artifacts.", nameof(actionOrigin));
+        }
+    }
 
     private sealed record AccountingMigrationRunArtifactSnapshot(IReadOnlyList<AccountingMigrationRunArtifactDto> Artifacts);
 }
