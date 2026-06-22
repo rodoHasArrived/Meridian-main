@@ -41,6 +41,13 @@ public sealed class AccountingPostingCandidateServiceTests
                 FundId: "fund-alpha",
                 EntityId: "entity-master",
                 InstrumentId: instrumentId,
+                OrganizationId: "tenant-alpha",
+                PortfolioId: "portfolio-income",
+                BookId: ledgerBookId.ToString("D"),
+                AccountId: "account-custodian-interest",
+                CustomerId: "customer-custodian",
+                VendorId: "vendor-bny",
+                ProjectId: "project-interest-accrual",
                 ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["Department"] = "InvestmentOps"
@@ -70,6 +77,13 @@ public sealed class AccountingPostingCandidateServiceTests
         result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.EntityId == "entity-master");
         result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.InstrumentId == instrumentId);
         result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.CounterpartyId == "custodian-bny");
+        result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.OrganizationId == "tenant-alpha");
+        result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.PortfolioId == "portfolio-income");
+        result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.BookId == ledgerBookId.ToString("D"));
+        result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.AccountId == "account-custodian-interest");
+        result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.CustomerId == "customer-custodian");
+        result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.VendorId == "vendor-bny");
+        result.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.ProjectId == "project-interest-accrual");
         result.GeneratedPostingLines.Should().Contain(line =>
             line.Dimensions!.CostCenterId == "income-review" &&
             line.Dimensions.ExternalGlDimensions["Department"] == "InvestmentOps");
@@ -263,6 +277,13 @@ public sealed class AccountingPostingCandidateServiceTests
                 FundId: "fund-alpha",
                 EntityId: "entity-master",
                 InstrumentId: instrumentId,
+                OrganizationId: "tenant-alpha",
+                PortfolioId: "portfolio-income",
+                BookId: ledgerBookId.ToString("D"),
+                AccountId: "account-custodian-interest",
+                CustomerId: "customer-custodian",
+                VendorId: "vendor-bny",
+                ProjectId: "project-interest-accrual",
                 ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["Department"] = "InvestmentOps"
@@ -286,6 +307,13 @@ public sealed class AccountingPostingCandidateServiceTests
         draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.EntityId == "entity-master");
         draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.InstrumentId == instrumentId);
         draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.CounterpartyId == "custodian-bny");
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.OrganizationId == "tenant-alpha");
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.PortfolioId == "portfolio-income");
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.BookId == ledgerBookId.ToString("D"));
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.AccountId == "account-custodian-interest");
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.CustomerId == "customer-custodian");
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.VendorId == "vendor-bny");
+        draftService.CapturedRequest.Lines.Should().OnlyContain(line => line.Dimensions!.ProjectId == "project-interest-accrual");
         draftService.CapturedRequest.Lines.Should().Contain(line =>
             line.Credit == 125.44m &&
             line.Dimensions!.CostCenterId == "income-review" &&
@@ -439,6 +467,17 @@ public sealed class AccountingPostingCandidateServiceTests
         appended.PostingCommand.Evidence.Should().Contain(evidence =>
             evidence.Kind == AccountingPostingEvidenceKindDto.Approval &&
             evidence.EvidenceId == "approval-generated-interest-202605");
+        appended.Entry.Lines.Should().OnlyContain(line => line.Dimensions != null);
+        appended.Entry.Lines.Should().OnlyContain(line =>
+            line.Dimensions!.FundId == "fund-alpha" &&
+            line.Dimensions.EntityId == "entity-master" &&
+            line.Dimensions.OrganizationId == "tenant-alpha" &&
+            line.Dimensions.PortfolioId == "portfolio-income" &&
+            line.Dimensions.BookId == ledgerBookId.ToString("D") &&
+            line.Dimensions.AccountId == "account-custodian-interest" &&
+            line.Dimensions.CustomerId == "customer-custodian" &&
+            line.Dimensions.VendorId == "vendor-bny" &&
+            line.Dimensions.ProjectId == "project-interest-accrual");
     }
 
     [Fact]
@@ -811,7 +850,16 @@ public sealed class AccountingPostingCandidateServiceTests
             "Accrue custodian interest from retained source event",
             AccountingBasis: accountingBasis,
             LedgerBookId: ledgerBookId,
-            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+            Dimensions: new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                EntityId: "entity-master",
+                OrganizationId: "tenant-alpha",
+                PortfolioId: "portfolio-income",
+                BookId: ledgerBookId.ToString("D"),
+                AccountId: "account-custodian-interest",
+                CustomerId: "customer-custodian",
+                VendorId: "vendor-bny",
+                ProjectId: "project-interest-accrual"),
             CounterpartyId: "custodian-bny",
             CorrelationId: Guid.NewGuid(),
             SourceEventId: sourceEventId,

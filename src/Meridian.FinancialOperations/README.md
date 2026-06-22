@@ -332,6 +332,10 @@ now require explicit ledger-book scope and fail closed before draft/write creati
 is unscoped, and tenant-scoped candidates cannot fall back to another company's workspace, so Rules
 Studio dry-run output cannot become a governed posting candidate through a fund-level fallback
 configuration.
+The generated candidate path also preserves the neutral operational dimensions carried by
+`LedgerDimensionSetDto` - organization, portfolio, book, account, customer, vendor, and project -
+through generated posting lines, governed draft lines, and approved append writes so reporting and
+external-GL mapping do not lose non-fund dimension scope at the rule-to-ledger boundary.
 `AccountingPostingCandidatePostService` is the separate append gate for approved generated
 candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
 origin, retained source-event identity, approval evidence, an aggregate id equal to the target
