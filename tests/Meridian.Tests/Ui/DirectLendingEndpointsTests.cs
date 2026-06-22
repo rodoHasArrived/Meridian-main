@@ -52,7 +52,7 @@ public sealed class DirectLendingEndpointsTests
         accrualResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var penaltyResponse = await client.PostAsJsonAsync(
-            $"/api/loans/{created.LoanId}/prepayment-penalty",
+            $"/api/loans/{created.LoanId}/prepayment-penalties",
             new ChargePrepaymentPenaltyRequest(200_000m, new DateOnly(2026, 3, 24), "prepay-rebuild"));
         penaltyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
