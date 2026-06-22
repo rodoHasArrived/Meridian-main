@@ -895,6 +895,62 @@ public sealed record PostingRuleJournalCandidateResultDto(
         Issues ?? [];
 }
 
+public sealed record AccountingBasisProjectionTargetDto(
+    AccountingBasisKindDto AccountingBasis,
+    Guid LedgerBookId,
+    Guid PeriodId,
+    string? PolicyId = null,
+    AccountingTreatmentKindDto? TreatmentKind = null,
+    LedgerDimensionSetDto? Dimensions = null);
+
+public sealed record AccountingBasisProjectionSetRequestDto(
+    string FundProfileId,
+    string SourceEventType,
+    decimal EventAmount,
+    string Currency,
+    DateOnly EffectiveDate,
+    string Actor,
+    Guid SourceEventId,
+    DateTimeOffset AccountingTimestamp,
+    string Description,
+    IReadOnlyList<AccountingBasisProjectionTargetDto> Targets,
+    Guid? CorrelationId = null,
+    string? CounterpartyId = null,
+    string? InstrumentSymbol = null,
+    TreasuryLedgerContextDto? TreasuryContext = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? TenantId = null,
+    string? CompanyId = null)
+{
+    public IReadOnlyList<AccountingBasisProjectionTargetDto> Targets { get; init; } =
+        Targets ?? [];
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record AccountingBasisProjectionItemDto(
+    AccountingBasisKindDto AccountingBasis,
+    Guid LedgerBookId,
+    Guid PeriodId,
+    PostingRuleJournalCandidateResultDto Candidate,
+    string Status,
+    string? DisabledReason = null);
+
+public sealed record AccountingBasisProjectionSetDto(
+    Guid SourceEventId,
+    string FundProfileId,
+    string SourceEventType,
+    DateOnly EffectiveDate,
+    decimal EventAmount,
+    string Currency,
+    DateTimeOffset ProjectedAtUtc,
+    IReadOnlyList<AccountingBasisProjectionItemDto>? Items = null)
+{
+    public IReadOnlyList<AccountingBasisProjectionItemDto> Items { get; init; } =
+        Items ?? [];
+}
+
 public sealed record AccountingRuleTestCaseDto(
     string TestCaseId,
     string DisplayName,
@@ -996,10 +1052,24 @@ public sealed record JournalEntryRebookDto(
     DateTimeOffset CreatedAtUtc,
     string CreatedBy);
 
+public sealed record PostedLedgerJournalEntryResultDto(
+    Guid JournalEntryId,
+    Guid LedgerBookId,
+    AccountingBasisKindDto AccountingBasis,
+    Guid PeriodId,
+    Guid AggregateId,
+    Guid? CommandId,
+    Guid? SourceEventId,
+    Guid? CorrelationId,
+    long? GlobalSequence = null,
+    DateTimeOffset? PostedAtUtc = null,
+    string? IdempotencyKey = null);
+
 public sealed record JournalEntryLifecycleActionResultDto(
     ManualJournalEntryDraftDto JournalEntry,
     JournalEntryLifecycleTransitionDto Transition,
-    IReadOnlyList<ManualJournalEntryDraftDto>? GeneratedJournalEntries = null)
+    IReadOnlyList<ManualJournalEntryDraftDto>? GeneratedJournalEntries = null,
+    PostedLedgerJournalEntryResultDto? PostedJournal = null)
 {
     public IReadOnlyList<ManualJournalEntryDraftDto> GeneratedJournalEntries { get; init; } =
         GeneratedJournalEntries ?? [];

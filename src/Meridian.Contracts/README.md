@@ -192,6 +192,9 @@ render rule counts, generated-posting coverage, effective-dated rule posture, sa
 promotion queues, activation readiness, and server-owned required-action counters from this shared
 studio read model instead of recomputing approval, regression-test, promotion, or validation state
 locally.
+Accounting-basis projection-set DTOs let shared clients request one retained source event across
+multiple accounting bases, ledger books, periods, policies, and dimension scopes, returning the
+governed posting candidate for each target without creating posted ledger facts.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.

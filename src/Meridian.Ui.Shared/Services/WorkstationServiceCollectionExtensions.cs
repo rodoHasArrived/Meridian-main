@@ -329,6 +329,7 @@ public static class WorkstationServiceCollectionExtensions
                 : sp.GetRequiredService<FileAccountingConfigurationStore>());
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));

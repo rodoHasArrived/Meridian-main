@@ -101,6 +101,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IAccountingTenantAdministrationProfileStore>(sp =>
             new FileAccountingTenantAdministrationProfileStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "tenant-administration-profiles.json"),

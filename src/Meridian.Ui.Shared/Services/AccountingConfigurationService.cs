@@ -3926,8 +3926,9 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             draft.JournalEntryId.ToString("D"),
             idempotencyKey);
 
-        var sourceEventType = NormalizeOptional(treasuryContext?.FundEventType) is not null
-            ? $"ManualJournalEntry:{treasuryContext.FundEventType}"
+        var treasuryFundEventType = NormalizeOptional(treasuryContext?.FundEventType);
+        var sourceEventType = treasuryFundEventType is not null
+            ? $"ManualJournalEntry:{treasuryFundEventType}"
             : null;
 
         return new AccountingPostingCommandDto(

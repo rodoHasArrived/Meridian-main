@@ -89,7 +89,8 @@ close-lock lifecycle buttons over the shared journal-entry lifecycle service, sh
 external GL evidence and retained package readiness from the shared QuickBooks, Xero, and NetSuite
 fixture/import-first provider registrations, projects
 close/evidence/reconciliation posture from shared operations continuity when available, and creates
-fund-scoped accounting-basis policy records through the Financial Operations policy service.
+fund-scoped accounting-basis policy records and multi-basis ledger-book projection candidates
+through Financial Operations services.
 Private-capital presets attach the shared
 treasury ledger context expected by the approval service, including effective date, idempotency,
 fund-event, capital-account, investor, payment, and settlement references.

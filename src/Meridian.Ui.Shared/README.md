@@ -124,6 +124,9 @@ dry-run, execution, and audit requests so browser and WPF clients cannot spoof a
 configuration workspace through request body fields. Posting-rule journal candidate requests use
 the same resolved tenant/company scope before invoking Financial Operations so generated
 source-event drafts dry-run against, and resolve chart paths from, the authenticated workspace.
+The shared composition also registers the accounting-basis projection-set service so browser and
+desktop hosts can ask Financial Operations to produce per-basis, per-ledger-book posting candidates
+for a single source event while keeping ledger posting behind journal lifecycle approval.
 Accounting production-readiness assessment also treats tenant administration evidence as
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
