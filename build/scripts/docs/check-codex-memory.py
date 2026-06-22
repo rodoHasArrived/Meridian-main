@@ -682,6 +682,7 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     if entry.get("freshness") in {"stale", "unknown"}:
         findings.append(Finding("warning", finding_path, f"Memory freshness is {entry.get('freshness')}."))
 
+    tier = entry.get("tier")
     raw_file = entry.get("file")
     if not isinstance(raw_file, str):
         findings.append(Finding("error", finding_path, "file must be a string."))
@@ -699,6 +700,7 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     if not memory_file.exists():
         findings.append(Finding("error", finding_path, f"Memory file does not exist: {raw_file}"))
         return entry, findings
+    memory_display_path = rel(root, memory_file)
 
     front_matter, front_findings = parse_front_matter(memory_file)
     findings.extend(front_findings)
