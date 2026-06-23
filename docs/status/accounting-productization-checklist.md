@@ -200,6 +200,8 @@ the requirement end to end.
 - [x] Final restatement package certification now also requires the retained approval artifact to
   name the exact prior package being restated before approving the statement and NAV restatement
   workflow metadata.
+- [x] Close task sign-off evidence now boundary-checks role and period tokens, so extended role or
+  period identifiers cannot satisfy retained close approval provenance by prefix.
 
 ## Still To Complete
 

@@ -296,6 +296,9 @@ wrong-scope approval evidence cannot certify a different
 report package. Report package certification, close task sign-off, and late-adjustment request/review commands also reject
 assistant or automation-origin requests before retaining approvals, sign-offs, decisions, or
 certified report evidence.
+Close task sign-off evidence must name the exact checklist task, sign-off role, workflow or close
+period, and ledger book when scoped; extended role or period tokens cannot satisfy retained approval
+provenance by prefix.
 Child export artifacts retain ledger-book and canonical dimension scope, and receive certified
 timestamps plus recomputed content hashes that include the book, dimensions, certified state, and
 retained certification evidence. When the package is a restatement, final certification also

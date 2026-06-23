@@ -809,30 +809,10 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         => evidenceLinks.Any(link =>
             HasCloseTaskSignOffEvidence([link]) &&
             EvidenceLinkContainsIdentifierToken(link, taskId) &&
-            EvidenceLinkContainsToken(link, role) &&
+            EvidenceLinkContainsIdentifierToken(link, role) &&
             (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsToken(link, workflow.PeriodId)) &&
+             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool EvidenceLinkContainsToken(string link, string token)
-    {
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return false;
-        }
-
-        if (link.Contains(token, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        var normalizedToken = NormalizeEvidenceToken(token);
-        return normalizedToken.Length > 0 &&
-            NormalizeEvidenceToken(link).Contains(normalizedToken, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string NormalizeEvidenceToken(string value)
-        => string.Concat(value.Where(static ch => char.IsLetterOrDigit(ch)));
 
     private static bool HasLateAdjustmentRequestEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>

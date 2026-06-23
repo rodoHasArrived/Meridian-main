@@ -1064,6 +1064,32 @@ public sealed partial class WorkstationEndpointsTests
         initialRequirement.ApprovedCount.Should().Be(0);
         initialRequirement.IsSatisfied.Should().BeFalse();
 
+        var extendedRoleEvidence = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "approval-control",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "reviewer-extended-role",
+                "Extended role token must not satisfy controller sign-off evidence.",
+                EvidenceLinks: ["evidence:close-task:approval-control:ControllerBackup:2026-12:controller-signoff"]),
+            "reviewer-extended-role");
+        await extendedRoleEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*close task sign-off evidence must reference*");
+
+        var extendedPeriodEvidence = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "approval-control",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "reviewer-extended-period",
+                "Extended period token must not satisfy controller sign-off evidence.",
+                EvidenceLinks: ["evidence:close-task:approval-control:Controller:2026-120:controller-signoff"]),
+            "reviewer-extended-period");
+        await extendedPeriodEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*close task sign-off evidence must reference*");
+
         var rejectedPlan = await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
                 workflowId,
