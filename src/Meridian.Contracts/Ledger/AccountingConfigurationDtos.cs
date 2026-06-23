@@ -2006,6 +2006,37 @@ public sealed record SignOffCloseTaskRequestDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record LockClosePeriodRequestDto(
+    Guid WorkflowId,
+    long ExpectedWorkflowVersion,
+    string Actor,
+    string Rationale,
+    string ReportPackId,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null,
+    string? CorrelationId = null,
+    string? ClosePackageId = null,
+    string? ClosePackageManifestId = null,
+    string? ClosePackageRetainedManifestRoute = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+
+    public IReadOnlyList<OperationsChecklistControlApprovalDto> ChecklistControlApprovals { get; init; } =
+        ChecklistControlApprovals ?? [];
+}
+
+public sealed record ClosePeriodLockResultDto(
+    bool IsLocked,
+    ClosePeriodPlanDto? Plan,
+    OperationsTransitionResultDto? Transition,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto>? Issues = null)
+{
+    public IReadOnlyList<AccountingConfigurationValidationIssueDto> Issues { get; init; } =
+        Issues ?? [];
+}
+
 public sealed record ClosePeriodPlanDto(
     string ClosePlanId,
     string FundProfileId,

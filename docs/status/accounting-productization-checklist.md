@@ -210,6 +210,10 @@ the requirement end to end.
 - [x] Close-period plans now have a governed shared configuration command for materiality policy,
   task owner/due-date overrides, sign-off counts, required evidence, custom dependencies,
   ledger-book-scoped setup evidence, and trusted session-actor stamping.
+- [x] Close management now exposes a governed close-period lock command/result that requires
+  human-operator origin, expected workflow version, scoped close-package/report-pack/period-lock
+  evidence, linked report-package id, and a close plan without critical blockers before delegating
+  to the Operations Continuity close-package publication gate.
 - [x] WPF Accounting close setup now registers the shared close-management service and exposes a
   governed view-model command that retains loaded close-plan materiality, task/dependency,
   sign-off, required-evidence, late-adjustment evidence, workflow correlation, and actor context
@@ -347,8 +351,9 @@ the requirement end to end.
   approval-count, required-evidence, ledger-book evidence, and correlation context through that
   shared configuration endpoint; WPF now has service registration and a close view-model command
   that retains loaded close-plan setup through the same shared contract when workflow context is
-  supplied. Production readiness now evidence-qualifies close-plan setup by ledger book, but richer
-  browser/WPF setup/editing workflows and review UX remain open.
+  supplied. Close management now also has a governed period-lock command/result over the Operations
+  Continuity close-package gate. Production readiness now evidence-qualifies close-plan setup by
+  ledger book, but richer browser/WPF setup/editing workflows and review UX remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails

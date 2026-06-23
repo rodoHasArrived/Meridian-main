@@ -304,6 +304,153 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_LockPeriodBlocksBeforeWorkflowCloseWhenSignOffsAreMissing()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474747");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(workflow);
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var result = await service.LockClosePeriodAsync(
+            new LockClosePeriodRequestDto(
+                workflowId,
+                ExpectedWorkflowVersion: workflow.Version,
+                Actor: "controller-reviewer",
+                Rationale: "Lock close period after report certification.",
+                ReportPackId: "report-pack-2026-03",
+                EvidenceLinks:
+                [
+                    $"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"
+                ],
+                ChecklistControlApprovals:
+                [
+                    new OperationsChecklistControlApprovalDto("reconciliation-review", "controller-reviewer", DateTimeOffset.Parse("2026-04-03T12:00:00Z")),
+                    new OperationsChecklistControlApprovalDto("report-certification", "controller-reviewer", DateTimeOffset.Parse("2026-04-03T12:05:00Z"))
+                ]),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeFalse();
+        result.Transition.Should().BeNull();
+        result.Plan.Should().NotBeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "CloseTaskSignOffMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        await workflowService.DidNotReceiveWithAnyArgs().CloseWorkflowAsync(default, default!, default);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_LockPeriodDelegatesToOperationsWorkflowAfterCloseControlsPass()
+    {
+        var workflowId = Guid.Parse("48484848-4848-4848-4848-484848484848");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var lockedWorkflow = workflow with
+        {
+            Status = OperationsWorkflowStatusDto.Closed,
+            ClosePackage = new OperationsClosePackagePublicationDto(
+                "close-package-2026-03",
+                "report-pack-2026-03",
+                "manifest-2026-03",
+                "/workstation/reporting/packages/manifest-2026-03",
+                "sha256-close-package",
+                DateTimeOffset.Parse("2026-04-03T12:10:00Z"),
+                "controller-reviewer",
+                "Lock close period after report certification.",
+                [
+                    new OperationsEvidenceLinkDto(
+                        $"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock",
+                        "Close package evidence",
+                        null,
+                        "Accounting close management",
+                        DateTimeOffset.Parse("2026-04-03T12:09:00Z"))
+                ],
+                [
+                    new OperationsChecklistControlApprovalDto("reconciliation-review", "controller-reviewer", DateTimeOffset.Parse("2026-04-03T12:00:00Z")),
+                    new OperationsChecklistControlApprovalDto("report-certification", "controller-reviewer", DateTimeOffset.Parse("2026-04-03T12:05:00Z"))
+                ])
+        };
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(workflow);
+        workflowService.CloseWorkflowAsync(workflowId, Arg.Any<OperationsCloseWorkflowRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(new OperationsTransitionResultDto(
+                true,
+                null,
+                null,
+                lockedWorkflow,
+                [],
+                [],
+                NewVersion: workflow.Version + 1));
+        var service = new AccountingCloseManagementService(workflowService);
+        var reconciliationEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [reconciliationEvidence]),
+            "controller-reviewer");
+        var reportEvidence = $"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [reportEvidence]),
+            "controller-reviewer");
+
+        var result = await service.LockClosePeriodAsync(
+            new LockClosePeriodRequestDto(
+                workflowId,
+                ExpectedWorkflowVersion: workflow.Version,
+                Actor: "controller-reviewer",
+                Rationale: "Lock close period after report certification.",
+                ReportPackId: "report-pack-2026-03",
+                EvidenceLinks:
+                [
+                    $"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"
+                ],
+                ChecklistControlApprovals:
+                [
+                    new OperationsChecklistControlApprovalDto("reconciliation-review", "controller-reviewer", DateTimeOffset.Parse("2026-04-03T12:00:00Z")),
+                    new OperationsChecklistControlApprovalDto("report-certification", "controller-reviewer", DateTimeOffset.Parse("2026-04-03T12:05:00Z"))
+                ],
+                CorrelationId: "close-lock-2026-03",
+                ClosePackageId: "close-package-2026-03",
+                ClosePackageManifestId: "manifest-2026-03",
+                ClosePackageRetainedManifestRoute: "/workstation/reporting/packages/manifest-2026-03"),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeTrue();
+        result.Issues.Should().BeEmpty();
+        result.Plan.Should().NotBeNull();
+        result.Plan!.IsPeriodLocked.Should().BeTrue();
+        result.Transition.Should().NotBeNull();
+        result.Transition!.Success.Should().BeTrue();
+        await workflowService.Received(1).CloseWorkflowAsync(
+            workflowId,
+            Arg.Is<OperationsCloseWorkflowRequestDto>(request =>
+                request.ExpectedVersion == workflow.Version &&
+                request.Actor == "controller-reviewer" &&
+                request.ReportPackId == "report-pack-2026-03" &&
+                request.CorrelationId == "close-lock-2026-03" &&
+                request.ChecklistControlApprovals.Count == 2 &&
+                request.EvidenceLinks!.Any(link => link.EvidenceId.Contains("period-lock", StringComparison.OrdinalIgnoreCase))),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public void Scenario_MonthEndFxTranslation_ReplayUsesStableAdjustmentIdAndRateLineage()
     {
         var service = new FxTranslationService();

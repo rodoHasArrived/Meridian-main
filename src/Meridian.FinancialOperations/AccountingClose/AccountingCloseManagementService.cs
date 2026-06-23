@@ -32,6 +32,11 @@ public interface IAccountingCloseManagementService
         UpsertClosePeriodPlanConfigurationRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+        LockClosePeriodRequestDto request,
+        string actor,
+        CancellationToken ct = default);
 }
 
 public sealed class AccountingCloseManagementService : IAccountingCloseManagementService
@@ -481,6 +486,80 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         return BuildPeriodPlan(workflow);
+    }
+
+    public async Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+        LockClosePeriodRequestDto request,
+        string actor,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "lock close periods");
+        if (request.WorkflowId == Guid.Empty)
+        {
+            throw new ArgumentException("WorkflowId is required.", nameof(request));
+        }
+
+        var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.Actor, "Actor") : actor.Trim();
+        var workflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+        if (workflow is null)
+        {
+            return null;
+        }
+
+        var plan = BuildPeriodPlan(workflow);
+        if (plan.IsPeriodLocked)
+        {
+            return new ClosePeriodLockResultDto(
+                true,
+                plan,
+                null,
+                [
+                    new AccountingConfigurationValidationIssueDto(
+                        "ClosePeriodAlreadyLocked",
+                        AccountingConfigurationValidationSeverityDto.Warning,
+                        $"Close period '{plan.PeriodId}' is already locked.",
+                        plan.ClosePlanId,
+                        "Use governed reopen workflow before changing a locked period.")
+                ]);
+        }
+
+        var issues = BuildClosePeriodLockIssues(request, workflow, plan);
+        if (issues.Count > 0)
+        {
+            return new ClosePeriodLockResultDto(false, plan, null, issues);
+        }
+
+        var transition = await _workflowService.CloseWorkflowAsync(
+            request.WorkflowId,
+            new OperationsCloseWorkflowRequestDto(
+                ExpectedVersion: request.ExpectedWorkflowVersion,
+                Actor: resolvedActor,
+                Rationale: RequireText(request.Rationale, "Rationale"),
+                ReportPackId: RequireText(request.ReportPackId, "ReportPackId"),
+                ChecklistControlApprovals: request.ChecklistControlApprovals,
+                CorrelationId: request.CorrelationId,
+                EvidenceLinks: ToOperationsEvidenceLinks(request.EvidenceLinks),
+                ClosePackageId: request.ClosePackageId,
+                ClosePackageManifestId: request.ClosePackageManifestId,
+                ClosePackageEvidenceHash: null,
+                ClosePackageRetainedManifestRoute: request.ClosePackageRetainedManifestRoute,
+                ActionOrigin: request.ActionOrigin),
+            ct).ConfigureAwait(false);
+
+        var updatedPlan = transition.Workflow is null
+            ? plan
+            : BuildPeriodPlan(transition.Workflow);
+        var transitionIssues = transition.Success
+            ? Array.Empty<AccountingConfigurationValidationIssueDto>()
+            : transition.Blockers
+                .Select(static blocker => ToValidationIssue(blocker))
+                .ToArray();
+        return new ClosePeriodLockResultDto(
+            transition.Success && updatedPlan.IsPeriodLocked,
+            updatedPlan,
+            transition,
+            transitionIssues);
     }
 
     private ClosePeriodPlanDto BuildPeriodPlan(OperationsContinuityWorkflowDto workflow)
@@ -981,6 +1060,91 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         return issues;
     }
 
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildClosePeriodLockIssues(
+        LockClosePeriodRequestDto request,
+        OperationsContinuityWorkflowDto workflow,
+        ClosePeriodPlanDto plan)
+    {
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        issues.AddRange(plan.ValidationIssues.Where(static issue =>
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical));
+
+        var evidenceLinks = NormalizeEvidenceLinks(request.EvidenceLinks);
+        if (evidenceLinks.Count == 0)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "ClosePeriodLockEvidenceMissing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close period lock requires retained close-package, report-pack, or period-lock evidence.",
+                plan.ClosePlanId,
+                "Retain close-package evidence with exact workflow or period and ledger-book scope before locking the period."));
+        }
+        else if (!HasClosePeriodLockEvidenceWithProvenance(evidenceLinks, workflow))
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "ClosePeriodLockEvidenceScopeMismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close period lock evidence must reference the workflow or exact close period and selected ledger book on the same artifact.",
+                plan.ClosePlanId,
+                "Retain close-package evidence with exact workflow or period and ledger-book scope before locking the period."));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.ReportPackId))
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "ClosePeriodLockReportPackMissing",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close period lock requires a linked report package id.",
+                plan.ClosePlanId,
+                "Assemble and certify the report package before locking the period."));
+        }
+
+        if (request.ExpectedWorkflowVersion < 0)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "ClosePeriodLockVersionInvalid",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close period lock requires a non-negative expected workflow version.",
+                plan.ClosePlanId,
+                "Refresh the workflow and retry period lock with the current version."));
+        }
+
+        var unique = new List<AccountingConfigurationValidationIssueDto>(issues.Count);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var issue in issues)
+        {
+            if (seen.Add($"{issue.Code}|{issue.TargetId}"))
+            {
+                unique.Add(issue);
+            }
+        }
+
+        return unique;
+    }
+
+    private static AccountingConfigurationValidationIssueDto ToValidationIssue(OperationsWorkflowBlockerDto blocker)
+        => new(
+            blocker.Code,
+            string.Equals(blocker.Severity, "Critical", StringComparison.OrdinalIgnoreCase)
+                ? AccountingConfigurationValidationSeverityDto.Critical
+                : AccountingConfigurationValidationSeverityDto.Warning,
+            blocker.Message,
+            blocker.Gate?.ToString(),
+            "Resolve the operations workflow blocker before locking the close period.");
+
+    private static IReadOnlyList<OperationsEvidenceLinkDto> ToOperationsEvidenceLinks(IReadOnlyList<string> evidenceLinks)
+        => NormalizeEvidenceLinks(evidenceLinks)
+            .Select(static link => new OperationsEvidenceLinkDto(
+                link,
+                "Close period lock evidence",
+                link.StartsWith("http", StringComparison.OrdinalIgnoreCase) ||
+                link.StartsWith("/", StringComparison.OrdinalIgnoreCase)
+                    ? link
+                    : null,
+                "Accounting close management",
+                DateTimeOffset.UtcNow))
+            .ToArray();
+
     private static MaterialityPolicyDto ResolveMaterialityPolicy(OperationsContinuityWorkflowDto workflow)
         => DefaultMaterialityPolicy with
         {
@@ -1187,6 +1351,25 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
             HasClosePlanConfigurationEvidence([link]) &&
+            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
+             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
+
+    private static bool HasClosePeriodLockEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("period-lock", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("close-package", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("close package", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("report-pack", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("report package", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("manifest", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("certification", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasClosePeriodLockEvidenceWithProvenance(
+        IReadOnlyList<string> evidenceLinks,
+        OperationsContinuityWorkflowDto workflow)
+        => evidenceLinks.Any(link =>
+            HasClosePeriodLockEvidence([link]) &&
             (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
              EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));

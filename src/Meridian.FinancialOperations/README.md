@@ -41,7 +41,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   evidence, file-backed late-adjustment requests, materiality policy validation, and ledger-book
   scoped close-control evidence checks, governed close-plan configuration for materiality, task
   ownership, due dates, sign-off counts, evidence requirements, and dependencies, including
-  independent-review enforcement for material late-adjustment decisions.
+  independent-review enforcement for material late-adjustment decisions, plus a governed
+  close-period lock bridge that fails closed on unresolved plan blockers before delegating to the
+  Operations Continuity close-package publication gate.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
   dimension-scoped package requests, certification state, validation issues, retained package
@@ -271,6 +273,13 @@ close workflow, duplicate decisions, and decisions after close-package period lo
 Pending material late adjustments now emit critical close-plan validation blockers until a
 controller review approves or rejects the retained request, keeping period-lock and report-package
 certification consumers from treating unresolved material adjustments as advisory close notes.
+The same service exposes a governed close-period lock command that requires human-operator origin,
+current workflow version, scoped close-package/report-pack/period-lock evidence, linked report
+package id, and a close plan with no critical blockers before delegating to
+`IOperationsContinuityWorkflowService.CloseWorkflowAsync`. The result carries the updated close
+plan, the underlying operations transition, and service-owned blocking issues so browser, WPF, and
+shared endpoints can show the same lock readiness without issuing the operations close command
+directly.
 `AccountingReportPackageService` assembles the implementation-grade report package DTO family:
 financial statement package, investor capital statement, realized gain/loss report, NAV package,
 certification, validation issues, deterministic report-line provenance, deterministic export

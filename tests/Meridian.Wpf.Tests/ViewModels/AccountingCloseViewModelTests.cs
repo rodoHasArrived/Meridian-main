@@ -156,5 +156,11 @@ public sealed class AccountingCloseViewModelTests
             Actor = actor;
             return Task.FromResult<ClosePeriodPlanDto?>(closePlan);
         }
+
+        public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+            LockClosePeriodRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
     }
 }

@@ -1239,6 +1239,12 @@ public sealed class AccountingReportPackageServiceTests
             string actor,
             CancellationToken ct = default)
             => throw new NotSupportedException();
+
+        public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+            LockClosePeriodRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
     }
 
     private sealed class MutableStubCloseManagementService(
@@ -1273,6 +1279,12 @@ public sealed class AccountingReportPackageServiceTests
 
         public Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
             UpsertClosePeriodPlanConfigurationRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+            LockClosePeriodRequestDto request,
             string actor,
             CancellationToken ct = default)
             => throw new NotSupportedException();
