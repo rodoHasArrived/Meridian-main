@@ -41,7 +41,9 @@ the requirement end to end.
   ledger-book-scoped reconciliation, and controlled export package certification exist while live
   external posting stays disabled. Provider rows now expose QBO/Xero/NetSuite-specific mapping
   requirements for account mapping, journal lineage, trial-balance tie-out, and dimension mapping,
-  and browser/WPF Accounting Configure surfaces consume those shared setup requirements.
+  plus Xero tracking/contact/tax/bank-account and NetSuite subsidiary/segment/entity/intercompany
+  fixture prerequisites. Browser/WPF Accounting Configure surfaces consume those shared setup
+  requirements.
 - [x] Close/report package and report-line DTOs carry ledger-book, reconciliation, certification,
   restatement, and evidence state for downstream close/reporting surfaces.
 - [x] Strategy-run workstation ledger trial-balance and journal reads now carry canonical
@@ -339,8 +341,8 @@ the requirement end to end.
   mismatches now fail closed, but full historical journal/dimensional data rewrite workers remain
   open.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
-  import fixtures, provider-specific mapping requirements, and guarded export fixture coverage, but
-  live credentialed import adapters, richer provider-specific mapping fixtures, and provider-owned
+  import fixtures, provider-specific mapping requirements, richer fixture prerequisites, and
+  guarded export fixture coverage, but live credentialed import adapters and provider-owned
   controlled export certification still need coverage before any separately approved live posting
   adapter is considered.
 - [ ] Productize close management with close-plan editing, dependency graph authoring, sign-off

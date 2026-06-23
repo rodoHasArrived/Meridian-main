@@ -2148,6 +2148,17 @@ public sealed class AccountingSystemIntegrationServiceTests
             row.MappingRequirements.Any(requirement =>
                 requirement.RequiredAction.Contains("Xero tracking categories", StringComparison.OrdinalIgnoreCase)));
         providers.Should().Contain(row =>
+            row.ProviderId == "xero-fixture" &&
+            row.MappingRequirements.Any(requirement =>
+                requirement.RequirementId == "xero-fixture:contact-mapping" &&
+                requirement.RequiredEvidenceKind == "XeroContact" &&
+                requirement.RequiredAction.Contains("counterparty, customer, vendor, investor", StringComparison.OrdinalIgnoreCase)));
+        providers.Should().Contain(row =>
+            row.ProviderId == "xero-fixture" &&
+            row.MappingRequirements.Any(requirement =>
+                requirement.RequirementId == "xero-fixture:tax-rate-mapping" &&
+                requirement.RequiredEvidenceKind == "XeroTaxRate"));
+        providers.Should().Contain(row =>
             row.ProviderId == "netsuite" &&
             row.State == AccountingSystemProviderStateDto.Planned &&
             row.SupportsChartOfAccounts &&
@@ -2156,6 +2167,18 @@ public sealed class AccountingSystemIntegrationServiceTests
             !row.SupportsPosting &&
             row.MappingRequirements.Any(requirement =>
                 requirement.RequiredAction.Contains("NetSuite segments", StringComparison.OrdinalIgnoreCase)));
+        providers.Should().Contain(row =>
+            row.ProviderId == "netsuite-fixture" &&
+            row.MappingRequirements.Any(requirement =>
+                requirement.RequirementId == "netsuite-fixture:subsidiary-scope" &&
+                requirement.RequiredEvidenceKind == "NetSuiteSubsidiary" &&
+                requirement.RequiredAction.Contains("fund, entity, and ledger-book", StringComparison.OrdinalIgnoreCase)));
+        providers.Should().Contain(row =>
+            row.ProviderId == "netsuite-fixture" &&
+            row.MappingRequirements.Any(requirement =>
+                requirement.RequirementId == "netsuite-fixture:intercompany-controls" &&
+                requirement.RequiredEvidenceKind == "NetSuiteJournalEntry" &&
+                requirement.RequiredAction.Contains("intercompany elimination", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Theory]
@@ -2762,6 +2785,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             MappingProfileId: profile.ProfileId,
             RequireBalancedReconciliation: false,
             EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId, providerId)]));
+        var manifest = await service.GetExportPackageManifestAsync(package.ExportPackageId);
 
         upserted.ProviderId.Should().Be(providerId);
         upserted.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
@@ -2781,6 +2805,12 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Code == "LiveExternalPostingDisabled" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
         package.ValidationIssues.Should().NotContain(issue =>
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        manifest.Should().NotBeNull();
+        manifest!.ProviderId.Should().Be(providerId);
+        manifest.ExternalPostingAllowed.Should().BeFalse();
+        manifest.GeneratedLines.Should().HaveSameCount(package.GeneratedLines);
+        manifest.ValidationIssues.Should().NotContain(issue =>
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
     }
 

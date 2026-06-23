@@ -1760,9 +1760,65 @@ public sealed class AccountingSystemIntegrationService
                 $"{normalized}:dimension-mapping",
                 "Dimension mapping",
                 $"{accountEvidenceKind}:Dimensions",
-                $"Certify canonical Meridian dimensions against {dimensionVocabulary} before generated export lines can be review-ready.")
+                $"Certify canonical Meridian dimensions against {dimensionVocabulary} before generated export lines can be review-ready."),
+            .. BuildProviderSpecificMappingRequirements(normalized, accountEvidenceKind, journalEvidenceKind)
         ];
     }
+
+    private static IReadOnlyList<AccountingSystemProviderMappingRequirementDto> BuildProviderSpecificMappingRequirements(
+        string normalizedProviderId,
+        string accountEvidenceKind,
+        string journalEvidenceKind)
+        => normalizedProviderId switch
+        {
+            "xero" or "xero-fixture" =>
+            [
+                new(
+                    $"{normalizedProviderId}:tracking-category-options",
+                    "Tracking category options",
+                    "XeroTrackingCategory",
+                    "Retain and certify Xero tracking category option mappings for fund, entity, strategy, cost center, and external GL dimensions before guarded export review."),
+                new(
+                    $"{normalizedProviderId}:contact-mapping",
+                    "Contact mapping",
+                    "XeroContact",
+                    "Map Meridian counterparty, customer, vendor, investor, and capital-account dimensions to certified Xero contacts for generated export lines."),
+                new(
+                    $"{normalizedProviderId}:tax-rate-mapping",
+                    "Tax rate mapping",
+                    "XeroTaxRate",
+                    "Certify Xero tax-rate treatment for taxable journal lines so export reviewers can reconcile tax classification without live posting."),
+                new(
+                    $"{normalizedProviderId}:bank-account-scope",
+                    "Bank account scope",
+                    accountEvidenceKind,
+                    "Identify Xero bank-account and clearing-account mappings for cash activity, transfers, and reconciliation evidence before export certification.")
+            ],
+            "netsuite" or "netsuite-fixture" =>
+            [
+                new(
+                    $"{normalizedProviderId}:subsidiary-scope",
+                    "Subsidiary scope",
+                    "NetSuiteSubsidiary",
+                    "Map Meridian fund, entity, and ledger-book scope to certified NetSuite subsidiaries before generated export lines can be review-ready."),
+                new(
+                    $"{normalizedProviderId}:classification-segments",
+                    "Classification segments",
+                    "NetSuiteSegment",
+                    "Retain certified NetSuite department, class, location, and custom-segment mappings for fund, sleeve, strategy, cost center, and external GL dimensions."),
+                new(
+                    $"{normalizedProviderId}:entity-mapping",
+                    "Entity mapping",
+                    "NetSuiteEntity",
+                    "Map Meridian counterparty, customer, vendor, investor, and capital-account dimensions to NetSuite entities for generated journal-entry evidence."),
+                new(
+                    $"{normalizedProviderId}:intercompany-controls",
+                    "Intercompany controls",
+                    journalEvidenceKind,
+                    "Retain intercompany elimination and due-to/due-from mapping evidence before NetSuite export packages can be certified.")
+            ],
+            _ => []
+        };
 
     private static AccountingSystemReconciliationStatusDto ResolveStatus(
         AccountingSystemTrialBalanceLineDto? external,
