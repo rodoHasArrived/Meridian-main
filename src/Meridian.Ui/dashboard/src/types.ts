@@ -1845,6 +1845,32 @@ export interface FinancialOperationsQueueRow {
   evidenceLinks: OperationsEvidenceLink[];
 }
 
+export interface FinancialOperationsCloseSupportDecisionRow {
+  decisionId: string;
+  category: string;
+  label: string;
+  status: string;
+  isBlocking: boolean;
+  detail: string;
+  requiredAction: string;
+  routeHint: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface FinancialOperationsCloseSupportDecision {
+  decisionId: string;
+  status: string;
+  isReady: boolean;
+  summary: string;
+  periodState: string;
+  lockReopenPosture: string;
+  navReportDependencyPosture: string;
+  unresolvedExceptionCount: number;
+  pendingApprovalCount: number;
+  retainedEvidenceGapCount: number;
+  decisions: FinancialOperationsCloseSupportDecisionRow[];
+}
+
 export interface FinancialOperationsCommandCenter {
   generatedAtUtc: string;
   fundProfileId: string | null;
@@ -1862,6 +1888,7 @@ export interface FinancialOperationsCommandCenter {
   activeWorkflow?: OperationsContinuityWorkflow | null;
   closeCalendar?: OperationsCloseCalendar | null;
   privateCapitalCloseCockpit?: PrivateCapitalCloseCockpit | null;
+  closeSupportDecision?: FinancialOperationsCloseSupportDecision | null;
 }
 
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";

@@ -12246,21 +12246,63 @@ function buildSharedFinancialOperationsCommandCenterViewState(
 ): CloseCommandCenterViewState {
   const status = mapCommandCenterStatus(commandCenter.status, loading);
   const statusTone = closeCommandCenterStatusTone(status);
-  const metricRows: CloseCommandCenterMetricViewModel[] = commandCenter.metrics.map((metric) => ({
-    id: metric.metricId,
-    label: metric.label,
-    value: metric.value,
-    detail: metric.detail,
-    tone: commandCenterMetricTone(metric.status),
-    href: localCommandCenterRoute(metric.routeHint, metric.metricId)
-  }));
-  const blockerRows = commandCenter.queueRows.slice(0, 10).map((row) => ({
+  const closeSupportDecision = commandCenter.closeSupportDecision ?? null;
+  const closeSupportMetrics: CloseCommandCenterMetricViewModel[] = closeSupportDecision
+    ? [
+      {
+        id: "close-support-period-state",
+        label: "Period state",
+        value: closeSupportDecision.status,
+        detail: closeSupportDecision.periodState,
+        tone: commandCenterMetricTone(closeSupportDecision.status),
+        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
+      },
+      {
+        id: "close-support-exceptions",
+        label: "Unresolved exceptions",
+        value: String(closeSupportDecision.unresolvedExceptionCount),
+        detail: closeSupportDecision.lockReopenPosture,
+        tone: closeSupportDecision.unresolvedExceptionCount > 0 ? "warning" : "success",
+        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
+      },
+      {
+        id: "close-support-evidence",
+        label: "Retained evidence gaps",
+        value: String(closeSupportDecision.retainedEvidenceGapCount),
+        detail: closeSupportDecision.navReportDependencyPosture,
+        tone: closeSupportDecision.retainedEvidenceGapCount > 0 ? "warning" : "success",
+        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+      }
+    ]
+    : [];
+  const metricRows: CloseCommandCenterMetricViewModel[] = [
+    ...commandCenter.metrics.map((metric) => ({
+      id: metric.metricId,
+      label: metric.label,
+      value: metric.value,
+      detail: metric.detail,
+      tone: commandCenterMetricTone(metric.status),
+      href: localCommandCenterRoute(metric.routeHint, metric.metricId)
+    })),
+    ...closeSupportMetrics
+  ];
+  const decisionBlockerRows = (closeSupportDecision?.decisions ?? [])
+    .filter((decision) => decision.isBlocking)
+    .map((decision) => ({
+      id: decision.decisionId,
+      label: `${decision.category} - ${decision.label}`,
+      detail: `${decision.detail} ${decision.requiredAction}`.trim(),
+      tone: "danger" as AccountingToolingTone,
+      href: localCommandCenterRoute(decision.routeHint, decision.category)
+    }));
+  const queueBlockerRows = commandCenter.queueRows.map((row) => ({
     id: row.queueId,
     label: `${row.kindLabel} - ${row.title}`,
     detail: `${row.detail} ${row.actionLabel}`.trim(),
     tone: row.isBlocked ? "danger" as AccountingToolingTone : "warning" as AccountingToolingTone,
     href: localCommandCenterRoute(row.routeHint, row.sourceKind)
   }));
+  const blockerRows = [...decisionBlockerRows, ...queueBlockerRows].slice(0, 10);
   const routedRows = commandCenter.queueRows
     .filter((row) => localCommandCenterRoute(row.routeHint, row.sourceKind))
     .slice(0, 3);
@@ -12291,14 +12333,14 @@ function buildSharedFinancialOperationsCommandCenterViewState(
     statusTone,
     periodLabel: commandCenter.periodId ?? "Current period",
     fundAccountLabel: commandCenter.fundAccountId ?? commandCenter.fundProfileId ?? "All accounts",
-    summary: errorText ? `${commandCenter.summary} ${errorText}` : commandCenter.summary,
+    summary: errorText ? `${closeSupportDecision?.summary ?? commandCenter.summary} ${errorText}` : closeSupportDecision?.summary ?? commandCenter.summary,
     updatedLabel: commandCenter.generatedAtUtc,
     metricRows,
     blockerRows,
     actionRows,
     loadingText: loading ? "Refreshing Financial Operations command center." : null,
     errorText,
-    liveRegionText: `Close command center ${status}. ${commandCenter.summary} ${formatCount(commandCenter.activeItemCount, "active item")}.`
+    liveRegionText: `Close command center ${status}. ${closeSupportDecision?.summary ?? commandCenter.summary} ${formatCount(commandCenter.activeItemCount, "active item")}.`
   };
 }
 

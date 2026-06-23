@@ -75,6 +75,10 @@ surfaces do not select a newer workflow from another accounting book.
 Operations approval and accounting-record evidence subjects also carry the workflow ledger-book
 scope into their subject DTOs and routes, and book-scoped subject lookups fail closed when the
 requested `ledgerBookId` does not match the retained workflow.
+The Financial Operations command-center endpoint forwards the contract-owned close-support
+decision from Financial Operations, including period state, lock/reopen posture, NAV/report
+dependencies, unresolved exceptions, approvals, and retained evidence gaps. UI Shared only maps the
+endpoint and must not recalculate those close blockers independently for browser or WPF clients.
 `FundOperationsWorkspaceReadService` passes Operations Continuity reviewed-automation posture through
 the shared governance lifecycle projection so browser and WPF report-pack handoff surfaces render
 the same automation guardrails and retained review evidence.

@@ -532,8 +532,17 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             ? "NAV support cockpit is unavailable."
             : cockpit.IsReadyToClose
                 ? "NAV support and private-capital close lanes are ready."
-                : $"{cockpit.ReadyLaneCount.ToString("N0", CultureInfo.InvariantCulture)}/{cockpit.Lanes.Count.ToString("N0", CultureInfo.InvariantCulture)} private-capital close lane(s) ready.";
+                : BuildNavDependencyCountLabel(cockpit);
         return $"{reportPosture} {navPosture}";
+    }
+
+    private static string BuildNavDependencyCountLabel(PrivateCapitalCloseCockpitDto cockpit)
+    {
+        var dependencyCount = cockpit.Lanes.Count > 0 ? cockpit.Lanes.Count : cockpit.NavSupportPackages.Count;
+        var readyCount = cockpit.Lanes.Count > 0
+            ? cockpit.ReadyLaneCount
+            : cockpit.NavSupportPackages.Count(static package => package.IsReady);
+        return $"{readyCount.ToString("N0", CultureInfo.InvariantCulture)}/{dependencyCount.ToString("N0", CultureInfo.InvariantCulture)} private-capital close lane(s) ready.";
     }
 
     private static string MapDecisionCategory(string sourceKind)

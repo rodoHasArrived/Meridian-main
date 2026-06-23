@@ -131,6 +131,12 @@ Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Ev
 Support. The dashboard metrics expose status, retained evidence, route hints, and required actions
 so browser and WPF clients can present the Financial Operations core flow without recomputing it
 from lower-level workflow fragments.
+`FinancialOperationsCommandCenterDto` also carries the optional
+`FinancialOperationsCloseSupportDecisionDto`, which packages period state, lock/reopen posture,
+NAV/report dependency posture, unresolved exception count, pending approval count, retained
+evidence gap count, and blocking decision rows into one shared close-support read model. Browser
+and WPF clients should render those server-owned decisions directly instead of deriving close
+completion readiness from queue rows independently.
 The workflow detail contract also carries `OperationsReviewedAutomationSummaryDto`, which lists
 allowed suggestion/draft use cases, prohibited material actions, current review stage, required
 human actions, retained evidence, and artifact rows for extraction, match suggestion, journal draft,

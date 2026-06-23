@@ -97,6 +97,10 @@ fixture/import-first provider registrations, projects
 close/evidence/reconciliation posture from shared operations continuity when available, and creates
 fund-scoped accounting-basis policy records and multi-basis ledger-book projection candidates
 through Financial Operations services.
+Desktop close-support queue projections consume
+`FinancialOperationsCommandCenterDto.CloseSupportDecision` directly, so period state,
+lock/reopen posture, NAV/report dependencies, unresolved exceptions, approvals, and retained
+evidence gaps stay aligned with the browser command center and shared endpoint decisions.
 Private-capital presets attach the shared
 treasury ledger context expected by the approval service, including effective date, idempotency,
 fund-event, capital-account, investor, payment, and settlement references.

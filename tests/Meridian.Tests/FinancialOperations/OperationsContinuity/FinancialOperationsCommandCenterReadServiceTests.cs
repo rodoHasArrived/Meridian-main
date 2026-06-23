@@ -33,6 +33,13 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             row.SourceKind == "evidence-package"
             && row.IsBlocked
             && row.Title == "Accounting record evidence");
+        commandCenter.CloseSupportDecision.Should().NotBeNull();
+        commandCenter.CloseSupportDecision!.Status.Should().Be("Blocked");
+        commandCenter.CloseSupportDecision.RetainedEvidenceGapCount.Should().Be(1);
+        commandCenter.CloseSupportDecision.Decisions.Should().Contain(row =>
+            row.Category == "Retained evidence gaps"
+            && row.IsBlocking
+            && row.Label == "Accounting record evidence");
     }
 
     [Fact]
@@ -59,6 +66,12 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             row.SourceKind == "approval"
             && row.IsBlocked
             && row.ActionLabel == "Complete workflow approval.");
+        commandCenter.CloseSupportDecision.Should().NotBeNull();
+        commandCenter.CloseSupportDecision!.PendingApprovalCount.Should().Be(1);
+        commandCenter.CloseSupportDecision.Decisions.Should().Contain(row =>
+            row.Category == "Approvals"
+            && row.IsBlocking
+            && row.RequiredAction == "Complete workflow approval.");
     }
 
     [Fact]
@@ -96,6 +109,12 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             row.SourceKind == "close-calendar"
             && row.IsBlocked
             && row.Title == "Retain period-lock evidence");
+        commandCenter.CloseSupportDecision.Should().NotBeNull();
+        commandCenter.CloseSupportDecision!.LockReopenPosture.Should().Contain("Period lock");
+        commandCenter.CloseSupportDecision.Decisions.Should().Contain(row =>
+            row.Category == "Lock/reopen posture"
+            && row.IsBlocking
+            && row.Label == "Period lock calendar");
     }
 
     [Fact]
@@ -112,6 +131,12 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             row.SourceKind == "nav-support"
             && row.IsBlocked
             && row.Title == "NAV support package");
+        commandCenter.CloseSupportDecision.Should().NotBeNull();
+        commandCenter.CloseSupportDecision!.NavReportDependencyPosture.Should().Contain("0/1 private-capital close lane");
+        commandCenter.CloseSupportDecision.Decisions.Should().Contain(row =>
+            row.Category == "NAV/report dependencies"
+            && row.IsBlocking
+            && row.Label == "NAV and report dependency posture");
     }
 
     private static FinancialOperationsCommandCenterReadService CreateService(

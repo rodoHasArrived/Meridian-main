@@ -83,6 +83,12 @@ from aggregate state. Its metrics cover Receive Activity, Match Records, Resolve
 Approve Results, Produce Evidence, and Close Support, including retained evidence, route hints, and
 required actions so UI surfaces consume a shared core-flow rollup instead of reconstructing
 dashboard state locally.
+The Financial Operations command-center read service also derives the shared close-support decision
+from Operations Continuity, close-calendar, and private-capital close cockpit inputs. That decision
+publishes period state, period-lock/reopen posture, NAV/report dependencies, unresolved exceptions,
+approvals, and retained evidence gaps as one server-owned readiness posture so browser and WPF
+surfaces cannot show synthetic completion while required evidence, approvals, lock state, or NAV
+support remain blocked.
 It also derives the reviewed-automation summary from aggregate state and enforces the action-origin
 guard for material commands. Automation-origin and assistant-origin requests may carry suggestions,
 summaries, drafts, flags, and retained review evidence, but Security Master override approval,

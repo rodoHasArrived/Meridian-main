@@ -40,6 +40,69 @@ public sealed class AccountingWorkspaceShellPageTests
     }
 
     [Fact]
+    public void BuildCloseSupportDecisionQueue_UsesSharedFinopsDecisionRows()
+    {
+        var commandCenter = new FinancialOperationsCommandCenterDto(
+            DateTimeOffset.Parse("2026-06-01T05:00:00Z"),
+            "fund-alpha",
+            Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            "2026-06",
+            "Blocked",
+            false,
+            "Shared close-support decisions block completion.",
+            2,
+            2,
+            0,
+            [],
+            [],
+            CloseSupportDecision: new FinancialOperationsCloseSupportDecisionDto(
+                "finops-close-support:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                "Blocked",
+                false,
+                "2 close-support decision(s) block completion.",
+                "ReadyForClose period 2026-06; close readiness Blocked.",
+                "Prior close package is retained, but current period is reopened or not re-locked.",
+                "Report pack is blocked. 0/1 private-capital close lane(s) ready.",
+                0,
+                1,
+                1,
+                [
+                    new FinancialOperationsCloseSupportDecisionRowDto(
+                        "period-lock-calendar",
+                        "Lock/reopen posture",
+                        "Period lock calendar",
+                        "Blocked",
+                        true,
+                        "Close calendar has blocked or incomplete period-lock items.",
+                        "Clear close-calendar period-lock and reopen remediation items.",
+                        "/api/workstation/operations/continuity/close-calendar"),
+                    new FinancialOperationsCloseSupportDecisionRowDto(
+                        "nav-report-dependencies",
+                        "NAV/report dependencies",
+                        "NAV and report dependency posture",
+                        "Blocked",
+                        true,
+                        "1 private-capital close lane blocks NAV/report support.",
+                        "Resolve NAV support, report output approval, delivery, and private-capital close lanes.",
+                        "/workstation/accounting/capital-accounts")
+                ]));
+
+        var queue = AccountingWorkspacePresentationService.BuildCloseSupportDecisionQueue(commandCenter);
+
+        queue.Should().Contain(item =>
+            item.Title == "Lock/reopen posture - Period lock calendar"
+            && item.IsBlocked
+            && item.PrimaryActionId == "FundAccountingConfigure"
+            && item.Detail.Contains("period-lock", StringComparison.Ordinal));
+        queue.Should().Contain(item =>
+            item.Title == "NAV/report dependencies - NAV and report dependency posture"
+            && item.IsBlocked
+            && item.PrimaryActionId == "FundCashFinancing"
+            && item.Detail.Contains("NAV support", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void BuildLaneHeroState_WithoutFundContext_UsesSwitchContextForSelectedLane()
     {
         var workflow = new WorkspaceWorkflowSummary(

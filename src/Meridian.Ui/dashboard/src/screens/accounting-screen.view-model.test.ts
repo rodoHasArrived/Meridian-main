@@ -64,6 +64,7 @@ import type {
   AccountingWorkspaceResponse,
   AccountingConfigurationWorkspace,
   AccountingProductionReadiness,
+  FinancialOperationsCommandCenter,
   AccountingTenantAdministrationProfile,
   AccountingReportPackageBundle,
   CapitalAccountWorkbench,
@@ -5114,6 +5115,101 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "signoff", value: "Signed by controller-reviewer", tone: "success" })
     ]));
     expect(state.blockerRows).toEqual([]);
+  });
+
+  it("uses shared FINOPS close-support decisions from the command-center DTO", () => {
+    const commandCenter: FinancialOperationsCommandCenter = {
+      generatedAtUtc: "2026-06-01T05:00:00Z",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "11111111-1111-1111-1111-111111111111",
+      fundAccountId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      periodId: "2026-06",
+      status: "Blocked",
+      isReadyToComplete: false,
+      summary: "Queue summary should not replace server close-support decision.",
+      activeItemCount: 2,
+      blockedItemCount: 2,
+      reviewItemCount: 0,
+      metrics: [],
+      queueRows: [],
+      activeWorkflow: null,
+      closeCalendar: null,
+      privateCapitalCloseCockpit: null,
+      closeSupportDecision: {
+        decisionId: "finops-close-support:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        status: "Blocked",
+        isReady: false,
+        summary: "2 close-support decision(s) block completion.",
+        periodState: "ReadyForClose period 2026-06; close readiness Blocked.",
+        lockReopenPosture: "Prior close package is retained, but current period is reopened or not re-locked.",
+        navReportDependencyPosture: "Report pack is blocked. 0/1 private-capital close lane(s) ready.",
+        unresolvedExceptionCount: 0,
+        pendingApprovalCount: 1,
+        retainedEvidenceGapCount: 1,
+        decisions: [
+          {
+            decisionId: "period-lock-calendar",
+            category: "Lock/reopen posture",
+            label: "Period lock calendar",
+            status: "Blocked",
+            isBlocking: true,
+            detail: "Close calendar has blocked or incomplete period-lock items.",
+            requiredAction: "Clear close-calendar period-lock and reopen remediation items.",
+            routeHint: "/api/workstation/operations/continuity/close-calendar",
+            evidenceLinks: []
+          },
+          {
+            decisionId: "nav-report-dependencies",
+            category: "NAV/report dependencies",
+            label: "NAV and report dependency posture",
+            status: "Blocked",
+            isBlocking: true,
+            detail: "1 private-capital close lane(s) block NAV/report support.",
+            requiredAction: "Resolve NAV support, report output approval, delivery, and private-capital close lanes.",
+            routeHint: "/workstation/accounting/capital-accounts",
+            evidenceLinks: []
+          }
+        ]
+      }
+    };
+
+    const state = buildCloseCommandCenterViewState({
+      data: accountingWorkspace,
+      commandCenter,
+      commandCenterLoading: false,
+      commandCenterError: null,
+      workflow: closeWorkflow,
+      workflowLoading: false,
+      workflowError: null,
+      accountingSystemProviders: [accountingSystemProvider],
+      accountingSystemImport: null,
+      accountingSystemReconciliation,
+      multiAssetCoverage
+    });
+
+    expect(state.summary).toBe("2 close-support decision(s) block completion.");
+    expect(state.metricRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "close-support-period-state",
+        value: "Blocked",
+        detail: "ReadyForClose period 2026-06; close readiness Blocked."
+      }),
+      expect.objectContaining({
+        id: "close-support-evidence",
+        value: "1",
+        detail: "Report pack is blocked. 0/1 private-capital close lane(s) ready."
+      })
+    ]));
+    expect(state.blockerRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "period-lock-calendar",
+        label: "Lock/reopen posture - Period lock calendar"
+      }),
+      expect.objectContaining({
+        id: "nav-report-dependencies",
+        label: "NAV/report dependencies - NAV and report dependency posture"
+      })
+    ]));
   });
 
   it("builds operational exception workbench state from reconciliation queues", () => {
