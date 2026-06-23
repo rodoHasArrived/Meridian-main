@@ -71,6 +71,7 @@ import type {
   ExecutionAuditEntry,
   AccountingWorkspaceResponse,
   AssetOperationsDetail,
+  FinancialOperationsCommandCenter,
   ReportingWorkspaceResponse,
   SignOffCloseTaskRequest,
   InvestmentAccountingTransactionLabPreview,
@@ -444,6 +445,7 @@ import {
   workstationFinancialRecordExplorerEndpoint,
   workstationFinancialRecordExplorerRecordEndpoint,
   workstationFinancialRecordExplorerSavedViewsEndpoint,
+  workstationFinancialOperationsCommandCenterEndpoint,
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
@@ -1562,6 +1564,30 @@ export function getOperationsCloseCalendar(
   options: ApiRequestOptions = {}
 ) {
   return getJson<OperationsCloseCalendar>(workstationOperationsContinuityCloseCalendarEndpoint(filters), options);
+}
+
+export interface FinancialOperationsCommandCenterQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundAccountId?: string | null;
+  periodId?: string | null;
+  entityId?: string | null;
+}
+
+export function getFinancialOperationsCommandCenter(
+  query: FinancialOperationsCommandCenterQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<FinancialOperationsCommandCenter>(
+    workstationFinancialOperationsCommandCenterEndpoint({
+      fundProfileId: query.fundProfileId ?? undefined,
+      ledgerBookId: query.ledgerBookId ?? undefined,
+      fundAccountId: query.fundAccountId ?? undefined,
+      periodId: query.periodId ?? undefined,
+      entityId: query.entityId ?? undefined
+    }),
+    options
+  );
 }
 
 export interface PrivateCapitalCloseCockpitQuery {

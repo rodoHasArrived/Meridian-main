@@ -120,6 +120,7 @@ import type {
   CreateLateAdjustmentRequest,
   ReviewLateAdjustmentRequest,
   SignOffCloseTaskRequest,
+  FinancialOperationsCommandCenter,
   LedgerBook,
   LedgerJournalLine,
   LedgerTrialBalanceLine,
@@ -12032,6 +12033,9 @@ function accountingCertificationTone(state: AccountingCertificationState): Accou
 
 export function buildCloseCommandCenterViewState({
   data,
+  commandCenter,
+  commandCenterLoading,
+  commandCenterError,
   workflow,
   workflowLoading,
   workflowError,
@@ -12041,6 +12045,9 @@ export function buildCloseCommandCenterViewState({
   multiAssetCoverage
 }: {
   data: AccountingWorkspaceResponse;
+  commandCenter?: FinancialOperationsCommandCenter | null;
+  commandCenterLoading?: boolean;
+  commandCenterError?: string | null;
   workflow: OperationsContinuityWorkflow | null;
   workflowLoading: boolean;
   workflowError: string | null;
@@ -12049,6 +12056,10 @@ export function buildCloseCommandCenterViewState({
   accountingSystemReconciliation: AccountingSystemReconciliationSummary | null;
   multiAssetCoverage: MultiAssetCoverageSummary | null | undefined;
 }): CloseCommandCenterViewState {
+  if (commandCenter) {
+    return buildSharedFinancialOperationsCommandCenterViewState(commandCenter, commandCenterLoading ?? workflowLoading, commandCenterError ?? workflowError);
+  }
+
   const openBreakCount = data.breakQueue.filter((item) => isOpenAccountingBreakStatus(item.status)).length;
   const workflowOpenBreakCount = workflow?.breakCases.filter((item) => isOpenAccountingBreakStatus(item.status)).length ?? 0;
   const closeBlockers = workflow ? collectCloseCommandCenterBlockers(workflow) : [];
@@ -12226,6 +12237,129 @@ export function buildCloseCommandCenterViewState({
     errorText: workflowError,
     liveRegionText: `Close command center ${status}. ${readinessLabel}. ${formatCount(blockerRows.length, "visible blocker")}.`
   };
+}
+
+function buildSharedFinancialOperationsCommandCenterViewState(
+  commandCenter: FinancialOperationsCommandCenter,
+  loading: boolean,
+  errorText: string | null
+): CloseCommandCenterViewState {
+  const status = mapCommandCenterStatus(commandCenter.status, loading);
+  const statusTone = closeCommandCenterStatusTone(status);
+  const metricRows: CloseCommandCenterMetricViewModel[] = commandCenter.metrics.map((metric) => ({
+    id: metric.metricId,
+    label: metric.label,
+    value: metric.value,
+    detail: metric.detail,
+    tone: commandCenterMetricTone(metric.status),
+    href: localCommandCenterRoute(metric.routeHint, metric.metricId)
+  }));
+  const blockerRows = commandCenter.queueRows.slice(0, 10).map((row) => ({
+    id: row.queueId,
+    label: `${row.kindLabel} - ${row.title}`,
+    detail: `${row.detail} ${row.actionLabel}`.trim(),
+    tone: row.isBlocked ? "danger" as AccountingToolingTone : "warning" as AccountingToolingTone,
+    href: localCommandCenterRoute(row.routeHint, row.sourceKind)
+  }));
+  const routedRows = commandCenter.queueRows
+    .filter((row) => localCommandCenterRoute(row.routeHint, row.sourceKind))
+    .slice(0, 3);
+  const actionRows: CloseCommandCenterActionViewModel[] = routedRows.length > 0
+    ? routedRows.map((row) => ({
+      id: row.queueId,
+      label: row.actionLabel || row.title,
+      href: localCommandCenterRoute(row.routeHint, row.sourceKind) ?? WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+      ariaLabel: `Open ${row.title} from close command center`,
+      tone: row.isBlocked ? "warning" : "success"
+    }))
+    : [
+      {
+        id: "financial-operations",
+        label: commandCenter.isReadyToComplete ? "Review close evidence" : "Open operations",
+        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+        ariaLabel: "Open Accounting approvals from close command center",
+        tone: commandCenter.isReadyToComplete ? "success" : "warning"
+      }
+    ];
+
+  return {
+    title: "CFO / Controller close command center",
+    description: "Controller-facing period readiness, close blockers, evidence gaps, report-pack readiness, and sign-off status from the shared Financial Operations command-center DTO.",
+    ariaLabel: "CFO and controller close command center",
+    status,
+    statusLabel: status === "ready" ? "Ready" : status === "blocked" ? "Blocked" : status === "loading" ? "Loading" : "At risk",
+    statusTone,
+    periodLabel: commandCenter.periodId ?? "Current period",
+    fundAccountLabel: commandCenter.fundAccountId ?? commandCenter.fundProfileId ?? "All accounts",
+    summary: errorText ? `${commandCenter.summary} ${errorText}` : commandCenter.summary,
+    updatedLabel: commandCenter.generatedAtUtc,
+    metricRows,
+    blockerRows,
+    actionRows,
+    loadingText: loading ? "Refreshing Financial Operations command center." : null,
+    errorText,
+    liveRegionText: `Close command center ${status}. ${commandCenter.summary} ${formatCount(commandCenter.activeItemCount, "active item")}.`
+  };
+}
+
+function mapCommandCenterStatus(status: string, loading: boolean): CloseCommandCenterStatus {
+  if (loading) {
+    return "loading";
+  }
+
+  const normalized = status.trim().toLowerCase();
+  if (normalized === "ready") {
+    return "ready";
+  }
+
+  if (normalized === "blocked") {
+    return "blocked";
+  }
+
+  return "at-risk";
+}
+
+function commandCenterMetricTone(status: string): AccountingToolingTone {
+  const normalized = status.trim().toLowerCase();
+  if (normalized === "ready") {
+    return "success";
+  }
+
+  if (normalized === "blocked" || normalized === "missing") {
+    return "danger";
+  }
+
+  if (normalized === "review" || normalized === "reviewrequired" || normalized === "atrisk") {
+    return "warning";
+  }
+
+  return "default";
+}
+
+function localCommandCenterRoute(route: string | null | undefined, sourceKind: string): string | null {
+  return normalizeLocalWorkstationRoute(route)
+    ?? commandCenterFallbackRoute(sourceKind);
+}
+
+function commandCenterFallbackRoute(sourceKind: string): string | null {
+  const normalized = sourceKind.trim().toLowerCase();
+  if (normalized.includes("break") || normalized.includes("reconciliation")) {
+    return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
+  }
+
+  if (normalized.includes("approval") || normalized.includes("checklist") || normalized.includes("calendar")) {
+    return WORKSTATION_ROUTE_CATALOG.accountingApprovals;
+  }
+
+  if (normalized.includes("evidence") || normalized.includes("nav")) {
+    return WORKSTATION_ROUTE_CATALOG.reportingEvidence;
+  }
+
+  if (normalized.includes("private-capital")) {
+    return WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts;
+  }
+
+  return null;
 }
 
 function collectCloseCommandCenterBlockers(workflow: OperationsContinuityWorkflow): CloseCommandCenterRawBlocker[] {

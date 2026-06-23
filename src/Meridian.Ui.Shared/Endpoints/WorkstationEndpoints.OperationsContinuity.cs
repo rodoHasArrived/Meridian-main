@@ -137,6 +137,34 @@ public static partial class WorkstationEndpoints
         .Produces<OperationsCloseCalendarDto>(200)
         .Produces(403);
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.FinancialOperationsCommandCenter), async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            Guid? fundAccountId,
+            string? periodId,
+            string? entityId,
+            HttpContext context,
+            [FromServices] IFinancialOperationsCommandCenterReadService? service) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Financial Operations command center read service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var commandCenter = await service
+                .GetCommandCenterAsync(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId, context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(commandCenter, jsonOptions);
+        })
+        .WithName("GetFinancialOperationsCommandCenter")
+        .Produces<FinancialOperationsCommandCenterDto>(200)
+        .Produces(403);
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendarItems), async (
             OperationsCloseCalendarItemUpsertRequestDto? request,
             HttpContext context,

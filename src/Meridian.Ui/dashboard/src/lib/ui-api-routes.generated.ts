@@ -529,6 +529,7 @@ export const UI_API_ROUTES = {
   OperationsContinuityChecklist: "/api/workstation/operations/continuity/{workflowId:guid}/checklist",
   OperationsContinuityChecklistAcknowledge: "/api/workstation/operations/continuity/{workflowId:guid}/checklist/{taskId}/acknowledge",
   OperationsContinuityCloseCalendar: "/api/workstation/operations/continuity/close-calendar",
+  FinancialOperationsCommandCenter: "/api/workstation/operations/financial-operations-command-center",
   OperationsPrivateCapitalCloseCockpit: "/api/workstation/operations/private-capital-close-cockpit",
   OperationsContinuityBrokerImport: "/api/workstation/operations/continuity/{workflowId:guid}/broker/import",
   OperationsContinuityBrokerNormalize: "/api/workstation/operations/continuity/{workflowId:guid}/broker/normalize",

@@ -637,6 +637,7 @@ public static class UiApiRoutes
     public const string OperationsContinuityChecklist = "/api/workstation/operations/continuity/{workflowId:guid}/checklist";
     public const string OperationsContinuityChecklistAcknowledge = "/api/workstation/operations/continuity/{workflowId:guid}/checklist/{taskId}/acknowledge";
     public const string OperationsContinuityCloseCalendar = "/api/workstation/operations/continuity/close-calendar";
+    public const string FinancialOperationsCommandCenter = "/api/workstation/operations/financial-operations-command-center";
     public const string OperationsPrivateCapitalCloseCockpit = "/api/workstation/operations/private-capital-close-cockpit";
     public const string OperationsContinuityBrokerImport = "/api/workstation/operations/continuity/{workflowId:guid}/broker/import";
     public const string OperationsContinuityBrokerNormalize = "/api/workstation/operations/continuity/{workflowId:guid}/broker/normalize";

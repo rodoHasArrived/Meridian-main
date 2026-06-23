@@ -1818,6 +1818,52 @@ export interface OperationsCloseCalendarItemUpsertResult {
   auditEvent: OperationsCloseCalendarItemAuditEvent;
 }
 
+export interface FinancialOperationsCommandCenterMetric {
+  metricId: string;
+  label: string;
+  value: string;
+  detail: string;
+  status: string;
+  routeHint: string | null;
+}
+
+export interface FinancialOperationsQueueRow {
+  queueId: string;
+  sourceKind: string;
+  kindLabel: string;
+  title: string;
+  statusLabel: string;
+  detail: string;
+  ownerLabel: string;
+  dueLabel: string;
+  evidenceLabel: string;
+  actionLabel: string;
+  routeHint: string | null;
+  isBlocked: boolean;
+  sortOrder: number;
+  workflowId?: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+}
+
+export interface FinancialOperationsCommandCenter {
+  generatedAtUtc: string;
+  fundProfileId: string | null;
+  ledgerBookId: string | null;
+  fundAccountId: string | null;
+  periodId: string | null;
+  status: string;
+  isReadyToComplete: boolean;
+  summary: string;
+  activeItemCount: number;
+  blockedItemCount: number;
+  reviewItemCount: number;
+  metrics: FinancialOperationsCommandCenterMetric[];
+  queueRows: FinancialOperationsQueueRow[];
+  activeWorkflow?: OperationsContinuityWorkflow | null;
+  closeCalendar?: OperationsCloseCalendar | null;
+  privateCapitalCloseCockpit?: PrivateCapitalCloseCockpit | null;
+}
+
 export type EvidenceStatus = "Unknown" | "Ready" | "ReviewRequired" | "Blocked" | "Stale" | "Missing";
 
 export interface EvidenceSubject {

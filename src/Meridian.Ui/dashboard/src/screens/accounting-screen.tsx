@@ -20,6 +20,7 @@ import {
   getAccountingSystemExportPackageManifest,
   getAccountingSystemMappingProfiles,
   getAccountingSystemProviders,
+  getFinancialOperationsCommandCenter,
   getLatestAccountingSystemImport,
   getLatestAccountingSystemReconciliation,
   getFinancialRecordExplorer,
@@ -96,6 +97,7 @@ import type {
   AccountingWorkspaceResponse,
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSavedViewSaveRequestDto,
+  FinancialOperationsCommandCenter,
   MultiAssetCoverageSummary,
   OperationsApproval,
   OperationsApprovalState,
@@ -1001,9 +1003,10 @@ function mergeExternalGlExportPackage(
   return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
-function parseCloseWorkflowQuery(search: string): { fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } {
+function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } {
   const params = new URLSearchParams(search);
   return {
+    fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
     fundAccountId: normalizeOptionalQueryValue(params.get("fundAccountId")),
     ledgerBookId: normalizeOptionalQueryValue(params.get("ledgerBookId")),
     periodId: normalizeOptionalQueryValue(params.get("periodId")),
@@ -1028,7 +1031,7 @@ function selectCloseWorkflowSummary(
     matchesOptionalValue(row.status, query.status)
   );
 
-  if ((query.fundAccountId || query.ledgerBookId || query.periodId || query.status) && scopedRows.length === 0) {
+  if ((query.fundProfileId || query.fundAccountId || query.ledgerBookId || query.periodId || query.status) && scopedRows.length === 0) {
     return null;
   }
 
@@ -1537,6 +1540,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [accountingSystemActionTone, setAccountingSystemActionTone] = useState<"success" | "warning" | "danger" | null>(null);
   const [accountingSystemLoading, setAccountingSystemLoading] = useState(false);
   const [accountingSystemError, setAccountingSystemError] = useState<string | null>(null);
+  const [financialOperationsCommandCenter, setFinancialOperationsCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
+  const [financialOperationsCommandCenterLoading, setFinancialOperationsCommandCenterLoading] = useState(false);
+  const [financialOperationsCommandCenterError, setFinancialOperationsCommandCenterError] = useState<string | null>(null);
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
@@ -1842,9 +1848,40 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     void refreshCloseWorkflow();
   }, [data, closeWorkflowQuery]);
 
+  const refreshFinancialOperationsCommandCenter = async () => {
+    if (!data) {
+      setFinancialOperationsCommandCenter(null);
+      return;
+    }
+
+    setFinancialOperationsCommandCenterLoading(true);
+    setFinancialOperationsCommandCenterError(null);
+    try {
+      const commandCenter = await getFinancialOperationsCommandCenter({
+        fundProfileId: closeWorkflowQuery.fundProfileId,
+        ledgerBookId: closeWorkflowQuery.ledgerBookId,
+        fundAccountId: closeWorkflowQuery.fundAccountId,
+        periodId: closeWorkflowQuery.periodId
+      });
+      setFinancialOperationsCommandCenter(commandCenter);
+    } catch (error) {
+      setFinancialOperationsCommandCenter(null);
+      setFinancialOperationsCommandCenterError(formatApprovalError(error, "Financial Operations command center could not be loaded."));
+    } finally {
+      setFinancialOperationsCommandCenterLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshFinancialOperationsCommandCenter();
+  }, [data, closeWorkflowQuery]);
+
   const closeCommandCenter = useMemo(
     () => data ? buildCloseCommandCenterViewState({
       data,
+      commandCenter: financialOperationsCommandCenter,
+      commandCenterLoading: financialOperationsCommandCenterLoading,
+      commandCenterError: financialOperationsCommandCenterError,
       workflow: closeWorkflow,
       workflowLoading: closeWorkflowLoading,
       workflowError: closeWorkflowError,
@@ -1861,6 +1898,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       closeWorkflowError,
       closeWorkflowLoading,
       data,
+      financialOperationsCommandCenter,
+      financialOperationsCommandCenterError,
+      financialOperationsCommandCenterLoading,
       multiAssetCoverage
     ]
   );

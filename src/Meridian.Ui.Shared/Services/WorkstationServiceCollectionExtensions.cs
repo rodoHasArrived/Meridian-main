@@ -360,6 +360,11 @@ public static class WorkstationServiceCollectionExtensions
             new PrivateCapitalCloseCockpitService(
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>()));
+        services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
+            new FinancialOperationsCommandCenterReadService(
+                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IOperationsCloseCalendarService>(),
+                sp.GetService<IPrivateCapitalCloseCockpitService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();

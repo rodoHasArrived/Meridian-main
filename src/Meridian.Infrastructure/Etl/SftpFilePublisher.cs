@@ -14,17 +14,17 @@ public sealed class SftpFilePublisher : ISftpFilePublisher
 
     public Task PublishAsync(EtlDestinationDefinition destination, string localPath, CancellationToken ct = default)
     {
-        var uri = new Uri(destination.Location!.StartsWith("sftp://", StringComparison.OrdinalIgnoreCase)
-            ? destination.Location
-            : $"sftp://{destination.Location!.TrimStart('/')}");
+        ct.ThrowIfCancellationRequested();
+        var location = SftpRemoteLocation.ParseRequired(destination.Location, "destination");
         var client = _clientFactory.Create(SftpConnectionOptions.Create(
-            uri.Host,
-            uri.Port > 0 ? uri.Port : 22,
+            location.Host,
+            location.Port,
             destination.Username ?? string.Empty,
             destination.SecretRef ?? string.Empty,
             destination.HostKeySha256Fingerprint));
         using (client)
         {
+            ct.ThrowIfCancellationRequested();
             client.Connect();
             try
             {
@@ -32,18 +32,19 @@ public sealed class SftpFilePublisher : ISftpFilePublisher
                 {
                     foreach (var file in Directory.EnumerateFiles(localPath, "*", SearchOption.AllDirectories))
                     {
+                        ct.ThrowIfCancellationRequested();
                         var relative = Path.GetRelativePath(localPath, file).Replace('\\', '/');
-                        var remotePath = CombineRemote(uri.AbsolutePath, relative);
+                        var remotePath = SftpRemoteLocation.Combine(location.RemotePath, relative);
                         EnsureRemoteDirectory(client, Path.GetDirectoryName(remotePath)!.Replace('\\', '/'));
-                        using var fs = File.OpenRead(file);
-                        client.UploadFile(fs, remotePath, true);
+                        UploadAtomic(client, file, remotePath, canOverwrite: true, ct);
                     }
                 }
                 else
                 {
-                    EnsureRemoteDirectory(client, uri.AbsolutePath);
-                    using var fs = File.OpenRead(localPath);
-                    client.UploadFile(fs, CombineRemote(uri.AbsolutePath, Path.GetFileName(localPath)), destination.OverwriteIfExists);
+                    ct.ThrowIfCancellationRequested();
+                    EnsureRemoteDirectory(client, location.RemotePath);
+                    var remotePath = SftpRemoteLocation.Combine(location.RemotePath, Path.GetFileName(localPath));
+                    UploadAtomic(client, localPath, remotePath, destination.OverwriteIfExists, ct);
                 }
             }
             finally
@@ -53,6 +54,26 @@ public sealed class SftpFilePublisher : ISftpFilePublisher
         }
 
         return Task.CompletedTask;
+    }
+
+    private static void UploadAtomic(ISftpClient client, string localPath, string remotePath, bool canOverwrite, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        var tempPath = remotePath + ".meridian-upload-" + Guid.NewGuid().ToString("N") + ".tmp";
+        var uploaded = false;
+        try
+        {
+            using var fs = File.OpenRead(localPath);
+            client.UploadFile(fs, tempPath, canOverwrite: true);
+            uploaded = true;
+            ct.ThrowIfCancellationRequested();
+            client.RenameFile(tempPath, remotePath, canOverwrite);
+        }
+        finally
+        {
+            if (uploaded && client.Exists(tempPath))
+                client.DeleteFile(tempPath);
+        }
     }
 
     private static void EnsureRemoteDirectory(ISftpClient client, string remoteDirectory)
@@ -70,6 +91,4 @@ public sealed class SftpFilePublisher : ISftpFilePublisher
         }
     }
 
-    private static string CombineRemote(string left, string right)
-        => (left.TrimEnd('/') + "/" + right.TrimStart('/')).Replace("//", "/");
 }

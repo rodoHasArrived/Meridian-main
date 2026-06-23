@@ -93,10 +93,34 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<ReportPackWorkflowService>()));
+        services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
+        services.TryAddSingleton<IOperationsContinuityRepository>(sp =>
+            new FileOperationsContinuityRepository(
+                ResolveAccountingDataDirectory(sp),
+                sp.GetRequiredService<IOperationsStatusDerivationService>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileOperationsContinuityRepository>>()));
+        services.TryAddSingleton<IOperationsWorkflowAuditStore>(sp =>
+            new FileOperationsWorkflowAuditStore(
+                ResolveAccountingDataDirectory(sp),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileOperationsWorkflowAuditStore>>()));
+        services.TryAddSingleton<IOperationsContinuityWorkflowService>(sp =>
+            new OperationsContinuityWorkflowService(
+                sp.GetRequiredService<IOperationsContinuityRepository>(),
+                sp.GetRequiredService<IOperationsWorkflowAuditStore>(),
+                sp.GetRequiredService<IOperationsStatusDerivationService>(),
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
+        services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
             new PrivateCapitalCloseCockpitService(
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>()));
+        services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
+            new FinancialOperationsCommandCenterReadService(
+                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IOperationsCloseCalendarService>(),
+                sp.GetService<IPrivateCapitalCloseCockpitService>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();

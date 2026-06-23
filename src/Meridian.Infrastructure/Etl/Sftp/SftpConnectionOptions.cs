@@ -46,10 +46,41 @@ public sealed partial record SftpConnectionOptions(
 
         var value = fingerprint.Trim();
         if (value.StartsWith("SHA256:", StringComparison.OrdinalIgnoreCase))
-            value = value[7..];
+        {
+            var payload = value[7..].Trim();
+            return NormalizeHexFingerprint(payload) ?? NormalizeOpenSshBase64Fingerprint(payload);
+        }
 
-        value = value.Replace(":", string.Empty, StringComparison.Ordinal).Replace("-", string.Empty, StringComparison.Ordinal);
+        return NormalizeHexFingerprint(value);
+    }
+
+    private static string? NormalizeHexFingerprint(string fingerprint)
+    {
+        var value = fingerprint.Replace(":", string.Empty, StringComparison.Ordinal)
+            .Replace("-", string.Empty, StringComparison.Ordinal);
+
         return Sha256FingerprintRegex().IsMatch(value) ? value.ToUpperInvariant() : null;
+    }
+
+    private static string? NormalizeOpenSshBase64Fingerprint(string fingerprint)
+    {
+        var value = fingerprint.Trim();
+        if (value.Length == 0)
+            return null;
+
+        var padding = value.Length % 4;
+        if (padding > 0)
+            value = value.PadRight(value.Length + 4 - padding, '=');
+
+        try
+        {
+            var bytes = Convert.FromBase64String(value);
+            return bytes.Length == 32 ? Convert.ToHexString(bytes) : null;
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
     }
 
     [GeneratedRegex("^[A-Fa-f0-9]{64}$", RegexOptions.CultureInvariant)]

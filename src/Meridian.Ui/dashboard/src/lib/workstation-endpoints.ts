@@ -69,6 +69,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   operationsContinuityApprovalPolicyRules: UI_API_ROUTES.OperationsContinuityApprovalPolicyRules,
   operationsContinuityCloseCalendar: UI_API_ROUTES.OperationsContinuityCloseCalendar,
   operationsContinuityCloseCalendarItems: UI_API_ROUTES.OperationsContinuityCloseCalendarItems,
+  financialOperationsCommandCenter: UI_API_ROUTES.FinancialOperationsCommandCenter,
   operationsPrivateCapitalCloseCockpit: UI_API_ROUTES.OperationsPrivateCapitalCloseCockpit,
   chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: UI_API_ROUTES.RunHistory,
@@ -841,6 +842,16 @@ export function workstationOperationsContinuityCloseCalendarEndpoint(options: {
   periodId?: string;
 } = {}): string {
   return `${WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar}${queryString(options)}`;
+}
+
+export function workstationFinancialOperationsCommandCenterEndpoint(options: {
+  fundProfileId?: string;
+  ledgerBookId?: string;
+  fundAccountId?: string;
+  periodId?: string;
+  entityId?: string;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.financialOperationsCommandCenter}${queryString(options)}`;
 }
 
 export function workstationOperationsPrivateCapitalCloseCockpitEndpoint(options: {
@@ -1643,4 +1654,3 @@ function queryString(params: Record<string, string | number | boolean | readonly
   const value = search.toString();
   return value ? `?${value}` : "";
 }
-
