@@ -16,7 +16,36 @@ public sealed record FinancialOperationsCommandCenterDto(
     IReadOnlyList<FinancialOperationsQueueRowDto> QueueRows,
     OperationsContinuityWorkflowDto? ActiveWorkflow = null,
     OperationsCloseCalendarDto? CloseCalendar = null,
-    PrivateCapitalCloseCockpitDto? PrivateCapitalCloseCockpit = null);
+    PrivateCapitalCloseCockpitDto? PrivateCapitalCloseCockpit = null,
+    FinancialOperationsCloseSupportDecisionDto? CloseSupportDecision = null);
+
+public sealed record FinancialOperationsCloseSupportDecisionDto(
+    string DecisionId,
+    string Status,
+    bool IsReady,
+    string Summary,
+    string PeriodState,
+    string LockReopenPosture,
+    string NavReportDependencyPosture,
+    int UnresolvedExceptionCount,
+    int PendingApprovalCount,
+    int RetainedEvidenceGapCount,
+    IReadOnlyList<FinancialOperationsCloseSupportDecisionRowDto> Decisions);
+
+public sealed record FinancialOperationsCloseSupportDecisionRowDto(
+    string DecisionId,
+    string Category,
+    string Label,
+    string Status,
+    bool IsBlocking,
+    string Detail,
+    string RequiredAction,
+    string? RouteHint,
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
+{
+    public IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
 
 public sealed record FinancialOperationsCommandCenterMetricDto(
     string MetricId,

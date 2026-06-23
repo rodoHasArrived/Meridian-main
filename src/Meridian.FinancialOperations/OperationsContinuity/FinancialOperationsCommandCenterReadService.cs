@@ -1,4 +1,5 @@
 using System.Globalization;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
@@ -109,7 +110,8 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             orderedRows,
             activeWorkflow,
             closeCalendar,
-            privateCapitalCloseCockpit);
+            privateCapitalCloseCockpit,
+            BuildCloseSupportDecision(activeWorkflow, closeCalendar, privateCapitalCloseCockpit, orderedRows));
     }
 
     private static OperationsContinuityWorkflowDto? ResolveActiveWorkflow(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
@@ -375,6 +377,194 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
             new("private-capital", "Private-capital close", cockpit?.OverallStatus.ToString() ?? "Unavailable", cockpit is null ? "Private-capital close cockpit is not registered." : cockpit.IsReadyToClose ? "Private-capital close cockpit is ready." : cockpit.ReadyLaneCount + "/" + cockpit.Lanes.Count + " close lanes ready.", cockpit?.IsReadyToClose == true ? "Ready" : "Review", cockpit?.CockpitRoute),
             new("queue", "Active queue", rows.Count.ToString(CultureInfo.InvariantCulture), BuildSummary(rows.Any(static row => row.IsBlocked) ? "Blocked" : "AtRisk", rows.Count, rows.Count(static row => row.IsBlocked), rows.Count(static row => !row.IsBlocked)), rows.Any(static row => row.IsBlocked) ? "Blocked" : "Review", null)
         ];
+    }
+
+    private static FinancialOperationsCloseSupportDecisionDto BuildCloseSupportDecision(
+        OperationsContinuityWorkflowDto? workflow,
+        OperationsCloseCalendarDto? closeCalendar,
+        PrivateCapitalCloseCockpitDto? cockpit,
+        IReadOnlyList<FinancialOperationsQueueRowDto> rows)
+    {
+        var periodState = workflow is null
+            ? "No active period workflow matched the requested scope."
+            : $"{workflow.Status} period {workflow.PeriodId}; close readiness {workflow.CloseReadiness?.Severity ?? "Unavailable"}.";
+        var lockPosture = BuildLockReopenPosture(workflow);
+        var navReportPosture = BuildNavReportDependencyPosture(workflow, cockpit);
+        var unresolvedExceptionCount = rows.Count(static row =>
+            row.SourceKind.Contains("break", StringComparison.OrdinalIgnoreCase)
+            || row.SourceKind.Contains("reconciliation", StringComparison.OrdinalIgnoreCase));
+        var pendingApprovalCount = rows.Count(static row =>
+            row.SourceKind.Contains("approval", StringComparison.OrdinalIgnoreCase));
+        var retainedEvidenceGapCount = rows.Count(static row =>
+            row.SourceKind.Contains("evidence", StringComparison.OrdinalIgnoreCase)
+            || row.SourceKind.Contains("nav-support", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(row.SourceKind, "close-checklist", StringComparison.OrdinalIgnoreCase));
+        var decisionRows = BuildCloseSupportDecisionRows(workflow, closeCalendar, cockpit, rows).ToArray();
+        var isReady = workflow is not null
+            && (workflow.CloseReadiness?.IsReadyToClose == true || workflow.Status is OperationsWorkflowStatusDto.ReadyForClose or OperationsWorkflowStatusDto.Closed)
+            && decisionRows.All(static row => !row.IsBlocking)
+            && (cockpit?.IsReadyToClose ?? true);
+        var status = isReady
+            ? "Ready"
+            : decisionRows.Any(static row => row.IsBlocking)
+                ? "Blocked"
+                : "Review";
+        var summary = status switch
+        {
+            "Ready" => "Close support is ready: period posture, NAV/report dependencies, exceptions, approvals, and retained evidence gaps are clear.",
+            "Blocked" => $"{decisionRows.Count(static row => row.IsBlocking).ToString("N0", CultureInfo.InvariantCulture)} close-support decision(s) block completion.",
+            _ => "Close support requires controller review before completion."
+        };
+
+        return new FinancialOperationsCloseSupportDecisionDto(
+            DecisionId: BuildCloseSupportDecisionId(workflow, cockpit),
+            Status: status,
+            IsReady: isReady,
+            Summary: summary,
+            PeriodState: periodState,
+            LockReopenPosture: lockPosture,
+            NavReportDependencyPosture: navReportPosture,
+            UnresolvedExceptionCount: unresolvedExceptionCount,
+            PendingApprovalCount: pendingApprovalCount,
+            RetainedEvidenceGapCount: retainedEvidenceGapCount,
+            Decisions: decisionRows);
+    }
+
+    private static IEnumerable<FinancialOperationsCloseSupportDecisionRowDto> BuildCloseSupportDecisionRows(
+        OperationsContinuityWorkflowDto? workflow,
+        OperationsCloseCalendarDto? closeCalendar,
+        PrivateCapitalCloseCockpitDto? cockpit,
+        IReadOnlyList<FinancialOperationsQueueRowDto> rows)
+    {
+        if (workflow is null)
+        {
+            yield return new FinancialOperationsCloseSupportDecisionRowDto(
+                "period-state",
+                "Period state",
+                "Active period workflow",
+                "Missing",
+                true,
+                "No active operations continuity workflow matched the requested close scope.",
+                "Start or select a scoped close workflow before close support can pass.",
+                UiApiRoutes.OperationsContinuity);
+        }
+
+        foreach (var row in rows.Take(12))
+        {
+            yield return new FinancialOperationsCloseSupportDecisionRowDto(
+                row.QueueId,
+                MapDecisionCategory(row.SourceKind),
+                row.Title,
+                row.StatusLabel,
+                row.IsBlocked,
+                row.Detail,
+                row.ActionLabel,
+                row.RouteHint,
+                row.EvidenceLinks);
+        }
+
+        if (closeCalendar?.Items.Any(static item => !item.IsReadyToClose || item.BlockerCount > 0) == true)
+        {
+            yield return new FinancialOperationsCloseSupportDecisionRowDto(
+                "period-lock-calendar",
+                "Lock/reopen posture",
+                "Period lock calendar",
+                "Blocked",
+                true,
+                "Close calendar has blocked or incomplete period-lock items.",
+                "Clear close-calendar period-lock and reopen remediation items.",
+                UiApiRoutes.OperationsContinuityCloseCalendar);
+        }
+
+        if (cockpit is not null && !cockpit.IsReadyToClose)
+        {
+            yield return new FinancialOperationsCloseSupportDecisionRowDto(
+                "nav-report-dependencies",
+                "NAV/report dependencies",
+                "NAV and report dependency posture",
+                cockpit.OverallStatus.ToString(),
+                true,
+                cockpit.BlockedLaneCount > 0
+                    ? $"{cockpit.BlockedLaneCount.ToString("N0", CultureInfo.InvariantCulture)} private-capital close lane(s) block NAV/report support."
+                    : "Private-capital close cockpit is not ready for close.",
+                "Resolve NAV support, report output approval, delivery, and private-capital close lanes.",
+                cockpit.CockpitRoute);
+        }
+    }
+
+    private static string BuildCloseSupportDecisionId(OperationsContinuityWorkflowDto? workflow, PrivateCapitalCloseCockpitDto? cockpit)
+        => workflow is not null
+            ? $"finops-close-support:{workflow.WorkflowId:D}"
+            : $"finops-close-support:{cockpit?.FundProfileId ?? "unscoped"}:{cockpit?.PeriodId ?? "current"}";
+
+    private static string BuildLockReopenPosture(OperationsContinuityWorkflowDto? workflow)
+    {
+        if (workflow is null)
+        {
+            return "Period lock posture is unavailable until a workflow is selected.";
+        }
+
+        var periodLockPackage = workflow.EvidencePackages.FirstOrDefault(static package =>
+            package.PackageId.Contains("period-lock", StringComparison.OrdinalIgnoreCase)
+            || package.Label.Contains("period lock", StringComparison.OrdinalIgnoreCase)
+            || package.Label.Contains("reopen", StringComparison.OrdinalIgnoreCase));
+        if (workflow.Status is OperationsWorkflowStatusDto.Closed && periodLockPackage?.IsReady == true)
+        {
+            return "Period is closed with retained period-lock evidence.";
+        }
+
+        if (workflow.ClosePackage is not null && workflow.Status is not OperationsWorkflowStatusDto.Closed)
+        {
+            return "Prior close package is retained, but current period is reopened or not re-locked.";
+        }
+
+        return periodLockPackage is null
+            ? "Period lock or governed reopen evidence has not been retained."
+            : $"{periodLockPackage.Label}: {periodLockPackage.Summary}";
+    }
+
+    private static string BuildNavReportDependencyPosture(OperationsContinuityWorkflowDto? workflow, PrivateCapitalCloseCockpitDto? cockpit)
+    {
+        var reportPosture = workflow?.ReportPackReadiness.IsReady == true
+            ? $"Report pack {workflow.ReportPackReadiness.ReportPackId ?? "selected"} is ready."
+            : workflow?.ReportPackReadiness.BlockingReason ?? "Report-pack readiness is unavailable.";
+        var navPosture = cockpit is null
+            ? "NAV support cockpit is unavailable."
+            : cockpit.IsReadyToClose
+                ? "NAV support and private-capital close lanes are ready."
+                : $"{cockpit.ReadyLaneCount.ToString("N0", CultureInfo.InvariantCulture)}/{cockpit.Lanes.Count.ToString("N0", CultureInfo.InvariantCulture)} private-capital close lane(s) ready.";
+        return $"{reportPosture} {navPosture}";
+    }
+
+    private static string MapDecisionCategory(string sourceKind)
+    {
+        var normalized = sourceKind.Trim().ToLowerInvariant();
+        if (normalized.Contains("calendar") || normalized.Contains("checklist"))
+        {
+            return "Lock/reopen posture";
+        }
+
+        if (normalized.Contains("nav") || normalized.Contains("private-capital"))
+        {
+            return "NAV/report dependencies";
+        }
+
+        if (normalized.Contains("break") || normalized.Contains("reconciliation"))
+        {
+            return "Unresolved exceptions";
+        }
+
+        if (normalized.Contains("approval"))
+        {
+            return "Approvals";
+        }
+
+        if (normalized.Contains("evidence"))
+        {
+            return "Retained evidence gaps";
+        }
+
+        return "Close support";
     }
 
     private static string BuildSummary(string status, int itemCount, int blockedCount, int reviewCount)
