@@ -59,6 +59,36 @@ public sealed class AccountingReportPackageServiceTests
     }
 
     [Fact]
+    public async Task BuildPackageAsync_CarriesStandaloneLedgerBookEvidenceScopeIssuesIntoReadiness()
+    {
+        var service = new AccountingReportPackageService();
+
+        var package = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-01",
+            EvidenceLinks:
+            [
+                $"evidence:ledger:trial-balance:2027-01:book:{AlternateLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-01:book:{AlternateLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-01:book:{AlternateLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-01:book:{AlternateLedgerBookId:D}"
+            ]));
+
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportLedgerEvidenceMissingLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportNavEvidenceMissingLedgerBookScope" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "report-evidence-package" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportLedgerEvidenceMissingLedgerBookScope") &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportNavEvidenceMissingLedgerBookScope"));
+    }
+
+    [Fact]
     public async Task BuildPackageAsync_BlocksCloseBackedCertificationUntilPeriodLock()
     {
         var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");

@@ -243,6 +243,9 @@ the requirement end to end.
   critical blocker and carries that blocker into the report-evidence readiness row, so financial
   statements, NAV, restatement, and export packages cannot appear ready for review without retained
   ledger, reconciliation, rendered-report, and NAV support evidence.
+- [x] Standalone accounting report packages now carry wrong-ledger-book retained evidence blockers
+  into the report-evidence readiness row, so operator review surfaces do not hide critical
+  ledger-book evidence scope drift behind package-level validation only.
 
 ## Still To Complete
 
@@ -297,8 +300,8 @@ the requirement end to end.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails
-  closed when retained report evidence is missing, but broader report authoring, review, and
-  operating workflows remain open.
+  closed when retained report evidence is missing or points to the wrong ledger book, but broader
+  report authoring, review, and operating workflows remain open.
 - [ ] Add broader operational hardening: deeper admin UX, tenant-level setup workflows,
   authorization and report-group scoping, audit review workflows, bulk import/export execution
   safeguards, performance test automation, and disaster-recovery validation. The shared
