@@ -782,10 +782,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
             HasCloseTaskSignOffEvidence([link]) &&
-            EvidenceLinkContainsToken(link, taskId) &&
+            EvidenceLinkContainsIdentifierToken(link, taskId) &&
             EvidenceLinkContainsToken(link, role) &&
-            (link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
              EvidenceLinkContainsToken(link, workflow.PeriodId)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
 
@@ -819,10 +818,8 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         Guid journalEntryId,
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
-            (link.Contains(journalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(journalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+            (EvidenceLinkContainsGuidToken(link, journalEntryId) ||
+             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
              link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
 
@@ -832,10 +829,8 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
             HasLateAdjustmentRequestEvidence([link]) &&
-            (link.Contains(journalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(journalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+            (EvidenceLinkContainsGuidToken(link, journalEntryId) ||
+             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
              link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
 
@@ -852,11 +847,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         LateAdjustmentRequestDto adjustment,
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
-            (link.Contains(requestId, StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(adjustment.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(adjustment.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+            (EvidenceLinkContainsIdentifierToken(link, requestId) ||
+             EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
+             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
              link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
 
@@ -867,13 +860,43 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         OperationsContinuityWorkflowDto workflow)
         => evidenceLinks.Any(link =>
             HasLateAdjustmentReviewEvidence([link]) &&
-            (link.Contains(requestId, StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(adjustment.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(adjustment.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-             link.Contains(workflow.WorkflowId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+            (EvidenceLinkContainsIdentifierToken(link, requestId) ||
+             EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
+             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
              link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
+
+    private static bool EvidenceLinkContainsGuidToken(string link, Guid value)
+        => EvidenceLinkContainsIdentifierToken(link, value.ToString("D")) ||
+           EvidenceLinkContainsIdentifierToken(link, value.ToString("N"));
+
+    private static bool EvidenceLinkContainsIdentifierToken(string link, string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        var searchIndex = 0;
+        while (searchIndex < link.Length)
+        {
+            var tokenIndex = link.IndexOf(token, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (tokenIndex < 0)
+            {
+                return false;
+            }
+
+            if (EvidenceTokenBoundaryAt(link, tokenIndex - 1) &&
+                EvidenceTokenBoundaryAt(link, tokenIndex + token.Length))
+            {
+                return true;
+            }
+
+            searchIndex = tokenIndex + token.Length;
+        }
+
+        return false;
+    }
 
     private static bool EvidenceLinkContainsLedgerBook(string link, OperationsContinuityWorkflowDto workflow)
     {
@@ -937,13 +960,16 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
     }
 
     private static bool EvidenceLedgerBookValueEndsAtBoundary(string link, int valueEndIndex)
+        => EvidenceTokenBoundaryAt(link, valueEndIndex);
+
+    private static bool EvidenceTokenBoundaryAt(string link, int index)
     {
-        if (valueEndIndex >= link.Length)
+        if (index < 0 || index >= link.Length)
         {
             return true;
         }
 
-        return link[valueEndIndex] switch
+        return link[index] switch
         {
             ':' or '/' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' => true,
             ' ' or '\t' or '\r' or '\n' => true,

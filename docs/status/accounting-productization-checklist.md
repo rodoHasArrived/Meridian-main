@@ -150,8 +150,9 @@ the requirement end to end.
   check, preventing certified financial statement, NAV, restatement, and export artifacts from
   accepting `book:{id}ffff` as selected-book provenance.
 - [x] Close-management task sign-off and late-adjustment request/review evidence now apply
-  exact-token ledger-book evidence checks, preventing `book:{id}ffff` from satisfying selected-book
-  provenance for close controls.
+  exact-token ledger-book, close-task, journal-entry, and late-adjustment request evidence checks,
+  preventing extended identifiers such as `book:{id}ffff` from satisfying selected close-control
+  provenance.
 - [x] External GL export-control and export-certification evidence recognizes colon-delimited
   ledger-book scope as a valid exact-token boundary while still rejecting extended ledger-book
   identifiers.

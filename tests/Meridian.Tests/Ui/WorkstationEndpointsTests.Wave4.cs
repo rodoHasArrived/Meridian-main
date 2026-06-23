@@ -597,6 +597,20 @@ public sealed partial class WorkstationEndpointsTests
 
         extendedBookSignOffResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
+        using var extendedTaskSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                taskToSignOff.TaskId,
+                requiredRole,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-controller",
+                "Controller tried to sign off with an extended close task evidence token.",
+                EvidenceLinks: [$"evidence:close-task:{taskToSignOff.TaskId}ffff:{requiredRole}:2026-07:book:{ledgerBookId:D}:controller-signoff"]),
+            ServerJsonOptions);
+
+        extendedTaskSignOffResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
         var controllerSignOffEvidence = $"evidence:close-task:{taskToSignOff.TaskId}:{requiredRole}:2026-07:book:{ledgerBookId:D}:controller-signoff";
         using var signOffResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementTaskSignOffs,
@@ -734,6 +748,20 @@ public sealed partial class WorkstationEndpointsTests
 
         extendedBookAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
+        using var extendedJournalAdjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Material close adjustment with an extended journal-entry evidence token.",
+                RequestedBy: "untrusted-browser-user",
+                EvidenceLinks: [$"evidence:late-adjustment:11111111-1111-1111-1111-111111111111ffff:book:{ledgerBookId:D}:review"]),
+            ServerJsonOptions);
+
+        extendedJournalAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
         var requestEvidence = $"evidence:late-adjustment:2026-07:book:{ledgerBookId:D}:review";
         using var adjustmentResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementLateAdjustments,
@@ -857,6 +885,19 @@ public sealed partial class WorkstationEndpointsTests
             ServerJsonOptions);
 
         extendedBookReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var extendedRequestReviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-reviewer",
+                "Controller tried to approve a material late adjustment with an extended request evidence token.",
+                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.RequestId}ffff:book:{ledgerBookId:D}:controller-approval"]),
+            ServerJsonOptions);
+
+        extendedRequestReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var reviewEvidence = $"evidence:late-adjustment:{adjustment.RequestId}:book:{ledgerBookId:D}:controller-approval";
         using var reviewResponse = await client.PostAsJsonAsync(
