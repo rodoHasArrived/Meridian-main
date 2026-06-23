@@ -279,7 +279,9 @@ Certified migration run artifacts must also be operationally clean: a retained c
 completion timestamp and zero retained issue count before the migration rollout plan can mark that
 lane ready. This keeps ledger-book, historical journal, dimensional, configuration-promotion, and
 close/reporting evidence migrations from becoming production proof while unresolved run issues
-remain attached to the artifact.
+remain attached to the artifact. Migration execution requests can retain source-store and migrated
+row counts on the same run; mismatched or incomplete supplied counts fail closed, and successful
+reconciliations are retained on the artifact and evidence references for rollout review.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

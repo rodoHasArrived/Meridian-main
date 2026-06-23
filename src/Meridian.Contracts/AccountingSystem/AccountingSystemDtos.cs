@@ -123,7 +123,9 @@ public sealed record AccountingMigrationRunArtifactDto(
     string? Summary = null,
     LedgerDimensionSetDto? Dimensions = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    int? SourceRecordCount = null,
+    bool? RowCountReconciled = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -163,6 +165,8 @@ public sealed record AccountingMigrationRunExecutionRequestDto(
     string? CorrelationId = null,
     string? TenantId = null,
     string? CompanyId = null,
+    int? SourceRecordCount = null,
+    int? MigratedRecordCount = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =

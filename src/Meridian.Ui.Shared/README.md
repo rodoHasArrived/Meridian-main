@@ -334,7 +334,10 @@ import external GL data, post journals, certify exports, or close periods.
 Certified migration run artifacts also stay blocked when they lack retained completion evidence or
 carry a nonzero issue count, so incomplete or unresolved ledger-book, historical journal,
 dimensional, configuration-promotion, or close/reporting evidence migrations cannot serve as
-production rollout proof. The shared migration artifact store rejects certified artifacts before
+production rollout proof. Governed migration-run execution can also retain source-store and
+migrated-row counts; incomplete, negative, or mismatched supplied counts create blocking issues and
+prevent certification while matched counts are retained as artifact fields and evidence tokens. The
+shared migration artifact store rejects certified artifacts before
 persistence unless they carry tenant, company, fund, ledger-book, completion, clean issue-count, and
 retained evidence scope; at least one retained evidence reference must identify the same tenant,
 company, fund profile, and ledger book as the certified artifact. Certified dimensional-backfill artifacts must additionally retain

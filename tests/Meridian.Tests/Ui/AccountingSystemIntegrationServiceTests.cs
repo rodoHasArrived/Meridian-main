@@ -4491,6 +4491,81 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemMigrationRunEndpoint_RetainsRowCountReconciliation()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var executionResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRuns,
+            JsonContent(new AccountingMigrationRunExecutionRequestDto(
+                AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                "spoofed-browser-user",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                RunId: "migration-run-historical-backfill-row-counts",
+                CertifyOnSuccess: true,
+                EvidenceLinks: [$"approval://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/historical-journal-backfill"],
+                CorrelationId: "historical-backfill-row-counts",
+                SourceRecordCount: 275,
+                MigratedRecordCount: 275)));
+
+        executionResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var executed = await ReadAsync<AccountingMigrationRunExecutionResultDto>(executionResponse);
+        executed.Status.Should().Be(AccountingMigrationRunStatusDto.Certified);
+        executed.Issues.Should().BeEmpty();
+        executed.Artifact.SourceRecordCount.Should().Be(275);
+        executed.Artifact.MigratedRecordCount.Should().Be(275);
+        executed.Artifact.RowCountReconciled.Should().BeTrue();
+        executed.Artifact.EvidenceReferences.Should().Contain(reference =>
+            reference == "row-count-reconciliation:source=275:migrated=275:reconciled=true");
+    }
+
+    [Fact]
+    public async Task AccountingSystemMigrationRunEndpoint_BlocksRowCountMismatch()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var executionResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRuns,
+            JsonContent(new AccountingMigrationRunExecutionRequestDto(
+                AccountingMigrationRunKindDto.DimensionalBackfill,
+                "spoofed-browser-user",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                RunId: "migration-run-dimensional-backfill-row-mismatch",
+                CertifyOnSuccess: true,
+                Dimensions: new LedgerDimensionSetDto(FundId: "default-fund", BookId: ledgerBookId.ToString("D")),
+                EvidenceLinks: [$"approval://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/dimensional-backfill dimension-scope ledger-dimension-set"],
+                CorrelationId: "dimensional-backfill-row-mismatch",
+                SourceRecordCount: 12,
+                MigratedRecordCount: 11)));
+
+        executionResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var executed = await ReadAsync<AccountingMigrationRunExecutionResultDto>(executionResponse);
+        executed.Status.Should().Be(AccountingMigrationRunStatusDto.Failed);
+        executed.IsCertified.Should().BeFalse();
+        executed.Issues.Should().ContainSingle(issue =>
+            issue.Code == "migration-run.row-count-mismatch" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        executed.Artifact.SourceRecordCount.Should().Be(12);
+        executed.Artifact.MigratedRecordCount.Should().Be(0);
+        executed.Artifact.RowCountReconciled.Should().BeFalse();
+
+        var listResponse = await client.GetAsync(
+            $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId=default-fund&ledgerBookId={ledgerBookId:D}");
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var listed = await ReadAsync<AccountingMigrationRunArtifactListDto>(listResponse);
+        listed.Artifacts.Should().ContainSingle(artifact =>
+            artifact.RunId == "migration-run-dimensional-backfill-row-mismatch" &&
+            artifact.Status == AccountingMigrationRunStatusDto.Failed &&
+            artifact.RowCountReconciled == false);
+    }
+
+    [Fact]
     public async Task AccountingSystemMigrationRunEndpoint_RejectsAutomationOrigin()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
