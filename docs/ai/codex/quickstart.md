@@ -10,7 +10,9 @@ still lives in `../assistant-workflow-contract.md`.
 
 ## Startup Checklist
 
-1. Run `git status --short` and separate existing user-owned changes from the task.
+1. Run `git status --short` and separate existing user-owned changes from the task. For PR-bound
+   implementation, start from the latest `origin/main` on a `codex/<short-task-name>` branch,
+   never write directly to `main`, and open or update a PR targeting `main`.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Disclose the working mode, intended scope, and first evidence source before deeper exploration.
@@ -44,6 +46,8 @@ still lives in `../assistant-workflow-contract.md`.
 11. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
 12. Choose the smallest validation lane from the task-to-proof matrix before editing.
+   For completed PR-ready work, run `bash scripts/ci.sh`; GitHub Actions
+   `Meridian CI / quality-gate` remains the merge authority.
    For local .NET tests, prefer
    `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
    so agent-triggered validation uses isolated outputs and avoids parallel test collisions.

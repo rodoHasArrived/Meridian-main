@@ -1,0 +1,10 @@
+# Default ownership
+* @rodoHasArrived
+
+# Governance and CI controls
+/.github/workflows/** @rodoHasArrived
+/.github/CODEOWNERS @rodoHasArrived
+/.github/pull_request_template.md @rodoHasArrived
+/.github/PULL_REQUEST_TEMPLATE.md @rodoHasArrived
+/AGENTS.md @rodoHasArrived
+/scripts/ci.sh @rodoHasArrived

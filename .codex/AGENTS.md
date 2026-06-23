@@ -12,6 +12,9 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
 ## Start Gate
 
 - Run `git status --short` before editing and preserve unrelated user-owned changes.
+- Follow the root `AGENTS.md` protected-branch policy: never write directly to `main`, use a
+  `codex/<short-task-name>` branch and PR, run `bash scripts/ci.sh` before representing completed
+  work, and treat GitHub Actions `Meridian CI / quality-gate` as the merge authority.
 - Read `.codex/skills/_shared/project-context.md` before changing Codex guidance that references
   product scope, active surfaces, commands, roadmap direction, or canonical terminology.
 - Read `docs/architecture/meridian-development-intelligence-framework.md`, `docs/domain/README.md`,

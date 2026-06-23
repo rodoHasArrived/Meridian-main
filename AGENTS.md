@@ -3,6 +3,85 @@
 This file is a compatibility shim for agents that look for root `AGENTS.md`.
 Keep it short and route detailed work to the canonical Meridian guidance sources.
 
+## Meridian Repository Operating Policy
+
+These instructions apply to all work in this repository.
+
+### Protected Target
+
+The `main` branch is protected. Never commit, push, force-push, rebase, reset, or
+otherwise write directly to `main`. Never attempt to bypass GitHub repository rules,
+required status checks, required reviews, or branch protections.
+
+### Branch Workflow
+
+For every task:
+
+1. Begin from the latest `origin/main`.
+2. Create or use a branch named `codex/<short-task-name>`.
+3. Make only changes that are required for the assigned task.
+4. Add or update appropriate automated tests.
+5. Run `bash scripts/ci.sh`.
+6. Do not represent a change as complete when that command fails.
+7. Commit the completed change to the feature branch.
+8. Push the feature branch to GitHub.
+9. Open or update a pull request targeting `main`.
+10. Report the commands run and their results in the pull request.
+
+### GitHub Actions Authority
+
+GitHub Actions is the authoritative integration-test result. A successful test run
+inside the Codex environment does not replace the required GitHub Actions check.
+When GitHub Actions fails:
+
+1. Inspect the failure.
+2. Correct the underlying problem.
+3. Run `bash scripts/ci.sh` again.
+4. Push a new commit to the same pull-request branch.
+5. Do not merge or request bypass of the failed check.
+
+### Prohibited Actions
+
+Do not:
+
+- Push directly to `main`.
+- Force-push any shared branch.
+- Use `--no-verify`.
+- Add `[skip ci]` or another CI-skip directive.
+- Disable, delete, weaken, or conditionally bypass tests.
+- Change expected behavior merely to make a failing test pass.
+- Change repository rulesets or branch protections.
+- Self-approve or self-merge pull requests.
+- Merge a pull request.
+- Store credentials, tokens, keys, or production secrets in the repository.
+- Modify CI governance files unless the task explicitly requests it and the pull
+  request is designated for human governance review.
+
+### Protected Governance Files
+
+The following files require explicit human review:
+
+- `.github/workflows/**`
+- `.github/CODEOWNERS`
+- `.github/pull_request_template.md`
+- `AGENTS.md`
+- `scripts/ci.sh`
+
+### Definition Of Done
+
+Work is complete only when:
+
+- The requested implementation is present.
+- Relevant tests were added or updated.
+- `bash scripts/ci.sh` succeeds.
+- The branch is pushed to GitHub.
+- A pull request targeting `main` exists.
+- The pull request explains the change and test evidence.
+- Required GitHub Actions checks pass.
+
+A passing local or Codex-environment test is preliminary evidence only. GitHub
+Actions remains the merge authority.
+
 ## Read First
 
 - `docs/README.md` for the canonical documentation front door.

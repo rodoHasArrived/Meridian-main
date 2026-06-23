@@ -26,6 +26,8 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 7. For workflows with multiple agents/lanes, use `docs/ai/agent-handoff-checklist.md` as the required handoff format.
 8. Select `docs/ai/work-modes.md` mode before implementation; if running parallel lanes, initialize `docs/ai/parallel-task-manifest-template.md`.
 9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine in `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
+10. Never write directly to `main`; use a `codex/<short-task-name>` branch, open a PR to `main`,
+    and treat GitHub Actions `Meridian CI / quality-gate` as the authoritative merge gate.
 
 ## Current Product Direction
 
@@ -54,6 +56,7 @@ Meridian is a .NET 10 trading and operational-finance platform with fund operati
 Use the narrowest relevant command:
 
 ```bash
+bash scripts/ci.sh
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
@@ -66,6 +69,8 @@ python3 build/scripts/docs/validate-skill-packages.py
 
 GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
 nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
+For completed PR-ready work, `bash scripts/ci.sh` is the canonical local/Codex verification
+command; the GitHub-hosted `quality-gate` check remains authoritative before merge.
 
 When local machine limits, restore failures, or MSBuild locks make validation unreliable, push the
 branch and use the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
