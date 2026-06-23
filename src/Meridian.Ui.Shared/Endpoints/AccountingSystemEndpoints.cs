@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
@@ -283,6 +284,72 @@ public static class AccountingSystemEndpoints
         })
         .WithName("UpsertAccountingMigrationRunArtifact")
         .Produces<AccountingMigrationRunArtifactDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapGet(UiApiRoutes.AccountingSystemMigrationWorkerPlans, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            AccountingMigrationRunKindDto? kind,
+            HttpContext context,
+            IAccountingMigrationRunWorkerPlanStore store) =>
+        {
+            if (!HasAccountingAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var plans = await store
+                .ListAsync(fundProfileId, ledgerBookId, kind, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
+                .ConfigureAwait(false);
+            var result = new AccountingMigrationRunWorkerPlanListDto(
+                fundProfileId,
+                ledgerBookId,
+                kind,
+                plans,
+                tenantContext.TenantId,
+                tenantContext.CompanyId);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ListAccountingMigrationWorkerPlans")
+        .Produces<AccountingMigrationRunWorkerPlanListDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapPost(UiApiRoutes.AccountingSystemMigrationWorkerPlans, async (
+            AccountingMigrationRunWorkerPlanUpsertRequestDto request,
+            HttpContext context,
+            IAccountingMigrationRunWorkerPlanWriter store) =>
+        {
+            if (!HasAccountingCertificationAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            try
+            {
+                EnsureHumanOrigin(request.ActionOrigin);
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                _ = ResolveMutationActor(context, request.Actor);
+                var trustedPlan = request.Plan with
+                {
+                    TenantId = tenantContext.TenantId ?? request.Plan.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.Plan.CompanyId
+                };
+                var result = await store.UpsertAsync(trustedPlan, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("UpsertAccountingMigrationWorkerPlan")
+        .Produces<AccountingMigrationRunWorkerPlanDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -616,6 +683,14 @@ public static class AccountingSystemEndpoints
            !string.IsNullOrWhiteSpace(currentUser)
             ? currentUser.Trim()
             : suppliedActor;
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new ArgumentException("Accounting migration worker plan retention requires a human operator origin.", nameof(actionOrigin));
+        }
+    }
 
     private static bool IsReviewedAutomationOriginError(Exception ex)
         => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.OrdinalIgnoreCase);

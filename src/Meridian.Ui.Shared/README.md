@@ -350,7 +350,10 @@ matched counts are retained as artifact fields and evidence tokens. The
 same execution service can resolve a retained worker plan by id for governed
 historical-journal and dimensional backfill runs; worker plans supply the retained
 source/migrated counts, scoped evidence references, and canonical dimensions used to build the
-artifact, and conflicting request scope or counts remain blocking issues.
+artifact, and conflicting request scope or counts remain blocking issues. Accounting System also
+exposes shared migration-worker-plan list/upsert endpoints that stamp authenticated tenant/company
+scope, reject automation-origin retention, and let browser and WPF setup surfaces retain the worker
+plan before executing the governed migration run.
 The
 shared migration artifact store rejects certified artifacts before
 persistence unless they carry tenant, company, fund, ledger-book, completion, clean issue-count, and

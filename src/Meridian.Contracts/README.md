@@ -109,9 +109,9 @@ rollout plan rows so browser, WPF, and admin surfaces can store ledger-book scop
 journal backfill, dimensional backfill, configuration-promotion, and close/reporting evidence
 migration proof under shared routes and render the required migration lane actions instead of
 passing one-off request-only evidence. Migration-run execution requests can also reference a
-retained worker plan, and the shared worker-plan DTO carries source and migrated row counts,
-ledger-book scope, evidence references, and optional canonical dimensions for governed
-historical-journal and dimensional backfill execution.
+retained worker plan, and the shared worker-plan DTO plus list/upsert request payloads carry source
+and migrated row counts, ledger-book scope, evidence references, tenant/company scope, and optional
+canonical dimensions for governed historical-journal and dimensional backfill execution.
 Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
 workflows can block the draft gate before post-time journal-line validation when Security Master
 provenance exists but approved identity or accounting mapping proof is still missing.
@@ -226,12 +226,13 @@ workflow evidence, and migration-rollout controls for
 ledger-book migration, historical journal backfill, dimensional backfill, accounting configuration
 promotion, and close/reporting evidence migration with shared blocker codes and retained
 `AccountingMigrationRunExecutionRequestDto`, `AccountingMigrationRunExecutionResultDto`,
-`AccountingMigrationRunWorkerPlanDto`, and `AccountingMigrationRunArtifactDto` rows so browser,
-WPF, and admin setup surfaces can execute a governed rollout run, render the same fail-closed
-readiness state, and avoid recomputing production gaps or treating certification booleans as
-executable migration proof. Execution requests can select a retained worker plan by id so historical
-journal and dimensional backfill runs carry the plan's source counts, migrated counts, evidence
-references, and canonical dimension scope into the retained artifact. Migration run artifacts can
+`AccountingMigrationRunWorkerPlanDto`, `AccountingMigrationRunWorkerPlanListDto`, and
+`AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can retain
+worker plans, execute a governed rollout run, render the same fail-closed readiness state, and avoid
+recomputing production gaps or treating certification booleans as executable migration proof.
+Execution requests can select a retained worker plan by id so historical journal and dimensional
+backfill runs carry the plan's source counts, migrated counts, evidence references, and canonical
+dimension scope into the retained artifact. Migration run artifacts can
 carry the canonical
 `LedgerDimensionSetDto` plus tenant and company scope; dimensional backfill certification is
 expected to retain fund, ledger-book, entity, sleeve, strategy, investor, capital-account,

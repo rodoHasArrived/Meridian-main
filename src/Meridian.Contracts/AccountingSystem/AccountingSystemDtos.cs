@@ -203,6 +203,23 @@ public sealed record AccountingMigrationRunWorkerPlanDto(
         EvidenceReferences ?? [];
 }
 
+public sealed record AccountingMigrationRunWorkerPlanUpsertRequestDto(
+    AccountingMigrationRunWorkerPlanDto Plan,
+    string Actor,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+
+public sealed record AccountingMigrationRunWorkerPlanListDto(
+    string? FundProfileId,
+    Guid? LedgerBookId,
+    AccountingMigrationRunKindDto? Kind,
+    IReadOnlyList<AccountingMigrationRunWorkerPlanDto>? Plans = null,
+    string? TenantId = null,
+    string? CompanyId = null)
+{
+    public IReadOnlyList<AccountingMigrationRunWorkerPlanDto> Plans { get; init; } =
+        Plans ?? [];
+}
+
 public sealed record AccountingMigrationRunExecutionIssueDto(
     string Code,
     AccountingConfigurationValidationSeverityDto Severity,

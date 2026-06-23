@@ -4463,6 +4463,77 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemMigrationWorkerPlanEndpoints_PersistListAndExecutePlan()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationWorkerPlans,
+            JsonContent(new AccountingMigrationRunWorkerPlanUpsertRequestDto(
+                new AccountingMigrationRunWorkerPlanDto(
+                    "worker-plan-historical-endpoint",
+                    AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                    "default-fund",
+                    ledgerBookId,
+                    SourceRecordCount: 512,
+                    MigratedRecordCount: 512,
+                    EvidenceReferences:
+                    [
+                        $"approval://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/historical-journal-backfill"
+                    ],
+                    TenantId: "spoofed-tenant",
+                    CompanyId: "spoofed-company",
+                    Summary: "Historical journal backfill worker plan retained from endpoint."),
+                "spoofed-browser-user",
+                OperationsActionOriginDto.HumanOperator)));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var upserted = await ReadAsync<AccountingMigrationRunWorkerPlanDto>(upsertResponse);
+        upserted.PlanId.Should().Be("worker-plan-historical-endpoint");
+        upserted.TenantId.Should().Be("company-alpha");
+        upserted.CompanyId.Should().Be("company-alpha");
+        upserted.SourceRecordCount.Should().Be(512);
+        upserted.MigratedRecordCount.Should().Be(512);
+
+        var listResponse = await client.GetAsync(
+            $"{UiApiRoutes.AccountingSystemMigrationWorkerPlans}?fundProfileId=default-fund&ledgerBookId={ledgerBookId:D}&kind=HistoricalJournalBackfill");
+
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var listed = await ReadAsync<AccountingMigrationRunWorkerPlanListDto>(listResponse);
+        listed.TenantId.Should().Be("company-alpha");
+        listed.CompanyId.Should().Be("company-alpha");
+        listed.Kind.Should().Be(AccountingMigrationRunKindDto.HistoricalJournalBackfill);
+        listed.Plans.Should().ContainSingle(plan =>
+            plan.PlanId == "worker-plan-historical-endpoint" &&
+            plan.TenantId == "company-alpha" &&
+            plan.CompanyId == "company-alpha");
+
+        var executionResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRuns,
+            JsonContent(new AccountingMigrationRunExecutionRequestDto(
+                AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                "spoofed-browser-user",
+                RunId: "migration-run-worker-plan-endpoint",
+                CertifyOnSuccess: true,
+                WorkerPlanId: "worker-plan-historical-endpoint")));
+
+        executionResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var executed = await ReadAsync<AccountingMigrationRunExecutionResultDto>(executionResponse);
+        executed.Status.Should().Be(AccountingMigrationRunStatusDto.Certified);
+        executed.Issues.Should().BeEmpty();
+        executed.Artifact.Actor.Should().Be("controller.admin");
+        executed.Artifact.FundProfileId.Should().Be("default-fund");
+        executed.Artifact.LedgerBookId.Should().Be(ledgerBookId);
+        executed.Artifact.TenantId.Should().Be("company-alpha");
+        executed.Artifact.CompanyId.Should().Be("company-alpha");
+        executed.Artifact.SourceRecordCount.Should().Be(512);
+        executed.Artifact.MigratedRecordCount.Should().Be(512);
+        executed.Artifact.EvidenceReferences.Should().Contain("worker-plan:worker-plan-historical-endpoint");
+    }
+
+    [Fact]
     public async Task AccountingSystemMigrationRunEndpoint_ExecutesCertifiedRunAndFeedsReadiness()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
@@ -4574,6 +4645,98 @@ public sealed class AccountingSystemIntegrationServiceTests
         executed.Artifact.RowCountReconciled.Should().BeTrue();
         executed.Artifact.EvidenceReferences.Should().Contain(reference =>
             reference == "row-count-reconciliation:source=275:migrated=275:reconciled=true");
+    }
+
+    [Fact]
+    public async Task AccountingSystemMigrationWorkerPlanEndpoints_RetainPlanAndFeedExecution()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationWorkerPlans,
+            JsonContent(new AccountingMigrationRunWorkerPlanUpsertRequestDto(
+                new AccountingMigrationRunWorkerPlanDto(
+                    "worker-plan-historical-journal-http",
+                    AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                    "default-fund",
+                    ledgerBookId,
+                    SourceRecordCount: 512,
+                    MigratedRecordCount: 512,
+                    EvidenceReferences:
+                    [
+                        $"approval://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/historical-journal-backfill"
+                    ],
+                    TenantId: "spoofed-tenant",
+                    CompanyId: "spoofed-company",
+                    Summary: "HTTP-retained worker plan reconciled historical journals."),
+                "spoofed-browser-user")));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var upserted = await ReadAsync<AccountingMigrationRunWorkerPlanDto>(upsertResponse);
+        upserted.PlanId.Should().Be("worker-plan-historical-journal-http");
+        upserted.TenantId.Should().Be("company-alpha");
+        upserted.CompanyId.Should().Be("company-alpha");
+        upserted.SourceRecordCount.Should().Be(512);
+
+        var listResponse = await client.GetAsync(
+            $"{UiApiRoutes.AccountingSystemMigrationWorkerPlans}?fundProfileId=default-fund&ledgerBookId={ledgerBookId:D}&kind=HistoricalJournalBackfill");
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var listed = await ReadAsync<AccountingMigrationRunWorkerPlanListDto>(listResponse);
+        listed.TenantId.Should().Be("company-alpha");
+        listed.CompanyId.Should().Be("company-alpha");
+        listed.Plans.Should().ContainSingle(plan =>
+            plan.PlanId == "worker-plan-historical-journal-http" &&
+            plan.TenantId == "company-alpha" &&
+            plan.CompanyId == "company-alpha");
+
+        var executionResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRuns,
+            JsonContent(new AccountingMigrationRunExecutionRequestDto(
+                AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                "spoofed-browser-user",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                RunId: "migration-run-historical-worker-plan-http",
+                CertifyOnSuccess: true,
+                WorkerPlanId: "worker-plan-historical-journal-http")));
+
+        executionResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var executed = await ReadAsync<AccountingMigrationRunExecutionResultDto>(executionResponse);
+        executed.Status.Should().Be(AccountingMigrationRunStatusDto.Certified);
+        executed.IsCertified.Should().BeTrue();
+        executed.Issues.Should().BeEmpty();
+        executed.Artifact.SourceRecordCount.Should().Be(512);
+        executed.Artifact.MigratedRecordCount.Should().Be(512);
+        executed.Artifact.RowCountReconciled.Should().BeTrue();
+        executed.Artifact.EvidenceReferences.Should().Contain("worker-plan:worker-plan-historical-journal-http");
+        executed.Artifact.EvidenceReferences.Should().Contain("row-count-reconciliation:source=512:migrated=512:reconciled=true");
+    }
+
+    [Fact]
+    public async Task AccountingSystemMigrationWorkerPlanEndpoint_RejectsAutomationOrigin()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var response = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationWorkerPlans,
+            JsonContent(new AccountingMigrationRunWorkerPlanUpsertRequestDto(
+                new AccountingMigrationRunWorkerPlanDto(
+                    "worker-plan-automation",
+                    AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                    "default-fund",
+                    ledgerBookId,
+                    SourceRecordCount: 1,
+                    MigratedRecordCount: 1),
+                "automation",
+                OperationsActionOriginDto.AutomationSuggestion)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("human operator");
     }
 
     [Fact]
@@ -5816,6 +5979,11 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
         builder.Services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         builder.Services.AddSingleton<IAccountingMigrationRunArtifactStore, InMemoryAccountingMigrationRunArtifactStore>();
+        builder.Services.AddSingleton<InMemoryAccountingMigrationRunWorkerPlanStore>();
+        builder.Services.AddSingleton<IAccountingMigrationRunWorkerPlanStore>(sp =>
+            sp.GetRequiredService<InMemoryAccountingMigrationRunWorkerPlanStore>());
+        builder.Services.AddSingleton<IAccountingMigrationRunWorkerPlanWriter>(sp =>
+            sp.GetRequiredService<InMemoryAccountingMigrationRunWorkerPlanStore>());
         builder.Services.AddSingleton<AccountingMigrationRunExecutionService>();
         builder.Services.AddSingleton<IAccountingTenantAdministrationProfileStore, InMemoryAccountingTenantAdministrationProfileStore>();
         builder.Services.AddSingleton<IAccountingProductionCertificationProfileStore, InMemoryAccountingProductionCertificationProfileStore>();
