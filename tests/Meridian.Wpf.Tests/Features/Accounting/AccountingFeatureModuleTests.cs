@@ -78,6 +78,7 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<IManualJournalEntryDraftStore>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IManualJournalEntryWorkbenchService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ICapitalAccountWorkbenchService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingCloseManagementService, AccountingCloseManagementService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IPrivateCapitalCloseCockpitService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingPolicyService, AccountingPolicyService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingBasisProjectionService, AccountingBasisProjectionService>(services, ServiceLifetime.Singleton);

@@ -95,6 +95,10 @@ fixture/import-first provider registrations, projects
 close/evidence/reconciliation posture from shared operations continuity when available, and creates
 fund-scoped accounting-basis policy records and multi-basis ledger-book projection candidates
 through Financial Operations services.
+The WPF Accounting close view model can also retain a loaded close-period plan through the shared
+`IAccountingCloseManagementService` when the caller supplies explicit workflow context, preserving
+materiality, task/dependency, sign-off, required-evidence, and late-adjustment evidence metadata in
+the same governed close-plan configuration request used by browser close setup.
 Desktop close-support queue projections consume
 `FinancialOperationsCommandCenterDto.CloseSupportDecision` directly, so period state,
 lock/reopen posture, NAV/report dependencies, unresolved exceptions, approvals, and retained

@@ -210,6 +210,10 @@ the requirement end to end.
 - [x] Close-period plans now have a governed shared configuration command for materiality policy,
   task owner/due-date overrides, sign-off counts, required evidence, custom dependencies,
   ledger-book-scoped setup evidence, and trusted session-actor stamping.
+- [x] WPF Accounting close setup now registers the shared close-management service and exposes a
+  governed view-model command that retains loaded close-plan materiality, task/dependency,
+  sign-off, required-evidence, late-adjustment evidence, workflow correlation, and actor context
+  through the same shared close-plan configuration contract used by browser close setup.
 - [x] External GL export certification and export-control provenance now require exact-token
   package, certification, fund/provider, and period evidence instead of accepting longer identifier
   prefixes.
@@ -341,8 +345,10 @@ the requirement end to end.
   critical pending material late-adjustment blockers, and a governed close-plan configuration
   command. The browser close cockpit can now retain the loaded materiality, checklist dependency,
   approval-count, required-evidence, ledger-book evidence, and correlation context through that
-  shared configuration endpoint, and production readiness now evidence-qualifies close-plan setup
-  by ledger book, but richer browser/WPF setup/editing workflows and review UX remain open.
+  shared configuration endpoint; WPF now has service registration and a close view-model command
+  that retains loaded close-plan setup through the same shared contract when workflow context is
+  supplied. Production readiness now evidence-qualifies close-plan setup by ledger book, but richer
+  browser/WPF setup/editing workflows and review UX remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails
