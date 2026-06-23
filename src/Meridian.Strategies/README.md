@@ -33,17 +33,23 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+`StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
+retained evidence links, accounting-record references, approval references, paper-validation
+lineage, and governed-report references are stored with the run so downstream review surfaces do
+not need to infer backtest acceptance from dashboard-only state.
 `LedgerReadService` projects strategy-run trial balance and journal rows with canonical
 `LedgerDimensionSetDto` scope for fund, strategy, portfolio, book, account, entity, sleeve,
 organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
 ledger drill-throughs stay aligned with accounting dimensions instead of a strategy-only scope
 vocabulary.
 Paper-to-live promotion requires the live approval checklist, explicit evidence references for
-each live checklist item, and an active `AllowLivePromotion` manual override. Approved and
-execution-control-blocked live promotion attempts are written to the durable execution audit
-trail with source run, target mode, required override kind, checklist count, evidence reference
-count, and control rejection evidence so operations review can trace human approval gates even
-when no live run is created.
+each live checklist item, and an active `AllowLivePromotion` manual override. The live checklist
+includes paper-validation, reconciliation, accounting-record, governed-reporting, governance
+sign-off, exception-handling, rollback or kill-switch, and audit-retention evidence before a live
+readiness claim can create a live run. Approved and execution-control-blocked live promotion
+attempts are written to the durable execution audit trail with source run, target mode, required
+override kind, checklist count, evidence reference count, and control rejection evidence so
+operations review can trace human approval gates even when no live run is created.
 Reconciliation also projects Security Master accounting inputs for Operations Continuity: fixed
 coupon accruals, expected journal previews, and factor-schedule principal paydowns are generated
 from resolved Security Master economic definitions before ledger/reconciliation gate posture is

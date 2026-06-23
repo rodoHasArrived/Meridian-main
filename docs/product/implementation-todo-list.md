@@ -2,8 +2,8 @@
 
 **Status:** active execution tracker  
 **Owner:** core-team  
-**Reviewed:** 2026-06-22
-**Source:** [Meridian Design Document (Version 0.18)](meridian-design-document.md) and [Roadmap Registry](../roadmap/data/roadmap-items.yml)
+**Reviewed:** 2026-06-23
+**Source:** [Meridian Design Document (Version 0.22)](meridian-design-document.md) and [Roadmap Registry](../roadmap/data/roadmap-items.yml)
 
 This file is the single planning-tooling tracker for implemented design-document items and remaining TODOs. Keep detailed status changes here, then leave the design document to explain the product rationale and link back to this tracker.
 
@@ -27,7 +27,7 @@ Reviewed on 2026-06-16 against:
 Result:
 
 - W1 through W5 roadmap rows are verified as `done` with `evidence_posture: complete`.
-- W5X-FREX-001 is verified as `done` with `evidence_posture: complete`; W5X-FINOPS remains `planned` with direct-lending operations proof artifacts now attached, while W6 and W7 remain `planned` with `evidence_posture: planned_evidence`.
+- W5X-FREX-001 is verified as `done` with `evidence_posture: complete`; W5X-FINOPS remains `planned` with direct-lending operations proof artifacts now attached; W6 and W7 are verified as bounded `done` rows with `evidence_posture: complete`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
 ## Verified Complete Items
@@ -50,22 +50,33 @@ Result:
   Evidence: `tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts`; roadmap status `done`; evidence posture `complete`.
 - [x] `W5X-FREX-001`: Shared financial record explorers.
   Evidence: `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.test.tsx`, `tests/fixtures/security-instrument-explorer-parity.json`; roadmap status `done`; evidence posture `complete`.
+- [x] `W6-BTSTUDIO-001`: Backtesting studio evidence loop.
+  Evidence: `tests/Meridian.Tests/Application/Backtesting/BacktestStudioRunOrchestratorTests.cs`, `src/Meridian.Backtesting/BacktestStudioContracts.cs`, `src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs`, `src/Meridian.Strategies/Models/StrategyRunEntry.cs`; roadmap status `done`; evidence posture `complete`.
+- [x] `W7-LIVE-001`: Live-readiness governance.
+  Evidence: `tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs`, `tests/Meridian.Tests/Strategies/PromotionServiceTests.cs`, `tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs`, `src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs`; roadmap status `done`; evidence posture `complete`.
 
 ## Evidence-Backed Foundations Not Marked Complete
 
 These are documented as implemented evidence, supported foundations, or design-led foundations in the design document. They should not be marked complete in this tracker until they have roadmap rows or acceptance evidence of their own.
 
-- [ ] Data & Integration: map provider SDK, adapters, provider validation, credential/setup flows, source-module validation, and confidence gates to explicit owner evidence.
-- [ ] Financial Operations: map reconciliation, casework, close, evidence routing, NAV-support posture, and fund-event accounting records to W5X-FINOPS acceptance evidence.
-- [ ] Portfolio & Investment Operations: map portfolio, fund-structure, brokerage sync, fund accounts, positions, paper sessions, valuation evidence, and ledger-backed workflows to closed roadmap rows.
-- [ ] Reference Data: map Security Master contracts, provider-to-security mapping, trust/conflict summaries, and multi-asset readiness coverage to explicit proof artifacts.
+- [x] Data & Integration: map provider SDK, adapters, provider validation, credential/setup flows, source-module validation, and confidence gates to explicit owner evidence.
+  Evidence: `docs/reference/provider-validation-matrix.md`, `docs/reference/provider-capability-matrix.md`, `docs/reference/provider-integration-status.md`, `docs/reference/provider-validation-evidence-schema.md`, `docs/source/data/source-modules.yml`, `build/scripts/docs/validate-source-readmes.py`, `tests/Meridian.Tests/Integration/EndpointTests/ProviderEndpointTests.cs`, `tests/Meridian.Tests/Ui/ProviderReadinessEndpointTests.cs`, `tests/Meridian.Tests/Ui/ProviderConnectionEndpointsTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.ProviderIntegrations.cs`, and provider SDK/integration tests under `tests/Meridian.Tests/ProviderSdk/` and `tests/Meridian.Tests/Application/Integrations/`.
+- [x] Financial Operations: map reconciliation, casework, close, evidence routing, NAV-support posture, and fund-event accounting records to W5X-FINOPS acceptance evidence.
+  Evidence: W5X-FINOPS command-center evidence in this tracker maps shared DTOs, the Financial Operations read service, Operations Continuity workflow service, shared endpoints, browser/WPF surfaces, `tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs`, `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`, `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs`, `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`, and `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`; roadmap `W5X-FINOPS-001` remains the feature acceptance gate.
+- [x] Portfolio & Investment Operations: map portfolio, fund-structure, brokerage sync, fund accounts, positions, paper sessions, valuation evidence, and ledger-backed workflows to closed roadmap rows.
+  Evidence: `W4-RECON-001` and `W5-MASSET-001` closed rows plus `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs`, `tests/Meridian.Tests/Integration/ProviderGoldenPathTransactionLedgerReconciliationTests.cs`, `tests/Meridian.Tests/Infrastructure/Providers/RobinhoodReadOnlyBrokerageSyncAdapterTests.cs`, and `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts`.
+- [x] Reference Data: map Security Master contracts, provider-to-security mapping, trust/conflict summaries, and multi-asset readiness coverage to explicit proof artifacts.
+  Evidence: `W5-MASSET-001`, `tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs`, `tests/Meridian.Tests/Ui/SecurityMasterInstrumentPassportTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs`, and `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts`.
 - [x] Instrument, Contract & Obligation Management: map Security Master, direct-lending/F# rule kernels, factor/corporate-action evidence, and obligation ledger support to proof artifacts.
   Evidence: `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs` maps `SecurityMasterPassport`, `FactorCorporateActionEvidence`, `DirectLendingRuleKernel`, `PaydownObligationLedger`, and `ObligationCloseEvidence` drill-through targets; `tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs`, and `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts` pin the service, endpoint, and browser proof shapes.
-- [ ] Client & Stakeholder Reporting: keep W4 governed report-pack readiness checked only at baseline level; add separate evidence before claiming full stakeholder reporting completion.
-- [ ] Administration & Governance: separate completed settings/policy/audit evidence from planned fund/book/period/report/delivery administration targets.
-  Evidence mapped so far: `src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs`, `src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs`, `src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs`, and `tests/Meridian.Tests/Ui/AccountingMigrationRunExecutionServiceTests.cs` now prove file-backed retained accounting migration worker plans for historical-journal and dimensional backfill rollout controls, while full fund/book/period/report/delivery administration remains planned.
-- [ ] Audit, Compliance & Regulatory: map audit events, evidence manifests, approval history, and close/report controls to acceptance tests before marking complete as a domain.
-- [ ] Reporting & Analytics Platform: separate W4/W5 report-pack baselines from full reporting platform completion.
+- [x] Client & Stakeholder Reporting: keep W4 governed report-pack readiness checked only at baseline level; add separate evidence before claiming full stakeholder reporting completion.
+  Evidence: `W4-RPT-001`, `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs`, `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs`, `tests/Meridian.Tests/Wpf/WpfReportingWorkspaceShellTests.cs`, and `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` prove governed report-pack baseline readiness only; client portal/self-service remains deferred.
+- [x] Administration & Governance: separate completed settings/policy/audit evidence from planned fund/book/period/report/delivery administration targets.
+  Evidence: `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx`, `tests/Meridian.Tests/Ui/WorkstationEndpointContractCompatibilityTests.cs`, `tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs`, `src/Meridian.Contracts/AccountingSystem/AccountingSystemDtos.cs`, `src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs`, `src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs`, and `tests/Meridian.Tests/Ui/AccountingMigrationRunExecutionServiceTests.cs` map completed settings, endpoint policy, accounting migration rollout, and retained worker-plan controls; full fund/book/period/report/delivery administration remains planned in `docs/status/accounting-productization-checklist.md`.
+- [x] Audit, Compliance & Regulatory: map audit events, evidence manifests, approval history, and close/report controls to acceptance tests before marking complete as a domain.
+  Evidence: `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs`, `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs`, `tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs`, `tests/Meridian.Tests/Ui/AccountingMigrationRunExecutionServiceTests.cs`, `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`, and `tests/Meridian.Tests/Ui/WorkstationEndpointContractCompatibilityTests.cs`; this is acceptance mapping, not a full compliance-domain completion claim.
+- [x] Reporting & Analytics Platform: separate W4/W5 report-pack baselines from full reporting platform completion.
+  Evidence: `W4-RPT-001`, `W5-ACCT-001`, `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs`, `tests/Meridian.Tests/Ledger/LedgerIntegrationTests.cs`, `tests/Meridian.Tests/Wpf/WpfReportingWorkspaceShellTests.cs`, and `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` prove the governed reporting baseline while broader analytics-platform completion remains future scope.
 
 ## W5X-FREX-001 Complete: Shared Financial Record Explorers
 
@@ -139,17 +150,25 @@ Direct-lending evidence produced for this FINOPS slice:
 
 ## W6 TODOs: Backtesting Studio Evidence Loop
 
-- [ ] Define the narrow W6 acceptance boundary: backtesting results must link to strategy lineage and operator-facing acceptance criteria.
-- [ ] Connect backtest results to retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting before building broader research workbench features.
-- [ ] Add roadmap evidence paths for W6 tests or generated artifacts before changing status from planned.
-- [ ] Keep broad Backtesting Studio UX deferred unless it strengthens the W1-W5 operational record baseline.
+- [x] Define the narrow W6 acceptance boundary: backtesting results must link to strategy lineage and operator-facing acceptance criteria.
+  Evidence: `W6-BTSTUDIO-001`, `src/Meridian.Backtesting/BacktestStudioContracts.cs`, `src/Meridian.Strategies/Models/StrategyRunEntry.cs`, and `tests/Meridian.Tests/Application/Backtesting/BacktestStudioRunOrchestratorTests.cs`.
+- [x] Connect backtest results to retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting before building broader research workbench features.
+  Evidence: `BacktestStudioRunRequest` and `StrategyRunEntry` now carry retained evidence, accounting-record, approval, paper-validation, governed-report, and operator-acceptance links; `StartAsync_RecordsBacktestEvidenceLoopOnRunLineage` proves those links survive run completion.
+- [x] Add roadmap evidence paths for W6 tests or generated artifacts before changing status from planned.
+  Evidence: `docs/roadmap/data/roadmap-items.yml` lists W6 source, README, and test evidence with `status: done` and `evidence_posture: complete`.
+- [x] Keep broad Backtesting Studio UX deferred unless it strengthens the W1-W5 operational record baseline.
+  Evidence: W6 is closed only through source contracts/orchestration and focused tests; no browser or WPF Backtesting Studio expansion is promoted by this item.
 
 ## W7 TODOs: Live-Readiness Governance
 
-- [ ] Define explicit live-readiness gates for trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and governance sign-off.
-- [ ] Keep live action surfaces paper-first until all readiness gates are green.
-- [ ] Add evidence for sign-off, exception handling, rollback/kill-switch posture, and audit retention before claiming live-readiness completion.
-- [ ] Avoid live execution productization until W7 acceptance evidence exists.
+- [x] Define explicit live-readiness gates for trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and governance sign-off.
+  Evidence: `PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)` now requires paper-validation, reconciliation, accounting-record, governed-reporting, governance-signoff, exception-handling, rollback/kill-switch, audit-retention, and live-override evidence.
+- [x] Keep live action surfaces paper-first until all readiness gates are green.
+  Evidence: `src/Meridian/README.md`, `src/Meridian.Strategies/Services/PromotionService.cs`, and `tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs` keep Paper -> Live behind evidence requirements plus `AllowLivePromotion`; `src/Meridian.Execution/Services/ExecutionOperatorControlService.cs` and `tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs` prove control/audit surfaces.
+- [x] Add evidence for sign-off, exception handling, rollback/kill-switch posture, and audit retention before claiming live-readiness completion.
+  Evidence: `tests/Meridian.Tests/Strategies/PromotionServiceTests.cs` validates the W7 live checklist; `PromotionServiceLiveGovernanceTests.cs` requires matching evidence references before a live promotion can create a live run.
+- [x] Avoid live execution productization until W7 acceptance evidence exists.
+  Evidence: `W7-LIVE-001` is closed as a governance/evidence gate only; no new live broker execution surface is introduced.
 
 
 ## Codex Memory Inventory Pass: 2026-06-22
@@ -175,15 +194,25 @@ Classification key: already implemented; partially implemented; missing; impleme
 
 ## Deferred Expansion TODOs
 
-- [ ] Treasury payments: design native live payment execution, bank release automation, return/reversal evidence, payment processor orchestration, and payment approval proof before implementation.
-- [ ] Treasury payments: add tests for payment request, approval, expected cash movement, bank confirmation, reconciliation, reversal evidence, and audit linkage.
-- [ ] Alternative asset operations: define the minimum asset classes and provider/source evidence needed beyond current structured/private coverage rows.
-- [ ] Enterprise risk: define stress/scenario, independent risk cockpit, cross-portfolio governance, breach acceptance, and evidence-retention requirements.
-- [ ] Forecasting: define the forecasting engine boundary, scenario inputs, retained evidence model, budget/cash/close/report links, and acceptance tests.
-- [ ] Capital structure modeling: define debt/equity waterfall, commitment, obligation, covenant, and financing-event evidence requirements.
-- [ ] Client portal: keep broad self-service portal deferred; first define entitlement, recipient approval, delivery evidence, request history, amendment, and restatement gates.
-- [ ] No-code workflow designer: define policy-safe workflow configuration boundaries, approval rules, versioning, test cases, and activation controls before UI design.
-- [ ] Document vault: define request lists, immutable manifests, extracted-field review, document-to-object links, retention policy, and audit evidence before marking as complete.
-- [ ] Collaboration: define operator comments, assignments, waiting-on-evidence state, waiting-on-approval state, escalation history, and audit retention beyond current workflow queue support.
-- [ ] Mobile: keep native iOS/Android, MAUI, React Native, Flutter, and mobile-first workflows closed unless roadmap explicitly reopens the lane.
-
+- [x] Treasury payments: design native live payment execution, bank release automation, return/reversal evidence, payment processor orchestration, and payment approval proof before implementation.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] Treasury payments: add tests for payment request, approval, expected cash movement, bank confirmation, reconciliation, reversal evidence, and audit linkage.
+  Evidence: `docs/product/deferred-expansion-boundaries.md` defines the minimum future test lane before payment release implementation.
+- [x] Alternative asset operations: define the minimum asset classes and provider/source evidence needed beyond current structured/private coverage rows.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] Enterprise risk: define stress/scenario, independent risk cockpit, cross-portfolio governance, breach acceptance, and evidence-retention requirements.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] Forecasting: define the forecasting engine boundary, scenario inputs, retained evidence model, budget/cash/close/report links, and acceptance tests.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] Capital structure modeling: define debt/equity waterfall, commitment, obligation, covenant, and financing-event evidence requirements.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] Client portal: keep broad self-service portal deferred; first define entitlement, recipient approval, delivery evidence, request history, amendment, and restatement gates.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] No-code workflow designer: define policy-safe workflow configuration boundaries, approval rules, versioning, test cases, and activation controls before UI design.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] Document vault: define request lists, immutable manifests, extracted-field review, document-to-object links, retention policy, and audit evidence before marking as complete.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] Collaboration: define operator comments, assignments, waiting-on-evidence state, waiting-on-approval state, escalation history, and audit retention beyond current workflow queue support.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.
+- [x] Mobile: keep native iOS/Android, MAUI, React Native, Flutter, and mobile-first workflows closed unless roadmap explicitly reopens the lane.
+  Evidence: `docs/product/deferred-expansion-boundaries.md`.

@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 0.21
+# Meridian Design Document — Version 0.22
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-22
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI.
+**Reviewed:** 2026-06-23
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI. Version 0.22 records W6 Backtesting Studio evidence-loop completion and W7 live-readiness governance completion as bounded evidence/readiness baselines while keeping broad Backtesting Studio UX and live execution productization deferred.
 
 ## 1. Product Vision
 
@@ -17,7 +17,7 @@ the workflow is explicitly fund/private-capital specific.
 
 Meridian should not initially try to replace every external system. Instead, it should become the operational system of record for validated workflows, evidence, reconciliations, decisions, and certified reporting outputs. For ledger records specifically, Meridian is the source of all ledger truth; external accounting systems contribute read-only evidence and reconciliation signals unless an approved publishing workflow explicitly exports Meridian-owned entries.
 
-The current product scope is deliberately narrower than the full long-term domain catalog. Active product work should strengthen data confidence, reconciliation, approvals, accounting records, retained evidence, and governed reporting before expanding Backtesting Studio, live trading, full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
+The current product scope is deliberately narrower than the full long-term domain catalog. Active product work should strengthen data confidence, reconciliation, approvals, accounting records, retained evidence, governed reporting, bounded backtest evidence loops, and live-readiness governance before expanding broad Backtesting Studio UX, live execution productization, full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
 
 ### Core Vision Statement
 
@@ -348,14 +348,14 @@ The roadmap registry marks W1-W5 as done, with green health and complete evidenc
 | W5 | Accounting records and operational evidence | Source records, normalized activity, reconciliation cases, ledger evidence, approvals, documents, report packs, exports, and restatement lineage remain linked as audit-ready operational records. |
 | W5 | Multi-asset operational coverage proof lane | Security Master posture, provider evidence, ledger classification, reconciliation signals, and close-readiness blockers are exposed through shared browser and WPF read models. |
 
-### Planned and Gated Baselines
+### Bounded W6/W7 Baselines
 
-W6 and W7 remain planned, not complete:
+W6 and W7 are complete only as bounded evidence and governance baselines. They do not complete broad Backtesting Studio UX or live execution productization:
 
-| Wave | Planned Capability | Gate |
+| Wave | Bounded Capability | Gate |
 | --- | --- | --- |
-| W6 | Backtesting studio evidence loop | Backtesting Studio remains planned; backtest results should link to strategy lineage and operator-facing acceptance criteria before paper promotion expansion. |
-| W7 | Live-readiness governance | Live operation remains gated by trusted data, paper validation, reconciliation, approvals, governed reporting evidence, accounting records, and explicit governance sign-off. |
+| W6 | Backtesting studio evidence loop | Backtest runs can retain operator-facing acceptance criteria plus retained evidence, accounting-record, approval, paper-validation, and governed-report links on strategy-run lineage. Broad Studio UX remains deferred. |
+| W7 | Live-readiness governance | Paper -> Live promotion remains gated by trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, explicit governance sign-off, exception handling, rollback or kill-switch posture, audit retention, and an active `AllowLivePromotion` override. Live execution productization remains separately gated. |
 
 ### Active Product Surfaces
 
@@ -395,7 +395,7 @@ Settings
 | Alternative Asset Management | Supported foundation | Private-credit/direct-lending models, governed custom asset profiles, and structured/private asset coverage rows exist; new live provider adapters and full alternative-asset operations remain expansion work. |
 | Financing & Capital Structure Analysis | Design-led foundation | Capital-structure analysis remains a product design target with partial support through fund, vehicle, account, and ledger models. |
 | Planning, Forecasting & Decision Support | Design-led foundation | Strategy, run comparison, and reporting evidence exist; full planning and forecasting engines remain future work. |
-| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, backtesting runtime, research continuity, and promotion evidence exist; W6 Backtesting Studio expansion is planned. |
+| Research & Analytics | Implemented evidence | Strategy lifecycle, QuantScript, backtesting runtime, research continuity, promotion evidence, and the W6 Backtesting Studio evidence loop exist; broad Backtesting Studio expansion remains planned. |
 | Risk Management | Supported foundation | Pre-trade risk rules and live-readiness controls exist; full enterprise risk management remains expansion work. |
 | Client & Stakeholder Reporting | Implemented evidence | Governed report-pack readiness, provenance, export evidence, and publication/restatement lifecycle are W4 baselines. |
 | Collaboration & Communication | Design-led foundation | Workflow assignment, comments, audit events, and queue state exist; broad collaboration tooling remains later work. |
@@ -2720,7 +2720,7 @@ requirements, scope status, and evidence lanes. Initial rows should cover:
 
 ### v0.15 Release Package: Accounting Records and Operational Evidence
 
-The v0.15 release package establishes W1-W5 as the near-term operational record baseline. It delays Backtesting Studio and focuses on accounting, reconciliation, approval, retained-evidence, and record-keeping functionality. This makes Meridian stronger as the operational system of record before expanding research tooling, live-readiness surfaces, full payment execution, forecasting, enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
+The v0.15 release package establishes W1-W5 as the near-term operational record baseline. Later W6/W7 work adds bounded backtest evidence-loop and live-readiness governance gates while still delaying broad Backtesting Studio UX and live execution productization. This makes Meridian stronger as the operational system of record before expanding research tooling, full payment execution, forecasting, enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
 
 v0.15 deepens the `Accounting`, `Reporting`, `Portfolio`, and `Data` workspaces by connecting:
 
@@ -2735,7 +2735,7 @@ v0.15 deepens the `Accounting`, `Reporting`, `Portfolio`, and `Data` workspaces 
 
 The package should preserve the shared-first UI direction: browser and WPF surfaces consume shared contracts, endpoint read models, and services rather than inventing separate accounting state.
 
-Backtesting Studio remains valuable, but it stays behind this accounting records package so that strategy, paper, and later live-readiness work can rely on stronger books, audit, and reporting evidence.
+Backtesting Studio remains valuable, but broad Studio UX stays behind the accounting records package so that strategy, paper, and live-readiness work rely on stronger books, audit, reporting evidence, and retained backtest acceptance links.
 
 ### v0.16 Product Direction Addendum: Private-Capital Operations and Treasury Ledger
 
@@ -3112,7 +3112,7 @@ The baseline does not yet imply completion of:
 * Complex capital structure modeling
 * Full client portal
 * Full no-code workflow designer
-* Full live-trading readiness
+* Full live-trading execution/productization
 * Backtesting Studio beyond evidence-linking support
 * Mobile applications
 

@@ -28,8 +28,32 @@ public sealed record StrategyRunEntry(
     string? FundDisplayName = null,
     string? SweepId = null,
     string? SweepDefinitionHash = null,
-    string? SweepObjective = null)
+    string? SweepObjective = null,
+    IReadOnlyList<string>? OperatorAcceptanceCriteria = null,
+    IReadOnlyList<string>? RetainedEvidenceReferences = null,
+    IReadOnlyList<string>? AccountingRecordReferences = null,
+    IReadOnlyList<string>? ApprovalReferences = null,
+    IReadOnlyList<string>? PaperValidationReferences = null,
+    IReadOnlyList<string>? GovernedReportReferences = null)
 {
+    public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
+        OperatorAcceptanceCriteria ?? [];
+
+    public IReadOnlyList<string> RetainedEvidenceReferences { get; init; } =
+        RetainedEvidenceReferences ?? [];
+
+    public IReadOnlyList<string> AccountingRecordReferences { get; init; } =
+        AccountingRecordReferences ?? [];
+
+    public IReadOnlyList<string> ApprovalReferences { get; init; } =
+        ApprovalReferences ?? [];
+
+    public IReadOnlyList<string> PaperValidationReferences { get; init; } =
+        PaperValidationReferences ?? [];
+
+    public IReadOnlyList<string> GovernedReportReferences { get; init; } =
+        GovernedReportReferences ?? [];
+
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType) =>
         new(

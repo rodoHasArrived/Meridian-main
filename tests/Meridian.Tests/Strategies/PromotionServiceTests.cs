@@ -585,9 +585,9 @@ public sealed class PromotionServiceTests
     }
 
     [Fact]
-    public async Task Wave2_Scenario_PromotionApprovalChecklistValidation_LiveModeRequiresOverrideReview()
+    public async Task Wave7_Scenario_PromotionApprovalChecklistValidation_LiveModeRequiresGovernanceEvidence()
     {
-        // Live mode requires an additional live-override review item beyond the Paper baseline
+        // Live mode requires the paper baseline plus explicit live-readiness governance evidence.
 
         var liveChecklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Live);
 
@@ -597,5 +597,21 @@ public sealed class PromotionServiceTests
             "DK1 trust packet review remains required in Live mode");
         liveChecklist.Should().Contain(PromotionApprovalChecklist.RiskControlsReviewed,
             "Risk controls review remains required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.PaperValidationReviewed,
+            "Paper-validation evidence is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.ReconciliationEvidenceReviewed,
+            "Reconciliation evidence is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.AccountingRecordsReviewed,
+            "Accounting-record evidence is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.GovernedReportingReviewed,
+            "Governed reporting evidence is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.GovernanceSignoffReviewed,
+            "Governance sign-off is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.ExceptionHandlingReviewed,
+            "Exception-handling posture is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.RollbackKillSwitchReviewed,
+            "Rollback or kill-switch posture is required in Live mode");
+        liveChecklist.Should().Contain(PromotionApprovalChecklist.AuditRetentionReviewed,
+            "Audit-retention evidence is required in Live mode");
     }
 }

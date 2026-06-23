@@ -37,6 +37,10 @@ Use this module for strategy backtests, simulation runtime behavior, and backtes
 Backtest Studio engines must return canonical SDK `BacktestResult` instances so native Meridian and
 external engine runs can flow through the same strategy-run repository, comparison, diff, and
 portfolio drill-in surfaces.
+Backtest Studio requests may carry operator-facing acceptance criteria plus retained evidence,
+accounting-record, approval, paper-validation, and governed-report references. The orchestrator
+persists those links onto the shared strategy-run entry at start and preserves them when the run
+completes, keeping W6 limited to evidence linkage rather than broad Studio UX expansion.
 
 ## API / contract notes
 
@@ -52,6 +56,10 @@ portfolio drill-in surfaces.
 - `BacktestStudioRunRequest`, `BacktestStudioRunHandle`, `BacktestStudioRunStatus`, and
   `IBacktestStudioEngine` live in this module so native and external Studio engines share the
   Backtesting-owned orchestration contract instead of depending on the application layer.
+- `BacktestStudioRunRequest` carries the W6 evidence-loop metadata consumed by
+  `BacktestStudioRunOrchestrator`: operator acceptance criteria, retained evidence references,
+  accounting-record references, approval references, paper-validation references, and governed
+  report references.
 - `BacktestPreflightService` consumes the shared `ISecurityValidationGateService` contract from
   `Meridian.Contracts.Services`, keeping Security Master trust-gate validation optional for hosts
   while preserving fail-closed preflight behavior when the gate reports blocking issues.

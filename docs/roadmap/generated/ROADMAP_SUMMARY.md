@@ -32,5 +32,5 @@ Snapshot date: 2026-06-10
 | W5-MASSET-001 | Multi-asset operational coverage proof lane | done | green | high | Accounting and Ledger |
 | W5X-FINOPS-001 | Financial operations control center | planned | green | high | Accounting and Ledger |
 | W5X-FREX-001 | Shared financial record explorers | done | green | high | Workstation Shell and UX |
-| W6-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy Analytics |
-| W7-LIVE-001 | Live-readiness governance | planned | green | medium | Accounting and Ledger |
+| W6-BTSTUDIO-001 | Backtesting studio evidence loop | done | green | medium | Strategy Analytics |
+| W7-LIVE-001 | Live-readiness governance | done | green | medium | Accounting and Ledger |

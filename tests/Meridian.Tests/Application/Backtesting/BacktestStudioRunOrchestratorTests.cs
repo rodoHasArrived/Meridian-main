@@ -81,6 +81,70 @@ public sealed class BacktestStudioRunOrchestratorTests
     }
 
     [Fact]
+    public async Task StartAsync_RecordsBacktestEvidenceLoopOnRunLineage()
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
+            store,
+            [engine],
+            NullLogger<BacktestStudioRunOrchestrator>.Instance);
+
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "strategy-evidence-loop",
+            StrategyName: "Evidence Loop",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: BuildRequest(),
+            OperatorAcceptanceCriteria:
+            [
+                "Backtest result links to retained strategy thesis.",
+                "Operator reviewed paper-validation promotion boundary."
+            ],
+            RetainedEvidenceReferences:
+            [
+                "evidence://research/backtests/strategy-evidence-loop/run-001",
+                " evidence://research/backtests/strategy-evidence-loop/run-001 "
+            ],
+            AccountingRecordReferences:
+            [
+                "accounting-record://operations/close-package/2026-03"
+            ],
+            ApprovalReferences:
+            [
+                "approval://strategy/backtest-evidence-loop"
+            ],
+            PaperValidationReferences:
+            [
+                "paper-validation://strategy-evidence-loop/run-001"
+            ],
+            GovernedReportReferences:
+            [
+                "report-pack://governed/strategy-evidence-loop"
+            ]);
+
+        var handle = await orchestrator.StartAsync(request);
+
+        var started = await store.GetLatestRunAsync("strategy-evidence-loop");
+        started.Should().NotBeNull();
+        started!.OperatorAcceptanceCriteria.Should().BeEquivalentTo(request.OperatorAcceptanceCriteria);
+        started.RetainedEvidenceReferences.Should().ContainSingle("evidence://research/backtests/strategy-evidence-loop/run-001");
+        started.AccountingRecordReferences.Should().ContainSingle("accounting-record://operations/close-package/2026-03");
+        started.ApprovalReferences.Should().ContainSingle("approval://strategy/backtest-evidence-loop");
+        started.PaperValidationReferences.Should().ContainSingle("paper-validation://strategy-evidence-loop/run-001");
+        started.GovernedReportReferences.Should().ContainSingle("report-pack://governed/strategy-evidence-loop");
+
+        engine.Complete(handle.EngineRunHandle, BuildResult(request.NativeRequest));
+
+        var completed = await WaitForRunAsync(store, "strategy-evidence-loop", run => run.EndedAt.HasValue);
+        completed.OperatorAcceptanceCriteria.Should().BeEquivalentTo(request.OperatorAcceptanceCriteria);
+        completed.RetainedEvidenceReferences.Should().ContainSingle("evidence://research/backtests/strategy-evidence-loop/run-001");
+        completed.AccountingRecordReferences.Should().ContainSingle("accounting-record://operations/close-package/2026-03");
+        completed.ApprovalReferences.Should().ContainSingle("approval://strategy/backtest-evidence-loop");
+        completed.PaperValidationReferences.Should().ContainSingle("paper-validation://strategy-evidence-loop/run-001");
+        completed.GovernedReportReferences.Should().ContainSingle("report-pack://governed/strategy-evidence-loop");
+    }
+
+    [Fact]
     public async Task StartAsync_WhenEngineFails_RecordsFailedRun()
     {
         var store = new StrategyRunStore();

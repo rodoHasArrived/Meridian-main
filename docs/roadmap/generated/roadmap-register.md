@@ -320,54 +320,54 @@ Completed shared Ledger, Portfolio, Security & Instrument, and Report-Line Prove
 | Field | Value |
 | --- | --- |
 | Wave | W6 |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | medium |
 | Owner lane | Strategy Analytics |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-04 |
+| Evidence posture | complete |
+| Last reviewed | 2026-06-23 |
 
 ### Current Summary
 
-Backtesting Studio remains planned. Strategy work should link research or backtest results into retained evidence, accounting records, approvals, paper-validation lineage, or governed reporting when those links are relevant, without treating prior baselines or named productization targets as development ceilings.
+Closed 2026-06-23. Backtest Studio remains limited to an evidence loop: accepted runs can carry operator-facing acceptance criteria, retained evidence references, accounting-record links, approval references, paper-validation lineage, and governed-report references into the shared strategy-run record, and completion preserves those links. Broader Backtesting Studio UX remains deferred unless it strengthens the W1-W5 operational record baseline.
 
 ### Exit Criteria
 
-- Backtest result evidence links to strategy lineage.
-- Operator-facing acceptance criteria are checklist-backed.
-- Source READMEs explain module ownership and test lanes.
-- Scope remains limited to evidence linkage and paper-validation support unless a later roadmap change promotes broader Studio scope.
+- Backtest result evidence links to strategy lineage through retained `StrategyRunEntry` fields.
+- Operator-facing acceptance criteria are persisted with the backtest run.
+- Source READMEs explain module ownership and focused test lanes.
+- Scope remains limited to evidence linkage and paper-validation support; no broad Studio UX is promoted by this item.
 
 ### Source Modules
 
-- `SRC-APP`
-- `SRC-CONTRACTS`
+- `SRC-BACKTESTING`
+- `SRC-STRATEGIES`
 
 ## W7-LIVE-001 - Live-readiness governance
 | Field | Value |
 | --- | --- |
 | Wave | W7 |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-04 |
+| Evidence posture | complete |
+| Last reviewed | 2026-06-23 |
 
 ### Current Summary
 
-Live-readiness remains planned and gated by the W1-W5 operational record baseline: trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and explicit governance sign-off. Near-term live work stays paper-first and readiness-oriented, not live execution productization.
+Closed 2026-06-23. Live-readiness governance is evidence-gated, not live-execution productization: Paper -> Live promotion requires the W1-W5 operational record baseline, paper-validation evidence, reconciliation evidence, accounting-record evidence, governed reporting evidence, governance sign-off, exception-handling posture, rollback or kill-switch posture, audit-retention evidence, and an active `AllowLivePromotion` override. Host and execution surfaces remain paper-first by default.
 
 ### Exit Criteria
 
-- Live action surfaces remain paper-first until acceptance gates are green.
+- Live action surfaces remain paper-first unless live-readiness acceptance gates and execution controls are green.
 - Credential and provider checks stay secret-safe and read-only by default.
-- Governance sign-off is linked before any live-readiness claim.
-- Any live-readiness work strengthens operational evidence and approval posture before adding broker execution surface area.
+- Governance sign-off, exception handling, rollback or kill-switch posture, and audit retention are linked before any live-readiness claim.
+- This item strengthens operational evidence and approval posture without adding broker execution surface area.
 
 ### Source Modules
 
 - `SRC-HOST`
-- `SRC-APP`
-- `SRC-CONTRACTS`
+- `SRC-EXECUTION`
+- `SRC-STRATEGIES`
 - `SRC-UI-DASHBOARD`

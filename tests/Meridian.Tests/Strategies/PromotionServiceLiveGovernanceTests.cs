@@ -462,6 +462,14 @@ public sealed class PromotionServiceLiveGovernanceTests
             $"{PromotionApprovalChecklist.RunLineageReviewed}:strategy-run/run-live-source",
             $"{PromotionApprovalChecklist.PortfolioLedgerContinuityReviewed}:ledger-continuity/live-book",
             $"{PromotionApprovalChecklist.RiskControlsReviewed}:risk-controls/pre-live",
+            $"{PromotionApprovalChecklist.PaperValidationReviewed}:paper-validation/run-live-source",
+            $"{PromotionApprovalChecklist.ReconciliationEvidenceReviewed}:reconciliation/live-readiness",
+            $"{PromotionApprovalChecklist.AccountingRecordsReviewed}:accounting-records/live-readiness",
+            $"{PromotionApprovalChecklist.GovernedReportingReviewed}:report-pack/live-readiness",
+            $"{PromotionApprovalChecklist.GovernanceSignoffReviewed}:governance-signoff/live-readiness",
+            $"{PromotionApprovalChecklist.ExceptionHandlingReviewed}:exceptions/live-readiness",
+            $"{PromotionApprovalChecklist.RollbackKillSwitchReviewed}:controls/kill-switch/live-readiness",
+            $"{PromotionApprovalChecklist.AuditRetentionReviewed}:audit-retention/live-readiness",
             $"{PromotionApprovalChecklist.LiveOverrideReviewed}:manual-override/{manualOverrideId}"
         ];
 

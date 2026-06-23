@@ -64,7 +64,13 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         {
             SweepId = request.SweepId,
             SweepDefinitionHash = computedSweepHash,
-            SweepObjective = request.SweepObjective
+            SweepObjective = request.SweepObjective,
+            OperatorAcceptanceCriteria = NormalizeLinks(request.OperatorAcceptanceCriteria),
+            RetainedEvidenceReferences = NormalizeLinks(request.RetainedEvidenceReferences),
+            AccountingRecordReferences = NormalizeLinks(request.AccountingRecordReferences),
+            ApprovalReferences = NormalizeLinks(request.ApprovalReferences),
+            PaperValidationReferences = NormalizeLinks(request.PaperValidationReferences),
+            GovernedReportReferences = NormalizeLinks(request.GovernedReportReferences)
         };
 
         await _repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
@@ -245,4 +251,11 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
         return Convert.ToHexString(bytes);
     }
+
+    private static string[] NormalizeLinks(IEnumerable<string>? values)
+        => values?
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray() ?? [];
 }
