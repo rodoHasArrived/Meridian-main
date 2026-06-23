@@ -1485,6 +1485,20 @@ public sealed partial class WorkstationEndpointsTests
                 new ChartOfAccountsNodeDto("capital-unscoped", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
                 "browser-user",
                 LedgerBookId: lifecycleDraft.LedgerBookId));
+        await configurationService.UpsertChartNodeAsync(
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("capital-fund", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+                "browser-user"));
+        using var lifecycleCapitalAccountResponse = await journalPreparerClient.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("capital-fund-http", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+                "browser-user",
+                LedgerBookId: lifecycleDraft.LedgerBookId),
+            ServerJsonOptions);
+        lifecycleCapitalAccountResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var lifecycleWorkspace = await configurationService.GetWorkspaceAsync("fund-alpha", lifecycleDraft.LedgerBookId);
         lifecycleWorkspace.ChartOfAccounts.Should().Contain(item => item.Path == "Assets:Cash");
         lifecycleWorkspace.ChartOfAccounts.Should().Contain(item => item.Path == "Equity:Capital Contributions");
@@ -1519,10 +1533,25 @@ public sealed partial class WorkstationEndpointsTests
         var postResponseBody = await postResponse.Content.ReadAsStringAsync();
         postResponse.StatusCode.Should().Be(HttpStatusCode.OK, postResponseBody);
         var posted = await postResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
-        using var reverseResponse = await journalControllerClient.PostAsJsonAsync(
+        using var extendedJournalIdReverseResponse = await journalControllerClient.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
             new JournalEntryLifecycleActionRequestDto(
                 posted!.JournalEntry.JournalEntryId,
+                posted.JournalEntry.FundProfileId,
+                JournalEntryLifecycleActionDto.Reverse,
+                "controller",
+                posted.JournalEntry.Version,
+                Notes: "Extended journal id evidence should not reverse a posted journal.",
+                EvidenceLinks:
+                [
+                    $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{posted.JournalEntry.LedgerBookId!.Value:D}/{posted.JournalEntry.JournalEntryId:D}ffff{ManualJournalScopeQuery(posted.JournalEntry)}"
+                ],
+                LedgerBookId: posted.JournalEntry.LedgerBookId),
+            ServerJsonOptions);
+        using var reverseResponse = await journalControllerClient.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                posted.JournalEntry.JournalEntryId,
                 posted.JournalEntry.FundProfileId,
                 JournalEntryLifecycleActionDto.Reverse,
                 "controller",
@@ -1542,6 +1571,7 @@ public sealed partial class WorkstationEndpointsTests
         promotionApprovalResponse.StatusCode.Should().Be(HttpStatusCode.OK, promotionApprovalResponseBody);
         approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         postResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        extendedJournalIdReverseResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
         reverseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var dryRun = await dryRunResponse.Content.ReadFromJsonAsync<RuleDryRunResultDto>(ServerJsonOptions);
         var candidate = await candidateResponse.Content.ReadFromJsonAsync<PostingRuleJournalCandidateResultDto>(ServerJsonOptions);
@@ -2176,13 +2206,29 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     private static string ManualJournalApprovalEvidence(ManualJournalEntryDraftDto journalEntry)
-        => $"/api/workstation/evidence/subjects/accounting-record/approval/ledger-book/{journalEntry.LedgerBookId:D}/{journalEntry.PeriodId}";
+        => $"/api/workstation/evidence/subjects/accounting-record/approval/ledger-book/{journalEntry.LedgerBookId!.Value:D}/{journalEntry.PeriodId}{ManualJournalScopeQuery(journalEntry)}";
 
     private static string ManualJournalPostingEvidence(ManualJournalEntryDraftDto journalEntry)
-        => $"/api/workstation/evidence/subjects/accounting-record/posting/ledger-book/{journalEntry.LedgerBookId:D}/{journalEntry.PeriodId}";
+        => $"/api/workstation/evidence/subjects/accounting-record/posting/ledger-book/{journalEntry.LedgerBookId!.Value:D}/{journalEntry.PeriodId}{ManualJournalScopeQuery(journalEntry)}";
 
     private static string ManualJournalReversalEvidence(ManualJournalEntryDraftDto journalEntry)
-        => $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{journalEntry.LedgerBookId:D}/{journalEntry.JournalEntryId:D}";
+        => $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{journalEntry.LedgerBookId!.Value:D}/{journalEntry.JournalEntryId:D}{ManualJournalScopeQuery(journalEntry)}";
+
+    private static string ManualJournalScopeQuery(ManualJournalEntryDraftDto journalEntry)
+    {
+        var queryParts = new List<string>(2);
+        if (!string.IsNullOrWhiteSpace(journalEntry.TenantId))
+        {
+            queryParts.Add($"tenantId={journalEntry.TenantId}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(journalEntry.CompanyId))
+        {
+            queryParts.Add($"companyId={journalEntry.CompanyId}");
+        }
+
+        return queryParts.Count == 0 ? string.Empty : $"?{string.Join("&", queryParts)}";
+    }
 
     private static ManualJournalEntryDraftDto ManualJournalEntryDraft(
         string fundEventId = "fund-event:fund-alpha:capital-call:20260630",

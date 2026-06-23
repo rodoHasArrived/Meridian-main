@@ -4572,10 +4572,10 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     private static bool HasManualJournalEntryOrPeriodProvenance(
         ManualJournalEntryDraftDto journalEntry,
         string evidenceLink)
-        => evidenceLink.Contains(journalEntry.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-           evidenceLink.Contains(journalEntry.JournalEntryId.ToString("N"), StringComparison.OrdinalIgnoreCase) ||
+        => ReferencesEvidenceToken(evidenceLink, journalEntry.JournalEntryId.ToString("D")) ||
+           ReferencesEvidenceToken(evidenceLink, journalEntry.JournalEntryId.ToString("N")) ||
            (!string.IsNullOrWhiteSpace(journalEntry.PeriodId) &&
-               evidenceLink.Contains(journalEntry.PeriodId, StringComparison.OrdinalIgnoreCase));
+               ReferencesEvidenceToken(evidenceLink, journalEntry.PeriodId));
 
     private static bool HasManualJournalLedgerBookProvenance(
         ManualJournalEntryDraftDto journalEntry,
@@ -4586,8 +4586,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             return true;
         }
 
-        return evidenceLink.Contains(ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains(ledgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+        return ReferencesEvidenceToken(evidenceLink, ledgerBookId.ToString("D")) ||
+               ReferencesEvidenceToken(evidenceLink, ledgerBookId.ToString("N"));
     }
 
     private static bool HasManualJournalTenantCompanyProvenance(
@@ -4608,12 +4608,71 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             return true;
         }
 
-        return evidenceLink.Contains($"{pathToken}:{normalized}", StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains($"{pathToken}/{normalized}", StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains($"{queryToken}={normalized}", StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains($"{queryToken}:{normalized}", StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains($"{queryToken}/{normalized}", StringComparison.OrdinalIgnoreCase);
+        return ReferencesScopedEvidenceToken(evidenceLink, $"{pathToken}:", normalized) ||
+               ReferencesScopedEvidenceToken(evidenceLink, $"{pathToken}/", normalized) ||
+               ReferencesScopedEvidenceToken(evidenceLink, $"{queryToken}=", normalized) ||
+               ReferencesScopedEvidenceToken(evidenceLink, $"{queryToken}:", normalized) ||
+               ReferencesScopedEvidenceToken(evidenceLink, $"{queryToken}/", normalized);
     }
+
+    private static bool ReferencesScopedEvidenceToken(string evidenceLink, string prefix, string token)
+    {
+        var searchIndex = 0;
+        while (searchIndex < evidenceLink.Length)
+        {
+            var prefixIndex = evidenceLink.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (prefixIndex < 0)
+            {
+                return false;
+            }
+
+            var tokenIndex = prefixIndex + prefix.Length;
+            if (evidenceLink.Length >= tokenIndex + token.Length &&
+                string.Compare(evidenceLink, tokenIndex, token, 0, token.Length, StringComparison.OrdinalIgnoreCase) == 0 &&
+                IsEvidenceTokenBoundary(evidenceLink, tokenIndex + token.Length))
+            {
+                return true;
+            }
+
+            searchIndex = tokenIndex;
+        }
+
+        return false;
+    }
+
+    private static bool ReferencesEvidenceToken(string evidenceLink, string token)
+    {
+        var normalized = NormalizeOptional(token);
+        if (normalized is null)
+        {
+            return false;
+        }
+
+        var searchIndex = 0;
+        while (searchIndex < evidenceLink.Length)
+        {
+            var tokenIndex = evidenceLink.IndexOf(normalized, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (tokenIndex < 0)
+            {
+                return false;
+            }
+
+            if (IsEvidenceTokenBoundary(evidenceLink, tokenIndex - 1) &&
+                IsEvidenceTokenBoundary(evidenceLink, tokenIndex + normalized.Length))
+            {
+                return true;
+            }
+
+            searchIndex = tokenIndex + normalized.Length;
+        }
+
+        return false;
+    }
+
+    private static bool IsEvidenceTokenBoundary(string evidenceLink, int index)
+        => index < 0 ||
+           index >= evidenceLink.Length ||
+           evidenceLink[index] is '/' or ':' or '=' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
     private static bool HasManualJournalCorrectionEvidence(IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(static link =>

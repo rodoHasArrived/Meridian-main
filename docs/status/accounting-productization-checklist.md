@@ -170,6 +170,9 @@ the requirement end to end.
 - [x] External GL export certification and export-control provenance now require exact-token
   package, certification, fund/provider, and period evidence instead of accepting longer identifier
   prefixes.
+- [x] Manual journal lifecycle approval, posting, close-lock, reversal, and rebook evidence now
+  requires exact-token journal-entry, period, ledger-book, tenant, and company provenance, so
+  extended lifecycle identifiers cannot satisfy governed transition evidence by prefix.
 
 ## Still To Complete
 
