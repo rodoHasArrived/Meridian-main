@@ -256,6 +256,9 @@ the requirement end to end.
 - [x] Tenant administration production readiness now requires aggregate accounting admin, browser
   admin-studio, and WPF admin-studio evidence to name the selected ledger book, so enterprise setup
   surfaces cannot be certified from generic tenant/company evidence alone.
+- [x] Tenant/company/report-group setup production readiness now also requires retained evidence for
+  the selected ledger book, blocking generic enterprise setup packets from certifying multi-ledger
+  reporting administration controls without book-specific proof.
 
 ## Still To Complete
 
