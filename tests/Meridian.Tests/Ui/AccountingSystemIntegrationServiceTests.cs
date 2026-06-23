@@ -351,6 +351,28 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.EvidenceReferences.Contains($"evidence://ledger-book/{otherLedgerBookId:D}/workflow-certification/full"));
 
+        var extendedTokenEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PostingRulesLedgerBookNativeCertified: true,
+                JournalLifecycleLedgerBookNativeCertified: true,
+                CloseReportingLedgerBookNativeCertified: true,
+                ExternalGlLedgerBookNativeCertified: true,
+                ReconciliationLedgerBookNativeCertified: true,
+                DirectLendingLedgerBookNativeCertified: true,
+                StrategyLedgerReadLedgerBookNativeCertified: true,
+                LedgerBookWorkflowEvidenceLinks: [$"evidence://ledger-book/{ledgerBookId:D}ffff/workflow-certification/full"]));
+
+        extendedTokenEvidence.LedgerBookWorkflows.Should().NotBeNull();
+        extendedTokenEvidence.LedgerBookWorkflows!.HasLedgerBookScopedEvidence.Should().BeFalse();
+        extendedTokenEvidence.LedgerBookWorkflows.CompletedControlCount.Should().Be(1);
+        extendedTokenEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-evidence-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}ffff/workflow-certification/full"));
+
         var incidentalGuidEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
