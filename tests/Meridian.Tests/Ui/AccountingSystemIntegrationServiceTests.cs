@@ -4409,6 +4409,112 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemMigrationRunEndpoint_ExecutesCertifiedRunAndFeedsReadiness()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var executionResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRuns,
+            JsonContent(new AccountingMigrationRunExecutionRequestDto(
+                AccountingMigrationRunKindDto.LedgerBookScope,
+                "spoofed-browser-user",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                RunId: "migration-run-ledger-book-scope-executed",
+                CertifyOnSuccess: true,
+                EvidenceLinks: [$"approval://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/ledger-book-scope"],
+                CorrelationId: "ledger-book-scope-executed")));
+
+        executionResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var executed = await ReadAsync<AccountingMigrationRunExecutionResultDto>(executionResponse);
+        executed.Status.Should().Be(AccountingMigrationRunStatusDto.Certified);
+        executed.IsCertified.Should().BeTrue();
+        executed.Issues.Should().BeEmpty();
+        executed.Artifact.Actor.Should().Be("controller.admin");
+        executed.Artifact.TenantId.Should().Be("company-alpha");
+        executed.Artifact.CompanyId.Should().Be("company-alpha");
+        executed.Artifact.LedgerBookId.Should().Be(ledgerBookId);
+        executed.Artifact.EvidenceReferences.Should().Contain(reference =>
+            reference.Contains("tenant/company-alpha/company/company-alpha/fund/default-fund", StringComparison.OrdinalIgnoreCase) &&
+            reference.Contains($"/ledger-book/{ledgerBookId:D}/", StringComparison.OrdinalIgnoreCase));
+
+        var readinessResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionReadiness,
+            JsonContent(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                LedgerBookMigrationCertified: true)));
+
+        readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
+        readiness.MigrationRunArtifacts.Should().ContainSingle(artifact =>
+            artifact.RunId == "migration-run-ledger-book-scope-executed" &&
+            artifact.Status == AccountingMigrationRunStatusDto.Certified);
+        readiness.Issues.Should().NotContain(issue => issue.Code == "migration.ledger-book-scope-certified-run-missing");
+    }
+
+    [Fact]
+    public async Task AccountingSystemMigrationRunEndpoint_FailsClosedWithoutLedgerBookScope()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var executionResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRuns,
+            JsonContent(new AccountingMigrationRunExecutionRequestDto(
+                AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+                "spoofed-browser-user",
+                FundProfileId: "default-fund",
+                RunId: "migration-run-historical-backfill-unscoped",
+                CertifyOnSuccess: true,
+                EvidenceLinks: ["approval://migration/historical-journal-backfill/unscoped"],
+                CorrelationId: "historical-backfill-unscoped")));
+
+        executionResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var executed = await ReadAsync<AccountingMigrationRunExecutionResultDto>(executionResponse);
+        executed.Status.Should().Be(AccountingMigrationRunStatusDto.Failed);
+        executed.IsCertified.Should().BeFalse();
+        executed.Issues.Should().ContainSingle(issue =>
+            issue.Code == "migration-run.ledger-book-scope-missing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+
+        var listResponse = await client.GetAsync(
+            $"{UiApiRoutes.AccountingSystemMigrationRunArtifacts}?fundProfileId=default-fund");
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var listed = await ReadAsync<AccountingMigrationRunArtifactListDto>(listResponse);
+        listed.Artifacts.Should().ContainSingle(artifact =>
+            artifact.RunId == "migration-run-historical-backfill-unscoped" &&
+            artifact.Status == AccountingMigrationRunStatusDto.Failed &&
+            artifact.IssueCount == 1);
+    }
+
+    [Fact]
+    public async Task AccountingSystemMigrationRunEndpoint_RejectsAutomationOrigin()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var response = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRuns,
+            JsonContent(new AccountingMigrationRunExecutionRequestDto(
+                AccountingMigrationRunKindDto.CloseReportingEvidence,
+                "automation",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                RunId: "migration-run-automation-origin",
+                CertifyOnSuccess: true,
+                EvidenceLinks: [$"approval://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/close-reporting-evidence"],
+                ActionOrigin: OperationsActionOriginDto.AutomationSuggestion)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("human operator");
+    }
+
+    [Fact]
     public async Task AccountingSystemMigrationRunArtifactEndpoints_BlockCertifiedRunWithoutLedgerBookScope()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
@@ -5580,6 +5686,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         builder.Services.AddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
         builder.Services.AddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         builder.Services.AddSingleton<IAccountingMigrationRunArtifactStore, InMemoryAccountingMigrationRunArtifactStore>();
+        builder.Services.AddSingleton<AccountingMigrationRunExecutionService>();
         builder.Services.AddSingleton<IAccountingTenantAdministrationProfileStore, InMemoryAccountingTenantAdministrationProfileStore>();
         builder.Services.AddSingleton<IAccountingProductionCertificationProfileStore, InMemoryAccountingProductionCertificationProfileStore>();
         builder.Services.AddSingleton<AccountingProductionReadinessService>();

@@ -151,6 +151,44 @@ public sealed record AccountingMigrationRunArtifactUpsertRequestDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record AccountingMigrationRunExecutionRequestDto(
+    AccountingMigrationRunKindDto Kind,
+    string Actor,
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    string? RunId = null,
+    bool CertifyOnSuccess = false,
+    LedgerDimensionSetDto? Dimensions = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record AccountingMigrationRunExecutionIssueDto(
+    string Code,
+    AccountingConfigurationValidationSeverityDto Severity,
+    string Message,
+    string SuggestedAction);
+
+public sealed record AccountingMigrationRunExecutionResultDto(
+    AccountingMigrationRunArtifactDto Artifact,
+    AccountingMigrationRunStatusDto Status,
+    bool IsCertified,
+    IReadOnlyList<AccountingMigrationRunExecutionIssueDto>? Issues = null,
+    IReadOnlyList<string>? EvidenceReferences = null)
+{
+    public IReadOnlyList<AccountingMigrationRunExecutionIssueDto> Issues { get; init; } =
+        Issues ?? [];
+
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+}
+
 public sealed record AccountingTenantAdministrationProfileDto(
     string TenantId,
     string CompanyId,

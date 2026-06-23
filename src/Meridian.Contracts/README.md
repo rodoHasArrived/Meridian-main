@@ -103,11 +103,12 @@ and external-GL dimensions through the Financial Operations posting gate.
 Reconciliation break queue items carry optional `LedgerBookId` scope so shared Accounting,
 Reconciliation, and close-readiness surfaces can filter explicit book cases without inferring
 accounting ownership from fund labels, routes, or exception text.
-Accounting-system production-readiness contracts also expose retained migration run artifact list,
-upsert payloads, and generated migration rollout plan rows so browser, WPF, and admin surfaces can
-store ledger-book scope, historical journal backfill, dimensional backfill,
-configuration-promotion, and close/reporting evidence migration proof under one shared route and
-render the required migration lane actions instead of passing one-off request-only evidence.
+Accounting-system production-readiness contracts also expose migration-run execution requests,
+execution results, retained migration run artifact list/upsert payloads, and generated migration
+rollout plan rows so browser, WPF, and admin surfaces can store ledger-book scope, historical
+journal backfill, dimensional backfill, configuration-promotion, and close/reporting evidence
+migration proof under shared routes and render the required migration lane actions instead of
+passing one-off request-only evidence.
 Ledger draft requests also carry explicit approval and ledger-mapping evidence flags so controller
 workflows can block the draft gate before post-time journal-line validation when Security Master
 provenance exists but approved identity or accounting mapping proof is still missing.
@@ -218,9 +219,11 @@ projections, and strategy ledger reads with retained ledger-book-scoped
 workflow evidence, and migration-rollout controls for
 ledger-book migration, historical journal backfill, dimensional backfill, accounting configuration
 promotion, and close/reporting evidence migration with shared blocker codes and retained
-`AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can render the
-same fail-closed readiness state instead of recomputing production gaps or treating certification
-booleans as executable migration proof. Migration run artifacts can carry the canonical
+`AccountingMigrationRunExecutionRequestDto`, `AccountingMigrationRunExecutionResultDto`, and
+`AccountingMigrationRunArtifactDto` rows so browser, WPF, and admin setup surfaces can execute a
+governed rollout run, render the same fail-closed readiness state, and avoid recomputing production
+gaps or treating certification booleans as executable migration proof. Migration run artifacts can
+carry the canonical
 `LedgerDimensionSetDto` plus tenant and company scope; dimensional backfill certification is
 expected to retain fund, ledger-book, entity, sleeve, strategy, investor, capital-account,
 instrument, tax-lot, cost-center, counterparty, and external-GL dimensions with the migration

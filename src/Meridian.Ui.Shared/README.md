@@ -320,7 +320,10 @@ close/reporting evidence migration cannot be certified as anonymous fund-level w
 readiness payload now emits generated migration rollout plan rows for ledger-book scope,
 historical journal backfill, dimensional backfill, configuration promotion, and close/reporting
 evidence migration, including lane status, scope, latest retained run, migrated-record and issue
-counts, blocking issue codes, and required actions for browser and WPF. External GL
+counts, blocking issue codes, and required actions for browser and WPF. Accounting System also
+exposes a governed migration-run execution endpoint that stamps authenticated tenant/company/actor
+context, rejects assistant or automation-origin runs, records failed artifacts for unscoped
+requests, and can retain certified artifacts only when scoped evidence is present. External GL
 readiness is blocked until the assessment
 names the target Meridian ledger book for import/reconciliation/mapping/export certification, has
 retained external-GL workflow evidence for that selected book, and has certified mapping profiles;
@@ -473,7 +476,8 @@ persists retained accounting migration run evidence at
 `workstation/accounting/migration-run-artifacts.json`, and `FileAccountingProductionCertificationProfileStore`
 persists tenant/company/fund/book certification profiles at
 `workstation/accounting/production-certification-profiles.json`. Shared Accounting System endpoints let
-operators list/upsert authenticated tenant/company-scoped migration artifacts before the
+operators execute governed migration runs or list/upsert authenticated tenant/company-scoped
+migration artifacts before the
 production-readiness endpoint merges only matching retained evidence into ledger-book, historical
 journal backfill, dimensional backfill, configuration promotion, and close/reporting migration
 checks. Manual journal drafts carry a shared

@@ -184,6 +184,42 @@ public static class AccountingSystemEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        group.MapPost(UiApiRoutes.AccountingSystemMigrationRuns, async (
+            AccountingMigrationRunExecutionRequestDto request,
+            HttpContext context,
+            AccountingMigrationRunExecutionService service) =>
+        {
+            if (!HasAccountingCertificationAccess(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var trustedRequest = request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId ?? request.TenantId,
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                };
+                var result = await service.ExecuteAsync(trustedRequest, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("ExecuteAccountingMigrationRun")
+        .Produces<AccountingMigrationRunExecutionResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         group.MapGet(UiApiRoutes.AccountingSystemMigrationRunArtifacts, async (
             string? fundProfileId,
             Guid? ledgerBookId,

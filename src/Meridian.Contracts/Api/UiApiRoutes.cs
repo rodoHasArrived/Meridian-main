@@ -117,6 +117,7 @@ public static class UiApiRoutes
     public const string AccountingSystemExportPackages = "/api/accounting-system/export-packages";
     public const string AccountingSystemExportPackageManifest = "/api/accounting-system/export-packages/{exportPackageId}/manifest";
     public const string AccountingSystemExportPackageCertification = "/api/accounting-system/export-packages/certification";
+    public const string AccountingSystemMigrationRuns = "/api/accounting-system/migration-runs";
     public const string AccountingSystemMigrationRunArtifacts = "/api/accounting-system/migration-run-artifacts";
     public const string AccountingSystemTenantAdministrationProfile = "/api/accounting-system/tenant-administration-profile";
     public const string AccountingSystemProductionCertificationProfile = "/api/accounting-system/production-certification-profile";

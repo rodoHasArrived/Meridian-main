@@ -101,7 +101,10 @@ the requirement end to end.
   evidence-reference count beside production-readiness blockers. WPF Accounting Configure renders
   the same shared migration rollout plan and retained run evidence. Migration rollout readiness now
   also fails closed when the assessment lacks tenant/company scope or when retained migration run
-  artifacts belong to another tenant/company rollout.
+  artifacts belong to another tenant/company rollout. Accounting System now exposes a governed
+  migration-run execution endpoint that stamps authenticated tenant/company/actor scope, rejects
+  assistant or automation-origin runs, creates scoped retained run artifacts, and feeds the same
+  production-readiness rollout plan.
 - [x] Source-event posting candidates and production-readiness Rules Studio checks now use
   tenant/company/fund/ledger-book scope for dry-run, workspace lookup, chart resolution, and
   browser/WPF endpoint entry, preventing a candidate or readiness assessment for one company from
@@ -214,8 +217,10 @@ the requirement end to end.
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
   evidence migration. The shared readiness contract now exposes fail-closed certification inputs,
   tenant/company-scoped retained migration run artifacts, retained-artifact blockers, and a shared
-  migration rollout plan/checklist for these controls, but it does not yet execute migration jobs
-  or backfill data.
+  migration rollout plan/checklist for these controls. A governed Accounting System migration-run
+  endpoint now executes scoped rollout runs into retained artifacts and blocks automation-origin or
+  unscoped runs, but full historical journal/dimensional data rewrite workers and reconciliation of
+  migrated row counts against source stores remain open.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, but live credentialed import adapters, richer mapping fixtures, and controlled
   export certification still need provider-specific coverage before any separately approved live
