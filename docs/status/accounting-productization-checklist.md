@@ -368,11 +368,12 @@ the requirement end to end.
   blocker/evidence review in shared services plus browser/WPF surfaces. Backend close-plan
   projection now proves dependency-gated task progression, fail-closed missing sign-off blockers,
   critical pending material late-adjustment blockers, and a governed close-plan configuration
-  command. The browser close cockpit can now retain the loaded materiality, checklist dependency,
-  approval-count, required-evidence, ledger-book evidence, and correlation context through that
-  shared configuration endpoint; WPF now has service registration and a close view-model command
-  that retains loaded close-plan setup through the same shared contract when workflow context is
-  supplied. Close management now also has a governed period-lock command/result over the Operations
+  command. The browser close cockpit now has editable close setup fields for materiality thresholds,
+  currency, review role, late-adjustment approval requirement, primary checklist owner/due date,
+  approval count, required evidence, and dependencies before retaining ledger-book evidence and
+  correlation context through that shared configuration endpoint; WPF now has service registration
+  and a close view-model command that retains loaded close-plan setup through the same shared
+  contract when workflow context is supplied. Close management now also has a governed period-lock command/result over the Operations
   Continuity close-package gate, and browser/WPF both expose that lock command with blocker rows and
   retained close-package/report-pack/ledger-book evidence. Production readiness now evidence-qualifies
   close-plan setup by ledger book, but richer browser/WPF setup/editing workflows and review UX

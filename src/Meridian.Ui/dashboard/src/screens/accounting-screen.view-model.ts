@@ -2376,6 +2376,21 @@ export interface AccountingLateAdjustmentDraftViewModel {
   reason: string;
 }
 
+export interface AccountingCloseSetupDraftViewModel {
+  amountThreshold: string;
+  percentThreshold: string;
+  currency: string;
+  reviewRole: string;
+  requiresLateAdjustmentApproval: boolean;
+  taskId: string;
+  taskDisplayName: string;
+  taskOwner: string;
+  taskDueDate: string;
+  taskRequiredApprovalCount: string;
+  taskRequiredEvidence: string;
+  taskDependsOnTaskIds: string;
+}
+
 export interface AccountingReportPackageRowViewModel {
   packageId: string;
   periodLabel: string;
@@ -2449,6 +2464,7 @@ export interface AccountingCloseReportPackageViewModel {
   configureClosePlanButtonLabel: string;
   configureClosePlanDisabledReason: string | null;
   createLateAdjustmentDisabledReason: string | null;
+  closeSetupDraft: AccountingCloseSetupDraftViewModel;
   lateAdjustmentDraft: AccountingLateAdjustmentDraftViewModel;
   exportManifestButtonLabel: string;
   exportManifestDisabledReason: string | null;
@@ -2467,6 +2483,7 @@ export interface AccountingCloseReportPackageViewModel {
   lockClosePeriod: () => Promise<void>;
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
+  updateCloseSetupDraft: (patch: Partial<AccountingCloseSetupDraftViewModel>) => void;
   updateLateAdjustmentDraft: (patch: Partial<AccountingLateAdjustmentDraftViewModel>) => void;
   createLateAdjustment: () => Promise<void>;
   reviewLateAdjustment: (requestId: string, decision: "Approved" | "Rejected") => Promise<void>;
@@ -2959,6 +2976,7 @@ export function useAccountingCloseReportPackageViewModel(
   const [configureClosePlanBusy, setConfigureClosePlanBusy] = useState(false);
   const [configureClosePlanStatusText, setConfigureClosePlanStatusText] = useState<string | null>(null);
   const [configureClosePlanStatusTone, setConfigureClosePlanStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [closeSetupDraft, setCloseSetupDraft] = useState<AccountingCloseSetupDraftViewModel>(() => createAccountingCloseSetupDraft(null));
   const [createLateAdjustmentBusy, setCreateLateAdjustmentBusy] = useState(false);
   const [createLateAdjustmentStatusText, setCreateLateAdjustmentStatusText] = useState<string | null>(null);
   const [createLateAdjustmentStatusTone, setCreateLateAdjustmentStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
@@ -2997,6 +3015,7 @@ export function useAccountingCloseReportPackageViewModel(
 
         return nextPackages[0]?.financialStatements.packageId ?? null;
       });
+      setCloseSetupDraft(createAccountingCloseSetupDraft(nextClosePlan));
     } catch (error) {
       setErrorText(formatAccountingWorkflowError(error, "Close/report package detail could not be loaded."));
     } finally {
@@ -3171,8 +3190,9 @@ export function useAccountingCloseReportPackageViewModel(
     setConfigureClosePlanStatusText(null);
     setConfigureClosePlanStatusTone("neutral");
     try {
-      const nextPlan = await services.configureClosePlan(buildClosePlanConfigurationRequest(workflow, closePlan));
+      const nextPlan = await services.configureClosePlan(buildClosePlanConfigurationRequest(workflow, closePlan, closeSetupDraft));
       setClosePlan(nextPlan);
+      setCloseSetupDraft(createAccountingCloseSetupDraft(nextPlan));
       setConfigureClosePlanStatusText(`Retained close-plan setup for ${nextPlan.periodId}.`);
       setConfigureClosePlanStatusTone("success");
     } catch (error) {
@@ -3181,7 +3201,11 @@ export function useAccountingCloseReportPackageViewModel(
     } finally {
       setConfigureClosePlanBusy(false);
     }
-  }, [closePlan, services, workflow]);
+  }, [closePlan, closeSetupDraft, services, workflow]);
+
+  const updateCloseSetupDraft = useCallback((patch: Partial<AccountingCloseSetupDraftViewModel>) => {
+    setCloseSetupDraft((current) => ({ ...current, ...patch }));
+  }, []);
 
   const updateLateAdjustmentDraft = useCallback((patch: Partial<AccountingLateAdjustmentDraftViewModel>) => {
     setLateAdjustmentDraft((current) => ({ ...current, ...patch }));
@@ -3335,6 +3359,7 @@ export function useAccountingCloseReportPackageViewModel(
       configureClosePlanBusy,
       configureClosePlanStatusText,
       configureClosePlanStatusTone,
+      closeSetupDraft,
       createLateAdjustmentBusy,
       createLateAdjustmentStatusText,
       createLateAdjustmentStatusTone,
@@ -3352,6 +3377,7 @@ export function useAccountingCloseReportPackageViewModel(
       lockClosePeriod,
       configureClosePlan,
       signOffNextTask,
+      updateCloseSetupDraft,
       updateLateAdjustmentDraft,
       createLateAdjustment,
       reviewLateAdjustment,
@@ -3376,6 +3402,7 @@ export function useAccountingCloseReportPackageViewModel(
       configureClosePlanBusy,
       configureClosePlanStatusText,
       configureClosePlanStatusTone,
+      closeSetupDraft,
       createLateAdjustment,
       createLateAdjustmentBusy,
       createLateAdjustmentStatusText,
@@ -3399,6 +3426,7 @@ export function useAccountingCloseReportPackageViewModel(
       signOffNextTask,
       signOffStatusText,
       signOffStatusTone,
+      updateCloseSetupDraft,
       updateLateAdjustmentDraft,
       workflow
     ]
@@ -11495,6 +11523,7 @@ function buildAccountingCloseReportPackageViewState({
   configureClosePlanBusy,
   configureClosePlanStatusText,
   configureClosePlanStatusTone,
+  closeSetupDraft,
   lateAdjustmentDraft,
   reviewLateAdjustmentBusy,
   reviewLateAdjustmentStatusText,
@@ -11509,6 +11538,7 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriod,
   configureClosePlan,
   signOffNextTask,
+  updateCloseSetupDraft,
   updateLateAdjustmentDraft,
   createLateAdjustment,
   reviewLateAdjustment,
@@ -11539,6 +11569,7 @@ function buildAccountingCloseReportPackageViewState({
   configureClosePlanBusy: boolean;
   configureClosePlanStatusText: string | null;
   configureClosePlanStatusTone: "neutral" | "success" | "danger";
+  closeSetupDraft: AccountingCloseSetupDraftViewModel;
   lateAdjustmentDraft: AccountingLateAdjustmentDraftViewModel;
   reviewLateAdjustmentBusy: boolean;
   reviewLateAdjustmentStatusText: string | null;
@@ -11553,6 +11584,7 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriod: () => Promise<void>;
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
+  updateCloseSetupDraft: (patch: Partial<AccountingCloseSetupDraftViewModel>) => void;
   updateLateAdjustmentDraft: (patch: Partial<AccountingLateAdjustmentDraftViewModel>) => void;
   createLateAdjustment: () => Promise<void>;
   reviewLateAdjustment: (requestId: string, decision: "Approved" | "Rejected") => Promise<void>;
@@ -11730,6 +11762,7 @@ function buildAccountingCloseReportPackageViewState({
     configureClosePlanButtonLabel: closePlan ? "Retain close setup" : "Configure close setup",
     configureClosePlanDisabledReason,
     createLateAdjustmentDisabledReason,
+    closeSetupDraft,
     lateAdjustmentDraft,
     exportManifestButtonLabel: selectedExportArtifact ? `Inspect ${selectedExportArtifact.displayName}` : "Inspect export manifest",
     exportManifestDisabledReason,
@@ -11788,6 +11821,7 @@ function buildAccountingCloseReportPackageViewState({
     lockClosePeriod,
     configureClosePlan,
     signOffNextTask,
+    updateCloseSetupDraft,
     updateLateAdjustmentDraft,
     createLateAdjustment,
     reviewLateAdjustment,
@@ -11989,6 +12023,32 @@ function createAccountingLateAdjustmentDraft(currency = "USD"): AccountingLateAd
   };
 }
 
+function createAccountingCloseSetupDraft(closePlan: ClosePeriodPlan | null): AccountingCloseSetupDraftViewModel {
+  const materiality = closePlan?.materialityPolicy;
+  const task = closePlan?.tasks[0] ?? null;
+  const signOffRequirements = task?.signOffRequirements ?? [];
+  const requiredApprovalCount = Math.max(1, ...signOffRequirements.map((requirement) => requirement.requiredApprovalCount));
+  const requiredEvidence = signOffRequirements
+    .map((requirement) => requirement.evidenceRequirement.trim())
+    .filter(Boolean)
+    .join("; ");
+
+  return {
+    amountThreshold: materiality ? String(materiality.amountThreshold) : "",
+    percentThreshold: materiality ? String(materiality.percentThreshold) : "",
+    currency: materiality?.currency ?? "USD",
+    reviewRole: materiality?.reviewRole ?? "Controller",
+    requiresLateAdjustmentApproval: materiality?.requiresLateAdjustmentApproval ?? true,
+    taskId: task?.taskId ?? "",
+    taskDisplayName: task?.displayName ?? "",
+    taskOwner: task?.owner ?? "",
+    taskDueDate: task?.dueDate ?? "",
+    taskRequiredApprovalCount: task ? String(requiredApprovalCount) : "1",
+    taskRequiredEvidence: requiredEvidence || "Retained close checklist evidence",
+    taskDependsOnTaskIds: task?.dependencies.map((dependency) => dependency.dependsOnTaskId).join(", ") ?? ""
+  };
+}
+
 function buildClosePlanTaskRow(task: CloseTask): AccountingClosePlanTaskRowViewModel {
   const signedOffCount = task.signOffs.filter((signOff) => signOff.approvalState === "Approved").length;
   const requirements = task.signOffRequirements ?? [];
@@ -12162,11 +12222,21 @@ function buildAccountingReportPackageRequest(
 
 function buildClosePlanConfigurationRequest(
   workflow: OperationsContinuityWorkflow,
-  closePlan: ClosePeriodPlan
+  closePlan: ClosePeriodPlan,
+  setupDraft: AccountingCloseSetupDraftViewModel
 ): UpsertClosePeriodPlanConfigurationRequest {
+  const amountThreshold = Number(setupDraft.amountThreshold);
+  const percentThreshold = Number(setupDraft.percentThreshold);
+  const requiredApprovalCount = Number.parseInt(setupDraft.taskRequiredApprovalCount, 10);
+  const editedTaskId = setupDraft.taskId.trim();
+  const editedTaskDependsOnTaskIds = setupDraft.taskDependsOnTaskIds
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
   const taskConfigurations = closePlan.tasks.map((task) => {
+    const isEditedTask = editedTaskId.length === 0 || task.taskId === editedTaskId;
     const signOffRequirements = task.signOffRequirements ?? [];
-    const requiredApprovalCount = Math.max(
+    const fallbackRequiredApprovalCount = Math.max(
       1,
       ...signOffRequirements.map((requirement) => requirement.requiredApprovalCount)
     );
@@ -12177,12 +12247,18 @@ function buildClosePlanConfigurationRequest(
 
     return {
       taskId: task.taskId,
-      displayName: task.displayName,
-      owner: task.owner,
-      dueDate: task.dueDate,
-      requiredApprovalCount,
-      requiredEvidence: requiredEvidence || "Retained close checklist evidence",
-      dependsOnTaskIds: task.dependencies.map((dependency) => dependency.dependsOnTaskId)
+      displayName: isEditedTask ? setupDraft.taskDisplayName.trim() || task.displayName : task.displayName,
+      owner: isEditedTask ? setupDraft.taskOwner.trim() || task.owner : task.owner,
+      dueDate: isEditedTask ? setupDraft.taskDueDate.trim() || task.dueDate : task.dueDate,
+      requiredApprovalCount: isEditedTask && Number.isFinite(requiredApprovalCount) && requiredApprovalCount > 0
+        ? requiredApprovalCount
+        : fallbackRequiredApprovalCount,
+      requiredEvidence: isEditedTask
+        ? setupDraft.taskRequiredEvidence.trim() || requiredEvidence || "Retained close checklist evidence"
+        : requiredEvidence || "Retained close checklist evidence",
+      dependsOnTaskIds: isEditedTask
+        ? editedTaskDependsOnTaskIds
+        : task.dependencies.map((dependency) => dependency.dependsOnTaskId)
     };
   });
   const evidenceLinks = collectAccountingCloseEvidenceLinks(workflow, closePlan);
@@ -12196,7 +12272,18 @@ function buildClosePlanConfigurationRequest(
 
   return {
     workflowId: workflow.workflowId,
-    materialityPolicy: closePlan.materialityPolicy,
+    materialityPolicy: {
+      ...closePlan.materialityPolicy,
+      amountThreshold: Number.isFinite(amountThreshold) && amountThreshold >= 0
+        ? amountThreshold
+        : closePlan.materialityPolicy.amountThreshold,
+      percentThreshold: Number.isFinite(percentThreshold) && percentThreshold >= 0
+        ? percentThreshold
+        : closePlan.materialityPolicy.percentThreshold,
+      currency: (setupDraft.currency.trim() || closePlan.materialityPolicy.currency || "USD").toUpperCase(),
+      reviewRole: setupDraft.reviewRole.trim() || closePlan.materialityPolicy.reviewRole,
+      requiresLateAdjustmentApproval: setupDraft.requiresLateAdjustmentApproval
+    },
     taskConfigurations,
     actor: "browser-accounting-controller",
     evidenceLinks: Array.from(new Set(evidenceLinks)),

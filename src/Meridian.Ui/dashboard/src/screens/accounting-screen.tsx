@@ -8,6 +8,7 @@ import { WorkspaceFilterBar } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -4574,6 +4575,114 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
               </div>
             ))}
+          </div>
+
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="Close setup editor">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Close setup</div>
+              <Badge variant={view.configureClosePlanDisabledReason ? "outline" : "success"}>{view.configureClosePlanButtonLabel}</Badge>
+            </div>
+            <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+              <div className="grid gap-2 rounded-md border border-border/70 bg-background/45 px-3 py-3">
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Materiality</div>
+                <div className="grid gap-2 md:grid-cols-3">
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Amount threshold</span>
+                    <Input
+                      inputMode="decimal"
+                      value={view.closeSetupDraft.amountThreshold}
+                      onChange={(event) => view.updateCloseSetupDraft({ amountThreshold: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Percent threshold</span>
+                    <Input
+                      inputMode="decimal"
+                      value={view.closeSetupDraft.percentThreshold}
+                      onChange={(event) => view.updateCloseSetupDraft({ percentThreshold: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Currency</span>
+                    <Input
+                      value={view.closeSetupDraft.currency}
+                      onChange={(event) => view.updateCloseSetupDraft({ currency: event.target.value })}
+                    />
+                  </label>
+                </div>
+                <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Review role</span>
+                    <Input
+                      value={view.closeSetupDraft.reviewRole}
+                      onChange={(event) => view.updateCloseSetupDraft({ reviewRole: event.target.value })}
+                    />
+                  </label>
+                  <Checkbox
+                    label="Approval required"
+                    checked={view.closeSetupDraft.requiresLateAdjustmentApproval}
+                    onCheckedChange={(checked) => view.updateCloseSetupDraft({ requiresLateAdjustmentApproval: checked })}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2 rounded-md border border-border/70 bg-background/45 px-3 py-3">
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Checklist task</div>
+                <div className="grid gap-2 md:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Task id</span>
+                    <Input
+                      value={view.closeSetupDraft.taskId}
+                      onChange={(event) => view.updateCloseSetupDraft({ taskId: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Display name</span>
+                    <Input
+                      value={view.closeSetupDraft.taskDisplayName}
+                      onChange={(event) => view.updateCloseSetupDraft({ taskDisplayName: event.target.value })}
+                    />
+                  </label>
+                </div>
+                <div className="grid gap-2 md:grid-cols-[minmax(0,0.4fr)_minmax(0,0.35fr)_minmax(0,0.25fr)]">
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Owner</span>
+                    <Input
+                      value={view.closeSetupDraft.taskOwner}
+                      onChange={(event) => view.updateCloseSetupDraft({ taskOwner: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Due date</span>
+                    <Input
+                      value={view.closeSetupDraft.taskDueDate}
+                      onChange={(event) => view.updateCloseSetupDraft({ taskDueDate: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Approvals</span>
+                    <Input
+                      inputMode="numeric"
+                      value={view.closeSetupDraft.taskRequiredApprovalCount}
+                      onChange={(event) => view.updateCloseSetupDraft({ taskRequiredApprovalCount: event.target.value })}
+                    />
+                  </label>
+                </div>
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Required evidence</span>
+                  <Input
+                    value={view.closeSetupDraft.taskRequiredEvidence}
+                    onChange={(event) => view.updateCloseSetupDraft({ taskRequiredEvidence: event.target.value })}
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Depends on task ids</span>
+                  <Input
+                    value={view.closeSetupDraft.taskDependsOnTaskIds}
+                    onChange={(event) => view.updateCloseSetupDraft({ taskDependsOnTaskIds: event.target.value })}
+                  />
+                </label>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="Accounting report certification safeguards">

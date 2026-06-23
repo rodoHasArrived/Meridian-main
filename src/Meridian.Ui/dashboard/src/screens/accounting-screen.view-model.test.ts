@@ -2088,6 +2088,20 @@ describe("accounting-screen view model", () => {
     expect(result.current.materialityLabel).toContain("controller");
     expect(result.current.configureClosePlanButtonLabel).toBe("Retain close setup");
     expect(result.current.configureClosePlanDisabledReason).toBeNull();
+    expect(result.current.closeSetupDraft).toMatchObject({
+      amountThreshold: "2500",
+      percentThreshold: "0.5",
+      currency: "USD",
+      reviewRole: "controller",
+      requiresLateAdjustmentApproval: true,
+      taskId: "task-nav",
+      taskDisplayName: "Finalize NAV package",
+      taskOwner: "fund-accounting",
+      taskDueDate: "2026-06-04",
+      taskRequiredApprovalCount: "1",
+      taskRequiredEvidence: "Controller NAV sign-off evidence",
+      taskDependsOnTaskIds: "task-reconciliation"
+    });
     expect(result.current.metrics.find((metric) => metric.id === "calendar")).toMatchObject({
       label: "Calendar",
       value: "1",
@@ -2211,24 +2225,46 @@ describe("accounting-screen view model", () => {
     });
 
     await act(async () => {
+      result.current.updateCloseSetupDraft({
+        amountThreshold: "7500",
+        percentThreshold: "1.25",
+        currency: "eur",
+        reviewRole: "CFO",
+        requiresLateAdjustmentApproval: false,
+        taskDisplayName: "CFO NAV package review",
+        taskOwner: "CFO Office",
+        taskDueDate: "2026-06-06",
+        taskRequiredApprovalCount: "2",
+        taskRequiredEvidence: "CFO approval and retained NAV support",
+        taskDependsOnTaskIds: "task-reconciliation, task-report"
+      });
+    });
+
+    await act(async () => {
       await result.current.configureClosePlan();
     });
 
     expect(configureClosePlan).toHaveBeenCalledWith(expect.objectContaining({
       workflowId: "workflow-close-1",
-      materialityPolicy: closePeriodPlan.materialityPolicy,
+      materialityPolicy: expect.objectContaining({
+        amountThreshold: 7500,
+        percentThreshold: 1.25,
+        currency: "EUR",
+        reviewRole: "CFO",
+        requiresLateAdjustmentApproval: false
+      }),
       actor: "browser-accounting-controller",
       correlationId: "browser-close-plan-configuration-workflow-close-1",
       actionOrigin: "HumanOperator",
       taskConfigurations: [
         expect.objectContaining({
           taskId: "task-nav",
-          displayName: "Finalize NAV package",
-          owner: "fund-accounting",
-          dueDate: "2026-06-04",
-          requiredApprovalCount: 1,
-          requiredEvidence: "Controller NAV sign-off evidence",
-          dependsOnTaskIds: ["task-reconciliation"]
+          displayName: "CFO NAV package review",
+          owner: "CFO Office",
+          dueDate: "2026-06-06",
+          requiredApprovalCount: 2,
+          requiredEvidence: "CFO approval and retained NAV support",
+          dependsOnTaskIds: ["task-reconciliation", "task-report"]
         })
       ],
       evidenceLinks: expect.arrayContaining([

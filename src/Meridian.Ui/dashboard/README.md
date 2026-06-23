@@ -302,10 +302,11 @@ command posts workflow, fund, period, package-seed, and evidence context
 to the shared accounting report package endpoint, and its certify command posts the selected
 retained package id, reviewer notes, and evidence links to the shared certification endpoint. Its
 task sign-off command posts the next ready checklist task role, reviewer notes, correlation id, and
-evidence links to the shared close-management endpoint. Its close setup action posts the loaded
-materiality policy, checklist task owner/due-date, dependency, required approval, required
-evidence, ledger-book evidence, and correlation context to the shared close-plan configuration
-endpoint, then refreshes the cockpit from the returned close plan. Its period-lock action posts the
+evidence links to the shared close-management endpoint. Its close setup editor lets operators adjust
+materiality thresholds, currency, review role, late-adjustment approval requirement, and the primary
+checklist task's owner, due date, required approval count, evidence requirement, and dependencies
+before posting ledger-book evidence and correlation context to the shared close-plan configuration
+endpoint. Its period-lock action posts the
 current workflow version, selected report package, checklist-control approvals, close-package
 manifest context, ledger-book-scoped evidence, and human-operator origin to the shared
 close-management lock endpoint, rendering returned service blockers without attempting a local
