@@ -134,19 +134,24 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             }
         }
 
-        // Bonds require coupon rate.
+        // Only fixed-coupon bonds require a coupon rate. Floating and zero-coupon bonds are valid
+        // without one (the canonical mapper defaults couponType to "Fixed" when absent).
         if (string.Equals(assetClass, "Bond", StringComparison.OrdinalIgnoreCase))
         {
-            var coupon = TryReadDecimalField(security.AssetSpecificTerms, "couponRate")
-                ?? TryReadDecimalField(security.AssetSpecificTerms, "coupon");
-
-            if (coupon is null)
+            var couponType = TryReadStringField(security.AssetSpecificTerms, "couponType") ?? "Fixed";
+            if (string.Equals(couponType, "Fixed", StringComparison.OrdinalIgnoreCase))
             {
-                yield return Violation(
-                    "MA002", "Missing Bond Coupon", DataQualityRuleCategory.MinimumAttribute,
-                    security.SecurityId, "assetSpecificTerms.couponRate",
-                    "Bond securities require a coupon rate.",
-                    DataQualityRuleSeverity.Error, now);
+                var coupon = TryReadDecimalField(security.AssetSpecificTerms, "couponRate")
+                    ?? TryReadDecimalField(security.AssetSpecificTerms, "coupon");
+
+                if (coupon is null)
+                {
+                    yield return Violation(
+                        "MA002", "Missing Bond Coupon", DataQualityRuleCategory.MinimumAttribute,
+                        security.SecurityId, "assetSpecificTerms.couponRate",
+                        "Fixed-coupon bond securities require a coupon rate.",
+                        DataQualityRuleSeverity.Error, now);
+                }
             }
         }
 

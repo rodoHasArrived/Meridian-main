@@ -41,11 +41,13 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     {
         var existing = await _store.GetSourceAsync(request.SecurityId, ct).ConfigureAwait(false);
 
-        // Client-provided sources remain authoritative; only a deliberate explicit upsert overrides them.
-        if (existing is { IsClientOverride: true } && !request.IsClientOverride)
+        // Client-provided sources remain authoritative against automated provider refreshes; an
+        // operator can still clear them with an explicit Force update (e.g. when the client source
+        // is stale or expired).
+        if (existing is { IsClientOverride: true } && !request.IsClientOverride && !request.Force)
         {
             _logger.LogWarning(
-                "Skipped cash flow source update for {SecurityId}: existing client-provided source is authoritative.",
+                "Skipped cash flow source update for {SecurityId}: existing client-provided source is authoritative (use Force to override).",
                 request.SecurityId);
             return;
         }

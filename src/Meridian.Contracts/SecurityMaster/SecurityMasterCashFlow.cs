@@ -70,4 +70,7 @@ public sealed record UpsertCashFlowSourceRequest(
     StructuredCashFlowSourceKind SourceKind,
     bool IsClientOverride,
     string? ClientConfirmedBy,
-    string Actor);
+    string Actor,
+    // When true, a non-client update is allowed to replace an existing client-provided source.
+    // This is the explicit operator path for clearing a stale or expired client override.
+    bool Force = false);

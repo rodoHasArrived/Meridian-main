@@ -62,8 +62,17 @@ public sealed class SecurityMasterPricingService : ISecurityMasterPricingService
         }
 
         var rawPrices = await _store.GetRawPricesAsync(securityId, ct).ConfigureAwait(false);
-        var priceMap = rawPrices.ToDictionary(
-            p => p.SourceId, p => (p.Price, p.PriceAsOf), StringComparer.OrdinalIgnoreCase);
+
+        // Source IDs are persisted as case-sensitive text, so the same security can hold rows whose
+        // IDs differ only by casing. Collapse them case-insensitively (keeping the freshest price)
+        // instead of letting an OrdinalIgnoreCase ToDictionary throw on the duplicate key.
+        var priceMap = new Dictionary<string, (decimal Price, DateTimeOffset PriceAsOf)>(
+            StringComparer.OrdinalIgnoreCase);
+        foreach (var p in rawPrices)
+        {
+            if (!priceMap.TryGetValue(p.SourceId, out var existing) || p.PriceAsOf > existing.PriceAsOf)
+                priceMap[p.SourceId] = (p.Price, p.PriceAsOf);
+        }
 
         var now = DateTimeOffset.UtcNow;
         var orderedEntries = hierarchy.Entries.OrderBy(e => e.Priority);
