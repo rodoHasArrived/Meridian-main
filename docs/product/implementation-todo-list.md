@@ -103,7 +103,7 @@ Evidence: `tests/Meridian.Tests/Ui/SecurityMasterInstrumentPassportTests.cs`, `t
 - [x] Route assignment, escalation, approval, reopen, and evidence-retention actions through shared services.
 - [x] Add browser tests for FINOPS queue, close blockers, approval requirements, and blocked completion behavior.
 - [x] Add WPF tests for dense workpaper execution against the same FINOPS DTOs and service decisions.
-- [ ] Update generated roadmap/product docs to state exactly what shipped before moving `W5X-FINOPS-001` out of planned.
+- [x] Update generated roadmap/product docs to state exactly what shipped before moving `W5X-FINOPS-001` out of planned.
 
 Command-center evidence produced for this FINOPS slice:
 
@@ -120,6 +120,8 @@ Command-center evidence produced for this FINOPS slice:
 - `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
 - `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts`
 - `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`
+- `docs/roadmap/data/roadmap-items.yml`
+- `docs/roadmap/generated/roadmap-register.md`
 
 Direct-lending evidence produced for this FINOPS slice:
 
