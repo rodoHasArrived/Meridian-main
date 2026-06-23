@@ -147,6 +147,7 @@ public static class LedgerScheduledReportExportPackageBuilder
 
     private static IEnumerable<(string Name, string Value)> BuildDimensionFields(LedgerLineDimensionSet? dimensions)
     {
+        dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(dimensions);
         if (dimensions is null)
             yield break;
 

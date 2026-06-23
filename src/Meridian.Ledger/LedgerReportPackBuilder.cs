@@ -344,7 +344,8 @@ public static class LedgerReportPackBuilder
 
     private static void AppendDimensionScope(StringBuilder builder, LedgerLineDimensionSet? dimensions)
     {
-        if (dimensions is null || !HasAnyDimension(dimensions))
+        dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(dimensions);
+        if (dimensions is null)
         {
             builder.AppendLine("  \"dimensionScope\": {},");
             return;
@@ -364,7 +365,8 @@ public static class LedgerReportPackBuilder
 
     private static string FormatDimensionScope(LedgerLineDimensionSet? dimensions)
     {
-        if (dimensions is null || !HasAnyDimension(dimensions))
+        dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(dimensions);
+        if (dimensions is null)
             return string.Empty;
 
         return string.Join(
@@ -376,6 +378,7 @@ public static class LedgerReportPackBuilder
 
     private static IEnumerable<(string Name, string Value)> BuildDimensionFields(LedgerLineDimensionSet dimensions)
     {
+        dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(dimensions)!;
         if (HasValue(dimensions.FundId))
             yield return ("fundId", dimensions.FundId!.Trim());
         if (HasValue(dimensions.EntityId))
@@ -419,89 +422,7 @@ public static class LedgerReportPackBuilder
     }
 
     private static bool MatchesLineDimensions(LedgerLineDimensionSet? actual, LedgerLineDimensionSet? expected)
-    {
-        if (expected is null || !HasAnyDimension(expected))
-            return true;
-
-        if (actual is null)
-            return false;
-
-        return Matches(actual.FundId, expected.FundId)
-            && Matches(actual.EntityId, expected.EntityId)
-            && Matches(actual.SleeveId, expected.SleeveId)
-            && Matches(actual.StrategyId, expected.StrategyId)
-            && Matches(actual.InvestorId, expected.InvestorId)
-            && Matches(actual.CapitalAccountId, expected.CapitalAccountId)
-            && Matches(actual.InstrumentId, expected.InstrumentId)
-            && Matches(actual.TaxLotId, expected.TaxLotId)
-            && Matches(actual.CostCenterId, expected.CostCenterId)
-            && Matches(actual.CounterpartyId, expected.CounterpartyId)
-            && Matches(actual.OrganizationId, expected.OrganizationId)
-            && Matches(actual.PortfolioId, expected.PortfolioId)
-            && Matches(actual.BookId, expected.BookId)
-            && Matches(actual.AccountId, expected.AccountId)
-            && Matches(actual.CustomerId, expected.CustomerId)
-            && Matches(actual.VendorId, expected.VendorId)
-            && Matches(actual.ProjectId, expected.ProjectId)
-            && MatchesExternalGlDimensions(actual.ExternalGlDimensions, expected.ExternalGlDimensions);
-    }
-
-    private static bool HasAnyDimension(LedgerLineDimensionSet dimensions)
-        => HasValue(dimensions.FundId)
-            || HasValue(dimensions.EntityId)
-            || HasValue(dimensions.SleeveId)
-            || HasValue(dimensions.StrategyId)
-            || HasValue(dimensions.InvestorId)
-            || HasValue(dimensions.CapitalAccountId)
-            || dimensions.InstrumentId is not null
-            || HasValue(dimensions.TaxLotId)
-            || HasValue(dimensions.CostCenterId)
-            || HasValue(dimensions.CounterpartyId)
-            || HasValue(dimensions.OrganizationId)
-            || HasValue(dimensions.PortfolioId)
-            || HasValue(dimensions.BookId)
-            || HasValue(dimensions.AccountId)
-            || HasValue(dimensions.CustomerId)
-            || HasValue(dimensions.VendorId)
-            || HasValue(dimensions.ProjectId)
-            || dimensions.ExternalGlDimensions.Count > 0;
-
-    private static bool Matches(string? actual, string? expected)
-    {
-        if (!HasValue(expected))
-            return true;
-
-        return string.Equals(actual?.Trim(), expected!.Trim(), StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool Matches(Guid? actual, Guid? expected)
-        => expected is null || actual == expected;
-
-    private static bool MatchesExternalGlDimensions(
-        IReadOnlyDictionary<string, string> actual,
-        IReadOnlyDictionary<string, string> expected)
-    {
-        if (expected.Count == 0)
-            return true;
-
-        foreach (var (key, expectedValue) in expected)
-        {
-            if (!actual.TryGetValue(key, out var actualValue))
-            {
-                var matchingPair = actual.FirstOrDefault(
-                    pair => string.Equals(pair.Key, key, StringComparison.OrdinalIgnoreCase));
-                if (matchingPair.Key is null)
-                    return false;
-
-                actualValue = matchingPair.Value;
-            }
-
-            if (!string.Equals(actualValue?.Trim(), expectedValue?.Trim(), StringComparison.OrdinalIgnoreCase))
-                return false;
-        }
-
-        return true;
-    }
+        => LedgerLineDimensionSetNormalizer.Matches(actual, expected);
 
     private static bool HasValue(string? value)
         => !string.IsNullOrWhiteSpace(value);

@@ -1568,18 +1568,20 @@ public sealed class LedgerIntegrationTests
         var periodStart = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
         var periodEnd = DateTimeOffset.Parse("2026-05-31T23:59:59Z");
         var alphaDimensions = new LedgerLineDimensionSet(
-            FundId: "fund-alpha",
-            EntityId: "entity-alpha",
-            OrganizationId: "tenant-alpha",
-            PortfolioId: "portfolio-income",
-            BookId: "book-gaap",
-            AccountId: "account-cash",
-            CustomerId: "customer-alpha",
-            VendorId: "vendor-bank",
-            ProjectId: "project-close",
+            FundId: " fund-alpha ",
+            EntityId: " entity-alpha ",
+            OrganizationId: " tenant-alpha ",
+            PortfolioId: " portfolio-income ",
+            BookId: " book-gaap ",
+            AccountId: " account-cash ",
+            CustomerId: " customer-alpha ",
+            VendorId: " vendor-bank ",
+            ProjectId: " project-close ",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["Department"] = "Investments"
+                [" Department "] = " Investments ",
+                ["department"] = "ignored-duplicate",
+                [" "] = "ignored"
             });
         var betaDimensions = alphaDimensions with
         {
@@ -1650,7 +1652,9 @@ public sealed class LedgerIntegrationTests
                 ProjectId: "PROJECT-CLOSE",
                 ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    ["department"] = "investments"
+                    [" department "] = " investments ",
+                    ["department"] = "ignored-duplicate",
+                    [" "] = "ignored"
                 }));
 
         var pack = LedgerReportPackBuilder.Build(ledger, request, chart);
@@ -1815,18 +1819,20 @@ public sealed class LedgerIntegrationTests
     public void LedgerReportScheduledExport_CreatesReportPackRequest()
     {
         var dimensions = new LedgerLineDimensionSet(
-            FundId: "fund-alpha",
-            EntityId: "entity-alpha",
-            OrganizationId: "tenant-alpha",
-            PortfolioId: "portfolio-income",
-            BookId: "book-gaap",
-            AccountId: "account-cash",
-            CustomerId: "customer-alpha",
-            VendorId: "vendor-bank",
-            ProjectId: "project-close",
+            FundId: " fund-alpha ",
+            EntityId: " entity-alpha ",
+            OrganizationId: " tenant-alpha ",
+            PortfolioId: " portfolio-income ",
+            BookId: " book-gaap ",
+            AccountId: " account-cash ",
+            CustomerId: " customer-alpha ",
+            VendorId: " vendor-bank ",
+            ProjectId: " project-close ",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["Department"] = "Investments"
+                [" Department "] = " Investments ",
+                ["department"] = "ignored-duplicate",
+                [" "] = "ignored"
             });
         var schedule = new LedgerReportSchedule(
             "reg-pack",
@@ -1873,18 +1879,20 @@ public sealed class LedgerIntegrationTests
         var capital = chart.Register("Equity:Capital", LedgerAccountType.Equity);
         var ledger = new Meridian.Ledger.Ledger();
         var dimensions = new LedgerLineDimensionSet(
-            FundId: "fund-alpha",
-            EntityId: "entity-alpha",
-            OrganizationId: "tenant-alpha",
-            PortfolioId: "portfolio-income",
-            BookId: "book-gaap",
-            AccountId: "account-cash",
-            CustomerId: "customer-alpha",
-            VendorId: "vendor-bank",
-            ProjectId: "project-close",
+            FundId: " fund-alpha ",
+            EntityId: " entity-alpha ",
+            OrganizationId: " tenant-alpha ",
+            PortfolioId: " portfolio-income ",
+            BookId: " book-gaap ",
+            AccountId: " account-cash ",
+            CustomerId: " customer-alpha ",
+            VendorId: " vendor-bank ",
+            ProjectId: " project-close ",
             ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["Department"] = "Investments"
+                [" Department "] = " Investments ",
+                ["department"] = "ignored-duplicate",
+                [" "] = "ignored"
             });
         ledger.PostLines(
             new DateTimeOffset(2026, 5, 15, 12, 0, 0, TimeSpan.Zero),

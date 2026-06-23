@@ -96,6 +96,9 @@ optional `LedgerLineDimensionSet` filters so core journal, trial-balance, and st
 scoped by fund/entity/strategy/instrument/counterparty, organization, portfolio, book, account,
 customer, vendor, project, and external-GL dimensions without building a UI- or storage-specific
 reporting fork.
+Ledger-owned dimension normalization trims scope values, removes empty dimensions, and
+deduplicates external-GL fields before matching, report-pack manifests, and scheduled-export
+manifests so in-memory reporting behavior stays aligned with durable journal storage.
 `ProjectLedgerBook` and `FundLedgerBook` propagate the same line-dimension scope through
 consolidated trial balances, point-in-time snapshots, reconciliation snapshots, account summaries,
 and consolidated journals so multi-book reporting can stay ledger-book-native without dropping
