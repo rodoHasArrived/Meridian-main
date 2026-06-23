@@ -100,7 +100,10 @@ through Financial Operations services.
 The WPF Accounting close view model can also retain a loaded close-period plan through the shared
 `IAccountingCloseManagementService` when the caller supplies explicit workflow context, preserving
 materiality, task/dependency, sign-off, required-evidence, and late-adjustment evidence metadata in
-the same governed close-plan configuration request used by browser close setup.
+the same governed close-plan configuration request used by browser close setup. It also exposes a
+governed period-lock command over the same shared service, building human-origin close-package,
+report-pack, manifest, checklist-approval, workflow-version, period, and ledger-book evidence
+requests while rendering service-owned lock blockers instead of applying desktop-local close rules.
 Desktop close-support queue projections consume
 `FinancialOperationsCommandCenterDto.CloseSupportDecision` directly, so period state,
 lock/reopen posture, NAV/report dependencies, unresolved exceptions, approvals, and retained

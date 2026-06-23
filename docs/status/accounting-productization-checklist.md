@@ -220,7 +220,10 @@ the requirement end to end.
 - [x] WPF Accounting close setup now registers the shared close-management service and exposes a
   governed view-model command that retains loaded close-plan materiality, task/dependency,
   sign-off, required-evidence, late-adjustment evidence, workflow correlation, and actor context
-  through the same shared close-plan configuration contract used by browser close setup.
+  through the same shared close-plan configuration contract used by browser close setup. WPF now
+  also exposes a governed close-period lock command over the same shared service, carrying workflow
+  version, close-package/report-pack/manifest identifiers, checklist-control approvals, selected
+  period, and selected ledger-book evidence while rendering service-owned lock blockers.
 - [x] External GL export certification and export-control provenance now require exact-token
   package, certification, fund/provider, and period evidence instead of accepting longer identifier
   prefixes.
@@ -365,8 +368,10 @@ the requirement end to end.
   shared configuration endpoint; WPF now has service registration and a close view-model command
   that retains loaded close-plan setup through the same shared contract when workflow context is
   supplied. Close management now also has a governed period-lock command/result over the Operations
-  Continuity close-package gate. Production readiness now evidence-qualifies close-plan setup by
-  ledger book, but richer browser/WPF setup/editing workflows and review UX remain open.
+  Continuity close-package gate, and WPF exposes that lock command with blocker rows and retained
+  close-package/report-pack/ledger-book evidence. Production readiness now evidence-qualifies
+  close-plan setup by ledger book, but richer browser/WPF setup/editing workflows and review UX
+  remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails

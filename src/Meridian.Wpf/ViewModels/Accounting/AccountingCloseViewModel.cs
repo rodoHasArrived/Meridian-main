@@ -12,10 +12,12 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     private readonly IAccountingCloseManagementService? _closeManagementService;
     private ClosePeriodPlanDto? _closePlan;
     private Guid _closeWorkflowId;
+    private long _closeWorkflowVersion;
     private ClosePeriodState _closeState = ClosePeriodState.Open;
     private string _closeStateText = "Open";
     private string _trialBalanceStatusText = "Trial balance has not loaded.";
     private string _closePlanSetupStatusText = "Load a close plan before retaining governed close setup.";
+    private string _closePeriodLockStatusText = "Load a close plan before locking the accounting period.";
     private string _selectedAuditDetailText = "Select a journal audit row to inspect source-event and approval linkage.";
     private SourceLinkedAuditLine? _selectedAuditLine;
 
@@ -26,13 +28,16 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _closeManagementService = closeManagementService;
         ConfigureClosePlanCommand = new AsyncRelayCommand(ConfigureClosePlanAsync, CanConfigureClosePlan);
+        LockClosePeriodCommand = new AsyncRelayCommand(LockClosePeriodAsync, CanLockClosePeriod);
     }
 
     public ObservableCollection<TrialBalanceLine> TrialBalance { get; } = [];
     public ObservableCollection<RollForwardLine> RollForward { get; } = [];
     public ObservableCollection<SourceLinkedAuditLine> AuditTrail { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ClosePeriodLockIssueRows { get; } = [];
 
     public IAsyncRelayCommand ConfigureClosePlanCommand { get; }
+    public IAsyncRelayCommand LockClosePeriodCommand { get; }
 
     public ClosePeriodState CloseState
     {
@@ -90,6 +95,21 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             }
 
             _closePlanSetupStatusText = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public string ClosePeriodLockStatusText
+    {
+        get => _closePeriodLockStatusText;
+        private set
+        {
+            if (string.Equals(_closePeriodLockStatusText, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _closePeriodLockStatusText = value;
             RaisePropertyChanged();
         }
     }
@@ -167,16 +187,27 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     }
 
     public void ApplyClosePlan(Guid workflowId, ClosePeriodPlanDto closePlan)
+        => ApplyClosePlan(workflowId, _closeWorkflowVersion, closePlan);
+
+    public void ApplyClosePlan(Guid workflowId, long workflowVersion, ClosePeriodPlanDto closePlan)
     {
         ArgumentNullException.ThrowIfNull(closePlan);
         _closeWorkflowId = workflowId;
+        _closeWorkflowVersion = Math.Max(0, workflowVersion);
         _closePlan = closePlan;
         ClosePlanSetupStatusText = workflowId == Guid.Empty
             ? $"Close plan {closePlan.PeriodId} loaded without workflow context; setup retention is disabled."
             : closePlan.IsPeriodLocked
             ? $"Close plan {closePlan.PeriodId} is locked; setup changes require a governed reopen workflow."
             : $"Close plan {closePlan.PeriodId} loaded for governed setup retention.";
+        ClosePeriodLockStatusText = workflowId == Guid.Empty
+            ? $"Close plan {closePlan.PeriodId} loaded without workflow context; period lock is disabled."
+            : closePlan.IsPeriodLocked
+            ? $"Close plan {closePlan.PeriodId} is already locked."
+            : $"Close plan {closePlan.PeriodId} is ready for governed period-lock review.";
+        ApplyClosePeriodLockIssues(closePlan.ValidationIssues);
         ConfigureClosePlanCommand.NotifyCanExecuteChanged();
+        LockClosePeriodCommand.NotifyCanExecuteChanged();
     }
 
     public void SetCloseState(ClosePeriodState state)
@@ -186,6 +217,11 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     }
 
     private bool CanConfigureClosePlan()
+        => _closeManagementService is not null &&
+           _closeWorkflowId != Guid.Empty &&
+           _closePlan is { IsPeriodLocked: false };
+
+    private bool CanLockClosePeriod()
         => _closeManagementService is not null &&
            _closeWorkflowId != Guid.Empty &&
            _closePlan is { IsPeriodLocked: false };
@@ -223,12 +259,67 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, updated);
+            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
             ClosePlanSetupStatusText = $"Retained close-plan setup for {updated.PeriodId}.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
             ClosePlanSetupStatusText = $"Close-plan setup could not be retained: {ex.Message}";
+        }
+    }
+
+    private async Task LockClosePeriodAsync()
+    {
+        if (_closeManagementService is null)
+        {
+            ClosePeriodLockStatusText = "Close management service is not registered for this desktop session.";
+            return;
+        }
+
+        if (_closePlan is null)
+        {
+            ClosePeriodLockStatusText = "Load a close plan before locking the accounting period.";
+            return;
+        }
+
+        if (_closeWorkflowId == Guid.Empty)
+        {
+            ClosePeriodLockStatusText = $"Close plan {_closePlan.PeriodId} loaded without workflow context; period lock is disabled.";
+            return;
+        }
+
+        if (_closePlan.IsPeriodLocked)
+        {
+            ClosePeriodLockStatusText = $"Close plan {_closePlan.PeriodId} is already locked.";
+            return;
+        }
+
+        try
+        {
+            var request = BuildClosePeriodLockRequest(_closeWorkflowId, _closeWorkflowVersion, _closePlan);
+            var result = await _closeManagementService
+                .LockClosePeriodAsync(request, "wpf-accounting-controller")
+                .ConfigureAwait(true);
+
+            if (result is null)
+            {
+                ClosePeriodLockStatusText = $"Close workflow {_closeWorkflowId:D} was not found.";
+                return;
+            }
+
+            if (result.Plan is not null)
+            {
+                ApplyClosePlan(_closeWorkflowId, result.Transition?.NewVersion ?? _closeWorkflowVersion, result.Plan);
+            }
+
+            ApplyClosePeriodLockIssues(result.Issues);
+            ClosePeriodLockStatusText = result.IsLocked
+                ? $"Locked close period {result.Plan?.PeriodId ?? _closePlan.PeriodId} with retained close-package evidence."
+                : $"Close period lock is blocked by {result.Issues.Count} issue(s).";
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            ClosePeriodLockStatusText = $"Close-period lock could not be retained: {ex.Message}";
         }
     }
 
@@ -309,5 +400,110 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         }
 
         return links.ToArray();
+    }
+
+    private static LockClosePeriodRequestDto BuildClosePeriodLockRequest(
+        Guid workflowId,
+        long workflowVersion,
+        ClosePeriodPlanDto closePlan)
+    {
+        var reportPackId = BuildCloseReportPackId(closePlan);
+        var closePackageId = $"close-package-{closePlan.FundProfileId}-{closePlan.PeriodId}";
+        var manifestId = $"manifest-{closePlan.FundProfileId}-{closePlan.PeriodId}";
+        return new LockClosePeriodRequestDto(
+            workflowId,
+            ExpectedWorkflowVersion: workflowVersion,
+            Actor: "wpf-accounting-controller",
+            Rationale: "Lock close period from WPF Accounting Close after checklist, sign-off, reconciliation, and report certification review.",
+            ReportPackId: reportPackId,
+            EvidenceLinks: BuildClosePeriodLockEvidence(workflowId, closePlan, reportPackId, closePackageId, manifestId),
+            ChecklistControlApprovals: BuildClosePeriodLockApprovals(closePlan),
+            CorrelationId: $"wpf-close-period-lock-{workflowId:D}",
+            ClosePackageId: closePackageId,
+            ClosePackageManifestId: manifestId,
+            ClosePackageRetainedManifestRoute: $"/workstation/reporting/packages/{manifestId}",
+            ActionOrigin: OperationsActionOriginDto.HumanOperator);
+    }
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> BuildClosePeriodLockApprovals(
+        ClosePeriodPlanDto closePlan)
+        => closePlan.Tasks
+            .SelectMany(static task => task.SignOffs
+                .Where(static signOff => signOff.ApprovalState == ManualJournalEntryStatusDto.Approved)
+                .Select(signOff => new OperationsChecklistControlApprovalDto(
+                    task.TaskId,
+                    string.IsNullOrWhiteSpace(signOff.Actor) ? "wpf-accounting-controller" : signOff.Actor.Trim(),
+                    signOff.SignedAtUtc ?? DateTimeOffset.UtcNow)))
+            .ToArray();
+
+    private static IReadOnlyList<string> BuildClosePeriodLockEvidence(
+        Guid workflowId,
+        ClosePeriodPlanDto closePlan,
+        string reportPackId,
+        string closePackageId,
+        string manifestId)
+    {
+        var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            $"wpf://accounting/close/period-lock/{workflowId:D}",
+            $"evidence://close-package/{closePackageId}/workflow/{workflowId:D}/period/{closePlan.PeriodId}/report-pack/{reportPackId}/manifest/{manifestId}/period-lock"
+        };
+
+        if (closePlan.LedgerBookId is { } ledgerBookId)
+        {
+            links.Add($"evidence://close-package/{closePackageId}/book/{ledgerBookId:D}/period/{closePlan.PeriodId}/report-pack/{reportPackId}/period-lock");
+        }
+
+        foreach (var task in closePlan.Tasks)
+        {
+            foreach (var evidence in task.EvidenceLinks)
+            {
+                if (!string.IsNullOrWhiteSpace(evidence))
+                {
+                    links.Add(evidence.Trim());
+                }
+            }
+
+            foreach (var signOff in task.SignOffs)
+            {
+                foreach (var evidence in signOff.EvidenceLinks)
+                {
+                    if (!string.IsNullOrWhiteSpace(evidence))
+                    {
+                        links.Add(evidence.Trim());
+                    }
+                }
+            }
+        }
+
+        foreach (var adjustment in closePlan.LateAdjustments)
+        {
+            foreach (var evidence in adjustment.EvidenceLinks)
+            {
+                if (!string.IsNullOrWhiteSpace(evidence))
+                {
+                    links.Add(evidence.Trim());
+                }
+            }
+        }
+
+        return links.ToArray();
+    }
+
+    private static string BuildCloseReportPackId(ClosePeriodPlanDto closePlan)
+        => $"report-pack-{closePlan.FundProfileId}-{closePlan.PeriodId}";
+
+    private void ApplyClosePeriodLockIssues(IReadOnlyList<AccountingConfigurationValidationIssueDto> issues)
+    {
+        ClosePeriodLockIssueRows.Clear();
+        foreach (var issue in issues)
+        {
+            ClosePeriodLockIssueRows.Add(new AccountingWorkbenchRow(
+                issue.Code,
+                issue.Severity.ToString(),
+                issue.Message,
+                issue.SuggestedAction ?? "Resolve the close blocker before locking the period.",
+                issue.TargetId ?? string.Empty));
+        }
     }
 }
