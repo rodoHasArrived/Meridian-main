@@ -388,11 +388,40 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
         var dashed = value.ToString("D");
         var compact = value.ToString("N");
-        return reference.Contains($"{label}:{dashed}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"{label}/{dashed}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"{label}={dashed}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"{label}:{compact}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"{label}/{compact}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"{label}={compact}", StringComparison.OrdinalIgnoreCase);
+        return ReferencesScopedValue(reference, $"{label}:", dashed) ||
+               ReferencesScopedValue(reference, $"{label}/", dashed) ||
+               ReferencesScopedValue(reference, $"{label}=", dashed) ||
+               ReferencesScopedValue(reference, $"{label}:", compact) ||
+               ReferencesScopedValue(reference, $"{label}/", compact) ||
+               ReferencesScopedValue(reference, $"{label}=", compact);
     }
+
+    private static bool ReferencesScopedValue(string reference, string prefix, string value)
+    {
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var prefixIndex = reference.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (prefixIndex < 0)
+            {
+                return false;
+            }
+
+            var valueIndex = prefixIndex + prefix.Length;
+            if (reference.Length >= valueIndex + value.Length &&
+                string.Compare(reference, valueIndex, value, 0, value.Length, StringComparison.OrdinalIgnoreCase) == 0 &&
+                IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
+            {
+                return true;
+            }
+
+            searchIndex = valueIndex;
+        }
+
+        return false;
+    }
+
+    private static bool IsEvidenceTokenBoundary(string reference, int index)
+        => index >= reference.Length ||
+           reference[index] is '/' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 }

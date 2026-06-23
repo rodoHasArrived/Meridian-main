@@ -801,6 +801,34 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task PostCandidateAsync_ExtendedLedgerBookEvidenceTokenBlocksAppend()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var candidateService = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(candidateService, store);
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            BuildCandidateRequest(
+                ledgerBookId,
+                periodId,
+                sourceEventId,
+                AccountingBasisKindDto.Gaap,
+                "gaap-accrual-v1"),
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: [$"approval://workpaper/fund-alpha/ledger-book:{ledgerBookId:D}ffff/source-event:{sourceEventId:D}/reviewed"]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*approval evidence must name approval intent, fund 'fund-alpha'*ledger book*source event*same retained artifact*");
+        store.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task PostCandidateAsync_TenantScopedCandidateRequiresTenantCompanyApprovalEvidence()
     {
         var ledgerBookId = Guid.NewGuid();
