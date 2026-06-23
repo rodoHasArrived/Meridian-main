@@ -43,7 +43,7 @@ public sealed class PostgresSecurityMasterPricingStore : ISecurityMasterPricingS
             return null;
 
         var entriesJson = reader.GetString(0);
-        var asOf = new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(1), DateTimeKind.Utc));
+        var asOf = reader.GetFieldValue<DateTimeOffset>(1);
         var updatedBy = reader.GetString(2);
 
         var entries = JsonSerializer.Deserialize<List<PricingHierarchyEntryDto>>(entriesJson, JsonOptions)
@@ -128,7 +128,7 @@ public sealed class PostgresSecurityMasterPricingStore : ISecurityMasterPricingS
         {
             var sourceId = reader.GetString(0);
             var price = reader.GetDecimal(1);
-            var priceAsOf = new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(2), DateTimeKind.Utc));
+            var priceAsOf = reader.GetFieldValue<DateTimeOffset>(2);
             results.Add((sourceId, price, priceAsOf));
         }
 

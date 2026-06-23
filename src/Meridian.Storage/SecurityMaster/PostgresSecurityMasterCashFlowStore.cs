@@ -31,12 +31,12 @@ public sealed class PostgresSecurityMasterCashFlowStore : ISecurityMasterCashFlo
         var sourceKind = Enum.Parse<StructuredCashFlowSourceKind>(reader.GetString(0));
         var lastUpdated = reader.IsDBNull(1)
             ? (DateTimeOffset?)null
-            : new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(1), DateTimeKind.Utc));
+            : reader.GetFieldValue<DateTimeOffset>(1);
         var isClientOverride = reader.GetBoolean(2);
         var clientConfirmedBy = reader.IsDBNull(3) ? null : reader.GetString(3);
         var clientConfirmedAt = reader.IsDBNull(4)
             ? (DateTimeOffset?)null
-            : new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(4), DateTimeKind.Utc));
+            : reader.GetFieldValue<DateTimeOffset>(4);
 
         return new SecurityCashFlowSourceDto(
             securityId, sourceKind, lastUpdated, isClientOverride, clientConfirmedBy, clientConfirmedAt);

@@ -33,7 +33,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         "GNF","LRD","SLL","SLE","STN","XSU","XUA","NIO","GTQ","HNL","CRC","PAB","DOP","JMD","TTD",
         "BBD","BSD","HTG","CUP","CUC","AWG","ANG","SRD","GYD","BMD","KYD","BZD","FJD","PGK","SBD",
         "VUV","WST","TOP","MOP","BND","MMK","KHR","LAK","MNT","NPR","LKR","MVR","BTN","PKR","TJS",
-        "TMT","KGS","TJS","KPW","TWD"
+        "TMT","KGS","KPW","TWD"
     };
 
     // ISO 3166-1 alpha-2 subset.
@@ -109,14 +109,18 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         // Non-equity securities require a maturity date.
         if (!IsEquityLike(assetClass))
         {
-            var maturity = TryReadDateField(security.AssetSpecificTerms, "maturityDate")
+            // The canonical Security Master mapper stores maturity under "maturity" for
+            // Bond/CD/CP/TBill and "maturityDate" for swaps; accept either spelling.
+            var maturity = TryReadDateField(security.AssetSpecificTerms, "maturity")
+                ?? TryReadDateField(security.AssetSpecificTerms, "maturityDate")
+                ?? TryReadDateField(security.CommonTerms, "maturity")
                 ?? TryReadDateField(security.CommonTerms, "maturityDate");
 
             if (maturity is null)
             {
                 yield return Violation(
                     "MA001", "Missing Maturity Date", DataQualityRuleCategory.MinimumAttribute,
-                    security.SecurityId, "assetSpecificTerms.maturityDate",
+                    security.SecurityId, "assetSpecificTerms.maturity",
                     $"{assetClass} securities require a maturity date.",
                     DataQualityRuleSeverity.Error, now);
             }
@@ -212,7 +216,8 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         {
             var issueDate = TryReadDateField(security.AssetSpecificTerms, "issueDate")
                 ?? TryReadDateField(security.CommonTerms, "issueDate");
-            var maturity = TryReadDateField(security.AssetSpecificTerms, "maturityDate");
+            var maturity = TryReadDateField(security.AssetSpecificTerms, "maturity")
+                ?? TryReadDateField(security.AssetSpecificTerms, "maturityDate");
 
             if (issueDate.HasValue && maturity.HasValue && maturity.Value <= issueDate.Value)
             {
@@ -260,46 +265,41 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     private static bool IsEquityLike(string assetClass)
-        => assetClass is "Equity" or "Warrant" or "Cfd" or "CryptoCurrency" or "Commodity";
+        => string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "Warrant", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "Cfd", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "CryptoCurrency", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(assetClass, "Commodity", StringComparison.OrdinalIgnoreCase);
 
     private static DateTimeOffset? TryReadDateField(JsonElement element, string fieldName)
     {
-        try
-        {
-            if (element.ValueKind == JsonValueKind.Object
-                && element.TryGetProperty(fieldName, out var prop)
-                && prop.ValueKind != JsonValueKind.Null
-                && prop.TryGetDateTimeOffset(out var result))
-                return result;
-        }
-        catch { }
+        if (element.ValueKind == JsonValueKind.Object
+            && element.TryGetProperty(fieldName, out var prop)
+            && prop.ValueKind != JsonValueKind.Null
+            && prop.TryGetDateTimeOffset(out var result))
+            return result;
+
         return null;
     }
 
     private static decimal? TryReadDecimalField(JsonElement element, string fieldName)
     {
-        try
-        {
-            if (element.ValueKind == JsonValueKind.Object
-                && element.TryGetProperty(fieldName, out var prop)
-                && prop.ValueKind == JsonValueKind.Number
-                && prop.TryGetDecimal(out var result))
-                return result;
-        }
-        catch { }
+        if (element.ValueKind == JsonValueKind.Object
+            && element.TryGetProperty(fieldName, out var prop)
+            && prop.ValueKind == JsonValueKind.Number
+            && prop.TryGetDecimal(out var result))
+            return result;
+
         return null;
     }
 
     private static string? TryReadStringField(JsonElement element, string fieldName)
     {
-        try
-        {
-            if (element.ValueKind == JsonValueKind.Object
-                && element.TryGetProperty(fieldName, out var prop)
-                && prop.ValueKind == JsonValueKind.String)
-                return prop.GetString();
-        }
-        catch { }
+        if (element.ValueKind == JsonValueKind.Object
+            && element.TryGetProperty(fieldName, out var prop)
+            && prop.ValueKind == JsonValueKind.String)
+            return prop.GetString();
+
         return null;
     }
 

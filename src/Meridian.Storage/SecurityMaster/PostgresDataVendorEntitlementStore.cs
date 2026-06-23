@@ -119,17 +119,17 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
         var vendorName = reader.GetString(1);
         var dataType = Enum.Parse<DataVendorDataType>(reader.GetString(2));
         var contractRef = reader.IsDBNull(3) ? null : reader.GetString(3);
-        var effectiveFrom = new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(4), DateTimeKind.Utc));
+        var effectiveFrom = reader.GetFieldValue<DateTimeOffset>(4);
         var effectiveTo = reader.IsDBNull(5)
             ? (DateTimeOffset?)null
-            : new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(5), DateTimeKind.Utc));
+            : reader.GetFieldValue<DateTimeOffset>(5);
         var aumThreshold = reader.IsDBNull(6) ? (decimal?)null : reader.GetDecimal(6);
         var requiresDirect = reader.GetBoolean(7);
         var contactEmail = reader.IsDBNull(8) ? null : reader.GetString(8);
         var renewalDays = reader.GetInt32(9);
         var isActive = reader.GetBoolean(10);
         var createdBy = reader.GetString(11);
-        var createdAt = new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(12), DateTimeKind.Utc));
+        var createdAt = reader.GetFieldValue<DateTimeOffset>(12);
 
         var status = DeriveStatus(isActive, effectiveTo, renewalDays);
 

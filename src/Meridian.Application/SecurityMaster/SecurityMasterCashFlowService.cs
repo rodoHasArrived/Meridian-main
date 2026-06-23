@@ -98,7 +98,14 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         var security = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        var isin = security?.Identifiers
+        if (security is null)
+        {
+            _logger.LogWarning(
+                "Security {SecurityId} not found when retrieving cash flow projections.", securityId);
+            return null;
+        }
+
+        var isin = security.Identifiers
             .FirstOrDefault(i => i.Kind == SecurityIdentifierKind.Isin)?.Value;
 
         var provider = _providers.FirstOrDefault(
