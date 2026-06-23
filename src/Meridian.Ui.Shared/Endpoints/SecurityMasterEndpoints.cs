@@ -999,6 +999,8 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         group.MapPost(UiApiRoutes.SecurityMasterRecordRawPrice, async (
@@ -1027,6 +1029,8 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         group.MapGet(UiApiRoutes.SecurityMasterPriceGoldenCopy, async (
@@ -1097,6 +1101,8 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         group.MapGet(UiApiRoutes.SecurityMasterCashFlowProjections, async (
@@ -1168,6 +1174,8 @@ public static class SecurityMasterEndpoints
         .Produces<DataVendorEntitlementDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         group.MapDelete(UiApiRoutes.DataVendorEntitlementById, async (
@@ -1193,6 +1201,8 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
     }
 

@@ -29,7 +29,15 @@ public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliat
             return null;
         }
 
-        var dueHours = Math.Max(1, ResolveDays(item) * BusinessHoursPerDay);
+        // Only the maturity/identity exception case types carry a configured day-based window.
+        // Other Security Master cases (e.g. operator overrides) defer to the default severity policy.
+        var days = ResolveDays(item);
+        if (days is null)
+        {
+            return null;
+        }
+
+        var dueHours = Math.Max(1, days.Value * BusinessHoursPerDay);
 
         return new ReconciliationSlaPolicy(
             PolicyId: ConflictPolicyId,
@@ -48,11 +56,11 @@ public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliat
             PauseAwaitingEvidence: true);
     }
 
-    private int ResolveDays(ReconciliationBreakQueueItem item) => item.RunId switch
+    private int? ResolveDays(ReconciliationBreakQueueItem item) => item.RunId switch
     {
         "security-master-conflicts" => _config.IdentifierConflictDays,
         "security-master-incomplete" => _config.IncompleteRecordDays,
         "security-master-new" => _config.NewSecurityUnresolvedDays,
-        _ => _config.IdentifierConflictDays
+        _ => null
     };
 }
