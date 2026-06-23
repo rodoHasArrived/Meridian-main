@@ -1021,7 +1021,7 @@ function normalizeOptionalQueryValue(value: string | null): string | undefined {
 
 function selectCloseWorkflowSummary(
   rows: OperationsContinuityWorkflowSummary[],
-  query: { fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string }
+  query: { fundProfileId?: string; fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string }
 ): OperationsContinuityWorkflowSummary | null {
   const sorted = [...rows].sort((left, right) => right.updatedAtUtc.localeCompare(left.updatedAtUtc));
   const scopedRows = sorted.filter((row) =>

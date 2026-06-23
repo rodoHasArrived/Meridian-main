@@ -11,14 +11,9 @@ type RenderWithRouterOptions = Omit<RenderOptions, "wrapper"> & {
   initialEntries?: MemoryRouterProps["initialEntries"];
 };
 
-const routerFutureFlags: MemoryRouterProps["future"] = {
-  v7_relativeSplatPath: true,
-  v7_startTransition: true
-};
-
 export function TestMemoryRouter({ children, initialEntries = ["/"] }: TestMemoryRouterProps) {
   return (
-    <MemoryRouter future={routerFutureFlags} initialEntries={initialEntries}>
+    <MemoryRouter initialEntries={initialEntries}>
       {children}
     </MemoryRouter>
   );

@@ -189,6 +189,9 @@ composition.
 ETL local job definitions are also Storage-owned. The JSON-backed `EtlJobDefinitionStore` writes
 operator-created ETL definitions under the storage root using `AtomicFileWriter`; Application wires
 the store through the shared `Meridian.Contracts.Etl` contract.
+ETL staging validates retained file names before writing under the job staging directory, rejecting
+path segments or traversal names from remote transports so source provenance cannot redirect the
+staged artifact path.
 
 Provider integration manifests are Storage-owned durable configuration and evidence records. The
 file-backed integration store persists approved manifests, connection instances, raw payloads,

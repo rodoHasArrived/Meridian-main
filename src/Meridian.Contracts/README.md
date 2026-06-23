@@ -667,7 +667,9 @@ and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so the Dat
 Integration-owned export service can target SFTP without depending on Infrastructure, while the
 Infrastructure adapter implements transport-specific publishing details. SFTP source and
 destination definitions carry `hostKeySha256Fingerprint` so shared job definitions can pin remote
-server identity without leaking transport-library types into Contracts.
+server identity without leaking transport-library types into Contracts. The transport adapter
+accepts either normalized 64-character hex SHA-256 fingerprints or OpenSSH-style `SHA256:<base64>`
+fingerprints and normalizes them before host-key comparison.
 
 Event-pipeline metrics and monitoring delivery contracts live in `Monitoring/` under
 `Meridian.Contracts.Monitoring`. Keep `IEventMetrics`, `MetricsSnapshot`, and
@@ -734,6 +736,11 @@ Data, Settings, browser, WPF, and endpoint flows validate the same no-code custo
 instead of accepting client-local JSON shapes.
 `SecurityAssetClassCatalog` also exposes `CustomAsset` so create workflows and projection consumers
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
+`SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
+narrow automation: each pack declares contract schema dimensions, lifecycle events, valuation
+methods, journal-template rule hooks, validation rules, reporting taxonomy, automation depth, and
+the policy that asset packs extend accounting through event-to-template mappings without changing
+the core ledger.
 `SecuritySearchRequest` carries optional `customProfileId`, `profileVersion`, `profileFieldKey`,
 and `profileFieldValue` filters so shared clients can find profile-backed alternative assets
 through the canonical Security Master search route without depending on endpoint-local JSON.
