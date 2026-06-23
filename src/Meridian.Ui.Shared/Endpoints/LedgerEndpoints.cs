@@ -1671,7 +1671,8 @@ public static class LedgerEndpoints
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1747,7 +1748,8 @@ public static class LedgerEndpoints
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1788,7 +1790,8 @@ public static class LedgerEndpoints
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId ?? request.TenantId,
-                    CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                    CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+                    ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1830,7 +1833,8 @@ public static class LedgerEndpoints
                     {
                         Actor = ResolveMutationActor(context, request.Actor),
                         TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                        CompanyId = tenantContext.CompanyId ?? request.CompanyId,
+                        ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);

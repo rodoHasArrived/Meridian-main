@@ -146,6 +146,10 @@ resolved tenant plus company when those scopes are present, so same-company even
 tenant remain audit context only for that tenant. Posting-rule journal candidate requests use
 the same resolved tenant/company scope before invoking Financial Operations so generated
 source-event drafts dry-run against, and resolve chart paths from, the authenticated workspace.
+Manual journal draft, submit, evidence-attach, and lifecycle endpoints also stamp the trusted
+tenant/company, actor, and report-group principal context onto shared-service requests so manual
+journal audit events retain the operator's role/profile scope instead of trusting body-supplied
+authorization metadata.
 The shared composition also registers the accounting-basis projection-set service so browser and
 desktop hosts can ask Financial Operations to produce per-basis, per-ledger-book posting candidates
 for a single source event while keeping ledger posting behind explicit approval. The generated

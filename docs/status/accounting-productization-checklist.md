@@ -173,6 +173,10 @@ the requirement end to end.
 - [x] Manual journal lifecycle approval, posting, close-lock, reversal, and rebook evidence now
   requires exact-token journal-entry, period, ledger-book, tenant, and company provenance, so
   extended lifecycle identifiers cannot satisfy governed transition evidence by prefix.
+- [x] Manual journal draft, submit, evidence-attach, and lifecycle endpoints now stamp trusted
+  tenant/company, actor, and report-group principal context onto shared-service requests, so manual
+  journal audit events retain browser/WPF session role/profile scope instead of relying on
+  body-supplied authorization metadata.
 
 ## Still To Complete
 
@@ -197,9 +201,11 @@ the requirement end to end.
   checks, evidence requirements, period locks, immutable posted entries, reversal/rebook correction
   paths, lifecycle idempotency, and transition audit coverage. Manual journal lifecycle commands now
   replay retained correlation ids for submit, approve, reject, post, close-lock, reverse, and rebook
-  without appending duplicate transitions or audit events, and approval/rejection/posting/close-lock/
-  correction actions require an actor independent from the draft preparer. Broader authorization
-  policy, role-based segregation, and end-to-end mutation coverage remain open.
+  without appending duplicate transitions or audit events, approval/rejection/posting/close-lock/
+  correction actions require an actor independent from the draft preparer, and endpoint-driven
+  manual journal lifecycle audit now retains trusted role/profile principal scope. Broader
+  authorization policy, service-level role enforcement, and end-to-end mutation coverage remain
+  open.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
   evidence migration. The shared readiness contract now exposes fail-closed certification inputs,

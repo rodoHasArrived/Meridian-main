@@ -459,8 +459,10 @@ public sealed partial class WorkstationEndpointsTests
                 saved.FundProfileId,
                 "controller",
                 saved.Version,
-                CorrelationId: "manual-je-submit"),
+                CorrelationId: "manual-je-submit",
+                LedgerBookId: saved.LedgerBookId),
             ServerJsonOptions);
+        var submitResponseBody = await submitResponse.Content.ReadAsStringAsync();
         using var workbenchResponse = await client.GetAsync($"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId=fund-alpha");
         using var privateCapitalResponse = await client.GetAsync($"{UiApiRoutes.LedgerPrivateCapitalActivity}?fundProfileId=fund-alpha");
         using var filteredPrivateCapitalResponse = await client.GetAsync(
@@ -492,7 +494,7 @@ public sealed partial class WorkstationEndpointsTests
 
         validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK, submitResponseBody);
         workbenchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         privateCapitalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         filteredPrivateCapitalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -907,6 +909,69 @@ public sealed partial class WorkstationEndpointsTests
         missingPrivateCapitalActivity.ReportOutputs.Should().BeEmpty();
         missingPrivateCapitalActivity.FundEventRecords.Should().BeEmpty();
         missingPrivateCapitalActivity.CapitalAccountSubledgers.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ManualJournalEntryWorkbenchEndpoints_StampsTrustedRoleProfileScopeOnAudit()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Admin,
+            currentUserRoleProfileName: "journal-controller",
+            currentUserCompanyId: null);
+        var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
+                "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                "fund-alpha",
+                new ChartOfAccountsNodeDto("capital", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+                "browser-user"),
+            ServerJsonOptions);
+
+        using var saveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(
+                ManualJournalEntryDraft(),
+                "spoofed-preparer",
+                CorrelationId: "manual-je-audit-save"),
+            ServerJsonOptions);
+        var saveResponseBody = await saveResponse.Content.ReadAsStringAsync();
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK, saveResponseBody);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+
+        using var submitResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntrySubmitApproval,
+            new SubmitManualJournalEntryApprovalRequest(
+                saved!.JournalEntryId,
+                saved.FundProfileId,
+                "spoofed-controller",
+                saved.Version,
+                CorrelationId: "manual-je-audit-submit",
+                LedgerBookId: saved.LedgerBookId),
+            ServerJsonOptions);
+        var submitResponseBody = await submitResponse.Content.ReadAsStringAsync();
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK, submitResponseBody);
+
+        using var workbenchResponse = await client.GetAsync($"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId=fund-alpha");
+        workbenchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var workbench = await workbenchResponse.Content.ReadFromJsonAsync<ManualJournalEntryWorkbenchDto>(ServerJsonOptions);
+
+        workbench!.AuditTrail.Should().Contain(item =>
+            item.Action == "manual-je.submit-approval" &&
+            item.Actor == "ops-user" &&
+            item.CorrelationId == "manual-je-audit-submit" &&
+            item.ReportGroupPrincipalIds != null &&
+            item.ReportGroupPrincipalIds.Contains(UserRole.Admin.ToString()) &&
+            item.ReportGroupPrincipalIds.Contains("journal-controller"));
     }
 
     [Fact]
