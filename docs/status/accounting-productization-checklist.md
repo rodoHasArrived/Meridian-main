@@ -158,6 +158,9 @@ the requirement end to end.
 - [x] External GL export-control and export-certification evidence recognizes colon-delimited
   ledger-book scope as a valid exact-token boundary while still rejecting extended ledger-book
   identifiers.
+- [x] External GL mapping-profile certification evidence now requires exact-token profile,
+  provider, and fund provenance, so extended profile identifiers cannot certify guarded export
+  mappings by prefix.
 
 ## Still To Complete
 

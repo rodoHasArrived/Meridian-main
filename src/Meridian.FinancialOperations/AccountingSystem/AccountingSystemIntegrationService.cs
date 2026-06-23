@@ -1798,9 +1798,9 @@ public sealed class AccountingSystemIntegrationService
         string fundProfileId,
         string profileId)
         => evidenceLinks.Any(link =>
-            link.Contains(profileId, StringComparison.OrdinalIgnoreCase) ||
-            (link.Contains(providerId, StringComparison.OrdinalIgnoreCase) &&
-             link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase)));
+            ReferencesEvidenceToken(link, profileId) ||
+            (ReferencesEvidenceToken(link, providerId) &&
+             ReferencesEvidenceToken(link, fundProfileId)));
 
     private static bool HasMappingProfileCertificationEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
@@ -1946,6 +1946,34 @@ public sealed class AccountingSystemIntegrationService
             }
 
             if (IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
+            {
+                return true;
+            }
+
+            searchIndex = valueIndex + value.Length;
+        }
+
+        return false;
+    }
+
+    private static bool ReferencesEvidenceToken(string reference, string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var valueIndex = reference.IndexOf(value, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (valueIndex < 0)
+            {
+                return false;
+            }
+
+            if (IsEvidenceTokenBoundary(reference, valueIndex - 1) &&
+                IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
             {
                 return true;
             }

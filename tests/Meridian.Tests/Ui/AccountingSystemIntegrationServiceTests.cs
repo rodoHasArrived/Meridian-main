@@ -2792,6 +2792,42 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task MappingProfiles_DowngradesCertifiedProfileWithExtendedProfileEvidenceToken()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile() with
+        {
+            ProfileId = "qbo-default-fund-extended-profile-evidence-certified"
+        };
+
+        var upserted = await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            EvidenceLinks: [$"approval:external-gl-mapping:{profile.ProfileId}ffff"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [ExportControlEvidence(ExternalGlLedgerBookId)]));
+
+        upserted.CertificationState.Should().Be(AccountingCertificationStateDto.Draft);
+        package.PostingEnabled.Should().BeFalse();
+        package.GeneratedLines.Should().BeEmpty();
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "UncertifiedExternalGlMappingProfile" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == profile.ProfileId);
+    }
+
+    [Fact]
     public async Task MappingProfiles_DowngradesCertifiedProfileWithSplitRetainedEvidence()
     {
         var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
