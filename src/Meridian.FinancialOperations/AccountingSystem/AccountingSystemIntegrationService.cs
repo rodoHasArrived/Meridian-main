@@ -1834,13 +1834,13 @@ public sealed class AccountingSystemIntegrationService
         var compactPeriodEnd = $"{package.PeriodEnd:yyyyMMdd}";
         return evidenceLinks.Any(link =>
             HasExportCertificationEvidence([link]) &&
-            link.Contains(package.ExportPackageId, StringComparison.OrdinalIgnoreCase) &&
-            link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
+            ReferencesEvidenceToken(link, package.ExportPackageId) &&
+            ReferencesEvidenceToken(link, package.Certification.CertificationId) &&
             HasExplicitLedgerBookEvidence(link, package.LedgerBookId) &&
-            ((link.Contains(periodStart, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(periodEnd, StringComparison.OrdinalIgnoreCase)) ||
-             (link.Contains(compactPeriodStart, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(compactPeriodEnd, StringComparison.OrdinalIgnoreCase))));
+            ((ReferencesEvidenceToken(link, periodStart) &&
+              ReferencesEvidenceToken(link, periodEnd)) ||
+             (ReferencesEvidenceToken(link, compactPeriodStart) &&
+              ReferencesEvidenceToken(link, compactPeriodEnd))));
     }
 
 
@@ -1867,13 +1867,13 @@ public sealed class AccountingSystemIntegrationService
         var compactEnd = $"{periodEnd:yyyyMMdd}";
         return evidenceLinks.Any(link =>
             HasLedgerBookEvidence(link, ledgerBookId) &&
-            (link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) ||
-             (link.Contains(providerId, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase)) ||
-             (link.Contains(formattedStart, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(formattedEnd, StringComparison.OrdinalIgnoreCase)) ||
-             (link.Contains(compactStart, StringComparison.OrdinalIgnoreCase) &&
-              link.Contains(compactEnd, StringComparison.OrdinalIgnoreCase))));
+            (ReferencesEvidenceToken(link, fundProfileId) ||
+             (ReferencesEvidenceToken(link, providerId) &&
+              ReferencesEvidenceToken(link, fundProfileId)) ||
+             (ReferencesEvidenceToken(link, formattedStart) &&
+              ReferencesEvidenceToken(link, formattedEnd)) ||
+             (ReferencesEvidenceToken(link, compactStart) &&
+              ReferencesEvidenceToken(link, compactEnd))));
     }
 
     private static bool HasExportPackageControlEvidenceWithProvenance(

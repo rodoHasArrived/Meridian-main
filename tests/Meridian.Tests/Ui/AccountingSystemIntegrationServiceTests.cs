@@ -3210,6 +3210,32 @@ public sealed class AccountingSystemIntegrationServiceTests
         await wrongLedgerBookCertification.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
 
+        var extendedPackageIdCertification = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Extended package id evidence should not certify the guarded export package.",
+            [$"approval:external-gl-export-certification:{package.ExportPackageId}ffff:{package.Certification!.CertificationId}:ledger-book:{ExternalGlLedgerBookId:D}:2026-01-01:2026-01-31"]));
+
+        await extendedPackageIdCertification.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
+
+        var extendedCertificationIdEvidence = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Extended certification id evidence should not certify the guarded export package.",
+            [$"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification!.CertificationId}ffff:ledger-book:{ExternalGlLedgerBookId:D}:2026-01-01:2026-01-31"]));
+
+        await extendedCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
+
+        var extendedPeriodEvidence = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
+            package.ExportPackageId,
+            "controller",
+            "Extended period evidence should not certify the guarded export package.",
+            [$"approval:external-gl-export-certification:{package.ExportPackageId}:{package.Certification!.CertificationId}:ledger-book:{ExternalGlLedgerBookId:D}:2026-01-01-extra:2026-01-31"]));
+
+        await extendedPeriodEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained export package id, certification id, export ledger book, and exact export period in the same artifact*");
 
         var certificationEvidence = ExportCertificationEvidence(package);
         var assistantCertification = () => service.CertifyExportPackageAsync(new CertifyAccountingSystemExportPackageRequestDto(
