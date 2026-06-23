@@ -106,9 +106,10 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             ?? throw new InvalidOperationException("Generated accounting posting candidate did not produce a durable ledger write.");
         var command = write.PostingCommand
             ?? throw new InvalidOperationException("Generated accounting posting candidate did not produce an accounting posting command.");
-        if (command.ApprovalState == AccountingPostingApprovalStateDto.Rejected)
+        if (command.ApprovalState != AccountingPostingApprovalStateDto.Pending)
         {
-            throw new InvalidOperationException("Rejected accounting posting candidates cannot be appended.");
+            throw new InvalidOperationException(
+                $"Generated accounting posting candidates require a pending approval command before append; current approval state is '{command.ApprovalState}'.");
         }
 
         EnsureWriteLedgerBookScope(write, ledgerBookId);

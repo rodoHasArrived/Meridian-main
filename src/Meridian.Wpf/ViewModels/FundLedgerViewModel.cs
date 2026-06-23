@@ -21,6 +21,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
     private readonly IStatementReconciliationWorkbenchService _statementReconciliationWorkbenchService;
     private readonly IPrivateCapitalCloseCockpitService? _privateCapitalCloseCockpitService;
+    private readonly IFinancialOperationsCommandCenterReadService? _financialOperationsCommandCenterReadService;
     private readonly FundLedgerCollectionsSectionViewModel _collectionsSection = new();
     private readonly FundLedgerWorkbenchSectionViewModel _workbenchSection = new();
 
@@ -86,6 +87,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private FundReportPackPreviewDto? _reportPackPreview;
     private GovernanceLifecycleProjectionDto? _accountingLifecycle;
     private PrivateCapitalCloseCockpitDto? _privateCapitalCloseCockpit;
+    private FinancialOperationsCommandCenterDto? _financialOperationsCommandCenter;
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -97,7 +99,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
         StrategyRunWorkspaceService runWorkspaceService,
         IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null,
-        IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null)
+        IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null,
+        IFinancialOperationsCommandCenterReadService? financialOperationsCommandCenterReadService = null)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -109,6 +112,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
         _statementReconciliationWorkbenchService = statementReconciliationWorkbenchService ?? new NullStatementReconciliationWorkbenchService();
         _privateCapitalCloseCockpitService = privateCapitalCloseCockpitService;
+        _financialOperationsCommandCenterReadService = financialOperationsCommandCenterReadService;
 
         AccountQueueTable = new WorkstationTableModel<FundAccountSummary>(
             Accounts,
@@ -947,8 +951,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             FundProfileId: activeFund.FundProfileId,
             Currency: activeFund.BaseCurrency), ct);
         var privateCapitalCloseTask = LoadPrivateCapitalCloseCockpitAsync(activeFund, ct);
+        var financialOperationsCommandCenterTask = LoadFinancialOperationsCommandCenterAsync(activeFund, ct);
 
-        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, accountingWorkspaceTask, privateCapitalCloseTask);
+        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, accountingWorkspaceTask, privateCapitalCloseTask, financialOperationsCommandCenterTask);
 
         var ledger = await ledgerTask;
         var accounts = await accountsTask;
@@ -958,7 +963,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var portfolioPositions = await portfolioTask;
         var accountingWorkspace = await accountingWorkspaceTask;
         var privateCapitalCloseCockpit = await privateCapitalCloseTask;
+        var financialOperationsCommandCenter = await financialOperationsCommandCenterTask;
         _accountingLifecycle = accountingWorkspace.Governance;
+        _financialOperationsCommandCenter = financialOperationsCommandCenter;
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is not null)
@@ -1023,6 +1030,20 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
         return await _privateCapitalCloseCockpitService
             .GetCockpitAsync(fundProfileId: activeFund.FundProfileId, ct: ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<FinancialOperationsCommandCenterDto?> LoadFinancialOperationsCommandCenterAsync(
+        FundProfileDetail activeFund,
+        CancellationToken ct)
+    {
+        if (_financialOperationsCommandCenterReadService is null)
+        {
+            return null;
+        }
+
+        return await _financialOperationsCommandCenterReadService
+            .GetCommandCenterAsync(fundProfileId: activeFund.FundProfileId, ct: ct)
             .ConfigureAwait(false);
     }
 
@@ -1119,6 +1140,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _reportPackPreview = null;
         _accountingLifecycle = null;
         _privateCapitalCloseCockpit = null;
+        _financialOperationsCommandCenter = null;
         FinancialOperationsQueueStatusText = "Queue pending";
         FinancialOperationsQueueSummaryText = "Load Operations Continuity and close cockpit evidence to inspect active Financial Operations work items.";
         AccountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
@@ -2252,6 +2274,29 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         FinancialOperationsQueueItems.Clear();
 
+        if (_financialOperationsCommandCenter is not null)
+        {
+            foreach (var row in _financialOperationsCommandCenter.QueueRows)
+            {
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: row.QueueId,
+                    KindLabel: row.KindLabel,
+                    Label: row.Title,
+                    StatusLabel: row.StatusLabel,
+                    Detail: row.Detail,
+                    OwnerLabel: row.OwnerLabel,
+                    TimingLabel: row.DueLabel,
+                    EvidenceLabel: row.EvidenceLabel,
+                    ActionLabel: row.ActionLabel,
+                    SourceTarget: MapFinancialOperationsCommandCenterRouteTarget(row),
+                    IsBlocked: row.IsBlocked));
+            }
+
+            FinancialOperationsQueueStatusText = _financialOperationsCommandCenter.Status;
+            FinancialOperationsQueueSummaryText = _financialOperationsCommandCenter.Summary;
+            return;
+        }
+
         var lifecycle = _accountingLifecycle;
         if (lifecycle is not null)
         {
@@ -2442,6 +2487,37 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         FinancialOperationsQueueStatusText = $"{itemCount:N0} active item{(itemCount == 1 ? string.Empty : "s")}";
         FinancialOperationsQueueSummaryText =
             $"{blockedCount:N0} blocked, {itemCount - blockedCount:N0} review item{(itemCount - blockedCount == 1 ? string.Empty : "s")} across reconciliation, close checklist, approvals, evidence packages, NAV support, and private-capital close.";
+    }
+
+    private static string MapFinancialOperationsCommandCenterRouteTarget(FinancialOperationsQueueRowDto row)
+    {
+        var route = row.RouteHint;
+        if (!string.IsNullOrWhiteSpace(route))
+        {
+            return row.SourceKind.Contains("private-capital", StringComparison.OrdinalIgnoreCase)
+                || row.SourceKind.Contains("nav-support", StringComparison.OrdinalIgnoreCase)
+                ? MapPrivateCapitalCloseRouteTarget(route)
+                : MapAccountingRecordRouteTarget(route);
+        }
+
+        if (row.SourceKind.Contains("break", StringComparison.OrdinalIgnoreCase)
+            || row.SourceKind.Contains("reconciliation", StringComparison.OrdinalIgnoreCase))
+        {
+            return "OperationsContinuity";
+        }
+
+        if (row.SourceKind.Contains("private-capital", StringComparison.OrdinalIgnoreCase)
+            || row.SourceKind.Contains("nav-support", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundAccountingConfigure";
+        }
+
+        if (row.SourceKind.Contains("evidence", StringComparison.OrdinalIgnoreCase))
+        {
+            return "EvidenceWorkbench";
+        }
+
+        return "OperationsClose";
     }
 
     private void ApplyPrivateCapitalCloseCockpit(PrivateCapitalCloseCockpitDto? cockpit)

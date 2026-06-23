@@ -349,11 +349,12 @@ external-GL mapping do not lose non-fund dimension scope at the rule-to-ledger b
 `AccountingPostingCandidatePostService` is the separate append gate for approved generated
 candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
 origin, retained source-event identity, approval evidence, an aggregate id equal to the target
-ledger book, a matching ledger book/accounting basis, journal metadata that names the approved
-ledger book, retained line dimensions whose book scope matches that ledger book, and a period owned
-by that book before calling the journal store. Replays for the same `(ledger book aggregate, source
-event)` return the existing journal, while the same economic event may still produce separate GAAP,
-cash, tax, statutory, or primary postings because each basis uses its own ledger-book aggregate.
+ledger book, a pending approval-gated posting command, a matching ledger book/accounting basis,
+journal metadata that names the approved ledger book, retained line dimensions whose book scope
+matches that ledger book, and a period owned by that book before calling the journal store. Replays
+for the same `(ledger book aggregate, source event)` return the existing journal, while the same
+economic event may still produce separate GAAP, cash, tax, statutory, or primary postings because
+each basis uses its own ledger-book aggregate.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,

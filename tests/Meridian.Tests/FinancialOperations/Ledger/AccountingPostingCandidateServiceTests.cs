@@ -663,6 +663,43 @@ public sealed class AccountingPostingCandidateServiceTests
         store.Appended.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(AccountingPostingApprovalStateDto.Approved)]
+    [InlineData(AccountingPostingApprovalStateDto.NotRequired)]
+    [InlineData(AccountingPostingApprovalStateDto.Rejected)]
+    public async Task PostCandidateAsync_NonPendingCandidateCommandBlocksAppend(
+        AccountingPostingApprovalStateDto approvalState)
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var request = BuildCandidateRequest(
+            ledgerBookId,
+            periodId,
+            sourceEventId,
+            AccountingBasisKindDto.Gaap,
+            "gaap-accrual-v1");
+        var builder = new FixedCandidateWriteBuilder(BuildCandidateWrite(
+            request,
+            journalMetadataLedgerBookId: ledgerBookId,
+            lineDimensionBookId: ledgerBookId,
+            approvalState: approvalState));
+        var store = new RecordingLedgerJournalStore(
+            BuildLedgerBook(ledgerBookId, AccountingBasisKindDto.Gaap),
+            BuildPeriod(periodId, ledgerBookId));
+        var service = new AccountingPostingCandidatePostService(builder, store);
+
+        var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+            request,
+            "reviewer@meridian.local",
+            "approval-generated-interest-202605",
+            EvidenceLinks: [ApprovalEvidence("fund-alpha", ledgerBookId, sourceEventId)]));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage($"*pending approval command*'{approvalState}'*");
+        store.Appended.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task PostCandidateAsync_HardClosedPeriodBlocksGeneratedPostingBeforeAppend()
     {
@@ -1077,7 +1114,8 @@ public sealed class AccountingPostingCandidateServiceTests
     private static AccountingPostingCandidateWriteResult BuildCandidateWrite(
         PostingRuleJournalCandidateRequestDto request,
         Guid journalMetadataLedgerBookId,
-        Guid lineDimensionBookId)
+        Guid lineDimensionBookId,
+        AccountingPostingApprovalStateDto approvalState = AccountingPostingApprovalStateDto.Pending)
     {
         var journalEntryId = Guid.NewGuid();
         var lineDimensions = new LedgerLineDimensionSet(
@@ -1124,6 +1162,7 @@ public sealed class AccountingPostingCandidateServiceTests
             CorrelationId: request.CorrelationId,
             SourceEventType: request.SourceEventType,
             TreasuryContext: request.TreasuryContext,
+            ApprovalState: approvalState,
             LedgerBookId: request.LedgerBookId);
         var write = new LedgerJournalEntryWrite(
             entry,
