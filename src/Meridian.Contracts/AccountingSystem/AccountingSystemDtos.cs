@@ -615,9 +615,46 @@ public sealed record AccountingTenantAdministrationReadinessDto(
             return false;
         }
 
-        return reference.Contains(TenantId, StringComparison.OrdinalIgnoreCase) &&
-               reference.Contains(CompanyId, StringComparison.OrdinalIgnoreCase);
+        return ReferencesEvidenceToken(reference, TenantId) &&
+               ReferencesEvidenceToken(reference, CompanyId);
     }
+
+    private static bool ReferencesEvidenceToken(string reference, string token)
+    {
+        if (string.IsNullOrWhiteSpace(reference) || string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        var comparison = StringComparison.OrdinalIgnoreCase;
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var tokenIndex = reference.IndexOf(token, searchIndex, comparison);
+            if (tokenIndex < 0)
+            {
+                return false;
+            }
+
+            var before = tokenIndex == 0 ? '\0' : reference[tokenIndex - 1];
+            var afterIndex = tokenIndex + token.Length;
+            var after = afterIndex >= reference.Length ? '\0' : reference[afterIndex];
+
+            if (IsEvidenceTokenBoundary(before) && IsEvidenceTokenBoundary(after))
+            {
+                return true;
+            }
+
+            searchIndex = tokenIndex + token.Length;
+        }
+
+        return false;
+    }
+
+    private static bool IsEvidenceTokenBoundary(char value)
+        => value == '\0' ||
+           char.IsWhiteSpace(value) ||
+           value is '/' or ':' or '=' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}';
 }
 
 public sealed record AccountingProductionReadinessIssueDto(

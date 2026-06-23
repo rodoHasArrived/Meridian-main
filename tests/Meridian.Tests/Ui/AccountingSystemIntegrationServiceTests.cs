@@ -1021,6 +1021,50 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
+
+        var extendedTokenEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                TenantScopeConfigured: true,
+                AdminRoleProfileConfigured: true,
+                ScopedAccessPoliciesConfigured: true,
+                ReportingGroupsConfigured: true,
+                AccountingAdminSurfaceConfigured: true,
+                BrowserAccountingAdminSurfaceConfigured: true,
+                WpfAccountingAdminSurfaceConfigured: true,
+                ChartAdministrationStudioConfigured: true,
+                RuleTestPromotionStudioConfigured: true,
+                CloseSetupStudioConfigured: true,
+                ProviderMappingStudioConfigured: true,
+                TenantCompanyReportGroupSetupStudioConfigured: true,
+                AuditReviewToolingConfigured: true,
+                BulkImportExportSafeguardsConfigured: true,
+                PerformanceValidationConfigured: true,
+                DisasterRecoveryRunbookConfigured: true,
+                LedgerBookAdministrationStudioConfigured: true,
+                PostingRuleAuthoringStudioConfigured: true,
+                ApprovalQueueStudioConfigured: true,
+                DimensionMappingStudioConfigured: true,
+                ImplementationSandboxConfigured: true,
+                TenantAdministrationEvidenceLinks:
+                [
+                    "evidence://tenant-admin/tenant-alpha-extra/company-alpha-extra/tenant-admin/full",
+                    "approval:tenant-admin:tenant-alpha-extra:company-alpha-extra"
+                ]));
+
+        extendedTokenEvidence.TenantAdministration.Should().NotBeNull();
+        extendedTokenEvidence.TenantAdministration!.HasTenantCompanyScopedEvidence.Should().BeFalse();
+        extendedTokenEvidence.TenantAdministration.CompletedControlCount.Should().Be(2);
+        extendedTokenEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.evidence-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha-extra/company-alpha-extra/tenant-admin/full"));
+        extendedTokenEvidence.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
     }
 
     [Fact]

@@ -164,6 +164,9 @@ the requirement end to end.
 - [x] Production-readiness dimensional rollout evidence now requires exact-token tenant, company,
   fund, and ledger-book provenance before retained dimension/report/export certification can count
   for the selected rollout scope.
+- [x] Tenant administration production-readiness evidence now requires exact-token tenant and
+  company provenance, so extended tenant or company identifiers cannot certify enterprise setup
+  controls by prefix.
 
 ## Still To Complete
 
