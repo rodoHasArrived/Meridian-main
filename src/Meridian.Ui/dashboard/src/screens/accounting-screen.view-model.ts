@@ -2263,6 +2263,12 @@ export interface CloseCommandCenterBlockerViewModel {
   detail: string;
   tone: AccountingToolingTone;
   href: string | null;
+  statusLabel: string;
+  ownerLabel: string | null;
+  dueLabel: string | null;
+  evidenceLabel: string;
+  actionLabel: string;
+  impactLabel: string;
 }
 
 export interface CloseCommandCenterActionViewModel {
@@ -12309,7 +12315,13 @@ export function buildCloseCommandCenterViewState({
       label: blocker.category ? `${blocker.category} - ${blocker.code}` : blocker.code,
       detail: blocker.message,
       tone: closeCommandCenterSeverityTone(blocker.severity),
-      href: blocker.routeHint ?? closeCommandCenterGateRoute(blocker.gate)
+      href: blocker.routeHint ?? closeCommandCenterGateRoute(blocker.gate),
+      statusLabel: blocker.severity,
+      ownerLabel: null,
+      dueLabel: null,
+      evidenceLabel: "Evidence pending",
+      actionLabel: "Resolve blocker before sign-off.",
+      impactLabel: blocker.category
     })),
     ...incompleteEvidenceCategories.slice(0, 3).map((category) => ({
       id: `evidence-${category.key}`,
@@ -12318,14 +12330,26 @@ export function buildCloseCommandCenterViewState({
         ? `Missing: ${category.requiredEvidence.join(", ")}`
         : category.status,
       tone: "warning" as AccountingToolingTone,
-      href: category.routeHint
+      href: category.routeHint,
+      statusLabel: category.status,
+      ownerLabel: null,
+      dueLabel: null,
+      evidenceLabel: category.requiredEvidence?.length ? formatCount(category.requiredEvidence.length, "required item") : "Evidence pending",
+      actionLabel: "Attach retained evidence before sign-off.",
+      impactLabel: "Retained evidence"
     })),
     ...((data.controlCenter?.alerts ?? []).slice(0, 2).map((alert, index) => ({
       id: `bootstrap-alert-${index}`,
       label: "Control-center alert",
       detail: alert.message,
       tone: alert.tone === "danger" ? "danger" as AccountingToolingTone : "warning" as AccountingToolingTone,
-      href: null
+      href: null,
+      statusLabel: alert.tone === "danger" ? "Blocked" : "Review",
+      ownerLabel: null,
+      dueLabel: null,
+      evidenceLabel: "Control-center alert",
+      actionLabel: "Review alert before close release.",
+      impactLabel: "Control center"
     })))
   ].slice(0, 8);
   return {
@@ -12397,6 +12421,16 @@ function buildSharedFinancialOperationsCommandCenterViewState(
         href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
       },
       {
+        id: "close-support-approvals",
+        label: "Pending approvals",
+        value: String(closeSupportDecision.pendingApprovalCount),
+        detail: closeSupportDecision.pendingApprovalCount > 0
+          ? "Shared close-support approvals must clear before completion."
+          : "No pending shared close-support approvals are surfaced.",
+        tone: closeSupportDecision.pendingApprovalCount > 0 ? "warning" : "success",
+        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
+      },
+      {
         id: "close-support-evidence",
         label: "Retained evidence gaps",
         value: String(closeSupportDecision.retainedEvidenceGapCount),
@@ -12424,18 +12458,42 @@ function buildSharedFinancialOperationsCommandCenterViewState(
       label: `${decision.category} - ${decision.label}`,
       detail: `${decision.detail} ${decision.requiredAction}`.trim(),
       tone: "danger" as AccountingToolingTone,
-      href: localCommandCenterRoute(decision.routeHint, decision.category)
+      href: localCommandCenterRoute(decision.routeHint, decision.category),
+      statusLabel: decision.status,
+      ownerLabel: null,
+      dueLabel: null,
+      evidenceLabel: formatCount(decision.evidenceLinks.length, "evidence link"),
+      actionLabel: decision.requiredAction,
+      impactLabel: decision.category
     }));
-  const queueBlockerRows = commandCenter.queueRows.map((row) => ({
-    id: row.queueId,
-    label: `${row.kindLabel} - ${row.title}`,
-    detail: `${row.detail} ${row.actionLabel}`.trim(),
-    tone: row.isBlocked ? "danger" as AccountingToolingTone : "warning" as AccountingToolingTone,
-    href: localCommandCenterRoute(row.routeHint, row.sourceKind)
-  }));
+  const queueBlockerRows = commandCenter.queueRows.map((row) => {
+    const metadata = [
+      row.severityLabel ? `Severity: ${row.severityLabel}.` : null,
+      row.slaLabel ? `SLA: ${row.slaLabel}.` : null,
+      row.blockerType ? `Blocker: ${row.blockerType}.` : null,
+      row.closeReportImpact ? `Impact: ${row.closeReportImpact}.` : null
+    ].filter(Boolean);
+
+    return {
+      id: row.queueId,
+      label: `${row.kindLabel} - ${row.title}`,
+      detail: [row.detail, row.actionLabel, ...metadata].join(" ").trim(),
+      tone: row.isBlocked ? "danger" as AccountingToolingTone : "warning" as AccountingToolingTone,
+      href: localCommandCenterRoute(row.routeHint, row.sourceKind),
+      statusLabel: row.statusLabel,
+      ownerLabel: row.ownerLabel,
+      dueLabel: row.slaLabel ?? row.dueLabel,
+      evidenceLabel: row.evidenceLabel,
+      actionLabel: row.actionLabel,
+      impactLabel: row.closeReportImpact ?? row.blockerType ?? row.kindLabel
+    };
+  });
   const blockerRows = [...decisionBlockerRows, ...queueBlockerRows].slice(0, 10);
   const routedRows = commandCenter.queueRows
     .filter((row) => localCommandCenterRoute(row.routeHint, row.sourceKind))
+    .slice(0, 3);
+  const routedDecisionRows = (closeSupportDecision?.decisions ?? [])
+    .filter((decision) => localCommandCenterRoute(decision.routeHint, decision.category))
     .slice(0, 3);
   const actionRows: CloseCommandCenterActionViewModel[] = routedRows.length > 0
     ? routedRows.map((row) => ({
@@ -12445,6 +12503,14 @@ function buildSharedFinancialOperationsCommandCenterViewState(
       ariaLabel: `Open ${row.title} from close command center`,
       tone: row.isBlocked ? "warning" : "success"
     }))
+    : routedDecisionRows.length > 0
+      ? routedDecisionRows.map((decision) => ({
+        id: decision.decisionId,
+        label: decision.requiredAction || decision.label,
+        href: localCommandCenterRoute(decision.routeHint, decision.category) ?? WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+        ariaLabel: `Open ${decision.label} close-support decision from close command center`,
+        tone: decision.isBlocking ? "warning" : "success"
+      }))
     : [
       {
         id: "financial-operations",
@@ -12520,16 +12586,16 @@ function commandCenterFallbackRoute(sourceKind: string): string | null {
     return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
   }
 
-  if (normalized.includes("approval") || normalized.includes("checklist") || normalized.includes("calendar")) {
+  if (normalized.includes("approval") || normalized.includes("checklist") || normalized.includes("calendar") || normalized.includes("lock") || normalized.includes("reopen")) {
     return WORKSTATION_ROUTE_CATALOG.accountingApprovals;
   }
 
-  if (normalized.includes("evidence") || normalized.includes("nav")) {
-    return WORKSTATION_ROUTE_CATALOG.reportingEvidence;
+  if (normalized.includes("nav") || normalized.includes("private-capital")) {
+    return WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts;
   }
 
-  if (normalized.includes("private-capital")) {
-    return WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts;
+  if (normalized.includes("evidence") || normalized.includes("report")) {
+    return WORKSTATION_ROUTE_CATALOG.reportingEvidence;
   }
 
   return null;

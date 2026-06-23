@@ -1843,6 +1843,10 @@ export interface FinancialOperationsQueueRow {
   sortOrder: number;
   workflowId?: string | null;
   evidenceLinks: OperationsEvidenceLink[];
+  severityLabel: string;
+  slaLabel: string;
+  blockerType: string;
+  closeReportImpact: string;
 }
 
 export interface FinancialOperationsCloseSupportDecisionRow {

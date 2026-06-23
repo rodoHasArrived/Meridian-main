@@ -171,7 +171,8 @@ const multiAssetCoverage: MultiAssetCoverageSummary = {
         { targetId: "DirectLoan:close-readiness", targetType: "CloseReadiness", label: "Close readiness", route: "/api/workstation/portfolio/multi-asset-coverage", evidenceLink: null, status: "ReviewRequired", source: "FundAccountCloseReadinessService" },
         { targetId: "DirectLoan:loan-schedule-evidence", targetType: "LoanScheduleEvidence", label: "Loan schedule and borrower notices", route: "/api/workstation/data-operations", evidenceLink: "provider://loan/acme", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
         { targetId: "DirectLoan:commitment-covenant-evidence", targetType: "CommitmentCovenantEvidence", label: "Commitment, unfunded commitment, and covenant evidence", route: "/api/workstation/data-operations", evidenceLink: "provider://loan/acme", status: "ReviewRequired", source: "ProviderLedgerReconciliation" },
-        { targetId: "DirectLoan:paydown-obligation-ledger", targetType: "PaydownObligationLedger", label: "Paydown and obligation ledger support", route: "/api/workstation/accounting", evidenceLink: "ledger://loan/acme", status: "Ready", source: "LoanAccountingProjector" }
+        { targetId: "DirectLoan:paydown-obligation-ledger", targetType: "PaydownObligationLedger", label: "Paydown and obligation ledger support", route: "/api/workstation/accounting", evidenceLink: "ledger://loan/acme", status: "Ready", source: "LoanAccountingProjector" },
+        { targetId: "DirectLoan:direct-lending-rule-kernel", targetType: "DirectLendingRuleKernel", label: "Direct-lending F# rule kernel evidence", route: "/api/workstation/accounting", evidenceLink: "ledger://loan/acme", status: "Ready", source: "Meridian.FSharp.DirectLending.Aggregates" }
       ],
       ledgerClassification: { classification: "Loan receivable / unfunded commitment obligation" },
       reconciliationSignals: { breaks: "loan schedule, commitment, paydown, obligation" }
@@ -517,7 +518,8 @@ describe("buildPortfolioScreenViewModel", () => {
       { type: "CloseReadiness", href: "/api/workstation/portfolio/multi-asset-coverage", statusLabel: "Review required", source: "FundAccountCloseReadinessService" },
       { type: "LoanScheduleEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required", source: "ProviderLedgerReconciliation" },
       { type: "CommitmentCovenantEvidence", href: "/api/workstation/data-operations", statusLabel: "Review required", source: "ProviderLedgerReconciliation" },
-      { type: "PaydownObligationLedger", href: "/api/workstation/accounting", statusLabel: "Ready", source: "LoanAccountingProjector" }
+      { type: "PaydownObligationLedger", href: "/api/workstation/accounting", statusLabel: "Ready", source: "LoanAccountingProjector" },
+      { type: "DirectLendingRuleKernel", href: "/api/workstation/accounting", statusLabel: "Ready", source: "Meridian.FSharp.DirectLending.Aggregates" }
     ]);
     expect(customAssetRow).toMatchObject({
       displayName: "MBS / ABS / CLO / CMBS / private assets",

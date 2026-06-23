@@ -102,7 +102,9 @@ the same governed close-plan configuration request used by browser close setup.
 Desktop close-support queue projections consume
 `FinancialOperationsCommandCenterDto.CloseSupportDecision` directly, so period state,
 lock/reopen posture, NAV/report dependencies, unresolved exceptions, approvals, and retained
-evidence gaps stay aligned with the browser command center and shared endpoint decisions.
+evidence gaps stay aligned with the browser command center and shared endpoint decisions. The
+desktop Financial Operations queue grid also renders the shared queue-row severity, SLA, blocker
+type, and close/report impact labels instead of deriving those operator fields locally.
 Private-capital presets attach the shared
 treasury ledger context expected by the approval service, including effective date, idempotency,
 fund-event, capital-account, investor, payment, and settlement references.

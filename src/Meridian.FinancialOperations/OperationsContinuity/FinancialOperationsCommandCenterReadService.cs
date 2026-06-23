@@ -155,7 +155,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 IsBreakCaseBlocked(breakCase),
                 100,
                 workflow.WorkflowId,
-                breakCase.EvidenceLinks));
+                breakCase.EvidenceLinks,
+                QueueValue(breakCase.Severity, "Review"),
+                BuildBreakCaseDueLabel(breakCase),
+                blockedOutputs.Length == 0 ? QueueValue(breakCase.Category, "Reconciliation break") : string.Join(", ", blockedOutputs),
+                blockedOutputs.Length == 0 ? "Close/report exception review" : $"Blocks {string.Join(", ", blockedOutputs)}"));
         }
 
         foreach (var task in (workflow.CloseChecklist ?? Array.Empty<OperationsCloseChecklistTaskDto>())
@@ -177,7 +181,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 task.RemediationRoute,
                 IsChecklistTaskBlocked(task),
                 200,
-                workflow.WorkflowId));
+                workflow.WorkflowId,
+                SeverityLabel: IsChecklistTaskBlocked(task) ? "Blocked" : "Review",
+                SlaLabel: BuildChecklistDueLabel(task),
+                BlockerType: task.Gate.ToString(),
+                CloseReportImpact: "Close checklist evidence and approval readiness"));
         }
 
         foreach (var approval in (workflow.Approvals ?? Array.Empty<OperationsApprovalDto>())
@@ -201,7 +209,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 approval.Status is not OperationsApprovalStateDto.Approved,
                 300,
                 workflow.WorkflowId,
-                approval.EvidenceLinks));
+                approval.EvidenceLinks,
+                SeverityLabel: approval.Status is OperationsApprovalStateDto.Rejected ? "Rejected" : "Pending approval",
+                SlaLabel: BuildApprovalDueLabel(approval.SubmittedAtUtc, approval.DecidedAtUtc),
+                BlockerType: "Approval",
+                CloseReportImpact: "Close/report sign-off"));
         }
 
         foreach (var lane in (workflow.ReconciliationLanes ?? Array.Empty<OperationsReconciliationLaneSummaryDto>())
@@ -222,7 +234,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 lane.Status is OperationsReconciliationLaneStatusDto.Blocked or OperationsReconciliationLaneStatusDto.Missing,
                 400,
                 workflow.WorkflowId,
-                lane.EvidenceLinks));
+                lane.EvidenceLinks,
+                SeverityLabel: FormatReconciliationLaneStatusLabel(lane.Status),
+                SlaLabel: FormatBreakCount(lane.BreakCount),
+                BlockerType: "Reconciliation lane",
+                CloseReportImpact: FormatRequiredActions(lane.RequiredActions)));
         }
 
         foreach (var package in (workflow.EvidencePackages ?? Array.Empty<OperationsEvidencePackageSummaryDto>())
@@ -243,7 +259,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 IsEvidenceStatusBlocked(package.Status),
                 500,
                 workflow.WorkflowId,
-                package.EvidenceLinks));
+                package.EvidenceLinks,
+                SeverityLabel: FormatEvidenceStatusLabel(package.Status),
+                SlaLabel: FormatEvidencePackageCategoryLabel(package.CompleteCategoryCount, package.RequiredCategoryCount),
+                BlockerType: "Evidence package",
+                CloseReportImpact: FormatRequiredActions(package.RequiredActions)));
         }
     }
 
@@ -265,7 +285,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 item.Route,
                 !item.IsReadyToClose || item.BlockerCount > 0,
                 600,
-                item.WorkflowId));
+                item.WorkflowId,
+                SeverityLabel: item.IsReadyToClose ? "Review" : "Blocked",
+                SlaLabel: item.NextDueDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "Due date pending",
+                BlockerType: item.NextDueTaskId ?? "period-lock",
+                CloseReportImpact: "Period lock/reopen readiness"));
         }
     }
 
@@ -287,7 +311,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 lane.Route,
                 IsEvidenceStatusBlocked(lane.Status),
                 700,
-                EvidenceLinks: lane.EvidenceLinks));
+                EvidenceLinks: lane.EvidenceLinks,
+                SeverityLabel: FormatEvidenceStatusLabel(lane.Status),
+                SlaLabel: "Close lane",
+                BlockerType: "Private-capital close lane",
+                CloseReportImpact: FormatRequiredActions(lane.RequiredActions)));
         }
 
         foreach (var package in cockpit.EvidencePackages.Where(static item => !item.IsReady))
@@ -306,7 +334,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 package.RouteHint,
                 IsEvidenceStatusBlocked(package.Status),
                 800,
-                EvidenceLinks: package.EvidenceLinks));
+                EvidenceLinks: package.EvidenceLinks,
+                SeverityLabel: FormatEvidenceStatusLabel(package.Status),
+                SlaLabel: FormatEvidencePackageCategoryLabel(package.CompleteCategoryCount, package.RequiredCategoryCount),
+                BlockerType: "Private-capital evidence package",
+                CloseReportImpact: FormatRequiredActions(package.RequiredActions)));
         }
 
         foreach (var package in cockpit.NavSupportPackages.Where(static item => !item.IsReady))
@@ -325,7 +357,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 package.Route,
                 IsEvidenceStatusBlocked(package.Status),
                 900,
-                EvidenceLinks: package.EvidenceLinks));
+                EvidenceLinks: package.EvidenceLinks,
+                SeverityLabel: FormatEvidenceStatusLabel(package.Status),
+                SlaLabel: FormatNavSupportComponentLabel(package.Components),
+                BlockerType: "NAV support",
+                CloseReportImpact: FormatRequiredActions(package.RequiredActions)));
         }
 
         foreach (var approval in cockpit.ApprovalHistory
@@ -349,7 +385,11 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
                 approval.Status is OperationsApprovalStateDto.Rejected,
                 1000,
                 approval.WorkflowId,
-                approval.EvidenceLinks));
+                approval.EvidenceLinks,
+                SeverityLabel: approval.Status is OperationsApprovalStateDto.Rejected ? "Rejected" : "Pending approval",
+                SlaLabel: BuildApprovalDueLabel(approval.SubmittedAtUtc, approval.DecidedAtUtc),
+                BlockerType: "Private-capital approval",
+                CloseReportImpact: "Private-capital close sign-off"));
         }
     }
 
@@ -703,4 +743,7 @@ public sealed class FinancialOperationsCommandCenterReadService : IFinancialOper
         var readyCount = components.Count(static component => component.IsReady);
         return $"{readyCount.ToString("N0", CultureInfo.InvariantCulture)}/{components.Count.ToString("N0", CultureInfo.InvariantCulture)} components";
     }
+
+    private static string QueueValue(string? value, string fallback)
+        => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
 }

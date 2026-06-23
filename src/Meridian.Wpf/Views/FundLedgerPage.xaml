@@ -1784,9 +1784,13 @@
                                             <DataGridTextColumn Header="Kind" Binding="{Binding KindLabel}" Width="132" />
                                             <DataGridTextColumn Header="Work Item" Binding="{Binding Label}" Width="180" />
                                             <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="116" />
+                                            <DataGridTextColumn Header="Severity" Binding="{Binding SeverityLabel}" Width="96" />
                                             <DataGridTextColumn Header="Owner" Binding="{Binding OwnerLabel}" Width="130" />
                                             <DataGridTextColumn Header="Due / Scope" Binding="{Binding TimingLabel}" Width="170" />
+                                            <DataGridTextColumn Header="SLA" Binding="{Binding SlaLabel}" Width="150" />
+                                            <DataGridTextColumn Header="Blocker" Binding="{Binding BlockerType}" Width="150" />
                                             <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="130" />
+                                            <DataGridTextColumn Header="Impact" Binding="{Binding CloseReportImpact}" Width="190" />
                                             <DataGridTextColumn Header="Action" Binding="{Binding ActionLabel}" Width="240" />
                                             <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="128" />
                                         </DataGrid.Columns>

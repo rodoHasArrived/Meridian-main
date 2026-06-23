@@ -409,6 +409,19 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         string ledgerRoute,
         string closeRoute)
     {
+        if (string.Equals(spec.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
+        {
+            var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
+            targets.Add(new(
+                $"{spec.AssetClass}:factor-corporate-action-evidence",
+                "FactorCorporateActionEvidence",
+                "Factor and corporate-action evidence",
+                providerRoute,
+                BestEvidenceLink(evidence, "ProviderEvidence"),
+                providerStatus,
+                "ProviderLedgerReconciliation"));
+        }
+
         if (string.Equals(spec.AssetClass, "DirectLoan", StringComparison.OrdinalIgnoreCase))
         {
             var providerStatus = RequirementStatus(requirements, "ProviderEvidence");
@@ -436,6 +449,14 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 BestEvidenceLink(evidence, "Ledger") ?? BestEvidenceLink(evidence, "ProviderEvidence"),
                 RequirementStatus(requirements, "Ledger"),
                 "LoanAccountingProjector"));
+            targets.Add(new(
+                $"{spec.AssetClass}:direct-lending-rule-kernel",
+                "DirectLendingRuleKernel",
+                "Direct-lending F# rule kernel evidence",
+                ledgerRoute,
+                BestEvidenceLink(evidence, "Ledger") ?? BestEvidenceLink(evidence, "ProviderEvidence"),
+                RequirementStatus(requirements, "Ledger"),
+                "Meridian.FSharp.DirectLending.Aggregates"));
         }
 
         if (string.Equals(spec.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase))
@@ -748,7 +769,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         => assetClass switch
         {
             "Bond" => "DailyPortfolioPricingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
-            "DirectLoan" => "LoanAccountingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
+            "DirectLoan" => "Meridian.FSharp.DirectLending.Aggregates, LoanAccountingProjector, FixedIncomeAmortizationProjector, SecurityMasterAccountingEventService",
             "FxSpot" => "MultiCurrency remeasurement projectors",
             "Option" or "Future" => "DailyPortfolioPricingProjector, LedgerTaxLotReliefProjector",
             "CustomAsset" or "OtherSecurity" => "DailyPortfolioPricingProjector, Security Master accounting-event services",

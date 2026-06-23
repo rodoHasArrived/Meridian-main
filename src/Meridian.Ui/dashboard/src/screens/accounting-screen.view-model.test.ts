@@ -5305,18 +5305,118 @@ describe("accounting-screen view model", () => {
         id: "close-support-evidence",
         value: "1",
         detail: "Report pack is blocked. 0/1 private-capital close lane(s) ready."
+      }),
+      expect.objectContaining({
+        id: "close-support-approvals",
+        value: "1",
+        href: "/accounting/approvals"
       })
     ]));
     expect(state.blockerRows).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "period-lock-calendar",
-        label: "Lock/reopen posture - Period lock calendar"
+        label: "Lock/reopen posture - Period lock calendar",
+        statusLabel: "Blocked",
+        actionLabel: "Clear close-calendar period-lock and reopen remediation items.",
+        impactLabel: "Lock/reopen posture",
+        href: "/accounting/approvals"
       }),
       expect.objectContaining({
         id: "nav-report-dependencies",
-        label: "NAV/report dependencies - NAV and report dependency posture"
+        label: "NAV/report dependencies - NAV and report dependency posture",
+        impactLabel: "NAV/report dependencies",
+        href: "/accounting/capital-accounts"
       })
     ]));
+    expect(state.actionRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "period-lock-calendar",
+        label: "Clear close-calendar period-lock and reopen remediation items.",
+        href: "/accounting/approvals"
+      }),
+      expect.objectContaining({
+        id: "nav-report-dependencies",
+        label: "Resolve NAV support, report output approval, delivery, and private-capital close lanes.",
+        href: "/accounting/capital-accounts"
+      })
+    ]));
+  });
+
+  it("surfaces shared FINOPS queue owner due evidence action and impact metadata", () => {
+    const commandCenter: FinancialOperationsCommandCenter = {
+      generatedAtUtc: "2026-06-01T05:00:00Z",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "11111111-1111-1111-1111-111111111111",
+      fundAccountId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      periodId: "2026-06",
+      status: "Blocked",
+      isReadyToComplete: false,
+      summary: "Shared FINOPS queue row blocks close-report release.",
+      activeItemCount: 1,
+      blockedItemCount: 1,
+      reviewItemCount: 0,
+      metrics: [],
+      queueRows: [
+        {
+          queueId: "break:cash-variance",
+          sourceKind: "reconciliation-break",
+          kindLabel: "Break",
+          title: "Cash variance",
+          statusLabel: "Blocked",
+          detail: "Cash reconciliation is over tolerance.",
+          ownerLabel: "Controller",
+          dueLabel: "SLA 2026-06-02 18:00Z",
+          evidenceLabel: "2 evidence links",
+          actionLabel: "Resolve cash break before close report release.",
+          routeHint: "/workstation/accounting/reconciliation",
+          isBlocked: true,
+          sortOrder: 100,
+          workflowId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+          evidenceLinks: [],
+          severityLabel: "Critical",
+          slaLabel: "SLA Warning 2026-06-02 18:00Z",
+          blockerType: "ReportPack",
+          closeReportImpact: "Blocks close report release"
+        }
+      ],
+      activeWorkflow: null,
+      closeCalendar: null,
+      privateCapitalCloseCockpit: null,
+      closeSupportDecision: null
+    };
+
+    const state = buildCloseCommandCenterViewState({
+      data: accountingWorkspace,
+      commandCenter,
+      commandCenterLoading: false,
+      commandCenterError: null,
+      workflow: closeWorkflow,
+      workflowLoading: false,
+      workflowError: null,
+      accountingSystemProviders: [accountingSystemProvider],
+      accountingSystemImport: null,
+      accountingSystemReconciliation,
+      multiAssetCoverage
+    });
+
+    expect(state.blockerRows).toContainEqual(expect.objectContaining({
+      id: "break:cash-variance",
+      label: "Break - Cash variance",
+      statusLabel: "Blocked",
+      ownerLabel: "Controller",
+      dueLabel: "SLA Warning 2026-06-02 18:00Z",
+      evidenceLabel: "2 evidence links",
+      actionLabel: "Resolve cash break before close report release.",
+      impactLabel: "Blocks close report release",
+      href: "/accounting/reconciliation"
+    }));
+    expect(state.blockerRows[0].detail).toContain("Severity: Critical.");
+    expect(state.blockerRows[0].detail).toContain("Blocker: ReportPack.");
+    expect(state.actionRows[0]).toMatchObject({
+      id: "break:cash-variance",
+      label: "Resolve cash break before close report release.",
+      href: "/accounting/reconciliation"
+    });
   });
 
   it("builds operational exception workbench state from reconciliation queues", () => {

@@ -346,7 +346,7 @@ items:
     health: green
     priority: high
     evidence_posture: planned_evidence
-    current_summary: Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. Direct-lending operations now has attached proof for endpoint parity, a shared operations read model, Security & Instrument Explorer and Financial Operations integration, WPF dense operations panels, and focused residual security tests; the broader FINOPS control center remains planned.
+    current_summary: Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. The shared command-center DTO and read service now project unified FINOPS queue rows, deterministic status/owner/due/severity/SLA/blocker/close-report impact labels, close-support decisions, and browser/WPF rendering tests. Direct-lending operations also has attached proof for endpoint parity, a shared operations read model, Security & Instrument Explorer and Financial Operations integration, WPF dense operations panels, and focused residual security tests; the broader FINOPS control center remains planned until generated roadmap/product docs and remaining rollout gates are explicitly promoted.
     exit_criteria:
       - Accounting workspace exposes a financial operations command surface that groups reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness from shared read models.
       - Reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets can be opened from a unified operator queue with deterministic status, owner, due date, and blocker signals.
@@ -368,6 +368,24 @@ items:
       - DIA-BROWSER-WORKSTATION
     evidence:
       - type: source
+        path: src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx
+      - type: source
+        path: src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs
+      - type: source
+        path: src/Meridian.Wpf/Views/FundLedgerPage.xaml
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts
+      - type: test
+        path: tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs
+      - type: source
         path: src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs
       - type: source
         path: src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs
@@ -387,7 +405,7 @@ items:
         path: tests/Meridian.Tests/Application/DirectLending/DirectLendingOutboxDispatcherTests.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs
-    last_reviewed: 2026-06-22
+    last_reviewed: 2026-06-23
 
   - id: W6-BTSTUDIO-001
     title: Backtesting studio evidence loop

@@ -251,12 +251,13 @@ and UI presentation concerns in their owning layers.
   browser and WPF clients see the same asset-pack schema, lifecycle, lifecycle-event automation
   coverage, valuation, accounting-rule, structured journal-template, registry-validation status,
   validation, taxonomy, admission-policy, and automation-depth metadata as the contract layer.
-  Private-credit depth is
-  represented on the canonical `DirectLoan` row with commitment, unfunded-commitment, paydown,
-  covenant, and obligation evidence requirements. Structured and private assets stay on governed
-  profile-backed `CustomAsset` rows, where servicer/trustee reports, warehouse tapes, NAV, capital
-  calls, distributions, obligation schedules, and valuation approvals are treated as retained
-  provider evidence before close readiness can become complete.
+  Bond rows expose factor and corporate-action drill-through proof, including retained factor
+  evidence blockers, while private-credit depth is represented on the canonical `DirectLoan` row
+  with commitment, unfunded-commitment, paydown, covenant, obligation, and
+  `Meridian.FSharp.DirectLending.Aggregates` rule-kernel evidence requirements. Structured and
+  private assets stay on governed profile-backed `CustomAsset` rows, where servicer/trustee
+  reports, warehouse tapes, NAV, capital calls, distributions, obligation schedules, and valuation
+  approvals are treated as retained provider evidence before close readiness can become complete.
 - Asset-specific instrument projection services for bonds, options, equity, futures, FX spot,
   crypto, deposits, certificates of deposit, commodities, swaps, money-market funds, and shared
   Asset Operations read/projection flows are owned by `Meridian.Instruments`. Money-market fund

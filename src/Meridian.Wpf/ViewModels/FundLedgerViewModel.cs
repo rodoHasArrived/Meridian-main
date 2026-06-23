@@ -2289,7 +2289,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     EvidenceLabel: row.EvidenceLabel,
                     ActionLabel: row.ActionLabel,
                     SourceTarget: MapFinancialOperationsCommandCenterRouteTarget(row),
-                    IsBlocked: row.IsBlocked));
+                    IsBlocked: row.IsBlocked,
+                    SeverityLabel: row.SeverityLabel,
+                    SlaLabel: row.SlaLabel,
+                    BlockerType: row.BlockerType,
+                    CloseReportImpact: row.CloseReportImpact));
             }
 
             FinancialOperationsQueueStatusText = _financialOperationsCommandCenter.Status;
@@ -2326,7 +2330,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                     EvidenceLabel: FormatEvidenceCount(breakCase.EvidenceLinks.Count),
                     ActionLabel: action,
                     SourceTarget: MapAccountingRecordRouteTarget(route),
-                    IsBlocked: IsBreakCaseBlocked(breakCase)));
+                    IsBlocked: IsBreakCaseBlocked(breakCase),
+                    SeverityLabel: FormatQueueStatusLabel(breakCase.Severity),
+                    SlaLabel: BuildBreakCaseTimingLabel(breakCase),
+                    BlockerType: blockedOutputs.Length == 0 ? FormatQueueStatusLabel(breakCase.Category) : string.Join(", ", blockedOutputs),
+                    CloseReportImpact: blockedOutputs.Length == 0 ? "Close/report exception review" : $"Blocks {string.Join(", ", blockedOutputs)}"));
             }
 
             foreach (var task in lifecycle.CloseChecklist.Where(static item => !IsChecklistTaskComplete(item)))

@@ -85,7 +85,11 @@ public sealed partial class WorkstationEndpointsTests
             row.DrillThroughTargets.Any(static target => target.TargetType == "AssetOperations") &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "LoanScheduleEvidence") &&
             row.DrillThroughTargets.Any(static target => target.TargetType == "CommitmentCovenantEvidence") &&
-            row.DrillThroughTargets.Any(static target => target.TargetType == "PaydownObligationLedger"));
+            row.DrillThroughTargets.Any(static target => target.TargetType == "PaydownObligationLedger") &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "DirectLendingRuleKernel"));
+        payload.AssetClasses.Should().Contain(static row =>
+            row.AssetClass == "Bond" &&
+            row.DrillThroughTargets.Any(static target => target.TargetType == "FactorCorporateActionEvidence"));
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "CustomAsset" &&
             row.EvidenceRequirements.Any(static requirement => requirement.Category == "Governance") &&

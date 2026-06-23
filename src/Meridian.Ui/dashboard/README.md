@@ -900,7 +900,9 @@ ready, blocked, and at-risk close posture from the latest operations-continuity 
 accounting-record evidence, reconciliation breaks, approvals, external GL provider warnings,
 multi-asset valuation readiness, report-pack readiness, and close-package sign-off state. React
 renders the shared status, metrics, blockers, and action rows without adding browser-local close
-rules. External GL provider warnings compare read-only provider evidence against Meridian-owned
+rules. Shared FINOPS queue rows preserve server-owned status, owner, due/SLA, severity, blocker
+type, close/report impact, evidence, action, and local route labels in the browser blocker panel.
+External GL provider warnings compare read-only provider evidence against Meridian-owned
 ledger truth; they must not make the external GL the source of ledger authority. When QuickBooks
 Online local config is ready, the Accounting GL evidence panel previews the selected company
 instead of the deterministic fixture; without that config it remains on `quickbooks-fixture`.

@@ -106,6 +106,11 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             blocker.Code == "Bond:retained-evidence:factorschedule" &&
             blocker.Severity == "Blocker" &&
             blocker.Message.Contains("Factor schedule evidence is missing", StringComparison.OrdinalIgnoreCase));
+        row.DrillThroughTargets.Should().Contain(target =>
+            target.TargetType == "FactorCorporateActionEvidence" &&
+            target.Route == "/evidence" &&
+            target.Status == "Blocked" &&
+            target.Source == "ProviderLedgerReconciliation");
     }
 
     [Fact]
@@ -171,11 +176,16 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
         row.DrillThroughTargets.Select(static target => target.TargetType).Should().Contain(
             "LoanScheduleEvidence",
             "CommitmentCovenantEvidence",
-            "PaydownObligationLedger");
+            "PaydownObligationLedger",
+            "DirectLendingRuleKernel");
         row.DrillThroughTargets.Should().Contain(target =>
             target.TargetType == "PaydownObligationLedger" &&
             target.Source == "LoanAccountingProjector");
+        row.DrillThroughTargets.Should().Contain(target =>
+            target.TargetType == "DirectLendingRuleKernel" &&
+            target.Source == "Meridian.FSharp.DirectLending.Aggregates");
         row.LedgerClassification["classification"].Should().Contain("unfunded commitment obligation");
+        row.LedgerClassification["projectors"].Should().Contain("Meridian.FSharp.DirectLending.Aggregates");
         row.ReconciliationSignals["retainedEvidence"].Should().Contain("Borrower notice commitment schedule");
     }
 

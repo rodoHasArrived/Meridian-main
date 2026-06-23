@@ -70,7 +70,11 @@ public sealed record FinancialOperationsQueueRowDto(
     bool IsBlocked,
     int SortOrder,
     Guid? WorkflowId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    string SeverityLabel = "Review",
+    string SlaLabel = "SLA not recorded",
+    string BlockerType = "Review",
+    string CloseReportImpact = "Close/report review")
 {
     public IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

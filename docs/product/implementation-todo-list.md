@@ -59,7 +59,8 @@ These are documented as implemented evidence, supported foundations, or design-l
 - [ ] Financial Operations: map reconciliation, casework, close, evidence routing, NAV-support posture, and fund-event accounting records to W5X-FINOPS acceptance evidence.
 - [ ] Portfolio & Investment Operations: map portfolio, fund-structure, brokerage sync, fund accounts, positions, paper sessions, valuation evidence, and ledger-backed workflows to closed roadmap rows.
 - [ ] Reference Data: map Security Master contracts, provider-to-security mapping, trust/conflict summaries, and multi-asset readiness coverage to explicit proof artifacts.
-- [ ] Instrument, Contract & Obligation Management: map Security Master, direct-lending/F# rule kernels, factor/corporate-action evidence, and obligation ledger support to proof artifacts.
+- [x] Instrument, Contract & Obligation Management: map Security Master, direct-lending/F# rule kernels, factor/corporate-action evidence, and obligation ledger support to proof artifacts.
+  Evidence: `src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs` maps `SecurityMasterPassport`, `FactorCorporateActionEvidence`, `DirectLendingRuleKernel`, `PaydownObligationLedger`, and `ObligationCloseEvidence` drill-through targets; `tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs`, and `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts` pin the service, endpoint, and browser proof shapes.
 - [ ] Client & Stakeholder Reporting: keep W4 governed report-pack readiness checked only at baseline level; add separate evidence before claiming full stakeholder reporting completion.
 - [ ] Administration & Governance: separate completed settings/policy/audit evidence from planned fund/book/period/report/delivery administration targets.
 - [ ] Audit, Compliance & Regulatory: map audit events, evidence manifests, approval history, and close/report controls to acceptance tests before marking complete as a domain.
@@ -89,20 +90,36 @@ Evidence: `tests/Meridian.Tests/Ui/SecurityMasterInstrumentPassportTests.cs`, `t
 
 ## W5X-FINOPS-001 TODOs: Financial Operations Control Center
 
-- [ ] Define FINOPS command-surface DTOs for reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness.
-- [ ] Build unified queue rows for reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets.
-- [ ] Add deterministic status, owner, due date, severity, SLA, blocker type, and close/report impact fields to shared read models.
+- [x] Define FINOPS command-surface DTOs for reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness.
+- [x] Build unified queue rows for reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets.
+- [x] Add deterministic status, owner, due date, severity, SLA, blocker type, and close/report impact fields to shared read models.
 - [x] Add direct-lending endpoint parity for collateral, status transitions, PIK, restructures, and discount/premium amortization using `ViewDirectLending`/`ManageDirectLending` permissions.
 - [x] Add a shared direct-lending operations read model for loan health, collateral coverage, covenant/status posture, servicing calendar, evidence, journals, reconciliation exceptions, close blockers, and servicer statement posture.
 - [x] Wire direct-lending operations into existing Security & Instrument Explorer and Financial Operations shared read surfaces before introducing any new route.
 - [x] Expand WPF DirectLending from accrual-focused review into dense operations panels for collateral, status, exceptions, close blockers, and evidence.
 - [x] Triage direct-lending residuals with focused tests for closed-period originating postings, prepayment penalty replay/outbox idempotency, and portfolio endpoint authorization.
-- [ ] Implement close support with period state, lock/reopen posture, NAV-support dependencies, report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps.
-- [ ] Ensure no FINOPS surface can show synthetic completion when required evidence, approvals, or lock state are missing.
-- [ ] Route assignment, escalation, approval, reopen, and evidence-retention actions through shared services.
-- [ ] Add browser tests for FINOPS queue, close blockers, approval requirements, and blocked completion behavior.
-- [ ] Add WPF tests for dense workpaper execution against the same FINOPS DTOs and service decisions.
+- [x] Implement close support with period state, lock/reopen posture, NAV-support dependencies, report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps.
+- [x] Ensure no FINOPS surface can show synthetic completion when required evidence, approvals, or lock state are missing.
+- [x] Route assignment, escalation, approval, reopen, and evidence-retention actions through shared services.
+- [x] Add browser tests for FINOPS queue, close blockers, approval requirements, and blocked completion behavior.
+- [x] Add WPF tests for dense workpaper execution against the same FINOPS DTOs and service decisions.
 - [ ] Update generated roadmap/product docs to state exactly what shipped before moving `W5X-FINOPS-001` out of planned.
+
+Command-center evidence produced for this FINOPS slice:
+
+- `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs`
+- `src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs`
+- `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs`
+- `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs`
+- `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts`
+- `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx`
+- `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`
+- `src/Meridian.Wpf/Views/FundLedgerPage.xaml`
+- `tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs`
+- `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`
+- `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
+- `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts`
+- `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`
 
 Direct-lending evidence produced for this FINOPS slice:
 

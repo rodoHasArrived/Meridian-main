@@ -797,6 +797,10 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("Financial Operations Operator Queue");
         xaml.Should().Contain("Text=\"{Binding FinancialOperationsQueueSummaryText}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding FinancialOperationsQueueItems}\"");
+        xaml.Should().Contain("Binding=\"{Binding SeverityLabel}\"");
+        xaml.Should().Contain("Binding=\"{Binding SlaLabel}\"");
+        xaml.Should().Contain("Binding=\"{Binding BlockerType}\"");
+        xaml.Should().Contain("Binding=\"{Binding CloseReportImpact}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding OperationsEvidencePackages}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding OperationsReconciliationLanes}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding PrivateCapitalCloseLanes}\"");
@@ -1620,6 +1624,10 @@ public sealed class FundLedgerViewModelTests
                     row.StatusLabel == "In Review" &&
                     row.OwnerLabel == "fund-controller" &&
                     row.TimingLabel.Contains("SLA Warning", StringComparison.OrdinalIgnoreCase) &&
+                    row.SeverityLabel == "Warning" &&
+                    row.SlaLabel.Contains("Warning", StringComparison.OrdinalIgnoreCase) &&
+                    row.BlockerType.Contains("Report-pack release", StringComparison.OrdinalIgnoreCase) &&
+                    row.CloseReportImpact.Contains("Close sign-off", StringComparison.OrdinalIgnoreCase) &&
                     row.ActionLabel.Contains("Resolve factor variance", StringComparison.OrdinalIgnoreCase) &&
                     row.SourceTarget == "OperationsContinuity" &&
                     row.IsBlocked);

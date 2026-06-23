@@ -138,6 +138,9 @@ NAV/report dependency posture, unresolved exception count, pending approval coun
 evidence gap count, and blocking decision rows into one shared close-support read model. Browser
 and WPF clients should render those server-owned decisions directly instead of deriving close
 completion readiness from queue rows independently.
+`FinancialOperationsQueueRowDto` carries deterministic row labels for status, owner, due date,
+severity, SLA, blocker type, close/report impact, evidence, action, and route so browser and WPF
+clients can present the same FINOPS queue without recreating exception-aging or close-impact logic.
 The workflow detail contract also carries `OperationsReviewedAutomationSummaryDto`, which lists
 allowed suggestion/draft use cases, prohibited material actions, current review stage, required
 human actions, retained evidence, and artifact rows for extraction, match suggestion, journal draft,

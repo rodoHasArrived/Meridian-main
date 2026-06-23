@@ -4304,6 +4304,17 @@ function CloseCommandCenterPanel({
                         <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.tone === "danger" ? "Blocker" : "Review"}</Badge>
                       </div>
                       <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+                      <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+                        <AccountingValue label="Status" value={item.statusLabel} />
+                        <AccountingValue label="Impact" value={item.impactLabel} />
+                        {item.ownerLabel ? <AccountingValue label="Owner" value={item.ownerLabel} /> : null}
+                        {item.dueLabel ? <AccountingValue label="Due" value={item.dueLabel} /> : null}
+                        <AccountingValue label="Evidence" value={item.evidenceLabel} />
+                        <div className="data-grid-surface px-3 py-2 sm:col-span-2">
+                          <span className="text-muted-foreground">Action</span>
+                          <p className="mt-1 break-words text-foreground">{item.actionLabel}</p>
+                        </div>
+                      </div>
                       {item.href ? <Link to={item.href} className="mt-2 inline-block text-xs font-medium text-primary hover:underline">Open evidence</Link> : null}
                     </div>
                   ))}

@@ -29,10 +29,13 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
 
         commandCenter.Status.Should().Be("Blocked");
         commandCenter.IsReadyToComplete.Should().BeFalse();
-        commandCenter.QueueRows.Should().Contain(row =>
-            row.SourceKind == "evidence-package"
-            && row.IsBlocked
-            && row.Title == "Accounting record evidence");
+        var queueRow = commandCenter.QueueRows.Should().ContainSingle(row => row.SourceKind == "evidence-package").Subject;
+        queueRow.IsBlocked.Should().BeTrue();
+        queueRow.Title.Should().Be("Accounting record evidence");
+        queueRow.SeverityLabel.Should().Be("Missing");
+        queueRow.SlaLabel.Should().Be("2/4 categories");
+        queueRow.BlockerType.Should().Be("Evidence package");
+        queueRow.CloseReportImpact.Should().Be("Review retained support.");
         commandCenter.CloseSupportDecision.Should().NotBeNull();
         commandCenter.CloseSupportDecision!.Status.Should().Be("Blocked");
         commandCenter.CloseSupportDecision.RetainedEvidenceGapCount.Should().Be(1);
@@ -62,16 +65,66 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         commandCenter.Status.Should().Be("Blocked");
-        commandCenter.QueueRows.Should().Contain(row =>
-            row.SourceKind == "approval"
-            && row.IsBlocked
-            && row.ActionLabel == "Complete workflow approval.");
+        var queueRow = commandCenter.QueueRows.Should().ContainSingle(row => row.SourceKind == "approval").Subject;
+        queueRow.IsBlocked.Should().BeTrue();
+        queueRow.ActionLabel.Should().Be("Complete workflow approval.");
+        queueRow.SeverityLabel.Should().Be("Pending approval");
+        queueRow.SlaLabel.Should().Be("2026-06-01 00:00");
+        queueRow.BlockerType.Should().Be("Approval");
+        queueRow.CloseReportImpact.Should().Be("Close/report sign-off");
         commandCenter.CloseSupportDecision.Should().NotBeNull();
         commandCenter.CloseSupportDecision!.PendingApprovalCount.Should().Be(1);
         commandCenter.CloseSupportDecision.Decisions.Should().Contain(row =>
             row.Category == "Approvals"
             && row.IsBlocking
             && row.RequiredAction == "Complete workflow approval.");
+    }
+
+    [Fact]
+    public async Task GetCommandCenterAsync_WhenBreakCaseOpen_ShouldProjectDeterministicQueueMetadata()
+    {
+        var workflow = CreateWorkflow(breakCases:
+        [
+            new OperationsBreakCaseDto(
+                "cash-break",
+                "cash-tie-out",
+                "Cash",
+                "Critical",
+                "Open",
+                "controller",
+                new DateOnly(2026, 6, 2),
+                "Custodian",
+                "Meridian ledger",
+                100m,
+                80m,
+                20m,
+                null,
+                null,
+                "Resolve cash break before close report release.",
+                [
+                    new OperationsEvidenceLinkDto(
+                        "cash-statement",
+                        "Cash statement",
+                        "/workstation/accounting/reconciliation",
+                        "custodian",
+                        DateTimeOffset.Parse("2026-06-01T00:00:00Z"))
+                ],
+                SlaState: "Warning",
+                SlaDueAtUtc: DateTimeOffset.Parse("2026-06-02T18:00:00Z"),
+                BlockedOutputs: ["close-report", "nav"])
+        ]);
+        var service = CreateService(workflow);
+
+        var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
+
+        var row = commandCenter.QueueRows.Should().ContainSingle(item => item.QueueId == "break:cash-break").Subject;
+        row.StatusLabel.Should().Be("Open");
+        row.OwnerLabel.Should().Be("controller");
+        row.DueLabel.Should().Be("Warning 2026-06-02 18:00Z");
+        row.SeverityLabel.Should().Be("Critical");
+        row.SlaLabel.Should().Be("Warning 2026-06-02 18:00Z");
+        row.BlockerType.Should().Be("close-report, nav");
+        row.CloseReportImpact.Should().Be("Blocks close-report, nav");
     }
 
     [Fact]
@@ -105,10 +158,13 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
         var commandCenter = await service.GetCommandCenterAsync(fundAccountId: workflow.FundAccountId, periodId: workflow.PeriodId);
 
         commandCenter.Status.Should().Be("Blocked");
-        commandCenter.QueueRows.Should().Contain(row =>
-            row.SourceKind == "close-calendar"
-            && row.IsBlocked
-            && row.Title == "Retain period-lock evidence");
+        var queueRow = commandCenter.QueueRows.Should().ContainSingle(row => row.SourceKind == "close-calendar").Subject;
+        queueRow.IsBlocked.Should().BeTrue();
+        queueRow.Title.Should().Be("Retain period-lock evidence");
+        queueRow.SeverityLabel.Should().Be("Blocked");
+        queueRow.SlaLabel.Should().Be("2026-06-05");
+        queueRow.BlockerType.Should().Be("period-lock");
+        queueRow.CloseReportImpact.Should().Be("Period lock/reopen readiness");
         commandCenter.CloseSupportDecision.Should().NotBeNull();
         commandCenter.CloseSupportDecision!.LockReopenPosture.Should().Contain("Period lock");
         commandCenter.CloseSupportDecision.Decisions.Should().Contain(row =>
@@ -150,7 +206,8 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
 
     private static OperationsContinuityWorkflowDto CreateWorkflow(
         IReadOnlyList<OperationsApprovalDto>? approvals = null,
-        IReadOnlyList<OperationsEvidencePackageSummaryDto>? evidencePackages = null)
+        IReadOnlyList<OperationsEvidencePackageSummaryDto>? evidencePackages = null,
+        IReadOnlyList<OperationsBreakCaseDto>? breakCases = null)
     {
         var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         var fundAccountId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -172,7 +229,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
             OperationsApprovalStateDto.Approved,
             [],
             [],
-            [],
+            breakCases ?? [],
             null,
             approvals ?? [],
             new OperationsReportPackReadinessDto(true, "report-pack-2026-06", null, []),
