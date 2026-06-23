@@ -262,6 +262,9 @@ the requirement end to end.
 - [x] Reporting-group production readiness now also requires retained evidence for the selected
   ledger book, so production reporting delivery controls cannot pass from generic tenant/company
   report-group evidence alone.
+- [x] Tenant setup, accounting admin role-profile, and scoped-access production readiness now require
+  retained evidence for the selected ledger book, so tenant-level setup packets cannot certify
+  book-native authorization and access controls by implication.
 
 ## Still To Complete
 

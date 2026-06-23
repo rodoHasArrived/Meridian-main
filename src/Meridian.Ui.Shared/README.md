@@ -160,11 +160,12 @@ the trusted tenant/company/actor context, and delegates durable append to Financ
 Accounting production-readiness assessment also treats tenant administration evidence as
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
-the shared control plane counts those enterprise setup controls as complete. Aggregate accounting
-admin, browser admin-studio, and WPF admin-studio evidence must also name the selected ledger book,
-and reporting-group plus tenant/company/report-group setup evidence must prove the same book scope,
-so workstation setup surfaces cannot be certified as production-ready from tenant-level evidence
-that does not prove the active accounting book.
+the shared control plane counts those enterprise setup controls as complete. Tenant setup, admin
+role-profile, scoped-access, aggregate accounting admin, browser admin-studio, and WPF admin-studio
+evidence must also name the selected ledger book, and reporting-group plus
+tenant/company/report-group setup evidence must prove the same book scope, so workstation setup
+surfaces cannot be certified as production-ready from tenant-level evidence that does not prove the
+active accounting book.
 Tenant administration profile persistence fails closed with the same scope posture: configured
 enterprise setup controls must retain evidence naming the selected tenant, company, and configured
 control family on the same retained artifact, or retain a full tenant-admin certification artifact,

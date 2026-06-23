@@ -26,6 +26,9 @@ public sealed class AccountingProductionReadinessOperationalHardeningTests
 
         var requiredBookScopedIssueCodes = new[]
         {
+            "tenant-admin.tenant-scope-book-evidence-missing",
+            "tenant-admin.role-profile-book-evidence-missing",
+            "tenant-admin.scoped-access-book-evidence-missing",
             "tenant-admin.operator-surface-book-evidence-missing",
             "tenant-admin.browser-admin-studio-book-evidence-missing",
             "tenant-admin.wpf-admin-studio-book-evidence-missing",

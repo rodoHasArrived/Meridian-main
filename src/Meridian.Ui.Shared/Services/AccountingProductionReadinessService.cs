@@ -1395,6 +1395,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for tenant scope, tenant storage, tenant ledger, or provider setup before production rollout.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "tenant-scope",
+                     "tenant-storage",
+                     "tenant-ledger",
+                     "tenant-provider"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-scope-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant-scoped accounting configuration certification lacks retained evidence for the selected ledger book.",
+                "Attach tenant-scope, tenant-storage, tenant-ledger, or provider setup evidence that names the selected ledgerBookId before certifying book-native tenant setup.",
+                evidenceReferences));
+        }
 
         if (!readiness.AdminRoleProfileConfigured)
         {
@@ -1416,6 +1432,21 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for admin role or accounting role-profile setup before production rollout.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "admin-role",
+                     "role-profile",
+                     "accounting-admin-role"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.role-profile-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting administrator role profile certification lacks retained evidence for the selected ledger book.",
+                "Attach admin-role or accounting role-profile evidence that names the selected ledgerBookId before certifying book-native administrator access.",
+                evidenceReferences));
+        }
 
         if (!readiness.ScopedAccessPoliciesConfigured)
         {
@@ -1435,6 +1466,21 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Scoped access policy certification lacks retained access-policy evidence.",
                 "Attach tenant administration evidence for scoped access policies, accounting entitlements, or report-package access before production rollout.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "scoped-access",
+                     "access-policy",
+                     "entitlement"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.scoped-access-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Scoped access policy certification lacks retained evidence for the selected ledger book.",
+                "Attach scoped-access, entitlement, or report-package access evidence that names the selected ledgerBookId before certifying book-native accounting authorization.",
                 evidenceReferences));
         }
 
