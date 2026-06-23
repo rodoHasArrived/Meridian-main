@@ -3,6 +3,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Ui.Services.Services.Accounting;
+using System.Globalization;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
@@ -18,6 +19,18 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     private string _trialBalanceStatusText = "Trial balance has not loaded.";
     private string _closePlanSetupStatusText = "Load a close plan before retaining governed close setup.";
     private string _closePeriodLockStatusText = "Load a close plan before locking the accounting period.";
+    private decimal _closeSetupAmountThreshold;
+    private decimal _closeSetupPercentThreshold;
+    private string _closeSetupCurrency = "USD";
+    private string _closeSetupReviewRole = "controller";
+    private bool _closeSetupRequiresLateAdjustmentApproval = true;
+    private string _closeSetupTaskId = string.Empty;
+    private string _closeSetupTaskDisplayName = string.Empty;
+    private string _closeSetupTaskOwner = string.Empty;
+    private string _closeSetupTaskDueDateText = string.Empty;
+    private int _closeSetupTaskRequiredApprovalCount = 1;
+    private string _closeSetupTaskRequiredEvidence = "Retained close checklist evidence";
+    private string _closeSetupTaskDependsOnTaskIdsText = string.Empty;
     private string _selectedAuditDetailText = "Select a journal audit row to inspect source-event and approval linkage.";
     private SourceLinkedAuditLine? _selectedAuditLine;
 
@@ -38,6 +51,78 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
 
     public IAsyncRelayCommand ConfigureClosePlanCommand { get; }
     public IAsyncRelayCommand LockClosePeriodCommand { get; }
+
+    public decimal CloseSetupAmountThreshold
+    {
+        get => _closeSetupAmountThreshold;
+        set => SetProperty(ref _closeSetupAmountThreshold, value);
+    }
+
+    public decimal CloseSetupPercentThreshold
+    {
+        get => _closeSetupPercentThreshold;
+        set => SetProperty(ref _closeSetupPercentThreshold, value);
+    }
+
+    public string CloseSetupCurrency
+    {
+        get => _closeSetupCurrency;
+        set => SetProperty(ref _closeSetupCurrency, value ?? string.Empty);
+    }
+
+    public string CloseSetupReviewRole
+    {
+        get => _closeSetupReviewRole;
+        set => SetProperty(ref _closeSetupReviewRole, value ?? string.Empty);
+    }
+
+    public bool CloseSetupRequiresLateAdjustmentApproval
+    {
+        get => _closeSetupRequiresLateAdjustmentApproval;
+        set => SetProperty(ref _closeSetupRequiresLateAdjustmentApproval, value);
+    }
+
+    public string CloseSetupTaskId
+    {
+        get => _closeSetupTaskId;
+        set => SetProperty(ref _closeSetupTaskId, value ?? string.Empty);
+    }
+
+    public string CloseSetupTaskDisplayName
+    {
+        get => _closeSetupTaskDisplayName;
+        set => SetProperty(ref _closeSetupTaskDisplayName, value ?? string.Empty);
+    }
+
+    public string CloseSetupTaskOwner
+    {
+        get => _closeSetupTaskOwner;
+        set => SetProperty(ref _closeSetupTaskOwner, value ?? string.Empty);
+    }
+
+    public string CloseSetupTaskDueDateText
+    {
+        get => _closeSetupTaskDueDateText;
+        set => SetProperty(ref _closeSetupTaskDueDateText, value ?? string.Empty);
+    }
+
+    public int CloseSetupTaskRequiredApprovalCount
+    {
+        get => _closeSetupTaskRequiredApprovalCount;
+        set => SetProperty(ref _closeSetupTaskRequiredApprovalCount, Math.Max(1, value));
+    }
+
+    public string CloseSetupTaskRequiredEvidence
+    {
+        get => _closeSetupTaskRequiredEvidence;
+        set => SetProperty(ref _closeSetupTaskRequiredEvidence, value ?? string.Empty);
+    }
+
+    public string CloseSetupTaskDependsOnTaskIdsText
+    {
+        get => _closeSetupTaskDependsOnTaskIdsText;
+        set => SetProperty(ref _closeSetupTaskDependsOnTaskIdsText, value ?? string.Empty);
+    }
 
     public ClosePeriodState CloseState
     {
@@ -195,6 +280,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         _closeWorkflowId = workflowId;
         _closeWorkflowVersion = Math.Max(0, workflowVersion);
         _closePlan = closePlan;
+        ApplyCloseSetupDraft(closePlan);
         ClosePlanSetupStatusText = workflowId == Guid.Empty
             ? $"Close plan {closePlan.PeriodId} loaded without workflow context; setup retention is disabled."
             : closePlan.IsPeriodLocked
@@ -323,12 +409,24 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         }
     }
 
-    private static UpsertClosePeriodPlanConfigurationRequestDto BuildClosePlanConfigurationRequest(
+    private UpsertClosePeriodPlanConfigurationRequestDto BuildClosePlanConfigurationRequest(
         Guid workflowId,
         ClosePeriodPlanDto closePlan)
     {
+        var materialityPolicy = new MaterialityPolicyDto(
+            closePlan.MaterialityPolicy.PolicyId,
+            CloseSetupAmountThreshold,
+            CloseSetupPercentThreshold,
+            NormalizeRequired(CloseSetupCurrency, closePlan.MaterialityPolicy.Currency),
+            NormalizeRequired(CloseSetupReviewRole, closePlan.MaterialityPolicy.ReviewRole),
+            CloseSetupRequiresLateAdjustmentApproval);
+        var editableTaskId = NormalizeOptional(CloseSetupTaskId)
+                             ?? closePlan.Tasks.FirstOrDefault()?.TaskId
+                             ?? "close-task";
+        var editableTaskDueDate = ParseCloseSetupDueDate(CloseSetupTaskDueDateText);
+        var editableTaskDependencies = ParseCloseSetupDependencies(CloseSetupTaskDependsOnTaskIdsText);
         var taskConfigurations = closePlan.Tasks
-            .Select(static task =>
+            .Select(task =>
             {
                 var requiredApprovalCount = Math.Max(
                     1,
@@ -341,26 +439,112 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                         .Select(static requirement => requirement.EvidenceRequirement.Trim())
                         .Where(static value => value.Length > 0));
 
+                if (!string.Equals(task.TaskId, editableTaskId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new CloseTaskConfigurationDto(
+                        task.TaskId,
+                        task.DisplayName,
+                        task.Owner,
+                        task.DueDate,
+                        requiredApprovalCount,
+                        string.IsNullOrWhiteSpace(requiredEvidence) ? "Retained close checklist evidence" : requiredEvidence,
+                        task.Dependencies.Select(static dependency => dependency.DependsOnTaskId).ToArray());
+                }
+
                 return new CloseTaskConfigurationDto(
                     task.TaskId,
-                    task.DisplayName,
-                    task.Owner,
-                    task.DueDate,
-                    requiredApprovalCount,
-                    string.IsNullOrWhiteSpace(requiredEvidence) ? "Retained close checklist evidence" : requiredEvidence,
-                    task.Dependencies.Select(static dependency => dependency.DependsOnTaskId).ToArray());
+                    NormalizeOptional(CloseSetupTaskDisplayName) ?? task.DisplayName,
+                    NormalizeOptional(CloseSetupTaskOwner) ?? task.Owner,
+                    editableTaskDueDate ?? task.DueDate,
+                    Math.Max(1, CloseSetupTaskRequiredApprovalCount),
+                    NormalizeOptional(CloseSetupTaskRequiredEvidence)
+                        ?? (string.IsNullOrWhiteSpace(requiredEvidence) ? "Retained close checklist evidence" : requiredEvidence),
+                    editableTaskDependencies);
             })
             .ToArray();
 
         return new UpsertClosePeriodPlanConfigurationRequestDto(
             workflowId,
-            closePlan.MaterialityPolicy,
+            materialityPolicy,
             taskConfigurations,
             Actor: "wpf-accounting-controller",
             EvidenceLinks: BuildClosePlanConfigurationEvidence(workflowId, closePlan),
             CorrelationId: $"wpf-close-plan-configuration-{workflowId:D}",
             ActionOrigin: OperationsActionOriginDto.HumanOperator);
     }
+
+    private void ApplyCloseSetupDraft(ClosePeriodPlanDto closePlan)
+    {
+        var materiality = closePlan.MaterialityPolicy;
+        CloseSetupAmountThreshold = materiality.AmountThreshold;
+        CloseSetupPercentThreshold = materiality.PercentThreshold;
+        CloseSetupCurrency = materiality.Currency;
+        CloseSetupReviewRole = materiality.ReviewRole;
+        CloseSetupRequiresLateAdjustmentApproval = materiality.RequiresLateAdjustmentApproval;
+
+        var task = closePlan.Tasks.FirstOrDefault();
+        if (task is null)
+        {
+            CloseSetupTaskId = string.Empty;
+            CloseSetupTaskDisplayName = string.Empty;
+            CloseSetupTaskOwner = string.Empty;
+            CloseSetupTaskDueDateText = string.Empty;
+            CloseSetupTaskRequiredApprovalCount = 1;
+            CloseSetupTaskRequiredEvidence = "Retained close checklist evidence";
+            CloseSetupTaskDependsOnTaskIdsText = string.Empty;
+            return;
+        }
+
+        var requiredApprovalCount = Math.Max(
+            1,
+            task.SignOffRequirements.Count == 0
+                ? 1
+                : task.SignOffRequirements.Max(static requirement => requirement.RequiredApprovalCount));
+        var requiredEvidence = string.Join(
+            "; ",
+            task.SignOffRequirements
+                .Select(static requirement => requirement.EvidenceRequirement.Trim())
+                .Where(static value => value.Length > 0));
+
+        CloseSetupTaskId = task.TaskId;
+        CloseSetupTaskDisplayName = task.DisplayName;
+        CloseSetupTaskOwner = task.Owner;
+        CloseSetupTaskDueDateText = task.DueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        CloseSetupTaskRequiredApprovalCount = requiredApprovalCount;
+        CloseSetupTaskRequiredEvidence = string.IsNullOrWhiteSpace(requiredEvidence)
+            ? "Retained close checklist evidence"
+            : requiredEvidence;
+        CloseSetupTaskDependsOnTaskIdsText = string.Join(", ", task.Dependencies.Select(static dependency => dependency.DependsOnTaskId));
+    }
+
+    private static string NormalizeRequired(string? value, string fallback)
+        => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static DateOnly? ParseCloseSetupDueDate(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        if (DateOnly.TryParseExact(value.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dueDate))
+        {
+            return dueDate;
+        }
+
+        throw new ArgumentException("Close task due date must use yyyy-MM-dd format.", nameof(CloseSetupTaskDueDateText));
+    }
+
+    private static IReadOnlyList<string> ParseCloseSetupDependencies(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? []
+            : value.Split([',', ';', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(static dependency => dependency.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
     private static IReadOnlyList<string> BuildClosePlanConfigurationEvidence(
         Guid workflowId,

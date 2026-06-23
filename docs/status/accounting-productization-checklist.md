@@ -372,7 +372,9 @@ the requirement end to end.
   currency, review role, late-adjustment approval requirement, primary checklist owner/due date,
   approval count, required evidence, and dependencies before retaining ledger-book evidence and
   correlation context through that shared configuration endpoint; WPF now has service registration
-  and a close view-model command that retains loaded close-plan setup through the same shared
+  and a close view-model command with editable close setup draft fields for materiality thresholds,
+  review role, late-adjustment approval posture, primary checklist owner/due date, approval count,
+  required evidence, and dependencies before retaining close-plan setup through the same shared
   contract when workflow context is supplied. Close management now also has a governed period-lock command/result over the Operations
   Continuity close-package gate, and browser/WPF both expose that lock command with blocker rows and
   retained close-package/report-pack/ledger-book evidence. Production readiness now evidence-qualifies

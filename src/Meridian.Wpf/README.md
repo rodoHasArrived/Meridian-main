@@ -98,9 +98,11 @@ close/evidence/reconciliation posture from shared operations continuity when ava
 fund-scoped accounting-basis policy records and multi-basis ledger-book projection candidates
 through Financial Operations services.
 The WPF Accounting close view model can also retain a loaded close-period plan through the shared
-`IAccountingCloseManagementService` when the caller supplies explicit workflow context, preserving
-materiality, task/dependency, sign-off, required-evidence, and late-adjustment evidence metadata in
-the same governed close-plan configuration request used by browser close setup. It also exposes a
+`IAccountingCloseManagementService` when the caller supplies explicit workflow context, exposing
+editable desktop draft fields for materiality thresholds, currency, review role, late-adjustment
+approval posture, primary checklist task owner, due date, approval count, required evidence, and
+dependencies before preserving task/dependency, sign-off, required-evidence, and late-adjustment
+evidence metadata in the same governed close-plan configuration request used by browser close setup. It also exposes a
 governed period-lock command over the same shared service, building human-origin close-package,
 report-pack, manifest, checklist-approval, workflow-version, period, and ledger-book evidence
 requests while rendering service-owned lock blockers instead of applying desktop-local close rules.

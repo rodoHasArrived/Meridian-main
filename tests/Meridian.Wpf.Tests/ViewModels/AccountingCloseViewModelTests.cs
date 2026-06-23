@@ -63,6 +63,48 @@ public sealed class AccountingCloseViewModelTests
     }
 
     [Fact]
+    public async Task ConfigureClosePlanCommand_UsesDesktopEditedCloseSetupDraft()
+    {
+        var workflowId = Guid.Parse("abababab-bbbb-cccc-dddd-eeeeeeeeeeee");
+        var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+        var closePlan = BuildClosePlan(ledgerBookId);
+        var service = new CapturingCloseManagementService(closePlan);
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service);
+
+        viewModel.ApplyClosePlan(workflowId, closePlan);
+        viewModel.CloseSetupAmountThreshold = 5_000m;
+        viewModel.CloseSetupPercentThreshold = 1.25m;
+        viewModel.CloseSetupCurrency = "EUR";
+        viewModel.CloseSetupReviewRole = "assistant-controller";
+        viewModel.CloseSetupRequiresLateAdjustmentApproval = false;
+        viewModel.CloseSetupTaskDisplayName = "Approve final NAV package";
+        viewModel.CloseSetupTaskOwner = "nav-controller";
+        viewModel.CloseSetupTaskDueDateText = "2026-06-06";
+        viewModel.CloseSetupTaskRequiredApprovalCount = 3;
+        viewModel.CloseSetupTaskRequiredEvidence = "Controller, administrator, and CFO retained evidence";
+        viewModel.CloseSetupTaskDependsOnTaskIdsText = "task-reconciliation; task-pricing, task-cash";
+
+        await viewModel.ConfigureClosePlanCommand.ExecuteAsync(null);
+
+        service.Request.Should().NotBeNull();
+        service.Request!.MaterialityPolicy.Should().Be(new MaterialityPolicyDto(
+            "materiality-alpha",
+            5_000m,
+            1.25m,
+            "EUR",
+            "assistant-controller",
+            false));
+        service.Request.TaskConfigurations.Should().ContainSingle().Which.Should().Match<CloseTaskConfigurationDto>(task =>
+            task.TaskId == "task-nav" &&
+            task.DisplayName == "Approve final NAV package" &&
+            task.Owner == "nav-controller" &&
+            task.DueDate == new DateOnly(2026, 6, 6) &&
+            task.RequiredApprovalCount == 3 &&
+            task.RequiredEvidence == "Controller, administrator, and CFO retained evidence" &&
+            task.DependsOnTaskIds.SequenceEqual(new[] { "task-reconciliation", "task-pricing", "task-cash" }));
+    }
+
+    [Fact]
     public async Task LockClosePeriodCommand_BuildsGovernedRequestAndRendersSharedBlockers()
     {
         var workflowId = Guid.Parse("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");
