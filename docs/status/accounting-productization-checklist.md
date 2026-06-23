@@ -177,6 +177,9 @@ the requirement end to end.
   tenant/company, actor, and report-group principal context onto shared-service requests, so manual
   journal audit events retain browser/WPF session role/profile scope instead of relying on
   body-supplied authorization metadata.
+- [x] Manual journal save/validate/submit end-to-end workstation proof now runs under an
+  authenticated tenant/company session, so Accounting and Reporting workspace projections are
+  tested through the same tenant-scope gate used by production workstation routes.
 
 ## Still To Complete
 
@@ -203,9 +206,10 @@ the requirement end to end.
   replay retained correlation ids for submit, approve, reject, post, close-lock, reverse, and rebook
   without appending duplicate transitions or audit events, approval/rejection/posting/close-lock/
   correction actions require an actor independent from the draft preparer, and endpoint-driven
-  manual journal lifecycle audit now retains trusted role/profile principal scope. Broader
-  authorization policy, service-level role enforcement, and end-to-end mutation coverage remain
-  open.
+  manual journal lifecycle audit now retains trusted role/profile principal scope. The primary
+  manual journal workstation proof also exercises Accounting and Reporting projections with an
+  authenticated tenant/company session. Broader authorization policy, service-level role
+  enforcement, and end-to-end mutation coverage remain open.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
   evidence migration. The shared readiness contract now exposes fail-closed certification inputs,

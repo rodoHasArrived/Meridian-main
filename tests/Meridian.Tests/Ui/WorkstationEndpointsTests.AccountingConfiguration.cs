@@ -417,7 +417,7 @@ public sealed partial class WorkstationEndpointsTests
         await using var app = await CreateAppAsync(
             RegisterAccountingConfigurationServices,
             currentUserPermissions: UserPermission.AdminMaintenance,
-            currentUserCompanyId: null);
+            currentUserCompanyId: "company-alpha");
         var client = app.GetTestClient();
 
         await client.PostAsJsonAsync(
