@@ -736,6 +736,16 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                         priorPackageId,
                         "Certify the prior report package before using it as restatement lineage."));
                 }
+
+                if (!HasRestatementPriorPackageEvidence(evidenceLinks, priorPackage))
+                {
+                    issues.Add(new AccountingConfigurationValidationIssueDto(
+                        "RestatementPriorPackageEvidenceMissing",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Restatement package for period '{periodId}' references prior package '{priorPackageId}' without retained evidence naming the exact prior package or certification.",
+                        priorPackageId,
+                        "Attach restatement lineage evidence that names the exact prior package or certification id before certification."));
+                }
             }
         }
 
@@ -753,6 +763,15 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         return issues;
     }
+
+    private static bool HasRestatementPriorPackageEvidence(
+        IReadOnlyList<string> evidenceLinks,
+        AccountingReportPackageBundleDto priorPackage)
+        => evidenceLinks.Any(link =>
+            (link.Contains("restatement", StringComparison.OrdinalIgnoreCase) ||
+             link.Contains("prior-package", StringComparison.OrdinalIgnoreCase)) &&
+            (EvidenceReferencesReportIdentifier(link, priorPackage.FinancialStatements.PackageId) ||
+             EvidenceReferencesReportIdentifier(link, priorPackage.Certification.CertificationId)));
 
     private static IReadOnlyList<AccountingCloseReadinessItemDto> BuildCloseReadinessItems(
         ClosePeriodPlanDto? closePlan,

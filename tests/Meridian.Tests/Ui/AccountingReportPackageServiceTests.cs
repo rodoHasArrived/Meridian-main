@@ -592,7 +592,7 @@ public sealed class AccountingReportPackageServiceTests
             "controller",
             "Controller certified the prior report package.",
             [CertificationEvidence(draftPrior)]));
-        var readyRestatement = await service.BuildPackageAsync(CompletePackageRequest(
+        var genericLineageRestatement = await service.BuildPackageAsync(CompletePackageRequest(
             "fund-alpha",
             "2027-04",
             CloseWorkflowId: workflowId,
@@ -608,10 +608,34 @@ public sealed class AccountingReportPackageServiceTests
                 "evidence:prior-package:lineage:2027-03"
             ]));
 
+        genericLineageRestatement.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        genericLineageRestatement.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "RestatementPriorPackageEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == certifiedPrior.FinancialStatements.PackageId);
+
+        var exactPriorPackageEvidence = $"evidence:prior-package:lineage:{certifiedPrior.FinancialStatements.PackageId}:2027-03";
+        var readyRestatement = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-04",
+            CloseWorkflowId: workflowId,
+            RestatementReasonCode: "nav-correction",
+            PriorPackageId: certifiedPrior.FinancialStatements.PackageId,
+            EvidenceLinks:
+            [
+                $"evidence:ledger:trial-balance:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:reconciliation:gl-tie-out:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:report-render:financial-statements:2027-04:book:{DefaultLedgerBookId:D}",
+                $"evidence:nav:support-package:2027-04:book:{DefaultLedgerBookId:D}",
+                "evidence:restatement:nav-correction:2027-04",
+                exactPriorPackageEvidence
+            ]));
+
         readyRestatement.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
         readyRestatement.ValidationIssues.Should().NotContain(issue =>
             issue.Code == "RestatementPriorPackageNotRetained" ||
-            issue.Code == "RestatementPriorPackageNotCertified");
+            issue.Code == "RestatementPriorPackageNotCertified" ||
+            issue.Code == "RestatementPriorPackageEvidenceMissing");
         readyRestatement.NavPackage.Restatement.Should().NotBeNull();
         readyRestatement.NavPackage.Restatement!.PriorPackageId.Should().Be(certifiedPrior.FinancialStatements.PackageId);
         readyRestatement.NavPackage.Restatement.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Submitted);
@@ -619,7 +643,7 @@ public sealed class AccountingReportPackageServiceTests
             row.StatementId == "restatement-workflow" &&
             row.SourceKind == "RestatementLineage" &&
             row.EvidenceLinks.Contains("evidence:restatement:nav-correction:2027-04") &&
-            row.EvidenceLinks.Contains("evidence:prior-package:lineage:2027-03"));
+            row.EvidenceLinks.Contains(exactPriorPackageEvidence));
 
         var certifiedRestatement = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             readyRestatement.FinancialStatements.PackageId,

@@ -194,6 +194,9 @@ the requirement end to end.
   matching-entry subquery before rehydrating all retained journal legs, preventing scoped ledger
   queries from returning unbalanced partial entries to close, reporting, reconciliation, or export
   consumers.
+- [x] Report package restatement workflows now require retained lineage evidence that names the
+  exact prior package or certification id being restated, so generic prior-period support cannot
+  move a restatement package to certification review.
 
 ## Still To Complete
 

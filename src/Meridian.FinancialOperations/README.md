@@ -278,8 +278,9 @@ blocking close-plan evidence is missing, close checklist dependencies are incomp
 close workflow has not reached period-lock, approved
 sign-offs are missing, or material late adjustments are still unapproved, blocks restatement
 certification when retained certified prior-package lineage or retained restatement evidence is
-missing, and retains package history through an atomic JSON snapshot when `StorageOptions` is
-registered.
+missing, requires restatement lineage evidence to name the exact prior package or certification id
+being restated, and retains package history through an atomic JSON snapshot when `StorageOptions`
+is registered.
   The service also owns the retained certification transition: only ready-for-review packages without
   critical validation issues and with a retained close workflow can move to `Certified`, duplicate
   certification is rejected, and reviewer notes plus evidence links are persisted back across the
