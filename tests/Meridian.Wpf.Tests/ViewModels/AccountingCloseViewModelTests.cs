@@ -107,6 +107,75 @@ public sealed class AccountingCloseViewModelTests
     }
 
     [Fact]
+    public async Task SignOffCloseTaskCommand_RetainsGovernedTaskSignOffEvidence()
+    {
+        var workflowId = Guid.Parse("dddddddd-eeee-ffff-aaaa-bbbbbbbbbbbb");
+        var ledgerBookId = Guid.Parse("11111111-2222-3333-4444-555555555555");
+        var closePlan = BuildClosePlan(ledgerBookId);
+        var signedPlan = closePlan with
+        {
+            Tasks =
+            [
+                closePlan.Tasks[0] with
+                {
+                    Status = CloseTaskStatusDto.SignedOff,
+                    SignOffs =
+                    [
+                        new CloseSignOffDto(
+                            "signoff-task-nav-controller",
+                            "controller",
+                            "wpf-accounting-controller",
+                            ManualJournalEntryStatusDto.Approved,
+                            DateTimeOffset.Parse("2026-06-04T15:00:00Z"),
+                            ["evidence/nav-package-signoff"],
+                            "Controller retained NAV package sign-off.")
+                    ],
+                    SignOffRequirements =
+                    [
+                        closePlan.Tasks[0].SignOffRequirements[0] with
+                        {
+                            ApprovedCount = 2,
+                            IsSatisfied = true
+                        }
+                    ]
+                }
+            ]
+        };
+        var service = new CapturingCloseManagementService(closePlan)
+        {
+            SignOffResult = signedPlan
+        };
+        var viewModel = new AccountingCloseViewModel(Substitute.For<IAccountingProjectionQueryService>(), service);
+
+        viewModel.ApplyClosePlan(workflowId, 7, closePlan);
+
+        viewModel.SignOffCloseTaskCommand.CanExecute(null).Should().BeTrue();
+
+        await viewModel.SignOffCloseTaskCommand.ExecuteAsync(null);
+
+        service.SignOffActor.Should().Be("wpf-accounting-controller");
+        service.SignOffRequest.Should().NotBeNull();
+        service.SignOffRequest!.WorkflowId.Should().Be(workflowId);
+        service.SignOffRequest.TaskId.Should().Be("task-nav");
+        service.SignOffRequest.Role.Should().Be("controller");
+        service.SignOffRequest.Decision.Should().Be(ManualJournalEntryStatusDto.Approved);
+        service.SignOffRequest.Actor.Should().Be("wpf-accounting-controller");
+        service.SignOffRequest.ActionOrigin.Should().Be(OperationsActionOriginDto.HumanOperator);
+        service.SignOffRequest.CorrelationId.Should().Be($"wpf-close-task-signoff-{workflowId:D}-task-nav-controller");
+        service.SignOffRequest.EvidenceLinks.Should().Contain(link =>
+            link.Contains(workflowId.ToString("D"), StringComparison.OrdinalIgnoreCase) &&
+            link.Contains("task-nav", StringComparison.OrdinalIgnoreCase) &&
+            link.Contains("controller", StringComparison.OrdinalIgnoreCase) &&
+            link.Contains("2026-05", StringComparison.OrdinalIgnoreCase));
+        service.SignOffRequest.EvidenceLinks.Should().Contain(link =>
+            link.Contains($"book/{ledgerBookId:D}", StringComparison.OrdinalIgnoreCase) &&
+            link.Contains("task-nav", StringComparison.OrdinalIgnoreCase));
+        service.SignOffRequest.EvidenceLinks.Should().Contain("evidence/nav-package");
+        viewModel.CloseTaskSignOffStatusText.Should().Be("Retained controller sign-off evidence for close task task-nav.");
+        viewModel.SignOffCloseTaskCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task LockClosePeriodCommand_BuildsGovernedRequestAndRendersSharedBlockers()
     {
         var workflowId = Guid.Parse("bbbbbbbb-cccc-dddd-eeee-ffffffffffff");
@@ -268,9 +337,12 @@ public sealed class AccountingCloseViewModelTests
     private sealed class CapturingCloseManagementService(ClosePeriodPlanDto closePlan) : IAccountingCloseManagementService
     {
         public UpsertClosePeriodPlanConfigurationRequestDto? Request { get; private set; }
+        public SignOffCloseTaskRequestDto? SignOffRequest { get; private set; }
         public LockClosePeriodRequestDto? LockRequest { get; private set; }
         public string? Actor { get; private set; }
+        public string? SignOffActor { get; private set; }
         public string? LockActor { get; private set; }
+        public ClosePeriodPlanDto? SignOffResult { get; init; }
         public ClosePeriodLockResultDto? LockResult { get; init; }
 
         public Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default)
@@ -292,7 +364,11 @@ public sealed class AccountingCloseViewModelTests
             SignOffCloseTaskRequestDto request,
             string actor,
             CancellationToken ct = default)
-            => Task.FromResult<ClosePeriodPlanDto?>(closePlan);
+        {
+            SignOffRequest = request;
+            SignOffActor = actor;
+            return Task.FromResult<ClosePeriodPlanDto?>(SignOffResult ?? closePlan);
+        }
 
         public Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
             UpsertClosePeriodPlanConfigurationRequestDto request,

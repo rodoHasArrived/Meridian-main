@@ -375,7 +375,10 @@ the requirement end to end.
   and a close view-model command with editable close setup draft fields for materiality thresholds,
   review role, late-adjustment approval posture, primary checklist owner/due date, approval role/count,
   required evidence, and dependencies before retaining close-plan setup through the same shared
-  contract when workflow context is supplied. Close management now also has a governed period-lock command/result over the Operations
+  contract when workflow context is supplied. WPF now also exposes a governed close-task sign-off
+  command that posts the next unsatisfied role requirement, notes, human actor, correlation id, and
+  task/workflow/period/book evidence through the shared close-management service instead of
+  desktop-local approval rules. Close management now also has a governed period-lock command/result over the Operations
   Continuity close-package gate, and browser/WPF both expose that lock command with blocker rows and
   retained close-package/report-pack/ledger-book evidence. Production readiness now evidence-qualifies
   close-plan setup by ledger book, but richer browser/WPF setup/editing workflows and review UX

@@ -103,6 +103,10 @@ editable desktop draft fields for materiality thresholds, currency, review role,
 approval posture, primary checklist task owner, due date, required approval role/count, required
 evidence, and dependencies before preserving task/dependency, sign-off, required-evidence, and late-adjustment
 evidence metadata in the same governed close-plan configuration request used by browser close setup. It also exposes a
+governed close-task sign-off command that selects the next unsatisfied task requirement, posts the
+role, approval decision, notes, human actor, correlation id, and task/workflow/period/book evidence
+through the shared close-management service, and reloads the returned plan instead of applying
+desktop-local approval rules, plus a
 governed period-lock command over the same shared service, building human-origin close-package,
 report-pack, manifest, checklist-approval, workflow-version, period, and ledger-book evidence
 requests while rendering service-owned lock blockers instead of applying desktop-local close rules.

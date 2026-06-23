@@ -19,6 +19,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     private string _trialBalanceStatusText = "Trial balance has not loaded.";
     private string _closePlanSetupStatusText = "Load a close plan before retaining governed close setup.";
     private string _closePeriodLockStatusText = "Load a close plan before locking the accounting period.";
+    private string _closeTaskSignOffStatusText = "Load a close plan before retaining close task sign-off evidence.";
     private decimal _closeSetupAmountThreshold;
     private decimal _closeSetupPercentThreshold;
     private string _closeSetupCurrency = "USD";
@@ -42,6 +43,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _closeManagementService = closeManagementService;
         ConfigureClosePlanCommand = new AsyncRelayCommand(ConfigureClosePlanAsync, CanConfigureClosePlan);
+        SignOffCloseTaskCommand = new AsyncRelayCommand(SignOffCloseTaskAsync, CanSignOffCloseTask);
         LockClosePeriodCommand = new AsyncRelayCommand(LockClosePeriodAsync, CanLockClosePeriod);
     }
 
@@ -51,6 +53,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     public ObservableCollection<AccountingWorkbenchRow> ClosePeriodLockIssueRows { get; } = [];
 
     public IAsyncRelayCommand ConfigureClosePlanCommand { get; }
+    public IAsyncRelayCommand SignOffCloseTaskCommand { get; }
     public IAsyncRelayCommand LockClosePeriodCommand { get; }
 
     public decimal CloseSetupAmountThreshold
@@ -206,6 +209,21 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         }
     }
 
+    public string CloseTaskSignOffStatusText
+    {
+        get => _closeTaskSignOffStatusText;
+        private set
+        {
+            if (string.Equals(_closeTaskSignOffStatusText, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _closeTaskSignOffStatusText = value;
+            RaisePropertyChanged();
+        }
+    }
+
     public SourceLinkedAuditLine? SelectedAuditLine
     {
         get => _selectedAuditLine;
@@ -298,8 +316,16 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             : closePlan.IsPeriodLocked
             ? $"Close plan {closePlan.PeriodId} is already locked."
             : $"Close plan {closePlan.PeriodId} is ready for governed period-lock review.";
+        CloseTaskSignOffStatusText = workflowId == Guid.Empty
+            ? $"Close plan {closePlan.PeriodId} loaded without workflow context; task sign-off is disabled."
+            : closePlan.IsPeriodLocked
+            ? $"Close plan {closePlan.PeriodId} is locked; task sign-off requires a governed reopen workflow."
+            : ResolveNextSignOffTask(closePlan) is { } signOffTask
+                ? $"Close task {signOffTask.TaskId} is ready for WPF sign-off evidence retention."
+                : $"Close plan {closePlan.PeriodId} has no open task sign-off requirement.";
         ApplyClosePeriodLockIssues(closePlan.ValidationIssues);
         ConfigureClosePlanCommand.NotifyCanExecuteChanged();
+        SignOffCloseTaskCommand.NotifyCanExecuteChanged();
         LockClosePeriodCommand.NotifyCanExecuteChanged();
     }
 
@@ -313,6 +339,12 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         => _closeManagementService is not null &&
            _closeWorkflowId != Guid.Empty &&
            _closePlan is { IsPeriodLocked: false };
+
+    private bool CanSignOffCloseTask()
+        => _closeManagementService is not null &&
+           _closeWorkflowId != Guid.Empty &&
+           _closePlan is { IsPeriodLocked: false } closePlan &&
+           ResolveNextSignOffTask(closePlan) is not null;
 
     private bool CanLockClosePeriod()
         => _closeManagementService is not null &&
@@ -358,6 +390,61 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
             ClosePlanSetupStatusText = $"Close-plan setup could not be retained: {ex.Message}";
+        }
+    }
+
+    private async Task SignOffCloseTaskAsync()
+    {
+        if (_closeManagementService is null)
+        {
+            CloseTaskSignOffStatusText = "Close management service is not registered for this desktop session.";
+            return;
+        }
+
+        if (_closePlan is null)
+        {
+            CloseTaskSignOffStatusText = "Load a close plan before retaining close task sign-off evidence.";
+            return;
+        }
+
+        if (_closeWorkflowId == Guid.Empty)
+        {
+            CloseTaskSignOffStatusText = $"Close plan {_closePlan.PeriodId} loaded without workflow context; task sign-off is disabled.";
+            return;
+        }
+
+        if (_closePlan.IsPeriodLocked)
+        {
+            CloseTaskSignOffStatusText = $"Close plan {_closePlan.PeriodId} is locked; task sign-off requires a governed reopen workflow.";
+            return;
+        }
+
+        var task = ResolveNextSignOffTask(_closePlan);
+        if (task is null)
+        {
+            CloseTaskSignOffStatusText = $"Close plan {_closePlan.PeriodId} has no open task sign-off requirement.";
+            return;
+        }
+
+        try
+        {
+            var request = BuildCloseTaskSignOffRequest(_closeWorkflowId, _closePlan, task);
+            var updated = await _closeManagementService
+                .SignOffCloseTaskAsync(request, "wpf-accounting-controller")
+                .ConfigureAwait(true);
+
+            if (updated is null)
+            {
+                CloseTaskSignOffStatusText = $"Close workflow {_closeWorkflowId:D} was not found.";
+                return;
+            }
+
+            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            CloseTaskSignOffStatusText = $"Retained {request.Role} sign-off evidence for close task {request.TaskId}.";
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            CloseTaskSignOffStatusText = $"Close task sign-off could not be retained: {ex.Message}";
         }
     }
 
@@ -621,6 +708,65 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             ClosePackageRetainedManifestRoute: $"/workstation/reporting/packages/{manifestId}",
             ActionOrigin: OperationsActionOriginDto.HumanOperator);
     }
+
+    private static SignOffCloseTaskRequestDto BuildCloseTaskSignOffRequest(
+        Guid workflowId,
+        ClosePeriodPlanDto closePlan,
+        CloseTaskDto task)
+    {
+        var requirement = task.SignOffRequirements.FirstOrDefault(static row => !row.IsSatisfied)
+                          ?? task.SignOffRequirements.FirstOrDefault();
+        var role = string.IsNullOrWhiteSpace(requirement?.Role) ? task.Owner : requirement!.Role.Trim();
+        return new SignOffCloseTaskRequestDto(
+            workflowId,
+            task.TaskId,
+            role,
+            ManualJournalEntryStatusDto.Approved,
+            Actor: "wpf-accounting-controller",
+            Notes: $"WPF Accounting Close retained {role} sign-off evidence for {task.DisplayName}.",
+            EvidenceLinks: BuildCloseTaskSignOffEvidence(workflowId, closePlan, task, role),
+            CorrelationId: $"wpf-close-task-signoff-{workflowId:D}-{SanitizeForCorrelation(task.TaskId)}-{SanitizeForCorrelation(role)}",
+            ActionOrigin: OperationsActionOriginDto.HumanOperator);
+    }
+
+    private static IReadOnlyList<string> BuildCloseTaskSignOffEvidence(
+        Guid workflowId,
+        ClosePeriodPlanDto closePlan,
+        CloseTaskDto task,
+        string role)
+    {
+        var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            $"wpf://accounting/close/task-signoff/{workflowId:D}/{task.TaskId}/{role}",
+            $"evidence://close-task-signoff/workflow/{workflowId:D}/task/{task.TaskId}/role/{role}/period/{closePlan.PeriodId}"
+        };
+
+        if (closePlan.LedgerBookId is { } ledgerBookId)
+        {
+            links.Add($"evidence://close-task-signoff/book/{ledgerBookId:D}/task/{task.TaskId}/role/{role}/period/{closePlan.PeriodId}");
+        }
+
+        foreach (var evidence in task.EvidenceLinks)
+        {
+            if (!string.IsNullOrWhiteSpace(evidence))
+            {
+                links.Add(evidence.Trim());
+            }
+        }
+
+        return links.ToArray();
+    }
+
+    private static CloseTaskDto? ResolveNextSignOffTask(ClosePeriodPlanDto closePlan)
+        => closePlan.Tasks.FirstOrDefault(static task =>
+            task.Status is not CloseTaskStatusDto.SignedOff and not CloseTaskStatusDto.Blocked and not CloseTaskStatusDto.WaitingOnDependency &&
+            task.SignOffRequirements.Any(static requirement => !requirement.IsSatisfied));
+
+    private static string SanitizeForCorrelation(string value)
+        => string.Concat((value ?? string.Empty)
+            .Trim()
+            .Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-'))
+            .Trim('-');
 
     private static IReadOnlyList<OperationsChecklistControlApprovalDto> BuildClosePeriodLockApprovals(
         ClosePeriodPlanDto closePlan)
