@@ -773,6 +773,24 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 "Remediate the rejected close sign-off before period lock or report certification."));
         }
 
+        foreach (var task in tasks)
+        {
+            foreach (var requirement in task.SignOffRequirements.Where(static requirement => !requirement.IsSatisfied))
+            {
+                if (HasRejectedSignOff(requirement.Role, task.SignOffs))
+                {
+                    continue;
+                }
+
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "CloseTaskSignOffMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Close task '{task.DisplayName}' needs {requirement.RequiredApprovalCount:N0} approved '{requirement.Role}' sign-off decision(s); {requirement.ApprovedCount:N0} are retained.",
+                    task.TaskId,
+                    "Retain the required close sign-off approvals with scoped evidence before period lock or report certification."));
+            }
+        }
+
         foreach (var task in tasks.Where(static task => task.Status == CloseTaskStatusDto.WaitingOnDependency))
         {
             var dependencyList = string.Join(", ", task.Dependencies.Select(static dependency => dependency.DependsOnTaskId));

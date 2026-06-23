@@ -62,6 +62,60 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_MissingRequiredSignOffBlocksPlanValidationUntilEvidenceIsRetained()
+    {
+        var workflowId = Guid.Parse("25252525-2525-2525-2525-252525252525");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Done",
+                secondTaskStatus: "Done"));
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var planBeforeSignOff = await service.GetPeriodPlanAsync(workflowId);
+
+        planBeforeSignOff.Should().NotBeNull();
+        planBeforeSignOff!.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "CloseTaskSignOffMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == "reconciliation-review");
+        planBeforeSignOff.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "CloseTaskSignOffMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == "report-certification");
+
+        var reconciliationEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [reconciliationEvidence]),
+            "controller-reviewer");
+        var reportEvidence = $"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
+        var planAfterSignOff = await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [reportEvidence]),
+            "controller-reviewer");
+
+        planAfterSignOff.Should().NotBeNull();
+        planAfterSignOff!.ValidationIssues.Should().NotContain(issue => issue.Code == "CloseTaskSignOffMissing");
+        planAfterSignOff.Tasks.Should().OnlyContain(task =>
+            task.SignOffRequirements.All(requirement => requirement.IsSatisfied));
+    }
+
+    [Fact]
     public async Task Scenario_ClosePlan_SignOffRequiresActorIndependentFromTaskAcknowledgement()
     {
         var workflowId = Guid.Parse("33333333-3333-3333-3333-333333333333");

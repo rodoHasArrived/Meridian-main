@@ -200,6 +200,10 @@ the requirement end to end.
   validation, and disaster-recovery runbooks.
 - [x] Accounting migration-run execution now fails certification requests unless operator-retained
   evidence names the selected tenant, company, fund profile, ledger book, and migration kind.
+- [x] Close-period plans now emit critical validation blockers for every unsatisfied required
+  close-task sign-off role, even when the upstream workflow checklist marks the task done, so close
+  cockpit, report certification, and period-lock surfaces see missing approvals before package
+  assembly.
 - [x] External GL export certification and export-control provenance now require exact-token
   package, certification, fund/provider, and period evidence instead of accepting longer identifier
   prefixes.
@@ -280,8 +284,8 @@ the requirement end to end.
 - [ ] Productize close management with close-plan editing, dependency graph authoring, sign-off
   matrix administration, materiality policy setup, late-adjustment workflow, period locks, and
   blocker/evidence review in shared services plus browser/WPF surfaces. Backend close-plan
-  projection now proves dependency-gated task progression, but operator setup/editing workflows
-  remain open.
+  projection now proves dependency-gated task progression and fail-closed missing sign-off blockers,
+  but operator setup/editing workflows remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes.

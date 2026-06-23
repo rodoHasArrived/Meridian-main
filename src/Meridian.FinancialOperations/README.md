@@ -249,6 +249,9 @@ is still active. Each projected close
 task now carries sign-off requirement rows so browser, WPF, report
 certification, and export workflows can inspect required role, required approval count, approved
 count, satisfaction state, and required evidence without rebuilding close matrix rules locally.
+Unsatisfied close sign-off requirements also emit critical close-plan validation blockers even when
+the upstream checklist row is marked done, so close cockpit, report certification, and period-lock
+consumers cannot treat workflow task completion as retained approval evidence.
 The same close plan carries close-calendar milestone rows derived from checklist due dates,
 dependencies, sign-off counts, evidence, blockers, and period-lock state so accounting/reporting
 surfaces can render calendar posture without reinterpreting workflow checklist rows. The late-adjustment command remains a governed close review artifact; it does not
