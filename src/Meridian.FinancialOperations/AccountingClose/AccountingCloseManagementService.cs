@@ -230,6 +230,12 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 throw new ArgumentException("Late adjustment review evidence must reference the request, journal entry, workflow, or exact close period and selected ledger book on the same artifact.", nameof(request));
             }
 
+            if (string.Equals(current.RequestedBy, resolvedActor, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Late adjustment '{requestId}' must be reviewed by an actor independent from requester '{current.RequestedBy}'.");
+            }
+
             if (current.ApprovalState is ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Rejected)
             {
                 throw new InvalidOperationException($"Late adjustment '{requestId}' has already been {current.ApprovalState}.");

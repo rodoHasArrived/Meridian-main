@@ -927,14 +927,14 @@ public sealed partial class WorkstationEndpointsTests
         extendedRequestReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var reviewEvidence = $"evidence:late-adjustment:{adjustment.RequestId}:book:{ledgerBookId:D}:controller-approval";
-        using var reviewResponse = await client.PostAsJsonAsync(
+        using var selfReviewResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
             new ReviewLateAdjustmentRequestDto(
                 workflowId,
                 adjustment.RequestId,
                 ManualJournalEntryStatusDto.Approved,
                 "untrusted-reviewer",
-                "Controller approved material late adjustment for close package.",
+                "Requester attempted to approve their own material late adjustment.",
                 EvidenceLinks:
                 [
                     requestEvidence,
@@ -942,12 +942,35 @@ public sealed partial class WorkstationEndpointsTests
                 ]),
             ServerJsonOptions);
 
+        selfReviewResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var selfReviewBody = await selfReviewResponse.Content.ReadAsStringAsync();
+        selfReviewBody.Should().Contain("independent from requester");
+
+        using var reviewRequest = new HttpRequestMessage(HttpMethod.Post, UiApiRoutes.LedgerCloseManagementLateAdjustmentReview)
+        {
+            Content = System.Net.Http.Json.JsonContent.Create(
+                new ReviewLateAdjustmentRequestDto(
+                    workflowId,
+                    adjustment.RequestId,
+                    ManualJournalEntryStatusDto.Approved,
+                    "untrusted-reviewer",
+                    "Controller approved material late adjustment for close package.",
+                    EvidenceLinks:
+                    [
+                        requestEvidence,
+                        reviewEvidence
+                    ]),
+                options: ServerJsonOptions)
+        };
+        reviewRequest.Headers.Add("X-Meridian-Test-User", "controller-reviewer");
+        using var reviewResponse = await client.SendAsync(reviewRequest);
+
         reviewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var reviewedPlan = await reviewResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
         reviewedPlan.Should().NotBeNull();
         var reviewedAdjustment = reviewedPlan!.LateAdjustments.Should().ContainSingle().Subject;
         reviewedAdjustment.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
-        reviewedAdjustment.DecidedBy.Should().Be("ops-user");
+        reviewedAdjustment.DecidedBy.Should().Be("controller-reviewer");
         reviewedAdjustment.DecidedAtUtc.Should().NotBeNull();
         reviewedAdjustment.DecisionNotes.Should().Be("Controller approved material late adjustment for close package.");
         reviewedAdjustment.EvidenceLinks.Should().Contain(reviewEvidence);

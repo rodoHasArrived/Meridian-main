@@ -204,6 +204,9 @@ the requirement end to end.
   period identifiers cannot satisfy retained close approval provenance by prefix.
 - [x] Late-adjustment request and review evidence now boundary-checks close-period tokens, blocking
   extended period identifiers from requesting or approving material close adjustments.
+- [x] Material late-adjustment review now enforces requester/reviewer independence at the
+  Financial Operations service and workstation endpoint layer before retaining an approval or
+  rejection decision.
 
 ## Still To Complete
 
