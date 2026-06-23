@@ -1869,6 +1869,7 @@ public sealed record CloseTaskConfigurationDto(
     string? Owner = null,
     DateOnly? DueDate = null,
     int? RequiredApprovalCount = null,
+    string? RequiredApprovalRole = null,
     string? RequiredEvidence = null,
     IReadOnlyList<string>? DependsOnTaskIds = null)
 {

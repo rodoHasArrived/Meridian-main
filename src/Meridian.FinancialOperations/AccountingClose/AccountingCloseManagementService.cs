@@ -782,6 +782,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         var owner = NormalizeOptional(configuration?.Owner) ?? task.Owner;
         var requiredEvidence = NormalizeOptional(configuration?.RequiredEvidence) ?? task.RequiredEvidence;
         var requiredApprovalCount = configuration?.RequiredApprovalCount ?? task.RequiredApprovalCount;
+        var requiredApprovalRole = NormalizeOptional(configuration?.RequiredApprovalRole) ?? ResolveRequiredSignOffRole(owner);
         var dependencies = BuildDependencies(task.TaskId, index, workflow, configuration);
         var signOffs = workflow.Approvals
             .Select(approval => ToCloseSignOff(task, approval))
@@ -799,14 +800,14 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         return new CloseTaskDto(
             task.TaskId,
             NormalizeOptional(configuration?.DisplayName) ?? task.Label,
-            ResolveTaskStatus(task, owner, requiredApprovalCount, dependencies, dependenciesSatisfied, workflow.Approvals, signOffs),
+            ResolveTaskStatus(task, requiredApprovalRole, requiredApprovalCount, dependencies, dependenciesSatisfied, workflow.Approvals, signOffs),
             owner,
             configuration?.DueDate ?? task.DueDate ?? task.ExpiresOn ?? DateOnly.FromDateTime(workflow.UpdatedAtUtc.UtcDateTime),
                 dependencies,
                 signOffs,
                 evidenceLinks,
                 task.BlockingReason,
-                BuildSignOffRequirements(task, owner, requiredApprovalCount, requiredEvidence, signOffs));
+                BuildSignOffRequirements(task, requiredApprovalRole, requiredApprovalCount, requiredEvidence, signOffs));
     }
 
     private static IReadOnlyList<CloseDependencyDto> BuildDependencies(
@@ -838,12 +839,11 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
     private static IReadOnlyList<CloseSignOffRequirementDto> BuildSignOffRequirements(
         OperationsCloseChecklistTaskDto task,
-        string owner,
+        string role,
         int requiredApprovalCount,
         string? requiredEvidence,
         IReadOnlyList<CloseSignOffDto> signOffs)
     {
-        var role = ResolveRequiredSignOffRole(owner);
         var requiredCount = requiredApprovalCount <= 0 ? 1 : requiredApprovalCount;
         var approvedCount = signOffs.Count(signOff =>
             signOff.ApprovalState == ManualJournalEntryStatusDto.Approved &&
@@ -923,7 +923,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
     private static CloseTaskStatusDto ResolveTaskStatus(
         OperationsCloseChecklistTaskDto task,
-        string owner,
+        string requiredRole,
         int requiredApprovalCount,
         IReadOnlyList<CloseDependencyDto> dependencies,
         bool dependenciesSatisfied,
@@ -943,7 +943,6 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             return CloseTaskStatusDto.WaitingOnDependency;
         }
 
-        var requiredRole = ResolveRequiredSignOffRole(owner);
         if (HasRejectedSignOff(requiredRole, signOffs))
         {
             return CloseTaskStatusDto.Blocked;
@@ -1235,6 +1234,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 TaskId = taskId,
                 DisplayName = NormalizeOptional(configuration.DisplayName),
                 Owner = NormalizeOptional(configuration.Owner),
+                RequiredApprovalRole = NormalizeOptional(configuration.RequiredApprovalRole),
                 RequiredEvidence = NormalizeOptional(configuration.RequiredEvidence),
                 DependsOnTaskIds = dependencies
             });

@@ -1003,8 +1003,8 @@ Close and reporting contracts publish `ClosePeriodPlanDto`,
 `SignOffCloseTaskRequestDto`, `LateAdjustmentRequestDto`, `ReviewLateAdjustmentRequestDto`,
 `LockClosePeriodRequestDto`, `ClosePeriodLockResultDto`, and `AccountingReportPackageBundleDto` so
 browser and WPF consumers use the same dependency, role-scoped sign-off requirement, governed
-close-plan setup, close-calendar milestone, evidence-backed close task sign-off whose retained
-artifact identifies the task, sign-off role, and workflow or period, materiality, retained
+close-plan setup with configurable task approval role/count, close-calendar milestone,
+evidence-backed close task sign-off whose retained artifact identifies the task, sign-off role, and workflow or period, materiality, retained
 late-adjustment approval/rejection with request-, journal-, workflow-, or period-specific evidence
 on the same retained artifact, governed period-lock request/result, financial statement, investor capital
 statement, realized gain/loss, NAV, export-artifact manifest, certification, validation, and restatement vocabulary.

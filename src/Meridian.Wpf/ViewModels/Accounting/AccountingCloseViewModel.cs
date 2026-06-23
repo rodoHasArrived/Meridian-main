@@ -29,6 +29,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     private string _closeSetupTaskOwner = string.Empty;
     private string _closeSetupTaskDueDateText = string.Empty;
     private int _closeSetupTaskRequiredApprovalCount = 1;
+    private string _closeSetupTaskRequiredApprovalRole = "Controller";
     private string _closeSetupTaskRequiredEvidence = "Retained close checklist evidence";
     private string _closeSetupTaskDependsOnTaskIdsText = string.Empty;
     private string _selectedAuditDetailText = "Select a journal audit row to inspect source-event and approval linkage.";
@@ -110,6 +111,12 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     {
         get => _closeSetupTaskRequiredApprovalCount;
         set => SetProperty(ref _closeSetupTaskRequiredApprovalCount, Math.Max(1, value));
+    }
+
+    public string CloseSetupTaskRequiredApprovalRole
+    {
+        get => _closeSetupTaskRequiredApprovalRole;
+        set => SetProperty(ref _closeSetupTaskRequiredApprovalRole, value ?? string.Empty);
     }
 
     public string CloseSetupTaskRequiredEvidence
@@ -447,6 +454,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                         task.Owner,
                         task.DueDate,
                         requiredApprovalCount,
+                        task.SignOffRequirements.FirstOrDefault()?.Role,
                         string.IsNullOrWhiteSpace(requiredEvidence) ? "Retained close checklist evidence" : requiredEvidence,
                         task.Dependencies.Select(static dependency => dependency.DependsOnTaskId).ToArray());
                 }
@@ -457,6 +465,9 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                     NormalizeOptional(CloseSetupTaskOwner) ?? task.Owner,
                     editableTaskDueDate ?? task.DueDate,
                     Math.Max(1, CloseSetupTaskRequiredApprovalCount),
+                    NormalizeOptional(CloseSetupTaskRequiredApprovalRole)
+                        ?? task.SignOffRequirements.FirstOrDefault()?.Role
+                        ?? task.Owner,
                     NormalizeOptional(CloseSetupTaskRequiredEvidence)
                         ?? (string.IsNullOrWhiteSpace(requiredEvidence) ? "Retained close checklist evidence" : requiredEvidence),
                     editableTaskDependencies);
@@ -490,6 +501,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             CloseSetupTaskOwner = string.Empty;
             CloseSetupTaskDueDateText = string.Empty;
             CloseSetupTaskRequiredApprovalCount = 1;
+            CloseSetupTaskRequiredApprovalRole = "Controller";
             CloseSetupTaskRequiredEvidence = "Retained close checklist evidence";
             CloseSetupTaskDependsOnTaskIdsText = string.Empty;
             return;
@@ -511,6 +523,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         CloseSetupTaskOwner = task.Owner;
         CloseSetupTaskDueDateText = task.DueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         CloseSetupTaskRequiredApprovalCount = requiredApprovalCount;
+        CloseSetupTaskRequiredApprovalRole = task.SignOffRequirements.FirstOrDefault()?.Role ?? task.Owner;
         CloseSetupTaskRequiredEvidence = string.IsNullOrWhiteSpace(requiredEvidence)
             ? "Retained close checklist evidence"
             : requiredEvidence;

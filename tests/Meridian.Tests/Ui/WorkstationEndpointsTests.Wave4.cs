@@ -1058,6 +1058,7 @@ public sealed partial class WorkstationEndpointsTests
                         Owner: "Controller",
                         DueDate: new DateOnly(2026, 8, 28),
                         RequiredApprovalCount: 1,
+                        RequiredApprovalRole: "CFO",
                         RequiredEvidence: "Controller sign-off evidence."),
                     new CloseTaskConfigurationDto(
                         secondTask.TaskId,
@@ -1084,7 +1085,7 @@ public sealed partial class WorkstationEndpointsTests
         configuredFirstTask.Owner.Should().Be("Controller");
         configuredFirstTask.DueDate.Should().Be(new DateOnly(2026, 8, 28));
         configuredFirstTask.SignOffRequirements.Should().ContainSingle(requirement =>
-            requirement.Role == "Controller" &&
+            requirement.Role == "CFO" &&
             requirement.RequiredApprovalCount == 1 &&
             requirement.EvidenceRequirement == "Controller sign-off evidence.");
         var configuredSecondTask = configuredPlan.Tasks.Should().Contain(task => task.TaskId == secondTask.TaskId).Subject;
@@ -1108,11 +1109,11 @@ public sealed partial class WorkstationEndpointsTests
             new SignOffCloseTaskRequestDto(
                 workflowId,
                 firstTask.TaskId,
-                "Controller",
+                "CFO",
                 ManualJournalEntryStatusDto.Approved,
-                "controller-a",
-                "First configured controller sign-off.",
-                EvidenceLinks: [$"evidence:close-task:{firstTask.TaskId}:Controller:2026-08:book:{ledgerBookId:D}:controller-signoff-a"]));
+                "cfo-a",
+                "First configured CFO sign-off.",
+                EvidenceLinks: [$"evidence:close-task:{firstTask.TaskId}:CFO:2026-08:book:{ledgerBookId:D}:cfo-signoff-a"]));
         firstSignOffResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var fullySignedPlan = await firstSignOffResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
         fullySignedPlan!.Tasks.Single(task => task.TaskId == firstTask.TaskId).Status.Should().Be(CloseTaskStatusDto.SignedOff);

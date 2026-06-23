@@ -2099,6 +2099,7 @@ describe("accounting-screen view model", () => {
       taskOwner: "fund-accounting",
       taskDueDate: "2026-06-04",
       taskRequiredApprovalCount: "1",
+      taskRequiredApprovalRole: "controller",
       taskRequiredEvidence: "Controller NAV sign-off evidence",
       taskDependsOnTaskIds: "task-reconciliation"
     });
@@ -2235,6 +2236,7 @@ describe("accounting-screen view model", () => {
         taskOwner: "CFO Office",
         taskDueDate: "2026-06-06",
         taskRequiredApprovalCount: "2",
+        taskRequiredApprovalRole: "CFO",
         taskRequiredEvidence: "CFO approval and retained NAV support",
         taskDependsOnTaskIds: "task-reconciliation, task-report"
       });
@@ -2263,6 +2265,7 @@ describe("accounting-screen view model", () => {
           owner: "CFO Office",
           dueDate: "2026-06-06",
           requiredApprovalCount: 2,
+          requiredApprovalRole: "CFO",
           requiredEvidence: "CFO approval and retained NAV support",
           dependsOnTaskIds: ["task-reconciliation", "task-report"]
         })

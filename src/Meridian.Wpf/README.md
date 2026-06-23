@@ -100,8 +100,8 @@ through Financial Operations services.
 The WPF Accounting close view model can also retain a loaded close-period plan through the shared
 `IAccountingCloseManagementService` when the caller supplies explicit workflow context, exposing
 editable desktop draft fields for materiality thresholds, currency, review role, late-adjustment
-approval posture, primary checklist task owner, due date, approval count, required evidence, and
-dependencies before preserving task/dependency, sign-off, required-evidence, and late-adjustment
+approval posture, primary checklist task owner, due date, required approval role/count, required
+evidence, and dependencies before preserving task/dependency, sign-off, required-evidence, and late-adjustment
 evidence metadata in the same governed close-plan configuration request used by browser close setup. It also exposes a
 governed period-lock command over the same shared service, building human-origin close-package,
 report-pack, manifest, checklist-approval, workflow-version, period, and ledger-book evidence

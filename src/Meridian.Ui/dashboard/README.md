@@ -304,7 +304,7 @@ retained package id, reviewer notes, and evidence links to the shared certificat
 task sign-off command posts the next ready checklist task role, reviewer notes, correlation id, and
 evidence links to the shared close-management endpoint. Its close setup editor lets operators adjust
 materiality thresholds, currency, review role, late-adjustment approval requirement, and the primary
-checklist task's owner, due date, required approval count, evidence requirement, and dependencies
+checklist task's owner, due date, required approval role/count, evidence requirement, and dependencies
 before posting ledger-book evidence and correlation context to the shared close-plan configuration
 endpoint. Its period-lock action posts the
 current workflow version, selected report package, checklist-control approvals, close-package

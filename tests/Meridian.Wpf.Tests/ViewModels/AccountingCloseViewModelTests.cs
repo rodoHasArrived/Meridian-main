@@ -81,6 +81,7 @@ public sealed class AccountingCloseViewModelTests
         viewModel.CloseSetupTaskOwner = "nav-controller";
         viewModel.CloseSetupTaskDueDateText = "2026-06-06";
         viewModel.CloseSetupTaskRequiredApprovalCount = 3;
+        viewModel.CloseSetupTaskRequiredApprovalRole = "CFO";
         viewModel.CloseSetupTaskRequiredEvidence = "Controller, administrator, and CFO retained evidence";
         viewModel.CloseSetupTaskDependsOnTaskIdsText = "task-reconciliation; task-pricing, task-cash";
 
@@ -100,6 +101,7 @@ public sealed class AccountingCloseViewModelTests
             task.Owner == "nav-controller" &&
             task.DueDate == new DateOnly(2026, 6, 6) &&
             task.RequiredApprovalCount == 3 &&
+            task.RequiredApprovalRole == "CFO" &&
             task.RequiredEvidence == "Controller, administrator, and CFO retained evidence" &&
             task.DependsOnTaskIds.SequenceEqual(new[] { "task-reconciliation", "task-pricing", "task-cash" }));
     }

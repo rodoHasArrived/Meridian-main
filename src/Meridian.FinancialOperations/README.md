@@ -40,7 +40,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   Operations Continuity workflow state, checklist dependencies, approval sign-offs, period-lock
   evidence, file-backed late-adjustment requests, materiality policy validation, and ledger-book
   scoped close-control evidence checks, governed close-plan configuration for materiality, task
-  ownership, due dates, sign-off counts, evidence requirements, and dependencies, including
+  ownership, due dates, sign-off roles/counts, evidence requirements, and dependencies, including
   independent-review enforcement for material late-adjustment decisions, plus a governed
   close-period lock bridge that fails closed on unresolved plan blockers before delegating to the
   Operations Continuity close-package publication gate.
@@ -248,8 +248,8 @@ actor-role decisions, actors who acknowledged the task, roles outside the task's
 or incomplete prerequisite tasks, require retained approval/sign-off/control/review evidence that
 identifies the close task, workflow, sign-off role, and workflow or exact close period on the same
 artifact, count only
-approved decisions toward the role-scoped approval cap, and promote the close task only when
-retained approved decisions satisfy the role-scoped task approval count. Rejected retained sign-off
+approved decisions toward the configured role-scoped approval cap, and promote the close task only when
+retained approved decisions satisfy the configured role-scoped task approval count. Rejected retained sign-off
 decisions block the close task, close-calendar milestone, and close-plan validation until operators
 remediate the failed control; additional role decisions are rejected while that retained rejection
 is still active. Each projected close

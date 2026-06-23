@@ -370,10 +370,10 @@ the requirement end to end.
   critical pending material late-adjustment blockers, and a governed close-plan configuration
   command. The browser close cockpit now has editable close setup fields for materiality thresholds,
   currency, review role, late-adjustment approval requirement, primary checklist owner/due date,
-  approval count, required evidence, and dependencies before retaining ledger-book evidence and
+  approval role/count, required evidence, and dependencies before retaining ledger-book evidence and
   correlation context through that shared configuration endpoint; WPF now has service registration
   and a close view-model command with editable close setup draft fields for materiality thresholds,
-  review role, late-adjustment approval posture, primary checklist owner/due date, approval count,
+  review role, late-adjustment approval posture, primary checklist owner/due date, approval role/count,
   required evidence, and dependencies before retaining close-plan setup through the same shared
   contract when workflow context is supplied. Close management now also has a governed period-lock command/result over the Operations
   Continuity close-package gate, and browser/WPF both expose that lock command with blocker rows and

@@ -4643,7 +4643,7 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                     />
                   </label>
                 </div>
-                <div className="grid gap-2 md:grid-cols-[minmax(0,0.4fr)_minmax(0,0.35fr)_minmax(0,0.25fr)]">
+                <div className="grid gap-2 md:grid-cols-[minmax(0,0.3fr)_minmax(0,0.25fr)_minmax(0,0.2fr)_minmax(0,0.25fr)]">
                   <label className="space-y-1 text-sm">
                     <span className="text-xs font-semibold uppercase text-muted-foreground">Owner</span>
                     <Input
@@ -4664,6 +4664,13 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                       inputMode="numeric"
                       value={view.closeSetupDraft.taskRequiredApprovalCount}
                       onChange={(event) => view.updateCloseSetupDraft({ taskRequiredApprovalCount: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Approval role</span>
+                    <Input
+                      value={view.closeSetupDraft.taskRequiredApprovalRole}
+                      onChange={(event) => view.updateCloseSetupDraft({ taskRequiredApprovalRole: event.target.value })}
                     />
                   </label>
                 </div>

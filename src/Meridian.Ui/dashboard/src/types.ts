@@ -2911,6 +2911,7 @@ export interface CloseTaskConfiguration {
   owner?: string | null;
   dueDate?: string | null;
   requiredApprovalCount?: number | null;
+  requiredApprovalRole?: string | null;
   requiredEvidence?: string | null;
   dependsOnTaskIds?: string[] | null;
 }

@@ -2387,6 +2387,7 @@ export interface AccountingCloseSetupDraftViewModel {
   taskOwner: string;
   taskDueDate: string;
   taskRequiredApprovalCount: string;
+  taskRequiredApprovalRole: string;
   taskRequiredEvidence: string;
   taskDependsOnTaskIds: string;
 }
@@ -12028,6 +12029,7 @@ function createAccountingCloseSetupDraft(closePlan: ClosePeriodPlan | null): Acc
   const task = closePlan?.tasks[0] ?? null;
   const signOffRequirements = task?.signOffRequirements ?? [];
   const requiredApprovalCount = Math.max(1, ...signOffRequirements.map((requirement) => requirement.requiredApprovalCount));
+  const requiredApprovalRole = signOffRequirements[0]?.role?.trim() ?? "";
   const requiredEvidence = signOffRequirements
     .map((requirement) => requirement.evidenceRequirement.trim())
     .filter(Boolean)
@@ -12044,6 +12046,7 @@ function createAccountingCloseSetupDraft(closePlan: ClosePeriodPlan | null): Acc
     taskOwner: task?.owner ?? "",
     taskDueDate: task?.dueDate ?? "",
     taskRequiredApprovalCount: task ? String(requiredApprovalCount) : "1",
+    taskRequiredApprovalRole: requiredApprovalRole || task?.owner || "Controller",
     taskRequiredEvidence: requiredEvidence || "Retained close checklist evidence",
     taskDependsOnTaskIds: task?.dependencies.map((dependency) => dependency.dependsOnTaskId).join(", ") ?? ""
   };
@@ -12244,6 +12247,7 @@ function buildClosePlanConfigurationRequest(
       .map((requirement) => requirement.evidenceRequirement.trim())
       .filter(Boolean)
       .join("; ");
+    const fallbackRequiredApprovalRole = signOffRequirements[0]?.role?.trim() || task.owner || "Controller";
 
     return {
       taskId: task.taskId,
@@ -12253,6 +12257,9 @@ function buildClosePlanConfigurationRequest(
       requiredApprovalCount: isEditedTask && Number.isFinite(requiredApprovalCount) && requiredApprovalCount > 0
         ? requiredApprovalCount
         : fallbackRequiredApprovalCount,
+      requiredApprovalRole: isEditedTask
+        ? setupDraft.taskRequiredApprovalRole.trim() || fallbackRequiredApprovalRole
+        : fallbackRequiredApprovalRole,
       requiredEvidence: isEditedTask
         ? setupDraft.taskRequiredEvidence.trim() || requiredEvidence || "Retained close checklist evidence"
         : requiredEvidence || "Retained close checklist evidence",
