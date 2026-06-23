@@ -48,6 +48,8 @@ public sealed class AccountingSystemIntegrationService
         "ExternalGlReconciliationPeriodMismatch",
         "ExternalGlReconciliationSnapshotChanged",
         "UnresolvedExternalGlBreaks",
+        "MissingExternalGlExportControlEvidence",
+        "UnscopedExternalGlExportControlEvidence",
         "LiveExternalPostingProviderEnabled",
         "LiveExternalPostingRetainedPackageEnabled",
         "MissingGeneratedExternalGlExportLines"
@@ -1892,8 +1894,7 @@ public sealed class AccountingSystemIntegrationService
             return true;
         }
 
-        return ReferencesScopedValue(link, string.Empty, scopedLedgerBookId.ToString("D")) ||
-            ReferencesScopedValue(link, string.Empty, scopedLedgerBookId.ToString("N"));
+        return HasExplicitLedgerBookEvidence(link, scopedLedgerBookId);
     }
 
     private static bool HasExplicitLedgerBookEvidence(string link, Guid? ledgerBookId)
@@ -1907,10 +1908,28 @@ public sealed class AccountingSystemIntegrationService
         var ledgerBookIdCompact = scopedLedgerBookId.ToString("N");
         return ReferencesScopedValue(link, "ledger-book:", ledgerBookIdText) ||
                ReferencesScopedValue(link, "ledger-book/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledger-book=", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerbook:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerbook/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerbook=", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerBookId:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerBookId/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledgerBookId=", ledgerBookIdText) ||
                ReferencesScopedValue(link, "book:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "book/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "book=", ledgerBookIdText) ||
                ReferencesScopedValue(link, "ledger-book:", ledgerBookIdCompact) ||
                ReferencesScopedValue(link, "ledger-book/", ledgerBookIdCompact) ||
-               ReferencesScopedValue(link, "book:", ledgerBookIdCompact);
+               ReferencesScopedValue(link, "ledger-book=", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerbook:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerbook/", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerbook=", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerBookId:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerBookId/", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledgerBookId=", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "book:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "book/", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "book=", ledgerBookIdCompact);
     }
 
     private static bool ReferencesScopedValue(string reference, string prefix, string value)
@@ -1962,7 +1981,7 @@ public sealed class AccountingSystemIntegrationService
 
     private static bool IsEvidenceTokenBoundary(string reference, int index)
         => index >= reference.Length ||
-           reference[index] is '/' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
+           reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)

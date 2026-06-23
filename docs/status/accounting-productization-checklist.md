@@ -152,6 +152,9 @@ the requirement end to end.
 - [x] Close-management task sign-off and late-adjustment request/review evidence now apply
   exact-token ledger-book evidence checks, preventing `book:{id}ffff` from satisfying selected-book
   provenance for close controls.
+- [x] External GL export-control and export-certification evidence recognizes colon-delimited
+  ledger-book scope as a valid exact-token boundary while still rejecting extended ledger-book
+  identifiers.
 
 ## Still To Complete
 
