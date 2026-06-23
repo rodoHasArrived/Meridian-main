@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using Meridian.Application.DirectLending;
 using Meridian.Contracts.DirectLending;
 
@@ -17,7 +18,9 @@ public sealed class DirectLendingOperationsReadService
         _servicerStatementService = servicerStatementService;
     }
 
-    public async Task<DirectLendingOperationsReadModelDto> GetOperationsAsync(CancellationToken ct = default)
+    public async Task<DirectLendingOperationsReadModelDto> GetOperationsAsync(
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default)
     {
         if (_directLendingService is null)
         {
@@ -34,7 +37,8 @@ public sealed class DirectLendingOperationsReadService
                         "Direct lending service is not registered.",
                         "/api/loans/portfolio")
                 ],
-                []);
+                [],
+                ledgerBookId);
         }
 
         var portfolio = await _directLendingService.GetPortfolioSummaryAsync(ct).ConfigureAwait(false);
@@ -54,7 +58,8 @@ public sealed class DirectLendingOperationsReadService
             ct.ThrowIfCancellationRequested();
             var servicing = await _directLendingService.GetServicingStateAsync(loan.LoanId, ct).ConfigureAwait(false);
             var contract = await _directLendingService.GetLoanAsync(loan.LoanId, ct).ConfigureAwait(false);
-            var journals = await _directLendingService.GetJournalsAsync(loan.LoanId, ct).ConfigureAwait(false);
+            var unscopedJournals = await _directLendingService.GetJournalsAsync(loan.LoanId, ct).ConfigureAwait(false);
+            var journals = FilterJournalsByLedgerBook(unscopedJournals, ledgerBookId);
             var runs = await _directLendingService.GetReconciliationRunsAsync(loan.LoanId, ct).ConfigureAwait(false);
             var projections = await _directLendingService.GetProjectionsAsync(loan.LoanId, ct).ConfigureAwait(false);
 
@@ -74,7 +79,7 @@ public sealed class DirectLendingOperationsReadService
                 }
             }
 
-            closeBlockers.AddRange(BuildCloseBlockers(loan, contract, servicing, journals, runs));
+            closeBlockers.AddRange(BuildCloseBlockers(loan, contract, servicing, journals, runs, ledgerBookId, unscopedJournals));
         }
 
         var exceptions = await _directLendingService.GetReconciliationExceptionsAsync(ct).ConfigureAwait(false);
@@ -126,7 +131,8 @@ public sealed class DirectLendingOperationsReadService
             journalRows,
             exceptionRows,
             closeBlockers,
-            servicerStatementRows);
+            servicerStatementRows,
+            ledgerBookId);
     }
 
     private async Task<IReadOnlyList<DirectLendingOperationsServicerStatementDto>> BuildServicerStatementRowsAsync(CancellationToken ct)
@@ -349,7 +355,9 @@ public sealed class DirectLendingOperationsReadService
         LoanContractDetailDto? contract,
         LoanServicingStateDto? servicing,
         IReadOnlyList<JournalEntryDto> journals,
-        IReadOnlyList<ReconciliationRunDto> runs)
+        IReadOnlyList<ReconciliationRunDto> runs,
+        Guid? ledgerBookId,
+        IReadOnlyList<JournalEntryDto> unscopedJournals)
     {
         if (contract is null)
         {
@@ -366,11 +374,100 @@ public sealed class DirectLendingOperationsReadService
             yield return new(loan.LoanId, loan.FacilityName, "JournalEvidence", "Warning", "No retained direct-lending journal evidence is available.", $"{LoanRoute(loan.LoanId)}/journals");
         }
 
+        if (ledgerBookId.HasValue &&
+            unscopedJournals.Count > 0 &&
+            journals.Count == 0)
+        {
+            yield return new(
+                loan.LoanId,
+                loan.FacilityName,
+                "LedgerBookScope",
+                "Critical",
+                $"Retained direct-lending journals do not identify selected ledger book {ledgerBookId.Value:D}.",
+                $"{LoanRoute(loan.LoanId)}/journals?ledgerBookId={ledgerBookId.Value:D}");
+        }
+
         if (runs.Count == 0)
         {
             yield return new(loan.LoanId, loan.FacilityName, "Reconciliation", "Warning", "No retained direct-lending reconciliation run is available.", $"{LoanRoute(loan.LoanId)}/reconciliation-runs");
         }
     }
+
+    private static IReadOnlyList<JournalEntryDto> FilterJournalsByLedgerBook(
+        IReadOnlyList<JournalEntryDto> journals,
+        Guid? ledgerBookId)
+    {
+        if (!ledgerBookId.HasValue)
+        {
+            return journals;
+        }
+
+        return journals
+            .Where(journal => journal.Lines.Any(line => ReferencesLedgerBook(line.DimensionsJson, ledgerBookId.Value)))
+            .ToArray();
+    }
+
+    private static bool ReferencesLedgerBook(string? dimensionsJson, Guid ledgerBookId)
+    {
+        if (string.IsNullOrWhiteSpace(dimensionsJson))
+        {
+            return false;
+        }
+
+        var expected = ledgerBookId.ToString("D");
+        var compactExpected = ledgerBookId.ToString("N");
+
+        try
+        {
+            using var document = JsonDocument.Parse(dimensionsJson);
+            return ReferencesLedgerBook(document.RootElement, expected, compactExpected);
+        }
+        catch (JsonException)
+        {
+            return dimensionsJson.Contains(expected, StringComparison.OrdinalIgnoreCase) ||
+                   dimensionsJson.Contains(compactExpected, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static bool ReferencesLedgerBook(JsonElement element, string expected, string compactExpected)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                foreach (var property in element.EnumerateObject())
+                {
+                    if (IsLedgerBookProperty(property.Name) &&
+                        property.Value.ValueKind == JsonValueKind.String &&
+                        ReferencesExpectedBook(property.Value.GetString(), expected, compactExpected))
+                    {
+                        return true;
+                    }
+
+                    if (ReferencesLedgerBook(property.Value, expected, compactExpected))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            case JsonValueKind.Array:
+                return element.EnumerateArray().Any(item => ReferencesLedgerBook(item, expected, compactExpected));
+            case JsonValueKind.String:
+                return ReferencesExpectedBook(element.GetString(), expected, compactExpected);
+            default:
+                return false;
+        }
+    }
+
+    private static bool IsLedgerBookProperty(string propertyName)
+        => propertyName.Equals("ledgerBookId", StringComparison.OrdinalIgnoreCase) ||
+           propertyName.Equals("ledgerBook", StringComparison.OrdinalIgnoreCase) ||
+           propertyName.Equals("bookId", StringComparison.OrdinalIgnoreCase);
+
+    private static bool ReferencesExpectedBook(string? value, string expected, string compactExpected)
+        => !string.IsNullOrWhiteSpace(value) &&
+           (value.Contains(expected, StringComparison.OrdinalIgnoreCase) ||
+            value.Contains(compactExpected, StringComparison.OrdinalIgnoreCase));
 
     private static DirectLendingOperationsReconciliationExceptionDto BuildExceptionRow(
         ReconciliationExceptionDto exception,

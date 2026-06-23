@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
@@ -253,6 +254,109 @@ public sealed class DirectLendingEndpointsTests
     }
 
     [Fact]
+    public async Task DirectLendingOperationsReadService_ShouldScopeJournalEvidenceToSelectedLedgerBook()
+    {
+        var selectedLedgerBookId = Guid.NewGuid();
+        var otherLedgerBookId = Guid.NewGuid();
+        var loanId = Guid.NewGuid();
+        var borrower = new BorrowerInfoDto(Guid.NewGuid(), "Contoso Borrower LLC", Guid.NewGuid());
+        var terms = BuildCreateRequest() with { LoanId = loanId, Borrower = borrower };
+        var summary = new LoanSummaryDto(
+            loanId,
+            terms.FacilityName,
+            borrower.BorrowerId,
+            borrower.BorrowerName,
+            LoanStatus.Active,
+            terms.Terms.BaseCurrency,
+            terms.Terms.CommitmentAmount,
+            100_000m,
+            25m,
+            0m,
+            900_000m,
+            terms.Terms.OriginationDate,
+            terms.Terms.MaturityDate,
+            new DateOnly(2026, 3, 24),
+            null);
+        var portfolio = new LoanPortfolioSummaryDto(
+            1,
+            1,
+            0,
+            0,
+            0,
+            summary.CommitmentAmount,
+            summary.PrincipalOutstanding,
+            summary.InterestAccruedUnpaid,
+            summary.PenaltyAccruedUnpaid,
+            summary.AvailableToDraw,
+            0m,
+            [summary]);
+        var contract = new LoanContractDetailDto(
+            loanId,
+            terms.FacilityName,
+            borrower,
+            LoanStatus.Active,
+            terms.EffectiveDate,
+            terms.EffectiveDate,
+            null,
+            1,
+            terms.Terms,
+            [new LoanTermsVersionDto(1, "terms-hash", terms.Terms, "create", null, DateTimeOffset.UtcNow)]);
+        var servicing = new LoanServicingStateDto(
+            loanId,
+            LoanStatus.Active,
+            terms.Terms.CommitmentAmount,
+            100_000m,
+            900_000m,
+            new OutstandingBalancesDto(100_000m, 25m, 0m, 0m, 0m),
+            [],
+            null,
+            new DateOnly(2026, 3, 24),
+            null,
+            1,
+            [],
+            [],
+            []);
+        var journals = new[]
+        {
+            BuildJournal(loanId, selectedLedgerBookId, JournalEntryStatus.Posted),
+            BuildJournal(loanId, otherLedgerBookId, JournalEntryStatus.Draft)
+        };
+
+        var directLending = Substitute.For<IDirectLendingService>();
+        directLending.GetPortfolioSummaryAsync(Arg.Any<CancellationToken>()).Returns(portfolio);
+        directLending.GetLoanAsync(loanId, Arg.Any<CancellationToken>()).Returns(contract);
+        directLending.GetServicingStateAsync(loanId, Arg.Any<CancellationToken>()).Returns(servicing);
+        directLending.GetJournalsAsync(loanId, Arg.Any<CancellationToken>()).Returns(journals);
+        directLending.GetReconciliationRunsAsync(loanId, Arg.Any<CancellationToken>()).Returns([]);
+        directLending.GetProjectionsAsync(loanId, Arg.Any<CancellationToken>()).Returns([]);
+        directLending.GetReconciliationExceptionsAsync(Arg.Any<CancellationToken>()).Returns([]);
+        var service = new DirectLendingOperationsReadService(directLending);
+
+        var selected = await service.GetOperationsAsync(selectedLedgerBookId);
+        var mismatched = await service.GetOperationsAsync(Guid.NewGuid());
+
+        selected.LedgerBookId.Should().Be(selectedLedgerBookId);
+        selected.Journals.Should().ContainSingle(row =>
+            row.LoanId == loanId &&
+            row.PostedCount == 1 &&
+            row.DraftCount == 0);
+        selected.Evidence.Should().ContainSingle(row =>
+            row.LoanId == loanId &&
+            row.EvidenceType == "Journals" &&
+            row.Label == "1 journal(s)");
+        selected.CloseBlockers.Should().NotContain(row => row.BlockerType == "LedgerBookScope");
+
+        mismatched.Journals.Should().ContainSingle(row =>
+            row.LoanId == loanId &&
+            row.PostedCount == 0 &&
+            row.DraftCount == 0);
+        mismatched.CloseBlockers.Should().ContainSingle(row =>
+            row.LoanId == loanId &&
+            row.BlockerType == "LedgerBookScope" &&
+            row.Severity == "Critical");
+    }
+
+    [Fact]
     public async Task DirectLendingEndpoints_ShouldPreviewImportAndApplyServicerStatementRows()
     {
         await using var app = await CreateAppAsync(services =>
@@ -390,4 +494,30 @@ public sealed class DirectLendingEndpointsTests
                 PrepaymentAllowed: true,
                 CovenantsJson: "{\"interestCoverage\": \">= 2.0x\"}",
                 PrepaymentPenaltyRate: 0.02m));
+
+    private static JournalEntryDto BuildJournal(
+        Guid loanId,
+        Guid ledgerBookId,
+        JournalEntryStatus status)
+    {
+        var dimensionsJson = JsonSerializer.Serialize(
+            new { ledgerBookId },
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        return new JournalEntryDto(
+            Guid.NewGuid(),
+            loanId,
+            new DateOnly(2026, 3, 24),
+            new DateOnly(2026, 3, 24),
+            Guid.NewGuid(),
+            "loan.drawdown-booked",
+            "Primary",
+            "Drawdown funding",
+            DateTimeOffset.UtcNow,
+            status == JournalEntryStatus.Posted ? DateTimeOffset.UtcNow : null,
+            status,
+            [
+                new JournalLineDto(Guid.NewGuid(), 1, "LoanPrincipal", 100_000m, 0m, CurrencyCode.USD, dimensionsJson),
+                new JournalLineDto(Guid.NewGuid(), 2, "Cash", 0m, 100_000m, CurrencyCode.USD, dimensionsJson)
+            ]);
+    }
 }

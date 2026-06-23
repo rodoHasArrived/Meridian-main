@@ -280,12 +280,15 @@ the requirement end to end.
 - [x] Browser external-GL fixtures and tests now carry provider mapping requirements for
   guarded-export readiness instead of omitting the required mapping contract from demo/test provider
   rows.
+- [x] Direct-lending operations read models now accept selected ledger-book scope, retain that scope
+  in the shared DTO, filter journal evidence by retained line dimensions, and raise a critical
+  close blocker when selected-book journal evidence is missing or mismatched.
 
 ## Still To Complete
 
 - [ ] Prove every accounting workflow is ledger-book-native end to end, including close, reporting,
-  reconciliation, external GL, direct-lending projections, strategy ledger reads, and any remaining
-  fund-level compatibility paths.
+  reconciliation, external GL, direct-lending projection storage beyond the operations evidence
+  view, strategy ledger reads, and any remaining fund-level compatibility paths.
 - [ ] Turn Accounting Configure into a complete enterprise configuration studio: the shared
   certification model now separately tracks ledger-book administration, chart administration,
   posting-rule authoring, rule-test management, approval queues, dimension mapping, close setup,

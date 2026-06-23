@@ -311,7 +311,8 @@ public sealed record DirectLendingOperationsReadModelDto(
     IReadOnlyList<DirectLendingOperationsJournalPostureDto> Journals,
     IReadOnlyList<DirectLendingOperationsReconciliationExceptionDto> ReconciliationExceptions,
     IReadOnlyList<DirectLendingOperationsCloseBlockerDto> CloseBlockers,
-    IReadOnlyList<DirectLendingOperationsServicerStatementDto>? ServicerStatements = null);
+    IReadOnlyList<DirectLendingOperationsServicerStatementDto>? ServicerStatements = null,
+    Guid? LedgerBookId = null);
 
 public sealed record DirectLendingOperationsLoanHealthDto(
     Guid LoanId,

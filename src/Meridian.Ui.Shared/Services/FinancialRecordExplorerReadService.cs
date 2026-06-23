@@ -309,7 +309,7 @@ public sealed class FinancialRecordExplorerReadService
         var reportRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
         var directLendingOperations = _directLendingOperationsReadService is null
             ? null
-            : await _directLendingOperationsReadService.GetOperationsAsync(ct).ConfigureAwait(false);
+            : await _directLendingOperationsReadService.GetOperationsAsync(ct: ct).ConfigureAwait(false);
         var enrichedRows = new List<(FinancialRecordExplorerRowDto Row, SecurityInstrumentEnrichment Enrichment)>(references.Count);
         for (var index = 0; index < references.Count; index++)
         {

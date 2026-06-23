@@ -467,7 +467,7 @@ public static class DirectLendingEndpoints
                 : Results.Json(await service.GetFeeBalancesAsync(loanId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
         });
 
-        group.MapGet("/operations", async (HttpContext context) =>
+        group.MapGet("/operations", async (Guid? ledgerBookId, HttpContext context) =>
         {
             var operationsService = context.RequestServices.GetService<DirectLendingOperationsReadService>();
             if (operationsService is null)
@@ -475,7 +475,7 @@ public static class DirectLendingEndpoints
                 return ServiceUnavailable();
             }
 
-            return Results.Json(await operationsService.GetOperationsAsync(context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            return Results.Json(await operationsService.GetOperationsAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
         })
         .WithName("GetDirectLendingOperations")
         .Produces<DirectLendingOperationsReadModelDto>(StatusCodes.Status200OK);

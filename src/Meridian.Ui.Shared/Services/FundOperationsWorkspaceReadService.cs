@@ -368,7 +368,7 @@ public sealed class FundOperationsWorkspaceReadService
             ledgerBook,
             asOf,
             ct);
-        var directLendingOperationsTask = _directLendingOperationsReadService?.GetOperationsAsync(ct);
+        var directLendingOperationsTask = _directLendingOperationsReadService?.GetOperationsAsync(ct: ct);
 
         await Task.WhenAll(cashTask, reconciliationTask, navTask).ConfigureAwait(false);
 
