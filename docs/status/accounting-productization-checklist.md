@@ -239,6 +239,10 @@ the requirement end to end.
   certification surfaces cannot treat unresolved late adjustments as advisory warnings.
 - [x] Accounting report package certification now enforces certifier independence from the
   retained package preparer after evidence, close-plan, state, and critical-issue checks pass.
+- [x] Accounting report package assembly now treats a missing retained report evidence package as a
+  critical blocker and carries that blocker into the report-evidence readiness row, so financial
+  statements, NAV, restatement, and export packages cannot appear ready for review without retained
+  ledger, reconciliation, rendered-report, and NAV support evidence.
 
 ## Still To Complete
 
@@ -292,7 +296,9 @@ the requirement end to end.
   remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
-  export evidence across all relevant ledger-book and dimension scopes.
+  export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails
+  closed when retained report evidence is missing, but broader report authoring, review, and
+  operating workflows remain open.
 - [ ] Add broader operational hardening: deeper admin UX, tenant-level setup workflows,
   authorization and report-group scoping, audit review workflows, bulk import/export execution
   safeguards, performance test automation, and disaster-recovery validation. The shared

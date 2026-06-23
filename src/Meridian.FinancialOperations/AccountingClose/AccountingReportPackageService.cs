@@ -130,7 +130,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         {
             validationIssues.Add(new AccountingConfigurationValidationIssueDto(
                 "ReportEvidenceMissing",
-                AccountingConfigurationValidationSeverityDto.Warning,
+                AccountingConfigurationValidationSeverityDto.Critical,
                 "No retained report evidence links were supplied for the package.",
                 periodId,
                 "Attach close package, ledger, reconciliation, and report-render evidence before certification."));
@@ -882,6 +882,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             ResolveReadinessState(
                 IssuesFor(
                     criticalIssues,
+                    "ReportEvidenceMissing",
                     "ReportLedgerEvidenceMissing",
                     "ReportReconciliationEvidenceMissing",
                     "ReportRenderEvidenceMissing",
@@ -900,6 +901,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             evidenceLinks,
             IssuesFor(
                 criticalIssues,
+                "ReportEvidenceMissing",
                 "ReportLedgerEvidenceMissing",
                 "ReportReconciliationEvidenceMissing",
                 "ReportRenderEvidenceMissing",

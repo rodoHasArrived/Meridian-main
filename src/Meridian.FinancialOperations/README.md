@@ -285,7 +285,10 @@ external-GL packages for the same book and period can coexist. Tenant/company-sc
 deterministic enterprise scope suffix so same fund/period/book packages cannot collide across
 companies. Package history can also be filtered by ledger book, dimensions, tenant, and company so
 close, reporting, and export review surfaces inspect the intended enterprise book/scope rather than
-a fund-period aggregate.
+a fund-period aggregate. Missing retained report evidence is a critical package blocker and is
+carried into the report-evidence readiness row, so financial statements, NAV, restatement, and
+export artifacts cannot appear ready for review without retained ledger, reconciliation,
+rendered-report, and NAV support evidence.
 blocking close-plan evidence is missing, close checklist dependencies are incomplete, the attached
 close workflow has not reached period-lock, approved
 sign-offs are missing, or material late adjustments are still unapproved, blocks restatement

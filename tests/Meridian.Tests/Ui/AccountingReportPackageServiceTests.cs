@@ -36,6 +36,29 @@ public sealed class AccountingReportPackageServiceTests
     }
 
     [Fact]
+    public async Task BuildPackageAsync_BlocksReadyForReviewWhenReportEvidenceIsMissing()
+    {
+        var service = new AccountingReportPackageService();
+
+        var package = await service.BuildPackageAsync(CompletePackageRequest(
+            "fund-alpha",
+            "2027-01",
+            EvidenceLinks: []));
+
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "ReportLedgerEvidenceMissing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "report-evidence-package" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportEvidenceMissing"));
+    }
+
+    [Fact]
     public async Task BuildPackageAsync_BlocksCloseBackedCertificationUntilPeriodLock()
     {
         var workflowId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
