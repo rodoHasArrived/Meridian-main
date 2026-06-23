@@ -2156,6 +2156,39 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task CreateExportPackageAsync_ExtendedLedgerBookEvidenceTokenBlocksReview()
+    {
+        var service = CreateService(CreateMatchedQuickBooksFixtureLedgerStore());
+        var profile = CertifiedQuickBooksMappingProfile();
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default-fund-certified"]));
+
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            LedgerBookId: ExternalGlLedgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [$"approval:export-package:quickbooks-fixture:default-fund:ledger-book:{ExternalGlLedgerBookId:D}ffff:2026-01-01:2026-01-31"]));
+
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "UnscopedExternalGlExportControlEvidence" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.ReconciliationSafeguardState.Should().Be(ExternalGlExportReconciliationSafeguardStateDto.Blocked);
+        package.ReconciliationSafeguardIssueCodes.Should().Contain("UnscopedExternalGlExportControlEvidence");
+        package.GeneratedLines.Should().HaveCount(3);
+    }
+
+    [Fact]
     public async Task CreateExportPackageAsync_BlocksReviewWhenProviderSupportsLivePosting()
     {
         var provider = new PostingCapableAccountingSystemProvider();

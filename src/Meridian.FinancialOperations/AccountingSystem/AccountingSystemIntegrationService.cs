@@ -1892,8 +1892,8 @@ public sealed class AccountingSystemIntegrationService
             return true;
         }
 
-        return link.Contains(scopedLedgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
-            link.Contains(scopedLedgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase);
+        return ReferencesScopedValue(link, string.Empty, scopedLedgerBookId.ToString("D")) ||
+            ReferencesScopedValue(link, string.Empty, scopedLedgerBookId.ToString("N"));
     }
 
     private static bool HasExplicitLedgerBookEvidence(string link, Guid? ledgerBookId)
@@ -1905,13 +1905,64 @@ public sealed class AccountingSystemIntegrationService
 
         var ledgerBookIdText = scopedLedgerBookId.ToString("D");
         var ledgerBookIdCompact = scopedLedgerBookId.ToString("N");
-        return link.Contains($"ledger-book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
-               link.Contains($"ledger-book/{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
-               link.Contains($"book:{ledgerBookIdText}", StringComparison.OrdinalIgnoreCase) ||
-               link.Contains($"ledger-book:{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase) ||
-               link.Contains($"ledger-book/{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase) ||
-               link.Contains($"book:{ledgerBookIdCompact}", StringComparison.OrdinalIgnoreCase);
+        return ReferencesScopedValue(link, "ledger-book:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledger-book/", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "book:", ledgerBookIdText) ||
+               ReferencesScopedValue(link, "ledger-book:", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "ledger-book/", ledgerBookIdCompact) ||
+               ReferencesScopedValue(link, "book:", ledgerBookIdCompact);
     }
+
+    private static bool ReferencesScopedValue(string reference, string prefix, string value)
+    {
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var valueIndex = string.IsNullOrEmpty(prefix)
+                ? reference.IndexOf(value, searchIndex, StringComparison.OrdinalIgnoreCase)
+                : IndexOfScopedValue(reference, prefix, value, searchIndex);
+            if (valueIndex < 0)
+            {
+                return false;
+            }
+
+            if (IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
+            {
+                return true;
+            }
+
+            searchIndex = valueIndex + value.Length;
+        }
+
+        return false;
+    }
+
+    private static int IndexOfScopedValue(string reference, string prefix, string value, int searchIndex)
+    {
+        while (searchIndex < reference.Length)
+        {
+            var prefixIndex = reference.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (prefixIndex < 0)
+            {
+                return -1;
+            }
+
+            var valueIndex = prefixIndex + prefix.Length;
+            if (reference.Length >= valueIndex + value.Length &&
+                string.Compare(reference, valueIndex, value, 0, value.Length, StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                return valueIndex;
+            }
+
+            searchIndex = valueIndex;
+        }
+
+        return -1;
+    }
+
+    private static bool IsEvidenceTokenBoundary(string reference, int index)
+        => index >= reference.Length ||
+           reference[index] is '/' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
