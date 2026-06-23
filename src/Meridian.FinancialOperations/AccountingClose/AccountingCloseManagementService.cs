@@ -395,9 +395,18 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         var period = ResolvePeriod(workflow.PeriodId);
         var materialityPolicy = ResolveMaterialityPolicy(workflow);
         var retainedSignOffs = GetTaskSignOffs(workflow.WorkflowId);
-        var tasks = workflow.CloseChecklist
-            .Select((task, index) => ToCloseTask(task, index, workflow, retainedSignOffs))
-            .ToArray();
+        var satisfiedTaskIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var tasks = new List<CloseTaskDto>(workflow.CloseChecklist.Count);
+        for (var index = 0; index < workflow.CloseChecklist.Count; index++)
+        {
+            var task = ToCloseTask(workflow.CloseChecklist[index], index, workflow, retainedSignOffs, satisfiedTaskIds);
+            tasks.Add(task);
+            if (task.Status == CloseTaskStatusDto.SignedOff)
+            {
+                satisfiedTaskIds.Add(task.TaskId);
+            }
+        }
+
         var lateAdjustments = GetLateAdjustments(workflow.WorkflowId);
         var validationIssues = BuildValidationIssues(workflow, tasks, lateAdjustments, materialityPolicy);
         var isPeriodLocked = workflow.Status == OperationsWorkflowStatusDto.Closed && workflow.ClosePackage is not null;
@@ -541,7 +550,8 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         OperationsCloseChecklistTaskDto task,
         int index,
         OperationsContinuityWorkflowDto workflow,
-        IReadOnlyList<WorkflowCloseTaskSignOffRecord> retainedSignOffs)
+        IReadOnlyList<WorkflowCloseTaskSignOffRecord> retainedSignOffs,
+        ISet<string> satisfiedTaskIds)
     {
         CloseDependencyDto[] dependencies = index == 0
             ? []
@@ -562,11 +572,13 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             .ToArray();
         var evidenceLinks = NormalizeEvidenceLinks(
             [task.EvidencePointer, .. signOffs.SelectMany(static signOff => signOff.EvidenceLinks)]);
+        var dependenciesSatisfied = dependencies.Length == 0 ||
+            dependencies.All(dependency => satisfiedTaskIds.Contains(dependency.DependsOnTaskId));
 
         return new CloseTaskDto(
             task.TaskId,
             task.Label,
-            ResolveTaskStatus(task, dependencies, workflow.Approvals, signOffs),
+            ResolveTaskStatus(task, dependencies, dependenciesSatisfied, workflow.Approvals, signOffs),
             task.Owner,
             task.DueDate ?? task.ExpiresOn ?? DateOnly.FromDateTime(workflow.UpdatedAtUtc.UtcDateTime),
                 dependencies,
@@ -658,6 +670,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
     private static CloseTaskStatusDto ResolveTaskStatus(
         OperationsCloseChecklistTaskDto task,
         IReadOnlyList<CloseDependencyDto> dependencies,
+        bool dependenciesSatisfied,
         IReadOnlyList<OperationsApprovalDto> approvals,
         IReadOnlyList<CloseSignOffDto> signOffs)
     {
@@ -667,7 +680,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             return CloseTaskStatusDto.Blocked;
         }
 
-        if (dependencies.Count > 0 && !string.Equals(task.Status, "Done", StringComparison.OrdinalIgnoreCase))
+        if (dependencies.Count > 0
+            && !dependenciesSatisfied
+            && !string.Equals(task.Status, "Done", StringComparison.OrdinalIgnoreCase))
         {
             return CloseTaskStatusDto.WaitingOnDependency;
         }
@@ -725,6 +740,17 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 task.BlockerReason ?? $"Close task '{task.DisplayName}' is blocked.",
                 task.TaskId,
                 "Resolve the close checklist blocker before period lock."));
+        }
+
+        foreach (var task in tasks.Where(static task => task.Status == CloseTaskStatusDto.WaitingOnDependency))
+        {
+            var dependencyList = string.Join(", ", task.Dependencies.Select(static dependency => dependency.DependsOnTaskId));
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "CloseTaskWaitingOnDependency",
+                AccountingConfigurationValidationSeverityDto.Warning,
+                $"Close task '{task.DisplayName}' is waiting on predecessor task(s): {dependencyList}.",
+                task.TaskId,
+                "Complete and sign off predecessor close tasks before this task can advance."));
         }
 
         foreach (var adjustment in lateAdjustments.Where(adjustment =>

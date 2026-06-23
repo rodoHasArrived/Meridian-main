@@ -1,7 +1,10 @@
 using System.Collections.Immutable;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.FinancialOperations.OperationsContinuity;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.FinancialOperations.AccountingClose;
@@ -12,6 +15,52 @@ namespace Meridian.Tests.FinancialOperations.AccountingClose;
 /// </summary>
 public sealed class AccountingCloseServicesTests
 {
+    [Fact]
+    public async Task Scenario_ClosePlan_DependencyWaitsUntilPredecessorIsSignedOff()
+    {
+        var workflowId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Pending",
+                secondTaskStatus: "Pending"));
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var plan = await service.GetPeriodPlanAsync(workflowId);
+
+        plan.Should().NotBeNull();
+        var dependentTask = plan!.Tasks.Single(task => task.TaskId == "report-certification");
+        dependentTask.Dependencies.Should().ContainSingle(dependency => dependency.DependsOnTaskId == "reconciliation-review");
+        dependentTask.Status.Should().Be(CloseTaskStatusDto.WaitingOnDependency);
+        plan.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == "CloseTaskWaitingOnDependency" &&
+            issue.TargetId == "report-certification");
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_DependencyAdvancesAfterPredecessorIsSignedOff()
+    {
+        var workflowId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Done",
+                secondTaskStatus: "Pending"));
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var plan = await service.GetPeriodPlanAsync(workflowId);
+
+        plan.Should().NotBeNull();
+        var dependentTask = plan!.Tasks.Single(task => task.TaskId == "report-certification");
+        dependentTask.Dependencies.Should().ContainSingle(dependency => dependency.DependsOnTaskId == "reconciliation-review");
+        dependentTask.Status.Should().Be(CloseTaskStatusDto.NotStarted);
+        plan.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "CloseTaskWaitingOnDependency" &&
+            issue.TargetId == "report-certification");
+    }
+
     [Fact]
     public void Scenario_MonthEndFxTranslation_ReplayUsesStableAdjustmentIdAndRateLineage()
     {
@@ -352,4 +401,72 @@ public sealed class AccountingCloseServicesTests
             sourceEventId,
             "month-end source event",
             lines.Select(line => string.IsNullOrWhiteSpace(line.ApprovalId) ? line with { ApprovalId = approvalId } : line).ToImmutableArray());
+
+    private static OperationsContinuityWorkflowDto BuildCloseWorkflow(
+        Guid workflowId,
+        string firstTaskStatus,
+        string secondTaskStatus)
+    {
+        var now = DateTimeOffset.Parse("2026-04-01T00:00:00Z");
+        return new OperationsContinuityWorkflowDto(
+            workflowId,
+            Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            "2026-03",
+            SecurityMasterSnapshotId: null,
+            BrokerSource: "custodian",
+            CreatedAtUtc: now,
+            UpdatedAtUtc: now,
+            Version: 7,
+            Status: OperationsWorkflowStatusDto.ApprovalPending,
+            BrokerIntakeState: OperationsBrokerIntakeStateDto.Complete,
+            SecurityMasterState: OperationsSecurityMasterStateDto.Complete,
+            LedgerPostingState: OperationsLedgerPostingStateDto.Complete,
+            ReconciliationState: OperationsReconciliationStateDto.Complete,
+            ApprovalState: OperationsApprovalStateDto.Pending,
+            Gates: [],
+            Timeline: [],
+            BreakCases: [],
+            LedgerPreview: null,
+            Approvals: [],
+            ReportPackReadiness: new OperationsReportPackReadinessDto(false, null, "Awaiting close certification.", []),
+            CloseChecklist:
+            [
+                new OperationsCloseChecklistTaskDto(
+                    "reconciliation-review",
+                    OperationsGateKeyDto.Reconciliation,
+                    "Reconciliation review",
+                    "Controller",
+                    "Retained reconciliation approval evidence",
+                    RequiredApprovalCount: 1,
+                    ExpiresOn: null,
+                    DueDate: new DateOnly(2026, 04, 2),
+                    Status: firstTaskStatus,
+                    BlockingReason: null,
+                    EvidencePointer: null,
+                    RemediationRoute: "/workstation/accounting/close",
+                    CanAcknowledge: true,
+                    AcknowledgedAtUtc: null,
+                    AcknowledgedBy: null),
+                new OperationsCloseChecklistTaskDto(
+                    "report-certification",
+                    OperationsGateKeyDto.Approval,
+                    "Report certification",
+                    "Controller",
+                    "Retained report certification evidence",
+                    RequiredApprovalCount: 1,
+                    ExpiresOn: null,
+                    DueDate: new DateOnly(2026, 04, 3),
+                    Status: secondTaskStatus,
+                    BlockingReason: null,
+                    EvidencePointer: null,
+                    RemediationRoute: "/workstation/reporting",
+                    CanAcknowledge: true,
+                    AcknowledgedAtUtc: null,
+                    AcknowledgedBy: null)
+            ],
+            EvidenceLinks: [],
+            Blockers: [],
+            NextActions: [],
+            LedgerBookId: Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"));
+    }
 }

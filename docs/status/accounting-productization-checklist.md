@@ -162,6 +162,9 @@ the requirement end to end.
   exact-token ledger-book, close-task, journal-entry, and late-adjustment request evidence checks,
   preventing extended identifiers such as `book:{id}ffff` from satisfying selected close-control
   provenance.
+- [x] Close-management dependency projection now requires predecessor tasks to be signed off before
+  dependent tasks advance, emits close-plan validation issues for unresolved dependencies, and
+  proves both waiting and advanced dependency states in focused Financial Operations tests.
 - [x] External GL export-control and export-certification evidence recognizes colon-delimited
   ledger-book scope as a valid exact-token boundary while still rejecting extended ledger-book
   identifiers.
@@ -231,9 +234,11 @@ the requirement end to end.
   live credentialed import adapters, richer provider-specific mapping fixtures, and provider-owned
   controlled export certification still need coverage before any separately approved live posting
   adapter is considered.
-- [ ] Productize close management with close-plan editing, dependency graph, sign-off matrix,
-  materiality policy setup, late-adjustment workflow, period locks, and blocker/evidence review in
-  shared services plus browser/WPF surfaces.
+- [ ] Productize close management with close-plan editing, dependency graph authoring, sign-off
+  matrix administration, materiality policy setup, late-adjustment workflow, period locks, and
+  blocker/evidence review in shared services plus browser/WPF surfaces. Backend close-plan
+  projection now proves dependency-gated task progression, but operator setup/editing workflows
+  remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes.
