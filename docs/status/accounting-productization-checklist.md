@@ -274,6 +274,12 @@ the requirement end to end.
   rule-test/promotion, close setup, provider mapping, and tenant/company/report-group setup controls
   as independent tenant-admin fields instead of deriving them from the aggregate operator-surface
   checkbox.
+- [x] Browser Accounting Configure regression coverage now saves every browser-exposed
+  tenant-admin setup-control family, including close setup and tenant/company/report-group setup, as
+  independent shared profile fields with retained evidence.
+- [x] Browser external-GL fixtures and tests now carry provider mapping requirements for
+  guarded-export readiness instead of omitting the required mapping contract from demo/test provider
+  rows.
 
 ## Still To Complete
 

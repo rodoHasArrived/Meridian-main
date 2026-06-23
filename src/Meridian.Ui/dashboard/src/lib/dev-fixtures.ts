@@ -12,6 +12,7 @@ import type {
   AccountingProductionReadiness,
   AccountingSystemImportDetail,
   AccountingSystemProvider,
+  AccountingSystemProviderMappingRequirement,
   AccountingSystemReconciliationSummary,
   CorporateAction,
   DataWorkspaceResponse,
@@ -3289,6 +3290,61 @@ const fixtureStatementRuns: StatementRunSummary[] = [
   }
 ];
 
+function buildFixtureProviderMappingRequirements(providerId: string): AccountingSystemProviderMappingRequirement[] {
+  const normalized = providerId.toLowerCase();
+  const accountEvidenceKind = normalized.includes("xero")
+    ? "XeroAccount"
+    : normalized.includes("netsuite")
+      ? "NetSuiteAccount"
+      : "QuickBooksAccount";
+  const journalEvidenceKind = normalized.includes("xero")
+    ? "XeroManualJournal"
+    : normalized.includes("netsuite")
+      ? "NetSuiteJournalEntry"
+      : "QuickBooksJournalEntry";
+  const trialBalanceEvidenceKind = normalized.includes("xero")
+    ? "XeroTrialBalance"
+    : normalized.includes("netsuite")
+      ? "NetSuiteTrialBalance"
+      : "QuickBooksTrialBalance";
+  const dimensionVocabulary = normalized.includes("xero")
+    ? "Xero tracking categories"
+    : normalized.includes("netsuite")
+      ? "NetSuite segments, departments, classes, and subsidiaries"
+      : "QuickBooks classes, locations, and departments";
+
+  return [
+    {
+      requirementId: `${normalized}:account-mapping`,
+      label: "Account mapping",
+      requiredEvidenceKind: accountEvidenceKind,
+      requiredAction: "Map every reconciled Meridian GL account to a certified external GL account before guarded export review.",
+      requiredForGuardedExport: true
+    },
+    {
+      requirementId: `${normalized}:journal-lineage`,
+      label: "Journal lineage",
+      requiredEvidenceKind: journalEvidenceKind,
+      requiredAction: "Retain provider journal evidence and Meridian ledger-entry lineage for the exact fund, book, and export period.",
+      requiredForGuardedExport: true
+    },
+    {
+      requirementId: `${normalized}:trial-balance-tie-out`,
+      label: "Trial-balance tie-out",
+      requiredEvidenceKind: trialBalanceEvidenceKind,
+      requiredAction: "Reconcile provider trial-balance rows against Meridian-owned ledger totals before certification.",
+      requiredForGuardedExport: true
+    },
+    {
+      requirementId: `${normalized}:dimension-mapping`,
+      label: "Dimension mapping",
+      requiredEvidenceKind: `${accountEvidenceKind}:Dimensions`,
+      requiredAction: `Certify canonical Meridian dimensions against ${dimensionVocabulary} before generated export lines can be review-ready.`,
+      requiredForGuardedExport: true
+    }
+  ];
+}
+
 const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
   {
     providerId: "quickbooks-fixture",
@@ -3301,7 +3357,8 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     supportsPosting: false,
     statusLabel: "Ready for fixture import",
     statusDetail: "Read-only external GL import and reconciliation compare provider evidence against Meridian-owned ledger truth.",
-    evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]
+    evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"],
+    mappingRequirements: buildFixtureProviderMappingRequirements("quickbooks-fixture")
   },
   {
     providerId: "quickbooks",
@@ -3315,6 +3372,7 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     statusLabel: "Local config required",
     statusDetail: "Add QuickBooks client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
     evidenceKinds: ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"],
+    mappingRequirements: buildFixtureProviderMappingRequirements("quickbooks"),
     connection: {
       providerId: "quickbooks",
       environment: "sandbox",
@@ -3339,7 +3397,8 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     supportsPosting: false,
     statusLabel: "Import adapter not registered",
     statusDetail: "Xero chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-    evidenceKinds: ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"]
+    evidenceKinds: ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"],
+    mappingRequirements: buildFixtureProviderMappingRequirements("xero")
   },
   {
     providerId: "netsuite",
@@ -3352,7 +3411,8 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
     supportsPosting: false,
     statusLabel: "Import adapter not registered",
     statusDetail: "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-    evidenceKinds: ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"]
+    evidenceKinds: ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"],
+    mappingRequirements: buildFixtureProviderMappingRequirements("netsuite")
   }
 ];
 

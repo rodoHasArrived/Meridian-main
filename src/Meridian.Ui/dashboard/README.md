@@ -221,7 +221,11 @@ description, and update timestamp before production-readiness review so operator
 which book is being certified without relying on hidden fund-level context. When operators save tenant-administration controls with book
 administration enabled, the browser adds a retained tenant-admin evidence reference for the selected
 `ledgerBookId` unless the operator already supplied one, keeping the setup editor aligned with the
-shared production-readiness gate for multi-ledger administration.
+shared production-readiness gate for multi-ledger administration. The browser tenant-admin setup
+editor persists chart administration, Rules Studio test/promotion, close setup, provider mapping,
+tenant/company/report-group setup, audit review, bulk import/export safeguards, performance
+validation, recovery runbooks, ledger-book administration, posting-rule authoring, approval queues,
+dimension mapping, and sandbox validation as independent shared profile controls.
 The same Configure surface also calls the shared `/api/accounting-system/production-readiness`
 assessment for the active fund and ledger-book scope, then renders the service-owned control-plane
 posture for ledger books, Rules Studio, posting rules, JE lifecycle, dimensions, external GL,

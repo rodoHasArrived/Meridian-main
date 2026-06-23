@@ -2394,7 +2394,16 @@ describe("AccountingScreen", () => {
       supportsPosting: false,
       statusLabel: "Ready for read-only import",
       statusDetail: "Fixture provider ready.",
-      evidenceKinds: ["QuickBooksTrialBalance"]
+      evidenceKinds: ["QuickBooksTrialBalance"],
+      mappingRequirements: [
+        {
+          requirementId: "quickbooks-fixture:trial-balance-tie-out",
+          label: "Trial-balance tie-out",
+          requiredEvidenceKind: "QuickBooksTrialBalance",
+          requiredAction: "Reconcile provider trial-balance rows against Meridian-owned ledger totals before certification.",
+          requiredForGuardedExport: true
+        }
+      ]
     };
     const xeroProvider: AccountingSystemProvider = {
       providerId: "xero",
@@ -2407,7 +2416,16 @@ describe("AccountingScreen", () => {
       supportsPosting: false,
       statusLabel: "Import mapping planned",
       statusDetail: "Xero remains import-first until mapping certification is complete.",
-      evidenceKinds: ["XeroChartOfAccounts", "XeroTrialBalance"]
+      evidenceKinds: ["XeroChartOfAccounts", "XeroTrialBalance"],
+      mappingRequirements: [
+        {
+          requirementId: "xero:dimension-mapping",
+          label: "Dimension mapping",
+          requiredEvidenceKind: "XeroAccount:Dimensions",
+          requiredAction: "Certify canonical Meridian dimensions against Xero tracking categories before generated export lines can be review-ready.",
+          requiredForGuardedExport: true
+        }
+      ]
     };
     const netSuiteProvider: AccountingSystemProvider = {
       providerId: "netsuite",
@@ -2420,7 +2438,16 @@ describe("AccountingScreen", () => {
       supportsPosting: false,
       statusLabel: "Import mapping planned",
       statusDetail: "NetSuite remains import-first until mapping certification is complete.",
-      evidenceKinds: ["NetSuiteChartOfAccounts", "NetSuiteTrialBalance"]
+      evidenceKinds: ["NetSuiteChartOfAccounts", "NetSuiteTrialBalance"],
+      mappingRequirements: [
+        {
+          requirementId: "netsuite:dimension-mapping",
+          label: "Dimension mapping",
+          requiredEvidenceKind: "NetSuiteAccount:Dimensions",
+          requiredAction: "Certify canonical Meridian dimensions against NetSuite segments, departments, classes, and subsidiaries before generated export lines can be review-ready.",
+          requiredForGuardedExport: true
+        }
+      ]
     };
     const importDetail: AccountingSystemImportDetail = {
       summary: {

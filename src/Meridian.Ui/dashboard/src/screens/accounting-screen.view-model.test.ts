@@ -1144,7 +1144,16 @@ const accountingSystemProvider: AccountingSystemProvider = {
   supportsPosting: false,
   statusLabel: "Planned",
   statusDetail: "Posting is disabled for fixture evidence.",
-  evidenceKinds: ["trial-balance"]
+  evidenceKinds: ["trial-balance"],
+  mappingRequirements: [
+    {
+      requirementId: "quickbooks-fixture:trial-balance-tie-out",
+      label: "Trial-balance tie-out",
+      requiredEvidenceKind: "QuickBooksTrialBalance",
+      requiredAction: "Reconcile provider trial-balance rows against Meridian-owned ledger totals before certification.",
+      requiredForGuardedExport: true
+    }
+  ]
 };
 
 const accountingSystemReconciliation: AccountingSystemReconciliationSummary = {
@@ -3453,7 +3462,9 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "operator-surface", checked: false }),
       expect.objectContaining({ id: "chart-administration-studio", checked: false }),
       expect.objectContaining({ id: "rule-test-promotion-studio", checked: false }),
+      expect.objectContaining({ id: "close-setup-studio", checked: false }),
       expect.objectContaining({ id: "provider-mapping-studio", checked: false }),
+      expect.objectContaining({ id: "tenant-company-report-group-studio", checked: false }),
       expect.objectContaining({ id: "audit-review-tooling", checked: false }),
       expect.objectContaining({ id: "bulk-import-export-safeguards", checked: false }),
       expect.objectContaining({ id: "performance-validation", checked: false }),
@@ -3470,7 +3481,9 @@ describe("accounting-screen view model", () => {
       result.current.tenantAdministrationProfile.updateControl("operator-surface", true);
       result.current.tenantAdministrationProfile.updateControl("chart-administration-studio", true);
       result.current.tenantAdministrationProfile.updateControl("rule-test-promotion-studio", true);
+      result.current.tenantAdministrationProfile.updateControl("close-setup-studio", true);
       result.current.tenantAdministrationProfile.updateControl("provider-mapping-studio", true);
+      result.current.tenantAdministrationProfile.updateControl("tenant-company-report-group-studio", true);
       result.current.tenantAdministrationProfile.updateControl("audit-review-tooling", true);
       result.current.tenantAdministrationProfile.updateControl("bulk-import-export-safeguards", true);
       result.current.tenantAdministrationProfile.updateControl("performance-validation", true);
@@ -3480,7 +3493,7 @@ describe("accounting-screen view model", () => {
       result.current.tenantAdministrationProfile.updateControl("approval-queue-studio", true);
       result.current.tenantAdministrationProfile.updateControl("dimension-mapping-studio", true);
       result.current.tenantAdministrationProfile.updateControl("implementation-sandbox", true);
-      result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup\nevidence://tenant-admin/operator-surface\nevidence://tenant-admin/chart-administration\nevidence://tenant-admin/rules-studio\nevidence://tenant-admin/provider-mapping\nevidence://tenant-admin/audit-review\nevidence://tenant-admin/bulk-import-export\nevidence://tenant-admin/performance-validation\nevidence://tenant-admin/disaster-recovery\nevidence://tenant-admin/ledger-book-administration\nevidence://tenant-admin/posting-rule-authoring\nevidence://tenant-admin/approval-queue\nevidence://tenant-admin/dimension-mapping\nevidence://tenant-admin/implementation-sandbox");
+      result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup\nevidence://tenant-admin/operator-surface\nevidence://tenant-admin/chart-administration\nevidence://tenant-admin/rules-studio\nevidence://tenant-admin/close-setup\nevidence://tenant-admin/provider-mapping\nevidence://tenant-admin/tenant-company-report-group\nevidence://tenant-admin/audit-review\nevidence://tenant-admin/bulk-import-export\nevidence://tenant-admin/performance-validation\nevidence://tenant-admin/disaster-recovery\nevidence://tenant-admin/ledger-book-administration\nevidence://tenant-admin/posting-rule-authoring\nevidence://tenant-admin/approval-queue\nevidence://tenant-admin/dimension-mapping\nevidence://tenant-admin/implementation-sandbox");
     });
 
     await act(async () => {
@@ -3497,9 +3510,9 @@ describe("accounting-screen view model", () => {
         wpfAccountingAdminSurfaceConfigured: false,
         chartAdministrationStudioConfigured: true,
         ruleTestPromotionStudioConfigured: true,
-        closeSetupStudioConfigured: false,
+        closeSetupStudioConfigured: true,
         providerMappingStudioConfigured: true,
-        tenantCompanyReportGroupSetupStudioConfigured: false,
+        tenantCompanyReportGroupSetupStudioConfigured: true,
         auditReviewToolingConfigured: true,
         bulkImportExportSafeguardsConfigured: true,
         performanceValidationConfigured: true,
@@ -3514,7 +3527,9 @@ describe("accounting-screen view model", () => {
           "evidence://tenant-admin/operator-surface",
           "evidence://tenant-admin/chart-administration",
           "evidence://tenant-admin/rules-studio",
+          "evidence://tenant-admin/close-setup",
           "evidence://tenant-admin/provider-mapping",
+          "evidence://tenant-admin/tenant-company-report-group",
           "evidence://tenant-admin/audit-review",
           "evidence://tenant-admin/bulk-import-export",
           "evidence://tenant-admin/performance-validation",
@@ -3532,7 +3547,9 @@ describe("accounting-screen view model", () => {
         "evidence://tenant-admin/operator-surface",
         "evidence://tenant-admin/chart-administration",
         "evidence://tenant-admin/rules-studio",
+        "evidence://tenant-admin/close-setup",
         "evidence://tenant-admin/provider-mapping",
+        "evidence://tenant-admin/tenant-company-report-group",
         "evidence://tenant-admin/audit-review",
         "evidence://tenant-admin/bulk-import-export",
         "evidence://tenant-admin/performance-validation",
