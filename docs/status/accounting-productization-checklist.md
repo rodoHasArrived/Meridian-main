@@ -204,6 +204,9 @@ the requirement end to end.
   close-task sign-off role, even when the upstream workflow checklist marks the task done, so close
   cockpit, report certification, and period-lock surfaces see missing approvals before package
   assembly.
+- [x] Close-period plans now have a governed shared configuration command for materiality policy,
+  task owner/due-date overrides, sign-off counts, required evidence, custom dependencies,
+  ledger-book-scoped setup evidence, and trusted session-actor stamping.
 - [x] External GL export certification and export-control provenance now require exact-token
   package, certification, fund/provider, and period evidence instead of accepting longer identifier
   prefixes.
@@ -332,8 +335,8 @@ the requirement end to end.
   matrix administration, materiality policy setup, late-adjustment workflow, period locks, and
   blocker/evidence review in shared services plus browser/WPF surfaces. Backend close-plan
   projection now proves dependency-gated task progression, fail-closed missing sign-off blockers,
-  and critical pending material late-adjustment blockers, but operator setup/editing workflows
-  remain open.
+  critical pending material late-adjustment blockers, and a governed close-plan configuration
+  command, but richer browser/WPF setup/editing workflows and review UX remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails

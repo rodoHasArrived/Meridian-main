@@ -716,6 +716,7 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
     public const string LedgerCloseManagementPeriodPlan = "/api/ledger/close-management/period-plan/{workflowId:guid}";
+    public const string LedgerCloseManagementPeriodPlanConfiguration = "/api/ledger/close-management/period-plan/configuration";
     public const string LedgerCloseManagementLateAdjustments = "/api/ledger/close-management/late-adjustments";
     public const string LedgerCloseManagementLateAdjustmentReview = "/api/ledger/close-management/late-adjustments/review";
     public const string LedgerCloseManagementTaskSignOffs = "/api/ledger/close-management/task-signoffs";

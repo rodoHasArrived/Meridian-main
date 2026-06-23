@@ -27,6 +27,11 @@ public interface IAccountingCloseManagementService
         SignOffCloseTaskRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
+        UpsertClosePeriodPlanConfigurationRequestDto request,
+        string actor,
+        CancellationToken ct = default);
 }
 
 public sealed class AccountingCloseManagementService : IAccountingCloseManagementService
@@ -51,6 +56,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
     private readonly string? _persistencePath;
     private readonly ConcurrentDictionary<Guid, List<LateAdjustmentRequestDto>> _lateAdjustments = new();
     private readonly ConcurrentDictionary<Guid, List<WorkflowCloseTaskSignOffRecord>> _taskSignOffs = new();
+    private readonly ConcurrentDictionary<Guid, ClosePeriodPlanConfigurationDto> _planConfigurations = new();
 
     public AccountingCloseManagementService(IOperationsContinuityWorkflowService workflowService)
     {
@@ -158,7 +164,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             }
 
             rows.Add(new WorkflowLateAdjustmentRecord(request.WorkflowId, adjustment));
-            await SaveCloseManagementAsync(rows, ReadTaskSignOffs(), ct).ConfigureAwait(false);
+            await SaveCloseManagementAsync(rows, ReadTaskSignOffs(), ReadPlanConfigurations(), ct).ConfigureAwait(false);
         }
         finally
         {
@@ -250,7 +256,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 EvidenceLinks = NormalizeEvidenceLinks([.. current.EvidenceLinks, .. reviewEvidence])
             };
             rows[index] = rows[index] with { Adjustment = updated };
-            await SaveCloseManagementAsync(rows, ReadTaskSignOffs(), ct).ConfigureAwait(false);
+            await SaveCloseManagementAsync(rows, ReadTaskSignOffs(), ReadPlanConfigurations(), ct).ConfigureAwait(false);
         }
         finally
         {
@@ -393,7 +399,81 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             }
 
             rows.Add(new WorkflowCloseTaskSignOffRecord(request.WorkflowId, taskId, signOff));
-            await SaveCloseManagementAsync(ReadLateAdjustments(), rows, ct).ConfigureAwait(false);
+            await SaveCloseManagementAsync(ReadLateAdjustments(), rows, ReadPlanConfigurations(), ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+
+        return BuildPeriodPlan(workflow);
+    }
+
+    public async Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
+        UpsertClosePeriodPlanConfigurationRequestDto request,
+        string actor,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "configure close period plans");
+        if (request.WorkflowId == Guid.Empty)
+        {
+            throw new ArgumentException("WorkflowId is required.", nameof(request));
+        }
+
+        var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.Actor, "Actor") : actor.Trim();
+        var evidenceLinks = NormalizeEvidenceLinks(request.EvidenceLinks);
+        if (evidenceLinks.Count == 0)
+        {
+            throw new ArgumentException("At least one evidence link is required for close plan configuration.", nameof(request));
+        }
+
+        if (!HasClosePlanConfigurationEvidence(evidenceLinks))
+        {
+            throw new ArgumentException("Close plan configuration requires retained close-plan setup, configuration, policy, or approval evidence.", nameof(request));
+        }
+
+        var workflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+        if (workflow is null)
+        {
+            return null;
+        }
+
+        if (workflow.Status == OperationsWorkflowStatusDto.Closed && workflow.ClosePackage is not null)
+        {
+            throw new InvalidOperationException(
+                $"Cannot configure close plan '{request.WorkflowId}' for period '{workflow.PeriodId}' because the close period is locked by close package '{workflow.ClosePackage.ClosePackageId}'.");
+        }
+
+        if (!HasClosePlanConfigurationEvidenceWithProvenance(evidenceLinks, workflow))
+        {
+            throw new ArgumentException("Close plan configuration evidence must reference the workflow or exact close period and selected ledger book on the same artifact.", nameof(request));
+        }
+
+        var currentConfiguration = GetPlanConfiguration(request.WorkflowId);
+        var materialityPolicy = NormalizeMaterialityPolicy(request.MaterialityPolicy, currentConfiguration?.MaterialityPolicy, workflow);
+        var taskConfigurations = NormalizeTaskConfigurations(request.TaskConfigurations, workflow);
+        if (request.MaterialityPolicy is null && taskConfigurations.Count == 0)
+        {
+            throw new ArgumentException("Close plan configuration must include a materiality policy or at least one task configuration.", nameof(request));
+        }
+
+        var configuration = new ClosePeriodPlanConfigurationDto(
+            request.WorkflowId,
+            materialityPolicy,
+            taskConfigurations,
+            resolvedActor,
+            DateTimeOffset.UtcNow,
+            evidenceLinks);
+
+        await _writeGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var configurations = ReadPlanConfigurations()
+                .Where(row => row.WorkflowId != request.WorkflowId)
+                .Append(configuration)
+                .ToArray();
+            await SaveCloseManagementAsync(ReadLateAdjustments(), ReadTaskSignOffs(), configurations, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -406,13 +486,18 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
     private ClosePeriodPlanDto BuildPeriodPlan(OperationsContinuityWorkflowDto workflow)
     {
         var period = ResolvePeriod(workflow.PeriodId);
-        var materialityPolicy = ResolveMaterialityPolicy(workflow);
+        var planConfiguration = GetPlanConfiguration(workflow.WorkflowId);
+        var materialityPolicy = planConfiguration?.MaterialityPolicy ?? ResolveMaterialityPolicy(workflow);
+        var taskConfigurations = planConfiguration?.TaskConfigurations
+            .ToDictionary(static configuration => configuration.TaskId, StringComparer.OrdinalIgnoreCase)
+            ?? new Dictionary<string, CloseTaskConfigurationDto>(StringComparer.OrdinalIgnoreCase);
         var retainedSignOffs = GetTaskSignOffs(workflow.WorkflowId);
         var satisfiedTaskIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var tasks = new List<CloseTaskDto>(workflow.CloseChecklist.Count);
         for (var index = 0; index < workflow.CloseChecklist.Count; index++)
         {
-            var task = ToCloseTask(workflow.CloseChecklist[index], index, workflow, retainedSignOffs, satisfiedTaskIds);
+            taskConfigurations.TryGetValue(workflow.CloseChecklist[index].TaskId, out var taskConfiguration);
+            var task = ToCloseTask(workflow.CloseChecklist[index], index, workflow, retainedSignOffs, satisfiedTaskIds, taskConfiguration);
             tasks.Add(task);
             if (task.Status == CloseTaskStatusDto.SignedOff)
             {
@@ -437,7 +522,8 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             lateAdjustments,
             materialityPolicy,
             validationIssues,
-            BuildCloseCalendar(tasks, isPeriodLocked));
+            BuildCloseCalendar(tasks, isPeriodLocked),
+            planConfiguration);
     }
 
     private IReadOnlyList<LateAdjustmentRequestDto> GetLateAdjustments(Guid workflowId)
@@ -475,6 +561,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
     private async Task SaveCloseManagementAsync(
         IReadOnlyList<WorkflowLateAdjustmentRecord> rows,
         IReadOnlyList<WorkflowCloseTaskSignOffRecord> taskSignOffRows,
+        IReadOnlyList<ClosePeriodPlanConfigurationDto> planConfigurationRows,
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(_persistencePath))
@@ -492,6 +579,12 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 {
                     _taskSignOffs[group.Key] = group.ToList();
                 }
+
+                _planConfigurations.Clear();
+                foreach (var configuration in planConfigurationRows)
+                {
+                    _planConfigurations[configuration.WorkflowId] = configuration;
+                }
             }
             return;
         }
@@ -505,6 +598,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 .OrderBy(static row => row.WorkflowId)
                 .ThenBy(static row => row.TaskId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static row => row.SignOff.SignedAtUtc)
+                .ToArray(),
+            planConfigurationRows
+                .OrderBy(static row => row.WorkflowId)
                 .ToArray());
         var json = JsonSerializer.Serialize(snapshot, JsonOptions);
         await AtomicFileWriter.WriteAsync(_persistencePath, json, ct).ConfigureAwait(false);
@@ -559,22 +655,55 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
     }
 
+    private ClosePeriodPlanConfigurationDto? GetPlanConfiguration(Guid workflowId)
+        => ReadPlanConfigurations()
+            .FirstOrDefault(configuration => configuration.WorkflowId == workflowId);
+
+    private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadPlanConfigurations()
+    {
+        if (string.IsNullOrWhiteSpace(_persistencePath) || !File.Exists(_persistencePath))
+        {
+            return ReadInMemoryPlanConfigurations();
+        }
+
+        lock (_readGate)
+        {
+            try
+            {
+                var snapshot = JsonSerializer.Deserialize<CloseManagementSnapshot>(
+                    File.ReadAllText(_persistencePath),
+                    JsonOptions);
+                return snapshot?.PlanConfigurations ?? [];
+            }
+            catch (JsonException)
+            {
+                return [];
+            }
+        }
+    }
+
+    private IReadOnlyList<ClosePeriodPlanConfigurationDto> ReadInMemoryPlanConfigurations()
+    {
+        lock (_readGate)
+        {
+            return _planConfigurations.Values
+                .OrderBy(static row => row.WorkflowId)
+                .ToArray();
+        }
+    }
+
     private static CloseTaskDto ToCloseTask(
         OperationsCloseChecklistTaskDto task,
         int index,
         OperationsContinuityWorkflowDto workflow,
         IReadOnlyList<WorkflowCloseTaskSignOffRecord> retainedSignOffs,
-        ISet<string> satisfiedTaskIds)
+        ISet<string> satisfiedTaskIds,
+        CloseTaskConfigurationDto? configuration)
     {
-        CloseDependencyDto[] dependencies = index == 0
-            ? []
-            :
-            [
-                new CloseDependencyDto(
-                    $"dependency-{task.TaskId}",
-                    workflow.CloseChecklist[index - 1].TaskId,
-                    "Close checklist tasks must be completed in workflow order.")
-            ];
+        var owner = NormalizeOptional(configuration?.Owner) ?? task.Owner;
+        var requiredEvidence = NormalizeOptional(configuration?.RequiredEvidence) ?? task.RequiredEvidence;
+        var requiredApprovalCount = configuration?.RequiredApprovalCount ?? task.RequiredApprovalCount;
+        var dependencies = BuildDependencies(task.TaskId, index, workflow, configuration);
         var signOffs = workflow.Approvals
             .Select(approval => ToCloseSignOff(task, approval))
             .Where(static signOff => signOff is not null)
@@ -585,28 +714,58 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             .ToArray();
         var evidenceLinks = NormalizeEvidenceLinks(
             [task.EvidencePointer, .. signOffs.SelectMany(static signOff => signOff.EvidenceLinks)]);
-        var dependenciesSatisfied = dependencies.Length == 0 ||
+        var dependenciesSatisfied = dependencies.Count == 0 ||
             dependencies.All(dependency => satisfiedTaskIds.Contains(dependency.DependsOnTaskId));
 
         return new CloseTaskDto(
             task.TaskId,
-            task.Label,
-            ResolveTaskStatus(task, dependencies, dependenciesSatisfied, workflow.Approvals, signOffs),
-            task.Owner,
-            task.DueDate ?? task.ExpiresOn ?? DateOnly.FromDateTime(workflow.UpdatedAtUtc.UtcDateTime),
+            NormalizeOptional(configuration?.DisplayName) ?? task.Label,
+            ResolveTaskStatus(task, owner, requiredApprovalCount, dependencies, dependenciesSatisfied, workflow.Approvals, signOffs),
+            owner,
+            configuration?.DueDate ?? task.DueDate ?? task.ExpiresOn ?? DateOnly.FromDateTime(workflow.UpdatedAtUtc.UtcDateTime),
                 dependencies,
                 signOffs,
                 evidenceLinks,
                 task.BlockingReason,
-                BuildSignOffRequirements(task, signOffs));
+                BuildSignOffRequirements(task, owner, requiredApprovalCount, requiredEvidence, signOffs));
+    }
+
+    private static IReadOnlyList<CloseDependencyDto> BuildDependencies(
+        string taskId,
+        int index,
+        OperationsContinuityWorkflowDto workflow,
+        CloseTaskConfigurationDto? configuration)
+    {
+        if (configuration is not null && configuration.DependsOnTaskIds.Count > 0)
+        {
+            return configuration.DependsOnTaskIds
+                .Select(dependsOnTaskId => new CloseDependencyDto(
+                    $"dependency-{Sanitize(taskId)}-{Sanitize(dependsOnTaskId)}",
+                    dependsOnTaskId,
+                    "Configured close-plan dependency."))
+                .ToArray();
+        }
+
+        return index == 0
+            ? []
+            :
+            [
+                new CloseDependencyDto(
+                    $"dependency-{taskId}",
+                    workflow.CloseChecklist[index - 1].TaskId,
+                    "Close checklist tasks must be completed in workflow order.")
+            ];
     }
 
     private static IReadOnlyList<CloseSignOffRequirementDto> BuildSignOffRequirements(
         OperationsCloseChecklistTaskDto task,
+        string owner,
+        int requiredApprovalCount,
+        string? requiredEvidence,
         IReadOnlyList<CloseSignOffDto> signOffs)
     {
-        var role = ResolveRequiredSignOffRole(task);
-        var requiredCount = task.RequiredApprovalCount <= 0 ? 1 : task.RequiredApprovalCount;
+        var role = ResolveRequiredSignOffRole(owner);
+        var requiredCount = requiredApprovalCount <= 0 ? 1 : requiredApprovalCount;
         var approvedCount = signOffs.Count(signOff =>
             signOff.ApprovalState == ManualJournalEntryStatusDto.Approved &&
             string.Equals(signOff.Role, role, StringComparison.OrdinalIgnoreCase));
@@ -618,9 +777,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 requiredCount,
                 approvedCount,
                 approvedCount >= requiredCount,
-                string.IsNullOrWhiteSpace(task.RequiredEvidence)
+                string.IsNullOrWhiteSpace(requiredEvidence)
                     ? "Retained close-control sign-off evidence is required."
-                    : task.RequiredEvidence)
+                    : requiredEvidence)
         ];
     }
 
@@ -656,7 +815,10 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
     }
 
     private static string ResolveRequiredSignOffRole(OperationsCloseChecklistTaskDto task)
-        => string.IsNullOrWhiteSpace(task.Owner) ? "Controller" : task.Owner.Trim();
+        => ResolveRequiredSignOffRole(task.Owner);
+
+    private static string ResolveRequiredSignOffRole(string? owner)
+        => string.IsNullOrWhiteSpace(owner) ? "Controller" : owner.Trim();
 
     private static CloseSignOffDto? ToCloseSignOff(
         OperationsCloseChecklistTaskDto task,
@@ -682,6 +844,8 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
     private static CloseTaskStatusDto ResolveTaskStatus(
         OperationsCloseChecklistTaskDto task,
+        string owner,
+        int requiredApprovalCount,
         IReadOnlyList<CloseDependencyDto> dependencies,
         bool dependenciesSatisfied,
         IReadOnlyList<OperationsApprovalDto> approvals,
@@ -700,7 +864,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             return CloseTaskStatusDto.WaitingOnDependency;
         }
 
-        var requiredRole = ResolveRequiredSignOffRole(task);
+        var requiredRole = ResolveRequiredSignOffRole(owner);
         if (HasRejectedSignOff(requiredRole, signOffs))
         {
             return CloseTaskStatusDto.Blocked;
@@ -710,7 +874,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             signOff.ApprovalState == ManualJournalEntryStatusDto.Approved &&
             string.Equals(signOff.Role, requiredRole, StringComparison.OrdinalIgnoreCase));
         if (string.Equals(task.Status, "Done", StringComparison.OrdinalIgnoreCase)
-            || (approvedSignOffCount > 0 && (task.RequiredApprovalCount == 0 || approvedSignOffCount >= task.RequiredApprovalCount)))
+            || (approvedSignOffCount > 0 && (requiredApprovalCount == 0 || approvedSignOffCount >= requiredApprovalCount)))
         {
             return CloseTaskStatusDto.SignedOff;
         }
@@ -824,6 +988,99 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             Currency = "USD"
         };
 
+    private static MaterialityPolicyDto NormalizeMaterialityPolicy(
+        MaterialityPolicyDto? requested,
+        MaterialityPolicyDto? current,
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var fallback = current ?? ResolveMaterialityPolicy(workflow);
+        if (requested is null)
+        {
+            return fallback;
+        }
+
+        if (requested.AmountThreshold < 0m)
+        {
+            throw new ArgumentException("Materiality amount threshold must be zero or greater.", nameof(requested));
+        }
+
+        if (requested.PercentThreshold < 0m)
+        {
+            throw new ArgumentException("Materiality percent threshold must be zero or greater.", nameof(requested));
+        }
+
+        var reviewRole = RequireText(requested.ReviewRole, "MaterialityPolicy.ReviewRole");
+        var currency = RequireText(requested.Currency, "MaterialityPolicy.Currency").ToUpperInvariant();
+        return requested with
+        {
+            PolicyId = string.IsNullOrWhiteSpace(requested.PolicyId)
+                ? $"materiality-{Sanitize(workflow.PeriodId)}"
+                : requested.PolicyId.Trim(),
+            Currency = currency,
+            ReviewRole = reviewRole
+        };
+    }
+
+    private static IReadOnlyList<CloseTaskConfigurationDto> NormalizeTaskConfigurations(
+        IReadOnlyList<CloseTaskConfigurationDto> taskConfigurations,
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var knownTaskIds = workflow.CloseChecklist
+            .Select(static task => task.TaskId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var normalized = new List<CloseTaskConfigurationDto>(taskConfigurations.Count);
+        var seenTaskIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var configuration in taskConfigurations)
+        {
+            var taskId = RequireText(configuration.TaskId, "TaskConfiguration.TaskId");
+            if (!knownTaskIds.Contains(taskId))
+            {
+                throw new ArgumentException($"Close task '{taskId}' was not found for workflow '{workflow.WorkflowId}'.", nameof(taskConfigurations));
+            }
+
+            if (!seenTaskIds.Add(taskId))
+            {
+                throw new ArgumentException($"Close task '{taskId}' has duplicate configuration rows.", nameof(taskConfigurations));
+            }
+
+            if (configuration.RequiredApprovalCount is <= 0)
+            {
+                throw new ArgumentException($"Close task '{taskId}' requires a positive required approval count when configured.", nameof(taskConfigurations));
+            }
+
+            var dependencies = configuration.DependsOnTaskIds
+                .Select(dependsOn => RequireText(dependsOn, "DependsOnTaskId"))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            foreach (var dependsOn in dependencies)
+            {
+                if (!knownTaskIds.Contains(dependsOn))
+                {
+                    throw new ArgumentException($"Close task '{taskId}' depends on unknown task '{dependsOn}'.", nameof(taskConfigurations));
+                }
+
+                if (string.Equals(dependsOn, taskId, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException($"Close task '{taskId}' cannot depend on itself.", nameof(taskConfigurations));
+                }
+            }
+
+            normalized.Add(configuration with
+            {
+                TaskId = taskId,
+                DisplayName = NormalizeOptional(configuration.DisplayName),
+                Owner = NormalizeOptional(configuration.Owner),
+                RequiredEvidence = NormalizeOptional(configuration.RequiredEvidence),
+                DependsOnTaskIds = dependencies
+            });
+        }
+
+        return normalized
+            .OrderBy(static configuration => configuration.TaskId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
     private static bool RequiresLateAdjustmentApproval(decimal amount, MaterialityPolicyDto policy)
         => policy.RequiresLateAdjustmentApproval && Math.Abs(amount) >= policy.AmountThreshold;
 
@@ -913,6 +1170,24 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             (EvidenceLinkContainsIdentifierToken(link, requestId) ||
              EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
              EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
+             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
+
+    private static bool HasClosePlanConfigurationEvidence(IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Any(static link =>
+            link.Contains("close-plan", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("close plan", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("close-setup", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("configuration", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("materiality", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("approval", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasClosePlanConfigurationEvidenceWithProvenance(
+        IReadOnlyList<string> evidenceLinks,
+        OperationsContinuityWorkflowDto workflow)
+        => evidenceLinks.Any(link =>
+            HasClosePlanConfigurationEvidence([link]) &&
+            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
              EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
 
@@ -1073,12 +1348,16 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             ? throw new ArgumentException($"{label} is required.")
             : value.Trim();
 
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     private static string Sanitize(string value)
         => string.Concat(value.Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-'));
 
     private sealed record CloseManagementSnapshot(
         IReadOnlyList<WorkflowLateAdjustmentRecord>? LateAdjustments = null,
-        IReadOnlyList<WorkflowCloseTaskSignOffRecord>? TaskSignOffs = null);
+        IReadOnlyList<WorkflowCloseTaskSignOffRecord>? TaskSignOffs = null,
+        IReadOnlyList<ClosePeriodPlanConfigurationDto>? PlanConfigurations = null);
 
     private sealed record WorkflowLateAdjustmentRecord(
         Guid WorkflowId,

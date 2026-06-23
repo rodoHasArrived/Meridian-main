@@ -987,9 +987,10 @@ consumers the same retained-evidence provenance contract. Reworked `Draft` and `
 must not carry stale submitted, approved, posted, or close-lock metadata from an earlier rejected
 review cycle, but their lifecycle transition history remains retained for audit reconstruction.
 Close and reporting contracts publish `ClosePeriodPlanDto`,
+`ClosePeriodPlanConfigurationDto`, `UpsertClosePeriodPlanConfigurationRequestDto`,
 `SignOffCloseTaskRequestDto`, `LateAdjustmentRequestDto`, `ReviewLateAdjustmentRequestDto`, and
 `AccountingReportPackageBundleDto` so browser and WPF consumers use the same dependency,
-role-scoped sign-off requirement, close-calendar milestone, evidence-backed close task sign-off
+role-scoped sign-off requirement, governed close-plan setup, close-calendar milestone, evidence-backed close task sign-off
 whose retained artifact identifies the task, sign-off role, and workflow or period, materiality, retained
 late-adjustment approval/rejection with request-, journal-, workflow-, or period-specific evidence
 on the same retained artifact, financial statement, investor capital

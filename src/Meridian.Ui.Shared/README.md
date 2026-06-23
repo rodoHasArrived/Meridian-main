@@ -562,7 +562,9 @@ capital-account subledger rows and ledger-impact account scopes are reconstructe
 shared ledger journal evidence. Close-management endpoints under `/api/ledger/close-management/*`
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
-  lock posture, and validation issues from Operations Continuity, while the task sign-off and
+  lock posture, and validation issues from Operations Continuity, the period-plan configuration route
+  retains governed materiality, task owner/due-date, sign-off count/evidence, and dependency setup
+  through the trusted session actor and ledger-book-scoped close-plan evidence, while the task sign-off and
   late-adjustment routes retain evidence-backed task, review request, approval, or rejection
   decisions without mutating posted journal entries. Assistant or automation-origin close sign-off
   and late-adjustment commands are rejected before retaining decisions. Task sign-off evidence must identify

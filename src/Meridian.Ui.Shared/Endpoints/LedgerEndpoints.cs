@@ -1013,6 +1013,55 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapPost(UiApiRoutes.LedgerCloseManagementPeriodPlanConfiguration, async (
+            UpsertClosePeriodPlanConfigurationRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingCloseManagementService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var actor = ResolveMutationActor(context, request.Actor ?? string.Empty);
+                var result = await service
+                    .ConfigurePeriodPlanAsync(
+                        request with { Actor = actor },
+                        actor,
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return result is null
+                    ? Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." })
+                    : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("ConfigureLedgerCloseManagementPeriodPlan")
+        .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         app.MapPost(UiApiRoutes.LedgerCloseManagementLateAdjustments, async (
             CreateLateAdjustmentRequestDto request,
             HttpContext context) =>

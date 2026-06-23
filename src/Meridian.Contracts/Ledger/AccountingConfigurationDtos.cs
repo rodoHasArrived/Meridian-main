@@ -1863,6 +1863,50 @@ public sealed record MaterialityPolicyDto(
     string ReviewRole,
     bool RequiresLateAdjustmentApproval);
 
+public sealed record CloseTaskConfigurationDto(
+    string TaskId,
+    string? DisplayName = null,
+    string? Owner = null,
+    DateOnly? DueDate = null,
+    int? RequiredApprovalCount = null,
+    string? RequiredEvidence = null,
+    IReadOnlyList<string>? DependsOnTaskIds = null)
+{
+    public IReadOnlyList<string> DependsOnTaskIds { get; init; } =
+        DependsOnTaskIds ?? [];
+}
+
+public sealed record ClosePeriodPlanConfigurationDto(
+    Guid WorkflowId,
+    MaterialityPolicyDto MaterialityPolicy,
+    IReadOnlyList<CloseTaskConfigurationDto>? TaskConfigurations = null,
+    string? ConfiguredBy = null,
+    DateTimeOffset? ConfiguredAtUtc = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<CloseTaskConfigurationDto> TaskConfigurations { get; init; } =
+        TaskConfigurations ?? [];
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record UpsertClosePeriodPlanConfigurationRequestDto(
+    Guid WorkflowId,
+    MaterialityPolicyDto? MaterialityPolicy = null,
+    IReadOnlyList<CloseTaskConfigurationDto>? TaskConfigurations = null,
+    string? Actor = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<CloseTaskConfigurationDto> TaskConfigurations { get; init; } =
+        TaskConfigurations ?? [];
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
 public sealed record CloseTaskDto(
     string TaskId,
     string DisplayName,
@@ -1975,7 +2019,8 @@ public sealed record ClosePeriodPlanDto(
     IReadOnlyList<LateAdjustmentRequestDto> LateAdjustments,
     MaterialityPolicyDto MaterialityPolicy,
     IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
-    IReadOnlyList<CloseCalendarMilestoneDto>? CloseCalendar = null)
+    IReadOnlyList<CloseCalendarMilestoneDto>? CloseCalendar = null,
+    ClosePeriodPlanConfigurationDto? Configuration = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];

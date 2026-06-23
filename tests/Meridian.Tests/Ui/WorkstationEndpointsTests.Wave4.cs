@@ -813,7 +813,7 @@ public sealed partial class WorkstationEndpointsTests
         adjustment.EvidenceLinks.Should().Contain(requestEvidence);
         adjustedPlan.ValidationIssues.Should().Contain(issue =>
             issue.Code == "LateAdjustmentRequiresApproval" &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.TargetId == adjustment.RequestId);
 
         using var duplicateAdjustmentResponse = await client.PostAsJsonAsync(
@@ -993,6 +993,134 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task LedgerCloseManagementEndpoints_ConfigureClosePlanMaterialitySignOffsAndDependencies()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-08",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor",
+                LedgerBookId: ledgerBookId));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflowId = start!.Workflow!.WorkflowId;
+        var firstTask = start.Workflow.CloseChecklist[0];
+        var secondTask = start.Workflow.CloseChecklist[1];
+
+        using var weakEvidenceResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodPlanConfiguration,
+            new UpsertClosePeriodPlanConfigurationRequestDto(
+                workflowId,
+                MaterialityPolicy: new MaterialityPolicyDto(
+                    "close-materiality-2026-08",
+                    AmountThreshold: 25_000m,
+                    PercentThreshold: 0.02m,
+                    Currency: "usd",
+                    ReviewRole: "CFO",
+                    RequiresLateAdjustmentApproval: true),
+                TaskConfigurations:
+                [
+                    new CloseTaskConfigurationDto(
+                        firstTask.TaskId,
+                        Owner: "Controller",
+                        RequiredApprovalCount: 2)
+                ],
+                Actor: "payload-actor",
+                EvidenceLinks: [$"evidence:close-plan:{workflowId:D}:2026-08:configuration-approval"]));
+        weakEvidenceResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var configureResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodPlanConfiguration,
+            new UpsertClosePeriodPlanConfigurationRequestDto(
+                workflowId,
+                MaterialityPolicy: new MaterialityPolicyDto(
+                    "close-materiality-2026-08",
+                    AmountThreshold: 25_000m,
+                    PercentThreshold: 0.02m,
+                    Currency: "usd",
+                    ReviewRole: "CFO",
+                    RequiresLateAdjustmentApproval: true),
+                TaskConfigurations:
+                [
+                    new CloseTaskConfigurationDto(
+                        firstTask.TaskId,
+                        DisplayName: "Controller close review",
+                        Owner: "Controller",
+                        DueDate: new DateOnly(2026, 8, 28),
+                        RequiredApprovalCount: 1,
+                        RequiredEvidence: "Controller sign-off evidence."),
+                    new CloseTaskConfigurationDto(
+                        secondTask.TaskId,
+                        Owner: "Audit Reviewer",
+                        DueDate: new DateOnly(2026, 8, 30),
+                        RequiredApprovalCount: 1,
+                        DependsOnTaskIds: [firstTask.TaskId])
+                ],
+                Actor: "payload-actor",
+                EvidenceLinks: [$"evidence:close-plan:{workflowId:D}:2026-08:book:{ledgerBookId:D}:configuration-approval"]));
+
+        configureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var configuredPlan = await configureResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
+        configuredPlan.Should().NotBeNull();
+        configuredPlan!.MaterialityPolicy.AmountThreshold.Should().Be(25_000m);
+        configuredPlan.MaterialityPolicy.Currency.Should().Be("USD");
+        configuredPlan.MaterialityPolicy.ReviewRole.Should().Be("CFO");
+        configuredPlan.Configuration.Should().NotBeNull();
+        configuredPlan.Configuration!.ConfiguredBy.Should().Be("ops-user");
+        configuredPlan.Configuration.EvidenceLinks.Should().ContainSingle(link => link.Contains("configuration-approval", StringComparison.OrdinalIgnoreCase));
+
+        var configuredFirstTask = configuredPlan.Tasks.Should().Contain(task => task.TaskId == firstTask.TaskId).Subject;
+        configuredFirstTask.DisplayName.Should().Be("Controller close review");
+        configuredFirstTask.Owner.Should().Be("Controller");
+        configuredFirstTask.DueDate.Should().Be(new DateOnly(2026, 8, 28));
+        configuredFirstTask.SignOffRequirements.Should().ContainSingle(requirement =>
+            requirement.Role == "Controller" &&
+            requirement.RequiredApprovalCount == 1 &&
+            requirement.EvidenceRequirement == "Controller sign-off evidence.");
+        var configuredSecondTask = configuredPlan.Tasks.Should().Contain(task => task.TaskId == secondTask.TaskId).Subject;
+        configuredSecondTask.Owner.Should().Be("Audit Reviewer");
+        configuredSecondTask.Dependencies.Should().ContainSingle(dependency => dependency.DependsOnTaskId == firstTask.TaskId);
+
+        using var blockedSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                secondTask.TaskId,
+                "Audit Reviewer",
+                ManualJournalEntryStatusDto.Approved,
+                "audit-reviewer",
+                "Dependency should block this configured task.",
+                EvidenceLinks: [$"evidence:close-task:{secondTask.TaskId}:Audit-Reviewer:2026-08:book:{ledgerBookId:D}:audit-signoff"]));
+        blockedSignOffResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        using var firstSignOffResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementTaskSignOffs,
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                firstTask.TaskId,
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-a",
+                "First configured controller sign-off.",
+                EvidenceLinks: [$"evidence:close-task:{firstTask.TaskId}:Controller:2026-08:book:{ledgerBookId:D}:controller-signoff-a"]));
+        firstSignOffResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var fullySignedPlan = await firstSignOffResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
+        fullySignedPlan!.Tasks.Single(task => task.TaskId == firstTask.TaskId).Status.Should().Be(CloseTaskStatusDto.SignedOff);
+        fullySignedPlan.CloseCalendar.Single(milestone => milestone.TaskId == firstTask.TaskId).RequiredSignOffCount.Should().Be(1);
+        fullySignedPlan.CloseCalendar.Single(milestone => milestone.TaskId == firstTask.TaskId).ApprovedSignOffCount.Should().Be(1);
+    }
+
+    [Fact]
     public async Task LedgerCloseManagementService_BlocksLateAdjustmentAfterPeriodLock()
     {
         var workflowId = Guid.NewGuid();
@@ -1168,14 +1296,31 @@ public sealed partial class WorkstationEndpointsTests
         var rejectedRequirement = rejectedTask.SignOffRequirements.Should().ContainSingle().Subject;
         rejectedRequirement.ApprovedCount.Should().Be(0);
         rejectedRequirement.IsSatisfied.Should().BeFalse();
-        rejectedTask.Status.Should().Be(CloseTaskStatusDto.NotStarted);
+        rejectedTask.Status.Should().Be(CloseTaskStatusDto.Blocked);
         rejectedTask.SignOffs.Should().ContainSingle(signOff =>
             signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
             signOff.Actor == "reviewer-reject");
 
-        var firstPlan = await service.SignOffCloseTaskAsync(
+        var approvalAfterRejection = async () => await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
                 workflowId,
+                "approval-control",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "reviewer-a",
+                "Approval should wait until the retained rejection is remediated.",
+                EvidenceLinks: ["evidence:close-task:approval-control:Controller:2026-12:controller-signoff-a"]),
+            "reviewer-a");
+        await approvalAfterRejection.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*retained rejected sign-off*");
+
+        var approvalWorkflowId = Guid.NewGuid();
+        workflowService.GetAsync(approvalWorkflowId, Arg.Any<CancellationToken>())
+            .Returns(workflow with { WorkflowId = approvalWorkflowId });
+
+        var firstPlan = await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                approvalWorkflowId,
                 "approval-control",
                 "Controller",
                 ManualJournalEntryStatusDto.Approved,
@@ -1191,7 +1336,7 @@ public sealed partial class WorkstationEndpointsTests
 
         var secondPlan = await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
-                workflowId,
+                approvalWorkflowId,
                 "approval-control",
                 "Controller",
                 ManualJournalEntryStatusDto.Approved,
@@ -1205,11 +1350,11 @@ public sealed partial class WorkstationEndpointsTests
         satisfiedRequirement.ApprovedCount.Should().Be(2);
         satisfiedRequirement.IsSatisfied.Should().BeTrue();
         signedOffTask.Status.Should().Be(CloseTaskStatusDto.SignedOff);
-        signedOffTask.SignOffs.Should().HaveCount(3);
+        signedOffTask.SignOffs.Should().HaveCount(2);
 
         var thirdSignOff = async () => await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
-                workflowId,
+                approvalWorkflowId,
                 "approval-control",
                 "Controller",
                 ManualJournalEntryStatusDto.Approved,

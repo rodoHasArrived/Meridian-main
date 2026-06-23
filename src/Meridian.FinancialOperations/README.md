@@ -39,8 +39,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AccountingClose/AccountingCloseManagementService.cs` - close-period plan projection over
   Operations Continuity workflow state, checklist dependencies, approval sign-offs, period-lock
   evidence, file-backed late-adjustment requests, materiality policy validation, and ledger-book
-  scoped close-control evidence checks, including independent-review enforcement for material
-  late-adjustment decisions.
+  scoped close-control evidence checks, governed close-plan configuration for materiality, task
+  ownership, due dates, sign-off counts, evidence requirements, and dependencies, including
+  independent-review enforcement for material late-adjustment decisions.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
   dimension-scoped package requests, certification state, validation issues, retained package
@@ -236,6 +237,10 @@ can reach ready-for-review certification; close-backed packages also recheck tha
 the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
+Close-period plan configuration is also governed through this service: human-origin commands can
+retain materiality policy setup, task display/owner/due-date overrides, role-scoped approval counts,
+required evidence text, and explicit task dependencies only when retained close-plan setup evidence
+names the workflow or exact period and selected ledger book on the same artifact.
 Task sign-off decisions retain authenticated actor, role, notes, and evidence, reject duplicate
 actor-role decisions, actors who acknowledged the task, roles outside the task's sign-off matrix,
 or incomplete prerequisite tasks, require retained approval/sign-off/control/review evidence that
