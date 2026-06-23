@@ -7,6 +7,21 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
+/// Per-category SLA configuration for Security Master exceptions.
+/// </summary>
+public sealed record SecurityMasterExceptionSlaConfig
+{
+    /// <summary>Days to resolve an identifier conflict before SLA breach.</summary>
+    public int IdentifierConflictDays { get; init; } = 5;
+
+    /// <summary>Days to resolve an incomplete security record before SLA breach.</summary>
+    public int IncompleteRecordDays { get; init; } = 3;
+
+    /// <summary>Days to create a new unresolved security before SLA breach.</summary>
+    public int NewSecurityUnresolvedDays { get; init; } = 1;
+}
+
+/// <summary>
 /// Projects Security Master exceptions into the shared reconciliation case queue.
 /// </summary>
 public sealed class SecurityMasterExceptionCaseworkService
@@ -21,6 +36,20 @@ public sealed class SecurityMasterExceptionCaseworkService
     {
         _breakQueueRepository = breakQueueRepository;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// Returns all open Security Master exception cases that have breached or are past their SLA deadline.
+    /// </summary>
+    public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAgingExceptionsAsync(
+        CancellationToken ct = default)
+    {
+        if (_breakQueueRepository is null)
+            return [];
+
+        return await _breakQueueRepository
+            .GetAgingByTeamAsync("Security Master", DateTimeOffset.UtcNow, ct)
+            .ConfigureAwait(false);
     }
 
     public async Task SeedOpenConflictCasesAsync(
@@ -179,6 +208,8 @@ public sealed class SecurityMasterExceptionCaseworkService
     {
         var assignedTo = NormalizeActor(actor) ?? "security-master-steward";
         var route = UiApiRoutes.SecurityMasterConflicts;
+        // SLA fields (SlaDueAt/SlaBreached/SlaPolicyId) are computed by the break queue
+        // repository via SecurityMasterReconciliationSlaPolicyProvider, keyed off Team/RunId.
         return new ReconciliationBreakQueueItem(
             BreakId: BuildConflictCaseId(conflict.ConflictId),
             RunId: "security-master-conflicts",

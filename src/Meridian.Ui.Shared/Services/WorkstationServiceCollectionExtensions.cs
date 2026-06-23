@@ -377,10 +377,17 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IOperationsCloseCalendarService>(),
                 sp.GetService<IPrivateCapitalCloseCockpitService>()));
+        services.TryAddSingleton<SecurityMasterExceptionSlaConfig>();
+        services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
+            new SecurityMasterReconciliationSlaPolicyProvider(
+                sp.GetService<SecurityMasterExceptionSlaConfig>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
-            return new FileReconciliationBreakQueueRepository(ResolveWorkstationDataDirectory(sp), logger);
+            return new FileReconciliationBreakQueueRepository(
+                ResolveWorkstationDataDirectory(sp),
+                logger,
+                sp.GetService<IReconciliationSlaPolicyProvider>());
         });
         services.TryAddSingleton<SecurityMasterExceptionCaseworkService>(sp =>
             new SecurityMasterExceptionCaseworkService(

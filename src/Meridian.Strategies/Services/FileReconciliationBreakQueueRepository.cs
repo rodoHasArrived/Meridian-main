@@ -13,6 +13,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     private readonly string _snapshotPath;
     private readonly string _auditPath;
     private readonly ILogger<FileReconciliationBreakQueueRepository> _logger;
+    private readonly IReconciliationSlaPolicyProvider? _slaPolicyProvider;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -24,10 +25,14 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     private readonly Dictionary<string, string> _bulkResultIdsByIdempotencyKey = new(StringComparer.OrdinalIgnoreCase);
     private readonly IReconciliationCaseWorkflowService _workflowService = new ReconciliationCaseWorkflowService();
 
-    public FileReconciliationBreakQueueRepository(string dataDirectory, ILogger<FileReconciliationBreakQueueRepository> logger)
+    public FileReconciliationBreakQueueRepository(
+        string dataDirectory,
+        ILogger<FileReconciliationBreakQueueRepository> logger,
+        IReconciliationSlaPolicyProvider? slaPolicyProvider = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _slaPolicyProvider = slaPolicyProvider;
 
         Directory.CreateDirectory(dataDirectory);
         _snapshotPath = Path.Combine(dataDirectory, "reconciliation-break-queue.json");
@@ -49,6 +54,29 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
 
             return items
                 .OrderByDescending(static item => item.LastUpdatedAt)
+                .ToArray();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAgingByTeamAsync(
+        string team, DateTimeOffset asOfUtc, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(team);
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            return _items!.Values
+                .Where(item => item.Status == ReconciliationBreakQueueStatus.Open
+                    && string.Equals(item.Team, team, StringComparison.OrdinalIgnoreCase)
+                    && item.SlaDueAt.HasValue
+                    && item.SlaDueAt.Value < asOfUtc)
+                .OrderBy(item => item.SlaDueAt!.Value)
                 .ToArray();
         }
         finally
@@ -1140,9 +1168,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         return lifecycle == ReconciliationCaseLifecycleState.SignedOff ? ReconciliationBreakQueueStatus.SignedOff : current;
     }
 
-    private static ReconciliationBreakQueueItem StampComputedFields(ReconciliationBreakQueueItem item, DateTimeOffset now)
+    private ReconciliationBreakQueueItem StampComputedFields(ReconciliationBreakQueueItem item, DateTimeOffset now)
     {
-        var sla = ReconciliationSlaCalculator.Compute(item, ReconciliationSlaCalculator.DefaultPolicyFor(item), now);
+        var policy = _slaPolicyProvider?.ResolvePolicy(item) ?? ReconciliationSlaCalculator.DefaultPolicyFor(item);
+        var sla = ReconciliationSlaCalculator.Compute(item, policy, now);
         return item with
         {
             Version = item.Version + 1,
