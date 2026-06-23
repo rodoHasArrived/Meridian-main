@@ -21,7 +21,7 @@ public sealed class AccountingPostingCandidateServiceTests
         var service = await CreateSeededCandidateServiceAsync(ledgerBookId: ledgerBookId);
         var instrumentId = Guid.NewGuid();
         var sourceEventId = Guid.NewGuid();
-        var aggregateId = Guid.NewGuid();
+        var aggregateId = ledgerBookId;
         var periodId = Guid.NewGuid();
 
         var result = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
@@ -218,6 +218,7 @@ public sealed class AccountingPostingCandidateServiceTests
     public async Task BuildCandidateAsync_MissingLedgerBook_BlocksCandidateBeforeDraftWrite()
     {
         var service = await CreateSeededCandidateServiceAsync();
+        var aggregateId = Guid.NewGuid();
 
         var result = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
             "fund-alpha",
@@ -226,7 +227,7 @@ public sealed class AccountingPostingCandidateServiceTests
             "USD",
             new DateOnly(2026, 5, 31),
             "controller@meridian.local",
-            Guid.NewGuid(),
+            aggregateId,
             Guid.NewGuid(),
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Missing ledger book",
@@ -267,7 +268,7 @@ public sealed class AccountingPostingCandidateServiceTests
             "USD",
             new DateOnly(2026, 5, 31),
             "controller@meridian.local",
-            Guid.NewGuid(),
+            ledgerBookId,
             Guid.NewGuid(),
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Dimensional generated posting",
@@ -321,6 +322,49 @@ public sealed class AccountingPostingCandidateServiceTests
     }
 
     [Fact]
+    public async Task BuildCandidateAsync_AggregateOutsideLedgerBook_BlocksBeforeDraftWrite()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var configurationService = await CreateSeededConfigurationServiceAsync(ledgerBookId: ledgerBookId);
+        var draftService = new CapturingJournalDraftService();
+        var service = new AccountingPostingCandidateService(configurationService, draftService);
+
+        var result = await service.BuildCandidateAsync(new PostingRuleJournalCandidateRequestDto(
+            "fund-alpha",
+            "CustodianInterestAccrual",
+            125.44m,
+            "USD",
+            new DateOnly(2026, 5, 31),
+            "controller@meridian.local",
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            "Mismatched aggregate generated posting",
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            LedgerBookId: ledgerBookId,
+            Dimensions: new LedgerDimensionSetDto(
+                FundId: "fund-alpha",
+                EntityId: "entity-master",
+                BookId: ledgerBookId.ToString("D")),
+            CounterpartyId: "custodian-bny",
+            PolicyId: "gaap-accrual-v1",
+            TreatmentKind: AccountingTreatmentKindDto.Accrual,
+            EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]));
+
+        result.SelectedRuleId.Should().Be("posting.interest-accrual");
+        result.GeneratedPostingLines.Should().HaveCount(2);
+        result.PostingCommand.Should().BeNull();
+        result.JournalEntryId.Should().BeNull();
+        result.CanSubmitForApproval.Should().BeFalse();
+        result.HasBlockingIssues.Should().BeTrue();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.ledger-book-aggregate-required" &&
+            issue.BlocksCandidate &&
+            issue.TargetId == "aggregateId");
+        draftService.CapturedRequest.Should().BeNull();
+    }
+
+    [Fact]
     public async Task BuildCandidateAsync_IsolatesRulesStudioWorkspaceByTenantAndCompany()
     {
         var ledgerBookId = Guid.NewGuid();
@@ -355,7 +399,7 @@ public sealed class AccountingPostingCandidateServiceTests
             "USD",
             new DateOnly(2026, 5, 31),
             "controller@meridian.local",
-            Guid.NewGuid(),
+            ledgerBookId,
             Guid.NewGuid(),
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Tenant-scoped generated posting",
@@ -375,7 +419,7 @@ public sealed class AccountingPostingCandidateServiceTests
             "USD",
             new DateOnly(2026, 5, 31),
             "controller@meridian.local",
-            Guid.NewGuid(),
+            ledgerBookId,
             Guid.NewGuid(),
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Tenant-scoped generated posting",
@@ -395,7 +439,7 @@ public sealed class AccountingPostingCandidateServiceTests
             "USD",
             new DateOnly(2026, 5, 31),
             "controller@meridian.local",
-            Guid.NewGuid(),
+            ledgerBookId,
             Guid.NewGuid(),
             DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
             "Unscoped generated posting",

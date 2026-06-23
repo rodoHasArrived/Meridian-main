@@ -338,10 +338,11 @@ line-entry keyed dimension tags on the governed write metadata so downstream led
 and export mapping can recover line-specific
 fund/entity/cost-center/counterparty/external-GL scope without adding a live posting path. It does
 not append ledger entries or bypass the manual-journal lifecycle. Source-event posting candidates
-now require explicit ledger-book scope and fail closed before draft/write creation when the request
-is unscoped, and tenant-scoped candidates cannot fall back to another company's workspace, so Rules
-Studio dry-run output cannot become a governed posting candidate through a fund-level fallback
-configuration.
+now require explicit ledger-book scope and a ledger-book aggregate id that matches that scope, then
+fail closed before draft/write creation when the request is unscoped or the aggregate boundary is a
+source transaction instead of the target book. Tenant-scoped candidates cannot fall back to another
+company's workspace, so Rules Studio dry-run output cannot become a governed posting candidate
+through a fund-level fallback configuration.
 The generated candidate path also preserves the neutral operational dimensions carried by
 `LedgerDimensionSetDto` - organization, portfolio, book, account, customer, vendor, and project -
 through generated posting lines, governed draft lines, and approved append writes so reporting and

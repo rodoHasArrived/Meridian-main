@@ -104,6 +104,15 @@ public sealed class AccountingPostingCandidateService : IAccountingPostingCandid
                 "ledgerBookId",
                 "Select the ledger book that owns the source event, posting rule configuration, journal draft, and approval workflow."));
         }
+        else if (request.AggregateId != request.LedgerBookId.Value)
+        {
+            issues.Add(Issue(
+                "posting-candidate.ledger-book-aggregate-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "A source-event posting candidate aggregate id must equal the target ledger book id before a governed journal draft can be built.",
+                "aggregateId",
+                "Use the target ledger book as the aggregate boundary for generated posting candidates; keep the source economic event in sourceEventId."));
+        }
 
         if (issues.Any(static issue => issue.BlocksCandidate))
         {
