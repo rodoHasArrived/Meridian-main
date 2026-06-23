@@ -645,26 +645,38 @@ public sealed class AccountingReportPackageServiceTests
             row.EvidenceLinks.Contains("evidence:restatement:nav-correction:2027-04") &&
             row.EvidenceLinks.Contains(exactPriorPackageEvidence));
 
-        var certifiedRestatement = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+        var missingPriorPackageCertificationEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             readyRestatement.FinancialStatements.PackageId,
             "controller",
             "Controller approved the restatement package.",
             [CertificationEvidence(readyRestatement, "restatement-approval")]));
+
+        await missingPriorPackageCertificationEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*exact prior package*");
+
+        var restatementCertificationEvidence =
+            $"{CertificationEvidence(readyRestatement, "restatement-approval")}:prior-package:{certifiedPrior.FinancialStatements.PackageId}";
+
+        var certifiedRestatement = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            readyRestatement.FinancialStatements.PackageId,
+            "controller",
+            "Controller approved the restatement package.",
+            [restatementCertificationEvidence]));
 
         certifiedRestatement.Should().NotBeNull();
         certifiedRestatement!.Certification.State.Should().Be(AccountingCertificationStateDto.Certified);
         certifiedRestatement.FinancialStatements.Restatement.Should().NotBeNull();
         certifiedRestatement.FinancialStatements.Restatement!.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
         certifiedRestatement.FinancialStatements.Restatement.EvidenceLinks.Should()
-            .Contain(CertificationEvidence(readyRestatement, "restatement-approval"));
+            .Contain(restatementCertificationEvidence);
         certifiedRestatement.NavPackage.Restatement.Should().NotBeNull();
         certifiedRestatement.NavPackage.Restatement!.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved);
         certifiedRestatement.NavPackage.Restatement.EvidenceLinks.Should()
-            .Contain(CertificationEvidence(readyRestatement, "restatement-approval"));
+            .Contain(restatementCertificationEvidence);
         certifiedRestatement.ExportArtifacts.Should().Contain(row =>
             row.ArtifactKind == "restatement-workflow" &&
             row.CertificationState == AccountingCertificationStateDto.Certified &&
-            row.EvidenceLinks.Contains(CertificationEvidence(readyRestatement, "restatement-approval")));
+            row.EvidenceLinks.Contains(restatementCertificationEvidence));
     }
 
     [Fact]

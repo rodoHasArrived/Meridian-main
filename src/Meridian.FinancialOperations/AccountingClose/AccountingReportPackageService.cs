@@ -326,6 +326,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 throw new ArgumentException("Accounting report package certification evidence must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact.");
             }
 
+            if (!HasRestatementCertificationEvidenceWithPriorPackage(package, evidenceLinks))
+            {
+                throw new ArgumentException("Restatement report package certification evidence must reference the exact prior package being restated in the same retained approval artifact.");
+            }
+
             var currentCloseIssues = await BuildCurrentCloseCertificationIssuesAsync(package, ct).ConfigureAwait(false);
             if (currentCloseIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
             {
@@ -1090,6 +1095,27 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             EvidenceReferencesReportLedgerBook(package, link) &&
             EvidenceReferencesReportTenantCompanyScope(package, link) &&
             EvidenceReferencesReportDimensionScope(package, link));
+
+    private static bool HasRestatementCertificationEvidenceWithPriorPackage(
+        AccountingReportPackageBundleDto package,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        var restatement = package.NavPackage.Restatement ?? package.FinancialStatements.Restatement;
+        if (restatement is null)
+        {
+            return true;
+        }
+
+        return evidenceLinks.Any(link =>
+            HasReportCertificationEvidence([link]) &&
+            EvidenceReferencesReportIdentifier(link, package.FinancialStatements.PackageId) &&
+            EvidenceReferencesReportIdentifier(link, package.Certification.CertificationId) &&
+            EvidenceReferencesReportIdentifier(link, package.FinancialStatements.PeriodId) &&
+            EvidenceReferencesReportLedgerBook(package, link) &&
+            EvidenceReferencesReportTenantCompanyScope(package, link) &&
+            EvidenceReferencesReportDimensionScope(package, link) &&
+            EvidenceReferencesReportIdentifier(link, restatement.PriorPackageId));
+    }
 
     private static bool EvidenceReferencesReportIdentifier(string evidenceLink, string identifier)
     {

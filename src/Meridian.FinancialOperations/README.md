@@ -298,9 +298,10 @@ assistant or automation-origin requests before retaining approvals, sign-offs, d
 certified report evidence.
 Child export artifacts retain ledger-book and canonical dimension scope, and receive certified
 timestamps plus recomputed content hashes that include the book, dimensions, certified state, and
-retained certification evidence. When the package is a restatement, final
-certification also promotes the retained restatement workflow metadata to approved and merges the
-certification evidence into the statement and NAV restatement records.
+retained certification evidence. When the package is a restatement, final certification also
+requires the approval evidence to name the exact prior package being restated, promotes the
+retained restatement workflow metadata to approved, and merges the certification evidence into the
+statement and NAV restatement records.
 Certified accounting report packages are immutable at the retained package boundary; rebuilding the
 same fund/period package after certification is rejected so corrections must use governed
 restatement lineage instead of replacing certification evidence.

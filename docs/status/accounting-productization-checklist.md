@@ -197,6 +197,9 @@ the requirement end to end.
 - [x] Report package restatement workflows now require retained lineage evidence that names the
   exact prior package or certification id being restated, so generic prior-period support cannot
   move a restatement package to certification review.
+- [x] Final restatement package certification now also requires the retained approval artifact to
+  name the exact prior package being restated before approving the statement and NAV restatement
+  workflow metadata.
 
 ## Still To Complete
 
