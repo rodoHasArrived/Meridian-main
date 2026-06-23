@@ -148,7 +148,10 @@ New ledger writes persist the first-class `LedgerEntry.Dimensions` value into
 `journal_legs.dimensions` as JSONB and rehydrate it with each ledger line. The metadata-tag path
 remains a compatibility fallback for older retained rows, but new dimensional accounting evidence
 should use the line property so reports, external-GL mapping, close checks, and future query
-filters do not have to infer line scope from journal-level tags.
+filters do not have to infer line scope from journal-level tags. The journal store canonicalizes
+line dimensions before storage, query containment, and rehydration so fund, entity, sleeve,
+strategy, investor, capital-account, instrument, tax-lot, cost-center, counterparty, external GL,
+and customer-neutral scope values use the same trimmed durable shape.
 `PostgresLedgerJournalStore.QueryAsync` provides the first durable journal-read seam for those
 line dimensions: callers can combine ledger-book, period, aggregate, account, date, and line-level
 dimension filters, and the store applies them against `journal_legs.dimensions` instead of

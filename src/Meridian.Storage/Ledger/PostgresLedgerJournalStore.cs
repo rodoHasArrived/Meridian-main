@@ -1460,15 +1460,22 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         => approval is null ? DBNull.Value : JsonSerializer.Serialize(approval, JsonOptions);
 
     private static object SerializeLineDimensions(LedgerLineDimensionSet? dimensions)
-        => dimensions is null ? DBNull.Value : JsonSerializer.Serialize(dimensions, JsonOptions);
+    {
+        var canonical = CanonicalizeLineDimensions(dimensions);
+        return canonical is null ? DBNull.Value : JsonSerializer.Serialize(canonical, JsonOptions);
+    }
 
     private static LedgerLineDimensionSet DeserializeLineDimensions(string json)
-        => JsonSerializer.Deserialize<LedgerLineDimensionSet>(json, JsonOptions)
+    {
+        var dimensions = JsonSerializer.Deserialize<LedgerLineDimensionSet>(json, JsonOptions)
            ?? throw new LedgerValidationException("Stored ledger line dimensions are invalid.");
+        return CanonicalizeLineDimensions(dimensions) ?? new LedgerLineDimensionSet();
+    }
 
     internal static string? BuildLineDimensionContainmentJson(LedgerLineDimensionSet? dimensions)
     {
-        if (dimensions is null || !HasAnyLineDimension(dimensions))
+        dimensions = CanonicalizeLineDimensions(dimensions);
+        if (dimensions is null)
         {
             return null;
         }
@@ -1476,9 +1483,6 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         var values = new Dictionary<string, object>(StringComparer.Ordinal)
         {
             ["externalGlDimensions"] = dimensions.ExternalGlDimensions
-                .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
-                .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(static pair => pair.Key.Trim(), static pair => pair.Value.Trim(), StringComparer.OrdinalIgnoreCase)
         };
         AddDimension(values, "fundId", dimensions.FundId);
         AddDimension(values, "entityId", dimensions.EntityId);
@@ -1531,6 +1535,49 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             values[name] = value.Trim();
         }
     }
+
+    internal static LedgerLineDimensionSet? CanonicalizeLineDimensions(LedgerLineDimensionSet? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return null;
+        }
+
+        var externalGlDimensions = NormalizeExternalGlDimensions(dimensions.ExternalGlDimensions);
+        var canonical = new LedgerLineDimensionSet(
+            FundId: NormalizeOptional(dimensions.FundId),
+            EntityId: NormalizeOptional(dimensions.EntityId),
+            SleeveId: NormalizeOptional(dimensions.SleeveId),
+            StrategyId: NormalizeOptional(dimensions.StrategyId),
+            InvestorId: NormalizeOptional(dimensions.InvestorId),
+            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
+            InstrumentId: dimensions.InstrumentId,
+            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
+            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
+            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
+            ExternalGlDimensions: externalGlDimensions,
+            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
+            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
+            BookId: NormalizeOptional(dimensions.BookId),
+            AccountId: NormalizeOptional(dimensions.AccountId),
+            CustomerId: NormalizeOptional(dimensions.CustomerId),
+            VendorId: NormalizeOptional(dimensions.VendorId),
+            ProjectId: NormalizeOptional(dimensions.ProjectId));
+
+        return HasAnyLineDimension(canonical) ? canonical : null;
+    }
+
+    private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(IReadOnlyDictionary<string, string> dimensions)
+        => dimensions
+            .Select(static pair => new
+            {
+                Key = NormalizeOptional(pair.Key),
+                Value = NormalizeOptional(pair.Value)
+            })
+            .Where(static pair => pair.Key is not null && pair.Value is not null)
+            .GroupBy(static pair => pair.Key!, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.First().Key!, static group => group.First().Value!, StringComparer.OrdinalIgnoreCase);
 
     private static bool HasAnyLineDimension(LedgerLineDimensionSet dimensions)
         => !string.IsNullOrWhiteSpace(dimensions.FundId) ||

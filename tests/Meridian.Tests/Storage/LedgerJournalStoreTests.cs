@@ -107,6 +107,102 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void LineDimensions_AreCanonicalizedBeforeDurableStorageAndQueryFilters()
+    {
+        var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var dimensions = new LedgerLineDimensionSet(
+            FundId: " fund-alpha ",
+            EntityId: " entity-master ",
+            SleeveId: " sleeve-core ",
+            StrategyId: " strategy-income ",
+            InvestorId: " investor-lp-1 ",
+            CapitalAccountId: " capital-account-lp-1 ",
+            InstrumentId: instrumentId,
+            TaxLotId: " tax-lot-2026-001 ",
+            CostCenterId: " fund-accounting ",
+            CounterpartyId: " counterparty-admin ",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [" Department "] = " FundAccounting ",
+                ["department"] = "ignored-duplicate",
+                [" "] = "ignored",
+                ["Region"] = " US "
+            },
+            OrganizationId: " org-meridian ",
+            PortfolioId: " portfolio-alpha ",
+            BookId: " book-gaap ",
+            AccountId: " account-cash ",
+            CustomerId: " customer-investor-services ",
+            VendorId: " vendor-administrator ",
+            ProjectId: " project-close ");
+
+        var canonical = PostgresLedgerJournalStore.CanonicalizeLineDimensions(dimensions);
+        var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(dimensions);
+
+        canonical.Should().NotBeNull();
+        canonical!.FundId.Should().Be("fund-alpha");
+        canonical.EntityId.Should().Be("entity-master");
+        canonical.SleeveId.Should().Be("sleeve-core");
+        canonical.StrategyId.Should().Be("strategy-income");
+        canonical.InvestorId.Should().Be("investor-lp-1");
+        canonical.CapitalAccountId.Should().Be("capital-account-lp-1");
+        canonical.InstrumentId.Should().Be(instrumentId);
+        canonical.TaxLotId.Should().Be("tax-lot-2026-001");
+        canonical.CostCenterId.Should().Be("fund-accounting");
+        canonical.CounterpartyId.Should().Be("counterparty-admin");
+        canonical.OrganizationId.Should().Be("org-meridian");
+        canonical.PortfolioId.Should().Be("portfolio-alpha");
+        canonical.BookId.Should().Be("book-gaap");
+        canonical.AccountId.Should().Be("account-cash");
+        canonical.CustomerId.Should().Be("customer-investor-services");
+        canonical.VendorId.Should().Be("vendor-administrator");
+        canonical.ProjectId.Should().Be("project-close");
+        canonical.ExternalGlDimensions.Should().ContainKey("Department");
+        canonical.ExternalGlDimensions["Department"].Should().Be("FundAccounting");
+        canonical.ExternalGlDimensions["Region"].Should().Be("US");
+        canonical.ExternalGlDimensions.Should().NotContainKey(" ");
+
+        json.Should().NotBeNull();
+        using var document = JsonDocument.Parse(json!);
+        var root = document.RootElement;
+        root.GetProperty("fundId").GetString().Should().Be("fund-alpha");
+        root.GetProperty("entityId").GetString().Should().Be("entity-master");
+        root.GetProperty("sleeveId").GetString().Should().Be("sleeve-core");
+        root.GetProperty("strategyId").GetString().Should().Be("strategy-income");
+        root.GetProperty("investorId").GetString().Should().Be("investor-lp-1");
+        root.GetProperty("capitalAccountId").GetString().Should().Be("capital-account-lp-1");
+        root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("taxLotId").GetString().Should().Be("tax-lot-2026-001");
+        root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
+        root.GetProperty("counterpartyId").GetString().Should().Be("counterparty-admin");
+        root.GetProperty("organizationId").GetString().Should().Be("org-meridian");
+        root.GetProperty("portfolioId").GetString().Should().Be("portfolio-alpha");
+        root.GetProperty("bookId").GetString().Should().Be("book-gaap");
+        root.GetProperty("accountId").GetString().Should().Be("account-cash");
+        root.GetProperty("customerId").GetString().Should().Be("customer-investor-services");
+        root.GetProperty("vendorId").GetString().Should().Be("vendor-administrator");
+        root.GetProperty("projectId").GetString().Should().Be("project-close");
+        root.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("FundAccounting");
+        root.GetProperty("externalGlDimensions").GetProperty("Region").GetString().Should().Be("US");
+    }
+
+    [Fact]
+    public void LineDimensions_BlankScopeCanonicalizesToNull()
+    {
+        var canonical = PostgresLedgerJournalStore.CanonicalizeLineDimensions(new LedgerLineDimensionSet(
+            FundId: " ",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = " "
+            }));
+
+        canonical.Should().BeNull();
+        PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(new LedgerLineDimensionSet(FundId: " "))
+            .Should()
+            .BeNull();
+    }
+
+    [Fact]
     public void JournalEntryQueryFilterSql_UsesMatchingEntrySubqueryToPreserveBalancedEntries()
     {
         var sql = PostgresLedgerJournalStore.BuildJournalEntryQueryFilterSql(

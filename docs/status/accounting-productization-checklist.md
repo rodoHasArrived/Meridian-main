@@ -56,6 +56,10 @@ the requirement end to end.
 - [x] Financial Operations accounting-close trial-balance projection now preserves line dimensions,
   buckets same-account activity by dimensional scope, and supports scoped close/report filters over
   the canonical dimension set plus external-GL dimensions.
+- [x] Durable ledger journal storage now canonicalizes first-class line dimensions before JSONB
+  persistence, query containment, and rehydration, covering fund, entity, sleeve, strategy,
+  investor, capital account, instrument, tax lot, cost center, counterparty, external GL, and
+  customer-neutral accounting scopes.
 - [x] Browser Accounting ledger inquiry now mirrors the shared trial-balance dimension contract,
   renders dimension summaries and detail fields, and lets GL account searches match retained fund,
   entity, sleeve, strategy, investor, capital account, instrument, tax-lot, cost-center,
