@@ -162,6 +162,7 @@ public sealed class AccountingProductionReadinessService
             PostingRulesLedgerBookNativeCertified = request.PostingRulesLedgerBookNativeCertified || profile.PostingRulesLedgerBookNativeCertified,
             JournalLifecycleLedgerBookNativeCertified = request.JournalLifecycleLedgerBookNativeCertified || profile.JournalLifecycleLedgerBookNativeCertified,
             CloseReportingLedgerBookNativeCertified = request.CloseReportingLedgerBookNativeCertified || profile.CloseReportingLedgerBookNativeCertified,
+            ClosePlanConfigurationLedgerBookNativeCertified = request.ClosePlanConfigurationLedgerBookNativeCertified || profile.ClosePlanConfigurationLedgerBookNativeCertified,
             ExternalGlLedgerBookNativeCertified = request.ExternalGlLedgerBookNativeCertified || profile.ExternalGlLedgerBookNativeCertified,
             ReconciliationLedgerBookNativeCertified = request.ReconciliationLedgerBookNativeCertified || profile.ReconciliationLedgerBookNativeCertified,
             DirectLendingLedgerBookNativeCertified = request.DirectLendingLedgerBookNativeCertified || profile.DirectLendingLedgerBookNativeCertified,
@@ -235,6 +236,7 @@ public sealed class AccountingProductionReadinessService
             request.PostingRulesLedgerBookNativeCertified,
             request.JournalLifecycleLedgerBookNativeCertified,
             request.CloseReportingLedgerBookNativeCertified,
+            request.ClosePlanConfigurationLedgerBookNativeCertified,
             request.ExternalGlLedgerBookNativeCertified,
             request.ReconciliationLedgerBookNativeCertified,
             request.DirectLendingLedgerBookNativeCertified,
@@ -288,7 +290,7 @@ public sealed class AccountingProductionReadinessService
             "Ledger books",
             status,
             status == AccountingProductionReadinessStatusDto.Ready ? 100 : status == AccountingProductionReadinessStatusDto.ReviewRequired ? 70 : 20,
-            $"{rollout.BookCount} ledger book(s), {rollout.OpenPeriodCount} open period(s), {rollout.CriticalIssueCount} critical issue(s); {workflowReadiness.CompletedControlCount}/{workflowReadiness.RequiredControlCount} ledger-book-native workflow control(s) certified across posting, lifecycle, close/reporting, external GL, reconciliation, direct lending, and strategy-ledger reads; {workflowReadiness.EvidenceReferences.Count} retained workflow evidence link(s).",
+            $"{rollout.BookCount} ledger book(s), {rollout.OpenPeriodCount} open period(s), {rollout.CriticalIssueCount} critical issue(s); {workflowReadiness.CompletedControlCount}/{workflowReadiness.RequiredControlCount} ledger-book-native workflow control(s) certified across posting, lifecycle, close/reporting, close-plan setup, external GL, reconciliation, direct lending, and strategy-ledger reads; {workflowReadiness.EvidenceReferences.Count} retained workflow evidence link(s).",
             issues,
             UiApiRoutes.LedgerBookRolloutAssessment,
             workflowReadiness.EvidenceReferences));
@@ -402,6 +404,26 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Close/reporting certification lacks retained close or report workflow evidence for the selected ledger book.",
                 "Attach evidence naming the selected ledger book and close-management, report-package, or restatement workflow before production rollout.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.ClosePlanConfigurationLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "ledger-books.close-plan-configuration-not-certified",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close-plan configuration has not been certified as ledger-book-native.",
+                "Prove materiality policy setup, checklist configuration, dependencies, sign-off requirements, and retained evidence are scoped to the selected ledger book before production rollout."));
+        }
+        else if (!readiness.HasClosePlanConfigurationLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "ledger-books.close-plan-configuration-evidence-missing",
+                AccountingProductionReadinessAreaDto.LedgerBooks,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close-plan configuration certification lacks retained setup evidence for the selected ledger book.",
+                "Attach evidence naming the selected ledger book and close-plan configuration, close setup, checklist, dependency, sign-off, or materiality-policy workflow before production rollout.",
                 readiness.EvidenceReferences));
         }
 
@@ -1102,13 +1124,15 @@ public sealed class AccountingProductionReadinessService
             AccountingProductionReadinessAreaDto.CloseReporting,
             "Close and reporting",
             ResolveIssueStatus(issues),
-            ScoreFromIssues(issues, hasPositiveEvidence: hasClose && hasReports && workflowReadiness.HasCloseReportingLedgerBookNativeEvidence && dimensionalReportingReadiness.CompletedControlCount == dimensionalReportingReadiness.RequiredControlCount),
+            ScoreFromIssues(issues, hasPositiveEvidence: hasClose && hasReports && workflowReadiness.HasCloseReportingLedgerBookNativeEvidence && workflowReadiness.HasClosePlanConfigurationLedgerBookNativeEvidence && dimensionalReportingReadiness.CompletedControlCount == dimensionalReportingReadiness.RequiredControlCount),
             hasClose && hasReports &&
             workflowReadiness.CloseReportingLedgerBookNativeCertified &&
             workflowReadiness.HasCloseReportingLedgerBookNativeEvidence &&
+            workflowReadiness.ClosePlanConfigurationLedgerBookNativeCertified &&
+            workflowReadiness.HasClosePlanConfigurationLedgerBookNativeEvidence &&
             dimensionalReportingReadiness.CompletedControlCount == dimensionalReportingReadiness.RequiredControlCount
-                ? "Close management and accounting report package services are registered and certified with retained ledger-book-native workflow and dimensional reporting evidence."
-                : "Close/reporting services, ledger-book-native certification, retained workflow evidence, or dimensional reporting evidence are incomplete.",
+                ? "Close management and accounting report package services are registered and certified with retained ledger-book-native setup, workflow, and dimensional reporting evidence."
+                : "Close/reporting services, close-plan setup certification, retained workflow evidence, or dimensional reporting evidence are incomplete.",
             issues,
             UiApiRoutes.LedgerReportsAccountingPackage,
             workflowReadiness.EvidenceReferences.Concat(dimensionalReportingReadiness.EvidenceReferences).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()));
@@ -1146,6 +1170,26 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Critical,
                 "Close/reporting certification lacks retained workflow evidence for the selected ledger book.",
                 "Attach retained evidence naming the selected ledger book and close-management, report-package, or restatement workflow.",
+                readiness.EvidenceReferences));
+        }
+
+        if (!readiness.ClosePlanConfigurationLedgerBookNativeCertified)
+        {
+            issues.Add(Issue(
+                "close-reporting.close-plan-configuration-not-certified",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close-plan configuration has not been certified for the selected ledger book.",
+                "Prove materiality policy setup, checklist configuration, dependencies, sign-off requirements, and close-plan evidence remain inside the selected ledger book."));
+        }
+        else if (!readiness.HasClosePlanConfigurationLedgerBookNativeEvidence)
+        {
+            issues.Add(Issue(
+                "close-reporting.close-plan-configuration-evidence-missing",
+                AccountingProductionReadinessAreaDto.CloseReporting,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Close-plan configuration certification lacks retained setup evidence for the selected ledger book.",
+                "Attach retained close-plan configuration, close setup, checklist, dependency, sign-off, or materiality-policy evidence naming the selected ledger book.",
                 readiness.EvidenceReferences));
         }
     }

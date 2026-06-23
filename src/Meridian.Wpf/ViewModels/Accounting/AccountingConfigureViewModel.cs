@@ -201,6 +201,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private bool _postingRulesLedgerBookNativeCertified;
     private bool _journalLifecycleLedgerBookNativeCertified;
     private bool _closeReportingLedgerBookNativeCertified;
+    private bool _closePlanConfigurationLedgerBookNativeCertified;
     private bool _externalGlLedgerBookNativeCertified;
     private bool _reconciliationLedgerBookNativeCertified;
     private bool _directLendingLedgerBookNativeCertified;
@@ -610,6 +611,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _closeReportingLedgerBookNativeCertified;
         set => SetProperty(ref _closeReportingLedgerBookNativeCertified, value);
+    }
+
+    public bool ClosePlanConfigurationLedgerBookNativeCertified
+    {
+        get => _closePlanConfigurationLedgerBookNativeCertified;
+        set => SetProperty(ref _closePlanConfigurationLedgerBookNativeCertified, value);
     }
 
     public bool ExternalGlLedgerBookNativeCertified
@@ -1351,7 +1358,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 StrategyLedgerReadLedgerBookNativeCertified,
                 LedgerLineDimensionsPersistedCertified,
                 TrialBalanceDimensionFiltersCertified,
-                ReportPackageDimensionProvenanceCertified);
+                ReportPackageDimensionProvenanceCertified,
+                ClosePlanConfigurationLedgerBookNativeCertified);
 
             var saved = await _productionCertificationProfileStore.UpsertAsync(
                 new AccountingProductionCertificationProfileUpsertRequestDto(
@@ -1884,6 +1892,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         PostingRulesLedgerBookNativeCertified = false;
         JournalLifecycleLedgerBookNativeCertified = false;
         CloseReportingLedgerBookNativeCertified = false;
+        ClosePlanConfigurationLedgerBookNativeCertified = false;
         ExternalGlLedgerBookNativeCertified = false;
         ReconciliationLedgerBookNativeCertified = false;
         DirectLendingLedgerBookNativeCertified = false;
@@ -2123,6 +2132,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         PostingRulesLedgerBookNativeCertified = profile.PostingRulesLedgerBookNativeCertified;
         JournalLifecycleLedgerBookNativeCertified = profile.JournalLifecycleLedgerBookNativeCertified;
         CloseReportingLedgerBookNativeCertified = profile.CloseReportingLedgerBookNativeCertified;
+        ClosePlanConfigurationLedgerBookNativeCertified = profile.ClosePlanConfigurationLedgerBookNativeCertified;
         ExternalGlLedgerBookNativeCertified = profile.ExternalGlLedgerBookNativeCertified;
         ReconciliationLedgerBookNativeCertified = profile.ReconciliationLedgerBookNativeCertified;
         DirectLendingLedgerBookNativeCertified = profile.DirectLendingLedgerBookNativeCertified;
@@ -2477,6 +2487,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             PostingRulesLedgerBookNativeCertified: PostingRulesLedgerBookNativeCertified,
             JournalLifecycleLedgerBookNativeCertified: JournalLifecycleLedgerBookNativeCertified,
             CloseReportingLedgerBookNativeCertified: CloseReportingLedgerBookNativeCertified,
+            ClosePlanConfigurationLedgerBookNativeCertified: ClosePlanConfigurationLedgerBookNativeCertified,
             ExternalGlLedgerBookNativeCertified: ExternalGlLedgerBookNativeCertified,
             ReconciliationLedgerBookNativeCertified: ReconciliationLedgerBookNativeCertified,
             DirectLendingLedgerBookNativeCertified: DirectLendingLedgerBookNativeCertified,
@@ -2501,7 +2512,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             $"{readiness.Components.Count} component(s), {readiness.CriticalIssueCount} critical issue(s), {readiness.WarningIssueCount} warning issue(s); generated {readiness.GeneratedAtUtc.ToLocalTime():g}.";
         ProductionReadinessLedgerBookText = readiness.LedgerBookRollout is null
             ? "Ledger-book rollout assessment is unavailable."
-            : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s); {readiness.LedgerBookWorkflows?.CompletedControlCount ?? 0}/{readiness.LedgerBookWorkflows?.RequiredControlCount ?? 9} workflow control(s).";
+            : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s); {readiness.LedgerBookWorkflows?.CompletedControlCount ?? 0}/{readiness.LedgerBookWorkflows?.RequiredControlCount ?? 10} workflow control(s).";
         ProductionReadinessExternalGlText =
             $"{readiness.ExternalGlProviderCount} provider(s), {readiness.CertifiedExternalGlMappingProfileCount} certified mapping profile(s); live posting {(readiness.ExternalGlLivePostingEnabled ? "available" : "disabled")}.";
         ProductionReadinessDimensionalReportingText = readiness.DimensionalReporting is null
@@ -2606,6 +2617,13 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             "Close management and report packages are certified for the selected book.",
             "Retain close-management, report-package, or restatement evidence for the selected book.",
             "ledger-book-workflows:close-reporting",
+            readiness.EvidenceReferences);
+        yield return BuildReadinessControlRow(
+            "Close-plan setup",
+            readiness.ClosePlanConfigurationLedgerBookNativeCertified && readiness.HasClosePlanConfigurationLedgerBookNativeEvidence,
+            "Close-plan configuration is certified for the selected book.",
+            "Retain close-plan configuration, setup, checklist, dependency, sign-off, or materiality evidence for the selected book.",
+            "ledger-book-workflows:close-plan-configuration",
             readiness.EvidenceReferences);
         yield return BuildReadinessControlRow(
             "External GL",
@@ -3901,6 +3919,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         AddWorkflowEvidence(PostingRulesLedgerBookNativeCertified, "posting-candidate");
         AddWorkflowEvidence(JournalLifecycleLedgerBookNativeCertified, "journal-lifecycle");
         AddWorkflowEvidence(CloseReportingLedgerBookNativeCertified, "close-reporting");
+        AddWorkflowEvidence(ClosePlanConfigurationLedgerBookNativeCertified, "close-plan-configuration");
         AddWorkflowEvidence(ExternalGlLedgerBookNativeCertified, "external-gl");
         AddWorkflowEvidence(ReconciliationLedgerBookNativeCertified, "reconciliation");
         AddWorkflowEvidence(DirectLendingLedgerBookNativeCertified, "direct-lending");

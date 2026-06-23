@@ -5730,6 +5730,7 @@ export interface AccountingProductionReadinessRequest {
   postingRulesLedgerBookNativeCertified?: boolean;
   journalLifecycleLedgerBookNativeCertified?: boolean;
   closeReportingLedgerBookNativeCertified?: boolean;
+  closePlanConfigurationLedgerBookNativeCertified?: boolean;
   externalGlLedgerBookNativeCertified?: boolean;
   reconciliationLedgerBookNativeCertified?: boolean;
   directLendingLedgerBookNativeCertified?: boolean;
@@ -5869,6 +5870,7 @@ export interface AccountingLedgerBookWorkflowReadiness {
   postingRulesLedgerBookNativeCertified: boolean;
   journalLifecycleLedgerBookNativeCertified: boolean;
   closeReportingLedgerBookNativeCertified: boolean;
+  closePlanConfigurationLedgerBookNativeCertified?: boolean;
   externalGlLedgerBookNativeCertified: boolean;
   reconciliationLedgerBookNativeCertified?: boolean;
   directLendingLedgerBookNativeCertified?: boolean;
@@ -5943,6 +5945,7 @@ export interface AccountingProductionCertificationProfile {
   postingRulesLedgerBookNativeCertified: boolean;
   journalLifecycleLedgerBookNativeCertified: boolean;
   closeReportingLedgerBookNativeCertified: boolean;
+  closePlanConfigurationLedgerBookNativeCertified?: boolean;
   externalGlLedgerBookNativeCertified: boolean;
   reconciliationLedgerBookNativeCertified?: boolean;
   directLendingLedgerBookNativeCertified?: boolean;

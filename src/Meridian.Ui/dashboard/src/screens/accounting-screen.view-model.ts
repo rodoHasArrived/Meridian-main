@@ -526,6 +526,7 @@ interface AccountingProductionCertificationProfileDraft {
   postingRulesLedgerBookNativeCertified: boolean;
   journalLifecycleLedgerBookNativeCertified: boolean;
   closeReportingLedgerBookNativeCertified: boolean;
+  closePlanConfigurationLedgerBookNativeCertified: boolean;
   externalGlLedgerBookNativeCertified: boolean;
   reconciliationLedgerBookNativeCertified: boolean;
   directLendingLedgerBookNativeCertified: boolean;
@@ -3457,6 +3458,8 @@ export function useAccountingConfigurationViewModel(
           return { ...current, journalLifecycleLedgerBookNativeCertified: checked };
         case "close-reporting-book":
           return { ...current, closeReportingLedgerBookNativeCertified: checked };
+        case "close-plan-configuration-book":
+          return { ...current, closePlanConfigurationLedgerBookNativeCertified: checked };
         case "external-gl-book":
           return { ...current, externalGlLedgerBookNativeCertified: checked };
         case "reconciliation-book":
@@ -3519,6 +3522,7 @@ export function useAccountingConfigurationViewModel(
       postingRulesLedgerBookNativeCertified: productionCertificationDraft.postingRulesLedgerBookNativeCertified,
       journalLifecycleLedgerBookNativeCertified: productionCertificationDraft.journalLifecycleLedgerBookNativeCertified,
       closeReportingLedgerBookNativeCertified: productionCertificationDraft.closeReportingLedgerBookNativeCertified,
+      closePlanConfigurationLedgerBookNativeCertified: productionCertificationDraft.closePlanConfigurationLedgerBookNativeCertified,
       externalGlLedgerBookNativeCertified: productionCertificationDraft.externalGlLedgerBookNativeCertified,
       reconciliationLedgerBookNativeCertified: productionCertificationDraft.reconciliationLedgerBookNativeCertified,
       directLendingLedgerBookNativeCertified: productionCertificationDraft.directLendingLedgerBookNativeCertified,
@@ -5319,7 +5323,7 @@ function buildAccountingProductionReadinessViewModel(
         : "No critical production-readiness blockers",
     externalGlLabel: `${readiness.externalGlProviderCount} provider${readiness.externalGlProviderCount === 1 ? "" : "s"} | ${readiness.certifiedExternalGlMappingProfileCount} certified mapping${readiness.certifiedExternalGlMappingProfileCount === 1 ? "" : "s"} | live posting ${readiness.externalGlLivePostingEnabled ? "enabled" : "disabled"}`,
     ledgerBookRolloutLabel: readiness.ledgerBookRollout
-      ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"} | ${readiness.ledgerBookWorkflows?.completedControlCount ?? 0}/${readiness.ledgerBookWorkflows?.requiredControlCount ?? 9} workflow controls`
+      ? `${readiness.ledgerBookRollout.bookCount} book${readiness.ledgerBookRollout.bookCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.openPeriodCount} open period${readiness.ledgerBookRollout.openPeriodCount === 1 ? "" : "s"} | ${readiness.ledgerBookRollout.criticalIssueCount} rollout blocker${readiness.ledgerBookRollout.criticalIssueCount === 1 ? "" : "s"} | ${readiness.ledgerBookWorkflows?.completedControlCount ?? 0}/${readiness.ledgerBookWorkflows?.requiredControlCount ?? 10} workflow controls`
       : "Ledger-book rollout evidence unavailable",
     dimensionalReportingLabel,
     dimensionalReportingEvidenceLabel,
@@ -5419,6 +5423,12 @@ function buildAccountingProductionCertificationProfileControls(
       checked: draft?.closeReportingLedgerBookNativeCertified ?? false
     },
     {
+      id: "close-plan-configuration-book",
+      label: "Close setup by book",
+      description: "Close-plan setup, materiality, dependencies, and sign-off configuration retain ledger-book scope.",
+      checked: draft?.closePlanConfigurationLedgerBookNativeCertified ?? false
+    },
+    {
       id: "external-gl-book",
       label: "External GL by book",
       description: "Guarded exports and mappings carry ledger-book scope.",
@@ -5494,6 +5504,7 @@ function buildAccountingProductionCertificationProfileDraft(
     postingRulesLedgerBookNativeCertified: profile.postingRulesLedgerBookNativeCertified,
     journalLifecycleLedgerBookNativeCertified: profile.journalLifecycleLedgerBookNativeCertified,
     closeReportingLedgerBookNativeCertified: profile.closeReportingLedgerBookNativeCertified,
+    closePlanConfigurationLedgerBookNativeCertified: profile.closePlanConfigurationLedgerBookNativeCertified ?? false,
     externalGlLedgerBookNativeCertified: profile.externalGlLedgerBookNativeCertified,
     reconciliationLedgerBookNativeCertified: profile.reconciliationLedgerBookNativeCertified ?? false,
     directLendingLedgerBookNativeCertified: profile.directLendingLedgerBookNativeCertified ?? false,
@@ -5527,6 +5538,7 @@ function buildAccountingProductionCertificationProfileFromReadiness(
     postingRulesLedgerBookNativeCertified: ledgerBookWorkflows?.postingRulesLedgerBookNativeCertified ?? false,
     journalLifecycleLedgerBookNativeCertified: ledgerBookWorkflows?.journalLifecycleLedgerBookNativeCertified ?? false,
     closeReportingLedgerBookNativeCertified: ledgerBookWorkflows?.closeReportingLedgerBookNativeCertified ?? false,
+    closePlanConfigurationLedgerBookNativeCertified: ledgerBookWorkflows?.closePlanConfigurationLedgerBookNativeCertified ?? false,
     externalGlLedgerBookNativeCertified: ledgerBookWorkflows?.externalGlLedgerBookNativeCertified ?? false,
     reconciliationLedgerBookNativeCertified: ledgerBookWorkflows?.reconciliationLedgerBookNativeCertified ?? false,
     directLendingLedgerBookNativeCertified: ledgerBookWorkflows?.directLendingLedgerBookNativeCertified ?? false,
@@ -5582,6 +5594,7 @@ function withProductionCertificationControlEvidence(
   addWorkflowEvidence(draft.postingRulesLedgerBookNativeCertified, "posting-candidate");
   addWorkflowEvidence(draft.journalLifecycleLedgerBookNativeCertified, "journal-lifecycle");
   addWorkflowEvidence(draft.closeReportingLedgerBookNativeCertified, "close-reporting");
+  addWorkflowEvidence(draft.closePlanConfigurationLedgerBookNativeCertified, "close-plan-configuration");
   addWorkflowEvidence(draft.externalGlLedgerBookNativeCertified, "external-gl");
   addWorkflowEvidence(draft.reconciliationLedgerBookNativeCertified, "reconciliation");
   addWorkflowEvidence(draft.directLendingLedgerBookNativeCertified, "direct-lending");

@@ -2877,13 +2877,14 @@ describe("accounting-screen view model", () => {
         postingRulesLedgerBookNativeCertified: true,
         journalLifecycleLedgerBookNativeCertified: true,
         closeReportingLedgerBookNativeCertified: false,
+        closePlanConfigurationLedgerBookNativeCertified: false,
         externalGlLedgerBookNativeCertified: false,
         reconciliationLedgerBookNativeCertified: false,
         directLendingLedgerBookNativeCertified: false,
         strategyLedgerReadLedgerBookNativeCertified: false,
         evidenceReferences: ["evidence://ledger-book/book-primary/workflow-certification"],
         completedControlCount: 4,
-        requiredControlCount: 9,
+        requiredControlCount: 10,
         hasLedgerBookScope: true,
         hasRetainedEvidence: true,
         hasLedgerBookScopedEvidence: true
@@ -3114,6 +3115,7 @@ describe("accounting-screen view model", () => {
       postingRulesLedgerBookNativeCertified: true,
       journalLifecycleLedgerBookNativeCertified: true,
       closeReportingLedgerBookNativeCertified: false,
+      closePlanConfigurationLedgerBookNativeCertified: false,
       externalGlLedgerBookNativeCertified: false,
       periodReportDimensionQueriesCertified: true,
       crossPeriodReportDimensionQueriesCertified: false,
@@ -3301,7 +3303,7 @@ describe("accounting-screen view model", () => {
       scoreLabel: "78/100",
       issueSummaryLabel: "1 warning requires review",
       externalGlLabel: "3 providers | 1 certified mapping | live posting disabled",
-      ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers | 4/9 workflow controls",
+      ledgerBookRolloutLabel: "1 book | 1 open period | 0 rollout blockers | 4/10 workflow controls",
       dimensionalReportingLabel: "4/9 ledger/query/report/export dimension controls | ledger book book-primary",
       dimensionalReportingEvidenceLabel: "1 retained dimensional evidence reference",
       tenantAdministrationLabel: "5/23 admin controls | tenant tenant-alpha | company company-alpha",
@@ -3393,6 +3395,7 @@ describe("accounting-screen view model", () => {
     expect(result.current.productionCertificationProfile.controls).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "posting-rules-book", checked: true }),
       expect.objectContaining({ id: "close-reporting-book", checked: false }),
+      expect.objectContaining({ id: "close-plan-configuration-book", checked: false }),
       expect.objectContaining({ id: "reconciliation-book", checked: false }),
       expect.objectContaining({ id: "direct-lending-book", checked: false }),
       expect.objectContaining({ id: "strategy-ledger-reads-book", checked: false }),
@@ -3405,6 +3408,7 @@ describe("accounting-screen view model", () => {
 
     act(() => {
       result.current.productionCertificationProfile.updateControl("close-reporting-book", true);
+      result.current.productionCertificationProfile.updateControl("close-plan-configuration-book", true);
       result.current.productionCertificationProfile.updateControl("cross-period-dimensions", true);
       result.current.productionCertificationProfile.updateEvidence("   ");
     });
@@ -3433,6 +3437,7 @@ describe("accounting-screen view model", () => {
         fundProfileId: "fund-alpha",
         ledgerBookId: "book-primary",
         closeReportingLedgerBookNativeCertified: true,
+        closePlanConfigurationLedgerBookNativeCertified: true,
         crossPeriodReportDimensionQueriesCertified: true,
         evidenceReferences: expect.arrayContaining([
           "evidence://ledger-book/book-primary/workflow-certification",
@@ -3440,6 +3445,7 @@ describe("accounting-screen view model", () => {
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/posting-candidate",
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/journal-lifecycle",
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-reporting",
+          "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-plan-configuration",
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/period-report/dimension-scope/canonical-production",
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/cross-period/dimension-scope/canonical-production",
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/journal-query/dimension-scope/canonical-production"
@@ -3451,6 +3457,7 @@ describe("accounting-screen view model", () => {
         "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/posting-candidate",
         "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/journal-lifecycle",
         "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-reporting",
+        "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/close-plan-configuration",
         "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/period-report/dimension-scope/canonical-production",
         "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/cross-period/dimension-scope/canonical-production",
         "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/journal-query/dimension-scope/canonical-production"

@@ -228,8 +228,9 @@ carry the canonical
 expected to retain fund, ledger-book, entity, sleeve, strategy, investor, capital-account,
 instrument, tax-lot, cost-center, counterparty, and external-GL dimensions with the migration
 evidence instead of relying on account or run names.
-`AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle, close/reporting,
-external GL, reconciliation, direct-lending, and strategy-ledger-read controls as complete only when the certification flag is paired with retained
+`AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle,
+close/reporting, close-plan configuration, external GL, reconciliation, direct-lending, and
+strategy-ledger-read controls as complete only when the certification flag is paired with retained
 ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
 certification packet. Ledger-book evidence must use an explicit `ledger-book:<id>`,
 `ledger-book/<id>`, `book:<id>`, or `ledgerBookId=<id>` marker, with `ledgerBookId:<id>` and

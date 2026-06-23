@@ -260,6 +260,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         => profile.PostingRulesLedgerBookNativeCertified ||
            profile.JournalLifecycleLedgerBookNativeCertified ||
            profile.CloseReportingLedgerBookNativeCertified ||
+           profile.ClosePlanConfigurationLedgerBookNativeCertified ||
            profile.ExternalGlLedgerBookNativeCertified ||
            profile.PeriodReportDimensionQueriesCertified ||
            profile.CrossPeriodReportDimensionQueriesCertified ||
@@ -325,6 +326,19 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             "close-management",
             "report-package",
             "restatement");
+        EnsureControlEvidence(
+            profile.ClosePlanConfigurationLedgerBookNativeCertified,
+            evidenceReferences,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
+            "close-plan configuration workflow",
+            "close-plan-configuration",
+            "close-plan",
+            "close-setup",
+            "close-checklist",
+            "materiality-policy");
         EnsureControlEvidence(
             profile.ExternalGlLedgerBookNativeCertified,
             evidenceReferences,

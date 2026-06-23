@@ -139,6 +139,9 @@ the requirement end to end.
   ledger-line dimensions, trial-balance filters, period reports, cross-period reports, journal
   dimension filters, report-package provenance, and external-export dimension mappings have retained
   ledger-book-scoped evidence.
+- [x] Close-plan configuration production readiness is now its own ledger-book-native workflow
+  control. Materiality policy, checklist/dependency, sign-off, and close-setup evidence must name
+  the selected ledger book before close/reporting readiness can count the setup lane as complete.
 - [x] Tenant administration production readiness is now evidence-qualified by setup lane: tenant
   scope, admin roles, scoped access, reporting groups, aggregate operator surface, browser admin
   studio, and WPF admin studio each require retained evidence for that lane, or an explicit
@@ -336,7 +339,8 @@ the requirement end to end.
   blocker/evidence review in shared services plus browser/WPF surfaces. Backend close-plan
   projection now proves dependency-gated task progression, fail-closed missing sign-off blockers,
   critical pending material late-adjustment blockers, and a governed close-plan configuration
-  command, but richer browser/WPF setup/editing workflows and review UX remain open.
+  command, and production readiness now evidence-qualifies close-plan setup by ledger book, but
+  richer browser/WPF setup/editing workflows and review UX remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails

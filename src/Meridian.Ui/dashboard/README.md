@@ -319,6 +319,9 @@ is enforced by the shared task sign-off endpoint.
 Close-calendar rows display milestone due dates, owners, dependency counts, sign-off counts,
 evidence counts, blockers, and period-lock state returned by the shared close plan instead of
 rebuilding calendar posture from checklist rows in React.
+The accounting production-certification editor also carries a separate close-plan setup control so
+materiality policy, checklist/dependency, and sign-off configuration evidence is retained by
+ledger book instead of being implied by generic close/reporting certification.
 Accounting report package history rows also display the shared export artifact certification count
 from the package bundle, while artifact generation, content hashes, and certification state remain
 owned by Financial Operations. Operators can inspect the selected package's retained controlled

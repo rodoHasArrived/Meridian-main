@@ -67,7 +67,7 @@ queue, dimension mapping, implementation sandbox, audit review, bulk import/expo
 performance validation, and disaster-recovery runbook controls, renders
 the shared ledger-book-native workflow control count and retained ledger-book-scoped
 workflow evidence for posting rules, JE lifecycle, close/reporting, external GL, reconciliation,
-direct-lending projections, and strategy ledger reads, renders
+close-plan setup, direct-lending projections, and strategy ledger reads, renders
 dimensional ledger/query/report/export control counts with retained ledger-book-scoped evidence, renders
 and saves retained tenant/company/fund/book-scoped production-certification controls through the
 shared Accounting System profile store, adding scoped retained evidence markers for checked
