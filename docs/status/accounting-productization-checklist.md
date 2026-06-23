@@ -148,7 +148,9 @@ the requirement end to end.
   certify one book by matching a longer unrelated identifier prefix.
 - [x] Accounting report package certification now applies the same exact-token ledger-book evidence
   check, preventing certified financial statement, NAV, restatement, and export artifacts from
-  accepting `book:{id}ffff` as selected-book provenance.
+  accepting `book:{id}ffff` as selected-book provenance. Certification evidence also requires
+  exact-token package id, certification id, and period provenance before reports, NAV, restatement,
+  or export artifacts can be certified.
 - [x] Close-management task sign-off and late-adjustment request/review evidence now apply
   exact-token ledger-book, close-task, journal-entry, and late-adjustment request evidence checks,
   preventing extended identifiers such as `book:{id}ffff` from satisfying selected close-control

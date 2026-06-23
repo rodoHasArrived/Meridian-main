@@ -319,6 +319,24 @@ public sealed class AccountingReportPackageServiceTests
         await missingCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
+        var extendedPackageIdEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with a package evidence token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}ffff:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}"]));
+
+        await extendedPackageIdEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedCertificationIdEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with a certification evidence token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}ffff:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}"]));
+
+        await extendedCertificationIdEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
         var missingLedgerBookEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
             "controller",
@@ -335,6 +353,15 @@ public sealed class AccountingReportPackageServiceTests
             [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}ffff:{ready.FinancialStatements.PeriodId}"]));
 
         await extendedLedgerBookEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedPeriodEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with a period evidence token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}ffff"]));
+
+        await extendedPeriodEvidence.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
         var assistantCertification = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(

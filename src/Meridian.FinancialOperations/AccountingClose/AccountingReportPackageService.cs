@@ -1065,12 +1065,40 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         IReadOnlyList<string> evidenceLinks)
         => evidenceLinks.Any(link =>
             HasReportCertificationEvidence([link]) &&
-            link.Contains(package.FinancialStatements.PackageId, StringComparison.OrdinalIgnoreCase) &&
-            link.Contains(package.Certification.CertificationId, StringComparison.OrdinalIgnoreCase) &&
-            link.Contains(package.FinancialStatements.PeriodId, StringComparison.OrdinalIgnoreCase) &&
+            EvidenceReferencesReportIdentifier(link, package.FinancialStatements.PackageId) &&
+            EvidenceReferencesReportIdentifier(link, package.Certification.CertificationId) &&
+            EvidenceReferencesReportIdentifier(link, package.FinancialStatements.PeriodId) &&
             EvidenceReferencesReportLedgerBook(package, link) &&
             EvidenceReferencesReportTenantCompanyScope(package, link) &&
             EvidenceReferencesReportDimensionScope(package, link));
+
+    private static bool EvidenceReferencesReportIdentifier(string evidenceLink, string identifier)
+    {
+        if (string.IsNullOrWhiteSpace(identifier))
+        {
+            return false;
+        }
+
+        var searchIndex = 0;
+        while (searchIndex < evidenceLink.Length)
+        {
+            var identifierIndex = evidenceLink.IndexOf(identifier, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (identifierIndex < 0)
+            {
+                return false;
+            }
+
+            if (IsEvidenceTokenBoundary(evidenceLink, identifierIndex - 1) &&
+                IsEvidenceTokenBoundary(evidenceLink, identifierIndex + identifier.Length))
+            {
+                return true;
+            }
+
+            searchIndex = identifierIndex + identifier.Length;
+        }
+
+        return false;
+    }
 
     private static bool EvidenceReferencesReportTenantCompanyScope(
         AccountingReportPackageBundleDto package,
