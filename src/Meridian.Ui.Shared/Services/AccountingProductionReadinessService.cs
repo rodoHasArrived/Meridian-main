@@ -1458,6 +1458,21 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for reporting groups, delivery groups, or report-group entitlements before production reporting delivery.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "reporting-group",
+                     "report-group",
+                     "delivery-group"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.reporting-groups-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Reporting delivery group certification lacks retained evidence for the selected ledger book.",
+                "Attach reporting-group, delivery-group, or report-entitlement evidence that names the selected ledgerBookId before certifying production reporting delivery.",
+                evidenceReferences));
+        }
 
         if (!readiness.AccountingAdminSurfaceConfigured)
         {

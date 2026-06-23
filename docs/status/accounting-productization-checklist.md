@@ -259,6 +259,9 @@ the requirement end to end.
 - [x] Tenant/company/report-group setup production readiness now also requires retained evidence for
   the selected ledger book, blocking generic enterprise setup packets from certifying multi-ledger
   reporting administration controls without book-specific proof.
+- [x] Reporting-group production readiness now also requires retained evidence for the selected
+  ledger book, so production reporting delivery controls cannot pass from generic tenant/company
+  report-group evidence alone.
 
 ## Still To Complete
 
