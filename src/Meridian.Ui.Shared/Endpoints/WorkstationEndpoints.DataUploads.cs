@@ -291,7 +291,7 @@ public static partial class WorkstationEndpoints
     }
 
     private static DataUploadTemplateCatalogDto BuildDataUploadTemplateCatalog()
-        => new(
+        => EnrichDataUploadTemplateCatalog(new(
             Templates:
             [
                 new DataUploadTemplateDto(
@@ -526,7 +526,90 @@ public static partial class WorkstationEndpoints
             ],
             AcceptedFileExtensions: [".csv"],
             MaxPreviewRows: DataUploadMaxPreviewRows,
-            MaxFileBytes: DataUploadMaxFileBytes);
+            MaxFileBytes: DataUploadMaxFileBytes));
+
+    private static DataUploadTemplateCatalogDto EnrichDataUploadTemplateCatalog(DataUploadTemplateCatalogDto catalog)
+        => catalog with
+        {
+            Templates = catalog.Templates
+                .Select(template => template with
+                {
+                    SourceKinds = BuildDataUploadSourceKinds(template.TemplateId),
+                    SetupChecklist = BuildDataUploadSetupChecklist(template.TemplateId),
+                    MappingGuidance = BuildDataUploadMappingGuidance(template.TemplateId)
+                })
+                .ToArray()
+        };
+
+    private static IReadOnlyList<string> BuildDataUploadSourceKinds(string templateId)
+        => templateId.Equals("bank-statement", StringComparison.OrdinalIgnoreCase)
+            ? ["Manual upload", "SFTP bank drop", "Provider statement export"]
+            : ["Manual upload", "SFTP file drop", "Provider export"];
+
+    private static IReadOnlyList<string> BuildDataUploadSetupChecklist(string templateId)
+        => templateId.Equals("bank-statement", StringComparison.OrdinalIgnoreCase)
+            ? [
+                "Confirm the bank account target and statement date before import.",
+                "Use a pinned SFTP host key or retained manual source file for provenance.",
+                "Preview the CSV before applying it as account evidence."
+            ]
+            : [
+                "Select the template that matches the downstream workflow before choosing a file.",
+                "Use the CSV template headers exactly; required fields are validated before review.",
+                "For SFTP intake, configure the remote path and pinned host-key fingerprint in the provider setup flow before routing files."
+            ];
+
+    private static IReadOnlyList<string> BuildDataUploadMappingGuidance(string templateId)
+        => templateId.ToLowerInvariant() switch
+        {
+            "trade-data" =>
+            [
+                "Map trade_id and source_document_id to retained broker evidence.",
+                "Map account_code, symbol, side, quantity, and price before reconciliation.",
+                "Keep strategy_id populated when a trade must hand off to strategy attribution."
+            ],
+            "transaction-data" =>
+            [
+                "Map transaction_id to the source activity key and account_code to the Meridian account.",
+                "Normalize transaction_type before reconciliation so fees, dividends, transfers, and adjustments do not collapse into one bucket.",
+                "Keep source_system and source_document_id populated for audit traceability."
+            ],
+            "bank-statement" =>
+            [
+                "Map transaction_date, amount, and description before importing the statement.",
+                "Use reference and closing_balance when available to improve duplicate and reconciliation checks.",
+                "Bank statement import writes retained account evidence only; ledger posting remains approval gated."
+            ],
+            "asset-information" =>
+            [
+                "Map asset_id and symbol to Security Master candidate identifiers.",
+                "Map asset_class, issuer, currency, and maturity facts before review.",
+                "Conflicting asset facts stay candidates until governed Security Master approval."
+            ],
+            "entity-configuration" =>
+            [
+                "Map entity_id, entity_type, parent_entity_id, and effective_from before governance review.",
+                "Use source_system to tie setup candidates back to the administrator or retained structure packet.",
+                "Parent and ownership mappings remain candidates until approved."
+            ],
+            "servicer-position-statement" =>
+            [
+                "Map rowId and at least one loan identifier before direct-lending reconciliation.",
+                "Map principalOutstanding and currency before review.",
+                "Retain externalRef so servicer evidence can be traced after import."
+            ],
+            "servicer-remittance-statement" =>
+            [
+                "Map rowId, statementDate, effectiveDate, grossAmount, and currency before applying rows.",
+                "Split principal, interest, fee, and penalty amounts before command review.",
+                "Use applyMode only after the previewed allocation is accepted."
+            ],
+            _ =>
+            [
+                "Map required fields first, then optional provenance fields.",
+                "Retain source identifiers so validation and reconciliation can explain every row."
+            ]
+        };
 
     private static DataUploadTemplateFieldDto RequiredUploadField(
         string name,

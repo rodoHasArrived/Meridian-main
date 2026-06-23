@@ -48,6 +48,22 @@ public sealed class SecurityMasterInstrumentPassportTests
         passport.Pricing.TickSize.Should().Be(0.01m);
         passport.Usage.IsScoped.Should().BeFalse();
         passport.TrustPosture.TrustScore.Should().BeGreaterThan(0);
+        passport.ReferenceDataWorkbench.Should().NotBeNull();
+        passport.ReferenceDataWorkbench!.Sections.Select(section => section.SectionId).Should().Contain(
+            [
+                "provider-evidence",
+                "identifier-confidence",
+                "terms-obligations",
+                "cash-flow-readiness",
+                "ledger-classification",
+                "operations-handoff"
+            ]);
+        passport.ReferenceDataWorkbench.Sections.Should().Contain(section =>
+            section.SectionId == "provider-evidence" &&
+            section.Summary.Contains("provider evidence", StringComparison.OrdinalIgnoreCase));
+        passport.ReferenceDataWorkbench.Sections.Should().Contain(section =>
+            section.SectionId == "ledger-classification" &&
+            section.Summary.Contains("Equity", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

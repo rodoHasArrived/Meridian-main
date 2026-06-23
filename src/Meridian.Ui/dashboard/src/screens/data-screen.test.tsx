@@ -328,6 +328,9 @@ describe("DataScreen", () => {
     ));
     expect(await screen.findByText(/1 rows parsed from trades\.csv/i)).toBeInTheDocument();
     expect(screen.getByText("workstation/data-uploads/UP-1/trades.csv")).toBeInTheDocument();
+    expect(screen.getByText("SFTP file drop")).toBeInTheDocument();
+    expect(screen.getByText(/pinned host-key fingerprint/i)).toBeInTheDocument();
+    expect(screen.getByText("4 of 7 required mapping fields matched in trades.csv.")).toBeInTheDocument();
     expect(screen.getAllByText("AAPL").length).toBeGreaterThanOrEqual(1);
 
     previewDataUpload.mockRestore();

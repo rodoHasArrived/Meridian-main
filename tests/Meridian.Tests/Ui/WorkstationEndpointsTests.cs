@@ -4770,6 +4770,14 @@ public sealed partial class WorkstationEndpointsTests
             item.Symbol == "AAPL" &&
             item.ProviderSource == "Identifier" &&
             item.ConfidenceScore >= 85m);
+        passport.ReferenceDataWorkbench.Should().NotBeNull();
+        passport.ReferenceDataWorkbench!.Sections.Should().Contain(section =>
+            section.SectionId == "provider-evidence" &&
+            section.Status == "Ready");
+        passport.ReferenceDataWorkbench.Sections.Should().Contain(section =>
+            section.SectionId == "identifier-confidence" &&
+            section.Summary.Contains("identifier", StringComparison.OrdinalIgnoreCase));
+        passport.ReferenceDataWorkbench.OperationsHandoffs.Should().NotBeEmpty();
     }
 
     [Fact]

@@ -14416,6 +14416,16 @@ export function buildInstrumentPassportViewState({
   const usageSummary = passport?.usage.summary?.trim() || "Downstream usage is unavailable.";
   const pricingStatus = passport?.pricing?.status?.trim() || "Unknown";
   const pricingSummary = passport?.pricing?.summary?.trim() || "Pricing and trading controls are unavailable.";
+  const referenceDataWorkbench = passport?.referenceDataWorkbench ?? null;
+  const referenceDataWorkbenchStatus = referenceDataWorkbench?.status?.trim() || "Unavailable";
+  const referenceDataWorkbenchSummary = referenceDataWorkbench?.summary?.trim() || "Reference-data workbench is unavailable.";
+  const referenceDataWorkbenchSections = (referenceDataWorkbench?.sections ?? []).map((section) => ({
+    label: section.title,
+    value: `${section.status}: ${section.summary} Evidence ${section.evidenceCount}; blockers ${section.blockingIssueCount}.`,
+    tone: section.status.toLowerCase() === "ready" ? "success" as const : "warning" as const
+  }));
+  const enabledHandoffs = referenceDataWorkbench?.operationsHandoffs.filter((handoff) => handoff.isEnabled).length ?? 0;
+  const totalHandoffs = referenceDataWorkbench?.operationsHandoffs.length ?? 0;
   const activeProviderCount = providerRows.filter((row) => row.isActive).length;
   const statusBadgeVariant = trustTone.toLowerCase() === "trusted"
     ? "success"
@@ -14440,6 +14450,17 @@ export function buildInstrumentPassportViewState({
       { label: "Provider confidence", value: `${activeProviderCount} active / ${providerRows.length} total` },
       { label: "Pricing", value: `${pricingStatus}: ${pricingSummary}` },
       { label: "Usage", value: usageSummary },
+      {
+        label: "Reference-data workbench",
+        value: `${referenceDataWorkbenchStatus}: ${referenceDataWorkbenchSummary}`,
+        tone: referenceDataWorkbenchStatus.toLowerCase() === "ready" ? "success" : "warning"
+      },
+      ...referenceDataWorkbenchSections,
+      {
+        label: "Operations handoff",
+        value: `${enabledHandoffs} enabled / ${totalHandoffs} total handoff(s).`,
+        tone: enabledHandoffs > 0 ? "success" : "warning"
+      },
       { label: "Retrieved", value: passport?.retrievedAtUtc ? formatDateTimeLabel(passport.retrievedAtUtc) : "-" }
     ],
     providerRows,

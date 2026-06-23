@@ -2384,8 +2384,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         var activeProviderCount = passport.ProviderConfidence.Count(item => item.IsActive);
         var primaryProvider = passport.ProviderConfidence.FirstOrDefault(item => item.IsPrimary)
             ?? passport.ProviderConfidence.FirstOrDefault();
-        ReplaceCollection(InstrumentPassportFields,
-        [
+        var fields = new List<SecurityMasterPresentationField>
+        {
             new SecurityMasterPresentationField("Display name", passport.Identity.DisplayName),
             new SecurityMasterPresentationField("Security ID", passport.SecurityId.ToString("D")),
             new SecurityMasterPresentationField("Asset class", SecurityMasterTextHelpers.FirstNonEmpty(passport.Identity.AssetClass, passport.EconomicDefinition.AssetClass, "Unavailable")),
@@ -2396,7 +2396,25 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Pricing", $"{passport.Pricing.Status}: {passport.Pricing.Summary}"),
             new SecurityMasterPresentationField("Usage", passport.Usage.Summary),
             new SecurityMasterPresentationField("Retrieved", passport.RetrievedAtUtc.LocalDateTime.ToString("g"))
-        ]);
+        };
+
+        if (passport.ReferenceDataWorkbench is { } workbench)
+        {
+            fields.Add(new SecurityMasterPresentationField("Reference-data workbench", $"{workbench.Status}: {workbench.Summary}"));
+            foreach (var section in workbench.Sections)
+            {
+                fields.Add(new SecurityMasterPresentationField(
+                    section.Title,
+                    $"{section.Status}: {section.Summary} Evidence {section.EvidenceCount}; blockers {section.BlockingIssueCount}."));
+            }
+
+            var enabledHandoffs = workbench.OperationsHandoffs.Count(static handoff => handoff.IsEnabled);
+            fields.Add(new SecurityMasterPresentationField(
+                "Operations handoff",
+                $"{enabledHandoffs} enabled / {workbench.OperationsHandoffs.Count} total handoff(s)."));
+        }
+
+        ReplaceCollection(InstrumentPassportFields, fields);
     }
     private void RebuildFilteredConflicts()
         => RebuildFilteredConflicts(SelectedConflict?.ConflictId);

@@ -258,11 +258,11 @@ Completed the first shared multi-asset operations proof lane by exposing Securit
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-10 |
+| Last reviewed | 2026-06-22 |
 
 ### Current Summary
 
-Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. It should consume shared contracts/read models rather than creating browser- or WPF-local business rules.
+Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. Direct-lending operations now has attached proof for endpoint parity, a shared operations read model, Security & Instrument Explorer and Financial Operations integration, WPF dense operations panels, and focused residual security tests; the broader FINOPS control center remains planned.
 
 ### Exit Criteria
 

@@ -359,6 +359,8 @@ describe("data-screen view model", () => {
     expect(typesSource).toContain("backfills: DataBackfillRecord[];");
     expect(typesSource).toContain("exports: DataExportRecord[];");
     expect(typesSource).toContain("uploadTemplates?: DataUploadTemplateCatalog | null;");
+    expect(typesSource).toContain("sourceKinds?: string[] | null;");
+    expect(typesSource).toContain("mappingGuidance?: string[] | null;");
     expect(typesSource).toContain("export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;");
     expect(typesSource).not.toContain("export interface DataOperationsWorkspaceResponse");
     expect(typesSource).not.toContain("export type DataWorkspaceResponse = DataOperationsWorkspaceResponse");
@@ -401,6 +403,10 @@ describe("data-screen view model", () => {
     ]);
     expect(state.statusLabel).toBe("Needs schema repair");
     expect(state.retainedPath).toBe("workstation/data-uploads/UP-1/trades.csv");
+    expect(state.sourceKinds).toContain("SFTP file drop");
+    expect(state.setupChecklist.join(" ")).toContain("pinned host-key fingerprint");
+    expect(state.mappingSummary).toBe("4 of 7 required mapping fields matched in trades.csv.");
+    expect(state.mappingGuidance[0]).toContain("trade_id");
     expect(state.issueRows[0]).toMatchObject({
       severity: "Warning",
       field: "row",

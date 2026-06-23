@@ -626,9 +626,9 @@ public sealed class AccountingPostingCandidateServiceTests
             sourceEventId,
             AccountingBasisKindDto.Gaap,
             "gaap-accrual-v1") with
-            {
-                AggregateId = sourceEventId
-            };
+        {
+            AggregateId = sourceEventId
+        };
 
         var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
             request,
@@ -845,10 +845,10 @@ public sealed class AccountingPostingCandidateServiceTests
             sourceEventId,
             AccountingBasisKindDto.Gaap,
             "gaap-accrual-v1") with
-            {
-                TenantId = "tenant-alpha",
-                CompanyId = "company-alpha"
-            };
+        {
+            TenantId = "tenant-alpha",
+            CompanyId = "company-alpha"
+        };
 
         var act = () => service.PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
             tenantScopedCandidate,

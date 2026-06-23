@@ -1736,6 +1736,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for tenant/company setup, report-group setup, or company report-group controls.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "tenant-company-report-group",
+                     "tenant-company-setup",
+                     "report-group-setup",
+                     "company-report-group"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.tenant-company-report-group-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Tenant, company, and report-group setup studio certification lacks retained evidence for the selected ledger book.",
+                "Attach tenant/company/report-group setup evidence that names the selected ledgerBookId before certifying book-native enterprise setup controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.AuditReviewToolingConfigured)
         {

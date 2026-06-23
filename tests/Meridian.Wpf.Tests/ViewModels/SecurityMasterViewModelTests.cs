@@ -871,6 +871,12 @@ public sealed class SecurityMasterViewModelTests
             viewModel.InstrumentPassportFields.Should().Contain(field =>
                 field.Label == "Primary provider" &&
                 field.Value.Contains("Bloomberg", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Reference-data workbench" &&
+                field.Value.Contains("Multi-asset reference-data workbench", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Operations handoff" &&
+                field.Value.Contains("enabled", StringComparison.OrdinalIgnoreCase));
         });
     }
 
@@ -1397,7 +1403,37 @@ public sealed class SecurityMasterViewModelTests
                     IdentifierConflictIds: [],
                     IdentifierConflictSummaries: [],
                     OverrideHistory: [])
-            ]
+            ],
+            ReferenceDataWorkbench = new InstrumentPassportReferenceDataWorkbenchDto(
+                Status: "Ready",
+                Summary: "Multi-asset reference-data workbench is ready for downstream FINOPS use.",
+                Sections:
+                [
+                    new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                        SectionId: "provider-evidence",
+                        Title: "Provider evidence",
+                        Status: "Ready",
+                        Summary: "Provider evidence is retained on the passport.",
+                        EvidenceCount: 1,
+                        BlockingIssueCount: 0),
+                    new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                        SectionId: "operations-handoff",
+                        Title: "Operations handoff",
+                        Status: "Ready",
+                        Summary: "Security Master context is retained for operations handoff.",
+                        EvidenceCount: 1,
+                        BlockingIssueCount: 0)
+                ],
+                OperationsHandoffs:
+                [
+                    new InstrumentPassportOperationsHandoffDto(
+                        HandoffId: "handoff-1",
+                        Target: "FINOPS",
+                        Title: "Retain Security Master context",
+                        Detail: "Continue close review from the selected passport.",
+                        Status: "Available",
+                        IsEnabled: true)
+                ])
         };
 
     private static SecurityMasterConflictAssessmentDto CreateAssessment(

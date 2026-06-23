@@ -23,7 +23,10 @@ public sealed record DataUploadTemplateDto(
     string HeaderLine,
     IReadOnlyList<DataUploadTemplateFieldDto> Fields,
     IReadOnlyList<string> SampleRows,
-    IReadOnlyList<string> ValidationNotes);
+    IReadOnlyList<string> ValidationNotes,
+    IReadOnlyList<string>? SourceKinds = null,
+    IReadOnlyList<string>? SetupChecklist = null,
+    IReadOnlyList<string>? MappingGuidance = null);
 
 /// <summary>
 /// Template-field metadata used by the browser and desktop shells for source-file preparation.

@@ -442,6 +442,10 @@ export interface DataUploadPanelState {
   selectedTemplate: DataUploadTemplate | null;
   selectedTemplateFields: DataUploadFieldRowState[];
   validationNotes: string[];
+  sourceKinds: string[];
+  setupChecklist: string[];
+  mappingGuidance: string[];
+  mappingSummary: string;
   acceptedFileTypes: string;
   maxFileSizeLabel: string;
   templateDownload: {
@@ -1971,6 +1975,10 @@ export function buildDataUploadPanelState(
       description: field.description
     })),
     validationNotes: selectedTemplate?.validationNotes ?? [],
+    sourceKinds: resolveDataUploadSourceKinds(selectedTemplate),
+    setupChecklist: resolveDataUploadSetupChecklist(selectedTemplate),
+    mappingGuidance: resolveDataUploadMappingGuidance(selectedTemplate),
+    mappingSummary: buildDataUploadMappingSummary(selectedTemplate, preview),
     acceptedFileTypes,
     maxFileSizeLabel: formatDataUploadFileSize(resolvedCatalog.maxFileBytes),
     templateDownload,
@@ -2012,6 +2020,85 @@ export function buildDataUploadPanelState(
     previewRows,
     requestStatus
   };
+}
+
+function resolveDataUploadSourceKinds(template: DataUploadTemplate | null): string[] {
+  const configured = template?.sourceKinds?.map((item) => item.trim()).filter(Boolean) ?? [];
+  if (configured.length > 0) {
+    return configured;
+  }
+
+  return template?.templateId === "bank-statement"
+    ? ["Manual upload", "SFTP bank drop", "Provider statement export"]
+    : ["Manual upload", "SFTP file drop", "Provider export"];
+}
+
+function resolveDataUploadSetupChecklist(template: DataUploadTemplate | null): string[] {
+  const configured = template?.setupChecklist?.map((item) => item.trim()).filter(Boolean) ?? [];
+  if (configured.length > 0) {
+    return configured;
+  }
+
+  if (!template) {
+    return ["Choose a data upload template before selecting a file."];
+  }
+
+  if (template.templateId === "bank-statement") {
+    return [
+      "Confirm the bank account target and statement date before import.",
+      "Use a pinned SFTP host key or retained manual source file for provenance.",
+      "Preview the CSV before applying it as account evidence."
+    ];
+  }
+
+  return [
+    "Select the template that matches the downstream workflow before choosing a file.",
+    "Use the CSV template headers exactly; required fields are validated before review.",
+    "For SFTP intake, configure the remote path and pinned host-key fingerprint in the provider setup flow before routing files."
+  ];
+}
+
+function resolveDataUploadMappingGuidance(template: DataUploadTemplate | null): string[] {
+  const configured = template?.mappingGuidance?.map((item) => item.trim()).filter(Boolean) ?? [];
+  if (configured.length > 0) {
+    return configured;
+  }
+
+  if (!template) {
+    return [];
+  }
+
+  const requiredFields = template.fields.filter((field) => field.required).slice(0, 5).map((field) => field.name);
+  const provenanceFields = template.fields
+    .filter((field) => !field.required && /source|reference|document|external/i.test(field.name))
+    .slice(0, 3)
+    .map((field) => field.name);
+
+  return [
+    `Map required fields first: ${requiredFields.join(", ")}.`,
+    provenanceFields.length > 0
+      ? `Keep provenance fields populated when available: ${provenanceFields.join(", ")}.`
+      : "Keep source identifiers populated when available so validation can explain each row.",
+    "Rows remain retained evidence until validation, reconciliation, and approval accept the file."
+  ];
+}
+
+function buildDataUploadMappingSummary(
+  template: DataUploadTemplate | null,
+  preview: DataUploadPreviewResult | null
+): string {
+  if (!template) {
+    return "Choose a template to see required mapping fields.";
+  }
+
+  const required = template.fields.filter((field) => field.required).map((field) => field.name);
+  if (!preview) {
+    return `${required.length} required mapping fields will be checked before review.`;
+  }
+
+  const headerSet = new Set(preview.headers.map((header) => header.toLowerCase()));
+  const mapped = required.filter((field) => headerSet.has(field.toLowerCase())).length;
+  return `${mapped} of ${required.length} required mapping fields matched in ${preview.fileName}.`;
 }
 
 export function buildDataUploadTemplateCsv(template: DataUploadTemplate): string {

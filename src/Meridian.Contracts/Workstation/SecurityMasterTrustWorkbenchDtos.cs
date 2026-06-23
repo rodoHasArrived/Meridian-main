@@ -366,6 +366,28 @@ public sealed record InstrumentPassportProviderConfidenceDto(
     IReadOnlyList<string> IdentifierConflictSummaries,
     IReadOnlyList<SecurityMasterChangeHistoryItemDto> OverrideHistory);
 
+public sealed record InstrumentPassportReferenceDataWorkbenchDto(
+    string Status,
+    string Summary,
+    IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Sections,
+    IReadOnlyList<InstrumentPassportOperationsHandoffDto> OperationsHandoffs);
+
+public sealed record InstrumentPassportReferenceDataWorkbenchSectionDto(
+    string SectionId,
+    string Title,
+    string Status,
+    string Summary,
+    int EvidenceCount,
+    int BlockingIssueCount);
+
+public sealed record InstrumentPassportOperationsHandoffDto(
+    string HandoffId,
+    string Target,
+    string Title,
+    string Detail,
+    string Status,
+    bool IsEnabled);
+
 public sealed record InstrumentPassportDto(
     Guid SecurityId,
     SecurityIdentityDrillInDto Identity,
@@ -380,6 +402,7 @@ public sealed record InstrumentPassportDto(
     DateTimeOffset RetrievedAtUtc)
 {
     public IReadOnlyList<InstrumentPassportProviderConfidenceDto> ProviderConfidence { get; init; } = [];
+    public InstrumentPassportReferenceDataWorkbenchDto? ReferenceDataWorkbench { get; init; }
 }
 
 public sealed record InstrumentPassportPricingDto(

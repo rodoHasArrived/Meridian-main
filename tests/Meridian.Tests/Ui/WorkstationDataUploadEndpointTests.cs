@@ -39,6 +39,12 @@ public sealed partial class WorkstationEndpointsTests
         catalog.Templates.Single(template => template.TemplateId == "trade-data")
             .Fields.Where(field => field.Required).Select(field => field.Name)
             .Should().Contain(["trade_id", "trade_date", "account_code", "symbol", "side", "quantity", "price"]);
+        catalog.Templates.Single(template => template.TemplateId == "trade-data")
+            .SourceKinds.Should().Contain(["Manual upload", "SFTP file drop"]);
+        catalog.Templates.Single(template => template.TemplateId == "trade-data")
+            .SetupChecklist.Should().Contain(item => item.Contains("pinned host-key fingerprint", StringComparison.OrdinalIgnoreCase));
+        catalog.Templates.Single(template => template.TemplateId == "trade-data")
+            .MappingGuidance.Should().Contain(item => item.Contains("account_code", StringComparison.OrdinalIgnoreCase));
 
         data.Should().NotBeNull();
         data!.UploadTemplates.Templates.Select(template => template.TemplateId)

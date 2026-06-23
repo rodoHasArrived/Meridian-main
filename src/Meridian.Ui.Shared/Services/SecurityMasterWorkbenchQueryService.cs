@@ -178,6 +178,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 .Select(MapHistoryToLifecycleEvent)
                 .ToArray();
         var pricing = BuildPassportPricing(snapshot.TrustPosture, tradingParameters);
+        var providerConfidence = BuildProviderConfidence(snapshot, identifierSummary, lifecycleEvents);
 
         return new InstrumentPassportDto(
             SecurityId: snapshot.SecurityId,
@@ -192,8 +193,178 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             TrustPosture: snapshot.TrustPosture,
             RetrievedAtUtc: snapshot.RetrievedAtUtc)
         {
-            ProviderConfidence = BuildProviderConfidence(snapshot, identifierSummary, lifecycleEvents)
+            ProviderConfidence = providerConfidence,
+            ReferenceDataWorkbench = BuildReferenceDataWorkbench(
+                snapshot,
+                identifierSummary,
+                providerConfidence,
+                pricing)
         };
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchDto BuildReferenceDataWorkbench(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        InstrumentPassportPricingDto pricing)
+    {
+        var openIdentifierConflictCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
+        var activeProviderEvidenceCount = providerConfidence.Count(static row => row.IsActive);
+        var hasUsableIdentifierConfidence =
+            identifierSummary.HasPrimaryIdentifier &&
+            identifierSummary.HasProviderMappings &&
+            activeProviderEvidenceCount > 0 &&
+            openIdentifierConflictCount == 0;
+        var hasObligationEvidence =
+            snapshot.CorporateActions.Count > 0 ||
+            snapshot.ScheduleBook?.Events.Count > 0 ||
+            snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true;
+        var hasCashFlowReadiness =
+            snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ||
+            snapshot.ScheduleBook?.SupportsCashflowSchedule == true ||
+            snapshot.CorporateActions.Count > 0;
+        var hasLedgerClassification =
+            !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass) &&
+            !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
+        var operationsHandoffEvidenceCount = Math.Max(
+            1,
+            snapshot.RecommendedActions.Count + snapshot.DownstreamImpact.Links.Count);
+
+        var sections = new[]
+        {
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "provider-evidence",
+                Title: "Provider evidence",
+                Status: activeProviderEvidenceCount > 0 ? "Ready" : "Review",
+                Summary: activeProviderEvidenceCount > 0
+                    ? $"{activeProviderEvidenceCount} active provider evidence row(s) retained on the passport."
+                    : "No active provider evidence rows are retained on the passport.",
+                EvidenceCount: providerConfidence.Count,
+                BlockingIssueCount: openIdentifierConflictCount),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "identifier-confidence",
+                Title: "Identifier confidence",
+                Status: hasUsableIdentifierConfidence ? "Ready" : "Review",
+                Summary: identifierSummary.Summary,
+                EvidenceCount: identifierSummary.ActiveIdentifierCount + identifierSummary.ActiveAliasCount + identifierSummary.ProviderMappingCount,
+                BlockingIssueCount: openIdentifierConflictCount),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "terms-obligations",
+                Title: "Terms and obligations",
+                Status: hasObligationEvidence ? "Ready" : "Review",
+                Summary: BuildTermsAndObligationsSummary(snapshot),
+                EvidenceCount: snapshot.CorporateActions.Count + (snapshot.ScheduleBook?.Events.Count ?? 0),
+                BlockingIssueCount: snapshot.TrustPosture.HasOpenConflicts ? snapshot.TrustPosture.OpenConflictCount : 0),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "cash-flow-readiness",
+                Title: "Projected cash-flow readiness",
+                Status: hasCashFlowReadiness ? "Ready" : "Review",
+                Summary: snapshot.ScheduleSummary?.Summary ?? pricing.Summary,
+                EvidenceCount: (snapshot.ScheduleBook?.Events.Count ?? 0) + snapshot.CorporateActions.Count,
+                BlockingIssueCount: hasCashFlowReadiness ? 0 : 1),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "ledger-classification",
+                Title: "Ledger classification",
+                Status: hasLedgerClassification ? "Ready" : "Review",
+                Summary: BuildLedgerClassificationSummary(snapshot),
+                EvidenceCount: snapshot.DownstreamImpact.LedgerExposureCount + (hasLedgerClassification ? 1 : 0),
+                BlockingIssueCount: hasLedgerClassification ? 0 : 1),
+            new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "operations-handoff",
+                Title: "Operations handoff",
+                Status: "Ready",
+                Summary: snapshot.DownstreamImpact.Summary,
+                EvidenceCount: operationsHandoffEvidenceCount,
+                BlockingIssueCount: snapshot.RecommendedActions.Count(static action => !action.IsEnabled))
+        };
+
+        var status = sections.Any(static section => section.BlockingIssueCount > 0 || section.Status.Equals("Review", StringComparison.OrdinalIgnoreCase))
+            ? "Review"
+            : "Ready";
+        var handoffs = BuildOperationsHandoffs(snapshot);
+
+        return new InstrumentPassportReferenceDataWorkbenchDto(
+            Status: status,
+            Summary: status.Equals("Ready", StringComparison.OrdinalIgnoreCase)
+                ? "Multi-asset reference-data workbench is ready for downstream FINOPS use."
+                : "Multi-asset reference-data workbench needs review before downstream FINOPS use.",
+            Sections: sections,
+            OperationsHandoffs: handoffs);
+    }
+
+    private static string BuildTermsAndObligationsSummary(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var scheduleEventCount = snapshot.ScheduleBook?.Events.Count ?? 0;
+        if (scheduleEventCount > 0)
+        {
+            return $"{scheduleEventCount} projected obligation event(s) retained with source provenance.";
+        }
+
+        if (snapshot.CorporateActions.Count > 0)
+        {
+            return $"{snapshot.CorporateActions.Count} corporate action obligation event(s) retained on the passport.";
+        }
+
+        return $"{snapshot.EconomicDefinition.AssetClass} terms retained for {snapshot.EconomicDefinition.Currency} reference-data review.";
+    }
+
+    private static string BuildLedgerClassificationSummary(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var classification = new[]
+        {
+            snapshot.EconomicDefinition.AssetClass,
+            snapshot.EconomicDefinition.AssetFamily,
+            snapshot.EconomicDefinition.SubType,
+            snapshot.EconomicDefinition.Currency
+        }
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var prefix = classification.Length == 0
+            ? "Ledger classification is unavailable"
+            : string.Join(" / ", classification);
+        return $"{prefix}. {snapshot.DownstreamImpact.LedgerExposureSummary}";
+    }
+
+    private static IReadOnlyList<InstrumentPassportOperationsHandoffDto> BuildOperationsHandoffs(
+        SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var handoffs = new List<InstrumentPassportOperationsHandoffDto>();
+
+        handoffs.AddRange(snapshot.DownstreamImpact.Links.Select((link, index) =>
+            new InstrumentPassportOperationsHandoffDto(
+                HandoffId: $"impact-{index + 1}",
+                Target: link.Target,
+                Title: link.Label,
+                Detail: link.Summary,
+                Status: link.Severity.ToString(),
+                IsEnabled: link.IsActive)));
+
+        handoffs.AddRange(snapshot.RecommendedActions.Select((action, index) =>
+            new InstrumentPassportOperationsHandoffDto(
+                HandoffId: $"action-{index + 1}",
+                Target: action.Target ?? action.Kind.ToString(),
+                Title: action.Title,
+                Detail: action.Detail,
+                Status: action.IsPrimary ? "Primary" : "Available",
+                IsEnabled: action.IsEnabled)));
+
+        if (handoffs.Count == 0)
+        {
+            handoffs.Add(new InstrumentPassportOperationsHandoffDto(
+                HandoffId: "downstream-impact",
+                Target: "SecurityMasterDetail",
+                Title: "Retain Security Master context",
+                Detail: snapshot.DownstreamImpact.Summary,
+                Status: snapshot.DownstreamImpact.Severity.ToString(),
+                IsEnabled: true));
+        }
+
+        return handoffs
+            .OrderByDescending(static handoff => handoff.IsEnabled)
+            .ThenBy(static handoff => handoff.Title, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static IReadOnlyList<InstrumentPassportProviderConfidenceDto> BuildProviderConfidence(

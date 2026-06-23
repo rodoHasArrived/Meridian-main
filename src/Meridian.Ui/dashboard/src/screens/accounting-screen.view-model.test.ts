@@ -272,7 +272,47 @@ const instrumentPassport: InstrumentPassport = {
       identifierConflictSummaries: ["RIC mapping is disabled."],
       overrideHistory: []
     }
-  ]
+  ],
+  referenceDataWorkbench: {
+    status: "Ready",
+    summary: "Multi-asset reference-data workbench is ready for downstream FINOPS use.",
+    sections: [
+      {
+        sectionId: "provider-evidence",
+        title: "Provider evidence",
+        status: "Ready",
+        summary: "1 active provider evidence row retained on the passport.",
+        evidenceCount: 2,
+        blockingIssueCount: 0
+      },
+      {
+        sectionId: "identifier-confidence",
+        title: "Identifier confidence",
+        status: "Ready",
+        summary: "Primary identifiers are aligned.",
+        evidenceCount: 3,
+        blockingIssueCount: 0
+      },
+      {
+        sectionId: "operations-handoff",
+        title: "Operations handoff",
+        status: "Ready",
+        summary: "Used by accounting and trading workflows.",
+        evidenceCount: 1,
+        blockingIssueCount: 0
+      }
+    ],
+    operationsHandoffs: [
+      {
+        handoffId: "handoff-1",
+        target: "FINOPS",
+        title: "Retain Security Master context",
+        detail: "Continue close review from the selected passport.",
+        status: "Available",
+        isEnabled: true
+      }
+    ]
+  }
 };
 const cashFlowSchedules: SecurityCashFlowScheduleEvent[] = [
   {
@@ -6607,7 +6647,18 @@ describe("accounting-screen view model", () => {
       { label: "Identifiers", value: "Primary identifiers are aligned." },
       { label: "Provider confidence", value: "1 active / 2 total" },
       { label: "Pricing", value: "Ready: Trading parameters are active." },
-      { label: "Usage", value: "Used by accounting and trading workflows." }
+      { label: "Usage", value: "Used by accounting and trading workflows." },
+      {
+        label: "Reference-data workbench",
+        value: "Ready: Multi-asset reference-data workbench is ready for downstream FINOPS use.",
+        tone: "success"
+      },
+      {
+        label: "Provider evidence",
+        value: "Ready: 1 active provider evidence row retained on the passport. Evidence 2; blockers 0.",
+        tone: "success"
+      },
+      { label: "Operations handoff", value: "1 enabled / 1 total handoff(s).", tone: "success" }
     ]));
     expect(view.providerRows).toEqual(expect.arrayContaining([
       expect.objectContaining({

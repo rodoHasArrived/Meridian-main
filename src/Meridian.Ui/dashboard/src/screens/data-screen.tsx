@@ -704,6 +704,36 @@ function DataUploadIntakePanel({
                 <span className="font-mono text-xs text-muted-foreground">{state.selectedTemplate.targetWorkflow}</span>
               </div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{state.selectedTemplate.description}</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
+                  <div className="eyebrow-label">Source setup</div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {state.sourceKinds.map((sourceKind) => (
+                      <Badge key={sourceKind} variant="outline">{sourceKind}</Badge>
+                    ))}
+                  </div>
+                  <ul className="mt-2 grid gap-1.5 text-xs leading-5 text-muted-foreground">
+                    {state.setupChecklist.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" aria-hidden="true" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
+                  <div className="eyebrow-label">Mapping readiness</div>
+                  <p className="mt-2 text-xs font-semibold text-foreground">{state.mappingSummary}</p>
+                  <ul className="mt-2 grid gap-1.5 text-xs leading-5 text-muted-foreground">
+                    {state.mappingGuidance.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <FileSpreadsheet className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
               <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {state.selectedTemplateFields.map((field) => (
                   <div key={field.id} className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">

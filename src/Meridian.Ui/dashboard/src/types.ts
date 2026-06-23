@@ -3607,6 +3607,9 @@ export interface DataUploadTemplate {
   fields: DataUploadTemplateField[];
   sampleRows: string[];
   validationNotes: string[];
+  sourceKinds?: string[] | null;
+  setupChecklist?: string[] | null;
+  mappingGuidance?: string[] | null;
 }
 
 export interface DataUploadTemplateCatalog {
@@ -9329,6 +9332,31 @@ export interface InstrumentPassportProviderConfidence {
   overrideHistory: Record<string, unknown>[];
 }
 
+export interface InstrumentPassportReferenceDataWorkbenchSection {
+  sectionId: string;
+  title: string;
+  status: string;
+  summary: string;
+  evidenceCount: number;
+  blockingIssueCount: number;
+}
+
+export interface InstrumentPassportOperationsHandoff {
+  handoffId: string;
+  target: string;
+  title: string;
+  detail: string;
+  status: string;
+  isEnabled: boolean;
+}
+
+export interface InstrumentPassportReferenceDataWorkbench {
+  status: string;
+  summary: string;
+  sections: InstrumentPassportReferenceDataWorkbenchSection[];
+  operationsHandoffs: InstrumentPassportOperationsHandoff[];
+}
+
 export interface InstrumentPassportPricing {
   status: string;
   summary: string;
@@ -9353,6 +9381,7 @@ export interface InstrumentPassport {
   trustPosture: InstrumentPassportTrustPosture;
   retrievedAtUtc: string;
   providerConfidence: InstrumentPassportProviderConfidence[];
+  referenceDataWorkbench?: InstrumentPassportReferenceDataWorkbench | null;
 }
 
 export interface SessionStatsDto {

@@ -80,10 +80,12 @@ These are documented as implemented evidence, supported foundations, or design-l
 
 ## Next Feature Slice: Multi-Asset Reference-Data Workbench
 
-- [ ] Complete the still-partial multi-asset reference-data workbench inside the existing Security Master detail flow.
-- [ ] Keep the work anchored to the current Security Master detail/passport route and shared read models; do not create a new route for this slice.
-- [ ] Extend the detail flow to cover multi-asset reference-data review, provider evidence, identifier confidence, terms/obligations, projected cash-flow readiness, ledger classification, and operations handoff from the retained Security Master context.
-- [ ] Add focused endpoint, browser, and WPF proof only where the existing Security Master detail flow exposes the new workbench state.
+- [x] Complete the still-partial multi-asset reference-data workbench inside the existing Security Master detail flow.
+- [x] Keep the work anchored to the current Security Master detail/passport route and shared read models; do not create a new route for this slice.
+- [x] Extend the detail flow to cover multi-asset reference-data review, provider evidence, identifier confidence, terms/obligations, projected cash-flow readiness, ledger classification, and operations handoff from the retained Security Master context.
+- [x] Add focused endpoint, browser, and WPF proof only where the existing Security Master detail flow exposes the new workbench state.
+
+Evidence: `tests/Meridian.Tests/Ui/SecurityMasterInstrumentPassportTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`, `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts`, and `tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs`.
 
 ## W5X-FINOPS-001 TODOs: Financial Operations Control Center
 
