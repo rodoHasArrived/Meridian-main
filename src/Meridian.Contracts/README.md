@@ -738,9 +738,22 @@ instead of accepting client-local JSON shapes.
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
 narrow automation: each pack declares contract schema dimensions, lifecycle events, valuation
-methods, journal-template rule hooks, validation rules, reporting taxonomy, automation depth, and
-the policy that asset packs extend accounting through event-to-template mappings without changing
-the core ledger.
+methods, lifecycle-event automation coverage, journal-template rule hooks, structured template
+rules by lifecycle event/accounting basis/currency scope/entity scope, validation rules, reporting
+taxonomy, automation depth, an admission policy for wide capture/narrow automation, and the policy
+that asset packs extend accounting through event-to-template mappings without changing the core
+ledger. `CreateCandidateDescriptor`, `ValidateDescriptor`, `ValidateAll`, and `ValidateCandidateSet`
+provide the contract-level admission gate for new packs, checking required schema sections,
+supported lifecycle and valuation methods, lifecycle capture/automation coverage, structured
+journal-template scopes, validation/taxonomy coverage, evidence-gated automation policy, and the
+core-ledger extension policy before an asset pack is exposed as registry-valid. Candidate descriptor
+creation gives imported or proposed packs the same standard schema, lifecycle coverage builder,
+template rule derivation, validation taxonomy, and admission policy as built-ins; candidate-set
+validation then proves their schema and asset-class claims against the built-in registry without
+mutating the built-in list or adding asset-specific core-ledger paths.
+`MultiAssetCoverageSummaryDto` carries those pack
+descriptors beside asset-class readiness rows so shared browser, WPF, and endpoint clients can
+inspect supported asset packs without rebuilding registry rules locally.
 `SecuritySearchRequest` carries optional `customProfileId`, `profileVersion`, `profileFieldKey`,
 and `profileFieldValue` filters so shared clients can find profile-backed alternative assets
 through the canonical Security Master search route without depending on endpoint-local JSON.
@@ -766,10 +779,16 @@ The workstation bootstrap contract in `Workstation/WorkstationBootstrapDtos.cs` 
 Data upload template, preview, and bank-statement import result contracts live under
 `Workstation/DataUploadDtos.cs`. The Data bootstrap payload includes the upload-template catalog so
 browser and WPF clients can render the same trade, transaction, bank-statement, asset-information,
-and entity-configuration intake templates while upload preview results remain retained source
+servicer position statement, servicer remittance statement, and entity-configuration intake
+templates while upload preview results remain retained source
 evidence, validation issues, and bounded sample rows only. Bank-statement import responses identify
 the retained source path, imported batch, target bank account, statement date, and line count after
 the shared endpoint applies evidence through the fund-account service.
+Direct Lending servicer statement intake contracts live under
+`DirectLending/DirectLendingWorkflowDtos.cs`. They publish shared preview/import/apply request and
+result payloads, row-level validation issues, statement kind/status/apply-mode enums, and retained
+evidence routes so browser, WPF, and endpoints use the same operator-reviewed servicer statement
+workflow instead of creating a separate importer contract stack.
 The same workstation contract file owns the multi-asset operational coverage DTOs returned by
 `/api/workstation/portfolio/multi-asset-coverage`: `MultiAssetCoverageSummaryDto`,
 `MultiAssetClassCoverageDto`, `MultiAssetEvidenceRequirementDto`, and

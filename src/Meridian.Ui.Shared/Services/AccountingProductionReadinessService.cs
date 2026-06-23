@@ -2691,7 +2691,7 @@ public sealed class AccountingProductionReadinessService
 
         if (!HasRolloutScopedEvidence(readiness.EvidenceReferences, request, fundProfileId, ledgerBookId))
         {
-            return true;
+            return false;
         }
 
         return readiness.EvidenceReferences.Any(reference =>
@@ -2709,9 +2709,9 @@ public sealed class AccountingProductionReadinessService
         string fundProfileId,
         Guid ledgerBookId)
         => !string.IsNullOrWhiteSpace(reference) &&
-           reference.Contains(request.TenantId!, StringComparison.OrdinalIgnoreCase) &&
-           reference.Contains(request.CompanyId!, StringComparison.OrdinalIgnoreCase) &&
-           reference.Contains(fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+           ReferencesEvidenceToken(reference, request.TenantId!) &&
+           ReferencesEvidenceToken(reference, request.CompanyId!) &&
+           ReferencesEvidenceToken(reference, fundProfileId) &&
            ReferencesLedgerBookEvidence(reference, ledgerBookId);
 
     private static bool ReferencesDimensionScopeEvidence(string? reference)
@@ -2756,13 +2756,45 @@ public sealed class AccountingProductionReadinessService
     private static bool ReferencesLedgerBookEvidence(string reference, Guid ledgerBookId)
     {
         var ledgerBookText = ledgerBookId.ToString("D");
-        return reference.Contains(ledgerBookText, StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId={ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledger-book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledger-book/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId/{ledgerBookText}", StringComparison.OrdinalIgnoreCase);
+        return ReferencesEvidenceToken(reference, ledgerBookText);
     }
+
+    private static bool ReferencesEvidenceToken(string reference, string token)
+    {
+        if (string.IsNullOrWhiteSpace(reference) || string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        var comparison = StringComparison.OrdinalIgnoreCase;
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var tokenIndex = reference.IndexOf(token, searchIndex, comparison);
+            if (tokenIndex < 0)
+            {
+                return false;
+            }
+
+            var before = tokenIndex == 0 ? '\0' : reference[tokenIndex - 1];
+            var afterIndex = tokenIndex + token.Length;
+            var after = afterIndex >= reference.Length ? '\0' : reference[afterIndex];
+
+            if (IsEvidenceTokenBoundary(before) && IsEvidenceTokenBoundary(after))
+            {
+                return true;
+            }
+
+            searchIndex = tokenIndex + token.Length;
+        }
+
+        return false;
+    }
+
+    private static bool IsEvidenceTokenBoundary(char value)
+        => value == '\0' ||
+           char.IsWhiteSpace(value) ||
+           value is '/' or ':' or '=' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}';
 
     private static IReadOnlyList<AccountingProductionGapDto> BuildProductionGaps(
         IReadOnlyCollection<AccountingProductionReadinessComponentDto> components)

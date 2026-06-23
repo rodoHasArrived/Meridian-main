@@ -211,6 +211,50 @@ public sealed class PostgresDirectLendingCommandServiceTests
     }
 
     [Fact]
+    public async Task PostDailyAccrualAsync_BlocksOriginatingPostingWhenAccountingPeriodIsClosed()
+    {
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var contract = BuildContract(loanId);
+        var servicing = BuildServicing(loanId);
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, contract, servicing));
+
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            queryService,
+            new LoanAccountingProjector(BuildLedgerJournalStore("HardClosed"), new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var act = () => service.PostDailyAccrualAsync(
+            loanId,
+            new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex =>
+                ex.Error.Code == DirectLendingErrorCode.Validation &&
+                ex.Error.Message.Contains("No ledger accounting period accepts Originating posting date '2026-03-24'.", StringComparison.Ordinal));
+
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default,
+            default,
+            default,
+            default!,
+            default!,
+            default!,
+            default,
+            default,
+            default!,
+            default!,
+            default,
+            default,
+            default,
+            default);
+    }
+
+    [Fact]
     public async Task AddCollateralAsync_PersistsServicingStateInsteadOfReturningPostgresNoOp()
     {
         var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
@@ -413,7 +457,7 @@ public sealed class PostgresDirectLendingCommandServiceTests
             default);
     }
 
-    private static ILedgerJournalStore BuildLedgerJournalStore()
+    private static ILedgerJournalStore BuildLedgerJournalStore(string status = "Open")
     {
         var store = Substitute.For<ILedgerJournalStore>();
         store.ListPeriodsAsync(
@@ -432,7 +476,7 @@ public sealed class PostgresDirectLendingCommandServiceTests
                     Label: "2026-P03",
                     StartDate: new DateOnly(2026, 3, 1),
                     EndDate: new DateOnly(2026, 3, 31),
-                    Status: "Open",
+                    Status: status,
                     OpenedAt: DateTimeOffset.Parse("2026-03-01T00:00:00Z"),
                     ClosedAt: null,
                     Version: 1)

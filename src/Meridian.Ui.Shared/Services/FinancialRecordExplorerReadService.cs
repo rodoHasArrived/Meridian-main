@@ -2,6 +2,7 @@ using System.Globalization;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
@@ -30,6 +31,7 @@ public sealed class FinancialRecordExplorerReadService
     private readonly ReportPackDeliveryService? _reportPackDeliveryService;
     private readonly ISecurityMasterWorkbenchQueryService? _securityMasterWorkbenchQueryService;
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
+    private readonly DirectLendingOperationsReadService? _directLendingOperationsReadService;
 
     public FinancialRecordExplorerReadService(
         IFinancialRecordExplorerSavedViewStore savedViewStore,
@@ -37,7 +39,8 @@ public sealed class FinancialRecordExplorerReadService
         ReportPackWorkflowService? reportPackWorkflowService = null,
         ReportPackDeliveryService? reportPackDeliveryService = null,
         ISecurityMasterWorkbenchQueryService? securityMasterWorkbenchQueryService = null,
-        IAssetOperationsQueryService? assetOperationsQueryService = null)
+        IAssetOperationsQueryService? assetOperationsQueryService = null,
+        DirectLendingOperationsReadService? directLendingOperationsReadService = null)
     {
         _savedViewStore = savedViewStore ?? throw new ArgumentNullException(nameof(savedViewStore));
         _runReadService = runReadService;
@@ -45,6 +48,7 @@ public sealed class FinancialRecordExplorerReadService
         _reportPackDeliveryService = reportPackDeliveryService;
         _securityMasterWorkbenchQueryService = securityMasterWorkbenchQueryService;
         _assetOperationsQueryService = assetOperationsQueryService;
+        _directLendingOperationsReadService = directLendingOperationsReadService;
     }
 
     public static bool IsKnownExplorerId(string explorerId)
@@ -303,12 +307,15 @@ public sealed class FinancialRecordExplorerReadService
         var run = source.Summary;
         var references = CollectSecurityReferences(source);
         var reportRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
+        var directLendingOperations = _directLendingOperationsReadService is null
+            ? null
+            : await _directLendingOperationsReadService.GetOperationsAsync(ct).ConfigureAwait(false);
         var enrichedRows = new List<(FinancialRecordExplorerRowDto Row, SecurityInstrumentEnrichment Enrichment)>(references.Count);
         for (var index = 0; index < references.Count; index++)
         {
             ct.ThrowIfCancellationRequested();
             var reference = references[index];
-            var enrichment = await BuildSecurityInstrumentEnrichmentAsync(reference, reportRecords, ct).ConfigureAwait(false);
+            var enrichment = await BuildSecurityInstrumentEnrichmentAsync(reference, reportRecords, directLendingOperations, ct).ConfigureAwait(false);
             enrichedRows.Add((BuildSecurityRow(run, source, reference, index, enrichment), enrichment));
         }
 
@@ -316,6 +323,7 @@ public sealed class FinancialRecordExplorerReadService
         var enrichments = enrichedRows.Select(static entry => entry.Enrichment).ToArray();
         var passportCount = enrichments.Count(static enrichment => enrichment.Passport is not null);
         var operationsCount = enrichments.Count(static enrichment => enrichment.Readiness is not null);
+        var directLendingCount = enrichments.Count(static enrichment => enrichment.DirectLendingHealth.Count > 0);
         var reportLineUsageCount = enrichments.Sum(static enrichment => enrichment.ReportLineUsages.Count);
         var termCount = enrichments.Sum(static enrichment => enrichment.Operations?.TermsHistory.Count ?? 0);
         var cashFlowCount = enrichments.Sum(static enrichment => enrichment.Operations?.ProjectedCashFlows.Count ?? 0);
@@ -337,6 +345,11 @@ public sealed class FinancialRecordExplorerReadService
         if (operationsCount > 0)
         {
             summaryItems.Add(new("Operations", operationsCount.ToString(CultureInfo.InvariantCulture), "AssetOperations readiness payloads available.", FinancialRecordExplorerTone.Info));
+        }
+
+        if (directLendingCount > 0)
+        {
+            summaryItems.Add(new("Direct Lending", directLendingCount.ToString(CultureInfo.InvariantCulture), "Direct-lending operations posture is linked to Security Master instruments.", FinancialRecordExplorerTone.Info));
         }
 
         if (termCount > 0)
@@ -392,6 +405,7 @@ public sealed class FinancialRecordExplorerReadService
                 new("trust", "Trust", Width: 120),
                 new("identifierConfidence", "Identifier Confidence", Width: 170),
                 new("operations", "Operations", Width: 140),
+                new("directLending", "Direct Lending", Width: 150),
                 new("cashFlow", "Cash Flow", Width: 120),
                 new("ledger", "Ledger / Journal", Width: 140),
                 new("terms", "Terms / Obligations", Width: 170),
@@ -1157,6 +1171,7 @@ public sealed class FinancialRecordExplorerReadService
         var trustCell = BuildTrustCell(enrichment.Passport);
         var identifierConfidenceCell = BuildIdentifierConfidenceCell(enrichment.Passport);
         var operationsCell = BuildAssetOperationsCell(enrichment.Readiness);
+        var directLendingCell = BuildDirectLendingCell(enrichment);
         var cashFlowCell = BuildCashFlowCell(enrichment.Operations);
         var ledgerCell = BuildLedgerCell(enrichment.Operations);
         var termsCell = BuildTermsCell(enrichment.Operations);
@@ -1193,6 +1208,7 @@ public sealed class FinancialRecordExplorerReadService
                 trustCell,
                 identifierConfidenceCell,
                 operationsCell,
+                directLendingCell,
                 cashFlowCell,
                 ledgerCell,
                 termsCell,
@@ -1208,12 +1224,13 @@ public sealed class FinancialRecordExplorerReadService
     private async Task<SecurityInstrumentEnrichment> BuildSecurityInstrumentEnrichmentAsync(
         WorkstationSecurityReference reference,
         IReadOnlyList<ReportPackWorkflowRecordDto> reportRecords,
+        DirectLendingOperationsReadModelDto? directLendingOperations,
         CancellationToken ct)
     {
         var reportLineUsages = CollectSecurityReportLineUsages(reference, reportRecords);
         if (reference.SecurityId == Guid.Empty)
         {
-            return new(null, null, null, reportLineUsages);
+            return new(null, null, null, [], reportLineUsages);
         }
 
         InstrumentPassportDto? passport = null;
@@ -1240,7 +1257,11 @@ public sealed class FinancialRecordExplorerReadService
             }
         }
 
-        return new(passport, operations, readiness, reportLineUsages);
+        var directLendingHealth = directLendingOperations?.LoanHealth
+            .Where(health => health.SecurityId == reference.SecurityId)
+            .ToArray() ?? [];
+
+        return new(passport, operations, readiness, directLendingHealth, reportLineUsages);
     }
 
     private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildSecurityFields(
@@ -1299,6 +1320,15 @@ public sealed class FinancialRecordExplorerReadService
                 enrichment.Readiness.Status,
                 BuildReadinessDetail(enrichment.Readiness),
                 ToneFromAssetOperationsReadiness(enrichment.Readiness)));
+        }
+
+        if (enrichment.DirectLendingHealth.Count > 0)
+        {
+            fields.Add(new(
+                "Direct Lending Operations",
+                BuildDirectLendingSummary(enrichment),
+                BuildDirectLendingDetail(enrichment),
+                ToneFromDirectLending(enrichment)));
         }
 
         if (enrichment.Operations is not null)
@@ -1383,6 +1413,14 @@ public sealed class FinancialRecordExplorerReadService
                 enrichment.Readiness is not null,
                 "AssetOperations readiness evidence is not available.",
                 ToneFromAssetOperationsReadiness(enrichment.Readiness)));
+            actions.Add(new(
+                "open-direct-lending-operations",
+                "Open direct-lending operations",
+                "Open retained direct-lending loan health, collateral, covenant/status, servicing, evidence, journal, reconciliation, and close-blocker posture.",
+                BuildDirectLendingHref(enrichment),
+                enrichment.DirectLendingHealth.Count > 0,
+                "No direct-lending operations posture references this instrument.",
+                ToneFromDirectLending(enrichment)));
             actions.Add(new(
                 "open-position-transaction",
                 "Open position/transaction",
@@ -1502,6 +1540,15 @@ public sealed class FinancialRecordExplorerReadService
             }
         }
 
+        impacts.Add(new(
+            "direct-lending-operations",
+            "Direct-lending operations",
+            enrichment.DirectLendingHealth.Count > 0
+                ? BuildDirectLendingDetail(enrichment)
+                : "No direct-lending operations read model references this instrument.",
+            BuildDirectLendingHref(enrichment),
+            ToneFromDirectLending(enrichment)));
+
         if (enrichment.Operations is not null)
         {
             var assetHref = BuildAssetOperationsHref(enrichment.Operations.Subject.SecurityId);
@@ -1589,6 +1636,21 @@ public sealed class FinancialRecordExplorerReadService
             BuildIdentifierConfidenceDetail(passport),
             ToneFromIdentifierConfidence(passport),
             BuildInstrumentPassportHref(passport.SecurityId));
+    }
+
+    private static FinancialRecordExplorerCellDto BuildDirectLendingCell(SecurityInstrumentEnrichment enrichment)
+    {
+        if (enrichment.DirectLendingHealth.Count == 0)
+        {
+            return new("directLending", "-");
+        }
+
+        return new(
+            "directLending",
+            BuildDirectLendingSummary(enrichment),
+            enrichment.DirectLendingHealth.Count.ToString(CultureInfo.InvariantCulture),
+            ToneFromDirectLending(enrichment),
+            BuildDirectLendingHref(enrichment));
     }
 
     private static FinancialRecordExplorerCellDto BuildAssetOperationsCell(AssetOperationsReadinessDto? readiness)
@@ -2091,6 +2153,37 @@ public sealed class FinancialRecordExplorerReadService
 
         return BuildSecurityEvidenceHref(reference, enrichment);
     }
+
+    private static string BuildDirectLendingSummary(SecurityInstrumentEnrichment enrichment)
+    {
+        var count = enrichment.DirectLendingHealth.Count;
+        if (count == 0)
+        {
+            return "No linked loans";
+        }
+
+        var blocked = enrichment.DirectLendingHealth.Count(static health => IsNegativeStatus(health.HealthStatus));
+        return blocked > 0
+            ? $"{blocked.ToString(CultureInfo.InvariantCulture)}/{count.ToString(CultureInfo.InvariantCulture)} loan health blocker{Plural(blocked)}"
+            : $"{count.ToString(CultureInfo.InvariantCulture)} linked loan{Plural(count)}";
+    }
+
+    private static string BuildDirectLendingDetail(SecurityInstrumentEnrichment enrichment)
+    {
+        if (enrichment.DirectLendingHealth.Count == 0)
+        {
+            return "No direct-lending operations read model row references this Security Master instrument.";
+        }
+
+        return string.Join(
+            "; ",
+            enrichment.DirectLendingHealth
+                .OrderBy(static health => health.FacilityName, StringComparer.OrdinalIgnoreCase)
+                .Select(static health => $"{health.FacilityName}: {health.HealthStatus} - {health.HealthDetail}"));
+    }
+
+    private static string BuildDirectLendingHref(SecurityInstrumentEnrichment enrichment)
+        => enrichment.DirectLendingHealth.FirstOrDefault()?.Route ?? "/api/loans/operations";
 
     private static string BuildFinancialRecordExplorerHref(
         string explorerId,
@@ -3332,6 +3425,23 @@ public sealed class FinancialRecordExplorerReadService
         return ToneFromStatusText(readiness.Status, FinancialRecordExplorerTone.Warning);
     }
 
+    private static FinancialRecordExplorerTone ToneFromDirectLending(SecurityInstrumentEnrichment enrichment)
+    {
+        if (enrichment.DirectLendingHealth.Count == 0)
+        {
+            return FinancialRecordExplorerTone.Default;
+        }
+
+        if (enrichment.DirectLendingHealth.Any(static health => IsNegativeStatus(health.HealthStatus)))
+        {
+            return FinancialRecordExplorerTone.Warning;
+        }
+
+        return enrichment.DirectLendingHealth.All(static health => ContainsStatusToken(health.HealthStatus, "ready"))
+            ? FinancialRecordExplorerTone.Success
+            : FinancialRecordExplorerTone.Info;
+    }
+
     private static FinancialRecordExplorerTone ToneFromCashFlows(AssetOperationsDetailDto operations)
         => operations.ProjectedCashFlows.Count == 0
             ? FinancialRecordExplorerTone.Warning
@@ -3443,6 +3553,7 @@ public sealed class FinancialRecordExplorerReadService
         InstrumentPassportDto? Passport,
         AssetOperationsDetailDto? Operations,
         AssetOperationsReadinessDto? Readiness,
+        IReadOnlyList<DirectLendingOperationsLoanHealthDto> DirectLendingHealth,
         IReadOnlyList<SecurityReportLineUsage> ReportLineUsages);
 
     private sealed record SecurityReportLineUsage(

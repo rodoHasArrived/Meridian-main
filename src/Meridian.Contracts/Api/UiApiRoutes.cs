@@ -674,6 +674,11 @@ public static class UiApiRoutes
     public const string ReconciliationStatementExceptions = "/api/workstation/reconciliation/statement-exceptions";
     public const string ReconciliationStatementBreaks = "/api/workstation/reconciliation/statement-breaks";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
+    public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
+    public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";
+    public const string DirectLendingServicerStatementById = "/api/loans/servicer-statements/{batchId}";
+    public const string DirectLendingServicerStatementRows = "/api/loans/servicer-statements/{batchId}/rows";
+    public const string DirectLendingServicerStatementApply = "/api/loans/servicer-statements/{batchId}/apply";
     public const string ReconciliationQueueStatus = "/api/workstation/reconciliation/queue-status";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";

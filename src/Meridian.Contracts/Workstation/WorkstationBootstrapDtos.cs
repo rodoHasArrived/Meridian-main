@@ -1,5 +1,6 @@
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -901,6 +902,29 @@ public sealed record MultiAssetClassCoverageDto(
     IReadOnlyDictionary<string, string> ReconciliationSignals);
 
 /// <summary>
+/// Shared registry contract for an asset pack exposed by the multi-asset coverage endpoint.
+/// </summary>
+public sealed record MultiAssetPackCoverageDto(
+    string PackId,
+    string DisplayName,
+    IReadOnlyList<string> AssetClasses,
+    AssetPackContractSchema ContractSchema,
+    IReadOnlyList<string> LifecycleEvents,
+    IReadOnlyList<AssetPackLifecycleCoverage> LifecycleCoverage,
+    IReadOnlyList<string> ValuationMethods,
+    AssetPackAccountingRules AccountingRules,
+    AssetPackValidationRules ValidationRules,
+    AssetPackReportingTaxonomy ReportingTaxonomy,
+    string AutomationDepth,
+    AssetPackAdmissionPolicy AdmissionPolicy,
+    string LedgerExtensionPolicy,
+    string RegistryValidationStatus = "Unknown",
+    IReadOnlyList<AssetPackRegistryValidationIssue>? RegistryValidationIssues = null)
+{
+    public IReadOnlyList<AssetPackRegistryValidationIssue> RegistryValidationIssues { get; init; } = RegistryValidationIssues ?? [];
+}
+
+/// <summary>
 /// Shared multi-asset operational coverage payload returned by
 /// <c>GET /api/workstation/portfolio/multi-asset-coverage</c>.
 /// </summary>
@@ -910,7 +934,11 @@ public sealed record MultiAssetCoverageSummaryDto(
     string AsOfUtc,
     IReadOnlyList<WorkstationMetricCard> Metrics,
     IReadOnlyList<MultiAssetClassCoverageDto> AssetClasses,
-    IReadOnlyDictionary<string, string> DrillThroughRoutes);
+    IReadOnlyDictionary<string, string> DrillThroughRoutes,
+    IReadOnlyList<MultiAssetPackCoverageDto>? AssetPacks = null)
+{
+    public IReadOnlyList<MultiAssetPackCoverageDto> AssetPacks { get; init; } = AssetPacks ?? [];
+}
 
 // ---------------------------------------------------------------------------
 // /api/workstation/data and /api/workstation/data-operations

@@ -6,6 +6,7 @@ using Meridian.Application.DirectLending;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.DirectLending;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -176,7 +177,161 @@ public sealed class DirectLendingEndpointsTests
         history[0].ReplayFlag.Should().BeFalse();
     }
 
-    private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection> configureServices)
+    [Fact]
+    public async Task DirectLendingEndpoints_ShouldExposeCollateralStatusPikRestructureAndAmortizationParity()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
+        });
+
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync("/api/loans", BuildCreateRequest());
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<LoanContractDetailDto>();
+        created.Should().NotBeNull();
+
+        var loanId = created!.LoanId;
+        (await client.PostAsJsonAsync($"/api/loans/{loanId}/activate", new ActivateLoanRequest(new DateOnly(2026, 3, 22))))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.PostAsJsonAsync(
+            $"/api/loans/{loanId}/drawdowns",
+            new BookDrawdownRequest(400_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 24), "wire-10")))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var collateralResponse = await client.PostAsJsonAsync(
+            $"/api/loans/{loanId}/collateral",
+            new AddCollateralRequest(CollateralType.RealEstate, "Phoenix industrial property", 650_000m, CurrencyCode.USD, new DateOnly(2026, 4, 1)));
+        collateralResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var collateralState = await collateralResponse.Content.ReadFromJsonAsync<LoanServicingStateDto>();
+        collateralState.Should().NotBeNull();
+        var collateral = collateralState!.Collateral.Should().ContainSingle().Subject;
+
+        var collateralList = await client.GetFromJsonAsync<List<CollateralDto>>($"/api/loans/{loanId}/collateral");
+        collateralList.Should().NotBeNull();
+        collateralList!.Should().ContainSingle(item => item.CollateralId == collateral.CollateralId);
+
+        var updateResponse = await client.PutAsJsonAsync(
+            $"/api/loans/{loanId}/collateral/value",
+            new UpdateCollateralValueRequest(collateral.CollateralId, 700_000m, new DateOnly(2026, 5, 1)));
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var updated = await updateResponse.Content.ReadFromJsonAsync<LoanServicingStateDto>();
+        updated!.Collateral!.Single().EstimatedValue.Should().Be(700_000m);
+
+        var statusResponse = await client.PostAsJsonAsync(
+            $"/api/loans/{loanId}/status-transitions",
+            new TransitionLoanStatusRequest(LoanStatus.Workout, "Covenant breach notice", new DateOnly(2026, 5, 2)));
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await statusResponse.Content.ReadFromJsonAsync<LoanServicingStateDto>())!.Status.Should().Be(LoanStatus.Workout);
+
+        var pikResponse = await client.PostAsJsonAsync(
+            $"/api/loans/{loanId}/pik",
+            new TogglePikRequest(true, new DateOnly(2026, 5, 3), "Borrower cash sweep approved"));
+        pikResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await pikResponse.Content.ReadFromJsonAsync<LoanServicingStateDto>())!.IsPikToggled.Should().BeTrue();
+
+        var restructureResponse = await client.PostAsJsonAsync(
+            $"/api/loans/{loanId}/restructures",
+            new RestructureLoanRequest(
+                RestructuringType.MaturityExtension,
+                "Approved workout extension",
+                new DateOnly(2026, 5, 4),
+                created.CurrentTerms with { MaturityDate = new DateOnly(2030, 3, 22) }));
+        restructureResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await restructureResponse.Content.ReadFromJsonAsync<LoanContractDetailDto>())!
+            .CurrentTerms.MaturityDate.Should().Be(new DateOnly(2030, 3, 22));
+
+        var amortizationResponse = await client.PostAsJsonAsync(
+            $"/api/loans/{loanId}/amortization/discount-premium",
+            new AmortizeDiscountPremiumRequest(new DateOnly(2026, 5, 5)));
+        amortizationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var operations = await client.GetFromJsonAsync<DirectLendingOperationsReadModelDto>("/api/loans/operations");
+        operations.Should().NotBeNull();
+        operations!.CollateralCoverage.Should().ContainSingle(row => row.LoanId == loanId && row.CollateralValue == 700_000m);
+        operations.CovenantStatusPosture.Should().ContainSingle(row => row.LoanId == loanId && row.PikEnabled);
+    }
+
+    [Fact]
+    public async Task DirectLendingEndpoints_ShouldPreviewImportAndApplyServicerStatementRows()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
+            services.AddSingleton<IDirectLendingServicerStatementService, DirectLendingServicerStatementService>();
+        });
+
+        var client = app.GetTestClient();
+        var createResponse = await client.PostAsJsonAsync("/api/loans", BuildCreateRequest());
+        var created = await createResponse.Content.ReadFromJsonAsync<LoanContractDetailDto>();
+        created.Should().NotBeNull();
+        var loanId = created!.LoanId;
+
+        (await client.PostAsJsonAsync($"/api/loans/{loanId}/activate", new ActivateLoanRequest(new DateOnly(2026, 3, 22))))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.PostAsJsonAsync($"/api/loans/{loanId}/drawdowns", new BookDrawdownRequest(100_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 24), "wire-servicer")))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var request = new ServicerStatementImportRequestDto(
+            ServicerStatementKind.Remittance,
+            "Northwind Servicer",
+            new DateOnly(2026, 4, 30),
+            "csv",
+            "remittance.csv",
+            "rowId,kind,loanId,statementDate,effectiveDate,grossAmount,principalAmount,interestAmount,feeAmount,penaltyAmount,currency,externalRef,applyMode\n" +
+            $"REM-1,Remittance,{loanId:D},2026-04-30,2026-04-30,10500.00,10000.00,500.00,0.00,0.00,USD,remit-1,ApplyMixedPayment",
+            ImportedBy: "ops-user",
+            FundAccountId: "fund-direct-lending",
+            CashAccountId: "cash-operating");
+
+        var previewResponse = await client.PostAsJsonAsync("/api/loans/servicer-statements/preview", request);
+        previewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var preview = await previewResponse.Content.ReadFromJsonAsync<ServicerStatementPreviewDto>();
+        preview.Should().NotBeNull();
+        preview!.ReadyToApplyRowCount.Should().Be(1);
+        preview.Issues.Should().NotContain(issue => issue.Severity == "Error");
+
+        var importResponse = await client.PostAsJsonAsync("/api/loans/servicer-statements/import", request);
+        importResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var imported = await importResponse.Content.ReadFromJsonAsync<ServicerStatementImportResultDto>();
+        imported.Should().NotBeNull();
+        imported!.Preview.Rows.Should().ContainSingle(row => row.Status == ServicerStatementRowStatus.ReadyToApply);
+
+        var applyResponse = await client.PostAsJsonAsync(
+            $"/api/loans/servicer-statements/{imported.BatchId:D}/apply",
+            new ServicerStatementApplyRequestDto(["REM-1"], ServicerStatementApplyMode.ApplyMixedPayment, "ops-user", "Reviewed servicer remittance."));
+        applyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var applied = await applyResponse.Content.ReadFromJsonAsync<ServicerStatementApplyResultDto>();
+        applied.Should().NotBeNull();
+        applied!.AppliedRowCount.Should().Be(1);
+
+        var servicing = await client.GetFromJsonAsync<LoanServicingStateDto>($"/api/loans/{loanId}/servicing-state");
+        servicing.Should().NotBeNull();
+        servicing!.Balances.PrincipalOutstanding.Should().Be(90_000m);
+
+        var operations = await client.GetFromJsonAsync<DirectLendingOperationsReadModelDto>("/api/loans/operations");
+        operations.Should().NotBeNull();
+        operations!.ServicerStatements.Should().ContainSingle(row =>
+            row.BatchId == imported.BatchId &&
+            row.AppliedRowCount == 1 &&
+            row.EvidenceRoute == $"/api/loans/servicer-statements/{imported.BatchId:D}");
+    }
+
+    [Fact]
+    public async Task DirectLendingEndpoints_PortfolioRequiresDirectLendingViewOrManagePermission()
+    {
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>(),
+            UserPermission.None);
+
+        var response = await app.GetTestClient().GetAsync("/api/loans/portfolio");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    private static async Task<WebApplication> CreateAppAsync(
+        Action<IServiceCollection> configureServices,
+        UserPermission permissions = UserPermission.ViewDirectLending | UserPermission.ManageDirectLending)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -184,6 +339,7 @@ public sealed class DirectLendingEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices(builder.Services);
+        builder.Services.AddSingleton<DirectLendingOperationsReadService>();
 
         var app = builder.Build();
 
@@ -196,7 +352,7 @@ public sealed class DirectLendingEndpointsTests
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "integration-user";
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Admin;
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] =
-                UserPermission.ViewDirectLending | UserPermission.ManageDirectLending;
+                permissions;
             await next();
         });
 

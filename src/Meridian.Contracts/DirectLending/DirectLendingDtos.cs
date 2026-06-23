@@ -299,6 +299,119 @@ public sealed record LoanPortfolioSummaryDto(
     decimal TotalCollateralValue,
     IReadOnlyList<LoanSummaryDto> Loans);
 
+public sealed record DirectLendingOperationsReadModelDto(
+    DateTimeOffset AsOf,
+    string Status,
+    string StatusDetail,
+    IReadOnlyList<DirectLendingOperationsLoanHealthDto> LoanHealth,
+    IReadOnlyList<DirectLendingOperationsCollateralCoverageDto> CollateralCoverage,
+    IReadOnlyList<DirectLendingOperationsStatusPostureDto> CovenantStatusPosture,
+    IReadOnlyList<DirectLendingOperationsCalendarItemDto> ServicingCalendar,
+    IReadOnlyList<DirectLendingOperationsEvidenceItemDto> Evidence,
+    IReadOnlyList<DirectLendingOperationsJournalPostureDto> Journals,
+    IReadOnlyList<DirectLendingOperationsReconciliationExceptionDto> ReconciliationExceptions,
+    IReadOnlyList<DirectLendingOperationsCloseBlockerDto> CloseBlockers,
+    IReadOnlyList<DirectLendingOperationsServicerStatementDto>? ServicerStatements = null);
+
+public sealed record DirectLendingOperationsLoanHealthDto(
+    Guid LoanId,
+    string FacilityName,
+    string BorrowerName,
+    LoanStatus Status,
+    CurrencyCode Currency,
+    decimal CommitmentAmount,
+    decimal PrincipalOutstanding,
+    decimal InterestAccruedUnpaid,
+    decimal PenaltyAccruedUnpaid,
+    DateOnly MaturityDate,
+    DateOnly? LastAccrualDate,
+    DateOnly? LastPaymentDate,
+    string HealthStatus,
+    string HealthDetail,
+    string Route,
+    Guid? SecurityId = null);
+
+public sealed record DirectLendingOperationsCollateralCoverageDto(
+    Guid LoanId,
+    string FacilityName,
+    decimal PrincipalOutstanding,
+    decimal CollateralValue,
+    decimal CoverageRatio,
+    string Status,
+    string Detail,
+    string Route);
+
+public sealed record DirectLendingOperationsStatusPostureDto(
+    Guid LoanId,
+    string FacilityName,
+    LoanStatus LoanStatus,
+    string CovenantStatus,
+    bool PikEnabled,
+    AmortizationType AmortizationType,
+    string RestructurePosture,
+    string Detail,
+    string Route,
+    Guid? SecurityId = null);
+
+public sealed record DirectLendingOperationsCalendarItemDto(
+    Guid LoanId,
+    string FacilityName,
+    string ItemType,
+    DateOnly DueDate,
+    string Status,
+    string Detail,
+    string Route);
+
+public sealed record DirectLendingOperationsEvidenceItemDto(
+    Guid LoanId,
+    string FacilityName,
+    string EvidenceType,
+    string Label,
+    string Status,
+    string Route);
+
+public sealed record DirectLendingOperationsJournalPostureDto(
+    Guid LoanId,
+    string FacilityName,
+    int DraftCount,
+    int PostedCount,
+    string Status,
+    string Detail,
+    string Route);
+
+public sealed record DirectLendingOperationsReconciliationExceptionDto(
+    Guid ExceptionId,
+    Guid LoanId,
+    string FacilityName,
+    string ExceptionType,
+    decimal DifferenceAmount,
+    string Status,
+    string AssignedTo,
+    string Detail,
+    string Route);
+
+public sealed record DirectLendingOperationsCloseBlockerDto(
+    Guid LoanId,
+    string FacilityName,
+    string BlockerType,
+    string Severity,
+    string Detail,
+    string Route);
+
+public sealed record DirectLendingOperationsServicerStatementDto(
+    Guid BatchId,
+    ServicerStatementKind Kind,
+    string ServicerName,
+    DateOnly StatementDate,
+    string Status,
+    int RowCount,
+    int UnmappedRowCount,
+    int ExceptionCount,
+    int ReadyToApplyRowCount,
+    int AppliedRowCount,
+    string EvidenceRoute,
+    string Detail);
+
 public sealed record AddCollateralRequest(
     CollateralType CollateralType,
     string Description,

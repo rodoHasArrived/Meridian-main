@@ -132,6 +132,58 @@ public sealed class DirectLendingOutboxDispatcherTests
     }
 
     [Fact]
+    public async Task ProcessJournalAsync_SkipsPrepaymentPenaltyReplayWhenSourceEventAlreadyHasJournal()
+    {
+        var operationsStore = Substitute.For<IDirectLendingOperationsStore>();
+        var commandService = Substitute.For<IDirectLendingCommandService>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        var loanId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var dispatcher = new DirectLendingOutboxDispatcher(
+            operationsStore,
+            commandService,
+            queryService,
+            new DirectLendingOptions(),
+            NullLogger<DirectLendingOutboxDispatcher>.Instance);
+        var sourceEvent = new LoanEventLineageDto(
+            sourceEventId,
+            AggregateVersion: 3,
+            EventType: "loan.prepayment-penalty-charged",
+            EventSchemaVersion: 1,
+            EffectiveDate: new DateOnly(2026, 5, 14),
+            RecordedAt: DateTimeOffset.Parse("2026-05-14T12:00:00Z"),
+            PayloadJson: """{"outstandingPrincipal":500000,"penaltyAmount":10000,"effectiveDate":"2026-05-14"}""",
+            CausationId: null,
+            CorrelationId: null,
+            CommandId: null,
+            SourceSystem: "test",
+            ReplayFlag: false);
+        var existingJournal = new JournalEntryDto(
+            Guid.NewGuid(),
+            loanId,
+            new DateOnly(2026, 5, 14),
+            new DateOnly(2026, 5, 14),
+            sourceEventId,
+            "loan.prepayment-penalty-charged",
+            "Primary",
+            "Prepayment penalty",
+            DateTimeOffset.Parse("2026-05-14T12:01:00Z"),
+            PostedAt: null,
+            JournalEntryStatus.Draft,
+            Lines: []);
+
+        queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns([sourceEvent]);
+        queryService.GetJournalsAsync(loanId, Arg.Any<CancellationToken>()).Returns([existingJournal]);
+        queryService.GetLoanAsync(loanId, Arg.Any<CancellationToken>()).Returns(BuildLoanContract(loanId));
+
+        await InvokeProcessAsync(dispatcher, BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate));
+
+        await operationsStore.DidNotReceiveWithAnyArgs().SaveJournalEntryAsync(default!, default);
+        await operationsStore.Received(1).MarkOutboxProcessedAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await operationsStore.DidNotReceiveWithAnyArgs().MarkOutboxFailedAsync(default, default!, default);
+    }
+
+    [Fact]
     public async Task ProcessJournalAsync_UsesAppliedAmountForCamelCaseWriteOffPayload()
     {
         var operationsStore = Substitute.For<IDirectLendingOperationsStore>();

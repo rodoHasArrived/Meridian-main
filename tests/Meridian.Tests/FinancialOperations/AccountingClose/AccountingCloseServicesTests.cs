@@ -231,7 +231,7 @@ public sealed class AccountingCloseServicesTests
         var rollForward = projection.BuildRollForward([], activity, adjustments);
 
         adjustments.Should().HaveCount(2);
-        adjustments.Should().OnlyContain(adjustment => adjustment.Dimensions is not null);
+        adjustments.Should().OnlyContain(adjustment => adjustment.Dimensions != null);
         adjustments.Select(adjustment => adjustment.AdjustmentId).Should().OnlyHaveUniqueItems();
         var alpha = rollForward.Single(line => line.Dimensions?.EntityId == "entity-alpha");
         alpha.Activity.Should().Be(100m);

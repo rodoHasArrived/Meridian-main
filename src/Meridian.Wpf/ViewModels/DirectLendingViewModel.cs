@@ -30,9 +30,21 @@ public sealed class DirectLendingViewModel : BindableBase
     public ObservableCollection<LoanSummaryDto> Loans { get; } = [];
     public ObservableCollection<DailyAccrualEntryDto> Accruals { get; } = [];
     public ObservableCollection<CashTransactionDto> CashTransactions { get; } = [];
+    public ObservableCollection<DirectLendingOperationsCollateralCoverageDto> CollateralCoverage { get; } = [];
+    public ObservableCollection<DirectLendingOperationsStatusPostureDto> StatusPostures { get; } = [];
+    public ObservableCollection<DirectLendingOperationsReconciliationExceptionDto> ReconciliationExceptions { get; } = [];
+    public ObservableCollection<DirectLendingOperationsEvidenceItemDto> EvidenceItems { get; } = [];
+    public ObservableCollection<DirectLendingOperationsCloseBlockerDto> CloseBlockers { get; } = [];
+    public ObservableCollection<DirectLendingOperationsServicerStatementDto> ServicerStatements { get; } = [];
     public WorkstationTableModel<LoanSummaryDto> LoansTable { get; }
     public WorkstationTableModel<DailyAccrualEntryDto> AccrualsTable { get; }
     public WorkstationTableModel<CashTransactionDto> CashTransactionsTable { get; }
+    public WorkstationTableModel<DirectLendingOperationsCollateralCoverageDto> CollateralCoverageTable { get; }
+    public WorkstationTableModel<DirectLendingOperationsStatusPostureDto> StatusPostureTable { get; }
+    public WorkstationTableModel<DirectLendingOperationsReconciliationExceptionDto> ExceptionsTable { get; }
+    public WorkstationTableModel<DirectLendingOperationsEvidenceItemDto> EvidenceTable { get; }
+    public WorkstationTableModel<DirectLendingOperationsCloseBlockerDto> CloseBlockersTable { get; }
+    public WorkstationTableModel<DirectLendingOperationsServicerStatementDto> ServicerStatementsTable { get; }
 
     // ── Selected loan state ──────────────────────────────────────────────────
 
@@ -271,6 +283,87 @@ public sealed class DirectLendingViewModel : BindableBase
             "No cash transactions",
             "Select a retained loan with cash activity before reviewing transaction evidence.");
 
+        CollateralCoverageTable = new WorkstationTableModel<DirectLendingOperationsCollateralCoverageDto>(
+            CollateralCoverage,
+            [
+                new("Facility", nameof(DirectLendingOperationsCollateralCoverageDto.FacilityName), 190),
+                new("Principal", nameof(DirectLendingOperationsCollateralCoverageDto.PrincipalOutstanding), 110, "{0:C0}"),
+                new("Collateral", nameof(DirectLendingOperationsCollateralCoverageDto.CollateralValue), 110, "{0:C0}"),
+                new("Coverage", nameof(DirectLendingOperationsCollateralCoverageDto.CoverageRatio), 95, "{0:P1}"),
+                new("Status", nameof(DirectLendingOperationsCollateralCoverageDto.Status), 110)
+            ],
+            "Collateral coverage",
+            "No collateral coverage",
+            "The shared direct-lending operations read model has no retained collateral coverage rows.");
+
+        StatusPostureTable = new WorkstationTableModel<DirectLendingOperationsStatusPostureDto>(
+            StatusPostures,
+            [
+                new("Facility", nameof(DirectLendingOperationsStatusPostureDto.FacilityName), 190),
+                new("Loan Status", nameof(DirectLendingOperationsStatusPostureDto.LoanStatus), 110),
+                new("Covenants", nameof(DirectLendingOperationsStatusPostureDto.CovenantStatus), 130),
+                new("PIK", nameof(DirectLendingOperationsStatusPostureDto.PikEnabled), 70),
+                new("Amortization", nameof(DirectLendingOperationsStatusPostureDto.AmortizationType), 130),
+                new("Restructure", nameof(DirectLendingOperationsStatusPostureDto.RestructurePosture), 170)
+            ],
+            "Covenant and status posture",
+            "No status posture",
+            "The shared operations read model did not return covenant, PIK, restructure, or amortization posture.");
+
+        ExceptionsTable = new WorkstationTableModel<DirectLendingOperationsReconciliationExceptionDto>(
+            ReconciliationExceptions,
+            [
+                new("Facility", nameof(DirectLendingOperationsReconciliationExceptionDto.FacilityName), 190),
+                new("Type", nameof(DirectLendingOperationsReconciliationExceptionDto.ExceptionType), 150),
+                new("Status", nameof(DirectLendingOperationsReconciliationExceptionDto.Status), 110),
+                new("Assigned", nameof(DirectLendingOperationsReconciliationExceptionDto.AssignedTo), 120),
+                new("Detail", nameof(DirectLendingOperationsReconciliationExceptionDto.Detail), 260)
+            ],
+            "Reconciliation exceptions",
+            "No open exceptions",
+            "The shared operations read model has no open direct-lending reconciliation exceptions.");
+
+        EvidenceTable = new WorkstationTableModel<DirectLendingOperationsEvidenceItemDto>(
+            EvidenceItems,
+            [
+                new("Facility", nameof(DirectLendingOperationsEvidenceItemDto.FacilityName), 180),
+                new("Type", nameof(DirectLendingOperationsEvidenceItemDto.EvidenceType), 120),
+                new("Label", nameof(DirectLendingOperationsEvidenceItemDto.Label), 180),
+                new("Status", nameof(DirectLendingOperationsEvidenceItemDto.Status), 110),
+                new("Route", nameof(DirectLendingOperationsEvidenceItemDto.Route), 220)
+            ],
+            "Operations evidence",
+            "No retained evidence",
+            "The shared operations read model has no direct-lending evidence rows.");
+
+        CloseBlockersTable = new WorkstationTableModel<DirectLendingOperationsCloseBlockerDto>(
+            CloseBlockers,
+            [
+                new("Facility", nameof(DirectLendingOperationsCloseBlockerDto.FacilityName), 190),
+                new("Type", nameof(DirectLendingOperationsCloseBlockerDto.BlockerType), 140),
+                new("Severity", nameof(DirectLendingOperationsCloseBlockerDto.Severity), 100),
+                new("Detail", nameof(DirectLendingOperationsCloseBlockerDto.Detail), 300)
+            ],
+            "Close blockers",
+            "No close blockers",
+            "Direct-lending operations have no close blockers in the shared read model.");
+
+        ServicerStatementsTable = new WorkstationTableModel<DirectLendingOperationsServicerStatementDto>(
+            ServicerStatements,
+            [
+                new("Servicer", nameof(DirectLendingOperationsServicerStatementDto.ServicerName), 150),
+                new("Kind", nameof(DirectLendingOperationsServicerStatementDto.Kind), 95),
+                new("Date", nameof(DirectLendingOperationsServicerStatementDto.StatementDate), 95, "{0:d}"),
+                new("Status", nameof(DirectLendingOperationsServicerStatementDto.Status), 115),
+                new("Rows", nameof(DirectLendingOperationsServicerStatementDto.RowCount), 70),
+                new("Unmapped", nameof(DirectLendingOperationsServicerStatementDto.UnmappedRowCount), 90),
+                new("Ready", nameof(DirectLendingOperationsServicerStatementDto.ReadyToApplyRowCount), 80),
+                new("Applied", nameof(DirectLendingOperationsServicerStatementDto.AppliedRowCount), 85)
+            ],
+            "Servicer statement batches",
+            "No imported servicer statements",
+            "Import servicer position or remittance statements through the shared Direct Lending statement intake endpoints.");
+
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync(), () => CanRefreshPortfolio);
         PostAccrualCommand = new AsyncRelayCommand(() => PostAccrualAsync(), () => CanPostAccrual);
     }
@@ -291,14 +384,21 @@ public sealed class DirectLendingViewModel : BindableBase
 
         try
         {
-            var portfolio = await _apiClient.GetAsync<LoanPortfolioSummaryDto>(
-                "/api/loans/portfolio", ct).ConfigureAwait(false);
+            var portfolioTask = _apiClient.GetAsync<LoanPortfolioSummaryDto>("/api/loans/portfolio", ct);
+            var operationsTask = _apiClient.GetAsync<DirectLendingOperationsReadModelDto>("/api/loans/operations", ct);
+
+            await Task.WhenAll(portfolioTask, operationsTask).ConfigureAwait(false);
+
+            var portfolio = await portfolioTask.ConfigureAwait(false);
+            var operations = await operationsTask.ConfigureAwait(false);
 
             _allLoans.Clear();
             if (portfolio?.Loans is not null)
             {
                 _allLoans.AddRange(portfolio.Loans);
             }
+
+            ApplyOperationsReadModel(operations);
 
             _hasLoadedPortfolioSnapshot = portfolio is not null;
             ApplyFilter();
@@ -316,6 +416,7 @@ public sealed class DirectLendingViewModel : BindableBase
         {
             _hasLoadedPortfolioSnapshot = false;
             _allLoans.Clear();
+            ApplyOperationsReadModel(null);
             ApplyFilter();
             StatusText = "Failed to load portfolio — check service connection.";
         }
@@ -323,6 +424,54 @@ public sealed class DirectLendingViewModel : BindableBase
         {
             IsRefreshing = false;
             RaiseLoanCollectionStateChanged();
+        }
+    }
+
+    private void ApplyOperationsReadModel(DirectLendingOperationsReadModelDto? operations)
+    {
+        CollateralCoverage.Clear();
+        StatusPostures.Clear();
+        ReconciliationExceptions.Clear();
+        EvidenceItems.Clear();
+        CloseBlockers.Clear();
+        ServicerStatements.Clear();
+
+        if (operations is null)
+        {
+            return;
+        }
+
+        foreach (var row in operations.CollateralCoverage)
+        {
+            CollateralCoverage.Add(row);
+        }
+
+        foreach (var row in operations.CovenantStatusPosture)
+        {
+            StatusPostures.Add(row);
+        }
+
+        foreach (var row in operations.ReconciliationExceptions)
+        {
+            ReconciliationExceptions.Add(row);
+        }
+
+        foreach (var row in operations.Evidence)
+        {
+            EvidenceItems.Add(row);
+        }
+
+        foreach (var row in operations.CloseBlockers)
+        {
+            CloseBlockers.Add(row);
+        }
+
+        if (operations.ServicerStatements is not null)
+        {
+            foreach (var row in operations.ServicerStatements)
+            {
+                ServicerStatements.Add(row);
+            }
         }
     }
 

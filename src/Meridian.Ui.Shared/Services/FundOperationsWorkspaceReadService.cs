@@ -260,6 +260,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly ReportPackDeliveryService? _reportPackDeliveryService;
     private readonly ReportingScheduleService? _reportingScheduleService;
     private readonly ReportPackRunReadService? _reportPackRunReadService;
+    private readonly DirectLendingOperationsReadService? _directLendingOperationsReadService;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -277,7 +278,8 @@ public sealed class FundOperationsWorkspaceReadService
         ReportPackWorkflowService? reportPackWorkflowService = null,
         ReportPackDeliveryService? reportPackDeliveryService = null,
         ReportingScheduleService? reportingScheduleService = null,
-        ReportPackRunReadService? reportPackRunReadService = null)
+        ReportPackRunReadService? reportPackRunReadService = null,
+        DirectLendingOperationsReadService? directLendingOperationsReadService = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -295,6 +297,7 @@ public sealed class FundOperationsWorkspaceReadService
         _reportPackDeliveryService = reportPackDeliveryService;
         _reportingScheduleService = reportingScheduleService;
         _reportPackRunReadService = reportPackRunReadService;
+        _directLendingOperationsReadService = directLendingOperationsReadService;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -365,6 +368,7 @@ public sealed class FundOperationsWorkspaceReadService
             ledgerBook,
             asOf,
             ct);
+        var directLendingOperationsTask = _directLendingOperationsReadService?.GetOperationsAsync(ct);
 
         await Task.WhenAll(cashTask, reconciliationTask, navTask).ConfigureAwait(false);
 
@@ -372,6 +376,9 @@ public sealed class FundOperationsWorkspaceReadService
         var cashFinancing = cashBuild.Summary;
         var reconciliation = await reconciliationTask.ConfigureAwait(false);
         var nav = await navTask.ConfigureAwait(false);
+        var directLendingOperations = directLendingOperationsTask is null
+            ? null
+            : await directLendingOperationsTask.ConfigureAwait(false);
         var allRuns = await allRunsTask.ConfigureAwait(false);
         var allAccountProjections = await allAccountProjectionsTask.ConfigureAwait(false);
         var crossFundConsolidations = await BuildCrossFundReportingConsolidationsAsync(
@@ -423,7 +430,8 @@ public sealed class FundOperationsWorkspaceReadService
             Reconciliation: reconciliation,
             Nav: nav,
             Reporting: reporting,
-            Governance: governance);
+            Governance: governance,
+            DirectLendingOperations: directLendingOperations);
     }
 
     public async Task<StructuredReportingExportPayloadDto> GetStructuredReportingExportAsync(

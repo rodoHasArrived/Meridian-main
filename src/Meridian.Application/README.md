@@ -180,6 +180,11 @@ and UI presentation concerns in their owning layers.
   Security Master instrument, and loan account dimensions before durable storage receives the
   posting candidate, so downstream trial balance, journal, close, and reporting filters do not have
   to infer direct-lending scope from journal-level tags.
+  `DirectLendingServicerStatementService` owns the first servicer statement intake slice for
+  Direct Lending operations: it previews CSV/manual JSON position and remittance statements, maps
+  rows through existing loan and Security Master references, retains accepted imports through the
+  existing servicer report batch command, and applies only operator-selected remittance rows through
+  existing payment, fee, and penalty commands.
 - Operations Continuity workflow DTO projection also derives the shared accounting-record summary
   from server-owned workflow state. The summary covers retained source records, normalized
   activity, reconciliation history, ledger evidence, approvals, report-pack lineage, export
@@ -241,7 +246,12 @@ and UI presentation concerns in their owning layers.
   futures, FX, fixed income, direct loans, structured/private `CustomAsset`, and `OtherSecurity`
   records. It declares required identifiers, economics, provider evidence, ledger classification,
   reconciliation signals, and close blockers while leaving missing live provider evidence as
-  review-required/blocking evidence instead of fabricating completeness. Private-credit depth is
+  review-required/blocking evidence instead of fabricating completeness. It also projects the
+  contract-owned `SecurityAssetPackRegistry` into the shared multi-asset coverage payload so
+  browser and WPF clients see the same asset-pack schema, lifecycle, lifecycle-event automation
+  coverage, valuation, accounting-rule, structured journal-template, registry-validation status,
+  validation, taxonomy, admission-policy, and automation-depth metadata as the contract layer.
+  Private-credit depth is
   represented on the canonical `DirectLoan` row with commitment, unfunded-commitment, paydown,
   covenant, and obligation evidence requirements. Structured and private assets stay on governed
   profile-backed `CustomAsset` rows, where servicer/trustee reports, warehouse tapes, NAV, capital

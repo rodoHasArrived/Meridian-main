@@ -34,6 +34,51 @@ public sealed partial class WorkstationEndpointsTests
             "ledgerMapping",
             "assetOperations",
             "closeReadiness");
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "private-loan-credit" &&
+            pack.AutomationDepth == "DeepAccountingAutomation" &&
+            pack.ContractSchema.Rates.Contains("reference rate") &&
+            pack.LifecycleEvents.Contains("Draw") &&
+            pack.LifecycleEvents.Contains("Repayment") &&
+            pack.LifecycleCoverage.Any(coverage =>
+                coverage.LifecycleEvent == "Draw" &&
+                coverage.AccountingAutomationStatus == "AutomatedTemplateAvailable" &&
+                coverage.JournalTemplateIds.Contains("asset-pack.principal-draw")) &&
+            pack.ValuationMethods.Contains("DiscountedCashFlow") &&
+            pack.AccountingRules.JournalTemplateEvents.Contains("principal repayment") &&
+            pack.AccountingRules.JournalTemplates.Any(template =>
+                template.LifecycleEvent == "Draw" &&
+                template.TemplateId == "asset-pack.principal-draw" &&
+                template.AccountingBases.Contains("GAAP") &&
+                template.CurrencyScopes.Contains("transaction currency") &&
+                template.EntityScopes.Contains("book")) &&
+            pack.RegistryValidationStatus == "Valid" &&
+            pack.RegistryValidationIssues.Count == 0 &&
+            pack.ValidationRules.RequiredFields.Contains("source evidence or operator rationale") &&
+            pack.AdmissionPolicy.RequiresJournalTemplateBeforeAutomatedPosting &&
+            pack.AdmissionPolicy.AccountingPostingPolicy.Contains("idempotency key") &&
+            pack.ReportingTaxonomy.Risk.Contains("credit risk") &&
+            pack.LedgerExtensionPolicy.Contains("core ledger", StringComparison.OrdinalIgnoreCase));
+        payload.AssetPacks.Should().Contain(static pack =>
+            pack.PackId == "controlled-other-asset" &&
+            pack.AutomationDepth == "WideCapture" &&
+            pack.AssetClasses.Contains("Art") &&
+            pack.AssetClasses.Contains("InsurancePolicy") &&
+            pack.AssetClasses.Contains("Vehicle") &&
+            pack.LifecycleCoverage.Any(coverage =>
+                coverage.LifecycleEvent == "Maturity" &&
+                coverage.AccountingAutomationStatus == "ManualReviewRequired") &&
+            pack.AdmissionPolicy.AllowsWideCapture &&
+            pack.AdmissionPolicy.AccountingPostingPolicy.Contains("accounting automation remains disabled") &&
+            pack.ValuationMethods.Contains("Appraisal") &&
+            pack.ValidationRules.IncompatibleCombinations.Contains("deep accounting automation without journal template coverage"));
+        payload.AssetPacks
+            .Where(static pack => pack.PackId != "controlled-other-asset")
+            .Should()
+            .OnlyContain(static pack => pack.AutomationDepth == "DeepAccountingAutomation");
+        payload.AssetPacks.Should().OnlyContain(static pack =>
+            pack.RegistryValidationStatus == "Valid" &&
+            pack.RegistryValidationIssues.Count == 0);
         payload.AssetClasses.Should().Contain(static row =>
             row.AssetClass == "DirectLoan" &&
             row.ReconciliationSignals["breaks"].Contains("loan schedule", StringComparison.OrdinalIgnoreCase) &&

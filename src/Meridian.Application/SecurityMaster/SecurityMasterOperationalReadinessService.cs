@@ -182,7 +182,8 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
                 ["closeReadiness"] = UiApiRoutes.FundAccountCloseReadiness,
                 ["assetOperations"] = UiApiRoutes.WorkstationAssetOperations,
                 ["coverage"] = UiApiRoutes.WorkstationPortfolioMultiAssetCoverage
-            }));
+            },
+            AssetPacks: SecurityAssetPackRegistry.All.Select(ToAssetPackCoverage).ToArray()));
     }
 
     private MultiAssetClassCoverageDto BuildCoverageRow(
@@ -757,6 +758,27 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
     private static bool RequiresGovernedProfile(string assetClass)
         => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase);
+
+    private static MultiAssetPackCoverageDto ToAssetPackCoverage(SecurityAssetPackDescriptor pack)
+    {
+        var validation = SecurityAssetPackRegistry.ValidateDescriptor(pack);
+        return new(
+            PackId: pack.PackId,
+            DisplayName: pack.DisplayName,
+            AssetClasses: pack.AssetClasses,
+            ContractSchema: pack.ContractSchema,
+            LifecycleEvents: pack.LifecycleEvents,
+            LifecycleCoverage: pack.LifecycleCoverage,
+            ValuationMethods: pack.ValuationMethods,
+            AccountingRules: pack.AccountingRules,
+            ValidationRules: pack.ValidationRules,
+            ReportingTaxonomy: pack.ReportingTaxonomy,
+            AutomationDepth: pack.AutomationDepth.ToString(),
+            AdmissionPolicy: pack.AdmissionPolicy,
+            LedgerExtensionPolicy: pack.LedgerExtensionPolicy,
+            RegistryValidationStatus: validation.IsValid ? "Valid" : "Invalid",
+            RegistryValidationIssues: validation.Issues);
+    }
 
     private static MultiAssetCoverageSpecification Listed(
         string assetClass,

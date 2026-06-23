@@ -155,6 +155,10 @@ snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible 
 provenance, and open-lot review sections.
 
 The same page now loads the shared Instrument Passport endpoint for the selected security so desktop operators see provider-confidence, pricing, trust, and downstream usage evidence in parity with the browser Accounting workstream.
+The Direct Lending page consumes the shared `DirectLendingOperationsReadModelDto` for servicer
+statement batches as well as collateral, status, exceptions, evidence, and close blockers. The WPF
+panel is read-only over imported position/remittance batches; preview, validation, evidence
+retention, and apply decisions stay behind shared Direct Lending endpoints and services.
 The Settings page also surfaces governed Security Master asset profiles for WPF operators. It lists
 approved profile definitions from the shared `/api/security-master/asset-profiles` route, drafts and
 approves profile variants through the shared governance endpoints, loads lineage, supports rollback,

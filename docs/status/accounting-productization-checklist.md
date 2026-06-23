@@ -161,6 +161,9 @@ the requirement end to end.
 - [x] External GL mapping-profile certification evidence now requires exact-token profile,
   provider, and fund provenance, so extended profile identifiers cannot certify guarded export
   mappings by prefix.
+- [x] Production-readiness dimensional rollout evidence now requires exact-token tenant, company,
+  fund, and ledger-book provenance before retained dimension/report/export certification can count
+  for the selected rollout scope.
 
 ## Still To Complete
 

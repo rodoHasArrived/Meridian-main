@@ -225,6 +225,130 @@ public sealed record ServicerReportBatchDto(
     string? LoadedBy,
     string? Notes);
 
+public enum ServicerStatementKind
+{
+    Position = 0,
+    Remittance = 1,
+    Mixed = 2
+}
+
+public enum ServicerStatementRowStatus
+{
+    Mapped = 0,
+    Unmapped = 1,
+    Duplicate = 2,
+    Rejected = 3,
+    ReadyToApply = 4,
+    Applied = 5
+}
+
+public enum ServicerStatementApplyMode
+{
+    CreateCashOnly = 0,
+    ApplyMixedPayment = 1,
+    ApplyPrincipalPayment = 2,
+    AssessFee = 3,
+    ChargePenalty = 4
+}
+
+public sealed record ServicerStatementImportRequestDto(
+    ServicerStatementKind Kind,
+    string ServicerName,
+    DateOnly StatementDate,
+    string SourceFormat,
+    string? SourceFileName,
+    string? RawPayload,
+    string? ImportedBy = null,
+    string? FundAccountId = null,
+    string? CashAccountId = null,
+    string? StatementRunId = null,
+    IReadOnlyList<ServicerStatementRowDto>? Rows = null,
+    string? Notes = null);
+
+public sealed record ServicerStatementPreviewDto(
+    Guid? BatchId,
+    ServicerStatementKind Kind,
+    string ServicerName,
+    DateOnly StatementDate,
+    string SourceFormat,
+    string? SourceFileName,
+    string RawPayloadHash,
+    int RowCount,
+    int MappedRowCount,
+    int UnmappedRowCount,
+    int DuplicateRowCount,
+    int ReadyToApplyRowCount,
+    int AppliedRowCount,
+    string Status,
+    IReadOnlyList<ServicerStatementRowDto> Rows,
+    IReadOnlyList<ServicerStatementValidationIssueDto> Issues,
+    IReadOnlyList<string> SuggestedActions,
+    string? EvidenceRoute = null,
+    string? StatementRunId = null);
+
+public sealed record ServicerStatementValidationIssueDto(
+    string IssueCode,
+    string Severity,
+    string Message,
+    string? RowId = null,
+    string? Field = null,
+    string? Route = null);
+
+public sealed record ServicerStatementRowDto(
+    string RowId,
+    ServicerStatementKind Kind,
+    int RowNumber,
+    ServicerStatementRowStatus Status,
+    Guid? LoanId,
+    Guid? SecurityId,
+    string? SecuritySymbol,
+    string? ExternalLoanReference,
+    string? ServicerLoanNumber,
+    string? BorrowerReference,
+    string? FundAccountId,
+    string? CashAccountId,
+    DateOnly? StatementDate,
+    DateOnly? EffectiveDate,
+    DateOnly? SettlementDate,
+    decimal? PrincipalOutstanding,
+    decimal? InterestAccruedUnpaid,
+    decimal? FeesAccruedUnpaid,
+    decimal? PenaltyAccruedUnpaid,
+    decimal? CommitmentAvailable,
+    decimal? GrossAmount,
+    decimal? PrincipalAmount,
+    decimal? InterestAmount,
+    decimal? FeeAmount,
+    decimal? PenaltyAmount,
+    CurrencyCode? Currency,
+    string? ExternalRef,
+    string RowHash,
+    string RawPayloadJson,
+    ServicerStatementApplyMode? SuggestedApplyMode = null,
+    IReadOnlyList<ServicerStatementValidationIssueDto>? Issues = null,
+    string? EvidenceRoute = null);
+
+public sealed record ServicerStatementImportResultDto(
+    Guid BatchId,
+    string Status,
+    string EvidenceRoute,
+    ServicerStatementPreviewDto Preview);
+
+public sealed record ServicerStatementApplyRequestDto(
+    IReadOnlyList<string> RowIds,
+    ServicerStatementApplyMode? DefaultMode = null,
+    string? AppliedBy = null,
+    string? Rationale = null);
+
+public sealed record ServicerStatementApplyResultDto(
+    Guid BatchId,
+    int RequestedRowCount,
+    int AppliedRowCount,
+    int SkippedRowCount,
+    IReadOnlyList<ServicerStatementRowDto> Rows,
+    IReadOnlyList<ServicerStatementValidationIssueDto> Issues,
+    string Status);
+
 public sealed record ServicerPositionReportLineImportDto(
     Guid LoanId,
     decimal? PrincipalOutstanding,

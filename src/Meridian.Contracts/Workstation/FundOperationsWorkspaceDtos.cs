@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -468,7 +469,8 @@ public sealed record FundOperationsWorkspaceDto(
     ReconciliationSummary Reconciliation,
     FundNavAttributionSummaryDto Nav,
     FundReportingSummaryDto Reporting,
-    GovernanceLifecycleProjectionDto? Governance = null);
+    GovernanceLifecycleProjectionDto? Governance = null,
+    DirectLendingOperationsReadModelDto? DirectLendingOperations = null);
 
 /// <summary>
 /// Request to build a preview of a governed report pack for one fund profile.

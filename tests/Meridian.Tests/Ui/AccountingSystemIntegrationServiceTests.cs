@@ -659,6 +659,38 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
 
+        var extendedRolloutTokenEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                PeriodReportDimensionQueriesCertified: true,
+                CrossPeriodReportDimensionQueriesCertified: true,
+                JournalQueryDimensionFiltersCertified: true,
+                ExternalExportDimensionMappingCertified: true,
+                LedgerLineDimensionsPersistedCertified: true,
+                TrialBalanceDimensionFiltersCertified: true,
+                ReportPackageDimensionProvenanceCertified: true,
+                DimensionalReportingEvidenceLinks:
+                [
+                    $"evidence://tenant/tenant-alpha-extra/company/company-alpha-extra/fund/default-fund-extra/ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full/dimension-scope/canonical-production"
+                ]));
+
+        extendedRolloutTokenEvidence.DimensionalReporting.Should().NotBeNull();
+        extendedRolloutTokenEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(10);
+        extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.period-reports-evidence-rollout-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.report-package-provenance-evidence-rollout-scope-mismatch" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        extendedRolloutTokenEvidence.Components.Should().Contain(component =>
+            component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            component.Status == AccountingProductionReadinessStatusDto.Blocked);
+
         var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full/dimension-scope/canonical-production";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(

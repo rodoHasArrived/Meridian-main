@@ -387,6 +387,82 @@ public static partial class WorkstationEndpoints
                         "Use the bank-statement import endpoint when the CSV should be applied to a bank account instead of previewed only."
                     ]),
                 new DataUploadTemplateDto(
+                    TemplateId: "servicer-position-statement",
+                    Label: "Servicer position statement",
+                    Description: "Direct Lending servicer position rows retained as statement-run evidence before operator review.",
+                    DataDomain: "Direct Lending",
+                    TargetWorkflow: "Preview -> Validate -> Import Evidence -> Reconcile -> Review",
+                    FileName: "meridian-servicer-position-statement-template.csv",
+                    ContentType: "text/csv",
+                    HeaderLine: "rowId,kind,loanId,securitySymbol,servicerLoanNumber,borrowerReference,fundAccountId,statementDate,principalOutstanding,interestAccruedUnpaid,feesAccruedUnpaid,penaltyAccruedUnpaid,commitmentAvailable,currency,externalRef",
+                    Fields:
+                    [
+                        RequiredUploadField("rowId", "Row ID", "POS-1", "Stable row identifier from the servicer statement."),
+                        OptionalUploadField("kind", "Kind", "Position", "Position, Remittance, or Mixed; defaults to the selected import kind."),
+                        OptionalUploadField("loanId", "Loan ID", "85d3d906-5a20-4d40-90dd-7ad8b7b33190", "Direct Lending loan id when known."),
+                        OptionalUploadField("securitySymbol", "Security symbol", "DL-ACME-2028", "Security Master symbol for the direct loan instrument."),
+                        OptionalUploadField("servicerLoanNumber", "Servicer loan number", "SLN-10001", "Loan number assigned by the servicer."),
+                        OptionalUploadField("borrowerReference", "Borrower reference", "Acme Borrower LLC", "Borrower name or source borrower reference."),
+                        OptionalUploadField("fundAccountId", "Fund account ID", "FUND-A-DL", "Fund account or account code receiving the retained evidence."),
+                        RequiredUploadField("statementDate", "Statement date", "2026-06-30", "Servicer statement date in YYYY-MM-DD format."),
+                        RequiredUploadField("principalOutstanding", "Principal outstanding", "245000.00", "Servicer-reported outstanding principal."),
+                        OptionalUploadField("interestAccruedUnpaid", "Interest accrued unpaid", "3250.00", "Servicer-reported unpaid interest."),
+                        OptionalUploadField("feesAccruedUnpaid", "Fees accrued unpaid", "150.00", "Servicer-reported unpaid fees."),
+                        OptionalUploadField("penaltyAccruedUnpaid", "Penalty accrued unpaid", "0.00", "Servicer-reported penalties."),
+                        OptionalUploadField("commitmentAvailable", "Commitment available", "755000.00", "Remaining available commitment."),
+                        OptionalUploadField("currency", "Currency", "USD", "Loan currency; mismatches are hard validation issues."),
+                        OptionalUploadField("externalRef", "External reference", "stmt-202606", "Retained source file, row, or servicer reference.")
+                    ],
+                    SampleRows:
+                    [
+                        "POS-1,Position,,DL-ACME-2028,SLN-10001,Acme Borrower LLC,FUND-A-DL,2026-06-30,245000.00,3250.00,150.00,0.00,755000.00,USD,stmt-202606"
+                    ],
+                    ValidationNotes:
+                    [
+                        "Position statements are retained evidence and reconciliation input; they do not post cash or ledger activity automatically.",
+                        "Provide either loanId, securitySymbol, borrowerReference, or a stable servicer loan number for mapping review."
+                    ]),
+                new DataUploadTemplateDto(
+                    TemplateId: "servicer-remittance-statement",
+                    Label: "Servicer remittance statement",
+                    Description: "Direct Lending remittance/payment rows previewed before controlled application to loan servicing events.",
+                    DataDomain: "Direct Lending",
+                    TargetWorkflow: "Preview -> Validate -> Import Evidence -> Apply Accepted Rows",
+                    FileName: "meridian-servicer-remittance-statement-template.csv",
+                    ContentType: "text/csv",
+                    HeaderLine: "rowId,kind,loanId,securitySymbol,servicerLoanNumber,borrowerReference,fundAccountId,cashAccountId,statementDate,effectiveDate,settlementDate,grossAmount,principalAmount,interestAmount,feeAmount,penaltyAmount,currency,externalRef,applyMode",
+                    Fields:
+                    [
+                        RequiredUploadField("rowId", "Row ID", "REM-1", "Stable row identifier from the servicer remittance statement."),
+                        OptionalUploadField("kind", "Kind", "Remittance", "Position, Remittance, or Mixed; defaults to the selected import kind."),
+                        OptionalUploadField("loanId", "Loan ID", "85d3d906-5a20-4d40-90dd-7ad8b7b33190", "Direct Lending loan id when known."),
+                        OptionalUploadField("securitySymbol", "Security symbol", "DL-ACME-2028", "Security Master symbol for the direct loan instrument."),
+                        OptionalUploadField("servicerLoanNumber", "Servicer loan number", "SLN-10001", "Loan number assigned by the servicer."),
+                        OptionalUploadField("borrowerReference", "Borrower reference", "Acme Borrower LLC", "Borrower name or source borrower reference."),
+                        OptionalUploadField("fundAccountId", "Fund account ID", "FUND-A-DL", "Fund account or account code receiving the retained evidence."),
+                        OptionalUploadField("cashAccountId", "Cash account ID", "FUND-A-CASH", "Cash account that received or expects the remittance."),
+                        RequiredUploadField("statementDate", "Statement date", "2026-06-30", "Servicer statement date in YYYY-MM-DD format."),
+                        RequiredUploadField("effectiveDate", "Effective date", "2026-06-28", "Loan servicing effective date in YYYY-MM-DD format."),
+                        OptionalUploadField("settlementDate", "Settlement date", "2026-06-30", "Cash settlement date in YYYY-MM-DD format."),
+                        RequiredUploadField("grossAmount", "Gross amount", "12500.00", "Total servicer-reported remittance amount."),
+                        OptionalUploadField("principalAmount", "Principal amount", "9000.00", "Principal component."),
+                        OptionalUploadField("interestAmount", "Interest amount", "3200.00", "Interest component."),
+                        OptionalUploadField("feeAmount", "Fee amount", "300.00", "Fee component."),
+                        OptionalUploadField("penaltyAmount", "Penalty amount", "0.00", "Penalty component."),
+                        OptionalUploadField("currency", "Currency", "USD", "Payment currency; mismatches are hard validation issues."),
+                        OptionalUploadField("externalRef", "External reference", "remit-202606-001", "Servicer payment or retained source reference."),
+                        OptionalUploadField("applyMode", "Apply mode", "ApplyMixedPayment", "ApplyMixedPayment, ApplyPrincipalPayment, AssessFee, ChargePenalty, or CreateCashOnly.")
+                    ],
+                    SampleRows:
+                    [
+                        "REM-1,Remittance,,DL-ACME-2028,SLN-10001,Acme Borrower LLC,FUND-A-DL,FUND-A-CASH,2026-06-30,2026-06-28,2026-06-30,12500.00,9000.00,3200.00,300.00,0.00,USD,remit-202606-001,ApplyMixedPayment"
+                    ],
+                    ValidationNotes:
+                    [
+                        "Remittance rows are never applied automatically; operators must import evidence and then apply selected accepted rows.",
+                        "Split principal, interest, fee, and penalty amounts so Direct Lending commands receive explicit allocations."
+                    ]),
+                new DataUploadTemplateDto(
                     TemplateId: "asset-information",
                     Label: "Asset information",
                     Description: "Security Master candidate facts and instrument metadata for operator review.",

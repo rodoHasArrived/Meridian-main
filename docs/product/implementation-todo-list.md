@@ -27,7 +27,7 @@ Reviewed on 2026-06-16 against:
 Result:
 
 - W1 through W5 roadmap rows are verified as `done` with `evidence_posture: complete`.
-- W5X-FREX-001 is verified as `done` with `evidence_posture: complete`; W5X-FINOPS, W6, and W7 remain `planned` with `evidence_posture: planned_evidence`.
+- W5X-FREX-001 is verified as `done` with `evidence_posture: complete`; W5X-FINOPS remains `planned` with direct-lending operations proof artifacts now attached, while W6 and W7 remain `planned` with `evidence_posture: planned_evidence`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
 ## Verified Complete Items
@@ -90,12 +90,30 @@ These are documented as implemented evidence, supported foundations, or design-l
 - [ ] Define FINOPS command-surface DTOs for reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness.
 - [ ] Build unified queue rows for reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets.
 - [ ] Add deterministic status, owner, due date, severity, SLA, blocker type, and close/report impact fields to shared read models.
+- [x] Add direct-lending endpoint parity for collateral, status transitions, PIK, restructures, and discount/premium amortization using `ViewDirectLending`/`ManageDirectLending` permissions.
+- [x] Add a shared direct-lending operations read model for loan health, collateral coverage, covenant/status posture, servicing calendar, evidence, journals, reconciliation exceptions, close blockers, and servicer statement posture.
+- [x] Wire direct-lending operations into existing Security & Instrument Explorer and Financial Operations shared read surfaces before introducing any new route.
+- [x] Expand WPF DirectLending from accrual-focused review into dense operations panels for collateral, status, exceptions, close blockers, and evidence.
+- [x] Triage direct-lending residuals with focused tests for closed-period originating postings, prepayment penalty replay/outbox idempotency, and portfolio endpoint authorization.
 - [ ] Implement close support with period state, lock/reopen posture, NAV-support dependencies, report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps.
 - [ ] Ensure no FINOPS surface can show synthetic completion when required evidence, approvals, or lock state are missing.
 - [ ] Route assignment, escalation, approval, reopen, and evidence-retention actions through shared services.
 - [ ] Add browser tests for FINOPS queue, close blockers, approval requirements, and blocked completion behavior.
 - [ ] Add WPF tests for dense workpaper execution against the same FINOPS DTOs and service decisions.
 - [ ] Update generated roadmap/product docs to state exactly what shipped before moving `W5X-FINOPS-001` out of planned.
+
+Direct-lending evidence produced for this FINOPS slice:
+
+- `src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs`
+- `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs`
+- `src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs`
+- `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs`
+- `src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs`
+- `src/Meridian.Wpf/Views/DirectLendingPage.xaml`
+- `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`
+- `tests/Meridian.Tests/Application/DirectLending/PostgresDirectLendingCommandServiceTests.cs`
+- `tests/Meridian.Tests/Application/DirectLending/DirectLendingOutboxDispatcherTests.cs`
+- `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`
 
 ## W6 TODOs: Backtesting Studio Evidence Loop
 

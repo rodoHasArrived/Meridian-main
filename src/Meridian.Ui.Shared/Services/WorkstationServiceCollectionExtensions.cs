@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.DirectLending;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Audit.Compliance;
 using Meridian.Application.FundStructure;
@@ -148,6 +149,8 @@ public static class WorkstationServiceCollectionExtensions
                 ResolveWorkstationDataDirectory(sp),
                 sp.GetRequiredService<ILogger<FileFinancialRecordExplorerSavedViewStore>>()));
         services.TryAddSingleton<FinancialRecordExplorerReadService>();
+        services.TryAddSingleton<IDirectLendingServicerStatementService, DirectLendingServicerStatementService>();
+        services.TryAddSingleton<DirectLendingOperationsReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
