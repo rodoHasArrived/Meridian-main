@@ -253,6 +253,9 @@ the requirement end to end.
   evidence, content hashes, ledger-book alignment, or package dimension-scope alignment, so report
   export certification surfaces cannot treat artifact retention as complete from certification state
   alone.
+- [x] Tenant administration production readiness now requires aggregate accounting admin, browser
+  admin-studio, and WPF admin-studio evidence to name the selected ledger book, so enterprise setup
+  surfaces cannot be certified from generic tenant/company evidence alone.
 
 ## Still To Complete
 

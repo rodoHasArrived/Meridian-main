@@ -1479,6 +1479,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for the aggregate accounting admin, operator, or setup surface before production rollout.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "accounting-admin-surface",
+                     "operator-surface",
+                     "admin-studio",
+                     "setup-surface"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.operator-surface-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Accounting administration operator-surface certification lacks retained evidence for the selected ledger book.",
+                "Attach aggregate accounting admin or setup-surface evidence that names the selected ledgerBookId before certifying enterprise configuration controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.BrowserAccountingAdminSurfaceConfigured)
         {
@@ -1500,6 +1516,21 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for browser accounting admin-studio or browser setup coverage before production rollout.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "browser-admin-studio",
+                     "browser-accounting-admin",
+                     "browser-setup"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.browser-admin-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Browser accounting administration studio certification lacks retained evidence for the selected ledger book.",
+                "Attach browser accounting admin-studio evidence that names the selected ledgerBookId before certifying book-native setup controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.WpfAccountingAdminSurfaceConfigured)
         {
@@ -1519,6 +1550,21 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "WPF accounting administration studio certification lacks retained WPF setup evidence.",
                 "Attach tenant administration evidence for WPF accounting admin-studio or desktop setup coverage before production rollout.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "wpf-admin-studio",
+                     "desktop-accounting-admin",
+                     "wpf-setup"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.wpf-admin-studio-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "WPF accounting administration studio certification lacks retained evidence for the selected ledger book.",
+                "Attach WPF accounting admin-studio evidence that names the selected ledgerBookId before certifying book-native desktop setup controls.",
                 evidenceReferences));
         }
 
