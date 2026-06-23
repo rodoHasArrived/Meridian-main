@@ -251,6 +251,59 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_MaterialLateAdjustmentBlocksValidationUntilReviewed()
+    {
+        var workflowId = Guid.Parse("46464646-4646-4646-4646-464646464646");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var journalEntryId = Guid.Parse("11112222-3333-4444-5555-666677778888");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Done",
+                secondTaskStatus: "Done"));
+        var service = new AccountingCloseManagementService(workflowService);
+        var requestEvidence = $"evidence:late-adjustment:{journalEntryId:D}:2026-03:book:{ledgerBookId:D}:request";
+
+        var planWithPendingAdjustment = await service.RequestLateAdjustmentAsync(
+            new CreateLateAdjustmentRequestDto(
+                workflowId,
+                journalEntryId,
+                25_000m,
+                "USD",
+                "Material valuation support arrived after close review.",
+                "fund-accountant",
+                [requestEvidence]),
+            "fund-accountant");
+
+        planWithPendingAdjustment.Should().NotBeNull();
+        var pendingAdjustment = planWithPendingAdjustment!.LateAdjustments.Should().ContainSingle().Subject;
+        pendingAdjustment.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        planWithPendingAdjustment.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "LateAdjustmentRequiresApproval" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == pendingAdjustment.RequestId);
+
+        var reviewEvidence = $"evidence:late-adjustment-review:{pendingAdjustment.RequestId}:2026-03:book:{ledgerBookId:D}:approval";
+        var reviewedPlan = await service.ReviewLateAdjustmentAsync(
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                pendingAdjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Controller approval retained for material late adjustment.",
+                [reviewEvidence]),
+            "controller-reviewer");
+
+        reviewedPlan.Should().NotBeNull();
+        reviewedPlan!.LateAdjustments.Should().ContainSingle().Subject.ApprovalState.Should()
+            .Be(ManualJournalEntryStatusDto.Approved);
+        reviewedPlan.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "LateAdjustmentRequiresApproval" &&
+            issue.TargetId == pendingAdjustment.RequestId);
+    }
+
+    [Fact]
     public void Scenario_MonthEndFxTranslation_ReplayUsesStableAdjustmentIdAndRateLineage()
     {
         var service = new FxTranslationService();

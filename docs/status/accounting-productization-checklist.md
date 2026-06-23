@@ -234,6 +234,9 @@ the requirement end to end.
 - [x] Material late-adjustment review now enforces requester/reviewer independence at the
   Financial Operations service and workstation endpoint layer before retaining an approval or
   rejection decision.
+- [x] Pending material late adjustments now emit critical close-plan validation blockers until a
+  controller review approves or rejects the retained request, so period-lock and report
+  certification surfaces cannot treat unresolved late adjustments as advisory warnings.
 - [x] Accounting report package certification now enforces certifier independence from the
   retained package preparer after evidence, close-plan, state, and critical-issue checks pass.
 
@@ -284,8 +287,9 @@ the requirement end to end.
 - [ ] Productize close management with close-plan editing, dependency graph authoring, sign-off
   matrix administration, materiality policy setup, late-adjustment workflow, period locks, and
   blocker/evidence review in shared services plus browser/WPF surfaces. Backend close-plan
-  projection now proves dependency-gated task progression and fail-closed missing sign-off blockers,
-  but operator setup/editing workflows remain open.
+  projection now proves dependency-gated task progression, fail-closed missing sign-off blockers,
+  and critical pending material late-adjustment blockers, but operator setup/editing workflows
+  remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes.

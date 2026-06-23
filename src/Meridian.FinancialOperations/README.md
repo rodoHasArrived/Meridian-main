@@ -263,6 +263,9 @@ rejection, decision, or review evidence that identifies the retained request, jo
 workflow, or exact close period on the same artifact; generic close support evidence and split
 support/provenance links are rejected for the governed request/review gates. Duplicate retained requests for the same journal entry within a
 close workflow, duplicate decisions, and decisions after close-package period lock fail closed.
+Pending material late adjustments now emit critical close-plan validation blockers until a
+controller review approves or rejects the retained request, keeping period-lock and report-package
+certification consumers from treating unresolved material adjustments as advisory close notes.
 `AccountingReportPackageService` assembles the implementation-grade report package DTO family:
 financial statement package, investor capital statement, realized gain/loss report, NAV package,
 certification, validation issues, deterministic report-line provenance, deterministic export

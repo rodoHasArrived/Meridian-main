@@ -808,7 +808,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         {
             issues.Add(new AccountingConfigurationValidationIssueDto(
                 "LateAdjustmentRequiresApproval",
-                AccountingConfigurationValidationSeverityDto.Warning,
+                AccountingConfigurationValidationSeverityDto.Critical,
                 $"Late adjustment '{adjustment.RequestId}' exceeds the materiality policy and requires {policy.ReviewRole} approval.",
                 adjustment.RequestId,
                 "Approve or reject the late adjustment before final close certification."));
