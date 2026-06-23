@@ -3113,6 +3113,15 @@ export interface AccountingSystemProvider {
   statusDetail: string;
   evidenceKinds: string[];
   connection?: AccountingSystemConnectionMetadata | null;
+  mappingRequirements: AccountingSystemProviderMappingRequirement[];
+}
+
+export interface AccountingSystemProviderMappingRequirement {
+  requirementId: string;
+  label: string;
+  requiredEvidenceKind: string;
+  requiredAction: string;
+  requiredForGuardedExport: boolean;
 }
 
 export interface AccountingSystemConnectionMetadata {

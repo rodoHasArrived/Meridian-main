@@ -623,6 +623,10 @@ function AccountingSystemReconciliationPanel({
               const postingLabel = provider.supportsPosting
                 ? "Posting gated by export certification"
                 : "Live posting disabled";
+              const mappingRequirementLabels = (provider.mappingRequirements ?? [])
+                .filter((requirement) => requirement.requiredForGuardedExport)
+                .slice(0, 2)
+                .map((requirement) => requirement.label);
 
               return (
                 <div
@@ -645,6 +649,7 @@ function AccountingSystemReconciliationPanel({
                     <div>{connectionLabel}</div>
                     <div>{importKinds.length > 0 ? `Import: ${importKinds.join(", ")}` : "Import: not configured"}</div>
                     <div>{hasMappingProfile ? "Mapping profile retained" : "Mapping profile needed"}</div>
+                    <div>{mappingRequirementLabels.length > 0 ? `Requires: ${mappingRequirementLabels.join(", ")}` : "Requires: mapping evidence"}</div>
                     <div>{postingLabel}</div>
                   </div>
                 </div>

@@ -2110,28 +2110,38 @@ public sealed class AccountingSystemIntegrationServiceTests
             row.SupportsChartOfAccounts &&
             row.SupportsJournalEntries &&
             row.SupportsTrialBalance &&
-            !row.SupportsPosting);
+            !row.SupportsPosting &&
+            row.MappingRequirements.Any(requirement =>
+                requirement.RequiredEvidenceKind == "XeroManualJournal" &&
+                requirement.RequiredForGuardedExport));
         providers.Should().Contain(row =>
             row.ProviderId == "netsuite-fixture" &&
             row.State == AccountingSystemProviderStateDto.Available &&
             row.SupportsChartOfAccounts &&
             row.SupportsJournalEntries &&
             row.SupportsTrialBalance &&
-            !row.SupportsPosting);
+            !row.SupportsPosting &&
+            row.MappingRequirements.Any(requirement =>
+                requirement.RequiredEvidenceKind == "NetSuiteJournalEntry" &&
+                requirement.RequiredForGuardedExport));
         providers.Should().Contain(row =>
             row.ProviderId == "xero" &&
             row.State == AccountingSystemProviderStateDto.Planned &&
             row.SupportsChartOfAccounts &&
             row.SupportsJournalEntries &&
             row.SupportsTrialBalance &&
-            !row.SupportsPosting);
+            !row.SupportsPosting &&
+            row.MappingRequirements.Any(requirement =>
+                requirement.RequiredAction.Contains("Xero tracking categories", StringComparison.OrdinalIgnoreCase)));
         providers.Should().Contain(row =>
             row.ProviderId == "netsuite" &&
             row.State == AccountingSystemProviderStateDto.Planned &&
             row.SupportsChartOfAccounts &&
             row.SupportsJournalEntries &&
             row.SupportsTrialBalance &&
-            !row.SupportsPosting);
+            !row.SupportsPosting &&
+            row.MappingRequirements.Any(requirement =>
+                requirement.RequiredAction.Contains("NetSuite segments", StringComparison.OrdinalIgnoreCase)));
     }
 
     [Theory]

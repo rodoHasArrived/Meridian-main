@@ -51,7 +51,19 @@ public sealed record AccountingSystemProviderDto(
     string StatusLabel,
     string StatusDetail,
     IReadOnlyList<string> EvidenceKinds,
-    AccountingSystemConnectionMetadataDto? Connection = null);
+    AccountingSystemConnectionMetadataDto? Connection = null,
+    IReadOnlyList<AccountingSystemProviderMappingRequirementDto>? MappingRequirements = null)
+{
+    public IReadOnlyList<AccountingSystemProviderMappingRequirementDto> MappingRequirements { get; init; } =
+        MappingRequirements ?? [];
+}
+
+public sealed record AccountingSystemProviderMappingRequirementDto(
+    string RequirementId,
+    string Label,
+    string RequiredEvidenceKind,
+    string RequiredAction,
+    bool RequiredForGuardedExport = true);
 
 public sealed record AccountingSystemConnectionMetadataDto(
     string ProviderId,

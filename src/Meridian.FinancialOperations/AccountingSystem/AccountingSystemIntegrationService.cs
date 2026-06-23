@@ -24,17 +24,20 @@ public sealed class AccountingSystemIntegrationService
             QuickBooksOnlineProviderId,
             "QuickBooks Online",
             "Live QuickBooks Online OAuth, company selection, and read-only GL import require the QuickBooks Online provider registration.",
-            ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]),
+            ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"],
+            BuildProviderMappingRequirements(QuickBooksOnlineProviderId)),
         new(
             "xero",
             "Xero",
             "Xero chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-            ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"]),
+            ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"],
+            BuildProviderMappingRequirements("xero-fixture")),
         new(
             "netsuite",
             "NetSuite",
             "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
-            ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"])
+            ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"],
+            BuildProviderMappingRequirements("netsuite-fixture"))
     ];
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -1703,7 +1706,62 @@ public sealed class AccountingSystemIntegrationService
             statusLabel,
             statusDetail,
             provider.Capabilities.EvidenceKinds,
-            metadata);
+            metadata,
+            BuildProviderMappingRequirements(provider.ProviderId));
+    }
+
+    private static IReadOnlyList<AccountingSystemProviderMappingRequirementDto> BuildProviderMappingRequirements(
+        string providerId)
+    {
+        var normalized = NormalizeProviderId(providerId);
+        var accountEvidenceKind = normalized switch
+        {
+            "xero" or "xero-fixture" => "XeroAccount",
+            "netsuite" or "netsuite-fixture" => "NetSuiteAccount",
+            _ => "QuickBooksAccount"
+        };
+        var journalEvidenceKind = normalized switch
+        {
+            "xero" or "xero-fixture" => "XeroManualJournal",
+            "netsuite" or "netsuite-fixture" => "NetSuiteJournalEntry",
+            _ => "QuickBooksJournalEntry"
+        };
+        var trialBalanceEvidenceKind = normalized switch
+        {
+            "xero" or "xero-fixture" => "XeroTrialBalance",
+            "netsuite" or "netsuite-fixture" => "NetSuiteTrialBalance",
+            _ => "QuickBooksTrialBalance"
+        };
+        var dimensionVocabulary = normalized switch
+        {
+            "xero" or "xero-fixture" => "Xero tracking categories",
+            "netsuite" or "netsuite-fixture" => "NetSuite segments, departments, classes, and subsidiaries",
+            _ => "QuickBooks classes, locations, and departments"
+        };
+
+        return
+        [
+            new(
+                $"{normalized}:account-mapping",
+                "Account mapping",
+                accountEvidenceKind,
+                "Map every reconciled Meridian GL account to a certified external GL account before guarded export review."),
+            new(
+                $"{normalized}:journal-lineage",
+                "Journal lineage",
+                journalEvidenceKind,
+                "Retain provider journal evidence and Meridian ledger-entry lineage for the exact fund, book, and export period."),
+            new(
+                $"{normalized}:trial-balance-tie-out",
+                "Trial-balance tie-out",
+                trialBalanceEvidenceKind,
+                "Reconcile provider trial-balance rows against Meridian-owned ledger totals before certification."),
+            new(
+                $"{normalized}:dimension-mapping",
+                "Dimension mapping",
+                $"{accountEvidenceKind}:Dimensions",
+                $"Certify canonical Meridian dimensions against {dimensionVocabulary} before generated export lines can be review-ready.")
+        ];
     }
 
     private static AccountingSystemReconciliationStatusDto ResolveStatus(
@@ -2130,7 +2188,8 @@ public sealed class AccountingSystemIntegrationService
         string ProviderId,
         string DisplayName,
         string StatusDetail,
-        IReadOnlyList<string> EvidenceKinds)
+        IReadOnlyList<string> EvidenceKinds,
+        IReadOnlyList<AccountingSystemProviderMappingRequirementDto> MappingRequirements)
     {
         public AccountingSystemProviderDto ToDto()
             => new(
@@ -2144,7 +2203,8 @@ public sealed class AccountingSystemIntegrationService
                 SupportsPosting: false,
                 "Import adapter not registered",
                 StatusDetail,
-                EvidenceKinds);
+                EvidenceKinds,
+                MappingRequirements: MappingRequirements);
     }
 
     private sealed record ScopedExternalGlMappingProfile(

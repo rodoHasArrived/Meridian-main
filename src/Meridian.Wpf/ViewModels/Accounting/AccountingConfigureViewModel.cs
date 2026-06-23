@@ -1482,10 +1482,13 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var providers = await _accountingSystemIntegrationService.ListProvidersAsync(ct).ConfigureAwait(false);
             foreach (var provider in providers)
             {
+                var requirementSummary = provider.MappingRequirements.Count == 0
+                    ? provider.StatusDetail
+                    : $"{provider.StatusDetail} Requirements: {string.Join(", ", provider.MappingRequirements.Take(3).Select(static requirement => requirement.Label))}.";
                 ProviderRows.Add(new AccountingWorkbenchRow(
                     provider.DisplayName,
                     provider.State.ToString(),
-                    provider.StatusDetail,
+                    requirementSummary,
                     provider.ProviderId));
             }
 
