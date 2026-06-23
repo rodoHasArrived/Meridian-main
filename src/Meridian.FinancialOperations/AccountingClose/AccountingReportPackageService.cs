@@ -875,6 +875,26 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 lateAdjustmentIssues));
         }
 
+        var dimensionIssues = IssuesFor(
+            criticalIssues,
+            "ReportPackageFundDimensionMismatch",
+            "ReportPackageLedgerBookDimensionMismatch",
+            "ReportPackageInvestorDimensionMismatch",
+            "ReportPackageCapitalAccountDimensionMismatch",
+            "ReportPackageDimensionScopeMismatch");
+        rows.Add(BuildCloseReadinessItem(
+            "report-dimension-scope",
+            "ReportDimensions",
+            "Report dimension scope",
+            ResolveReadinessState(dimensionIssues, 0, certification.State),
+            dimensionIssues.Count == 0
+                ? "Report package dimensions align with the selected fund, ledger book, investor, capital account, and explicit scope."
+                : $"{dimensionIssues.Count:N0} report dimension scope blocker(s) require remediation.",
+            "Resolve fund, ledger-book, investor, capital-account, and explicit dimension-scope mismatches before report certification.",
+            financialStatements,
+            evidenceLinks,
+            dimensionIssues));
+
         rows.Add(BuildCloseReadinessItem(
             "report-evidence-package",
             "ReportEvidence",

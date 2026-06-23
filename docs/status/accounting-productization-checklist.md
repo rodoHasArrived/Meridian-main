@@ -246,6 +246,9 @@ the requirement end to end.
 - [x] Standalone accounting report packages now carry wrong-ledger-book retained evidence blockers
   into the report-evidence readiness row, so operator review surfaces do not hide critical
   ledger-book evidence scope drift behind package-level validation only.
+- [x] Accounting report package assembly now emits a dedicated report-dimension-scope readiness row
+  for fund, ledger-book, investor, capital-account, and explicit dimension mismatches, so
+  dimensional reporting blockers are visible to operator review surfaces before certification.
 
 ## Still To Complete
 

@@ -290,7 +290,9 @@ carried into the report-evidence readiness row, so financial statements, NAV, re
 export artifacts cannot appear ready for review without retained ledger, reconciliation,
 rendered-report, and NAV support evidence. Standalone package evidence that names a different
 ledger book is also carried into that readiness row so operator review surfaces see wrong-book
-support evidence instead of only a package-level validation issue.
+support evidence instead of only a package-level validation issue. Package dimension mismatches are
+also projected through a dedicated report-dimension-scope readiness row, covering fund, ledger-book,
+investor, capital-account, and explicit dimension-scope blockers before certification.
 blocking close-plan evidence is missing, close checklist dependencies are incomplete, the attached
 close workflow has not reached period-lock, approved
 sign-offs are missing, or material late adjustments are still unapproved, blocks restatement

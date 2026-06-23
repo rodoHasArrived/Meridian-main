@@ -997,6 +997,14 @@ public sealed class AccountingReportPackageServiceTests
         package.ValidationIssues.Should().Contain(issue =>
             issue.Code == "ReportPackageLedgerBookDimensionMismatch" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "report-dimension-scope" &&
+            item.Category == "ReportDimensions" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportPackageFundDimensionMismatch") &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportPackageLedgerBookDimensionMismatch") &&
+            item.Dimensions.FundId == "fund-alpha" &&
+            item.Dimensions.BookId == DefaultLedgerBookId.ToString("D"));
     }
 
     [Fact]
