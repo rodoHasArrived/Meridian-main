@@ -387,10 +387,11 @@ chart setup, rule-test/promotion setup, close setup, provider mapping, report-gr
 ledger-book administration, posting-rule authoring, approval queues, dimension mapping, or sandbox validation unless
 the evidence is an explicit setup-certified tenant-admin packet. When a production-readiness request
 selects a ledger book, chart administration, Rules Studio test/promotion, close setup, provider
-mapping, ledger-book administration, posting-rule authoring, approval queues, dimension mapping,
-and implementation sandbox controls additionally require retained tenant-admin evidence that names
-the selected `ledgerBookId`, so tenant/company-wide setup packets cannot certify book-native
-enterprise setup controls by implication.
+mapping, audit review tooling, bulk import/export safeguards, performance validation,
+disaster-recovery runbooks, ledger-book administration, posting-rule authoring, approval queues,
+dimension mapping, and implementation sandbox controls additionally require retained tenant-admin
+evidence that names the selected `ledgerBookId`, so tenant/company-wide setup packets cannot
+certify book-native enterprise setup controls by implication.
 `/api/accounting-system/tenant-administration-profile` retains those tenant/company setup controls in
 the shared Accounting System store. Reads require accounting access, writes require
 `AdminMaintenance`, reads and writes resolve tenant/company scope from the authenticated workstation

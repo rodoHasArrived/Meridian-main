@@ -1711,6 +1711,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for audit review, evidence review, audit workbench, or transition-audit tooling.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "audit-review",
+                     "audit-tooling",
+                     "audit-workbench",
+                     "evidence-review"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.audit-review-tooling-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Audit review tooling certification lacks retained evidence for the selected ledger book.",
+                "Attach audit review or evidence-review tooling evidence that names the selected ledgerBookId before certifying book-native audit controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.BulkImportExportSafeguardsConfigured)
         {
@@ -1730,6 +1746,22 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Bulk import/export safeguard certification lacks retained safeguard evidence.",
                 "Attach tenant administration evidence for bulk import/export, guarded export, import preview, rollback, or reconciliation safeguards.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "bulk-import-export",
+                     "bulk-import",
+                     "bulk-export",
+                     "import-export-safeguard"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.bulk-import-export-safeguards-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Bulk import/export safeguard certification lacks retained evidence for the selected ledger book.",
+                "Attach bulk import/export safeguard evidence that names the selected ledgerBookId before certifying book-native import, export, preview, approval, and rollback controls.",
                 evidenceReferences));
         }
 
@@ -1753,6 +1785,22 @@ public sealed class AccountingProductionReadinessService
                 "Attach tenant administration evidence for performance validation, load tests, capacity tests, or production query-latency validation.",
                 evidenceReferences));
         }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "performance-validation",
+                     "performance-test",
+                     "load-test",
+                     "capacity-validation"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.performance-validation-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Performance validation certification lacks retained evidence for the selected ledger book.",
+                "Attach performance, load, capacity, or query-latency validation evidence that names the selected ledgerBookId before certifying book-native production performance controls.",
+                evidenceReferences));
+        }
 
         if (!readiness.DisasterRecoveryRunbookConfigured)
         {
@@ -1772,6 +1820,22 @@ public sealed class AccountingProductionReadinessService
                 AccountingConfigurationValidationSeverityDto.Warning,
                 "Disaster recovery runbook certification lacks retained runbook evidence.",
                 "Attach tenant administration evidence for disaster recovery, operating runbooks, restore validation, replay validation, or escalation procedures.",
+                evidenceReferences));
+        }
+        else if (!HasLedgerBookScopedTenantAdministrationEvidence(
+                     request,
+                     evidenceReferences,
+                     "disaster-recovery",
+                     "dr-runbook",
+                     "operating-runbook",
+                     "recovery-validation"))
+        {
+            issues.Add(Issue(
+                "tenant-admin.disaster-recovery-runbook-book-evidence-missing",
+                AccountingProductionReadinessAreaDto.TenantAdministration,
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Disaster recovery runbook certification lacks retained evidence for the selected ledger book.",
+                "Attach disaster-recovery, restore, replay, escalation, or operating-runbook evidence that names the selected ledgerBookId before certifying book-native recovery controls.",
                 evidenceReferences));
         }
 

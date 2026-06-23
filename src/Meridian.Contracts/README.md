@@ -259,7 +259,10 @@ Each configured tenant administration or enterprise configuration studio control
 evidence for that setup lane, or an explicit `tenant-admin/full` or `tenant-administration/full`
 certification packet, before readiness counts the control as complete. That evidence must identify
 the selected tenant and company, so a generic or wrong-company setup packet is retained for audit
-context but cannot certify every tenant-admin control by implication.
+context but cannot certify every tenant-admin control by implication. When a rollout is scoped to a
+ledger book, operational-hardening controls for audit review, bulk import/export safeguards,
+performance validation, and disaster-recovery runbooks also require retained evidence naming that
+selected ledger book before readiness treats those controls as production-ready.
 `AccountingTenantAdministrationProfileDto` is the retained setup profile shape for the same controls,
 allowing shared endpoints, browser, and WPF to review or certify tenant administration posture
 without passing transient request-only booleans.
