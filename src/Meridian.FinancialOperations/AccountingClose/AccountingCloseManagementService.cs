@@ -882,18 +882,73 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             return true;
         }
 
-        if (!link.Contains(ledgerBookId.ToString("D"), StringComparison.OrdinalIgnoreCase) &&
-            !link.Contains(ledgerBookId.ToString("N"), StringComparison.OrdinalIgnoreCase))
+        return EvidenceLinkContainsScopedLedgerBookValue(link, ledgerBookId.ToString("D")) ||
+            EvidenceLinkContainsScopedLedgerBookValue(link, ledgerBookId.ToString("N"));
+    }
+
+    private static bool EvidenceLinkContainsScopedLedgerBookValue(string link, string ledgerBookValue)
+    {
+        var prefixes = new[]
         {
-            return false;
+            "ledger-book:",
+            "ledger-book/",
+            "ledger-book=",
+            "ledgerbook:",
+            "ledgerbook/",
+            "ledgerbook=",
+            "ledgerBookId:",
+            "ledgerBookId/",
+            "ledgerBookId=",
+            "book:",
+            "book/",
+            "book="
+        };
+
+        foreach (var prefix in prefixes)
+        {
+            var searchIndex = 0;
+            while (searchIndex < link.Length)
+            {
+                var prefixIndex = link.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
+                if (prefixIndex < 0)
+                {
+                    break;
+                }
+
+                var valueIndex = prefixIndex + prefix.Length;
+                if (valueIndex + ledgerBookValue.Length <= link.Length &&
+                    string.Compare(
+                        link,
+                        valueIndex,
+                        ledgerBookValue,
+                        0,
+                        ledgerBookValue.Length,
+                        StringComparison.OrdinalIgnoreCase) == 0 &&
+                    EvidenceLedgerBookValueEndsAtBoundary(link, valueIndex + ledgerBookValue.Length))
+                {
+                    return true;
+                }
+
+                searchIndex = valueIndex;
+            }
         }
 
-        return link.Contains("ledger-book", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("ledger book", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("ledgerbook", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("book:", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("book/", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("book=", StringComparison.OrdinalIgnoreCase);
+        return false;
+    }
+
+    private static bool EvidenceLedgerBookValueEndsAtBoundary(string link, int valueEndIndex)
+    {
+        if (valueEndIndex >= link.Length)
+        {
+            return true;
+        }
+
+        return link[valueEndIndex] switch
+        {
+            ':' or '/' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' => true,
+            ' ' or '\t' or '\r' or '\n' => true,
+            _ => false
+        };
     }
 
     private static DateOnly ResolveCloseDueDate(IReadOnlyList<CloseTaskDto> tasks, DateOnly fallback)

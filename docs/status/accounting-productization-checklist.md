@@ -149,6 +149,9 @@ the requirement end to end.
 - [x] Accounting report package certification now applies the same exact-token ledger-book evidence
   check, preventing certified financial statement, NAV, restatement, and export artifacts from
   accepting `book:{id}ffff` as selected-book provenance.
+- [x] Close-management task sign-off and late-adjustment request/review evidence now apply
+  exact-token ledger-book evidence checks, preventing `book:{id}ffff` from satisfying selected-book
+  provenance for close controls.
 
 ## Still To Complete
 
