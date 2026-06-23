@@ -449,6 +449,15 @@ public sealed class AccountingReportPackageServiceTests
         await missingScopeEvidence.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
+        var extendedScopeEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification with a dimension-scope token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.DimensionScope!.CertificationEvidenceToken}ffff:{ready.FinancialStatements.PeriodId}"]));
+
+        await extendedScopeEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
         var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
             "controller",
@@ -480,6 +489,17 @@ public sealed class AccountingReportPackageServiceTests
             [CertificationEvidence(ready)]));
 
         await bookScopedOnly.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
+        var extendedTenantCompanyEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller attempted certification with tenant/company tokens that only match by prefix.",
+            [$"evidence:report-certification:controller-approval:tenant/tenant-alpha-extra/company/company-alpha-extra:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}"],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
+
+        await extendedTenantCompanyEvidence.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
         var tenantScopedEvidence =

@@ -1118,11 +1118,11 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             return true;
         }
 
-        return evidenceLink.Contains($"{pathToken}:{normalized}", StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains($"{pathToken}/{normalized}", StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains($"{queryToken}={normalized}", StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains($"{queryToken}:{normalized}", StringComparison.OrdinalIgnoreCase) ||
-               evidenceLink.Contains($"{queryToken}/{normalized}", StringComparison.OrdinalIgnoreCase);
+        return ReferencesScopedValue(evidenceLink, $"{pathToken}:", normalized) ||
+               ReferencesScopedValue(evidenceLink, $"{pathToken}/", normalized) ||
+               ReferencesScopedValue(evidenceLink, $"{queryToken}=", normalized) ||
+               ReferencesScopedValue(evidenceLink, $"{queryToken}:", normalized) ||
+               ReferencesScopedValue(evidenceLink, $"{queryToken}/", normalized);
     }
 
     private static bool EvidenceReferencesReportLedgerBook(
@@ -1144,7 +1144,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             return true;
         }
 
-        return evidenceLink.Contains($"dimension-scope:{BuildDimensionScopeHash(dimensions)}", StringComparison.OrdinalIgnoreCase);
+        return ReferencesScopedValue(evidenceLink, "dimension-scope:", BuildDimensionScopeHash(dimensions));
     }
 
     private static bool TryGetReportLedgerBookId(AccountingReportPackageBundleDto package, out Guid ledgerBookId)
