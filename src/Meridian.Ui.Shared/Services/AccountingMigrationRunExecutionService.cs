@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -7,6 +8,12 @@ namespace Meridian.Ui.Shared.Services;
 public sealed class AccountingMigrationRunExecutionService
 {
     private const string DefaultFundProfileId = "default-fund";
+    private static readonly Regex SourceCountPattern = new(
+        @"(?:source[-_\s]?(?:store[-_\s]?)?(?:record[-_\s]?)?count|source)\s*[:=]\s*(?<count>-?\d+)",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+    private static readonly Regex MigratedCountPattern = new(
+        @"(?:migrated[-_\s]?(?:row[-_\s]?)?(?:record[-_\s]?)?count|migrated)\s*[:=]\s*(?<count>-?\d+)",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
     private readonly IAccountingMigrationRunArtifactStore _store;
 
@@ -30,17 +37,19 @@ public sealed class AccountingMigrationRunExecutionService
         var startedAt = DateTimeOffset.UtcNow;
         var runId = NormalizeOptional(request.RunId)
             ?? BuildRunId(request.Kind, fundProfileId, request.LedgerBookId, startedAt);
-        var issues = BuildIssues(request, fundProfileId, tenantId, companyId);
+        var rowCounts = ResolveMigrationRowCounts(request);
+        var issues = BuildIssues(request, fundProfileId, tenantId, companyId, rowCounts);
         var completedAt = DateTimeOffset.UtcNow;
         var status = issues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
             ? AccountingMigrationRunStatusDto.Failed
             : request.CertifyOnSuccess
                 ? AccountingMigrationRunStatusDto.Certified
                 : AccountingMigrationRunStatusDto.Completed;
-        var migratedRecordCount = ResolveMigratedRecordCount(request, status);
-        var rowCountReconciled = ResolveRowCountReconciled(request, status);
+        var migratedRecordCount = ResolveMigratedRecordCount(request, rowCounts, status);
+        var rowCountReconciled = ResolveRowCountReconciled(rowCounts, status);
         var evidenceReferences = BuildEvidenceReferences(
             request,
+            rowCounts,
             runId,
             fundProfileId,
             request.LedgerBookId,
@@ -63,7 +72,7 @@ public sealed class AccountingMigrationRunExecutionService
             Dimensions: NormalizeDimensions(request.Dimensions, fundProfileId, request.LedgerBookId),
             TenantId: tenantId,
             CompanyId: companyId,
-            SourceRecordCount: request.SourceRecordCount,
+            SourceRecordCount: rowCounts.SourceRecordCount,
             RowCountReconciled: rowCountReconciled);
 
         var retained = await _store
@@ -88,7 +97,8 @@ public sealed class AccountingMigrationRunExecutionService
         AccountingMigrationRunExecutionRequestDto request,
         string fundProfileId,
         string? tenantId,
-        string? companyId)
+        string? companyId,
+        MigrationRowCounts rowCounts)
     {
         var issues = new List<AccountingMigrationRunExecutionIssueDto>();
         if (string.IsNullOrWhiteSpace(tenantId))
@@ -139,7 +149,7 @@ public sealed class AccountingMigrationRunExecutionService
                 "Attach retained migration certification evidence for the same tenant, company, fund profile, ledger book, and migration control before requesting certification."));
         }
 
-        AddRowCountReconciliationIssues(request, issues);
+        AddRowCountReconciliationIssues(rowCounts, issues);
 
         if (request.Kind == AccountingMigrationRunKindDto.DimensionalBackfill)
         {
@@ -150,24 +160,40 @@ public sealed class AccountingMigrationRunExecutionService
     }
 
     private static void AddRowCountReconciliationIssues(
-        AccountingMigrationRunExecutionRequestDto request,
+        MigrationRowCounts rowCounts,
         List<AccountingMigrationRunExecutionIssueDto> issues)
     {
-        if (request.SourceRecordCount is null && request.MigratedRecordCount is null)
+        if (rowCounts.HasSourceConflict)
+        {
+            issues.Add(Issue(
+                "migration-run.source-store-count-evidence-mismatch",
+                "Supplied source-store row count does not match retained source-count evidence.",
+                "Reconcile the source-store count evidence with the submitted migration run count before certification."));
+        }
+
+        if (rowCounts.HasMigratedConflict)
+        {
+            issues.Add(Issue(
+                "migration-run.migrated-row-count-evidence-mismatch",
+                "Supplied migrated-row count does not match retained migrated-row evidence.",
+                "Reconcile the migrated-row evidence with the submitted migration run count before certification."));
+        }
+
+        if (rowCounts.SourceRecordCount is null && rowCounts.MigratedRecordCount is null)
         {
             return;
         }
 
-        if (request.SourceRecordCount is null || request.MigratedRecordCount is null)
+        if (rowCounts.SourceRecordCount is null || rowCounts.MigratedRecordCount is null)
         {
             issues.Add(Issue(
                 "migration-run.row-count-reconciliation-incomplete",
                 "Migration row-count reconciliation requires both source and migrated record counts.",
-                "Provide the source-store count and migrated-row count on the same migration run request."));
+                "Provide the source-store count and migrated-row count on the same migration run request or retained evidence artifact."));
             return;
         }
 
-        if (request.SourceRecordCount < 0 || request.MigratedRecordCount < 0)
+        if (rowCounts.SourceRecordCount < 0 || rowCounts.MigratedRecordCount < 0)
         {
             issues.Add(Issue(
                 "migration-run.row-count-negative",
@@ -176,7 +202,7 @@ public sealed class AccountingMigrationRunExecutionService
             return;
         }
 
-        if (request.SourceRecordCount != request.MigratedRecordCount)
+        if (rowCounts.SourceRecordCount != rowCounts.MigratedRecordCount)
         {
             issues.Add(Issue(
                 "migration-run.row-count-mismatch",
@@ -281,6 +307,7 @@ public sealed class AccountingMigrationRunExecutionService
 
     private static IReadOnlyList<string> BuildEvidenceReferences(
         AccountingMigrationRunExecutionRequestDto request,
+        MigrationRowCounts rowCounts,
         string runId,
         string fundProfileId,
         Guid? ledgerBookId,
@@ -306,11 +333,15 @@ public sealed class AccountingMigrationRunExecutionService
             evidence.Add($"correlation:{request.CorrelationId.Trim()}");
         }
 
-        if (request.SourceRecordCount.HasValue && request.MigratedRecordCount.HasValue)
+        if (rowCounts.SourceRecordCount.HasValue && rowCounts.MigratedRecordCount.HasValue)
         {
-            var reconciled = request.SourceRecordCount == request.MigratedRecordCount && request.SourceRecordCount >= 0;
+            var reconciled = status != AccountingMigrationRunStatusDto.Failed &&
+                !rowCounts.HasSourceConflict &&
+                !rowCounts.HasMigratedConflict &&
+                rowCounts.SourceRecordCount == rowCounts.MigratedRecordCount &&
+                rowCounts.SourceRecordCount >= 0;
             evidence.Add(
-                $"row-count-reconciliation:source={request.SourceRecordCount.Value}:migrated={request.MigratedRecordCount.Value}:reconciled={reconciled.ToString().ToLowerInvariant()}");
+                $"row-count-reconciliation:source={rowCounts.SourceRecordCount.Value}:migrated={rowCounts.MigratedRecordCount.Value}:reconciled={reconciled.ToString().ToLowerInvariant()}");
         }
 
         return evidence
@@ -332,20 +363,55 @@ public sealed class AccountingMigrationRunExecutionService
 
     private static int ResolveMigratedRecordCount(
         AccountingMigrationRunExecutionRequestDto request,
+        MigrationRowCounts rowCounts,
         AccountingMigrationRunStatusDto status)
         => status == AccountingMigrationRunStatusDto.Failed
             ? 0
-            : request.MigratedRecordCount ?? EstimateMigratedRecordCount(request.Kind, request.Dimensions, status);
+            : rowCounts.MigratedRecordCount ?? EstimateMigratedRecordCount(request.Kind, request.Dimensions, status);
 
     private static bool? ResolveRowCountReconciled(
-        AccountingMigrationRunExecutionRequestDto request,
+        MigrationRowCounts rowCounts,
         AccountingMigrationRunStatusDto status)
-        => request.SourceRecordCount.HasValue || request.MigratedRecordCount.HasValue
+        => rowCounts.SourceRecordCount.HasValue || rowCounts.MigratedRecordCount.HasValue
             ? status != AccountingMigrationRunStatusDto.Failed &&
-              request.SourceRecordCount.HasValue &&
-              request.MigratedRecordCount.HasValue &&
-              request.SourceRecordCount == request.MigratedRecordCount
+              !rowCounts.HasSourceConflict &&
+              !rowCounts.HasMigratedConflict &&
+              rowCounts.SourceRecordCount.HasValue &&
+              rowCounts.MigratedRecordCount.HasValue &&
+              rowCounts.SourceRecordCount == rowCounts.MigratedRecordCount
             : null;
+
+    private static MigrationRowCounts ResolveMigrationRowCounts(AccountingMigrationRunExecutionRequestDto request)
+    {
+        var evidenceSourceCount = ExtractEvidenceCount(request.EvidenceLinks, SourceCountPattern);
+        var evidenceMigratedCount = ExtractEvidenceCount(request.EvidenceLinks, MigratedCountPattern);
+        var sourceCount = request.SourceRecordCount ?? evidenceSourceCount;
+        var migratedCount = request.MigratedRecordCount ?? evidenceMigratedCount;
+        return new MigrationRowCounts(
+            sourceCount,
+            migratedCount,
+            request.SourceRecordCount.HasValue &&
+                evidenceSourceCount.HasValue &&
+                request.SourceRecordCount.Value != evidenceSourceCount.Value,
+            request.MigratedRecordCount.HasValue &&
+                evidenceMigratedCount.HasValue &&
+                request.MigratedRecordCount.Value != evidenceMigratedCount.Value);
+    }
+
+    private static int? ExtractEvidenceCount(IReadOnlyList<string> evidenceLinks, Regex pattern)
+    {
+        foreach (var evidenceLink in evidenceLinks.Where(static link => !string.IsNullOrWhiteSpace(link)))
+        {
+            var match = pattern.Match(evidenceLink);
+            if (match.Success &&
+                int.TryParse(match.Groups["count"].Value, out var count))
+            {
+                return count;
+            }
+        }
+
+        return null;
+    }
 
     private static int EstimateMigratedRecordCount(
         AccountingMigrationRunKindDto kind,
@@ -444,4 +510,10 @@ public sealed class AccountingMigrationRunExecutionService
             .ToArray();
         return new string(chars).Trim('-');
     }
+
+    private sealed record MigrationRowCounts(
+        int? SourceRecordCount,
+        int? MigratedRecordCount,
+        bool HasSourceConflict,
+        bool HasMigratedConflict);
 }

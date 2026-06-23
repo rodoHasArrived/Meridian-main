@@ -117,8 +117,9 @@ the requirement end to end.
   migration-run execution endpoint that stamps authenticated tenant/company/actor scope, rejects
   assistant or automation-origin runs, creates scoped retained run artifacts, and feeds the same
   production-readiness rollout plan. Migration execution now also accepts source-store and
-  migrated-row counts on retained runs, blocks incomplete, negative, or mismatched supplied counts,
-  and retains successful row-count reconciliation as artifact metadata plus evidence tokens.
+  migrated-row counts supplied on retained runs or extracted from retained evidence links, blocks
+  incomplete, negative, mismatched, or body-versus-evidence-conflicting counts, and retains
+  successful row-count reconciliation as artifact metadata plus evidence tokens.
 - [x] Source-event posting candidates and production-readiness Rules Studio checks now use
   tenant/company/fund/ledger-book scope for dry-run, workspace lookup, chart resolution, and
   browser/WPF endpoint entry, preventing a candidate or readiness assessment for one company from
@@ -334,9 +335,9 @@ the requirement end to end.
   tenant/company-scoped retained migration run artifacts, retained-artifact blockers, and a shared
   migration rollout plan/checklist for these controls. A governed Accounting System migration-run
   endpoint now executes scoped rollout runs into retained artifacts and blocks automation-origin or
-  unscoped runs, and supplied source-store versus migrated row-count mismatches now fail closed, but
-  full historical journal/dimensional data rewrite workers and automated source-store count
-  extraction remain open.
+  unscoped runs, and supplied or retained-evidence-extracted source-store versus migrated row-count
+  mismatches now fail closed, but full historical journal/dimensional data rewrite workers remain
+  open.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, provider-specific mapping requirements, and guarded export fixture coverage, but
   live credentialed import adapters, richer provider-specific mapping fixtures, and provider-owned

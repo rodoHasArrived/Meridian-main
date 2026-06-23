@@ -344,8 +344,9 @@ Certified migration run artifacts also stay blocked when they lack retained comp
 carry a nonzero issue count, so incomplete or unresolved ledger-book, historical journal,
 dimensional, configuration-promotion, or close/reporting evidence migrations cannot serve as
 production rollout proof. Governed migration-run execution can also retain source-store and
-migrated-row counts; incomplete, negative, or mismatched supplied counts create blocking issues and
-prevent certification while matched counts are retained as artifact fields and evidence tokens. The
+migrated-row counts from the request or retained evidence; incomplete, negative, mismatched, or
+request-versus-evidence-conflicting counts create blocking issues and prevent certification while
+matched counts are retained as artifact fields and evidence tokens. The
 shared migration artifact store rejects certified artifacts before
 persistence unless they carry tenant, company, fund, ledger-book, completion, clean issue-count, and
 retained evidence scope; at least one retained evidence reference must identify the same tenant,

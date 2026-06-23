@@ -284,8 +284,9 @@ completion timestamp and zero retained issue count before the migration rollout 
 lane ready. This keeps ledger-book, historical journal, dimensional, configuration-promotion, and
 close/reporting evidence migrations from becoming production proof while unresolved run issues
 remain attached to the artifact. Migration execution requests can retain source-store and migrated
-row counts on the same run; mismatched or incomplete supplied counts fail closed, and successful
-reconciliations are retained on the artifact and evidence references for rollout review. Execution
+row counts on the same run, either supplied directly or extracted from retained evidence links;
+mismatched, incomplete, negative, or body-versus-evidence-conflicting counts fail closed, and
+successful reconciliations are retained on the artifact and evidence references for rollout review. Execution
 requests that ask to certify a migration run must also provide operator-retained evidence naming the
 selected tenant, company, fund profile, ledger book, and migration kind; generated run lineage alone
 does not certify a migration control.
