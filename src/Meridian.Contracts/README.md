@@ -284,7 +284,10 @@ lane ready. This keeps ledger-book, historical journal, dimensional, configurati
 close/reporting evidence migrations from becoming production proof while unresolved run issues
 remain attached to the artifact. Migration execution requests can retain source-store and migrated
 row counts on the same run; mismatched or incomplete supplied counts fail closed, and successful
-reconciliations are retained on the artifact and evidence references for rollout review.
+reconciliations are retained on the artifact and evidence references for rollout review. Execution
+requests that ask to certify a migration run must also provide operator-retained evidence naming the
+selected tenant, company, fund profile, ledger book, and migration kind; generated run lineage alone
+does not certify a migration control.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

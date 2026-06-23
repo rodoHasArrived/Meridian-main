@@ -405,6 +405,10 @@ company, fund, and ledger-book scope before evaluating ledger-book-native workfl
 reporting blockers. Retained certification evidence must also name the selected tenant, company,
 fund profile, and ledger book; a generic or mismatched production-certification packet remains
 attached for audit review but no longer clears workflow or dimensional reporting rollout blockers.
+Accounting migration execution follows the same rule for certification: a migration run can retain a
+failed or completed artifact for review, but a run requested as certified must include
+operator-retained evidence naming the selected tenant, company, fund profile, ledger book, and
+migration kind before the execution service can retain certified status.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers

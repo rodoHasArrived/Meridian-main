@@ -130,6 +130,14 @@ public sealed class AccountingMigrationRunExecutionService
                 "Certified migration runs require retained evidence.",
                 "Attach retained migration evidence before requesting certification."));
         }
+        else if (request.CertifyOnSuccess &&
+                 !HasCertifiedRunScopeEvidence(request, fundProfileId, tenantId, companyId))
+        {
+            issues.Add(Issue(
+                "migration-run.certification-evidence-scope-missing",
+                "Certified migration run evidence must identify the selected tenant, company, fund profile, ledger book, and migration kind.",
+                "Attach retained migration certification evidence for the same tenant, company, fund profile, ledger book, and migration control before requesting certification."));
+        }
 
         AddRowCountReconciliationIssues(request, issues);
 
@@ -211,6 +219,65 @@ public sealed class AccountingMigrationRunExecutionService
             AccountingConfigurationValidationSeverityDto.Critical,
             message,
             suggestedAction);
+
+    private static bool HasCertifiedRunScopeEvidence(
+        AccountingMigrationRunExecutionRequestDto request,
+        string fundProfileId,
+        string? tenantId,
+        string? companyId)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId) ||
+            string.IsNullOrWhiteSpace(companyId) ||
+            !request.LedgerBookId.HasValue)
+        {
+            return false;
+        }
+
+        var kindCode = MigrationKindCode(request.Kind);
+        var ledgerBookId = request.LedgerBookId.Value.ToString("D");
+        return request.EvidenceLinks.Any(reference =>
+            ReferencesEvidenceToken(reference, tenantId) &&
+            ReferencesEvidenceToken(reference, companyId) &&
+            ReferencesEvidenceToken(reference, fundProfileId) &&
+            ReferencesEvidenceToken(reference, ledgerBookId) &&
+            ReferencesEvidenceToken(reference, kindCode));
+    }
+
+    private static bool ReferencesEvidenceToken(string? reference, string token)
+    {
+        if (string.IsNullOrWhiteSpace(reference) || string.IsNullOrWhiteSpace(token))
+        {
+            return false;
+        }
+
+        var comparison = StringComparison.OrdinalIgnoreCase;
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var tokenIndex = reference.IndexOf(token, searchIndex, comparison);
+            if (tokenIndex < 0)
+            {
+                return false;
+            }
+
+            var before = tokenIndex == 0 ? '\0' : reference[tokenIndex - 1];
+            var afterIndex = tokenIndex + token.Length;
+            var after = afterIndex >= reference.Length ? '\0' : reference[afterIndex];
+            if (IsEvidenceTokenBoundary(before) && IsEvidenceTokenBoundary(after))
+            {
+                return true;
+            }
+
+            searchIndex = tokenIndex + token.Length;
+        }
+
+        return false;
+    }
+
+    private static bool IsEvidenceTokenBoundary(char value)
+        => value == '\0' ||
+           char.IsWhiteSpace(value) ||
+           value is '/' or ':' or '=' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}';
 
     private static IReadOnlyList<string> BuildEvidenceReferences(
         AccountingMigrationRunExecutionRequestDto request,

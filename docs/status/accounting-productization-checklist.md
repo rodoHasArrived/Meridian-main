@@ -198,6 +198,8 @@ the requirement end to end.
 - [x] Tenant administration production-readiness now also requires selected ledger-book evidence for
   operational-hardening controls: audit review tooling, bulk import/export safeguards, performance
   validation, and disaster-recovery runbooks.
+- [x] Accounting migration-run execution now fails certification requests unless operator-retained
+  evidence names the selected tenant, company, fund profile, ledger book, and migration kind.
 - [x] External GL export certification and export-control provenance now require exact-token
   package, certification, fund/provider, and period evidence instead of accepting longer identifier
   prefixes.
