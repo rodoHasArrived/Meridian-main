@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Workstation;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Services;
