@@ -242,7 +242,9 @@ or incomplete prerequisite tasks, require retained approval/sign-off/control/rev
 identifies the close task, workflow, sign-off role, and workflow or exact close period on the same
 artifact, count only
 approved decisions toward the role-scoped approval cap, and promote the close task only when
-retained approved decisions satisfy the role-scoped task approval count. Each projected close
+retained approved decisions satisfy the role-scoped task approval count. Rejected retained sign-off
+decisions block the close task, close-calendar milestone, and close-plan validation until operators
+remediate the failed control. Each projected close
 task now carries sign-off requirement rows so browser, WPF, report
 certification, and export workflows can inspect required role, required approval count, approved
 count, satisfaction state, and required evidence without rebuilding close matrix rules locally.

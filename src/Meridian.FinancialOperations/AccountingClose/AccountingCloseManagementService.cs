@@ -695,6 +695,11 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         var requiredRole = ResolveRequiredSignOffRole(task);
+        if (HasRejectedSignOff(requiredRole, signOffs))
+        {
+            return CloseTaskStatusDto.Blocked;
+        }
+
         var approvedSignOffCount = signOffs.Count(signOff =>
             signOff.ApprovalState == ManualJournalEntryStatusDto.Approved &&
             string.Equals(signOff.Role, requiredRole, StringComparison.OrdinalIgnoreCase));
@@ -749,6 +754,19 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 "Resolve the close checklist blocker before period lock."));
         }
 
+        foreach (var task in tasks.Where(static task => task.SignOffs.Any(signOff =>
+                     signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
+                     task.SignOffRequirements.Any(requirement =>
+                         string.Equals(requirement.Role, signOff.Role, StringComparison.OrdinalIgnoreCase)))))
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "CloseTaskSignOffRejected",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Close task '{task.DisplayName}' has a rejected retained sign-off decision.",
+                task.TaskId,
+                "Remediate the rejected close sign-off before period lock or report certification."));
+        }
+
         foreach (var task in tasks.Where(static task => task.Status == CloseTaskStatusDto.WaitingOnDependency))
         {
             var dependencyList = string.Join(", ", task.Dependencies.Select(static dependency => dependency.DependsOnTaskId));
@@ -791,6 +809,11 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
     private static bool IsLateAdjustmentRequestRetained(LateAdjustmentRequestDto adjustment)
         => adjustment.ApprovalState is not ManualJournalEntryStatusDto.Rejected;
+
+    private static bool HasRejectedSignOff(string requiredRole, IReadOnlyList<CloseSignOffDto> signOffs)
+        => signOffs.Any(signOff =>
+            signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
+            string.Equals(signOff.Role, requiredRole, StringComparison.OrdinalIgnoreCase));
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {

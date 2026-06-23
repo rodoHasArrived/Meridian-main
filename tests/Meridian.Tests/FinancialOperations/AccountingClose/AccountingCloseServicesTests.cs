@@ -103,6 +103,49 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_RejectedSignOffBlocksTaskAndCloseCalendar()
+    {
+        var workflowId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Pending",
+                secondTaskStatus: "Pending"));
+        var service = new AccountingCloseManagementService(workflowService);
+        var evidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-review-rejection";
+        var plan = await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Rejected,
+                "controller-reviewer",
+                "Close support packet rejected pending remediation.",
+                [evidence]),
+            "controller-reviewer");
+
+        plan.Should().NotBeNull();
+        var rejectedTask = plan!.Tasks.Single(task => task.TaskId == "reconciliation-review");
+        rejectedTask.Status.Should().Be(CloseTaskStatusDto.Blocked);
+        rejectedTask.SignOffs.Should().ContainSingle(signOff =>
+            signOff.Actor == "controller-reviewer" &&
+            signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
+            signOff.EvidenceLinks.Contains(evidence));
+        rejectedTask.SignOffRequirements.Should().ContainSingle().Subject.IsSatisfied.Should().BeFalse();
+        plan.CloseCalendar.Should().ContainSingle(milestone =>
+            milestone.TaskId == "reconciliation-review" &&
+            milestone.IsBlocked &&
+            !milestone.IsSatisfied &&
+            milestone.ApprovedSignOffCount == 0);
+        plan.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "CloseTaskSignOffRejected" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.TargetId == "reconciliation-review");
+    }
+
+    [Fact]
     public void Scenario_MonthEndFxTranslation_ReplayUsesStableAdjustmentIdAndRateLineage()
     {
         var service = new FxTranslationService();
