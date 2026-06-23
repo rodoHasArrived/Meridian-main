@@ -159,6 +159,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly AccountingProductionReadinessService? _accountingProductionReadinessService;
     private readonly IAccountingProductionCertificationProfileStore? _productionCertificationProfileStore;
     private readonly IAccountingTenantAdministrationProfileStore? _tenantAdministrationProfileStore;
+    private readonly IAccountingMigrationRunWorkerPlanStore? _migrationRunWorkerPlanStore;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
@@ -263,7 +264,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ILedgerBookService? ledgerBookService = null,
         AccountingProductionReadinessService? accountingProductionReadinessService = null,
         IAccountingProductionCertificationProfileStore? productionCertificationProfileStore = null,
-        IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null)
+        IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null,
+        IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -281,6 +283,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         _accountingProductionReadinessService = accountingProductionReadinessService;
         _productionCertificationProfileStore = productionCertificationProfileStore;
         _tenantAdministrationProfileStore = tenantAdministrationProfileStore;
+        _migrationRunWorkerPlanStore = migrationRunWorkerPlanStore;
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
         SeedBaselineConfigurationCommand = new AsyncRelayCommand(() => SeedBaselineConfigurationAsync());
@@ -374,6 +377,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessGapRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationPlanRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationArtifactRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ProductionReadinessMigrationWorkerPlanRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> TenantAdministrationControlRows { get; } = [];
     public ObservableCollection<string> ReconciliationViewOptions { get; } =
     [
@@ -2380,6 +2384,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessGapRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
+            ProductionReadinessMigrationWorkerPlanRows.Clear();
             return;
         }
 
@@ -2398,6 +2403,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessGapRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
+            ProductionReadinessMigrationWorkerPlanRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
             [
                 new AccountingWorkbenchRow(
@@ -2413,7 +2419,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         {
             var request = BuildProductionReadinessRequest();
             var readiness = await _accountingProductionReadinessService.AssessAsync(request, ct).ConfigureAwait(false);
-            ApplyProductionReadiness(readiness);
+            var workerPlans = await LoadMigrationWorkerPlansAsync(readiness, ct).ConfigureAwait(false);
+            ApplyProductionReadiness(readiness, workerPlans);
         }
         catch (Exception ex)
         {
@@ -2430,6 +2437,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ProductionReadinessGapRows.Clear();
             ProductionReadinessMigrationPlanRows.Clear();
             ProductionReadinessMigrationArtifactRows.Clear();
+            ProductionReadinessMigrationWorkerPlanRows.Clear();
             ProductionReadinessIssueRows.ReplaceWith(
             [
                 new AccountingWorkbenchRow(
@@ -2504,7 +2512,30 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             RequiredLedgerBookScopes: requiredScopes);
     }
 
-    private void ApplyProductionReadiness(AccountingProductionReadinessDto readiness)
+    private async Task<IReadOnlyList<AccountingMigrationRunWorkerPlanDto>> LoadMigrationWorkerPlansAsync(
+        AccountingProductionReadinessDto readiness,
+        CancellationToken ct)
+    {
+        if (_migrationRunWorkerPlanStore is null)
+        {
+            return [];
+        }
+
+        var fundProfileId = _activeFundProfile?.FundProfileId;
+        var ledgerBookId = _configuration?.LedgerBookId;
+        return await _migrationRunWorkerPlanStore.ListAsync(
+                fundProfileId,
+                ledgerBookId,
+                kind: null,
+                ct: ct,
+                tenantId: ResolveTenantAdministrationTenantId(),
+                companyId: ResolveTenantAdministrationCompanyId())
+            .ConfigureAwait(false);
+    }
+
+    private void ApplyProductionReadiness(
+        AccountingProductionReadinessDto readiness,
+        IReadOnlyList<AccountingMigrationRunWorkerPlanDto> migrationWorkerPlans)
     {
         ProductionReadinessStatusText = $"{readiness.Status} | {readiness.Score}/100";
         ProductionReadinessScoreText = $"{readiness.Score}/100";
@@ -2567,6 +2598,18 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     ? string.Join("; ", artifact.EvidenceReferences)
                     : FormatLedgerDimensionSet(artifact.Dimensions),
                 artifact.RunId)));
+        ProductionReadinessMigrationWorkerPlanRows.ReplaceWith(migrationWorkerPlans
+            .OrderBy(static plan => plan.Kind)
+            .ThenBy(static plan => plan.PlanId, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .Select(plan => new AccountingWorkbenchRow(
+                FormatMigrationArtifactKind(plan.Kind),
+                plan.SourceRecordCount == plan.MigratedRecordCount ? "Reconciled" : "Mismatch",
+                $"{FormatMigrationWorkerPlanScope(plan)}; {plan.SourceRecordCount:N0} source record(s), {plan.MigratedRecordCount:N0} migrated record(s).",
+                plan.EvidenceReferences.Count > 0
+                    ? string.Join("; ", plan.EvidenceReferences)
+                    : FormatLedgerDimensionSet(plan.Dimensions),
+                plan.PlanId)));
     }
 
     private static IEnumerable<AccountingWorkbenchRow> BuildLedgerBookWorkflowRows(
@@ -2820,6 +2863,20 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         return string.Join("; ", scope);
     }
 
+    private static string FormatMigrationWorkerPlanScope(AccountingMigrationRunWorkerPlanDto plan)
+    {
+        var scope = new[]
+        {
+            string.IsNullOrWhiteSpace(plan.TenantId) ? null : $"tenant {plan.TenantId}",
+            string.IsNullOrWhiteSpace(plan.CompanyId) ? null : $"company {plan.CompanyId}",
+            string.IsNullOrWhiteSpace(plan.FundProfileId) ? null : $"fund {plan.FundProfileId}",
+            $"book {plan.LedgerBookId:D}",
+            FormatLedgerDimensionSet(plan.Dimensions),
+            string.IsNullOrWhiteSpace(plan.Summary) ? null : plan.Summary
+        }.Where(static item => !string.IsNullOrWhiteSpace(item));
+        return string.Join("; ", scope);
+    }
+
     private static string FormatLedgerDimensionSet(LedgerDimensionSetDto? dimensions)
     {
         if (dimensions is null)
@@ -3004,8 +3061,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             : draft.PeriodId;
         var actionToken = action.ToString().ToLowerInvariant();
         var ledgerBookScope = draft.LedgerBookId.HasValue
-            ? $"ledger-book-{draft.LedgerBookId.Value:D}"
-            : "ledger-book-fund-level";
+            ? $"ledger-book/{draft.LedgerBookId.Value:D}"
+            : "ledger-book/fund-level";
         var required = action switch
         {
             JournalEntryLifecycleActionDto.Approve => $"approval://manual-je/{journalId}/review-approval/{period}/{ledgerBookScope}",
@@ -3827,6 +3884,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProductionReadinessGapRows.Clear();
         ProductionReadinessMigrationArtifactRows.Clear();
         ProductionReadinessMigrationPlanRows.Clear();
+        ProductionReadinessMigrationWorkerPlanRows.Clear();
         TenantAdministrationControlRows.Clear();
         ClearCapitalAccountWorkbenchRows();
         EvidenceRows.Clear();

@@ -136,6 +136,14 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new FileAccountingMigrationRunArtifactStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "migration-run-artifacts.json"),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingMigrationRunArtifactStore>>()));
+        services.TryAddSingleton<FileAccountingMigrationRunWorkerPlanStore>(sp =>
+            new FileAccountingMigrationRunWorkerPlanStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "migration-run-worker-plans.json"),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingMigrationRunWorkerPlanStore>>()));
+        services.TryAddSingleton<IAccountingMigrationRunWorkerPlanStore>(sp =>
+            sp.GetRequiredService<FileAccountingMigrationRunWorkerPlanStore>());
+        services.TryAddSingleton<IAccountingMigrationRunWorkerPlanWriter>(sp =>
+            sp.GetRequiredService<FileAccountingMigrationRunWorkerPlanStore>());
         services.TryAddSingleton<IAccountingTenantAdministrationProfileStore>(sp =>
             new FileAccountingTenantAdministrationProfileStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "tenant-administration-profiles.json"),

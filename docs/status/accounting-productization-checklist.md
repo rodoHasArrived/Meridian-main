@@ -346,8 +346,10 @@ the requirement end to end.
   dimension scope into the retained artifact while failing closed when request scope or counts
   conflict with the selected worker plan. Browser Accounting Configure now consumes the shared
   worker-plan endpoint and renders retained worker-plan reconciliation, scope, dimension, and
-  evidence summaries beside migration rollout evidence. Full source data rewrite workers that
-  transform legacy journal/dimension stores remain open.
+  evidence summaries beside migration rollout evidence. WPF Accounting Configure now registers the
+  same file-backed worker-plan store and renders retained worker-plan reconciliation, scope,
+  dimension, and evidence rows beside migration rollout evidence. Full source data rewrite workers
+  that transform legacy journal/dimension stores remain open.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, provider-specific mapping requirements, richer fixture prerequisites, and
   guarded export fixture coverage, but live credentialed import adapters and provider-owned

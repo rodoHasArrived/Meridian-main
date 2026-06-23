@@ -169,7 +169,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ProductionReadinessComponentRows.Should().Contain(row =>
             row.Name == "External GL"
             && row.Detail.Contains("certified", StringComparison.OrdinalIgnoreCase));
-        harness.ViewModel.ProductionReadinessWorkflowRows.Should().HaveCount(9);
+        harness.ViewModel.ProductionReadinessWorkflowRows.Should().HaveCount(10);
         harness.ViewModel.ProductionReadinessWorkflowRows.Should().Contain(row =>
             row.Name == "Ledger-book scope"
             && row.Status == "Complete"
@@ -551,6 +551,34 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             "controller",
             CorrelationId: "wpf-dimensional-backfill-alpha-fund",
             EvidenceLinks: ["approval:dimensional-backfill:alpha-fund"]));
+        await harness.MigrationRunWorkerPlanStore.UpsertAsync(new AccountingMigrationRunWorkerPlanDto(
+            "worker-plan-historical-alpha-fund",
+            AccountingMigrationRunKindDto.HistoricalJournalBackfill,
+            "alpha-fund",
+            Guid.Parse("7e0be005-49e1-46eb-9d4f-89d75e2328bd"),
+            SourceRecordCount: 275,
+            MigratedRecordCount: 275,
+            Dimensions: new LedgerDimensionSetDto(
+                FundId: "alpha-fund",
+                EntityId: "entity-alpha",
+                SleeveId: "sleeve-credit",
+                StrategyId: "strategy-income",
+                InvestorId: "investor-lp",
+                CapitalAccountId: "capital-account-alpha",
+                InstrumentId: Guid.Parse("0f92e649-013f-4e7f-99bf-2b14396701e8"),
+                TaxLotId: "tax-lot-alpha",
+                BookId: "7e0be005-49e1-46eb-9d4f-89d75e2328bd",
+                AccountId: "account-cash",
+                CostCenterId: "fund-accounting",
+                CounterpartyId: "administrator",
+                ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["Department"] = "FundAccounting"
+                }),
+            EvidenceReferences: ["evidence://migration-worker-plan/historical/alpha-fund"],
+            TenantId: "alpha-fund",
+            CompanyId: "Alpha Fund LP",
+            Summary: "Historical journal worker plan reconciles source and migrated rows."));
 
         await harness.ViewModel.LoadAsync();
         harness.ViewModel.TenantAdministrationProfileScopeText.Should()
@@ -622,6 +650,17 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ProductionReadinessMigrationPlanRows.Should().Contain(row =>
             row.Name == "Dimensional backfill"
             && row.Evidence.Contains("migration.dimensional-backfill-not-certified", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessMigrationWorkerPlanRows.Should().Contain(row =>
+            row.Name == "Historical journal backfill"
+            && row.Status == "Reconciled"
+            && row.Detail.Contains("tenant alpha-fund", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("company Alpha Fund LP", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("275 source record", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("275 migrated record", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("fund alpha-fund", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("external Department=FundAccounting", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("evidence://migration-worker-plan/historical/alpha-fund", StringComparison.OrdinalIgnoreCase)
+            && row.Key == "worker-plan-historical-alpha-fund");
     }
 
     [Fact]
@@ -1160,6 +1199,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingProductionReadinessDimensionalControlGrid");
         xaml.Should().Contain("ProductionReadinessDimensionalControlRows");
         xaml.Should().Contain("AccountingProductionReadinessMigrationArtifactGrid");
+        xaml.Should().Contain("AccountingProductionReadinessMigrationWorkerPlanGrid");
         xaml.Should().Contain("AccountingPostingCandidateButton");
         xaml.Should().Contain("AccountingConfigurationSetupReadinessGrid");
         xaml.Should().Contain("SetupReadinessRows");
@@ -1235,6 +1275,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var productionCertificationProfileStore = new InMemoryAccountingProductionCertificationProfileStore();
         var tenantAdministrationProfileStore = new InMemoryAccountingTenantAdministrationProfileStore();
         var migrationRunArtifactStore = new InMemoryAccountingMigrationRunArtifactStore();
+        var migrationRunWorkerPlanStore = new InMemoryAccountingMigrationRunWorkerPlanStore();
         var services = new ServiceCollection();
         services.AddSingleton<ILedgerBookService>(ledgerBookService);
         services.AddSingleton<IAccountingConfigurationService>(configurationService);
@@ -1245,6 +1286,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         services.AddSingleton<IAccountingProductionCertificationProfileStore>(productionCertificationProfileStore);
         services.AddSingleton<IAccountingTenantAdministrationProfileStore>(tenantAdministrationProfileStore);
         services.AddSingleton<IAccountingMigrationRunArtifactStore>(migrationRunArtifactStore);
+        services.AddSingleton<IAccountingMigrationRunWorkerPlanStore>(migrationRunWorkerPlanStore);
+        services.AddSingleton<IAccountingMigrationRunWorkerPlanWriter>(migrationRunWorkerPlanStore);
         var productionReadinessService = new AccountingProductionReadinessService(services.BuildServiceProvider());
         var viewModel = new AccountingConfigureViewModel(
             fundContext,
@@ -1260,7 +1303,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             ledgerBookService: ledgerBookService,
             accountingProductionReadinessService: productionReadinessService,
             productionCertificationProfileStore: productionCertificationProfileStore,
-            tenantAdministrationProfileStore: tenantAdministrationProfileStore);
+            tenantAdministrationProfileStore: tenantAdministrationProfileStore,
+            migrationRunWorkerPlanStore: migrationRunWorkerPlanStore);
 
         return new AccountingConfigureHarness(
             viewModel,
@@ -1271,6 +1315,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             productionCertificationProfileStore,
             tenantAdministrationProfileStore,
             migrationRunArtifactStore,
+            migrationRunWorkerPlanStore,
             ledgerBookService);
     }
 
@@ -1283,6 +1328,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         IAccountingProductionCertificationProfileStore ProductionCertificationProfileStore,
         IAccountingTenantAdministrationProfileStore TenantAdministrationProfileStore,
         IAccountingMigrationRunArtifactStore MigrationRunArtifactStore,
+        IAccountingMigrationRunWorkerPlanWriter MigrationRunWorkerPlanStore,
         TestLedgerBookService LedgerBookService);
 
 

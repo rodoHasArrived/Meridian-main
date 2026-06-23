@@ -74,7 +74,9 @@ shared Accounting System profile store, adding scoped retained evidence markers 
 book-native workflow and dimensional controls before persistence,
 retained migration-run evidence plus generated migration rollout plan rows with ledger-book scope,
 latest retained run, blocking issue codes, required actions, and canonical dimensions from the shared
-production-readiness payload, renders the shared production-gap checklist for configurable
+production-readiness payload, renders retained migration worker plans from the shared accounting
+system store with source/migrated row reconciliation, tenant/company/fund/book scope, evidence, and
+canonical dimensions, renders the shared production-gap checklist for configurable
 multi-ledger accounting, enterprise configuration studio coverage, guarded external GL integration,
 dimensional ledger and reporting coverage, and production-control hardening with service-owned issue
 messages beside stable blocker codes, surfaces
@@ -111,8 +113,9 @@ fund-event, capital-account, investor, payment, and settlement references.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration
-run evidence in `workstation/accounting/migration-run-artifacts.json` under the configured
-workstation data root.
+run evidence in `workstation/accounting/migration-run-artifacts.json` plus retained migration worker
+plans in `workstation/accounting/migration-run-worker-plans.json` under the configured workstation
+data root.
 
 `FinancialRecordExplorerPage` is the generic WPF consumer for the shared Financial Record Explorer
 DTO. `LedgerExplorer`, `PortfolioExplorer`, `SecurityInstrumentExplorer`, and

@@ -263,6 +263,15 @@
                                             <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="260" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <TextBlock Text="Migration Worker Plans" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ProductionReadinessMigrationWorkerPlanRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,18" AutomationProperties.AutomationId="AccountingProductionReadinessMigrationWorkerPlanGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Plan" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Scope / Counts" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="260" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     <TextBlock Text="Production Certification Profile" Style="{StaticResource CardHeaderStyle}" />
                                     <TextBlock Text="{Binding ProductionCertificationProfileScopeText}"
                                                Style="{StaticResource CardDescriptionStyle}"
