@@ -809,7 +809,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         => evidenceLinks.Any(link =>
             HasCloseTaskSignOffEvidence([link]) &&
             EvidenceLinkContainsIdentifierToken(link, taskId) &&
-            EvidenceLinkContainsIdentifierToken(link, role) &&
+            EvidenceLinkContainsRoleToken(link, role) &&
             (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
              EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
@@ -819,16 +819,6 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             link.Contains("late-adjustment", StringComparison.OrdinalIgnoreCase) ||
             link.Contains("late adjustment", StringComparison.OrdinalIgnoreCase));
 
-    private static bool HasLateAdjustmentRequestProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        Guid journalEntryId,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            (EvidenceLinkContainsGuidToken(link, journalEntryId) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
     private static bool HasLateAdjustmentRequestEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         Guid journalEntryId,
@@ -837,7 +827,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             HasLateAdjustmentRequestEvidence([link]) &&
             (EvidenceLinkContainsGuidToken(link, journalEntryId) ||
              EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
+             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
 
     private static bool HasLateAdjustmentReviewEvidence(IReadOnlyList<string> evidenceLinks)
@@ -846,18 +836,6 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             link.Contains("rejection", StringComparison.OrdinalIgnoreCase) ||
             link.Contains("decision", StringComparison.OrdinalIgnoreCase) ||
             link.Contains("review", StringComparison.OrdinalIgnoreCase));
-
-    private static bool HasLateAdjustmentReviewProvenance(
-        IReadOnlyList<string> evidenceLinks,
-        string requestId,
-        LateAdjustmentRequestDto adjustment,
-        OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            (EvidenceLinkContainsIdentifierToken(link, requestId) ||
-             EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
 
     private static bool HasLateAdjustmentReviewEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
@@ -869,12 +847,26 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             (EvidenceLinkContainsIdentifierToken(link, requestId) ||
              EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
              EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             link.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase)) &&
+             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
             EvidenceLinkContainsLedgerBook(link, workflow));
 
     private static bool EvidenceLinkContainsGuidToken(string link, Guid value)
         => EvidenceLinkContainsIdentifierToken(link, value.ToString("D")) ||
            EvidenceLinkContainsIdentifierToken(link, value.ToString("N"));
+
+    private static bool EvidenceLinkContainsRoleToken(string link, string role)
+    {
+        if (EvidenceLinkContainsIdentifierToken(link, role))
+        {
+            return true;
+        }
+
+        var roleSlug = string.Join(
+            '-',
+            role.Split([' ', '\t', '\r', '\n', '_', '/'], StringSplitOptions.RemoveEmptyEntries));
+        return !string.Equals(roleSlug, role, StringComparison.OrdinalIgnoreCase) &&
+            EvidenceLinkContainsIdentifierToken(link, roleSlug);
+    }
 
     private static bool EvidenceLinkContainsIdentifierToken(string link, string token)
     {

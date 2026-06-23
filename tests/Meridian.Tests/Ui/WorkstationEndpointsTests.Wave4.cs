@@ -702,6 +702,20 @@ public sealed partial class WorkstationEndpointsTests
 
         wrongPeriodAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
+        using var extendedPeriodAdjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Material close adjustment with an extended close-period evidence token.",
+                RequestedBy: "untrusted-browser-user",
+                EvidenceLinks: [$"evidence:late-adjustment:2026-070:book:{ledgerBookId:D}:review"]),
+            ServerJsonOptions);
+
+        extendedPeriodAdjustmentResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
         using var splitAdjustmentResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementLateAdjustments,
             new CreateLateAdjustmentRequestDto(
@@ -842,6 +856,19 @@ public sealed partial class WorkstationEndpointsTests
             ServerJsonOptions);
 
         wrongPeriodReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var extendedPeriodReviewResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,
+            new ReviewLateAdjustmentRequestDto(
+                workflowId,
+                adjustment.RequestId,
+                ManualJournalEntryStatusDto.Approved,
+                "untrusted-reviewer",
+                "Controller tried to approve a material late adjustment with extended-period evidence.",
+                EvidenceLinks: [$"evidence:late-adjustment:controller-approval:2026-070:book:{ledgerBookId:D}"]),
+            ServerJsonOptions);
+
+        extendedPeriodReviewResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         using var splitReviewResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerCloseManagementLateAdjustmentReview,

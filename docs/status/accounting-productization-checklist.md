@@ -202,6 +202,8 @@ the requirement end to end.
   workflow metadata.
 - [x] Close task sign-off evidence now boundary-checks role and period tokens, so extended role or
   period identifiers cannot satisfy retained close approval provenance by prefix.
+- [x] Late-adjustment request and review evidence now boundary-checks close-period tokens, blocking
+  extended period identifiers from requesting or approving material close adjustments.
 
 ## Still To Complete
 

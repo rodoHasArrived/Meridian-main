@@ -299,6 +299,9 @@ certified report evidence.
 Close task sign-off evidence must name the exact checklist task, sign-off role, workflow or close
 period, and ledger book when scoped; extended role or period tokens cannot satisfy retained approval
 provenance by prefix.
+Late-adjustment request and review evidence uses the same exact-period provenance requirement, so
+wrong or extended close-period tokens cannot request or approve material close adjustments for a
+different period.
 Child export artifacts retain ledger-book and canonical dimension scope, and receive certified
 timestamps plus recomputed content hashes that include the book, dimensions, certified state, and
 retained certification evidence. When the package is a restatement, final certification also
