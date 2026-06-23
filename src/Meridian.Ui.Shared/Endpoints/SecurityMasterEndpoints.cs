@@ -836,17 +836,24 @@ public static class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
-        // Clearwater-model extensions (registered only when services are available)
-        if (app.Services.GetService<ISecurityMasterPricingService>() is not null)
+        // Clearwater-model extensions. These map only when a real (non-null) implementation is
+        // registered: when Security Master is unconfigured the NullSecurityMaster* fallbacks are
+        // still present in DI, and their write/run paths throw, so mapping against them would turn
+        // requests into 500s instead of leaving the routes unavailable.
+        if (app.Services.GetService<ISecurityMasterPricingService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterPricingService))
             MapPricingEndpoints(group, jsonOptions);
 
-        if (app.Services.GetService<ISecurityMasterCashFlowService>() is not null)
+        if (app.Services.GetService<ISecurityMasterCashFlowService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterCashFlowService))
             MapCashFlowEndpoints(group, jsonOptions);
 
-        if (app.Services.GetService<IDataVendorEntitlementService>() is not null)
+        if (app.Services.GetService<IDataVendorEntitlementService>()
+            is not (null or AppSecurityMaster.NullDataVendorEntitlementService))
             MapEntitlementEndpoints(group, jsonOptions);
 
-        if (app.Services.GetService<ISecurityMasterDataQualityService>() is not null)
+        if (app.Services.GetService<ISecurityMasterDataQualityService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterDataQualityService))
             MapQualityReportEndpoints(group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)

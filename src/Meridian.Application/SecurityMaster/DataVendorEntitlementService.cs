@@ -32,7 +32,7 @@ public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
         var status = DeriveStatus(effectiveTo, request.RenewalReminderDays);
 
         var dto = new DataVendorEntitlementDto(
-            Guid.NewGuid(),
+            request.EntitlementId ?? Guid.NewGuid(),
             request.VendorName.Trim(),
             request.DataType,
             request.ContractReference?.Trim(),

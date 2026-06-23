@@ -97,7 +97,8 @@ public sealed class PostgresSecurityMasterPricingStore : ISecurityMasterPricingS
                 set price = excluded.price,
                     price_as_of = excluded.price_as_of,
                     recorded_by = excluded.recorded_by,
-                    recorded_at = now();
+                    recorded_at = now()
+                where excluded.price_as_of >= security_raw_prices.price_as_of;
             """;
         command.Parameters.AddWithValue("security_id", securityId);
         command.Parameters.AddWithValue("source_id", sourceId);

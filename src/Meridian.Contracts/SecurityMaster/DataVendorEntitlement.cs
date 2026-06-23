@@ -50,4 +50,6 @@ public sealed record UpsertDataVendorEntitlementRequest(
     bool RequiresDirectClientContract,
     string? ContactEmail,
     int RenewalReminderDays,
-    string Actor);
+    string Actor,
+    // Supply the existing id to renew or edit an entitlement in place; omit to create a new one.
+    Guid? EntitlementId = null);
