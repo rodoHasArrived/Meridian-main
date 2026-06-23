@@ -361,6 +361,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                     $"Accounting report package '{package.FinancialStatements.PackageId}' has critical validation issues and cannot be certified.");
             }
 
+            if (string.Equals(package.Certification.Actor, actor, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Accounting report package '{package.FinancialStatements.PackageId}' must be certified by an actor independent from preparer '{package.Certification.Actor}'.");
+            }
+
             var certifiedAtUtc = DateTimeOffset.UtcNow;
             var certificationEvidenceLinks = MergeEvidenceLinks(package.Certification.EvidenceLinks, evidenceLinks);
             var certification = package.Certification with

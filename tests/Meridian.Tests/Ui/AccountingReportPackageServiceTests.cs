@@ -373,9 +373,17 @@ public sealed class AccountingReportPackageServiceTests
         await assistantCertification.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*Reviewed automation cannot certify accounting report packages*human operator*");
 
-        var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+        var selfCertification = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
             "controller",
+            "Controller attempted to certify the report package they prepared.",
+            [CertificationEvidence(ready)]));
+        await selfCertification.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*independent from preparer*");
+
+        var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller-reviewer",
             "Controller certified the retained report package.",
             [CertificationEvidence(ready)]));
 
@@ -460,7 +468,7 @@ public sealed class AccountingReportPackageServiceTests
 
         var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller certified the retained dimension-scoped report package.",
             [CertificationEvidence(ready)]));
 
@@ -506,7 +514,7 @@ public sealed class AccountingReportPackageServiceTests
             $"evidence:report-certification:controller-approval:tenant/tenant-alpha/company/company-alpha:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}:{ready.FinancialStatements.PeriodId}";
         var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller certified the retained tenant-scoped report package.",
             [tenantScopedEvidence],
             TenantId: "tenant-alpha",
@@ -589,7 +597,7 @@ public sealed class AccountingReportPackageServiceTests
 
         var certifiedPrior = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             draftPrior.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller certified the prior report package.",
             [CertificationEvidence(draftPrior)]));
         var genericLineageRestatement = await service.BuildPackageAsync(CompletePackageRequest(
@@ -659,7 +667,7 @@ public sealed class AccountingReportPackageServiceTests
 
         var certifiedRestatement = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             readyRestatement.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller approved the restatement package.",
             [restatementCertificationEvidence]));
 
@@ -692,7 +700,7 @@ public sealed class AccountingReportPackageServiceTests
             LedgerBookId: DefaultLedgerBookId));
         var certifiedPrior = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             prior.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller certified the prior primary-book report package.",
             [CertificationEvidence(prior)]));
 
@@ -737,7 +745,7 @@ public sealed class AccountingReportPackageServiceTests
                 BookId: DefaultLedgerBookId.ToString("D"))));
         var certifiedPrior = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             prior.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller certified the prior entity-scoped report package.",
             [CertificationEvidence(prior)]));
 
@@ -778,7 +786,7 @@ public sealed class AccountingReportPackageServiceTests
         var ready = await service.BuildPackageAsync(CompletePackageRequest("fund-alpha", "2027-05", CloseWorkflowId: workflowId));
         var certified = await service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
-            "controller",
+            "controller-reviewer",
             "Controller certified the May report package.",
             [CertificationEvidence(ready)]));
 

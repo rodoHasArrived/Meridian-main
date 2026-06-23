@@ -207,6 +207,8 @@ the requirement end to end.
 - [x] Material late-adjustment review now enforces requester/reviewer independence at the
   Financial Operations service and workstation endpoint layer before retaining an approval or
   rejection decision.
+- [x] Accounting report package certification now enforces certifier independence from the
+  retained package preparer after evidence, close-plan, state, and critical-issue checks pass.
 
 ## Still To Complete
 

@@ -44,7 +44,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
   financial statements, investor capital statements, realized gain/loss, NAV packages,
   dimension-scoped package requests, certification state, validation issues, retained package
-  history, evidence-backed package certification, and restatement workflow metadata.
+  history, evidence-backed package certification, independent certifier enforcement, and
+  restatement workflow metadata.
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
