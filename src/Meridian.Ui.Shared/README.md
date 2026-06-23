@@ -161,11 +161,13 @@ Accounting production-readiness assessment also treats tenant administration evi
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
 the shared control plane counts those enterprise setup controls as complete. Tenant setup, admin
-role-profile, scoped-access, aggregate accounting admin, browser admin-studio, and WPF admin-studio
-evidence must also name the selected ledger book, and reporting-group plus
-tenant/company/report-group setup evidence must prove the same book scope, so workstation setup
-surfaces cannot be certified as production-ready from tenant-level evidence that does not prove the
-active accounting book.
+role-profile, scoped-access, reporting groups, accounting admin surfaces, chart administration,
+Rules Studio test/promotion, close setup, provider mapping, tenant/company/report-group setup,
+ledger-book administration, posting-rule authoring, approval queues, dimension mapping,
+implementation sandbox, audit review, bulk import/export safeguards, performance validation, and
+runbook evidence must also name the selected ledger book, so workstation setup surfaces cannot be
+certified as production-ready from tenant-level evidence that does not prove the active accounting
+book.
 Tenant administration profile persistence fails closed with the same scope posture: configured
 enterprise setup controls must retain evidence naming the selected tenant, company, and configured
 control family on the same retained artifact, or retain a full tenant-admin certification artifact,

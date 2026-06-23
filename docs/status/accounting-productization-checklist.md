@@ -265,6 +265,11 @@ the requirement end to end.
 - [x] Tenant setup, accounting admin role-profile, and scoped-access production readiness now require
   retained evidence for the selected ledger book, so tenant-level setup packets cannot certify
   book-native authorization and access controls by implication.
+- [x] The focused operational-hardening regression now covers every configured tenant-admin
+  setup-control family that has selected-ledger-book evidence enforcement, including chart
+  administration, Rules Studio promotion, close setup, provider mapping, ledger-book administration,
+  posting-rule authoring, approval queues, dimension mapping, sandbox validation, audit review,
+  import/export safeguards, performance validation, and recovery runbooks.
 
 ## Still To Complete
 

@@ -33,11 +33,20 @@ public sealed class AccountingProductionReadinessOperationalHardeningTests
             "tenant-admin.browser-admin-studio-book-evidence-missing",
             "tenant-admin.wpf-admin-studio-book-evidence-missing",
             "tenant-admin.reporting-groups-book-evidence-missing",
+            "tenant-admin.chart-administration-studio-book-evidence-missing",
+            "tenant-admin.rule-test-promotion-studio-book-evidence-missing",
+            "tenant-admin.close-setup-studio-book-evidence-missing",
+            "tenant-admin.provider-mapping-studio-book-evidence-missing",
             "tenant-admin.tenant-company-report-group-studio-book-evidence-missing",
             "tenant-admin.audit-review-tooling-book-evidence-missing",
             "tenant-admin.bulk-import-export-safeguards-book-evidence-missing",
             "tenant-admin.performance-validation-book-evidence-missing",
-            "tenant-admin.disaster-recovery-runbook-book-evidence-missing"
+            "tenant-admin.disaster-recovery-runbook-book-evidence-missing",
+            "tenant-admin.ledger-book-administration-studio-book-evidence-missing",
+            "tenant-admin.posting-rule-authoring-studio-book-evidence-missing",
+            "tenant-admin.approval-queue-studio-book-evidence-missing",
+            "tenant-admin.dimension-mapping-studio-book-evidence-missing",
+            "tenant-admin.implementation-sandbox-book-evidence-missing"
         };
         genericEvidence.TenantAdministration.Should().NotBeNull();
         genericEvidence.TenantAdministration!.CompletedControlCount.Should().Be(23);
