@@ -190,6 +190,10 @@ the requirement end to end.
 - [x] Manual journal save/validate/submit end-to-end workstation proof now runs under an
   authenticated tenant/company session, so Accounting and Reporting workspace projections are
   tested through the same tenant-scope gate used by production workstation routes.
+- [x] Durable PostgreSQL journal reads now apply account and line-dimension filters through a
+  matching-entry subquery before rehydrating all retained journal legs, preventing scoped ledger
+  queries from returning unbalanced partial entries to close, reporting, reconciliation, or export
+  consumers.
 
 ## Still To Complete
 
@@ -208,8 +212,9 @@ the requirement end to end.
   trial-balance projection, browser ledger inquiry, and browser retained-journal evidence rows now
   have dimension bucketing/filter/display proof, and browser run-ledger helpers can now request
   server-scoped dimension filters for trial-balance and journal reads. WPF Run Ledger also projects
-  canonical dimensions from retained run ledger rows, but not every durable query and report surface
-  is covered.
+  canonical dimensions from retained run ledger rows. PostgreSQL journal storage now preserves full
+  balanced entries for account and line-dimension scoped reads, but not every durable query and
+  report surface is covered.
 - [ ] Finish JE lifecycle hardening across every mutation path: version guards, actor/segregation
   checks, evidence requirements, period locks, immutable posted entries, reversal/rebook correction
   paths, lifecycle idempotency, and transition audit coverage. Manual journal lifecycle commands now

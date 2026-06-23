@@ -111,55 +111,54 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = CreateJournalEntryReadCommand(connection);
-        command.CommandText +=
-            $"""
-            join {Qualified("accounting_periods")} p on p.period_id = je.period_id
-            where 1 = 1
-            """;
+        command.CommandText += BuildJournalEntryQueryFilterSql(
+            Qualified("journal_entries"),
+            Qualified("journal_legs"),
+            Qualified("accounting_periods"));
 
         if (query.LedgerBookId.HasValue)
         {
-            command.CommandText += " and p.ledger_book_id = @ledger_book_id";
+            command.CommandText += " and p_filter.ledger_book_id = @ledger_book_id";
             command.Parameters.AddWithValue("ledger_book_id", query.LedgerBookId.Value);
         }
 
         if (query.PeriodId.HasValue)
         {
-            command.CommandText += " and je.period_id = @period_id";
+            command.CommandText += " and je_filter.period_id = @period_id";
             command.Parameters.AddWithValue("period_id", query.PeriodId.Value);
         }
 
         if (query.AggregateId.HasValue)
         {
-            command.CommandText += " and je.aggregate_id = @aggregate_id";
+            command.CommandText += " and je_filter.aggregate_id = @aggregate_id";
             command.Parameters.AddWithValue("aggregate_id", query.AggregateId.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(query.AccountName))
         {
-            command.CommandText += " and jl.account_name = @account_name";
+            command.CommandText += " and jl_filter.account_name = @account_name";
             command.Parameters.AddWithValue("account_name", query.AccountName.Trim());
         }
 
         if (query.OccurredFrom.HasValue)
         {
-            command.CommandText += " and je.occurred_at >= @occurred_from";
+            command.CommandText += " and je_filter.occurred_at >= @occurred_from";
             command.Parameters.AddWithValue("occurred_from", query.OccurredFrom.Value.UtcDateTime);
         }
 
         if (query.OccurredTo.HasValue)
         {
-            command.CommandText += " and je.occurred_at <= @occurred_to";
+            command.CommandText += " and je_filter.occurred_at <= @occurred_to";
             command.Parameters.AddWithValue("occurred_to", query.OccurredTo.Value.UtcDateTime);
         }
 
         if (lineDimensionsJson is not null)
         {
-            command.CommandText += " and jl.dimensions @> cast(@line_dimensions as jsonb)";
+            command.CommandText += " and jl_filter.dimensions @> cast(@line_dimensions as jsonb)";
             command.Parameters.AddWithValue("line_dimensions", lineDimensionsJson);
         }
 
-        command.CommandText += " order by je.occurred_at, je.global_sequence, jl.line_no;";
+        command.CommandText += ") order by je.occurred_at, je.global_sequence, jl.line_no;";
         return await ReadJournalEntriesAsync(command, ct).ConfigureAwait(false);
     }
 
@@ -1510,6 +1509,20 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
 
         return JsonSerializer.Serialize(values, JsonOptions);
     }
+
+    internal static string BuildJournalEntryQueryFilterSql(
+        string journalEntriesTable,
+        string journalLegsTable,
+        string accountingPeriodsTable)
+        => $"""
+
+            where je.journal_entry_id in (
+                select distinct je_filter.journal_entry_id
+                from {journalEntriesTable} je_filter
+                join {journalLegsTable} jl_filter on jl_filter.journal_entry_id = je_filter.journal_entry_id
+                join {accountingPeriodsTable} p_filter on p_filter.period_id = je_filter.period_id
+                where 1 = 1
+            """;
 
     private static void AddDimension(IDictionary<string, object> values, string name, string? value)
     {

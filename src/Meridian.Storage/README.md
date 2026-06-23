@@ -153,7 +153,10 @@ filters do not have to infer line scope from journal-level tags.
 line dimensions: callers can combine ledger-book, period, aggregate, account, date, and line-level
 dimension filters, and the store applies them against `journal_legs.dimensions` instead of
 guessing scope from account names or browser/WPF state. Empty queries fail before opening a
-connection so production journal reads stay explicitly scoped.
+connection so production journal reads stay explicitly scoped. Account and line-dimension filters
+first identify matching journal entries, then rehydrate every retained leg for those entries, so
+durable scoped reads do not return unbalanced partial journals to close, reporting, reconciliation,
+or export consumers.
 
 ### Direct lending and operational projections
 

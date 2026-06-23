@@ -107,6 +107,23 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void JournalEntryQueryFilterSql_UsesMatchingEntrySubqueryToPreserveBalancedEntries()
+    {
+        var sql = PostgresLedgerJournalStore.BuildJournalEntryQueryFilterSql(
+            "ledger.journal_entries",
+            "ledger.journal_legs",
+            "ledger.accounting_periods");
+
+        sql.Should().Contain("where je.journal_entry_id in");
+        sql.Should().Contain("select distinct je_filter.journal_entry_id");
+        sql.Should().Contain("from ledger.journal_entries je_filter");
+        sql.Should().Contain("join ledger.journal_legs jl_filter on jl_filter.journal_entry_id = je_filter.journal_entry_id");
+        sql.Should().Contain("join ledger.accounting_periods p_filter on p_filter.period_id = je_filter.period_id");
+        sql.Should().NotContain("where jl.");
+        sql.Should().NotContain("where p.");
+    }
+
+    [Fact]
     public void PostingGuard_OpenPeriod_AllowsOriginatingAndAdjustmentEntries()
     {
         var period = BuildAccountingPeriod("Open");
