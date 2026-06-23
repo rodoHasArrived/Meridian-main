@@ -5824,6 +5824,29 @@ export interface AccountingMigrationRunArtifactList {
   artifacts: AccountingMigrationRunArtifact[];
 }
 
+export interface AccountingMigrationRunWorkerPlan {
+  planId: string;
+  kind: AccountingMigrationRunKind;
+  fundProfileId: string;
+  ledgerBookId: string;
+  sourceRecordCount: number;
+  migratedRecordCount: number;
+  dimensions?: LedgerDimensionSet | null;
+  evidenceReferences: string[];
+  tenantId?: string | null;
+  companyId?: string | null;
+  summary?: string | null;
+}
+
+export interface AccountingMigrationRunWorkerPlanList {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  kind?: AccountingMigrationRunKind | null;
+  plans: AccountingMigrationRunWorkerPlan[];
+  tenantId?: string | null;
+  companyId?: string | null;
+}
+
 export interface AccountingProductionReadinessIssue {
   code: string;
   area: AccountingProductionReadinessArea;

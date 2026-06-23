@@ -3203,6 +3203,23 @@ describe("accounting-screen view model", () => {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       assessProductionReadiness: vi.fn().mockResolvedValue(productionReadiness),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: productionReadiness.migrationRunArtifacts ?? [] }),
+      listMigrationWorkerPlans: vi.fn().mockResolvedValue({
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "book-primary",
+        kind: null,
+        plans: [{
+          planId: "worker-plan-historical-book-primary",
+          kind: "HistoricalJournalBackfill",
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "book-primary",
+          sourceRecordCount: 275,
+          migratedRecordCount: 275,
+          evidenceReferences: ["evidence://migration-worker-plan/historical/book-primary"],
+          tenantId: "tenant-alpha",
+          companyId: "company-alpha",
+          summary: "Historical journal worker plan retained for primary book."
+        }]
+      }),
       getProductionCertificationProfile: vi.fn(async () => retainedProductionCertificationProfile),
       upsertProductionCertificationProfile: vi.fn(async (request) => {
         retainedProductionCertificationProfile = request.profile;
@@ -3350,7 +3367,21 @@ describe("accounting-screen view model", () => {
       dimensionalReportingLabel: "4/9 ledger/query/report/export dimension controls | ledger book book-primary",
       dimensionalReportingEvidenceLabel: "1 retained dimensional evidence reference",
       tenantAdministrationLabel: "5/23 admin controls | tenant tenant-alpha | company company-alpha",
-      tenantAdministrationEvidenceLabel: "1 retained setup evidence reference"
+      tenantAdministrationEvidenceLabel: "1 retained setup evidence reference",
+      migrationWorkerPlanSummaryLabel: "1/1 retained worker plan reconciled"
+    });
+    expect(result.current.productionReadiness.migrationWorkerPlanRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "worker-plan-historical-book-primary",
+        kindLabel: "Historical journal backfill",
+        countLabel: "275 source records -> 275 migrated records",
+        evidenceLabel: "1 evidence reference",
+        tone: "success"
+      })
+    ]));
+    expect(services.listMigrationWorkerPlans).toHaveBeenCalledWith({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary"
     });
     expect(result.current.productionReadiness.productionGapRows).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -4053,6 +4084,7 @@ describe("accounting-screen view model", () => {
       getConfiguration: vi.fn().mockResolvedValue(workspace),
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: [] }),
+      listMigrationWorkerPlans: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", kind: null, plans: [] }),
       getProductionCertificationProfile: vi.fn(),
       upsertProductionCertificationProfile: vi.fn(),
       getTenantAdministrationProfile: vi.fn(),
@@ -4242,6 +4274,7 @@ describe("accounting-screen view model", () => {
       getConfiguration,
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-missing", artifacts: [] }),
+      listMigrationWorkerPlans: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-missing", kind: null, plans: [] }),
       getProductionCertificationProfile: vi.fn(),
       upsertProductionCertificationProfile: vi.fn(),
       getTenantAdministrationProfile: vi.fn(),

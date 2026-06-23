@@ -7032,6 +7032,31 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             </div>
           ) : null}
 
+          {view.productionReadiness.migrationWorkerPlanRows.length > 0 ? (
+            <div className="space-y-2" role="region" aria-label="Retained accounting migration worker plans">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {view.productionReadiness.migrationWorkerPlanSummaryLabel}
+              </div>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {view.productionReadiness.migrationWorkerPlanRows.map((plan) => (
+                  <div key={plan.id} className={cn("rounded-md border px-3 py-3", accountingToolingBorderClass(plan.tone))}>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <div className="font-semibold text-foreground">{plan.kindLabel}</div>
+                        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{plan.id}</div>
+                      </div>
+                      <Badge variant={accountingToolingBadgeVariant(plan.tone)}>{plan.tone === "success" ? "Reconciled" : "Mismatch"}</Badge>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{plan.title}</p>
+                    <div className="mt-2 font-mono text-[11px] text-muted-foreground">{plan.countLabel} | {plan.evidenceLabel}</div>
+                    <div className="mt-1 text-[11px] text-muted-foreground">{plan.scopeLabel}</div>
+                    <div className="mt-1 text-[11px] text-muted-foreground">{plan.detail}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {view.productionReadiness.components.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" aria-label="Accounting production readiness components">
               {view.productionReadiness.components.map((component) => (

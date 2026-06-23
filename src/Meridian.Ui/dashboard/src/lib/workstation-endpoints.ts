@@ -335,6 +335,7 @@ export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
   exportPackageManifest: UI_API_ROUTES.AccountingSystemExportPackageManifest,
   exportPackageCertification: UI_API_ROUTES.AccountingSystemExportPackageCertification,
   migrationRunArtifacts: UI_API_ROUTES.AccountingSystemMigrationRunArtifacts,
+  migrationWorkerPlans: UI_API_ROUTES.AccountingSystemMigrationWorkerPlans,
   tenantAdministrationProfile: UI_API_ROUTES.AccountingSystemTenantAdministrationProfile,
   productionCertificationProfile: UI_API_ROUTES.AccountingSystemProductionCertificationProfile
 } as const;

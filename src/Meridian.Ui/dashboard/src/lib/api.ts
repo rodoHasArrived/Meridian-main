@@ -4,6 +4,8 @@ import type {
   BackfillTriggerRequest,
   BackfillTriggerResult,
   AccountingMigrationRunArtifactList,
+  AccountingMigrationRunKind,
+  AccountingMigrationRunWorkerPlanList,
   AccountingProductionCertificationProfile,
   AccountingProductionCertificationProfileUpsertRequest,
   AccountingProductionReadiness,
@@ -2052,6 +2054,28 @@ export function getAccountingMigrationRunArtifacts(
   const suffix = params.toString();
   const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationRunArtifacts;
   return getJson<AccountingMigrationRunArtifactList>(route, options);
+}
+
+export function getAccountingMigrationWorkerPlans(
+  query: { fundProfileId?: string | null; ledgerBookId?: string | null; kind?: AccountingMigrationRunKind | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  if (query.kind) {
+    params.set("kind", query.kind);
+  }
+
+  const suffix = params.toString();
+  const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans;
+  return getJson<AccountingMigrationRunWorkerPlanList>(route, options);
 }
 
 export function getAccountingTenantAdministrationProfile(

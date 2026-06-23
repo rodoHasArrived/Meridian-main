@@ -15,6 +15,7 @@ import {
   dryRunAccountingConfigurationPostingRule,
   executeAccountingConfigurationPostingRuleTests,
   getAccountingMigrationRunArtifacts,
+  getAccountingMigrationWorkerPlans,
   getLedgerCloseManagementPeriodPlan,
   getAccountingTenantAdministrationProfile,
   getAccountingProductionCertificationProfile,
@@ -85,6 +86,8 @@ import type {
   AccountingConfigurationWorkspace,
   AccountingMigrationRunArtifact,
   AccountingMigrationRunArtifactList,
+  AccountingMigrationRunWorkerPlan,
+  AccountingMigrationRunWorkerPlanList,
   AccountingMigrationRolloutPlanItem,
   AccountingProductionReadiness,
   AccountingProductionReadinessRequest,
@@ -237,6 +240,7 @@ export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
   assessProductionReadiness: (request: AccountingProductionReadinessRequest) => Promise<AccountingProductionReadiness>;
   listMigrationRunArtifacts: (query: { fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingMigrationRunArtifactList>;
+  listMigrationWorkerPlans: (query: { fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingMigrationRunWorkerPlanList>;
   getProductionCertificationProfile: (query: { tenantId?: string | null; companyId?: string | null; fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingProductionCertificationProfile>;
   upsertProductionCertificationProfile: (request: AccountingProductionCertificationProfileUpsertRequest) => Promise<AccountingProductionCertificationProfile>;
   getTenantAdministrationProfile: (query: { tenantId?: string | null; companyId?: string | null }) => Promise<AccountingTenantAdministrationProfile>;
@@ -417,6 +421,17 @@ export interface AccountingMigrationRolloutPlanItemViewModel {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+export interface AccountingMigrationWorkerPlanViewModel {
+  id: string;
+  title: string;
+  detail: string;
+  kindLabel: string;
+  countLabel: string;
+  evidenceLabel: string;
+  scopeLabel: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
 export interface AccountingTenantAdministrationControlViewModel {
   id: string;
   label: string;
@@ -441,6 +456,8 @@ export interface AccountingProductionReadinessViewModel {
   migrationPlanRows: AccountingMigrationRolloutPlanItemViewModel[];
   migrationArtifactSummaryLabel: string;
   migrationArtifactRows: AccountingMigrationRunArtifactViewModel[];
+  migrationWorkerPlanSummaryLabel: string;
+  migrationWorkerPlanRows: AccountingMigrationWorkerPlanViewModel[];
   productionGapRows: AccountingProductionGapViewModel[];
   components: AccountingProductionReadinessComponentViewModel[];
   blockerIssues: AccountingProductionReadinessIssueViewModel[];
@@ -2564,6 +2581,7 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   getConfiguration: () => getAccountingConfiguration(),
   assessProductionReadiness: (request) => assessAccountingProductionReadiness(request),
   listMigrationRunArtifacts: (query) => getAccountingMigrationRunArtifacts(query),
+  listMigrationWorkerPlans: (query) => getAccountingMigrationWorkerPlans(query),
   getProductionCertificationProfile: (query) => getAccountingProductionCertificationProfile(query),
   upsertProductionCertificationProfile: (request) => upsertAccountingProductionCertificationProfile(request),
   getTenantAdministrationProfile: (query) => getAccountingTenantAdministrationProfile(query),
@@ -3328,6 +3346,7 @@ export function useAccountingConfigurationViewModel(
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [productionReadiness, setProductionReadiness] = useState<AccountingProductionReadiness | null>(null);
   const [migrationRunArtifacts, setMigrationRunArtifacts] = useState<AccountingMigrationRunArtifact[]>([]);
+  const [migrationWorkerPlans, setMigrationWorkerPlans] = useState<AccountingMigrationRunWorkerPlan[]>([]);
   const [productionReadinessLoading, setProductionReadinessLoading] = useState(false);
   const [productionReadinessError, setProductionReadinessError] = useState<ApiErrorDisplay | null>(null);
   const [productionCertificationProfile, setProductionCertificationProfile] = useState<AccountingProductionCertificationProfile | null>(null);
@@ -3467,11 +3486,21 @@ export function useAccountingConfigurationViewModel(
         } catch {
           setMigrationRunArtifacts(readiness.migrationRunArtifacts ?? []);
         }
+        try {
+          const workerPlanList = await services.listMigrationWorkerPlans({
+            fundProfileId: next.fundProfileId,
+            ledgerBookId: next.ledgerBookId ?? null
+          });
+          setMigrationWorkerPlans(workerPlanList.plans ?? []);
+        } catch {
+          setMigrationWorkerPlans([]);
+        }
       } catch (readinessErr) {
         setProductionReadiness(null);
         setProductionCertificationProfile(null);
         setProductionCertificationDraft(null);
         setMigrationRunArtifacts([]);
+        setMigrationWorkerPlans([]);
         setProductionReadinessError(describeApiError(readinessErr, "Accounting production readiness is unavailable."));
       } finally {
         setProductionReadinessLoading(false);
@@ -3487,6 +3516,7 @@ export function useAccountingConfigurationViewModel(
       setError(describeApiError(err, "Accounting configuration is unavailable."));
       setProductionReadiness(null);
       setMigrationRunArtifacts([]);
+      setMigrationWorkerPlans([]);
       setProductionCertificationProfile(null);
       setProductionCertificationDraft(null);
       setTenantAdministrationProfile(null);
@@ -4923,6 +4953,7 @@ export function useAccountingConfigurationViewModel(
     const productionReadinessView = buildAccountingProductionReadinessViewModel(
       productionReadiness,
       migrationRunArtifacts,
+      migrationWorkerPlans,
       productionReadinessLoading,
       productionReadinessError,
       workspace
@@ -5217,6 +5248,7 @@ export function useAccountingConfigurationViewModel(
     previewError,
     productionReadiness,
     migrationRunArtifacts,
+    migrationWorkerPlans,
     productionReadinessError,
     productionReadinessLoading,
     productionCertificationDraft,
@@ -5269,11 +5301,13 @@ function cloneLedgerDimensionSet(dimensions: PostingRule["scope"]): PostingRule[
 function buildAccountingProductionReadinessViewModel(
   readiness: AccountingProductionReadiness | null,
   retainedMigrationRunArtifacts: AccountingMigrationRunArtifact[],
+  retainedMigrationWorkerPlans: AccountingMigrationRunWorkerPlan[],
   loading: boolean,
   error: ApiErrorDisplay | null,
   workspace: AccountingConfigurationWorkspace | null
 ): AccountingProductionReadinessViewModel {
   const artifactRows = buildAccountingMigrationRunArtifactRows(retainedMigrationRunArtifacts);
+  const workerPlanRows = buildAccountingMigrationWorkerPlanRows(retainedMigrationWorkerPlans);
   if (!readiness) {
     return {
       title: "Accounting production readiness",
@@ -5298,6 +5332,10 @@ function buildAccountingProductionReadinessViewModel(
         ? `${artifactRows.length} retained migration run artifact${artifactRows.length === 1 ? "" : "s"} loaded`
         : "No retained migration run artifacts loaded",
       migrationArtifactRows: artifactRows,
+      migrationWorkerPlanSummaryLabel: workerPlanRows.length > 0
+        ? `${workerPlanRows.length} retained migration worker plan${workerPlanRows.length === 1 ? "" : "s"} loaded`
+        : "No retained migration worker plans loaded",
+      migrationWorkerPlanRows: workerPlanRows,
       productionGapRows: [],
       components: [],
       blockerIssues: [],
@@ -5324,9 +5362,11 @@ function buildAccountingProductionReadinessViewModel(
     ? retainedMigrationRunArtifacts
     : readiness.migrationRunArtifacts ?? [];
   const migrationArtifactRows = buildAccountingMigrationRunArtifactRows(retainedArtifacts);
+  const migrationWorkerPlanRows = buildAccountingMigrationWorkerPlanRows(retainedMigrationWorkerPlans);
   const migrationPlanRows = buildAccountingMigrationRolloutPlanRows(readiness.migrationRolloutPlan ?? []);
   const certifiedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Certified").length;
   const failedArtifactCount = retainedArtifacts.filter((artifact) => artifact.status === "Failed").length;
+  const reconciledWorkerPlanCount = retainedMigrationWorkerPlans.filter((plan) => plan.sourceRecordCount === plan.migratedRecordCount).length;
   const tenantAdministration = readiness.tenantAdministration ?? null;
   const dimensionalReporting = readiness.dimensionalReporting ?? null;
   const dimensionalReportingLabel = dimensionalReporting
@@ -5391,6 +5431,10 @@ function buildAccountingProductionReadinessViewModel(
       ? `${certifiedArtifactCount}/${retainedArtifacts.length} retained artifact${retainedArtifacts.length === 1 ? "" : "s"} certified${failedArtifactCount > 0 ? ` | ${failedArtifactCount} failed` : ""}`
       : "No retained migration run artifacts loaded",
     migrationArtifactRows,
+    migrationWorkerPlanSummaryLabel: retainedMigrationWorkerPlans.length > 0
+      ? `${reconciledWorkerPlanCount}/${retainedMigrationWorkerPlans.length} retained worker plan${retainedMigrationWorkerPlans.length === 1 ? "" : "s"} reconciled`
+      : "No retained migration worker plans loaded",
+    migrationWorkerPlanRows,
     productionGapRows,
     components: readiness.components.map<AccountingProductionReadinessComponentViewModel>((component) => ({
       id: component.area,
@@ -6000,6 +6044,26 @@ function buildAccountingMigrationRunArtifactRows(artifacts: AccountingMigrationR
         issueCountLabel: `${artifact.issueCount} issue${artifact.issueCount === 1 ? "" : "s"}`,
         evidenceLabel: `${artifact.evidenceReferences.length} evidence reference${artifact.evidenceReferences.length === 1 ? "" : "s"}`,
         tone: migrationRunStatusTone(artifact.status)
+      };
+    });
+}
+
+function buildAccountingMigrationWorkerPlanRows(plans: AccountingMigrationRunWorkerPlan[]): AccountingMigrationWorkerPlanViewModel[] {
+  return [...plans]
+    .sort((left, right) => left.kind.localeCompare(right.kind) || left.planId.localeCompare(right.planId))
+    .slice(0, 6)
+    .map((plan) => {
+      const reconciled = plan.sourceRecordCount === plan.migratedRecordCount;
+      const dimensionScope = formatLedgerDimensionSet(plan.dimensions).join(", ");
+      return {
+        id: plan.planId,
+        title: plan.summary?.trim() || plan.planId,
+        detail: dimensionScope ? `Dimensions ${dimensionScope}` : "No retained dimension envelope",
+        kindLabel: formatMigrationRunKind(plan.kind),
+        countLabel: `${formatCount(plan.sourceRecordCount, "source record")} -> ${formatCount(plan.migratedRecordCount, "migrated record")}`,
+        evidenceLabel: `${plan.evidenceReferences.length} evidence reference${plan.evidenceReferences.length === 1 ? "" : "s"}`,
+        scopeLabel: `Tenant ${plan.tenantId?.trim() || "context"} | company ${plan.companyId?.trim() || "context"} | fund ${plan.fundProfileId || "default-fund"} | book ${plan.ledgerBookId || "missing"}`,
+        tone: reconciled ? "success" : "danger"
       };
     });
 }

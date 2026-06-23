@@ -190,6 +190,7 @@ vi.mock("@/lib/api", async () => {
     getAccountingSystemMappingProfiles: vi.fn().mockResolvedValue([]),
     listAccountingSystemExportPackages: vi.fn().mockResolvedValue([]),
     getAccountingMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "default-fund", ledgerBookId: null, artifacts: [] }),
+    getAccountingMigrationWorkerPlans: vi.fn().mockResolvedValue({ fundProfileId: "default-fund", ledgerBookId: null, kind: null, plans: [] }),
     createAccountingSystemExportPackage: vi.fn(),
     getAccountingSystemExportPackageManifest: vi.fn(),
     certifyAccountingSystemExportPackage: vi.fn(),
@@ -2187,6 +2188,27 @@ describe("AccountingScreen", () => {
         }
       ]
     });
+    vi.mocked(api.getAccountingMigrationWorkerPlans).mockResolvedValueOnce({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      kind: null,
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      plans: [
+        {
+          planId: "worker-plan-historical-book-primary",
+          kind: "HistoricalJournalBackfill",
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "book-primary",
+          sourceRecordCount: 275,
+          migratedRecordCount: 275,
+          evidenceReferences: ["evidence://migration-worker-plan/historical/book-primary"],
+          tenantId: "tenant-alpha",
+          companyId: "company-alpha",
+          summary: "Historical journal worker plan retained for primary book."
+        }
+      ]
+    });
     vi.mocked(api.approveAccountingConfigurationPostingRulePromotion).mockResolvedValueOnce(approvedWorkspace);
     vi.mocked(api.dryRunAccountingConfigurationPostingRule).mockResolvedValueOnce(dryRunResult);
     vi.mocked(api.buildAccountingPostingRuleJournalCandidate).mockResolvedValueOnce(journalCandidateResult);
@@ -2229,9 +2251,10 @@ describe("AccountingScreen", () => {
     expect(screen.getAllByText("Approvals").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Dimension maps").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Sandbox proof").length).toBeGreaterThan(0);
-    expect(screen.getByRole("region", { name: "Accounting migration rollout plan" })).toBeInTheDocument();
-    expect(screen.getByText("Ledger-book migration scope")).toBeInTheDocument();
-    expect(screen.getByText("Historical journal backfill")).toBeInTheDocument();
+    const migrationRolloutPlan = screen.getByRole("region", { name: "Accounting migration rollout plan" });
+    expect(migrationRolloutPlan).toBeInTheDocument();
+    expect(within(migrationRolloutPlan).getByText("Ledger-book migration scope")).toBeInTheDocument();
+    expect(within(migrationRolloutPlan).getByText("Historical journal backfill")).toBeInTheDocument();
     expect(screen.getByText(/migration-run-ledger-book-scope-book-primary/)).toBeInTheDocument();
     expect(screen.getByText("migration.historical-journal-backfill-not-certified")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting production certification profile editor" })).toBeInTheDocument();
@@ -2247,12 +2270,20 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Dimensional backfill")).toBeInTheDocument();
     expect(screen.getByText("Dimensional backfill retained for primary book.")).toBeInTheDocument();
     expect(screen.getByText(/Dimensions Fund: fund-alpha, Entity: entity-master/)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Retained accounting migration worker plans" })).toBeInTheDocument();
+    expect(screen.getByText("1/1 retained worker plan reconciled")).toBeInTheDocument();
+    expect(screen.getByText("Historical journal worker plan retained for primary book.")).toBeInTheDocument();
+    expect(screen.getByText("275 source records -> 275 migrated records | 1 evidence reference")).toBeInTheDocument();
     expect(api.assessAccountingProductionReadiness).toHaveBeenCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",
       requiredLedgerBookScopes: null
     }));
     expect(api.getAccountingMigrationRunArtifacts).toHaveBeenCalledWith({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary"
+    });
+    expect(api.getAccountingMigrationWorkerPlans).toHaveBeenCalledWith({
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary"
     });

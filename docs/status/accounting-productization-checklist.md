@@ -344,8 +344,10 @@ the requirement end to end.
   that migration execution can consume for historical-journal and dimensional backfill lanes,
   carrying worker-plan source/migrated counts, certified evidence references, and canonical
   dimension scope into the retained artifact while failing closed when request scope or counts
-  conflict with the selected worker plan. Full source data rewrite workers that transform legacy
-  journal/dimension stores remain open.
+  conflict with the selected worker plan. Browser Accounting Configure now consumes the shared
+  worker-plan endpoint and renders retained worker-plan reconciliation, scope, dimension, and
+  evidence summaries beside migration rollout evidence. Full source data rewrite workers that
+  transform legacy journal/dimension stores remain open.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, provider-specific mapping requirements, richer fixture prerequisites, and
   guarded export fixture coverage, but live credentialed import adapters and provider-owned

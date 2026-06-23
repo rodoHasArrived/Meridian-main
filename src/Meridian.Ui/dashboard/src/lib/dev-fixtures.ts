@@ -6310,6 +6310,27 @@ const fixtures = {
     ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId,
     artifacts: fixtureAccountingProductionReadiness.migrationRunArtifacts ?? []
   },
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans]: {
+    fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
+    ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId,
+    kind: null,
+    tenantId: "fixture-tenant",
+    companyId: "fixture-company",
+    plans: [
+      {
+        planId: "fixture-historical-worker-plan",
+        kind: "HistoricalJournalBackfill",
+        fundProfileId: fixtureAccountingProductionReadiness.fundProfileId,
+        ledgerBookId: fixtureAccountingProductionReadiness.ledgerBookId ?? "",
+        sourceRecordCount: 275,
+        migratedRecordCount: 275,
+        evidenceReferences: ["fixture://migration-worker-plan/historical-journal"],
+        tenantId: "fixture-tenant",
+        companyId: "fixture-company",
+        summary: "Fixture worker plan reconciles historical journal source and migrated rows."
+      }
+    ]
+  },
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile]: {
     tenantId: "fixture-tenant",
     companyId: "fixture-company",
