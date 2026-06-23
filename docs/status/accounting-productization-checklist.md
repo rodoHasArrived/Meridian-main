@@ -338,8 +338,11 @@ the requirement end to end.
   migration rollout plan/checklist for these controls. A governed Accounting System migration-run
   endpoint now executes scoped rollout runs into retained artifacts and blocks automation-origin or
   unscoped runs, and supplied or retained-evidence-extracted source-store versus migrated row-count
-  mismatches now fail closed, but full historical journal/dimensional data rewrite workers remain
-  open.
+  mismatches now fail closed. Migration execution now can consume file-backed retained worker plans for
+  historical-journal and dimensional backfill lanes, carrying worker-plan source/migrated counts,
+  certified evidence references, and canonical dimension scope into the retained artifact while
+  failing closed when request scope or counts conflict with the selected worker plan. Full source
+  data rewrite workers that transform legacy journal/dimension stores remain open.
 - [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
   import fixtures, provider-specific mapping requirements, richer fixture prerequisites, and
   guarded export fixture coverage, but live credentialed import adapters and provider-owned

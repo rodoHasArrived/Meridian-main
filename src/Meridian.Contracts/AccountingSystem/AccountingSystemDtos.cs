@@ -179,10 +179,28 @@ public sealed record AccountingMigrationRunExecutionRequestDto(
     string? CompanyId = null,
     int? SourceRecordCount = null,
     int? MigratedRecordCount = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    string? WorkerPlanId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
+}
+
+public sealed record AccountingMigrationRunWorkerPlanDto(
+    string PlanId,
+    AccountingMigrationRunKindDto Kind,
+    string FundProfileId,
+    Guid LedgerBookId,
+    int SourceRecordCount,
+    int MigratedRecordCount,
+    LedgerDimensionSetDto? Dimensions = null,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    string? Summary = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
 }
 
 public sealed record AccountingMigrationRunExecutionIssueDto(

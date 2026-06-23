@@ -16,10 +16,19 @@ public sealed class AccountingMigrationRunExecutionService
         RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
     private readonly IAccountingMigrationRunArtifactStore _store;
+    private readonly IAccountingMigrationRunWorkerPlanStore? _workerPlanStore;
 
     public AccountingMigrationRunExecutionService(IAccountingMigrationRunArtifactStore store)
+        : this(store, null)
+    {
+    }
+
+    public AccountingMigrationRunExecutionService(
+        IAccountingMigrationRunArtifactStore store,
+        IAccountingMigrationRunWorkerPlanStore? workerPlanStore)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
+        _workerPlanStore = workerPlanStore;
     }
 
     public async Task<AccountingMigrationRunExecutionResultDto> ExecuteAsync(
@@ -31,15 +40,29 @@ public sealed class AccountingMigrationRunExecutionService
         EnsureHumanOrigin(request.ActionOrigin);
 
         var actor = RequireText(request.Actor, "Migration run actor");
-        var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
-        var tenantId = NormalizeOptional(request.TenantId);
-        var companyId = NormalizeOptional(request.CompanyId);
+        var requestedFundProfileId = NormalizeOptional(request.FundProfileId);
+        var requestedTenantId = NormalizeOptional(request.TenantId);
+        var requestedCompanyId = NormalizeOptional(request.CompanyId);
         var startedAt = DateTimeOffset.UtcNow;
+        var workerPlan = await ResolveWorkerPlanAsync(request, ct).ConfigureAwait(false);
+        var workerPlanIssues = ValidateWorkerPlan(
+            request,
+            requestedFundProfileId,
+            requestedTenantId,
+            requestedCompanyId,
+            workerPlan);
+        var effectiveRequest = ApplyWorkerPlan(request, workerPlan);
+        var fundProfileId = NormalizeFundProfileId(effectiveRequest.FundProfileId);
+        var tenantId = NormalizeOptional(effectiveRequest.TenantId);
+        var companyId = NormalizeOptional(effectiveRequest.CompanyId);
         var runId = NormalizeOptional(request.RunId)
-            ?? BuildRunId(request.Kind, fundProfileId, request.LedgerBookId, startedAt);
-        var rowCounts = ResolveMigrationRowCounts(request);
-        var issues = BuildIssues(request, fundProfileId, tenantId, companyId, rowCounts);
+            ?? BuildRunId(request.Kind, fundProfileId, effectiveRequest.LedgerBookId, startedAt);
+        var rowCounts = ResolveMigrationRowCounts(effectiveRequest, workerPlan);
+        var issues = BuildIssues(effectiveRequest, fundProfileId, tenantId, companyId, rowCounts)
+            .Concat(workerPlanIssues)
+            .ToArray();
         var completedAt = DateTimeOffset.UtcNow;
+
         var status = issues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
             ? AccountingMigrationRunStatusDto.Failed
             : request.CertifyOnSuccess
@@ -48,11 +71,12 @@ public sealed class AccountingMigrationRunExecutionService
         var migratedRecordCount = ResolveMigratedRecordCount(request, rowCounts, status);
         var rowCountReconciled = ResolveRowCountReconciled(rowCounts, status);
         var evidenceReferences = BuildEvidenceReferences(
-            request,
+            effectiveRequest,
+            workerPlan,
             rowCounts,
             runId,
             fundProfileId,
-            request.LedgerBookId,
+            effectiveRequest.LedgerBookId,
             tenantId,
             companyId,
             status);
@@ -64,12 +88,12 @@ public sealed class AccountingMigrationRunExecutionService
             completedAt,
             actor,
             MigratedRecordCount: migratedRecordCount,
-            IssueCount: issues.Count,
+            IssueCount: issues.Length,
             EvidenceReferences: evidenceReferences,
             FundProfileId: fundProfileId,
-            LedgerBookId: request.LedgerBookId,
-            Summary: BuildSummary(request.Kind, status, issues.Count, request.CertifyOnSuccess),
-            Dimensions: NormalizeDimensions(request.Dimensions, fundProfileId, request.LedgerBookId),
+            LedgerBookId: effectiveRequest.LedgerBookId,
+            Summary: BuildSummary(request.Kind, status, issues.Length, request.CertifyOnSuccess, workerPlan),
+            Dimensions: NormalizeDimensions(effectiveRequest.Dimensions, fundProfileId, effectiveRequest.LedgerBookId),
             TenantId: tenantId,
             CompanyId: companyId,
             SourceRecordCount: rowCounts.SourceRecordCount,
@@ -91,6 +115,129 @@ public sealed class AccountingMigrationRunExecutionService
             retained.Status == AccountingMigrationRunStatusDto.Certified,
             issues,
             retained.EvidenceReferences);
+    }
+
+    private async Task<AccountingMigrationRunWorkerPlanDto?> ResolveWorkerPlanAsync(
+        AccountingMigrationRunExecutionRequestDto request,
+        CancellationToken ct)
+    {
+        var workerPlanId = NormalizeOptional(request.WorkerPlanId);
+        if (workerPlanId is null || _workerPlanStore is null)
+        {
+            return null;
+        }
+
+        return await _workerPlanStore.GetAsync(workerPlanId, ct).ConfigureAwait(false);
+    }
+
+    private static AccountingMigrationRunExecutionRequestDto ApplyWorkerPlan(
+        AccountingMigrationRunExecutionRequestDto request,
+        AccountingMigrationRunWorkerPlanDto? workerPlan)
+    {
+        if (workerPlan is null)
+        {
+            return request;
+        }
+
+        var evidenceLinks = request.EvidenceLinks
+            .Concat(workerPlan.EvidenceReferences)
+            .Append($"worker-plan:{workerPlan.PlanId}")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return request with
+        {
+            FundProfileId = NormalizeOptional(request.FundProfileId) ?? workerPlan.FundProfileId,
+            LedgerBookId = request.LedgerBookId ?? workerPlan.LedgerBookId,
+            Dimensions = request.Dimensions ?? workerPlan.Dimensions,
+            EvidenceLinks = evidenceLinks,
+            TenantId = NormalizeOptional(request.TenantId) ?? workerPlan.TenantId,
+            CompanyId = NormalizeOptional(request.CompanyId) ?? workerPlan.CompanyId,
+            SourceRecordCount = request.SourceRecordCount ?? workerPlan.SourceRecordCount,
+            MigratedRecordCount = request.MigratedRecordCount ?? workerPlan.MigratedRecordCount
+        };
+    }
+
+    private static IReadOnlyList<AccountingMigrationRunExecutionIssueDto> ValidateWorkerPlan(
+        AccountingMigrationRunExecutionRequestDto request,
+        string? requestedFundProfileId,
+        string? requestedTenantId,
+        string? requestedCompanyId,
+        AccountingMigrationRunWorkerPlanDto? workerPlan)
+    {
+        var workerPlanId = NormalizeOptional(request.WorkerPlanId);
+        if (workerPlanId is null)
+        {
+            return [];
+        }
+
+        if (workerPlan is null)
+        {
+            return
+            [
+                Issue(
+                    "migration-run.worker-plan-missing",
+                    "Migration worker plan was not found.",
+                    "Retain the migration worker plan before executing the historical or dimensional backfill run.")
+            ];
+        }
+
+        var issues = new List<AccountingMigrationRunExecutionIssueDto>();
+        if (!string.Equals(workerPlan.PlanId, workerPlanId, StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-id-mismatch",
+                "Migration worker plan identity does not match the requested plan.",
+                "Execute the migration run against the retained worker plan selected by the operator."));
+        }
+
+        if (workerPlan.Kind != request.Kind)
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-kind-mismatch",
+                "Migration worker plan kind does not match the requested migration kind.",
+                "Select a worker plan for the same migration lane before executing the run."));
+        }
+
+        if (!string.IsNullOrWhiteSpace(requestedFundProfileId) &&
+            !string.Equals(workerPlan.FundProfileId, requestedFundProfileId, StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-fund-mismatch",
+                "Migration worker plan fund scope does not match the selected fund profile.",
+                "Regenerate or select a worker plan for the same fund profile."));
+        }
+
+        if (request.LedgerBookId.HasValue && workerPlan.LedgerBookId != request.LedgerBookId.Value)
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-ledger-book-mismatch",
+                "Migration worker plan ledger-book scope does not match the selected ledger book.",
+                "Regenerate or select a worker plan for the same ledger book."));
+        }
+
+        if (!string.IsNullOrWhiteSpace(requestedTenantId) &&
+            !string.IsNullOrWhiteSpace(workerPlan.TenantId) &&
+            !string.Equals(workerPlan.TenantId, requestedTenantId, StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-tenant-mismatch",
+                "Migration worker plan tenant scope does not match the current tenant.",
+                "Regenerate the worker plan in the current tenant scope."));
+        }
+
+        if (!string.IsNullOrWhiteSpace(requestedCompanyId) &&
+            !string.IsNullOrWhiteSpace(workerPlan.CompanyId) &&
+            !string.Equals(workerPlan.CompanyId, requestedCompanyId, StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-company-mismatch",
+                "Migration worker plan company scope does not match the current company.",
+                "Regenerate the worker plan in the current company scope."));
+        }
+
+        AddWorkerPlanCountIssues(request, workerPlan, issues);
+        return issues;
     }
 
     private static IReadOnlyList<AccountingMigrationRunExecutionIssueDto> BuildIssues(
@@ -133,7 +280,12 @@ public sealed class AccountingMigrationRunExecutionService
                 "Select the target ledger book before executing migration or backfill work."));
         }
 
-        if (request.CertifyOnSuccess && request.EvidenceLinks.Count == 0)
+        var hasCertificationScope =
+            !string.IsNullOrWhiteSpace(tenantId) &&
+            !string.IsNullOrWhiteSpace(companyId) &&
+            !string.IsNullOrWhiteSpace(fundProfileId) &&
+            request.LedgerBookId.HasValue;
+        if (request.CertifyOnSuccess && hasCertificationScope && request.EvidenceLinks.Count == 0)
         {
             issues.Add(Issue(
                 "migration-run.certification-evidence-missing",
@@ -141,6 +293,7 @@ public sealed class AccountingMigrationRunExecutionService
                 "Attach retained migration evidence before requesting certification."));
         }
         else if (request.CertifyOnSuccess &&
+                 hasCertificationScope &&
                  !HasCertifiedRunScopeEvidence(request, fundProfileId, tenantId, companyId))
         {
             issues.Add(Issue(
@@ -208,6 +361,50 @@ public sealed class AccountingMigrationRunExecutionService
                 "migration-run.row-count-mismatch",
                 "Migrated row count does not match the source-store row count.",
                 "Reconcile the source extract and migrated rows before retaining the migration run."));
+        }
+    }
+
+    private static void AddWorkerPlanCountIssues(
+        AccountingMigrationRunExecutionRequestDto request,
+        AccountingMigrationRunWorkerPlanDto workerPlan,
+        List<AccountingMigrationRunExecutionIssueDto> issues)
+    {
+        if (request.SourceRecordCount.HasValue &&
+            request.SourceRecordCount.Value != workerPlan.SourceRecordCount)
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-source-count-mismatch",
+                "Submitted source-store row count does not match the retained worker plan.",
+                "Reconcile the worker plan source count before executing the migration run."));
+        }
+
+        if (request.MigratedRecordCount.HasValue &&
+            request.MigratedRecordCount.Value != workerPlan.MigratedRecordCount)
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-migrated-count-mismatch",
+                "Submitted migrated-row count does not match the retained worker plan.",
+                "Reconcile the worker plan migrated count before executing the migration run."));
+        }
+
+        var evidenceSourceCount = ExtractEvidenceCount(request.EvidenceLinks, SourceCountPattern);
+        if (evidenceSourceCount.HasValue &&
+            evidenceSourceCount.Value != workerPlan.SourceRecordCount)
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-source-evidence-count-mismatch",
+                "Retained source-count evidence does not match the migration worker plan.",
+                "Reconcile source-count evidence with the retained worker plan before certification."));
+        }
+
+        var evidenceMigratedCount = ExtractEvidenceCount(request.EvidenceLinks, MigratedCountPattern);
+        if (evidenceMigratedCount.HasValue &&
+            evidenceMigratedCount.Value != workerPlan.MigratedRecordCount)
+        {
+            issues.Add(Issue(
+                "migration-run.worker-plan-migrated-evidence-count-mismatch",
+                "Retained migrated-row evidence does not match the migration worker plan.",
+                "Reconcile migrated-row evidence with the retained worker plan before certification."));
         }
     }
 
@@ -307,6 +504,7 @@ public sealed class AccountingMigrationRunExecutionService
 
     private static IReadOnlyList<string> BuildEvidenceReferences(
         AccountingMigrationRunExecutionRequestDto request,
+        AccountingMigrationRunWorkerPlanDto? workerPlan,
         MigrationRowCounts rowCounts,
         string runId,
         string fundProfileId,
@@ -319,6 +517,15 @@ public sealed class AccountingMigrationRunExecutionService
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .ToList();
+
+        if (workerPlan is not null)
+        {
+            evidence.Add($"worker-plan:{workerPlan.PlanId}");
+            if (!string.IsNullOrWhiteSpace(workerPlan.Summary))
+            {
+                evidence.Add($"worker-plan-summary:{workerPlan.Summary.Trim()}");
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(tenantId) &&
             !string.IsNullOrWhiteSpace(companyId) &&
@@ -381,12 +588,14 @@ public sealed class AccountingMigrationRunExecutionService
               rowCounts.SourceRecordCount == rowCounts.MigratedRecordCount
             : null;
 
-    private static MigrationRowCounts ResolveMigrationRowCounts(AccountingMigrationRunExecutionRequestDto request)
+    private static MigrationRowCounts ResolveMigrationRowCounts(
+        AccountingMigrationRunExecutionRequestDto request,
+        AccountingMigrationRunWorkerPlanDto? workerPlan = null)
     {
         var evidenceSourceCount = ExtractEvidenceCount(request.EvidenceLinks, SourceCountPattern);
         var evidenceMigratedCount = ExtractEvidenceCount(request.EvidenceLinks, MigratedCountPattern);
-        var sourceCount = request.SourceRecordCount ?? evidenceSourceCount;
-        var migratedCount = request.MigratedRecordCount ?? evidenceMigratedCount;
+        var sourceCount = request.SourceRecordCount ?? evidenceSourceCount ?? workerPlan?.SourceRecordCount;
+        var migratedCount = request.MigratedRecordCount ?? evidenceMigratedCount ?? workerPlan?.MigratedRecordCount;
         return new MigrationRowCounts(
             sourceCount,
             migratedCount,
@@ -445,11 +654,19 @@ public sealed class AccountingMigrationRunExecutionService
         AccountingMigrationRunKindDto kind,
         AccountingMigrationRunStatusDto status,
         int issueCount,
-        bool certifyOnSuccess)
+        bool certifyOnSuccess,
+        AccountingMigrationRunWorkerPlanDto? workerPlan)
     {
         if (status == AccountingMigrationRunStatusDto.Failed)
         {
             return $"{MigrationKindLabel(kind)} migration run failed with {issueCount} blocking issue(s).";
+        }
+
+        if (workerPlan is not null)
+        {
+            return status == AccountingMigrationRunStatusDto.Certified
+                ? $"{MigrationKindLabel(kind)} migration worker plan {workerPlan.PlanId} completed and retained certification evidence."
+                : $"{MigrationKindLabel(kind)} migration worker plan {workerPlan.PlanId} completed as a retained rollout artifact.";
         }
 
         if (status == AccountingMigrationRunStatusDto.Certified)

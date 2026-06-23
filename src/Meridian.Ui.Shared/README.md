@@ -347,6 +347,11 @@ production rollout proof. Governed migration-run execution can also retain sourc
 migrated-row counts from the request or retained evidence; incomplete, negative, mismatched, or
 request-versus-evidence-conflicting counts create blocking issues and prevent certification while
 matched counts are retained as artifact fields and evidence tokens. The
+same execution service can resolve a retained worker plan by id for governed
+historical-journal and dimensional backfill runs; worker plans supply the retained
+source/migrated counts, scoped evidence references, and canonical dimensions used to build the
+artifact, and conflicting request scope or counts remain blocking issues.
+The
 shared migration artifact store rejects certified artifacts before
 persistence unless they carry tenant, company, fund, ledger-book, completion, clean issue-count, and
 retained evidence scope; at least one retained evidence reference must identify the same tenant,
@@ -494,14 +499,18 @@ persists chart accounts, templates, posting rules, saved rule test cases, and ac
 persists draft and submitted manual journal records at
 `workstation/accounting/manual-journal-drafts.json`. `FileAccountingMigrationRunArtifactStore`
 persists retained accounting migration run evidence at
-`workstation/accounting/migration-run-artifacts.json`, and `FileAccountingProductionCertificationProfileStore`
+`workstation/accounting/migration-run-artifacts.json`, `FileAccountingMigrationRunWorkerPlanStore`
+persists retained migration worker plans at
+`workstation/accounting/migration-run-worker-plans.json`, and `FileAccountingProductionCertificationProfileStore`
 persists tenant/company/fund/book certification profiles at
 `workstation/accounting/production-certification-profiles.json`. Shared Accounting System endpoints let
 operators execute governed migration runs or list/upsert authenticated tenant/company-scoped
 migration artifacts before the
 production-readiness endpoint merges only matching retained evidence into ledger-book, historical
 journal backfill, dimensional backfill, configuration promotion, and close/reporting migration
-checks. Manual journal drafts carry a shared
+checks. Migration execution requests that name a retained worker plan merge that plan's source and
+migrated row counts, evidence references, and dimension scope into the retained run artifact while
+failing closed on fund, ledger-book, tenant, company, kind, or count mismatches. Manual journal drafts carry a shared
 `ManualJournalEntryTypeDto` so accrual, prepaid expense, expense, amortization, deferral,
 reclassification, reversal, capital-call, distribution, subscription, redemption, LP-transfer,
 management-fee, and general adjustment workflows persist as typed accounting records instead of
