@@ -202,17 +202,32 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         return results;
     }
 
-    public async Task<IReadOnlyList<SecurityProjectionRecord>> LoadAllAsync(CancellationToken ct = default)
+    public Task<IReadOnlyList<SecurityProjectionRecord>> LoadAllAsync(CancellationToken ct = default)
+        => LoadByStatusAsync(activeOnly: false, ct);
+
+    public Task<IReadOnlyList<SecurityProjectionRecord>> LoadActiveAsync(CancellationToken ct = default)
+        => LoadByStatusAsync(activeOnly: true, ct);
+
+    private async Task<IReadOnlyList<SecurityProjectionRecord>> LoadByStatusAsync(
+        bool activeOnly, CancellationToken ct)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
-        command.CommandText = $"select security_id from {Qualified("securities")} order by display_name;";
+        command.CommandText =
+            $"""
+            select security_id from {Qualified("securities")}
+            where (@active_only = false or status = 'Active')
+            order by display_name;
+            """;
+        command.Parameters.AddWithValue("active_only", activeOnly);
 
         var ids = new List<Guid>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
-            ids.Add(reader.GetGuid(0));
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                ids.Add(reader.GetGuid(0));
+            }
         }
 
         var results = new List<SecurityProjectionRecord>(ids.Count);

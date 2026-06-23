@@ -34,6 +34,33 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
         return results;
     }
 
+    public async Task<IReadOnlyList<DataVendorEntitlementDto>> GetExpiringAsync(
+        DateTimeOffset cutoffUtc, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select entitlement_id, vendor_name, data_type, contract_reference,
+                   effective_from, effective_to, aum_threshold_usd, requires_direct_client_contract,
+                   contact_email, renewal_reminder_days, is_active, created_by, created_at
+            from {Qualified("data_vendor_entitlements")}
+            where is_active = true
+              and effective_to is not null
+              and effective_to >= now()
+              and effective_to <= @cutoff
+            order by effective_to;
+            """;
+        command.Parameters.AddWithValue("cutoff", cutoffUtc);
+
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        var results = new List<DataVendorEntitlementDto>();
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            results.Add(ReadDto(reader));
+
+        return results;
+    }
+
     public async Task<DataVendorEntitlementDto?> GetByIdAsync(Guid entitlementId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);

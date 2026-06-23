@@ -28,17 +28,14 @@ public sealed class SecurityMasterExceptionCaseworkService
 {
     private const string DefaultActor = "security-master-casework";
     private readonly IReconciliationBreakQueueRepository? _breakQueueRepository;
-    private readonly SecurityMasterExceptionSlaConfig _slaConfig;
     private readonly ILogger<SecurityMasterExceptionCaseworkService> _logger;
 
     public SecurityMasterExceptionCaseworkService(
         IReconciliationBreakQueueRepository? breakQueueRepository,
-        ILogger<SecurityMasterExceptionCaseworkService> logger,
-        SecurityMasterExceptionSlaConfig? slaConfig = null)
+        ILogger<SecurityMasterExceptionCaseworkService> logger)
     {
         _breakQueueRepository = breakQueueRepository;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _slaConfig = slaConfig ?? new SecurityMasterExceptionSlaConfig();
     }
 
     /// <summary>
@@ -50,15 +47,9 @@ public sealed class SecurityMasterExceptionCaseworkService
         if (_breakQueueRepository is null)
             return [];
 
-        var all = await _breakQueueRepository.GetAllAsync(
-            ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
-
-        var now = DateTimeOffset.UtcNow;
-        return all
-            .Where(item => item.Team == "Security Master"
-                && item.SlaDueAt.HasValue
-                && item.SlaDueAt.Value < now)
-            .ToList();
+        return await _breakQueueRepository
+            .GetAgingByTeamAsync("Security Master", DateTimeOffset.UtcNow, ct)
+            .ConfigureAwait(false);
     }
 
     public async Task SeedOpenConflictCasesAsync(
@@ -76,7 +67,7 @@ public sealed class SecurityMasterExceptionCaseworkService
         {
             ct.ThrowIfCancellationRequested();
             await _breakQueueRepository
-                .CreateIfMissingAsync(BuildConflictCase(conflict, actor, _slaConfig), ct)
+                .CreateIfMissingAsync(BuildConflictCase(conflict, actor), ct)
                 .ConfigureAwait(false);
         }
     }
@@ -92,7 +83,7 @@ public sealed class SecurityMasterExceptionCaseworkService
         }
 
         var actor = NormalizeActor(request.ResolvedBy);
-        var desired = BuildConflictCase(conflict, actor, _slaConfig);
+        var desired = BuildConflictCase(conflict, actor);
         await _breakQueueRepository.CreateIfMissingAsync(desired, ct).ConfigureAwait(false);
 
         var existing = await _breakQueueRepository.GetByIdAsync(desired.BreakId, ct).ConfigureAwait(false);
@@ -213,13 +204,12 @@ public sealed class SecurityMasterExceptionCaseworkService
 
     private static ReconciliationBreakQueueItem BuildConflictCase(
         SecurityMasterConflict conflict,
-        string? actor,
-        SecurityMasterExceptionSlaConfig slaConfig)
+        string? actor)
     {
         var assignedTo = NormalizeActor(actor) ?? "security-master-steward";
         var route = UiApiRoutes.SecurityMasterConflicts;
-        var slaDueAt = conflict.DetectedAt.AddDays(slaConfig.IdentifierConflictDays);
-        var slaBreached = DateTimeOffset.UtcNow > slaDueAt;
+        // SLA fields (SlaDueAt/SlaBreached/SlaPolicyId) are computed by the break queue
+        // repository via SecurityMasterReconciliationSlaPolicyProvider, keyed off Team/RunId.
         return new ReconciliationBreakQueueItem(
             BreakId: BuildConflictCaseId(conflict.ConflictId),
             RunId: "security-master-conflicts",
@@ -255,10 +245,7 @@ public sealed class SecurityMasterExceptionCaseworkService
             LastUpstreamSyncAt: conflict.DetectedAt,
             Team: "Security Master",
             Counterparty: conflict.ProviderB,
-            StateTransitions: [],
-            SlaDueAt: slaDueAt,
-            SlaBreached: slaBreached,
-            SlaPolicyId: "security-master-conflict-sla");
+            StateTransitions: []);
     }
 
     private static ReconciliationBreakQueueItem BuildOverrideCase(

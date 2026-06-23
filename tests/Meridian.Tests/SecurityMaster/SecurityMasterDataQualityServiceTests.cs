@@ -28,7 +28,7 @@ public sealed class SecurityMasterDataQualityServiceTests
     {
         var (sut, store) = BuildSut();
         var security = MakeSecurity(Guid.NewGuid(), "Equity", currency: "XXX");
-        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
 
         var report = await sut.RunQualityChecksAsync();
 
@@ -43,7 +43,7 @@ public sealed class SecurityMasterDataQualityServiceTests
     {
         var (sut, store) = BuildSut();
         var security = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD");
-        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
 
         var report = await sut.RunQualityChecksAsync();
 
@@ -58,7 +58,7 @@ public sealed class SecurityMasterDataQualityServiceTests
     {
         var (sut, store) = BuildSut();
         var security = MakeSecurity(Guid.NewGuid(), "Equity", currency: "USD");
-        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
 
         var report = await sut.RunQualityChecksAsync();
 
@@ -71,7 +71,7 @@ public sealed class SecurityMasterDataQualityServiceTests
         var (sut, store) = BuildSut();
         var security = MakeSecurity(Guid.NewGuid(), "Option", currency: "USD",
             assetSpecificTerms: new { expirationDate = DateTimeOffset.UtcNow.AddDays(30) });
-        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
 
         var report = await sut.RunQualityChecksAsync();
 
@@ -85,7 +85,7 @@ public sealed class SecurityMasterDataQualityServiceTests
     {
         var (sut, store) = BuildSut();
         var security = MakeStaleSecurityTerms(Guid.NewGuid());
-        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
 
         var report = await sut.RunQualityChecksAsync();
 
@@ -105,7 +105,7 @@ public sealed class SecurityMasterDataQualityServiceTests
             EffectiveFrom = DateTimeOffset.UtcNow,
             EffectiveTo = DateTimeOffset.UtcNow.AddDays(-1)
         };
-        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { invalid });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { invalid });
 
         var report = await sut.RunQualityChecksAsync();
 
@@ -122,7 +122,7 @@ public sealed class SecurityMasterDataQualityServiceTests
         {
             Status = SecurityStatusDto.Inactive
         };
-        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
 
         var report = await sut.RunQualityChecksAsync();
 

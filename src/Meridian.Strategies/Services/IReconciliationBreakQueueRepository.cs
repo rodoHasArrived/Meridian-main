@@ -20,6 +20,22 @@ public interface IReconciliationBreakQueueRepository
 
     Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default);
 
+    /// <summary>
+    /// Returns open cases for <paramref name="team"/> whose SLA due date has elapsed as of
+    /// <paramref name="asOfUtc"/>. Implementations should filter at the storage layer; the default
+    /// delegates to <see cref="GetAllAsync"/> for repositories that cannot.
+    /// </summary>
+    async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAgingByTeamAsync(
+        string team, DateTimeOffset asOfUtc, CancellationToken ct = default)
+    {
+        var open = await GetAllAsync(ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
+        return open
+            .Where(item => string.Equals(item.Team, team, StringComparison.OrdinalIgnoreCase)
+                && item.SlaDueAt.HasValue
+                && item.SlaDueAt.Value < asOfUtc)
+            .ToList();
+    }
+
     Task<ReconciliationBreakQueueItem?> RebuildSnapshotFromAuditAsync(string breakId, CancellationToken ct = default)
         => Task.FromResult<ReconciliationBreakQueueItem?>(null);
 

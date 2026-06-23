@@ -16,18 +16,9 @@ public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
     public Task<IReadOnlyList<DataVendorEntitlementDto>> GetAllAsync(CancellationToken ct = default)
         => _store.GetAllAsync(ct);
 
-    public async Task<IReadOnlyList<DataVendorEntitlementDto>> GetExpiringAsync(
+    public Task<IReadOnlyList<DataVendorEntitlementDto>> GetExpiringAsync(
         int withinDays, CancellationToken ct = default)
-    {
-        var all = await _store.GetAllAsync(ct).ConfigureAwait(false);
-        var cutoff = DateTimeOffset.UtcNow.AddDays(withinDays);
-
-        return all
-            .Where(e => e.Status != DataVendorEntitlementStatus.Expired
-                && e.EffectiveTo.HasValue
-                && e.EffectiveTo.Value <= cutoff)
-            .ToList();
-    }
+        => _store.GetExpiringAsync(DateTimeOffset.UtcNow.AddDays(withinDays), ct);
 
     public async Task<DataVendorEntitlementDto> UpsertAsync(
         UpsertDataVendorEntitlementRequest request, CancellationToken ct = default)

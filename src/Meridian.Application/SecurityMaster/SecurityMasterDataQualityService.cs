@@ -20,6 +20,14 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
 
     private static readonly int MaxTermsAgeDays = 180;
 
+    // Asset classes whose canonical validator requires a maturity date (see AssetClassValidatorRegistry).
+    // Other non-equity classes (options, futures, FX, money-market funds, deposits) use different
+    // required fields, so MA001 must not flag them for a missing maturity.
+    private static readonly HashSet<string> MaturityBearingClasses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Swap"
+    };
+
     // ISO 4217 subset covering the most common currencies; a full list would be loaded from a reference source.
     private static readonly HashSet<string> Iso4217Codes = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -69,7 +77,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     {
         _logger.LogInformation("Starting Security Master data quality scan.");
 
-        var securities = await _securityStore.LoadAllAsync(ct).ConfigureAwait(false);
+        var securities = await _securityStore.LoadActiveAsync(ct).ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
         var violations = new List<DataQualityRuleViolationDto>();
         var scanned = 0;
@@ -106,8 +114,8 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     {
         var assetClass = security.AssetClass;
 
-        // Non-equity securities require a maturity date.
-        if (!IsEquityLike(assetClass))
+        // Only maturity-bearing classes require a maturity date.
+        if (MaturityBearingClasses.Contains(assetClass))
         {
             // The canonical Security Master mapper stores maturity under "maturity" for
             // Bond/CD/CP/TBill and "maturityDate" for swaps; accept either spelling.
@@ -263,13 +271,6 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
-
-    private static bool IsEquityLike(string assetClass)
-        => string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "Warrant", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "Cfd", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "CryptoCurrency", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "Commodity", StringComparison.OrdinalIgnoreCase);
 
     private static DateTimeOffset? TryReadDateField(JsonElement element, string fieldName)
     {

@@ -18,20 +18,23 @@ public sealed class DataVendorEntitlementServiceTests
     }
 
     [Fact]
-    public async Task GetExpiringAsync_ReturnsOnlyEntitlementsWithinWindow()
+    public async Task GetExpiringAsync_DelegatesToStoreWithComputedCutoff()
     {
         var (sut, store) = BuildSut();
         var expiringSoon = MakeEntitlement("CUSIP Global Services", DateTimeOffset.UtcNow.AddDays(10), DataVendorEntitlementStatus.ExpiringSoon);
-        var active = MakeEntitlement("Bloomberg", DateTimeOffset.UtcNow.AddDays(90), DataVendorEntitlementStatus.Active);
-        var expired = MakeEntitlement("IDC", DateTimeOffset.UtcNow.AddDays(-1), DataVendorEntitlementStatus.Expired);
 
-        store.GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns(new List<DataVendorEntitlementDto> { expiringSoon, active, expired });
+        store.GetExpiringAsync(Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(new List<DataVendorEntitlementDto> { expiringSoon });
 
+        var before = DateTimeOffset.UtcNow.AddDays(30);
         var result = await sut.GetExpiringAsync(withinDays: 30);
+        var after = DateTimeOffset.UtcNow.AddDays(30);
 
         result.Should().HaveCount(1);
         result[0].VendorName.Should().Be("CUSIP Global Services");
+        await store.Received(1).GetExpiringAsync(
+            Arg.Is<DateTimeOffset>(cutoff => cutoff >= before && cutoff <= after),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]

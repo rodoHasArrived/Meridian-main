@@ -986,10 +986,12 @@ public static class SecurityMasterEndpoints
                     ["securityId"] = ["Request SecurityId must match the route parameter."]
                 });
 
-            if (!EndpointAuthorization.TryResolveActor(context, out _))
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
                 return Results.Unauthorized();
 
-            await pricingService.UpsertPricingHierarchyAsync(request, ct).ConfigureAwait(false);
+            await pricingService
+                .UpsertPricingHierarchyAsync(request with { UpdatedBy = actor }, ct)
+                .ConfigureAwait(false);
             return Results.NoContent();
         })
         .WithName("UpsertSecurityMasterPricingHierarchy")
@@ -1012,10 +1014,12 @@ public static class SecurityMasterEndpoints
                     ["securityId"] = ["Request SecurityId must match the route parameter."]
                 });
 
-            if (!EndpointAuthorization.TryResolveActor(context, out _))
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
                 return Results.Unauthorized();
 
-            await pricingService.RecordRawPriceAsync(request, ct).ConfigureAwait(false);
+            await pricingService
+                .RecordRawPriceAsync(request with { RecordedBy = actor }, ct)
+                .ConfigureAwait(false);
             return Results.NoContent();
         })
         .WithName("RecordSecurityMasterRawPrice")
