@@ -4299,6 +4299,36 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemMigrationRunArtifactEndpoints_BlockExtendedLedgerBookEvidenceToken()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("77777777-2222-3333-4444-555555555555");
+
+        var response = await client.PostAsync(
+            UiApiRoutes.AccountingSystemMigrationRunArtifacts,
+            JsonContent(new AccountingMigrationRunArtifactUpsertRequestDto(
+                new AccountingMigrationRunArtifactDto(
+                    "migration-run-ledger-book-scope-extended-token",
+                    AccountingMigrationRunKindDto.LedgerBookScope,
+                    AccountingMigrationRunStatusDto.Certified,
+                    DateTimeOffset.Parse("2026-03-02T00:00:00Z"),
+                    CompletedAtUtc: DateTimeOffset.Parse("2026-03-02T00:15:00Z"),
+                    MigratedRecordCount: 275,
+                    IssueCount: 0,
+                    EvidenceReferences: [$"evidence://migration/tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}ffff/certified"],
+                    FundProfileId: "default-fund",
+                    LedgerBookId: ledgerBookId,
+                    Summary: "Certified ledger-book migration with an extended book token."),
+                "spoofed-browser-user",
+                CorrelationId: "ledger-book-scope-extended-token")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("tenant, company, fund profile, and ledger book");
+    }
+
+    [Fact]
     public async Task AccountingSystemMigrationRunArtifactEndpoints_BlockCertifiedRunWithRetainedIssues()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
@@ -4722,6 +4752,42 @@ public sealed class AccountingSystemIntegrationServiceTests
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
             error.Contains("ledger book is required", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task AccountingSystemProductionCertificationProfileEndpoint_BlocksExtendedLedgerBookEvidenceToken()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemProductionCertificationProfile,
+            JsonContent(new AccountingProductionCertificationProfileUpsertRequestDto(
+                new AccountingProductionCertificationProfileDto(
+                    "default-fund",
+                    ExternalGlLedgerBookId,
+                    PostingRulesLedgerBookNativeCertified: true,
+                    JournalLifecycleLedgerBookNativeCertified: false,
+                    CloseReportingLedgerBookNativeCertified: false,
+                    ExternalGlLedgerBookNativeCertified: false,
+                    PeriodReportDimensionQueriesCertified: false,
+                    CrossPeriodReportDimensionQueriesCertified: false,
+                    JournalQueryDimensionFiltersCertified: false,
+                    ExternalExportDimensionMappingCertified: false,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller",
+                    EvidenceReferences:
+                    [
+                        $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}ffff/posting-candidate/certification"
+                    ]),
+                "spoofed-browser-user",
+                CorrelationId: "production-certification-extended-ledger-book-token")));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
+        problem.Errors.Should().ContainKey("request");
+        problem.Errors["request"].Should().Contain(error =>
+            error.Contains("selected tenant, company, fund profile, and ledger book", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

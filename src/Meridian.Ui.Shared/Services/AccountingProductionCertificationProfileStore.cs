@@ -551,19 +551,48 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
 
         var ledgerBookText = ledgerBookId.Value.ToString("D");
         var compactLedgerBookText = ledgerBookId.Value.ToString("N");
-        return reference.Contains($"ledger-book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledger-book/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"book:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId={ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId:{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId/{ledgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledger-book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledger-book/{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"book:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId={compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId:{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase) ||
-               reference.Contains($"ledgerBookId/{compactLedgerBookText}", StringComparison.OrdinalIgnoreCase);
+        return ReferencesScopedValue(reference, "ledger-book:", ledgerBookText) ||
+               ReferencesScopedValue(reference, "ledger-book/", ledgerBookText) ||
+               ReferencesScopedValue(reference, "book:", ledgerBookText) ||
+               ReferencesScopedValue(reference, "ledgerBookId=", ledgerBookText) ||
+               ReferencesScopedValue(reference, "ledgerBookId:", ledgerBookText) ||
+               ReferencesScopedValue(reference, "ledgerBookId/", ledgerBookText) ||
+               ReferencesScopedValue(reference, "ledger-book:", compactLedgerBookText) ||
+               ReferencesScopedValue(reference, "ledger-book/", compactLedgerBookText) ||
+               ReferencesScopedValue(reference, "book:", compactLedgerBookText) ||
+               ReferencesScopedValue(reference, "ledgerBookId=", compactLedgerBookText) ||
+               ReferencesScopedValue(reference, "ledgerBookId:", compactLedgerBookText) ||
+               ReferencesScopedValue(reference, "ledgerBookId/", compactLedgerBookText);
     }
+
+    private static bool ReferencesScopedValue(string reference, string prefix, string value)
+    {
+        var searchIndex = 0;
+        while (searchIndex < reference.Length)
+        {
+            var prefixIndex = reference.IndexOf(prefix, searchIndex, StringComparison.OrdinalIgnoreCase);
+            if (prefixIndex < 0)
+            {
+                return false;
+            }
+
+            var valueIndex = prefixIndex + prefix.Length;
+            if (reference.Length >= valueIndex + value.Length &&
+                string.Compare(reference, valueIndex, value, 0, value.Length, StringComparison.OrdinalIgnoreCase) == 0 &&
+                IsEvidenceTokenBoundary(reference, valueIndex + value.Length))
+            {
+                return true;
+            }
+
+            searchIndex = valueIndex;
+        }
+
+        return false;
+    }
+
+    private static bool IsEvidenceTokenBoundary(string reference, int index)
+        => index >= reference.Length ||
+           reference[index] is '/' or ':' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}' or ' ' or '\t' or '\r' or '\n';
 
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin)
     {
