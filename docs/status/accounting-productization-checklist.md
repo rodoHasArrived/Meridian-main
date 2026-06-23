@@ -1,6 +1,6 @@
 # Meridian Accounting Productization Checklist
 
-Last updated: 2026-06-21
+Last updated: 2026-06-23
 
 This checklist tracks progress toward production-grade, configurable, multi-ledger accounting. It is
 not a release certification; items stay open until current source, tests, and operator surfaces prove
@@ -143,6 +143,9 @@ the requirement end to end.
   review tooling, bulk import/export safeguards, performance validation, and disaster-recovery
   runbooks. Browser and WPF setup surfaces carry the same shared profile fields, and production
   readiness blocks until those controls have retained tenant-admin evidence or a full setup packet.
+- [x] Retained accounting production certification and migration-run artifacts now reject extended
+  ledger-book evidence tokens such as `ledger-book:{id}ffff`, so durable readiness stores cannot
+  certify one book by matching a longer unrelated identifier prefix.
 
 ## Still To Complete
 
