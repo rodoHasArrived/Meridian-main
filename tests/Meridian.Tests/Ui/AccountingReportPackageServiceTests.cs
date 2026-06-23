@@ -328,6 +328,15 @@ public sealed class AccountingReportPackageServiceTests
         await missingLedgerBookEvidence.Should().ThrowAsync<ArgumentException>()
             .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
 
+        var extendedLedgerBookEvidence = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
+            ready.FinancialStatements.PackageId,
+            "controller",
+            "Controller certified with a ledger-book evidence token that only matches by prefix.",
+            [$"evidence:report-certification:controller-approval:{ready.FinancialStatements.PackageId}:{ready.Certification.CertificationId}:book:{DefaultLedgerBookId:D}ffff:{ready.FinancialStatements.PeriodId}"]));
+
+        await extendedLedgerBookEvidence.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*must reference the retained package, certification id, ledger book, exact package period, and explicit dimension scope when applicable in the same artifact*");
+
         var assistantCertification = () => service.CertifyPackageAsync(new CertifyAccountingReportPackageRequestDto(
             ready.FinancialStatements.PackageId,
             "assistant",

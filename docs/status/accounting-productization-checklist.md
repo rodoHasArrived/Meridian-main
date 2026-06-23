@@ -146,6 +146,9 @@ the requirement end to end.
 - [x] Retained accounting production certification and migration-run artifacts now reject extended
   ledger-book evidence tokens such as `ledger-book:{id}ffff`, so durable readiness stores cannot
   certify one book by matching a longer unrelated identifier prefix.
+- [x] Accounting report package certification now applies the same exact-token ledger-book evidence
+  check, preventing certified financial statement, NAV, restatement, and export artifacts from
+  accepting `book:{id}ffff` as selected-book provenance.
 
 ## Still To Complete
 
