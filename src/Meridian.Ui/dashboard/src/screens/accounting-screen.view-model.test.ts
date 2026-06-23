@@ -4483,10 +4483,32 @@ describe("accounting-screen view model", () => {
     expect(result.current.totalDebitsLabel).toBe("$100");
     expect(result.current.totalCreditsLabel).toBe("$100");
     expect(result.current.balanceStatusLabel).toBe("Balanced");
+    expect(result.current.balanceImpactRows).toEqual([
+      expect.objectContaining({
+        accountPath: "Assets:Cash",
+        accountName: "Cash",
+        debitLabel: "$100",
+        creditLabel: "$0",
+        netEffectLabel: "+$100",
+        balanceDirectionLabel: "This draft increases the debit-normal account balance by $100."
+      }),
+      expect.objectContaining({
+        accountPath: "Income:Interest",
+        accountName: "Interest Income",
+        debitLabel: "$0",
+        creditLabel: "$100",
+        netEffectLabel: "+$100",
+        balanceDirectionLabel: "This draft increases the credit-normal account balance by $100."
+      })
+    ]);
     act(() => result.current.updateLine("line-debit", { amount: 125 }));
     expect(result.current.totalDebitsLabel).toBe("$125");
     expect(result.current.totalCreditsLabel).toBe("$100");
     expect(result.current.balanceStatusLabel).toBe("Out by $25");
+    expect(result.current.balanceImpactRows.find((row) => row.accountPath === "Assets:Cash")).toMatchObject({
+      netEffectLabel: "+$125",
+      balanceDirectionLabel: "This draft increases the debit-normal account balance by $125."
+    });
     expect(result.current.canSubmit).toBe(false);
     act(() => result.current.updateLine("line-credit", { amount: 125 }));
     expect(result.current.totalDebitsLabel).toBe("$125");

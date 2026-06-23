@@ -6278,6 +6278,60 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
             </div>
           </section>
 
+          <section className="rounded-md border border-border/70 bg-secondary/20 p-3" aria-labelledby="manual-je-balance-impact-heading">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h4 id="manual-je-balance-impact-heading" className="text-sm font-semibold text-foreground">Balance impact preview</h4>
+                <p className="text-xs text-muted-foreground">
+                  See how the draft will move each ledger account before saving, validating, or submitting approval.
+                </p>
+              </div>
+              <Badge variant={view.balanceImpactRows.length > 0 ? "success" : "warning"} dot>
+                {view.balanceImpactRows.length} account{view.balanceImpactRows.length === 1 ? "" : "s"}
+              </Badge>
+            </div>
+            <div className="mt-3 overflow-x-auto">
+              {view.balanceImpactRows.length > 0 ? (
+                <table className="accounting-journal-table">
+                  <thead>
+                    <tr>
+                      <th>Ledger account</th>
+                      <th>Debit entry</th>
+                      <th>Credit entry</th>
+                      <th>Balance effect</th>
+                      <th>Agency cue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {view.balanceImpactRows.map((row) => (
+                      <tr key={row.id}>
+                        <td>
+                          <div className="font-semibold text-foreground">{row.accountName}</div>
+                          <div className="font-mono text-[11px] text-muted-foreground">{row.accountPath} / {row.accountType}</div>
+                        </td>
+                        <td className="font-mono text-right">{row.debitLabel}</td>
+                        <td className="font-mono text-right">{row.creditLabel}</td>
+                        <td>
+                          <Badge variant={row.tone === "warning" ? "warning" : row.tone === "success" ? "success" : "outline"}>
+                            {row.netEffectLabel}
+                          </Badge>
+                        </td>
+                        <td className="text-xs text-muted-foreground">
+                          <span className="block">{row.balanceDirectionLabel}</span>
+                          <span className="mt-1 block font-mono">{row.lineCountLabel}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p role="status" className="rounded border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                  Select at least one GL account and amount to preview account-level balance impact.
+                </p>
+              )}
+            </div>
+          </section>
+
           <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>

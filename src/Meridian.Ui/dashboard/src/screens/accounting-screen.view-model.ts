@@ -145,6 +145,7 @@ import type {
   UpsertPostingRuleRequest,
   ActivateAccountingConfigurationRequest,
   AttachManualJournalEntryEvidenceRequest,
+  ChartOfAccountsNode,
   JournalEntryLifecycleAction,
   JournalEntryLifecycleActionRequest,
   JournalEntryLifecycleActionResult,
@@ -1763,6 +1764,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   imbalanceLabel: string;
   balanceStatusLabel: string;
   balanceStatusTone: "success" | "warning";
+  balanceImpactRows: ManualJournalBalanceImpactRowViewModel[];
   treasuryContextLabel: string;
   privateCapitalActivity: ManualJournalPrivateCapitalActivityViewModel;
   validationIssues: AccountingConfigurationIssueViewModel[];
@@ -1798,6 +1800,19 @@ export interface ManualJournalEntryWorkbenchViewModel {
   save: () => Promise<void>;
   validate: () => Promise<void>;
   submit: () => Promise<void>;
+}
+
+export interface ManualJournalBalanceImpactRowViewModel {
+  id: string;
+  accountPath: string;
+  accountName: string;
+  accountType: string;
+  debitLabel: string;
+  creditLabel: string;
+  netEffectLabel: string;
+  balanceDirectionLabel: string;
+  lineCountLabel: string;
+  tone: "success" | "warning" | "default";
 }
 
 export interface OperationalExceptionWorkbenchMetricViewModel {
@@ -7719,6 +7734,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     return [...serverIssues, ...localBadges];
   }, [draft.evidenceAttachments, draft.lines, draft.validationIssues]);
   const balancedDraft = withManualJournalTotals(draft);
+  const balanceImpactRows = buildManualJournalBalanceImpactRows(balancedDraft, workbench?.chartOfAccounts ?? []);
   const hasEvidence = (balancedDraft.evidenceLinks?.length ?? 0) > 0 || (balancedDraft.evidenceAttachments?.length ?? 0) > 0;
   const canSubmit = balancedDraft.validationIssues.every((issue) => issue.severity !== "Critical") && Math.abs(balancedDraft.imbalance) === 0 && balancedDraft.lines.length >= 2 && hasEvidence;
   const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatCurrency(Math.abs(balancedDraft.imbalance));
@@ -7766,6 +7782,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     imbalanceLabel: `Imbalance ${formatCurrency(balancedDraft.imbalance)}`,
     balanceStatusLabel,
     balanceStatusTone: Math.abs(balancedDraft.imbalance) === 0 ? "success" : "warning",
+    balanceImpactRows,
     treasuryContextLabel,
     privateCapitalActivity,
     validationIssues,
@@ -8835,6 +8852,67 @@ function withManualJournalTotals(draft: ManualJournalEntryDraft): ManualJournalE
     totalCredits,
     imbalance: totalDebits - totalCredits
   };
+}
+
+function buildManualJournalBalanceImpactRows(
+  draft: ManualJournalEntryDraft,
+  chartOfAccounts: ChartOfAccountsNode[]
+): ManualJournalBalanceImpactRowViewModel[] {
+  const accountsByPath = new Map(chartOfAccounts.map((account) => [account.path, account]));
+  const groups = new Map<string, { debit: number; credit: number; count: number }>();
+
+  for (const line of draft.lines) {
+    const accountPath = line.accountPath.trim();
+    if (!accountPath) {
+      continue;
+    }
+
+    const current = groups.get(accountPath) ?? { debit: 0, credit: 0, count: 0 };
+    const amount = Number.isFinite(line.amount) ? Math.max(line.amount, 0) : 0;
+    if (line.side === "Debit") {
+      current.debit += amount;
+    } else {
+      current.credit += amount;
+    }
+
+    current.count += 1;
+    groups.set(accountPath, current);
+  }
+
+  return [...groups.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([accountPath, totals]) => {
+      const account = accountsByPath.get(accountPath);
+      const normalBalanceSide = manualJournalNormalBalanceSide(account?.accountType);
+      const netEffect = normalBalanceSide === "Debit"
+        ? totals.debit - totals.credit
+        : totals.credit - totals.debit;
+      const direction = netEffect > 0 ? "increases" : netEffect < 0 ? "decreases" : "does not change";
+      const absoluteEffect = formatCurrency(Math.abs(netEffect));
+
+      return {
+        id: accountPath,
+        accountPath,
+        accountName: account?.accountName ?? accountPath,
+        accountType: account?.accountType ?? "Unclassified",
+        debitLabel: formatCurrency(totals.debit),
+        creditLabel: formatCurrency(totals.credit),
+        netEffectLabel: `${netEffect >= 0 ? "+" : "-"}${absoluteEffect}`,
+        balanceDirectionLabel: `This draft ${direction} the ${normalBalanceSide.toLowerCase()}-normal account balance by ${absoluteEffect}.`,
+        lineCountLabel: `${totals.count} line${totals.count === 1 ? "" : "s"}`,
+        tone: netEffect === 0 ? "default" : totals.debit > 0 && totals.credit > 0 ? "warning" : "success"
+      };
+    });
+}
+
+function manualJournalNormalBalanceSide(accountType?: string | null): AccountingTemplateLineSide {
+  const normalized = (accountType ?? "").toLowerCase();
+  return normalized.includes("liabil")
+    || normalized.includes("equity")
+    || normalized.includes("revenue")
+    || normalized.includes("income")
+    ? "Credit"
+    : "Debit";
 }
 
 function formatManualJournalTreasuryContext(draft: ManualJournalEntryDraft): string {

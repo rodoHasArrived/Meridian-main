@@ -2918,6 +2918,9 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal entry workbench");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Manual journal entry - balanced double-entry" })).toHaveTextContent("Totals");
+    expect(screen.getByRole("heading", { name: "Balance impact preview" })).toBeInTheDocument();
+    expect(screen.getByText("This draft increases the debit-normal account balance by $100.")).toBeInTheDocument();
+    expect(screen.getByText("This draft increases the credit-normal account balance by $100.")).toBeInTheDocument();
     expect(screen.getByDisplayValue("2026-06-30")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Manual close adjustment")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Microsoft Corp./ })).toBeInTheDocument();
