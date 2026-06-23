@@ -1005,6 +1005,9 @@ hash, mapping/reconciliation lineage, and `ExternalPostingAllowed = false` remai
 enabling live posting. Import summaries carry a stable `ContentHash`, and reconciliation summaries
 carry the selected import hash as `ImportContentHash` so shared clients and export certification
 guards can detect provider-evidence drift beyond row totals or provider-facing reconciliation ids.
+Provider rows also publish shared mapping-requirement DTOs for account mapping, journal lineage,
+trial-balance tie-out, and dimension mapping so browser, WPF, and admin setup surfaces can render
+QBO/Xero/NetSuite-specific guarded-export prerequisites without hard-coding provider vocabulary.
 Export packages also retain mapping profile, reconciliation, and balanced-reconciliation lineage so
 Financial Operations can revalidate the current external-GL mapping and latest reconciliation state
 before certification.

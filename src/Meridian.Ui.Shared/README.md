@@ -412,9 +412,12 @@ store is available. The reconciliation response carries provider-side refs, Meri
 and package posture for external import, Meridian ledger support, and the GL tie-out. Import,
 latest-import, reconciliation, mapping-profile, guarded-export, certification, and manifest routes
 resolve tenant/company scope from the workstation session, so retained external-GL evidence cannot
-cross companies that share provider, fund, and ledger-book identifiers. The same endpoint group now
-lists and upserts scoped external-GL mapping profiles and creates guarded export packages that
-require certified mapping and reconciliation evidence before reaching ready-for-review state.
+cross companies that share provider, fund, and ledger-book identifiers. Provider rows also carry
+shared QBO/Xero/NetSuite mapping requirements for account mapping, journal lineage,
+trial-balance tie-out, and dimension mapping so browser and WPF Accounting Configure can render the
+same external-GL setup prerequisites. The same endpoint group now lists and upserts scoped
+external-GL mapping profiles and creates guarded export packages that require certified mapping and
+reconciliation evidence before reaching ready-for-review state.
 Guarded export package creation only reuses mapping profiles and latest reconciliation evidence
 retained for that same tenant/company, fund, provider, and ledger book. Export package creation also requires retained export-control evidence that identifies the
 export fund, provider/fund scope, or exact export period. Export packages carry generated mapped
