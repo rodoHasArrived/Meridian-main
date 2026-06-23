@@ -249,6 +249,10 @@ the requirement end to end.
 - [x] Accounting report package assembly now emits a dedicated report-dimension-scope readiness row
   for fund, ledger-book, investor, capital-account, and explicit dimension mismatches, so
   dimensional reporting blockers are visible to operator review surfaces before certification.
+- [x] Accounting report export readiness now fails closed when retained export artifacts are missing
+  evidence, content hashes, ledger-book alignment, or package dimension-scope alignment, so report
+  export certification surfaces cannot treat artifact retention as complete from certification state
+  alone.
 
 ## Still To Complete
 

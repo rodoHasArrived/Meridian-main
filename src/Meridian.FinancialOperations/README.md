@@ -293,13 +293,15 @@ ledger book is also carried into that readiness row so operator review surfaces 
 support evidence instead of only a package-level validation issue. Package dimension mismatches are
 also projected through a dedicated report-dimension-scope readiness row, covering fund, ledger-book,
 investor, capital-account, and explicit dimension-scope blockers before certification.
-blocking close-plan evidence is missing, close checklist dependencies are incomplete, the attached
-close workflow has not reached period-lock, approved
-sign-offs are missing, or material late adjustments are still unapproved, blocks restatement
-certification when retained certified prior-package lineage or retained restatement evidence is
-missing, requires restatement lineage evidence to name the exact prior package or certification id
-being restated, and retains package history through an atomic JSON snapshot when `StorageOptions`
-is registered.
+Report export readiness also fails closed when retained export artifacts are missing evidence,
+content hashes, ledger-book alignment, or package dimension-scope alignment, so downstream
+certification surfaces do not treat artifact retention as complete from certification state alone.
+It blocks certification when close-plan evidence is missing, close checklist dependencies are
+incomplete, the attached close workflow has not reached period-lock, approved sign-offs are missing,
+or material late adjustments are still unapproved. It also blocks restatement certification when
+retained certified prior-package lineage or retained restatement evidence is missing, requires
+restatement lineage evidence to name the exact prior package or certification id being restated, and
+retains package history through an atomic JSON snapshot when `StorageOptions` is registered.
   The service also owns the retained certification transition: only ready-for-review packages without
   critical validation issues and with a retained close workflow can move to `Certified`, duplicate
   certification is rejected, and reviewer notes plus evidence links are persisted back across the

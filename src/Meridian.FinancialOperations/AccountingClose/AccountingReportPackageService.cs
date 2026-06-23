@@ -941,18 +941,21 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
         var uncertifiedExports = exportArtifacts
             .Count(static artifact => artifact.CertificationState != AccountingCertificationStateDto.Certified);
+        var exportArtifactIssues = BuildReportExportArtifactIssues(financialStatements, exportArtifacts);
         rows.Add(BuildCloseReadinessItem(
             "report-export-certification",
             "ReportExports",
             "Report export certification",
-            ResolveReadinessState([], uncertifiedExports, certification.State),
-            exportArtifacts.Count > 0
+            ResolveReadinessState(exportArtifactIssues, uncertifiedExports, certification.State),
+            exportArtifactIssues.Count > 0
+                ? $"{exportArtifactIssues.Count:N0} retained export artifact blocker(s) require remediation."
+                : exportArtifacts.Count > 0
                 ? $"{exportArtifacts.Count - uncertifiedExports:N0}/{exportArtifacts.Count:N0} retained export artifact(s) are certified."
                 : "No retained report export artifacts are attached.",
-            "Certify the report package so every retained export artifact carries certified state and content hash.",
+            "Certify the report package so every retained export artifact carries certified state, content hash, ledger-book scope, dimension scope, and retained evidence.",
             financialStatements,
             exportArtifacts.SelectMany(static artifact => artifact.EvidenceLinks).Concat(evidenceLinks),
-            []));
+            exportArtifactIssues));
 
         if (restatement is not null)
         {
@@ -1041,6 +1044,79 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
         => issues
             .Where(issue => codes.Any(code => string.Equals(issue.Code, code, StringComparison.OrdinalIgnoreCase)))
             .ToArray();
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildReportExportArtifactIssues(
+        FinancialStatementPackageDto financialStatements,
+        IReadOnlyList<ReportExportArtifactDto> exportArtifacts)
+    {
+        if (exportArtifacts.Count == 0)
+        {
+            return
+            [
+                new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Accounting report package '{financialStatements.PackageId}' has no retained export artifacts.",
+                    financialStatements.PackageId,
+                    "Retain report export artifacts with ledger-book scope, dimension scope, evidence, and content hashes before certification.")
+            ];
+        }
+
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        foreach (var artifact in exportArtifacts)
+        {
+            if (string.IsNullOrWhiteSpace(artifact.ContentHash))
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactHashMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Report export artifact '{artifact.ArtifactId}' is missing a retained content hash.",
+                    artifact.ArtifactId,
+                    "Regenerate the export artifact and retain its deterministic content hash before certification."));
+            }
+
+            if (artifact.EvidenceLinks.Count == 0)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactEvidenceMissing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Report export artifact '{artifact.ArtifactId}' has no retained evidence links.",
+                    artifact.ArtifactId,
+                    "Attach retained ledger, reconciliation, rendered-report, NAV, or certification evidence to every export artifact."));
+            }
+
+            if (artifact.LedgerBookId != financialStatements.LedgerBookId)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactLedgerBookMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Report export artifact '{artifact.ArtifactId}' targets ledger book '{artifact.LedgerBookId?.ToString("D") ?? "unscoped"}' but package '{financialStatements.PackageId}' targets ledger book '{financialStatements.LedgerBookId?.ToString("D") ?? "unscoped"}'.",
+                    artifact.ArtifactId,
+                    "Regenerate the export artifact from the same ledger book as the retained report package."));
+            }
+
+            var artifactDimensionScope = artifact.DimensionScope;
+            if (!MatchesExactDimensionScope(artifact.Dimensions, financialStatements.Dimensions) ||
+                artifactDimensionScope is null ||
+                !string.Equals(
+                    artifactDimensionScope.ScopeHash,
+                    BuildDimensionScopeHash(financialStatements.Dimensions),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto(
+                    "ReportExportArtifactDimensionScopeMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Report export artifact '{artifact.ArtifactId}' does not retain the same dimensional scope as package '{financialStatements.PackageId}'.",
+                    artifact.ArtifactId,
+                    "Regenerate the export artifact from the same fund, ledger-book, investor, capital-account, and explicit dimension scope as the retained report package."));
+            }
+        }
+
+        return issues
+            .OrderBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
 
     private static string BuildPackageId(
         string fundProfileId,

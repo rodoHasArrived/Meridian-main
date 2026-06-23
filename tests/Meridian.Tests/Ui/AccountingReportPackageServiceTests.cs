@@ -56,6 +56,10 @@ public sealed class AccountingReportPackageServiceTests
             item.ItemId == "report-evidence-package" &&
             item.State == AccountingReadinessStateDto.Blocked &&
             item.BlockingIssues.Any(issue => issue.Code == "ReportEvidenceMissing"));
+        package.CloseReadinessItems.Should().Contain(item =>
+            item.ItemId == "report-export-certification" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssues.Any(issue => issue.Code == "ReportExportArtifactEvidenceMissing"));
     }
 
     [Fact]
