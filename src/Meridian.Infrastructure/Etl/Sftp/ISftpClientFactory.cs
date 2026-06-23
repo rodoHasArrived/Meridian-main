@@ -25,6 +25,8 @@ public interface ISftpClient : IDisposable
     void UploadFile(Stream input, string path, bool canOverwrite);
     bool Exists(string path);
     void CreateDirectory(string path);
+    void RenameFile(string oldPath, string newPath);
+    void DeleteFile(string path);
 }
 
 /// <summary>
@@ -70,6 +72,8 @@ internal sealed class SshNetSftpClient(Renci.SshNet.SftpClient inner) : ISftpCli
     public void UploadFile(Stream input, string path, bool canOverwrite) => inner.UploadFile(input, path, canOverwrite);
     public bool Exists(string path) => inner.Exists(path);
     public void CreateDirectory(string path) => inner.CreateDirectory(path);
+    public void RenameFile(string oldPath, string newPath) => inner.RenameFile(oldPath, newPath);
+    public void DeleteFile(string path) => inner.DeleteFile(path);
     public void Dispose() => inner.Dispose();
 
     public IEnumerable<ISftpFileEntry> ListDirectory(string path)

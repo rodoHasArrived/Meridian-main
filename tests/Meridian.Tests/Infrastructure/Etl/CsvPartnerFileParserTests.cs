@@ -27,7 +27,7 @@ public sealed class CsvPartnerFileParserTests : IDisposable
         };
 
         var rows = new List<PartnerRecordEnvelope>();
-        await foreach (var row in parser.ParseAsync(staged, new EtlCheckpointToken { CurrentFileChecksum = "abc123", CurrentRecordIndex = 1 }))
+        await foreach (var row in parser.ParseAsync(staged, "partner.trades.csv.v1", new EtlCheckpointToken { CurrentFileChecksum = "abc123", CurrentRecordIndex = 1 }))
         {
             rows.Add(row);
         }

@@ -42,6 +42,10 @@ and UI presentation concerns in their owning layers.
   export service now lives in `Meridian.DataIntegration.Etl`. The ETL job-definition store and
   SFTP publisher port contracts live in `Meridian.Contracts.Etl`, and the local JSON-backed
   job-definition store implementation lives in `Meridian.Storage.Etl`.
+  SFTP transaction-file onboarding now includes non-mutating preview/list/test CLI modes,
+  schema-aware CSV sampling for `bank.statement.csv.v1` and `bank.transactions.csv.v1`, explicit
+  source post-processing options, and runtime SFTP capability checks so operators can validate
+  connectivity, host-key pinning, and file shape before committing an import.
 - `Integrations/` - provider integration template catalog, setup persistence, dry-run
   orchestration, and activation readiness. The catalog seeds the first no-code template pack for
   manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.

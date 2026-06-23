@@ -11,14 +11,13 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
         _schemas = schemas;
     }
 
-    public string SchemaId => "partner.trades.csv.v1";
+    public string SchemaId => "csv";
 
     public bool CanParse(EtlStagedFile file)
         => Path.GetExtension(file.FileName).Equals(".csv", StringComparison.OrdinalIgnoreCase);
 
-    public async IAsyncEnumerable<PartnerRecordEnvelope> ParseAsync(EtlStagedFile file, EtlCheckpointToken? checkpoint, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+    public async IAsyncEnumerable<PartnerRecordEnvelope> ParseAsync(EtlStagedFile file, string schemaId, EtlCheckpointToken? checkpoint, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
     {
-        var schemaId = SchemaId;
         var schema = _schemas.GetCsvSchema(schemaId);
         using var reader = new StreamReader(file.StagedPath);
         string[]? headers = null;

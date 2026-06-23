@@ -662,12 +662,14 @@ and WPF consumers should depend on this contract rather than the Application-lay
 Environment Design service contracts also live in `Services/` and return DTOs from
 `EnvironmentDesign/`; browser, WPF, and host composition should depend on those contracts while the
 Workflow module provides the current local-first `EnvironmentDesignerService` implementation.
-ETL contracts include `EtlJobDefinition`, run/export result payloads, `IEtlJobDefinitionStore`,
-and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so the Data
-Integration-owned export service can target SFTP without depending on Infrastructure, while the
-Infrastructure adapter implements transport-specific publishing details. SFTP source and
-destination definitions carry `hostKeySha256Fingerprint` so shared job definitions can pin remote
-server identity without leaking transport-library types into Contracts.
+ETL contracts include `EtlJobDefinition`, run/export/preview result payloads,
+`IEtlJobDefinitionStore`, and `ISftpFilePublisher`. Keep the SFTP publisher port contract-owned so
+Data Integration-owned services can target SFTP without depending on Infrastructure, while the
+Infrastructure adapter implements transport-specific connection, staging, post-processing, and
+publishing details. SFTP source and destination definitions carry `hostKeySha256Fingerprint` so
+shared job definitions can pin remote server identity without leaking transport-library types into
+Contracts. Source definitions also carry post-processing intent so local and SFTP readers can leave,
+delete, archive, error-route, or mark completed files consistently after a successful import.
 
 Event-pipeline metrics and monitoring delivery contracts live in `Monitoring/` under
 `Meridian.Contracts.Monitoring`. Keep `IEventMetrics`, `MetricsSnapshot`, and

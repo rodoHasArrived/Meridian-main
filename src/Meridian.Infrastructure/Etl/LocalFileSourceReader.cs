@@ -40,4 +40,37 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
         await using var stream = new FileStream(file.Path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
         return await _stagingStore.StageAsync(jobId, file, stream, ct).ConfigureAwait(false);
     }
+
+    public Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
+    {
+        if (!succeeded)
+        {
+            return Task.CompletedTask;
+        }
+
+        var action = source.DeleteAfterSuccess ? EtlSourcePostProcessingAction.Delete : source.PostProcessingAction;
+        switch (action)
+        {
+            case EtlSourcePostProcessingAction.Delete when File.Exists(file.Path):
+                File.Delete(file.Path);
+                break;
+            case EtlSourcePostProcessingAction.MoveToArchive when !string.IsNullOrWhiteSpace(source.ArchiveLocation):
+                MoveLocalFile(file.Path, source.ArchiveLocation);
+                break;
+            case EtlSourcePostProcessingAction.WriteDoneMarker:
+                File.WriteAllText(file.Path + ".done", DateTimeOffset.UtcNow.ToString("O"));
+                break;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static void MoveLocalFile(string path, string directory)
+    {
+        Directory.CreateDirectory(directory);
+        var destination = Path.Combine(directory, Path.GetFileName(path));
+        if (File.Exists(destination))
+            File.Delete(destination);
+        File.Move(path, destination);
+    }
 }

@@ -146,7 +146,7 @@ public sealed class EtlJobOrchestrator
                 var staged = await reader.StageFileAsync(jobId, definition.Source, file, ct).ConfigureAwait(false);
                 await _auditStore.WriteEventAsync(jobId, new EtlAuditEvent { Stage = "staged", Message = $"Staged {file.Name}." }, ct).ConfigureAwait(false);
 
-                await foreach (var record in _parser.ParseAsync(staged, checkpoint, ct).ConfigureAwait(false))
+                await foreach (var record in _parser.ParseAsync(staged, definition.PartnerSchemaId, checkpoint, ct).ConfigureAwait(false))
                 {
                     processed++;
                     var outcome = await _normalizer.NormalizeAsync(definition, record, ct).ConfigureAwait(false);
@@ -200,8 +200,7 @@ public sealed class EtlJobOrchestrator
                         CapturedAtUtc = DateTime.UtcNow
                     };
                 }
-                if (definition.Source.DeleteAfterSuccess && definition.Source.Kind == EtlSourceKind.Local && File.Exists(file.Path))
-                    File.Delete(file.Path);
+                await reader.PostProcessFileAsync(definition.Source, file, succeeded: true, ct).ConfigureAwait(false);
             }
 
             await _pipeline.FlushAsync(ct).ConfigureAwait(false);

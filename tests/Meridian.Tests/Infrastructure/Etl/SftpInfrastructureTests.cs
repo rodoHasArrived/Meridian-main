@@ -15,7 +15,7 @@ public sealed class SftpInfrastructureTests : IDisposable
     public async Task ListFilesAsync_WithoutPinnedHostKey_ShouldFailClosedBeforeConnecting()
     {
         var factory = new RecordingSftpClientFactory(new RecordingSftpClient());
-        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory);
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory, new EnvironmentSftpCredentialResolver());
         var source = new EtlSourceDefinition
         {
             Kind = EtlSourceKind.Sftp,
@@ -44,7 +44,7 @@ public sealed class SftpInfrastructureTests : IDisposable
             ]
         };
         var factory = new RecordingSftpClientFactory(client);
-        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory);
+        var reader = new SftpFileSourceReader(new EtlStagingStore(_root), factory, new EnvironmentSftpCredentialResolver());
         var source = new EtlSourceDefinition
         {
             Kind = EtlSourceKind.Sftp,
@@ -128,6 +128,8 @@ public sealed class SftpInfrastructureTests : IDisposable
         }
         public bool Exists(string path) => true;
         public void CreateDirectory(string path) { }
+        public void RenameFile(string oldPath, string newPath) { }
+        public void DeleteFile(string path) { }
         public void Dispose() { }
     }
 

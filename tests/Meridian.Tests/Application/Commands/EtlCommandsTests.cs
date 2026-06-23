@@ -12,6 +12,9 @@ public sealed class EtlCommandsTests
     [InlineData("--etl-export")]
     [InlineData("--etl-roundtrip")]
     [InlineData("--etl-resume")]
+    [InlineData("--etl-preview")]
+    [InlineData("--etl-list-files")]
+    [InlineData("--etl-test-connection")]
     public void CanHandle_WithEtlFlags_ReturnsTrue(string flag)
     {
         var command = new EtlCommands("config/appsettings.json", Serilog.Log.Logger);
@@ -67,5 +70,38 @@ public sealed class EtlCommandsTests
         definition.Destination.Location.Should().Be("output");
         definition.Symbols.Should().Equal("AAPL", "MSFT");
         definition.PublishNormalizedExtract.Should().BeTrue();
+    }
+
+    [Fact]
+    public void TryBuildDefinition_WithSftpPreviewArgs_BuildsSourceSafetyOptions()
+    {
+        var result = EtlCommands.TryBuildDefinition(
+            [
+                "--etl-preview",
+                "--etl-source-kind",
+                "sftp",
+                "--etl-source-path",
+                "sftp://bank.example.com/inbound",
+                "--etl-schema",
+                "bank.statement.csv.v1",
+                "--etl-source-username",
+                "feed-user",
+                "--etl-source-secret-ref",
+                "env:BANK_PASSWORD",
+                "--etl-source-host-key-sha256",
+                "00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF",
+                "--etl-source-post-processing",
+                "archive",
+                "--etl-source-archive-path",
+                "/archive"
+            ],
+            out var definition);
+
+        result.Should().BeTrue();
+        definition.PartnerSchemaId.Should().Be("bank.statement.csv.v1");
+        definition.Source.Kind.Should().Be(EtlSourceKind.Sftp);
+        definition.Source.PostProcessingAction.Should().Be(EtlSourcePostProcessingAction.MoveToArchive);
+        definition.Source.ArchiveLocation.Should().Be("/archive");
+        definition.Source.SecretRef.Should().Be("env:BANK_PASSWORD");
     }
 }

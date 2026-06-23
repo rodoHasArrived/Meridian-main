@@ -8,19 +8,22 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
 {
     private readonly EtlStagingStore _stagingStore;
     private readonly ISftpClientFactory _clientFactory;
+    private readonly ISftpCredentialResolver _credentialResolver;
 
-    public SftpFileSourceReader(EtlStagingStore stagingStore, ISftpClientFactory clientFactory)
+    public SftpFileSourceReader(EtlStagingStore stagingStore, ISftpClientFactory clientFactory, ISftpCredentialResolver credentialResolver)
     {
         _stagingStore = stagingStore;
         _clientFactory = clientFactory;
+        _credentialResolver = credentialResolver;
     }
 
     public EtlSourceKind Kind => EtlSourceKind.Sftp;
 
-    public Task<IReadOnlyList<EtlRemoteFile>> ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default)
+    public async Task<IReadOnlyList<EtlRemoteFile>> ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default)
     {
         var uri = ParseUri(source.Location);
-        using var client = CreateClient(source, uri);
+        var credential = await _credentialResolver.ResolveAsync(source, ct).ConfigureAwait(false);
+        using var client = CreateClient(source, uri, credential);
         client.Connect();
         try
         {
@@ -37,7 +40,7 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
                     LastModifiedUtc = f.LastWriteTimeUtc
                 })
                 .ToList();
-            return Task.FromResult<IReadOnlyList<EtlRemoteFile>>(files);
+            return files;
         }
         finally
         {
@@ -48,7 +51,8 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
     public async Task<EtlStagedFile> StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default)
     {
         var uri = ParseUri(source.Location);
-        using var client = CreateClient(source, uri);
+        var credential = await _credentialResolver.ResolveAsync(source, ct).ConfigureAwait(false);
+        using var client = CreateClient(source, uri, credential);
         client.Connect();
         var tempPath = Path.Combine(Path.GetTempPath(), "meridian-sftp-" + Guid.NewGuid().ToString("N") + ".tmp");
         try
@@ -68,13 +72,64 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
         }
     }
 
-    private ISftpClient CreateClient(EtlSourceDefinition source, Uri uri)
+
+    public async Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
+    {
+        if (!succeeded || source.PostProcessingAction == EtlSourcePostProcessingAction.LeaveInPlace)
+        {
+            return;
+        }
+
+        var uri = ParseUri(source.Location);
+        var credential = await _credentialResolver.ResolveAsync(source, ct).ConfigureAwait(false);
+        using var client = CreateClient(source, uri, credential);
+        client.Connect();
+        try
+        {
+            switch (source.PostProcessingAction)
+            {
+                case EtlSourcePostProcessingAction.Delete:
+                    client.DeleteFile(file.Path);
+                    break;
+                case EtlSourcePostProcessingAction.MoveToArchive:
+                    MoveRemoteFile(client, file, source.ArchiveLocation);
+                    break;
+                case EtlSourcePostProcessingAction.MoveToError:
+                    MoveRemoteFile(client, file, source.ErrorLocation);
+                    break;
+                case EtlSourcePostProcessingAction.WriteDoneMarker:
+                    using (var marker = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(DateTimeOffset.UtcNow.ToString("O"))))
+                    {
+                        client.UploadFile(marker, file.Path + ".done", canOverwrite: true);
+                    }
+                    break;
+            }
+        }
+        finally
+        {
+            client.Disconnect();
+        }
+    }
+
+    private static void MoveRemoteFile(ISftpClient client, EtlRemoteFile file, string? remoteDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(remoteDirectory))
+            throw new InvalidOperationException("Remote post-processing move requires an archive or error location.");
+
+        var normalizedDirectory = remoteDirectory.TrimEnd('/');
+        if (!client.Exists(normalizedDirectory))
+            client.CreateDirectory(normalizedDirectory);
+
+        client.RenameFile(file.Path, normalizedDirectory + "/" + file.Name);
+    }
+
+    private ISftpClient CreateClient(EtlSourceDefinition source, Uri uri, SftpCredentialMaterial credential)
     {
         return _clientFactory.Create(SftpConnectionOptions.Create(
             uri.Host,
             uri.Port > 0 ? uri.Port : 22,
-            source.Username ?? string.Empty,
-            source.SecretRef ?? string.Empty,
+            credential.Username,
+            credential.Password,
             source.HostKeySha256Fingerprint));
     }
 

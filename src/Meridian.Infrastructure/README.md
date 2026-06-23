@@ -80,6 +80,10 @@ ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts
 only owns transport connection, pinned host-key verification, directory creation, and upload
 mechanics. SFTP source and destination definitions must provide a SHA-256 host-key fingerprint so
 imports and exports fail closed before trusting a remote server identity.
+SFTP source imports now resolve credentials through `ISftpCredentialResolver` before opening a
+session, expose `ISftpCapabilityService` for runtime readiness diagnostics, and support explicit
+post-import source handling (`leave`, `delete`, `archive`, `error`, or `.done` marker) without
+weakening the pinned-host-key requirement.
 
 Broker statement imports hash the source file bytes and persist the resulting content hash with a
 deterministic duplicate key derived from fund account, statement period, and source hash. Source

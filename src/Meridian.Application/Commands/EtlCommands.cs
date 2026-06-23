@@ -18,7 +18,7 @@ internal sealed class EtlCommands : ICliCommand
     }
 
     public bool CanHandle(string[] args)
-        => CliArguments.HasFlag(args, "--etl-import") || CliArguments.HasFlag(args, "--etl-export") || CliArguments.HasFlag(args, "--etl-roundtrip") || CliArguments.HasFlag(args, "--etl-resume");
+        => CliArguments.HasFlag(args, "--etl-import") || CliArguments.HasFlag(args, "--etl-export") || CliArguments.HasFlag(args, "--etl-roundtrip") || CliArguments.HasFlag(args, "--etl-resume") || CliArguments.HasFlag(args, "--etl-preview") || CliArguments.HasFlag(args, "--etl-list-files") || CliArguments.HasFlag(args, "--etl-test-connection");
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {
@@ -36,6 +36,25 @@ internal sealed class EtlCommands : ICliCommand
 
         if (!TryBuildDefinition(args, out var definition))
             return CliResult.Fail(ErrorCode.RequiredFieldMissing);
+
+        if (CliArguments.HasFlag(args, "--etl-preview") || CliArguments.HasFlag(args, "--etl-list-files") || CliArguments.HasFlag(args, "--etl-test-connection"))
+        {
+            var preview = startup.GetRequiredService<EtlPreviewService>();
+            var sampleRows = int.TryParse(CliArguments.GetValue(args, "--etl-preview-sample-rows"), out var parsedSampleRows) ? parsedSampleRows : 10;
+            var result = await preview.PreviewAsync(definition, sampleRows, ct).ConfigureAwait(false);
+            foreach (var file in result.Files)
+            {
+                Console.WriteLine($"{file.SourceFile.Name}: {file.Disposition}; Records={file.RecordCount}; Hash={file.FileHashSha256}");
+                if (!CliArguments.HasFlag(args, "--etl-list-files"))
+                {
+                    foreach (var issue in file.Issues)
+                        Console.WriteLine($"  {issue.Severity}: {issue.Field}: {issue.Message}");
+                }
+            }
+            foreach (var error in result.Errors)
+                Console.Error.WriteLine(error);
+            return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.Unknown);
+        }
 
         var job = await svc.CreateJobAsync(definition, ct).ConfigureAwait(false);
         var run = await svc.RunAsync(job.JobId, ct).ConfigureAwait(false);
@@ -74,7 +93,10 @@ internal sealed class EtlCommands : ICliCommand
                 Username = CliArguments.GetValue(args, "--etl-source-username"),
                 SecretRef = CliArguments.GetValue(args, "--etl-source-secret-ref"),
                 HostKeySha256Fingerprint = CliArguments.GetValue(args, "--etl-source-host-key-sha256"),
-                DeleteAfterSuccess = CliArguments.HasFlag(args, "--etl-delete-source")
+                DeleteAfterSuccess = CliArguments.HasFlag(args, "--etl-delete-source"),
+                PostProcessingAction = ParsePostProcessingAction(CliArguments.GetValue(args, "--etl-source-post-processing")),
+                ArchiveLocation = CliArguments.GetValue(args, "--etl-source-archive-path"),
+                ErrorLocation = CliArguments.GetValue(args, "--etl-source-error-path")
             },
             Destination = new EtlDestinationDefinition
             {
@@ -99,6 +121,16 @@ internal sealed class EtlCommands : ICliCommand
 
     private static EtlSourceKind ParseSourceKind(string value)
         => value.Equals("sftp", StringComparison.OrdinalIgnoreCase) ? EtlSourceKind.Sftp : EtlSourceKind.Local;
+
+    private static EtlSourcePostProcessingAction ParsePostProcessingAction(string? value)
+        => value?.ToLowerInvariant() switch
+        {
+            "delete" => EtlSourcePostProcessingAction.Delete,
+            "archive" or "move-to-archive" => EtlSourcePostProcessingAction.MoveToArchive,
+            "error" or "move-to-error" => EtlSourcePostProcessingAction.MoveToError,
+            "done" or "write-done-marker" => EtlSourcePostProcessingAction.WriteDoneMarker,
+            _ => EtlSourcePostProcessingAction.LeaveInPlace
+        };
 
     private static EtlDestinationKind ParseDestinationKind(string value)
         => value.ToLowerInvariant() switch
