@@ -383,6 +383,30 @@
                                                   IsChecked="{Binding AccountingAdminSurfaceConfigured, Mode=TwoWay}"
                                                   Margin="0,0,0,6"
                                                   AutomationProperties.AutomationId="AccountingTenantAdminSurfaceCheckBox" />
+                                        <CheckBox Content="WPF admin"
+                                                  IsChecked="{Binding WpfAccountingAdminSurfaceConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminWpfAdminStudioCheckBox" />
+                                        <CheckBox Content="Chart admin"
+                                                  IsChecked="{Binding ChartAdministrationStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminChartAdministrationCheckBox" />
+                                        <CheckBox Content="Rule tests"
+                                                  IsChecked="{Binding RuleTestPromotionStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminRuleTestPromotionCheckBox" />
+                                        <CheckBox Content="Close setup"
+                                                  IsChecked="{Binding CloseSetupStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminCloseSetupCheckBox" />
+                                        <CheckBox Content="Provider maps"
+                                                  IsChecked="{Binding ProviderMappingStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,0,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminProviderMappingCheckBox" />
+                                        <CheckBox Content="Tenant/report setup"
+                                                  IsChecked="{Binding TenantCompanyReportGroupSetupStudioConfigured, Mode=TwoWay}"
+                                                  Margin="0,0,10,6"
+                                                  AutomationProperties.AutomationId="AccountingTenantAdminReportGroupSetupCheckBox" />
                                         <CheckBox Content="Audit review"
                                                   IsChecked="{Binding AuditReviewToolingConfigured, Mode=TwoWay}"
                                                   Margin="0,0,10,6"

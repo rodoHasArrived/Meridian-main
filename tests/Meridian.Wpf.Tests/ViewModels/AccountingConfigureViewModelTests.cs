@@ -562,6 +562,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ScopedAccessPoliciesConfigured = true;
         harness.ViewModel.ReportingGroupsConfigured = true;
         harness.ViewModel.AccountingAdminSurfaceConfigured = true;
+        harness.ViewModel.WpfAccountingAdminSurfaceConfigured = true;
+        harness.ViewModel.ChartAdministrationStudioConfigured = true;
+        harness.ViewModel.RuleTestPromotionStudioConfigured = true;
+        harness.ViewModel.CloseSetupStudioConfigured = true;
+        harness.ViewModel.ProviderMappingStudioConfigured = true;
+        harness.ViewModel.TenantCompanyReportGroupSetupStudioConfigured = true;
         harness.ViewModel.LedgerBookAdministrationStudioConfigured = true;
         harness.ViewModel.TenantAdministrationEvidenceText =
             "evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup\nEVIDENCE://tenant-admin/alpha-fund/Alpha Fund LP/setup\nevidence://tenant-admin/full/alpha-fund/Alpha Fund LP/control-set\nevidence://tenant-admin/alpha-fund/Alpha Fund LP/operator-surface";
@@ -577,6 +583,11 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         retained.AccountingAdminSurfaceConfigured.Should().BeTrue();
         retained.BrowserAccountingAdminSurfaceConfigured.Should().BeFalse();
         retained.WpfAccountingAdminSurfaceConfigured.Should().BeTrue();
+        retained.ChartAdministrationStudioConfigured.Should().BeTrue();
+        retained.RuleTestPromotionStudioConfigured.Should().BeTrue();
+        retained.CloseSetupStudioConfigured.Should().BeTrue();
+        retained.ProviderMappingStudioConfigured.Should().BeTrue();
+        retained.TenantCompanyReportGroupSetupStudioConfigured.Should().BeTrue();
         retained.UpdatedBy.Should().Be("desktop-controller");
         retained.CorrelationId.Should().StartWith("wpf-accounting-tenant-admin-");
         retained.LedgerBookAdministrationStudioConfigured.Should().BeTrue();
@@ -600,6 +611,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "Tenant config" && row.Status == "Configured");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
             row.Name == "Reporting groups" && row.Status == "Configured");
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Chart admin" && row.Status == "Configured");
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Close setup" && row.Status == "Configured");
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Provider maps" && row.Status == "Configured");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
             row.Name == "Audit review" && row.Status == "Missing");
         harness.ViewModel.ProductionReadinessMigrationPlanRows.Should().Contain(row =>

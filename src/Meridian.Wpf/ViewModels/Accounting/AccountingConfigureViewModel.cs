@@ -221,6 +221,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private bool _scopedAccessPoliciesConfigured;
     private bool _reportingGroupsConfigured;
     private bool _accountingAdminSurfaceConfigured;
+    private bool _wpfAccountingAdminSurfaceConfigured;
+    private bool _chartAdministrationStudioConfigured;
+    private bool _ruleTestPromotionStudioConfigured;
+    private bool _closeSetupStudioConfigured;
+    private bool _providerMappingStudioConfigured;
+    private bool _tenantCompanyReportGroupSetupStudioConfigured;
     private bool _auditReviewToolingConfigured;
     private bool _bulkImportExportSafeguardsConfigured;
     private bool _performanceValidationConfigured;
@@ -737,6 +743,42 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         set => SetProperty(ref _accountingAdminSurfaceConfigured, value);
     }
 
+    public bool WpfAccountingAdminSurfaceConfigured
+    {
+        get => _wpfAccountingAdminSurfaceConfigured;
+        set => SetProperty(ref _wpfAccountingAdminSurfaceConfigured, value);
+    }
+
+    public bool ChartAdministrationStudioConfigured
+    {
+        get => _chartAdministrationStudioConfigured;
+        set => SetProperty(ref _chartAdministrationStudioConfigured, value);
+    }
+
+    public bool RuleTestPromotionStudioConfigured
+    {
+        get => _ruleTestPromotionStudioConfigured;
+        set => SetProperty(ref _ruleTestPromotionStudioConfigured, value);
+    }
+
+    public bool CloseSetupStudioConfigured
+    {
+        get => _closeSetupStudioConfigured;
+        set => SetProperty(ref _closeSetupStudioConfigured, value);
+    }
+
+    public bool ProviderMappingStudioConfigured
+    {
+        get => _providerMappingStudioConfigured;
+        set => SetProperty(ref _providerMappingStudioConfigured, value);
+    }
+
+    public bool TenantCompanyReportGroupSetupStudioConfigured
+    {
+        get => _tenantCompanyReportGroupSetupStudioConfigured;
+        set => SetProperty(ref _tenantCompanyReportGroupSetupStudioConfigured, value);
+    }
+
     public bool AuditReviewToolingConfigured
     {
         get => _auditReviewToolingConfigured;
@@ -1217,12 +1259,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 DefaultLifecycleActor,
                 evidence,
                 correlationId,
-                WpfAccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
-                ChartAdministrationStudioConfigured: AccountingAdminSurfaceConfigured,
-                RuleTestPromotionStudioConfigured: AccountingAdminSurfaceConfigured,
-                CloseSetupStudioConfigured: AccountingAdminSurfaceConfigured,
-                ProviderMappingStudioConfigured: AccountingAdminSurfaceConfigured,
-                TenantCompanyReportGroupSetupStudioConfigured: AccountingAdminSurfaceConfigured,
+                WpfAccountingAdminSurfaceConfigured: WpfAccountingAdminSurfaceConfigured,
+                ChartAdministrationStudioConfigured: ChartAdministrationStudioConfigured,
+                RuleTestPromotionStudioConfigured: RuleTestPromotionStudioConfigured,
+                CloseSetupStudioConfigured: CloseSetupStudioConfigured,
+                ProviderMappingStudioConfigured: ProviderMappingStudioConfigured,
+                TenantCompanyReportGroupSetupStudioConfigured: TenantCompanyReportGroupSetupStudioConfigured,
                 AuditReviewToolingConfigured: AuditReviewToolingConfigured,
                 BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
                 PerformanceValidationConfigured: PerformanceValidationConfigured,
@@ -1862,6 +1904,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ScopedAccessPoliciesConfigured = false;
         ReportingGroupsConfigured = false;
         AccountingAdminSurfaceConfigured = false;
+        WpfAccountingAdminSurfaceConfigured = false;
+        ChartAdministrationStudioConfigured = false;
+        RuleTestPromotionStudioConfigured = false;
+        CloseSetupStudioConfigured = false;
+        ProviderMappingStudioConfigured = false;
+        TenantCompanyReportGroupSetupStudioConfigured = false;
         AuditReviewToolingConfigured = false;
         BulkImportExportSafeguardsConfigured = false;
         PerformanceValidationConfigured = false;
@@ -2153,6 +2201,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ScopedAccessPoliciesConfigured = profile.ScopedAccessPoliciesConfigured;
         ReportingGroupsConfigured = profile.ReportingGroupsConfigured;
         AccountingAdminSurfaceConfigured = profile.AccountingAdminSurfaceConfigured;
+        WpfAccountingAdminSurfaceConfigured = profile.WpfAccountingAdminSurfaceConfigured;
+        ChartAdministrationStudioConfigured = profile.ChartAdministrationStudioConfigured;
+        RuleTestPromotionStudioConfigured = profile.RuleTestPromotionStudioConfigured;
+        CloseSetupStudioConfigured = profile.CloseSetupStudioConfigured;
+        ProviderMappingStudioConfigured = profile.ProviderMappingStudioConfigured;
+        TenantCompanyReportGroupSetupStudioConfigured = profile.TenantCompanyReportGroupSetupStudioConfigured;
         AuditReviewToolingConfigured = profile.AuditReviewToolingConfigured;
         BulkImportExportSafeguardsConfigured = profile.BulkImportExportSafeguardsConfigured;
         PerformanceValidationConfigured = profile.PerformanceValidationConfigured;
@@ -2205,6 +2259,42 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 "Accounting setup controls are exposed through the governed operator surface.",
                 "WPF Accounting Configure",
                 "operator-surface"),
+            new AccountingWorkbenchRow(
+                "WPF admin",
+                WpfAccountingAdminSurfaceConfigured ? "Configured" : "Missing",
+                "Desktop accounting setup controls are exposed through the governed WPF administration surface.",
+                "WPF Accounting Configure",
+                "wpf-admin-studio"),
+            new AccountingWorkbenchRow(
+                "Chart admin",
+                ChartAdministrationStudioConfigured ? "Configured" : "Missing",
+                "Chart, ledger-book chart, account template, and activation controls are retained.",
+                "chart setup",
+                "chart-administration-studio"),
+            new AccountingWorkbenchRow(
+                "Rule tests",
+                RuleTestPromotionStudioConfigured ? "Configured" : "Missing",
+                "Rules Studio tests, dry-run previews, generated postings, and promotion queues are retained.",
+                "rules studio",
+                "rule-test-promotion-studio"),
+            new AccountingWorkbenchRow(
+                "Close setup",
+                CloseSetupStudioConfigured ? "Configured" : "Missing",
+                "Close checklist, dependencies, sign-offs, materiality, late adjustments, and period locks are retained.",
+                "close setup",
+                "close-setup-studio"),
+            new AccountingWorkbenchRow(
+                "Provider maps",
+                ProviderMappingStudioConfigured ? "Configured" : "Missing",
+                "QuickBooks, Xero, NetSuite, dimension mapping, import evidence, and guarded export setup are retained.",
+                "provider mapping",
+                "provider-mapping-studio"),
+            new AccountingWorkbenchRow(
+                "Tenant/report setup",
+                TenantCompanyReportGroupSetupStudioConfigured ? "Configured" : "Missing",
+                "Tenant, company, scoped access, admin role, and report group setup controls are retained.",
+                "tenant/company/report",
+                "tenant-company-report-group-studio"),
             new AccountingWorkbenchRow(
                 "Audit review",
                 AuditReviewToolingConfigured ? "Configured" : "Missing",
@@ -2368,12 +2458,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ScopedAccessPoliciesConfigured: ScopedAccessPoliciesConfigured,
             ReportingGroupsConfigured: ReportingGroupsConfigured,
             AccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
-            WpfAccountingAdminSurfaceConfigured: AccountingAdminSurfaceConfigured,
-            ChartAdministrationStudioConfigured: AccountingAdminSurfaceConfigured,
-            RuleTestPromotionStudioConfigured: AccountingAdminSurfaceConfigured,
-            CloseSetupStudioConfigured: AccountingAdminSurfaceConfigured,
-            ProviderMappingStudioConfigured: AccountingAdminSurfaceConfigured,
-            TenantCompanyReportGroupSetupStudioConfigured: AccountingAdminSurfaceConfigured,
+            WpfAccountingAdminSurfaceConfigured: WpfAccountingAdminSurfaceConfigured,
+            ChartAdministrationStudioConfigured: ChartAdministrationStudioConfigured,
+            RuleTestPromotionStudioConfigured: RuleTestPromotionStudioConfigured,
+            CloseSetupStudioConfigured: CloseSetupStudioConfigured,
+            ProviderMappingStudioConfigured: ProviderMappingStudioConfigured,
+            TenantCompanyReportGroupSetupStudioConfigured: TenantCompanyReportGroupSetupStudioConfigured,
             AuditReviewToolingConfigured: AuditReviewToolingConfigured,
             BulkImportExportSafeguardsConfigured: BulkImportExportSafeguardsConfigured,
             PerformanceValidationConfigured: PerformanceValidationConfigured,

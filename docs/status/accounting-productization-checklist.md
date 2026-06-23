@@ -270,6 +270,10 @@ the requirement end to end.
   administration, Rules Studio promotion, close setup, provider mapping, ledger-book administration,
   posting-rule authoring, approval queues, dimension mapping, sandbox validation, audit review,
   import/export safeguards, performance validation, and recovery runbooks.
+- [x] WPF Accounting Configure now persists and assesses WPF admin-studio, chart administration,
+  rule-test/promotion, close setup, provider mapping, and tenant/company/report-group setup controls
+  as independent tenant-admin fields instead of deriving them from the aggregate operator-surface
+  checkbox.
 
 ## Still To Complete
 

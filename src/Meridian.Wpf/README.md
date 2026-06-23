@@ -60,13 +60,11 @@ through the shared accounting configuration service, renders the shared accounti
 assessment across ledger books, Rules Studio, posting execution, dimensions, external GL,
 close/reporting, and tenant-admin blockers, renders tenant-admin control/evidence progress from the
 shared readiness DTO, persists tenant-admin setup controls and retained evidence through the shared
-accounting tenant administration profile store with WPF accounting admin-studio coverage, maps the
-desktop aggregate setup checkbox into the shared enterprise configuration studio controls for chart
-administration, rule-test/promotion setup, close setup, provider mapping, and tenant/company/report
-group setup, plus separate enterprise-studio controls for ledger-book administration,
-posting-rule authoring, approval queues, dimension mapping, and implementation sandbox validation,
-and separate operational-hardening controls for audit review tooling, bulk import/export
-safeguards, performance validation, and disaster-recovery runbooks, renders
+accounting tenant administration profile store with independent WPF accounting admin-studio, chart
+administration, rule-test/promotion setup, close setup, provider mapping,
+tenant/company/report-group setup, ledger-book administration, posting-rule authoring, approval
+queue, dimension mapping, implementation sandbox, audit review, bulk import/export safeguard,
+performance validation, and disaster-recovery runbook controls, renders
 the shared ledger-book-native workflow control count and retained ledger-book-scoped
 workflow evidence for posting rules, JE lifecycle, close/reporting, external GL, reconciliation,
 direct-lending projections, and strategy ledger reads, renders
