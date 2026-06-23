@@ -98,6 +98,8 @@ The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cel
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
 portfolio, book, account, investor, capital-account, instrument, tax-lot, cost-center,
 counterparty, and external-GL context without re-inferring accounting scope from display text. The
+shared ledger report endpoints also canonicalize dimension query filters, returned row dimensions,
+matching, and report signatures before browser or WPF clients render or certify scoped reports. The
 shared Financial Record Explorer route also accepts server-applied `viewId`, `searchText`, and
 `filter=<filterId>:<value>` query scope, so saved views and dimension chips can return a scoped
 payload with matching rows, selected record, summary counts, and proof graph before browser or WPF

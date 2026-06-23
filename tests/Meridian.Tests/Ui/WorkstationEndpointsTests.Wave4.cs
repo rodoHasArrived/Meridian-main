@@ -96,9 +96,9 @@ public sealed partial class WorkstationEndpointsTests
             ClosedAt: new DateTimeOffset(2027, 1, 3, 18, 0, 0, TimeSpan.Zero),
             Version: 4);
         var dimensions = new LedgerDimensionSetDto(
-            FundId: "fund-alpha",
-            EntityId: "entity-master",
-            SleeveId: "sleeve-alpha",
+            FundId: " fund-alpha ",
+            EntityId: " entity-master ",
+            SleeveId: " sleeve-alpha ",
             StrategyId: "strategy-credit",
             InvestorId: "investor-lp-1",
             CapitalAccountId: "capital-lp-1",
@@ -106,9 +106,10 @@ public sealed partial class WorkstationEndpointsTests
             TaxLotId: "taxlot-2026-001",
             CostCenterId: "cc-investments",
             CounterpartyId: "counterparty-bank",
-            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            ExternalGlDimensions: new Dictionary<string, string>
             {
-                ["Department"] = "InvestmentOps"
+                [" Department "] = " InvestmentOps ",
+                ["department"] = "ShadowDepartment"
             },
             OrganizationId: "org-operations",
             PortfolioId: "portfolio-credit",
@@ -187,6 +188,18 @@ public sealed partial class WorkstationEndpointsTests
         returnedDimensions.GetProperty("costCenterId").GetString().Should().Be("cc-investments");
         returnedDimensions.GetProperty("counterpartyId").GetString().Should().Be("counterparty-bank");
         returnedDimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
+        var canonicalTotalDebits = document.RootElement.GetProperty("totalDebits").GetDecimal();
+
+        using var messyEquivalentResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={ledgerBookId:D}&dimensionFundId=%20fund-alpha%20&dimensionEntityId=%20entity-master%20&dimensionSleeveId=%20sleeve-alpha%20&dimensionStrategyId=strategy-credit&dimensionInvestorId=investor-lp-1&dimensionCapitalAccountId=capital-lp-1&dimensionInstrumentId={instrumentId:D}&dimensionBookId=book-gaap&dimensionOrganizationId=org-operations&dimensionPortfolioId=portfolio-credit&dimensionAccountId=acct-investments&dimensionCustomerId=customer-investor-services&dimensionVendorId=vendor-custodian&dimensionProjectId=project-close&dimensionTaxLotId=taxlot-2026-001&dimensionCostCenterId=cc-investments&dimensionCounterpartyId=counterparty-bank&externalGlDimensionKey=%20Department%20&externalGlDimensionValue=%20InvestmentOps%20");
+
+        messyEquivalentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var messyEquivalentDocument = await JsonDocument.ParseAsync(await messyEquivalentResponse.Content.ReadAsStreamAsync());
+        messyEquivalentDocument.RootElement.GetProperty("lines").GetArrayLength().Should().Be(1);
+        messyEquivalentDocument.RootElement.GetProperty("totalDebits").GetDecimal().Should().Be(canonicalTotalDebits);
+        var messyEquivalentDimensions = messyEquivalentDocument.RootElement.GetProperty("lines")[0].GetProperty("dimensions");
+        messyEquivalentDimensions.GetProperty("fundId").GetString().Should().Be("fund-alpha");
+        messyEquivalentDimensions.GetProperty("externalGlDimensions").GetProperty("Department").GetString().Should().Be("InvestmentOps");
 
         using var mismatchResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerReportsTrialBalance}?ledgerBookId={ledgerBookId:D}&dimensionFundId=fund-missing&dimensionBookId=book-gaap");

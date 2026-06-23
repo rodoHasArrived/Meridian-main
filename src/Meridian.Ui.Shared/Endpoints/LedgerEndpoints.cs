@@ -2147,6 +2147,7 @@ public static class LedgerEndpoints
         var signedAtUtc = DateTimeOffset.UtcNow;
         var actor = TryResolveActor(context, out var resolvedActor) ? resolvedActor : "system";
         var lines = summary.TrialBalance
+            .Select(static row => row with { Dimensions = CanonicalizeDimensions(row.Dimensions) })
             .OrderBy(static row => row.AccountType, StringComparer.Ordinal)
             .ThenBy(static row => row.AccountName, StringComparer.Ordinal)
             .ThenBy(static row => row.Symbol, StringComparer.Ordinal)
@@ -2244,6 +2245,7 @@ public static class LedgerEndpoints
 
     private static string BuildDimensionFilterSignature(LedgerDimensionReportFilter filter)
     {
+        filter = CanonicalizeFilter(filter);
         if (!filter.HasCriteria)
         {
             return string.Empty;
@@ -2277,6 +2279,7 @@ public static class LedgerEndpoints
 
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
     {
+        dimensions = CanonicalizeDimensions(dimensions);
         if (dimensions is null)
         {
             return string.Empty;
@@ -2333,7 +2336,7 @@ public static class LedgerEndpoints
             externalGlDimensions[externalGlDimensionKey] = externalGlDimensionValue;
         }
 
-        return new LedgerDimensionReportFilter(
+        return CanonicalizeFilter(new LedgerDimensionReportFilter(
             FundId: NormalizeOptional(GetFirstQueryValue(query, "dimensionFundId", "fundId", "fundProfileId")),
             EntityId: NormalizeOptional(GetFirstQueryValue(query, "dimensionEntityId", "entityId")),
             SleeveId: NormalizeOptional(GetFirstQueryValue(query, "dimensionSleeveId", "sleeveId")),
@@ -2351,11 +2354,12 @@ public static class LedgerEndpoints
             CustomerId: NormalizeOptional(GetFirstQueryValue(query, "dimensionCustomerId", "customerId")),
             VendorId: NormalizeOptional(GetFirstQueryValue(query, "dimensionVendorId", "vendorId")),
             ProjectId: NormalizeOptional(GetFirstQueryValue(query, "dimensionProjectId", "projectId")),
-            ExternalGlDimensions: externalGlDimensions);
+            ExternalGlDimensions: externalGlDimensions));
     }
 
     private static LedgerLineDimensionSet? ToLineDimensionSet(LedgerDimensionReportFilter filter)
     {
+        filter = CanonicalizeFilter(filter);
         if (!filter.HasCriteria)
         {
             return null;
@@ -2387,6 +2391,7 @@ public static class LedgerEndpoints
 
     private static LedgerDimensionSetDto? ToLedgerDimensionSetDto(LedgerDimensionReportFilter filter)
     {
+        filter = CanonicalizeFilter(filter);
         if (!filter.HasCriteria)
         {
             return null;
@@ -2437,6 +2442,7 @@ public static class LedgerEndpoints
         LedgerPeriodSummaryDto summary,
         LedgerDimensionReportFilter filter)
     {
+        filter = CanonicalizeFilter(filter);
         if (!filter.HasCriteria)
         {
             return summary;
@@ -2460,6 +2466,7 @@ public static class LedgerEndpoints
         Func<LedgerJournalEntryRecord, Guid?> resolveLedgerBookId,
         LedgerDimensionReportFilter filter)
     {
+        filter = CanonicalizeFilter(filter);
         return entries
             .OrderBy(static entry => entry.GlobalSequence)
             .Select(entry => BuildJournalEntryDto(entry, resolveLedgerBookId(entry), filter))
@@ -2552,7 +2559,7 @@ public static class LedgerEndpoints
             VendorId: FirstTag(tags, "vendorId"),
             ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"));
 
-        return HasAnyDimension(dimensions) ? dimensions : null;
+        return CanonicalizeDimensions(dimensions);
     }
 
     private static LedgerDimensionSetDto? BuildDimensions(LedgerLineDimensionSet? dimensions)
@@ -2582,7 +2589,7 @@ public static class LedgerEndpoints
             VendorId: dimensions.VendorId,
             ProjectId: dimensions.ProjectId);
 
-        return HasAnyDimension(result) ? result : null;
+        return CanonicalizeDimensions(result);
     }
 
     private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata, Guid lineEntryId)
@@ -2614,7 +2621,7 @@ public static class LedgerEndpoints
             VendorId: FirstTag(tags, prefix + "vendorId"),
             ProjectId: FirstTag(tags, prefix + "projectId"));
 
-        return HasAnyDimension(dimensions) ? dimensions : null;
+        return CanonicalizeDimensions(dimensions);
     }
 
     private static decimal CalculateNetIncome(IReadOnlyList<LedgerPeriodTrialBalanceLineDto> lines)
@@ -2630,11 +2637,13 @@ public static class LedgerEndpoints
         LedgerDimensionSetDto? dimensions,
         LedgerDimensionReportFilter filter)
     {
+        filter = CanonicalizeFilter(filter);
         if (!filter.HasCriteria)
         {
             return true;
         }
 
+        dimensions = CanonicalizeDimensions(dimensions);
         if (dimensions is null)
         {
             return false;
@@ -2693,25 +2702,98 @@ public static class LedgerEndpoints
     private static bool IsValidDateRange(DateOnly? startDate, DateOnly? endDate)
         => !startDate.HasValue || !endDate.HasValue || startDate.Value <= endDate.Value;
 
-    private static bool HasAnyDimension(LedgerDimensionSetDto dimensions)
-        => !string.IsNullOrWhiteSpace(dimensions.FundId)
-           || !string.IsNullOrWhiteSpace(dimensions.EntityId)
-           || !string.IsNullOrWhiteSpace(dimensions.SleeveId)
-           || !string.IsNullOrWhiteSpace(dimensions.StrategyId)
-           || !string.IsNullOrWhiteSpace(dimensions.InvestorId)
-           || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
+    private static LedgerDimensionReportFilter CanonicalizeFilter(LedgerDimensionReportFilter filter)
+        => new(
+            FundId: NormalizeOptional(filter.FundId),
+            EntityId: NormalizeOptional(filter.EntityId),
+            SleeveId: NormalizeOptional(filter.SleeveId),
+            StrategyId: NormalizeOptional(filter.StrategyId),
+            InvestorId: NormalizeOptional(filter.InvestorId),
+            CapitalAccountId: NormalizeOptional(filter.CapitalAccountId),
+            InstrumentId: NormalizeOptional(filter.InstrumentId),
+            TaxLotId: NormalizeOptional(filter.TaxLotId),
+            CostCenterId: NormalizeOptional(filter.CostCenterId),
+            CounterpartyId: NormalizeOptional(filter.CounterpartyId),
+            OrganizationId: NormalizeOptional(filter.OrganizationId),
+            PortfolioId: NormalizeOptional(filter.PortfolioId),
+            BookId: NormalizeOptional(filter.BookId),
+            AccountId: NormalizeOptional(filter.AccountId),
+            CustomerId: NormalizeOptional(filter.CustomerId),
+            VendorId: NormalizeOptional(filter.VendorId),
+            ProjectId: NormalizeOptional(filter.ProjectId),
+            ExternalGlDimensions: NormalizeExternalGlDimensions(filter.ExternalGlDimensions));
+
+    private static LedgerDimensionSetDto? CanonicalizeDimensions(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return null;
+        }
+
+        var canonical = new LedgerDimensionSetDto(
+            FundId: NormalizeOptional(dimensions.FundId),
+            EntityId: NormalizeOptional(dimensions.EntityId),
+            SleeveId: NormalizeOptional(dimensions.SleeveId),
+            StrategyId: NormalizeOptional(dimensions.StrategyId),
+            InvestorId: NormalizeOptional(dimensions.InvestorId),
+            CapitalAccountId: NormalizeOptional(dimensions.CapitalAccountId),
+            InstrumentId: dimensions.InstrumentId,
+            TaxLotId: NormalizeOptional(dimensions.TaxLotId),
+            CostCenterId: NormalizeOptional(dimensions.CostCenterId),
+            CounterpartyId: NormalizeOptional(dimensions.CounterpartyId),
+            ExternalGlDimensions: NormalizeExternalGlDimensions(dimensions.ExternalGlDimensions),
+            OrganizationId: NormalizeOptional(dimensions.OrganizationId),
+            PortfolioId: NormalizeOptional(dimensions.PortfolioId),
+            BookId: NormalizeOptional(dimensions.BookId),
+            AccountId: NormalizeOptional(dimensions.AccountId),
+            CustomerId: NormalizeOptional(dimensions.CustomerId),
+            VendorId: NormalizeOptional(dimensions.VendorId),
+            ProjectId: NormalizeOptional(dimensions.ProjectId));
+
+        return HasAnyCanonicalDimension(canonical) ? canonical : null;
+    }
+
+    private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(
+        IReadOnlyDictionary<string, string>? dimensions)
+    {
+        if (dimensions is null || dimensions.Count == 0)
+        {
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        var normalized = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in dimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var key = NormalizeOptional(pair.Key);
+            var value = NormalizeOptional(pair.Value);
+            if (key is not null && value is not null && !normalized.ContainsKey(key))
+            {
+                normalized[key] = value;
+            }
+        }
+
+        return normalized;
+    }
+
+    private static bool HasAnyCanonicalDimension(LedgerDimensionSetDto dimensions)
+        => dimensions.FundId is not null
+           || dimensions.EntityId is not null
+           || dimensions.SleeveId is not null
+           || dimensions.StrategyId is not null
+           || dimensions.InvestorId is not null
+           || dimensions.CapitalAccountId is not null
            || dimensions.InstrumentId.HasValue
-           || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
-           || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
-           || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)
+           || dimensions.TaxLotId is not null
+           || dimensions.CostCenterId is not null
+           || dimensions.CounterpartyId is not null
            || dimensions.ExternalGlDimensions.Count > 0
-           || !string.IsNullOrWhiteSpace(dimensions.OrganizationId)
-           || !string.IsNullOrWhiteSpace(dimensions.PortfolioId)
-           || !string.IsNullOrWhiteSpace(dimensions.BookId)
-           || !string.IsNullOrWhiteSpace(dimensions.AccountId)
-           || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
-           || !string.IsNullOrWhiteSpace(dimensions.VendorId)
-           || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
+           || dimensions.OrganizationId is not null
+           || dimensions.PortfolioId is not null
+           || dimensions.BookId is not null
+           || dimensions.AccountId is not null
+           || dimensions.CustomerId is not null
+           || dimensions.VendorId is not null
+           || dimensions.ProjectId is not null;
 
     private static IReadOnlyDictionary<string, string> ExtractExternalGlDimensions(
         IReadOnlyDictionary<string, string>? tags)
@@ -3154,7 +3236,7 @@ public static class LedgerEndpoints
                 line.RuleVersion,
                 line.SourceEventId,
                 line.SourceJournalEntryId,
-                line.Dimensions)))
+                CanonicalizeDimensions(line.Dimensions))))
             .ToArray();
 
         return new LedgerCrossPeriodTrialBalanceReportDto(

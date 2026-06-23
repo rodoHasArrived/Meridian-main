@@ -63,6 +63,9 @@ the requirement end to end.
 - [x] Ledger-owned report-pack and scheduled-export dimension filters now share canonical
   line-dimension matching/formatting, so messy or duplicate external-GL dimension inputs do not
   split report scopes from durable journal query behavior.
+- [x] Shared ledger report endpoints now canonicalize dimension query filters, retained row
+  dimensions, matching, and report signatures before browser/WPF clients render or certify
+  scoped trial-balance reports.
 - [x] Browser Accounting ledger inquiry now mirrors the shared trial-balance dimension contract,
   renders dimension summaries and detail fields, and lets GL account searches match retained fund,
   entity, sleeve, strategy, investor, capital account, instrument, tax-lot, cost-center,
