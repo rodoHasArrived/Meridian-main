@@ -2020,6 +2020,7 @@ describe("accounting-screen view model", () => {
     const createLateAdjustment = vi.fn(async () => closePeriodPlan);
     const reviewLateAdjustment = vi.fn(async () => closePeriodPlan);
     const signOffCloseTask = vi.fn(async () => closePeriodPlan);
+    const configureClosePlan = vi.fn(async () => closePeriodPlan);
     const buildPackage = vi.fn(async () => accountingReportPackage);
     const certifyPackage = vi.fn(async () => ({
       ...accountingReportPackage,
@@ -2052,6 +2053,7 @@ describe("accounting-screen view model", () => {
       createLateAdjustment,
       reviewLateAdjustment,
       signOffCloseTask,
+      configureClosePlan,
       buildPackage,
       certifyPackage,
       getExportManifest,
@@ -2077,6 +2079,8 @@ describe("accounting-screen view model", () => {
       certifyDisabledReason: null
     });
     expect(result.current.materialityLabel).toContain("controller");
+    expect(result.current.configureClosePlanButtonLabel).toBe("Retain close setup");
+    expect(result.current.configureClosePlanDisabledReason).toBeNull();
     expect(result.current.metrics.find((metric) => metric.id === "calendar")).toMatchObject({
       label: "Calendar",
       value: "1",
@@ -2200,6 +2204,38 @@ describe("accounting-screen view model", () => {
     });
 
     await act(async () => {
+      await result.current.configureClosePlan();
+    });
+
+    expect(configureClosePlan).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-close-1",
+      materialityPolicy: closePeriodPlan.materialityPolicy,
+      actor: "browser-accounting-controller",
+      correlationId: "browser-close-plan-configuration-workflow-close-1",
+      actionOrigin: "HumanOperator",
+      taskConfigurations: [
+        expect.objectContaining({
+          taskId: "task-nav",
+          displayName: "Finalize NAV package",
+          owner: "fund-accounting",
+          dueDate: "2026-06-04",
+          requiredApprovalCount: 1,
+          requiredEvidence: "Controller NAV sign-off evidence",
+          dependsOnTaskIds: ["task-reconciliation"]
+        })
+      ],
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/setup/workflow-close-1",
+        "evidence://close-plan-configuration/fund/fund-alpha/period/2026-05",
+        "evidence://close-plan-configuration/ledger-book/book-alpha",
+        "evidence/nav-package",
+        "evidence/late-adjustment"
+      ])
+    }));
+    expect(result.current.configureClosePlanStatusText).toBe("Retained close-plan setup for 2026-05.");
+    expect(result.current.configureClosePlanStatusTone).toBe("success");
+
+    await act(async () => {
       await result.current.buildReportPackage();
     });
 
@@ -2299,6 +2335,7 @@ describe("accounting-screen view model", () => {
       createLateAdjustment: vi.fn(async () => closePeriodPlan),
       reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
       signOffCloseTask: vi.fn(async () => closePeriodPlan),
+      configureClosePlan: vi.fn(async () => closePeriodPlan),
       buildPackage: vi.fn(async () => serviceOwnedPackage),
       certifyPackage: vi.fn(async () => serviceOwnedPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -2353,6 +2390,7 @@ describe("accounting-screen view model", () => {
     const createLateAdjustment = vi.fn(async () => pendingLateAdjustmentPlan);
     const reviewLateAdjustment = vi.fn(async () => reviewedLateAdjustmentPlan);
     const signOffCloseTask = vi.fn(async () => pendingLateAdjustmentPlan);
+    const configureClosePlan = vi.fn(async () => pendingLateAdjustmentPlan);
     const buildPackage = vi.fn(async () => accountingReportPackage);
     const certifyPackage = vi.fn(async () => accountingReportPackage);
     const getExportManifest = vi.fn(async () => accountingReportExportManifest);
@@ -2362,6 +2400,7 @@ describe("accounting-screen view model", () => {
       createLateAdjustment,
       reviewLateAdjustment,
       signOffCloseTask,
+      configureClosePlan,
       buildPackage,
       certifyPackage,
       getExportManifest,
@@ -2405,6 +2444,7 @@ describe("accounting-screen view model", () => {
       reviewDisabledReason: "Late adjustment is already approved."
     });
     expect(createLateAdjustment).not.toHaveBeenCalled();
+    expect(configureClosePlan).not.toHaveBeenCalled();
     expect(signOffCloseTask).not.toHaveBeenCalled();
     expect(buildPackage).not.toHaveBeenCalled();
     expect(certifyPackage).not.toHaveBeenCalled();
@@ -2450,6 +2490,7 @@ describe("accounting-screen view model", () => {
     const createLateAdjustment = vi.fn(async () => unsignedClosePlan);
     const reviewLateAdjustment = vi.fn(async () => unsignedClosePlan);
     const signOffCloseTask = vi.fn(async () => signedClosePlan);
+    const configureClosePlan = vi.fn(async () => signedClosePlan);
     const buildPackage = vi.fn(async () => accountingReportPackage);
     const certifyPackage = vi.fn(async () => accountingReportPackage);
     const getExportManifest = vi.fn(async () => accountingReportExportManifest);
@@ -2459,6 +2500,7 @@ describe("accounting-screen view model", () => {
       createLateAdjustment,
       reviewLateAdjustment,
       signOffCloseTask,
+      configureClosePlan,
       buildPackage,
       certifyPackage,
       getExportManifest,
@@ -2503,6 +2545,7 @@ describe("accounting-screen view model", () => {
     expect(result.current.signOffDisabledReason).toBe("No close checklist task is ready for sign-off.");
     expect(createLateAdjustment).not.toHaveBeenCalled();
     expect(reviewLateAdjustment).not.toHaveBeenCalled();
+    expect(configureClosePlan).not.toHaveBeenCalled();
     expect(buildPackage).not.toHaveBeenCalled();
     expect(certifyPackage).not.toHaveBeenCalled();
   });

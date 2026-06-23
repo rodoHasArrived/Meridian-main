@@ -339,8 +339,10 @@ the requirement end to end.
   blocker/evidence review in shared services plus browser/WPF surfaces. Backend close-plan
   projection now proves dependency-gated task progression, fail-closed missing sign-off blockers,
   critical pending material late-adjustment blockers, and a governed close-plan configuration
-  command, and production readiness now evidence-qualifies close-plan setup by ledger book, but
-  richer browser/WPF setup/editing workflows and review UX remain open.
+  command. The browser close cockpit can now retain the loaded materiality, checklist dependency,
+  approval-count, required-evidence, ledger-book evidence, and correlation context through that
+  shared configuration endpoint, and production readiness now evidence-qualifies close-plan setup
+  by ledger book, but richer browser/WPF setup/editing workflows and review UX remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
   gain/loss, NAV packages, report-line provenance, restatement workflows, certification states, and
   export evidence across all relevant ledger-book and dimension scopes. Package assembly now fails

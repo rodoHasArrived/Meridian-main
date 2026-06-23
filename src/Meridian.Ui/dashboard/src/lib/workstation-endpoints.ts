@@ -33,6 +33,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   accountingConfigurationActivate: UI_API_ROUTES.LedgerAccountingConfigurationActivate,
   accountingConfigurationAudit: UI_API_ROUTES.LedgerAccountingConfigurationAudit,
   closeManagementPeriodPlan: UI_API_ROUTES.LedgerCloseManagementPeriodPlan,
+  closeManagementPeriodPlanConfiguration: UI_API_ROUTES.LedgerCloseManagementPeriodPlanConfiguration,
   closeManagementLateAdjustments: UI_API_ROUTES.LedgerCloseManagementLateAdjustments,
   closeManagementLateAdjustmentReview: UI_API_ROUTES.LedgerCloseManagementLateAdjustmentReview,
   closeManagementTaskSignOffs: UI_API_ROUTES.LedgerCloseManagementTaskSignOffs,

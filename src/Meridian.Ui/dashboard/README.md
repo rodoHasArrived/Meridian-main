@@ -302,8 +302,11 @@ command posts workflow, fund, period, package-seed, and evidence context
 to the shared accounting report package endpoint, and its certify command posts the selected
 retained package id, reviewer notes, and evidence links to the shared certification endpoint. Its
 task sign-off command posts the next ready checklist task role, reviewer notes, correlation id, and
-evidence links to the shared close-management endpoint. The late-adjustment request form posts the
-journal entry id, amount, currency, reason, controller actor, correlation id, and retained
+evidence links to the shared close-management endpoint. Its close setup action posts the loaded
+materiality policy, checklist task owner/due-date, dependency, required approval, required
+evidence, ledger-book evidence, and correlation context to the shared close-plan configuration
+endpoint, then refreshes the cockpit from the returned close plan. The late-adjustment request form
+posts the journal entry id, amount, currency, reason, controller actor, correlation id, and retained
 late-adjustment/materiality evidence links to the shared close-management endpoint, then refreshes
 the cockpit from the returned close plan. Late-adjustment approve/reject buttons post the retained
 request id, decision, reviewer notes, correlation id, and evidence links to the shared

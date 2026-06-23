@@ -215,6 +215,7 @@ vi.mock("@/lib/api", async () => {
     attachManualJournalEntryEvidence: vi.fn(),
     applyManualJournalEntryLifecycleAction: vi.fn(),
     getLedgerCloseManagementPeriodPlan: vi.fn(),
+    configureLedgerCloseManagementPeriodPlan: vi.fn(),
     createLedgerCloseManagementLateAdjustment: vi.fn(),
     reviewLedgerCloseManagementLateAdjustment: vi.fn(),
     signOffLedgerCloseManagementTask: vi.fn(),
@@ -2816,12 +2817,29 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
     vi.mocked(api.getLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
     vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValueOnce([]);
+    vi.mocked(api.configureLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
     vi.mocked(api.createLedgerCloseManagementLateAdjustment).mockResolvedValueOnce(lateAdjustmentPlan);
 
     await renderAccountingScreen(data, "/accounting");
 
     const cockpit = await screen.findByRole("region", { name: "Accounting close and report package certification cockpit" });
     expect(await within(cockpit).findByText("$1,000 USD or 1% review by Controller")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Retain close setup" })).toBeEnabled());
+    await user.click(screen.getByRole("button", { name: "Retain close setup" }));
+    expect(await within(cockpit).findByText("Retained close-plan setup for 2026-05.")).toBeInTheDocument();
+    expect(api.configureLedgerCloseManagementPeriodPlan).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-approval-1",
+      actor: "browser-accounting-controller",
+      correlationId: "browser-close-plan-configuration-workflow-approval-1",
+      actionOrigin: "HumanOperator",
+      materialityPolicy: closePlan.materialityPolicy,
+      taskConfigurations: [],
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/setup/workflow-approval-1",
+        "evidence://close-plan-configuration/fund/fund-alpha/period/2026-05",
+        "evidence://close-plan-configuration/ledger-book/book-alpha"
+      ])
+    }));
     fireEvent.change(within(cockpit).getByLabelText("Journal entry"), { target: { value: "manual-je-1" } });
     fireEvent.change(within(cockpit).getByLabelText("Amount"), { target: { value: "1250" } });
     fireEvent.change(within(cockpit).getByLabelText("Reason"), { target: { value: "Accrual invoice received after controller review." } });

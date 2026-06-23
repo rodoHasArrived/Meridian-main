@@ -4387,6 +4387,19 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
             type="button"
             size="sm"
             variant="outline"
+            disabled={Boolean(view.configureClosePlanDisabledReason)}
+            disabledReason={view.configureClosePlanDisabledReason ?? undefined}
+            busy={view.configureClosePlanBusy}
+            busyLabel="Retaining close setup"
+            onClick={() => void view.configureClosePlan()}
+          >
+            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            {view.configureClosePlanButtonLabel}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
             disabled={Boolean(view.signOffDisabledReason)}
             disabledReason={view.signOffDisabledReason ?? undefined}
             busy={view.signOffBusy}
@@ -4459,6 +4472,19 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
               )}
             >
               {view.signOffStatusText}
+            </div>
+          ) : null}
+          {view.configureClosePlanStatusText ? (
+            <div
+              role={view.configureClosePlanStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.configureClosePlanStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.configureClosePlanStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.configureClosePlanStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.configureClosePlanStatusText}
             </div>
           ) : null}
           {view.createLateAdjustmentStatusText ? (

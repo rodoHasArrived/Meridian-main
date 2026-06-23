@@ -39,6 +39,7 @@ import type {
   CorporateAction,
   CreateLateAdjustmentRequest,
   ReviewLateAdjustmentRequest,
+  UpsertClosePeriodPlanConfigurationRequest,
   ExternalGlExportPackage,
   ExternalGlExportPackageManifest,
   ExternalGlMappingProfile,
@@ -2210,6 +2211,13 @@ export function certifyAccountingSystemExportPackage(
 export function getLedgerCloseManagementPeriodPlan(workflowId: string, options: ApiRequestOptions = {}) {
   const endpoint = WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan.replace("{workflowId:guid}", workflowId);
   return getJson<ClosePeriodPlan>(endpoint, options);
+}
+
+export function configureLedgerCloseManagementPeriodPlan(
+  request: UpsertClosePeriodPlanConfigurationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlanConfiguration, request, options);
 }
 
 export function createLedgerCloseManagementLateAdjustment(

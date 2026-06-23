@@ -6294,6 +6294,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.accountingConfiguration]: fixtureAccountingConfiguration,
   [WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun]: fixtureAccountingRuleDryRun,
   [WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan]: fixtureLedgerClosePeriodPlan,
+  [WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlanConfiguration]: fixtureLedgerClosePeriodPlan,
   [WORKSTATION_API_ENDPOINTS.closeManagementLateAdjustments]: fixtureLedgerClosePeriodPlan,
   [WORKSTATION_API_ENDPOINTS.accountingReportPackage]: fixtureAccountingReportPackage,
   [WORKSTATION_API_ENDPOINTS.accountingReportPackages]: [fixtureAccountingReportPackage],

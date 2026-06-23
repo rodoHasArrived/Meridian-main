@@ -2901,6 +2901,26 @@ export interface SignOffCloseTaskRequest {
   correlationId?: string | null;
 }
 
+export interface CloseTaskConfiguration {
+  taskId: string;
+  displayName?: string | null;
+  owner?: string | null;
+  dueDate?: string | null;
+  requiredApprovalCount?: number | null;
+  requiredEvidence?: string | null;
+  dependsOnTaskIds?: string[] | null;
+}
+
+export interface UpsertClosePeriodPlanConfigurationRequest {
+  workflowId: string;
+  materialityPolicy?: MaterialityPolicy | null;
+  taskConfigurations?: CloseTaskConfiguration[] | null;
+  actor?: string | null;
+  evidenceLinks?: string[] | null;
+  correlationId?: string | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
 export interface ClosePeriodPlan {
   closePlanId: string;
   fundProfileId: string;

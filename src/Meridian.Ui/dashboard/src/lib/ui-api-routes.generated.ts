@@ -605,6 +605,7 @@ export const UI_API_ROUTES = {
   LedgerAccountingConfigurationActivate: "/api/ledger/accounting-configuration/activate",
   LedgerAccountingConfigurationAudit: "/api/ledger/accounting-configuration/audit",
   LedgerCloseManagementPeriodPlan: "/api/ledger/close-management/period-plan/{workflowId:guid}",
+  LedgerCloseManagementPeriodPlanConfiguration: "/api/ledger/close-management/period-plan/configuration",
   LedgerCloseManagementLateAdjustments: "/api/ledger/close-management/late-adjustments",
   LedgerCloseManagementLateAdjustmentReview: "/api/ledger/close-management/late-adjustments/review",
   LedgerCloseManagementTaskSignOffs: "/api/ledger/close-management/task-signoffs",
