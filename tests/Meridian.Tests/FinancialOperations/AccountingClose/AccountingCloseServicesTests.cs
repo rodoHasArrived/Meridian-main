@@ -62,6 +62,47 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_SignOffRequiresActorIndependentFromTaskAcknowledgement()
+    {
+        var workflowId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Pending",
+                secondTaskStatus: "Pending",
+                firstTaskAcknowledgedBy: "close-preparer"));
+        var service = new AccountingCloseManagementService(workflowService);
+        var evidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
+        var request = new SignOffCloseTaskRequestDto(
+            workflowId,
+            "reconciliation-review",
+            "Controller",
+            ManualJournalEntryStatusDto.Approved,
+            "close-preparer",
+            "Controller sign-off retained.",
+            [evidence]);
+
+        var sameActor = async () => await service.SignOffCloseTaskAsync(request, "close-preparer");
+
+        await sameActor.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*independent from acknowledgement actor 'close-preparer'*");
+
+        var plan = await service.SignOffCloseTaskAsync(request with { Actor = "controller-reviewer" }, "controller-reviewer");
+
+        plan.Should().NotBeNull();
+        var signedOffTask = plan!.Tasks.Single(task => task.TaskId == "reconciliation-review");
+        signedOffTask.Status.Should().Be(CloseTaskStatusDto.SignedOff);
+        signedOffTask.SignOffs.Should().ContainSingle(signOff =>
+            signOff.Actor == "controller-reviewer" &&
+            signOff.ApprovalState == ManualJournalEntryStatusDto.Approved &&
+            signOff.EvidenceLinks.Contains(evidence));
+        signedOffTask.SignOffRequirements.Should().ContainSingle().Subject.IsSatisfied.Should().BeTrue();
+    }
+
+    [Fact]
     public void Scenario_MonthEndFxTranslation_ReplayUsesStableAdjustmentIdAndRateLineage()
     {
         var service = new FxTranslationService();
@@ -405,7 +446,9 @@ public sealed class AccountingCloseServicesTests
     private static OperationsContinuityWorkflowDto BuildCloseWorkflow(
         Guid workflowId,
         string firstTaskStatus,
-        string secondTaskStatus)
+        string secondTaskStatus,
+        string? firstTaskAcknowledgedBy = null,
+        string? secondTaskAcknowledgedBy = null)
     {
         var now = DateTimeOffset.Parse("2026-04-01T00:00:00Z");
         return new OperationsContinuityWorkflowDto(
@@ -445,8 +488,8 @@ public sealed class AccountingCloseServicesTests
                     EvidencePointer: null,
                     RemediationRoute: "/workstation/accounting/close",
                     CanAcknowledge: true,
-                    AcknowledgedAtUtc: null,
-                    AcknowledgedBy: null),
+                    AcknowledgedAtUtc: firstTaskAcknowledgedBy is null ? null : now,
+                    AcknowledgedBy: firstTaskAcknowledgedBy),
                 new OperationsCloseChecklistTaskDto(
                     "report-certification",
                     OperationsGateKeyDto.Approval,
@@ -461,8 +504,8 @@ public sealed class AccountingCloseServicesTests
                     EvidencePointer: null,
                     RemediationRoute: "/workstation/reporting",
                     CanAcknowledge: true,
-                    AcknowledgedAtUtc: null,
-                    AcknowledgedBy: null)
+                    AcknowledgedAtUtc: secondTaskAcknowledgedBy is null ? null : now,
+                    AcknowledgedBy: secondTaskAcknowledgedBy)
             ],
             EvidenceLinks: [],
             Blockers: [],

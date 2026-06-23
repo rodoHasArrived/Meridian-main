@@ -350,6 +350,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.Actor, "Actor") : actor.Trim();
+        EnsureIndependentCloseTaskSignOffActor(checklistTask, resolvedActor);
         var signOff = new CloseSignOffDto(
             $"signoff-{Sanitize(taskId)}-{Sanitize(role)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmssfff}",
             role,
@@ -796,6 +797,18 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         if (actionOrigin != OperationsActionOriginDto.HumanOperator)
         {
             throw new InvalidOperationException($"Reviewed automation cannot {action}; a human operator must perform this accounting close action.");
+        }
+    }
+
+    private static void EnsureIndependentCloseTaskSignOffActor(
+        OperationsCloseChecklistTaskDto task,
+        string actor)
+    {
+        if (!string.IsNullOrWhiteSpace(task.AcknowledgedBy) &&
+            string.Equals(task.AcknowledgedBy.Trim(), actor, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Close task '{task.TaskId}' must be signed off by an actor independent from acknowledgement actor '{task.AcknowledgedBy.Trim()}'.");
         }
     }
 

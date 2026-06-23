@@ -172,6 +172,9 @@ the requirement end to end.
   exact-token ledger-book, close-task, journal-entry, and late-adjustment request evidence checks,
   preventing extended identifiers such as `book:{id}ffff` from satisfying selected close-control
   provenance.
+- [x] Close-management task sign-off now also enforces reviewer independence from the actor who
+  acknowledged/prepared the checklist task before retained sign-off evidence can satisfy the close
+  matrix.
 - [x] Close-management dependency projection now requires predecessor tasks to be signed off before
   dependent tasks advance, emits close-plan validation issues for unresolved dependencies, and
   proves both waiting and advanced dependency states in focused Financial Operations tests.

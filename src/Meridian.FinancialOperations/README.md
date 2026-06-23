@@ -237,9 +237,10 @@ the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
 Task sign-off decisions retain authenticated actor, role, notes, and evidence, reject duplicate
-actor-role decisions, roles outside the task's sign-off matrix, or incomplete prerequisite tasks,
-require retained approval/sign-off/control/review evidence that identifies the close task, workflow,
-sign-off role, and workflow or exact close period on the same artifact, count only
+actor-role decisions, actors who acknowledged the task, roles outside the task's sign-off matrix,
+or incomplete prerequisite tasks, require retained approval/sign-off/control/review evidence that
+identifies the close task, workflow, sign-off role, and workflow or exact close period on the same
+artifact, count only
 approved decisions toward the role-scoped approval cap, and promote the close task only when
 retained approved decisions satisfy the role-scoped task approval count. Each projected close
 task now carries sign-off requirement rows so browser, WPF, report
