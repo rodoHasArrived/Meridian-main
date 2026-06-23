@@ -121,13 +121,19 @@ public sealed class AccountingPostingService
 
 public sealed class FxTranslationService
 {
-    public TranslationAdjustment Translate(string ledgerId, DateOnly period, string accountCode, decimal functionalAmount, FxRate rate)
+    public TranslationAdjustment Translate(
+        string ledgerId,
+        DateOnly period,
+        string accountCode,
+        decimal functionalAmount,
+        FxRate rate,
+        LedgerDimensionSetDto? dimensions = null)
     {
         ArgumentNullException.ThrowIfNull(rate);
 
         var reportingAmount = decimal.Round(functionalAmount * rate.Rate, 2, MidpointRounding.AwayFromZero);
         var adjustment = reportingAmount - functionalAmount;
-        var adjustmentId = CreateDeterministicId(ledgerId, period, accountCode, functionalAmount, reportingAmount, rate);
+        var adjustmentId = CreateDeterministicId(ledgerId, period, accountCode, functionalAmount, reportingAmount, rate, dimensions);
         return new TranslationAdjustment(
             adjustmentId,
             ledgerId,
@@ -139,7 +145,8 @@ public sealed class FxTranslationService
             rate.SourceEventId,
             rate.FromCurrency,
             rate.ToCurrency,
-            string.IsNullOrWhiteSpace(rate.RateId) ? rate.SourceEventId : rate.RateId);
+            string.IsNullOrWhiteSpace(rate.RateId) ? rate.SourceEventId : rate.RateId,
+            Dimensions: dimensions);
     }
 
     public ImmutableArray<TranslationAdjustment> TranslateTrialBalance(
@@ -151,7 +158,7 @@ public sealed class FxTranslationService
         ArgumentNullException.ThrowIfNull(lines);
         return lines
             .OrderBy(static line => line.AccountCode, StringComparer.OrdinalIgnoreCase)
-            .Select(line => Translate(ledgerId, period, line.AccountCode, line.Net, rate))
+            .Select(line => Translate(ledgerId, period, line.AccountCode, line.Net, rate, line.Dimensions))
             .ToImmutableArray();
     }
 
@@ -161,9 +168,10 @@ public sealed class FxTranslationService
         string accountCode,
         decimal functionalAmount,
         decimal reportingAmount,
-        FxRate rate)
+        FxRate rate,
+        LedgerDimensionSetDto? dimensions)
     {
-        var input = string.Join('|', ledgerId, period.ToString("yyyy-MM-dd"), accountCode, functionalAmount, reportingAmount, rate.FromCurrency, rate.ToCurrency, rate.RateDate.ToString("yyyy-MM-dd"), rate.Rate, rate.SourceEventId, rate.RateId);
+        var input = string.Join('|', ledgerId, period.ToString("yyyy-MM-dd"), accountCode, functionalAmount, reportingAmount, rate.FromCurrency, rate.ToCurrency, rate.RateDate.ToString("yyyy-MM-dd"), rate.Rate, rate.SourceEventId, rate.RateId, TrialBalanceProjectionService.DimensionSignature(dimensions));
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         return new Guid(hash[..16]);
     }
@@ -298,7 +306,7 @@ public sealed class TrialBalanceProjectionService
         var buckets = openingRows
             .Select(static row => (row.AccountCode, row.Dimensions))
             .Concat(activityRows.Select(static row => (row.AccountCode, row.Dimensions)))
-            .Concat(fxRows.Select(static row => (row.AccountCode, Dimensions: (LedgerDimensionSetDto?)null)))
+            .Concat(fxRows.Select(static row => (row.AccountCode, row.Dimensions)))
             .GroupBy(static row => BuildBucketKey(row.AccountCode, row.Dimensions), StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .OrderBy(static row => row.AccountCode, StringComparer.OrdinalIgnoreCase)
@@ -312,20 +320,23 @@ public sealed class TrialBalanceProjectionService
             var activityBalance = activityRows
                 .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
                 .Sum(static row => row.Net);
-            var adjustment = bucket.Dimensions is null
-                ? fxRows.Where(row => string.Equals(row.AccountCode, bucket.AccountCode, StringComparison.OrdinalIgnoreCase)).Sum(static row => row.AdjustmentAmount)
-                : 0m;
+            var adjustment = fxRows
+                .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                .Sum(static row => row.AdjustmentAmount);
             var sourceEventIds = activityRows.Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
                 .SelectMany(static row => row.SourceEventIds.IsDefault ? ImmutableArray<string>.Empty : row.SourceEventIds)
-                .Concat(bucket.Dimensions is null
-                    ? fxRows.Where(row => string.Equals(row.AccountCode, bucket.AccountCode, StringComparison.OrdinalIgnoreCase)).Select(static row => row.SourceEventId)
-                    : [])
+                .Concat(fxRows
+                    .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                    .Select(static row => row.SourceEventId))
                 .Where(static value => !string.IsNullOrWhiteSpace(value))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
                 .ToImmutableArray();
             var approvalIds = activityRows.Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
                 .SelectMany(static row => row.ApprovalIds.IsDefault ? ImmutableArray<string>.Empty : row.ApprovalIds)
+                .Concat(fxRows
+                    .Where(row => SameAccountAndDimensions(row.AccountCode, row.Dimensions, bucket.AccountCode, bucket.Dimensions))
+                    .Select(static row => row.ApprovalId))
                 .Where(static value => !string.IsNullOrWhiteSpace(value))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Order(StringComparer.OrdinalIgnoreCase)
@@ -418,6 +429,9 @@ public sealed class TrialBalanceProjectionService
 
         return true;
     }
+
+    internal static string DimensionSignature(LedgerDimensionSetDto? dimensions)
+        => BuildDimensionSignature(dimensions);
 
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
     {

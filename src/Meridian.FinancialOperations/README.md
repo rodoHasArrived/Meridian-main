@@ -205,7 +205,9 @@ Trial-balance projection preserves `LedgerDimensionSetDto` on journal lines, buc
 activity separately by dimensional scope, and supports scoped close/report filters for fund, entity,
 sleeve, strategy, investor, capital account, instrument, tax lot, cost center, counterparty, neutral
 organization/portfolio/book/account/customer/vendor/project dimensions, and external-GL dimensions
-without inferring scope from account names.
+without inferring scope from account names. FX translation adjustments generated from those trial
+balance rows retain the same dimensions and roll forward into the matching dimensional close row
+instead of collapsing adjustments to account-only reporting buckets.
 Production-readiness assessment now requires retained ledger-book-scoped evidence that period
 reports, cross-period reports, journal dimension filters, and guarded external-export dimension
 mappings preserve those canonical dimensions before dimensional reporting is treated as rollout-ready.

@@ -59,7 +59,8 @@ public sealed record TranslationAdjustment(
     string FromCurrency = "",
     string ToCurrency = "",
     string RateId = "",
-    string ApprovalId = "");
+    string ApprovalId = "",
+    LedgerDimensionSetDto? Dimensions = null);
 
 public sealed record CloseEvidenceCheck(
     string CheckId,

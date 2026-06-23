@@ -185,6 +185,71 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public void Scenario_MonthEndRollForward_PreservesDimensionScopedFxAdjustments()
+    {
+        var projection = new TrialBalanceProjectionService();
+        var fx = new FxTranslationService();
+        var entityAlpha = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-alpha",
+            BookId: "book-gaap",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Investments"
+            });
+        var entityBeta = new LedgerDimensionSetDto(
+            FundId: "fund-alpha",
+            EntityId: "entity-beta",
+            BookId: "book-gaap",
+            ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Department"] = "Operations"
+            });
+        var activity = ImmutableArray.Create(
+            new TrialBalanceLine(
+                "Cash",
+                100m,
+                0m,
+                100m,
+                SourceEventIds: ImmutableArray.Create("activity-alpha"),
+                ApprovalIds: ImmutableArray.Create("approval-activity-alpha"),
+                Dimensions: entityAlpha),
+            new TrialBalanceLine(
+                "Cash",
+                50m,
+                0m,
+                50m,
+                SourceEventIds: ImmutableArray.Create("activity-beta"),
+                ApprovalIds: ImmutableArray.Create("approval-activity-beta"),
+                Dimensions: entityBeta));
+        var adjustments = fx.TranslateTrialBalance(
+            "ledger-a",
+            new DateOnly(2026, 03, 31),
+            activity,
+            new FxRate("EUR", "USD", new DateOnly(2026, 03, 31), 1.10m, "fx:ecb:20260331", "ECB-EURUSD-20260331"));
+
+        var rollForward = projection.BuildRollForward([], activity, adjustments);
+
+        adjustments.Should().HaveCount(2);
+        adjustments.Should().OnlyContain(adjustment => adjustment.Dimensions is not null);
+        adjustments.Select(adjustment => adjustment.AdjustmentId).Should().OnlyHaveUniqueItems();
+        var alpha = rollForward.Single(line => line.Dimensions?.EntityId == "entity-alpha");
+        alpha.Activity.Should().Be(100m);
+        alpha.TranslationAdjustment.Should().Be(10m);
+        alpha.ClosingBalance.Should().Be(110m);
+        alpha.Dimensions!.ExternalGlDimensions["Department"].Should().Be("Investments");
+        alpha.SourceEventIds.Should().BeEquivalentTo(["activity-alpha", "fx:ecb:20260331"]);
+        alpha.ApprovalIds.Should().BeEquivalentTo(["approval-activity-alpha"]);
+        var beta = rollForward.Single(line => line.Dimensions?.EntityId == "entity-beta");
+        beta.Activity.Should().Be(50m);
+        beta.TranslationAdjustment.Should().Be(5m);
+        beta.ClosingBalance.Should().Be(55m);
+        beta.Dimensions!.ExternalGlDimensions["Department"].Should().Be("Operations");
+        beta.SourceEventIds.Should().BeEquivalentTo(["activity-beta", "fx:ecb:20260331"]);
+        beta.ApprovalIds.Should().BeEquivalentTo(["approval-activity-beta"]);
+    }
+
+    [Fact]
     public void Scenario_MonthEndPosting_OutOfBalanceJournalIsRejectedBeforeReplay()
     {
         var posting = new AccountingPostingService();
