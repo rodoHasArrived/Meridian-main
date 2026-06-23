@@ -610,6 +610,7 @@ export const UI_API_ROUTES = {
   LedgerCloseManagementLateAdjustments: "/api/ledger/close-management/late-adjustments",
   LedgerCloseManagementLateAdjustmentReview: "/api/ledger/close-management/late-adjustments/review",
   LedgerCloseManagementTaskSignOffs: "/api/ledger/close-management/task-signoffs",
+  LedgerCloseManagementPeriodLock: "/api/ledger/close-management/period-lock",
   LedgerManualJournalEntryWorkbench: "/api/ledger/journal-entry-workbench",
   LedgerPrivateCapitalActivity: "/api/ledger/private-capital/activity",
   LedgerPrivateCapitalFundEventRecord: "/api/ledger/private-capital/fund-event-record",

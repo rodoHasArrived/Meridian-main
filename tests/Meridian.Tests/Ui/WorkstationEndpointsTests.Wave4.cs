@@ -1121,6 +1121,56 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task LedgerCloseManagementEndpoints_LockPeriodReturnsServiceBlockersWithoutPosting()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-09",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor",
+                LedgerBookId: ledgerBookId));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflow = start!.Workflow!;
+
+        using var lockRequest = new HttpRequestMessage(HttpMethod.Post, UiApiRoutes.LedgerCloseManagementPeriodLock)
+        {
+            Content = System.Net.Http.Json.JsonContent.Create(
+                new LockClosePeriodRequestDto(
+                    workflow.WorkflowId,
+                    ExpectedWorkflowVersion: workflow.Version,
+                    Actor: "payload-actor",
+                    Rationale: "Attempt browser period lock without retained close package evidence.",
+                    ReportPackId: string.Empty,
+                    EvidenceLinks: []),
+                options: ServerJsonOptions)
+        };
+        lockRequest.Headers.Add("X-Meridian-Test-User", "controller-reviewer");
+
+        using var lockResponse = await client.SendAsync(lockRequest);
+
+        lockResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await lockResponse.Content.ReadFromJsonAsync<ClosePeriodLockResultDto>(ServerJsonOptions);
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeFalse();
+        result.Transition.Should().BeNull();
+        result.Plan.Should().NotBeNull();
+        result.Plan!.IsPeriodLocked.Should().BeFalse();
+        result.Issues.Should().Contain(issue => issue.Code == "ClosePeriodLockEvidenceMissing");
+        result.Issues.Should().Contain(issue => issue.Code == "ClosePeriodLockReportPackMissing");
+    }
+
+    [Fact]
     public async Task LedgerCloseManagementService_BlocksLateAdjustmentAfterPeriodLock()
     {
         var workflowId = Guid.NewGuid();

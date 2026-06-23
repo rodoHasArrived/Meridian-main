@@ -2021,6 +2021,12 @@ describe("accounting-screen view model", () => {
     const reviewLateAdjustment = vi.fn(async () => closePeriodPlan);
     const signOffCloseTask = vi.fn(async () => closePeriodPlan);
     const configureClosePlan = vi.fn(async () => closePeriodPlan);
+    const lockClosePeriod = vi.fn(async () => ({
+      isLocked: true,
+      plan: { ...closePeriodPlan, isPeriodLocked: true },
+      transition: null,
+      issues: []
+    }));
     const buildPackage = vi.fn(async () => accountingReportPackage);
     const certifyPackage = vi.fn(async () => ({
       ...accountingReportPackage,
@@ -2054,6 +2060,7 @@ describe("accounting-screen view model", () => {
       reviewLateAdjustment,
       signOffCloseTask,
       configureClosePlan,
+      lockClosePeriod,
       buildPackage,
       certifyPackage,
       getExportManifest,
@@ -2236,6 +2243,40 @@ describe("accounting-screen view model", () => {
     expect(result.current.configureClosePlanStatusTone).toBe("success");
 
     await act(async () => {
+      await result.current.lockClosePeriod();
+    });
+
+    expect(lockClosePeriod).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-close-1",
+      expectedWorkflowVersion: closeWorkflow.version,
+      actor: "browser-accounting-controller",
+      rationale: "Lock close period 2026-05 after close checklist and report package review.",
+      reportPackId: "accounting-report-package-alpha-202605",
+      correlationId: "browser-close-period-lock-workflow-close-1",
+      closePackageId: "close-package-2026-05",
+      closePackageManifestId: "close-manifest-2026-05",
+      closePackageRetainedManifestRoute: "/api/ledger/reports/accounting-packages/accounting-report-package-alpha-202605/exports/report-export-financial-statements",
+      actionOrigin: "HumanOperator",
+      checklistControlApprovals: [
+        {
+          taskId: "task-nav",
+          approvedBy: "ops-user",
+          approvedAtUtc: "2026-06-02T05:00:00Z"
+        }
+      ],
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/period-lock/workflow-close-1",
+        "evidence://close-package/workflow/workflow-close-1/period/2026-05/book/book-alpha/period-lock",
+        "evidence://report-package/accounting-report-package-alpha-202605/workflow/workflow-close-1/period/2026-05/book/book-alpha",
+        "evidence/nav-package",
+        "evidence/certification"
+      ])
+    }));
+    expect(result.current.lockClosePeriodStatusText).toBe("Locked close period 2026-05.");
+    expect(result.current.lockClosePeriodStatusTone).toBe("success");
+    expect(result.current.lockLabel).toBe("Period locked");
+
+    await act(async () => {
       await result.current.buildReportPackage();
     });
 
@@ -2336,6 +2377,7 @@ describe("accounting-screen view model", () => {
       reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
       signOffCloseTask: vi.fn(async () => closePeriodPlan),
       configureClosePlan: vi.fn(async () => closePeriodPlan),
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
       buildPackage: vi.fn(async () => serviceOwnedPackage),
       certifyPackage: vi.fn(async () => serviceOwnedPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -2401,6 +2443,7 @@ describe("accounting-screen view model", () => {
       reviewLateAdjustment,
       signOffCloseTask,
       configureClosePlan,
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: pendingLateAdjustmentPlan, transition: null, issues: [] })),
       buildPackage,
       certifyPackage,
       getExportManifest,
@@ -2501,6 +2544,7 @@ describe("accounting-screen view model", () => {
       reviewLateAdjustment,
       signOffCloseTask,
       configureClosePlan,
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: signedClosePlan, transition: null, issues: [] })),
       buildPackage,
       certifyPackage,
       getExportManifest,

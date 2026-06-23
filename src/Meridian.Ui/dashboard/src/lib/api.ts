@@ -38,8 +38,10 @@ import type {
   ChiefOfStaffSessionSummary,
   ChiefOfStaffTraceExportRequest,
   ClosePeriodPlan,
+  ClosePeriodLockResult,
   CorporateAction,
   CreateLateAdjustmentRequest,
+  LockClosePeriodRequest,
   ReviewLateAdjustmentRequest,
   UpsertClosePeriodPlanConfigurationRequest,
   ExternalGlExportPackage,
@@ -2263,6 +2265,13 @@ export function signOffLedgerCloseManagementTask(
   options: ApiRequestOptions = {}
 ) {
   return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementTaskSignOffs, request, options);
+}
+
+export function lockLedgerCloseManagementPeriod(
+  request: LockClosePeriodRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodLockResult>(WORKSTATION_API_ENDPOINTS.closeManagementPeriodLock, request, options);
 }
 
 export function buildLedgerAccountingReportPackage(

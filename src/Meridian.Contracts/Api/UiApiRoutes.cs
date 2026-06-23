@@ -721,6 +721,7 @@ public static class UiApiRoutes
     public const string LedgerCloseManagementLateAdjustments = "/api/ledger/close-management/late-adjustments";
     public const string LedgerCloseManagementLateAdjustmentReview = "/api/ledger/close-management/late-adjustments/review";
     public const string LedgerCloseManagementTaskSignOffs = "/api/ledger/close-management/task-signoffs";
+    public const string LedgerCloseManagementPeriodLock = "/api/ledger/close-management/period-lock";
     public const string LedgerManualJournalEntryWorkbench = "/api/ledger/journal-entry-workbench";
     public const string LedgerPrivateCapitalActivity = "/api/ledger/private-capital/activity";
     public const string LedgerPrivateCapitalFundEventRecord = "/api/ledger/private-capital/fund-event-record";

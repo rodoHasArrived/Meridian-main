@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.PrivateCapital;
@@ -1202,6 +1203,59 @@ public static class LedgerEndpoints
         })
         .WithName("SignOffLedgerCloseManagementTask")
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerCloseManagementPeriodLock, async (
+            LockClosePeriodRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingCloseManagementService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var actor = ResolveMutationActor(context, request.Actor);
+                var result = await service
+                    .LockClosePeriodAsync(
+                        request with
+                        {
+                            Actor = actor,
+                            ActionOrigin = OperationsActionOriginDto.HumanOperator
+                        },
+                        actor,
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return result is null
+                    ? Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." })
+                    : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("LockLedgerCloseManagementPeriod")
+        .Produces<ClosePeriodLockResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)

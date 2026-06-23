@@ -305,7 +305,11 @@ task sign-off command posts the next ready checklist task role, reviewer notes, 
 evidence links to the shared close-management endpoint. Its close setup action posts the loaded
 materiality policy, checklist task owner/due-date, dependency, required approval, required
 evidence, ledger-book evidence, and correlation context to the shared close-plan configuration
-endpoint, then refreshes the cockpit from the returned close plan. The late-adjustment request form
+endpoint, then refreshes the cockpit from the returned close plan. Its period-lock action posts the
+current workflow version, selected report package, checklist-control approvals, close-package
+manifest context, ledger-book-scoped evidence, and human-operator origin to the shared
+close-management lock endpoint, rendering returned service blockers without attempting a local
+close transition. The late-adjustment request form
 posts the journal entry id, amount, currency, reason, controller actor, correlation id, and retained
 late-adjustment/materiality evidence links to the shared close-management endpoint, then refreshes
 the cockpit from the returned close plan. Late-adjustment approve/reject buttons post the retained

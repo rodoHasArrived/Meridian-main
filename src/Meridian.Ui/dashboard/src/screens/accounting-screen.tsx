@@ -1,4 +1,4 @@
-import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
+import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
@@ -4411,6 +4411,19 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
             type="button"
             size="sm"
             variant="outline"
+            disabled={Boolean(view.lockClosePeriodDisabledReason)}
+            disabledReason={view.lockClosePeriodDisabledReason ?? undefined}
+            busy={view.lockClosePeriodBusy}
+            busyLabel="Locking close period"
+            onClick={() => void view.lockClosePeriod()}
+          >
+            <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" />
+            {view.lockClosePeriodButtonLabel}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
             disabled={Boolean(view.signOffDisabledReason)}
             disabledReason={view.signOffDisabledReason ?? undefined}
             busy={view.signOffBusy}
@@ -4496,6 +4509,19 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
               )}
             >
               {view.configureClosePlanStatusText}
+            </div>
+          ) : null}
+          {view.lockClosePeriodStatusText ? (
+            <div
+              role={view.lockClosePeriodStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.lockClosePeriodStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.lockClosePeriodStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.lockClosePeriodStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.lockClosePeriodStatusText}
             </div>
           ) : null}
           {view.createLateAdjustmentStatusText ? (

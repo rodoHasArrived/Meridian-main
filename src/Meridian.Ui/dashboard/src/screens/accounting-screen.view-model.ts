@@ -41,6 +41,7 @@ import {
   getTradingParameters,
   runAnalysisExport,
   listLedgerAccountingReportPackages,
+  lockLedgerCloseManagementPeriod,
   previewAccountingConfigurationTemplate,
   saveManualJournalEntryDraft,
   resolveReconciliationBreak,
@@ -120,6 +121,7 @@ import type {
   AccountingRulesStudioRuleRow,
   CloseCalendarMilestone,
   ClosePeriodPlan,
+  ClosePeriodLockResult,
   CloseTask,
   UpsertClosePeriodPlanConfigurationRequest,
   CreateLateAdjustmentRequest,
@@ -155,6 +157,7 @@ import type {
   JournalEntryLifecycleAction,
   JournalEntryLifecycleActionRequest,
   JournalEntryLifecycleActionResult,
+  LockClosePeriodRequest,
   JournalEntryLifecycleTransition,
   ManualJournalEntryDraft,
   ManualJournalEntryEvidenceAttachment,
@@ -2419,6 +2422,9 @@ export interface AccountingCloseReportPackageViewModel {
   signOffBusy: boolean;
   signOffStatusText: string | null;
   signOffStatusTone: "neutral" | "success" | "danger";
+  lockClosePeriodBusy: boolean;
+  lockClosePeriodStatusText: string | null;
+  lockClosePeriodStatusTone: "neutral" | "success" | "danger";
   configureClosePlanBusy: boolean;
   configureClosePlanStatusText: string | null;
   configureClosePlanStatusTone: "neutral" | "success" | "danger";
@@ -2438,6 +2444,8 @@ export interface AccountingCloseReportPackageViewModel {
   certifyDisabledReason: string | null;
   signOffButtonLabel: string;
   signOffDisabledReason: string | null;
+  lockClosePeriodButtonLabel: string;
+  lockClosePeriodDisabledReason: string | null;
   configureClosePlanButtonLabel: string;
   configureClosePlanDisabledReason: string | null;
   createLateAdjustmentDisabledReason: string | null;
@@ -2456,6 +2464,7 @@ export interface AccountingCloseReportPackageViewModel {
   refresh: () => Promise<void>;
   buildReportPackage: () => Promise<void>;
   certifyPackage: () => Promise<void>;
+  lockClosePeriod: () => Promise<void>;
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
   updateLateAdjustmentDraft: (patch: Partial<AccountingLateAdjustmentDraftViewModel>) => void;
@@ -2485,6 +2494,7 @@ export interface AccountingCloseReportPackageServices {
   reviewLateAdjustment: (request: ReviewLateAdjustmentRequest) => Promise<ClosePeriodPlan>;
   signOffCloseTask: (request: SignOffCloseTaskRequest) => Promise<ClosePeriodPlan>;
   configureClosePlan: (request: UpsertClosePeriodPlanConfigurationRequest) => Promise<ClosePeriodPlan>;
+  lockClosePeriod: (request: LockClosePeriodRequest) => Promise<ClosePeriodLockResult>;
   buildPackage: (request: AccountingReportPackageRequest) => Promise<AccountingReportPackageBundle>;
   certifyPackage: (request: CertifyAccountingReportPackageRequest) => Promise<AccountingReportPackageBundle>;
   getExportManifest: (packageId: string, artifactId: string) => Promise<ReportExportArtifactManifest>;
@@ -2571,6 +2581,7 @@ const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageS
   reviewLateAdjustment: (request) => reviewLedgerCloseManagementLateAdjustment(request),
   signOffCloseTask: (request) => signOffLedgerCloseManagementTask(request),
   configureClosePlan: (request) => configureLedgerCloseManagementPeriodPlan(request),
+  lockClosePeriod: (request) => lockLedgerCloseManagementPeriod(request),
   buildPackage: (request) => buildLedgerAccountingReportPackage(request),
   certifyPackage: (request) => certifyLedgerAccountingReportPackage(request),
   getExportManifest: (packageId, artifactId) => getLedgerAccountingReportPackageExport(packageId, artifactId),
@@ -2942,6 +2953,9 @@ export function useAccountingCloseReportPackageViewModel(
   const [signOffBusy, setSignOffBusy] = useState(false);
   const [signOffStatusText, setSignOffStatusText] = useState<string | null>(null);
   const [signOffStatusTone, setSignOffStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [lockClosePeriodBusy, setLockClosePeriodBusy] = useState(false);
+  const [lockClosePeriodStatusText, setLockClosePeriodStatusText] = useState<string | null>(null);
+  const [lockClosePeriodStatusTone, setLockClosePeriodStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
   const [configureClosePlanBusy, setConfigureClosePlanBusy] = useState(false);
   const [configureClosePlanStatusText, setConfigureClosePlanStatusText] = useState<string | null>(null);
   const [configureClosePlanStatusTone, setConfigureClosePlanStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
@@ -3094,6 +3108,51 @@ export function useAccountingCloseReportPackageViewModel(
       setSignOffBusy(false);
     }
   }, [closePlan, services, workflow]);
+
+  const lockClosePeriod = useCallback(async () => {
+    if (!workflow || !closePlan) {
+      setLockClosePeriodStatusText("A close plan is required before locking the close period.");
+      setLockClosePeriodStatusTone("danger");
+      return;
+    }
+
+    if (closePlan.isPeriodLocked) {
+      setLockClosePeriodStatusText("The period is already locked.");
+      setLockClosePeriodStatusTone("success");
+      return;
+    }
+
+    const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
+    setLockClosePeriodBusy(true);
+    setLockClosePeriodStatusText(null);
+    setLockClosePeriodStatusTone("neutral");
+    try {
+      const result = await services.lockClosePeriod(buildClosePeriodLockRequest(workflow, closePlan, selectedBundle));
+      if (result.plan) {
+        setClosePlan(result.plan);
+      }
+
+      const blockingIssueCount = result.issues.filter((issue) => issue.severity === "Critical").length;
+      if (result.isLocked) {
+        setLockClosePeriodStatusText(`Locked close period ${result.plan?.periodId ?? closePlan.periodId}.`);
+        setLockClosePeriodStatusTone("success");
+      } else if (blockingIssueCount > 0) {
+        setLockClosePeriodStatusText(`Close period lock blocked by ${formatCount(blockingIssueCount, "critical issue")}.`);
+        setLockClosePeriodStatusTone("danger");
+      } else if (result.issues.length > 0) {
+        setLockClosePeriodStatusText(result.issues.map((issue) => issue.message).join(" "));
+        setLockClosePeriodStatusTone("neutral");
+      } else {
+        setLockClosePeriodStatusText("Close period lock did not complete.");
+        setLockClosePeriodStatusTone("danger");
+      }
+    } catch (error) {
+      setLockClosePeriodStatusText(formatAccountingWorkflowError(error, "Close period could not be locked."));
+      setLockClosePeriodStatusTone("danger");
+    } finally {
+      setLockClosePeriodBusy(false);
+    }
+  }, [closePlan, packages, selectedPackageId, services, workflow]);
 
   const configureClosePlan = useCallback(async () => {
     if (!workflow || !closePlan) {
@@ -3270,6 +3329,9 @@ export function useAccountingCloseReportPackageViewModel(
       signOffBusy,
       signOffStatusText,
       signOffStatusTone,
+      lockClosePeriodBusy,
+      lockClosePeriodStatusText,
+      lockClosePeriodStatusTone,
       configureClosePlanBusy,
       configureClosePlanStatusText,
       configureClosePlanStatusTone,
@@ -3287,6 +3349,7 @@ export function useAccountingCloseReportPackageViewModel(
       refresh,
       buildReportPackage,
       certifyPackage,
+      lockClosePeriod,
       configureClosePlan,
       signOffNextTask,
       updateLateAdjustmentDraft,
@@ -3305,6 +3368,10 @@ export function useAccountingCloseReportPackageViewModel(
       certifyStatusText,
       certifyStatusTone,
       closePlan,
+      lockClosePeriod,
+      lockClosePeriodBusy,
+      lockClosePeriodStatusText,
+      lockClosePeriodStatusTone,
       configureClosePlan,
       configureClosePlanBusy,
       configureClosePlanStatusText,
@@ -11419,6 +11486,9 @@ function buildAccountingCloseReportPackageViewState({
   signOffBusy,
   signOffStatusText,
   signOffStatusTone,
+  lockClosePeriodBusy,
+  lockClosePeriodStatusText,
+  lockClosePeriodStatusTone,
   createLateAdjustmentBusy,
   createLateAdjustmentStatusText,
   createLateAdjustmentStatusTone,
@@ -11436,6 +11506,7 @@ function buildAccountingCloseReportPackageViewState({
   refresh,
   buildReportPackage,
   certifyPackage,
+  lockClosePeriod,
   configureClosePlan,
   signOffNextTask,
   updateLateAdjustmentDraft,
@@ -11459,6 +11530,9 @@ function buildAccountingCloseReportPackageViewState({
   signOffBusy: boolean;
   signOffStatusText: string | null;
   signOffStatusTone: "neutral" | "success" | "danger";
+  lockClosePeriodBusy: boolean;
+  lockClosePeriodStatusText: string | null;
+  lockClosePeriodStatusTone: "neutral" | "success" | "danger";
   createLateAdjustmentBusy: boolean;
   createLateAdjustmentStatusText: string | null;
   createLateAdjustmentStatusTone: "neutral" | "success" | "danger";
@@ -11476,6 +11550,7 @@ function buildAccountingCloseReportPackageViewState({
   refresh: () => Promise<void>;
   buildReportPackage: () => Promise<void>;
   certifyPackage: () => Promise<void>;
+  lockClosePeriod: () => Promise<void>;
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
   updateLateAdjustmentDraft: (patch: Partial<AccountingLateAdjustmentDraftViewModel>) => void;
@@ -11532,7 +11607,7 @@ function buildAccountingCloseReportPackageViewState({
     : "Materiality policy pending";
   const buildDisabledReason = !workflow
     ? "A close workflow must be loaded before building a package."
-    : loading || buildBusy || certifyBusy || signOffBusy
+    : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
       ? "Close/report package refresh is running."
       : null;
   const criticalIssueCount = [...closeValidationIssues, ...packageValidationIssues].filter((issue) => issue.severity === "Critical").length;
@@ -11544,7 +11619,7 @@ function buildAccountingCloseReportPackageViewState({
         ? `Certification requires Ready for review state; current state is ${formatAccountingCertificationState(selectedBundle.certification.state)}.`
         : criticalIssueCount > 0
           ? "Critical validation issues must be cleared before certification."
-          : loading || buildBusy || certifyBusy || signOffBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
             ? "Close/report package certification is running."
             : null;
   const signOffTarget = closePlan ? resolveCloseTaskSignOffTarget(closePlan) : null;
@@ -11556,7 +11631,18 @@ function buildAccountingCloseReportPackageViewState({
         ? "The period is locked; close task sign-off is disabled."
         : !signOffTarget
           ? "No close checklist task is ready for sign-off."
-          : loading || buildBusy || certifyBusy || signOffBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
+            ? "Close/report package action is running."
+            : null;
+  const lockClosePeriodDisabledReason = !workflow
+    ? "A close workflow must be loaded before locking the period."
+    : !closePlan
+      ? "A close plan must be loaded before locking the period."
+      : locked
+        ? "The close period is already locked."
+        : !selectedBundle
+          ? "A report package must be built before locking the period."
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
             ? "Close/report package action is running."
             : null;
   const configureClosePlanDisabledReason = !workflow
@@ -11565,7 +11651,7 @@ function buildAccountingCloseReportPackageViewState({
       ? "A close plan must be loaded before configuring close setup."
       : locked
         ? "The period is locked; close setup changes require a governed reopen workflow."
-        : loading || buildBusy || certifyBusy || signOffBusy || configureClosePlanBusy
+        : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || configureClosePlanBusy
           ? "Close/report package action is running."
           : null;
   const createLateAdjustmentAmount = Number(lateAdjustmentDraft.amount);
@@ -11581,7 +11667,7 @@ function buildAccountingCloseReportPackageViewState({
             ? "Enter a non-zero late adjustment amount."
             : !lateAdjustmentDraft.reason.trim()
               ? "Enter the late adjustment reason."
-              : loading || buildBusy || certifyBusy || signOffBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
+              : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
                 ? "Close/report package action is running."
                 : null;
   const selectedExportArtifact = selectedBundle?.exportArtifacts?.[0] ?? null;
@@ -11589,7 +11675,7 @@ function buildAccountingCloseReportPackageViewState({
     ? "A report package must be selected before export manifest inspection."
     : !selectedExportArtifact
       ? "The selected report package has no retained export artifacts."
-      : loading || buildBusy || certifyBusy || signOffBusy || reviewLateAdjustmentBusy || exportManifestBusy
+      : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || reviewLateAdjustmentBusy || exportManifestBusy
         ? "Close/report package action is running."
         : null;
 
@@ -11617,6 +11703,9 @@ function buildAccountingCloseReportPackageViewState({
     signOffBusy,
     signOffStatusText,
     signOffStatusTone,
+    lockClosePeriodBusy,
+    lockClosePeriodStatusText,
+    lockClosePeriodStatusTone,
     configureClosePlanBusy,
     configureClosePlanStatusText,
     configureClosePlanStatusTone,
@@ -11636,6 +11725,8 @@ function buildAccountingCloseReportPackageViewState({
     certifyDisabledReason,
     signOffButtonLabel: signOffTarget ? `Sign off ${signOffTarget.task.displayName}` : "Sign off next task",
     signOffDisabledReason,
+    lockClosePeriodButtonLabel: locked ? "Period locked" : "Lock period",
+    lockClosePeriodDisabledReason,
     configureClosePlanButtonLabel: closePlan ? "Retain close setup" : "Configure close setup",
     configureClosePlanDisabledReason,
     createLateAdjustmentDisabledReason,
@@ -11694,6 +11785,7 @@ function buildAccountingCloseReportPackageViewState({
     refresh,
     buildReportPackage,
     certifyPackage,
+    lockClosePeriod,
     configureClosePlan,
     signOffNextTask,
     updateLateAdjustmentDraft,
@@ -12111,6 +12203,54 @@ function buildClosePlanConfigurationRequest(
     correlationId: `browser-close-plan-configuration-${workflow.workflowId}`,
     actionOrigin: "HumanOperator"
   };
+}
+
+function buildClosePeriodLockRequest(
+  workflow: OperationsContinuityWorkflow,
+  closePlan: ClosePeriodPlan,
+  selectedBundle: AccountingReportPackageBundle | null
+): LockClosePeriodRequest {
+  const reportPackId = selectedBundle?.financialStatements.packageId
+    ?? workflow.reportPackReadiness.reportPackId
+    ?? `report-pack-${closePlan.fundProfileId}-${closePlan.periodId}`;
+  const evidenceLinks = collectAccountingCloseEvidenceLinks(workflow, closePlan);
+  evidenceLinks.push(
+    `browser://accounting/close/period-lock/${workflow.workflowId}`,
+    `evidence://close-package/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${closePlan.ledgerBookId ?? "primary"}/period-lock`,
+    `evidence://report-package/${reportPackId}/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${closePlan.ledgerBookId ?? "primary"}`
+  );
+  selectedBundle?.financialStatements.evidenceLinks.forEach((link) => evidenceLinks.push(link));
+  selectedBundle?.certification.evidenceLinks.forEach((link) => evidenceLinks.push(link));
+  selectedBundle?.exportArtifacts?.forEach((artifact) => artifact.evidenceLinks.forEach((link) => evidenceLinks.push(link)));
+
+  return {
+    workflowId: workflow.workflowId,
+    expectedWorkflowVersion: workflow.version,
+    actor: "browser-accounting-controller",
+    rationale: `Lock close period ${closePlan.periodId} after close checklist and report package review.`,
+    reportPackId,
+    evidenceLinks: Array.from(new Set(evidenceLinks)),
+    checklistControlApprovals: buildClosePeriodChecklistApprovals(closePlan),
+    correlationId: `browser-close-period-lock-${workflow.workflowId}`,
+    closePackageId: workflow.closePackage?.closePackageId ?? `close-package-${closePlan.periodId}`,
+    closePackageManifestId: workflow.closePackage?.retainedManifestId ?? `close-manifest-${closePlan.periodId}`,
+    closePackageRetainedManifestRoute: workflow.closePackage?.retainedManifestRoute
+      ?? selectedBundle?.exportArtifacts?.[0]?.route
+      ?? `/workstation/accounting/close/${closePlan.periodId}`,
+    actionOrigin: "HumanOperator"
+  };
+}
+
+function buildClosePeriodChecklistApprovals(closePlan: ClosePeriodPlan) {
+  return closePlan.tasks.flatMap((task) =>
+    task.signOffs
+      .filter((signOff) => signOff.approvalState === "Approved" && signOff.actor && signOff.signedAtUtc)
+      .map((signOff) => ({
+        taskId: task.taskId,
+        approvedBy: signOff.actor!,
+        approvedAtUtc: signOff.signedAtUtc!
+      }))
+  );
 }
 
 function buildCertifyAccountingReportPackageRequest(

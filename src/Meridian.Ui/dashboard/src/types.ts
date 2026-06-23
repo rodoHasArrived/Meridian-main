@@ -2925,6 +2925,28 @@ export interface UpsertClosePeriodPlanConfigurationRequest {
   actionOrigin?: OperationsActionOrigin | null;
 }
 
+export interface LockClosePeriodRequest {
+  workflowId: string;
+  expectedWorkflowVersion: number;
+  actor: string;
+  rationale: string;
+  reportPackId: string;
+  evidenceLinks?: string[] | null;
+  checklistControlApprovals?: OperationsChecklistControlApproval[] | null;
+  correlationId?: string | null;
+  closePackageId?: string | null;
+  closePackageManifestId?: string | null;
+  closePackageRetainedManifestRoute?: string | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
+export interface ClosePeriodLockResult {
+  isLocked: boolean;
+  plan?: ClosePeriodPlan | null;
+  transition?: OperationsTransitionResult | null;
+  issues: AccountingConfigurationValidationIssue[];
+}
+
 export interface ClosePeriodPlan {
   closePlanId: string;
   fundProfileId: string;

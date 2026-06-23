@@ -577,9 +577,13 @@ adapt Financial Operations close-plan behavior for browser and WPF consumers: th
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
   lock posture, and validation issues from Operations Continuity, the period-plan configuration route
   retains governed materiality, task owner/due-date, sign-off count/evidence, and dependency setup
-  through the trusted session actor and ledger-book-scoped close-plan evidence, while the task sign-off and
-  late-adjustment routes retain evidence-backed task, review request, approval, or rejection
-  decisions without mutating posted journal entries. Assistant or automation-origin close sign-off
+  through the trusted session actor and ledger-book-scoped close-plan evidence, while the task sign-off,
+  period-lock, and late-adjustment routes retain evidence-backed task, lock, review request,
+  approval, or rejection decisions without mutating posted journal entries locally. The period-lock
+  route stamps the trusted session actor, forces human-operator origin, requires expected workflow
+  version, linked report package, and close-package/report-pack/period-lock evidence scoped to the
+  workflow or period and selected ledger book, and returns `ClosePeriodLockResultDto` service
+  blockers for clients to render. Assistant or automation-origin close sign-off, period-lock,
   and late-adjustment commands are rejected before retaining decisions. Task sign-off evidence must identify
 the close task, sign-off role, and workflow or close period on the same retained artifact. Late-adjustment request evidence must identify
 the journal entry, workflow, or close period, and late-adjustment review evidence must identify the

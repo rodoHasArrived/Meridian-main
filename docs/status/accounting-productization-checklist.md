@@ -224,6 +224,11 @@ the requirement end to end.
   also exposes a governed close-period lock command over the same shared service, carrying workflow
   version, close-package/report-pack/manifest identifiers, checklist-control approvals, selected
   period, and selected ledger-book evidence while rendering service-owned lock blockers.
+- [x] Browser Accounting close/report package cockpit now exposes the same governed close-period
+  lock path through `/api/ledger/close-management/period-lock`, carrying loaded workflow version,
+  selected report package, close-package manifest route, checklist-control approvals,
+  ledger-book-scoped evidence, and human-operator origin while rendering returned service blockers
+  instead of mutating close state locally.
 - [x] External GL export certification and export-control provenance now require exact-token
   package, certification, fund/provider, and period evidence instead of accepting longer identifier
   prefixes.
@@ -368,8 +373,8 @@ the requirement end to end.
   shared configuration endpoint; WPF now has service registration and a close view-model command
   that retains loaded close-plan setup through the same shared contract when workflow context is
   supplied. Close management now also has a governed period-lock command/result over the Operations
-  Continuity close-package gate, and WPF exposes that lock command with blocker rows and retained
-  close-package/report-pack/ledger-book evidence. Production readiness now evidence-qualifies
+  Continuity close-package gate, and browser/WPF both expose that lock command with blocker rows and
+  retained close-package/report-pack/ledger-book evidence. Production readiness now evidence-qualifies
   close-plan setup by ledger book, but richer browser/WPF setup/editing workflows and review UX
   remain open.
 - [ ] Productize reporting with financial statements, investor capital statements, realized
