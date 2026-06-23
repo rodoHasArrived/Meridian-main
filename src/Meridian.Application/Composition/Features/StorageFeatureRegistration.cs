@@ -272,6 +272,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
             services.AddSingleton<ISecurityMasterConflictService, SecurityMasterConflictService>();
+
+            // Clearwater-model extensions: pricing hierarchy, cash flow, entitlements, data quality
+            services.AddSingleton<ISecurityMasterPricingStore, PostgresSecurityMasterPricingStore>();
+            services.AddSingleton<ISecurityMasterCashFlowStore, PostgresSecurityMasterCashFlowStore>();
+            services.AddSingleton<IDataVendorEntitlementStore, PostgresDataVendorEntitlementStore>();
+            services.AddSingleton<ISecurityMasterQualityReportStore, PostgresSecurityMasterQualityReportStore>();
+            services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
+            services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
+            services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
+            services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
         }
 
         if (AssetOperationsStartup.IsConfigured())
@@ -308,6 +318,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ICorporateActionCommandService, NullCorporateActionCommandService>();
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
         services.TryAddSingleton<IOperatorOverridesStore, NullOperatorOverridesStore>();
+        services.TryAddSingleton<ISecurityMasterPricingService, NullSecurityMasterPricingService>();
+        services.TryAddSingleton<ISecurityMasterCashFlowService, NullSecurityMasterCashFlowService>();
+        services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();
+        services.TryAddSingleton<ISecurityMasterDataQualityService, NullSecurityMasterDataQualityService>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();

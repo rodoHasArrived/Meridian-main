@@ -7,20 +7,58 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
+/// Per-category SLA configuration for Security Master exceptions.
+/// </summary>
+public sealed record SecurityMasterExceptionSlaConfig
+{
+    /// <summary>Days to resolve an identifier conflict before SLA breach.</summary>
+    public int IdentifierConflictDays { get; init; } = 5;
+
+    /// <summary>Days to resolve an incomplete security record before SLA breach.</summary>
+    public int IncompleteRecordDays { get; init; } = 3;
+
+    /// <summary>Days to create a new unresolved security before SLA breach.</summary>
+    public int NewSecurityUnresolvedDays { get; init; } = 1;
+}
+
+/// <summary>
 /// Projects Security Master exceptions into the shared reconciliation case queue.
 /// </summary>
 public sealed class SecurityMasterExceptionCaseworkService
 {
     private const string DefaultActor = "security-master-casework";
     private readonly IReconciliationBreakQueueRepository? _breakQueueRepository;
+    private readonly SecurityMasterExceptionSlaConfig _slaConfig;
     private readonly ILogger<SecurityMasterExceptionCaseworkService> _logger;
 
     public SecurityMasterExceptionCaseworkService(
         IReconciliationBreakQueueRepository? breakQueueRepository,
-        ILogger<SecurityMasterExceptionCaseworkService> logger)
+        ILogger<SecurityMasterExceptionCaseworkService> logger,
+        SecurityMasterExceptionSlaConfig? slaConfig = null)
     {
         _breakQueueRepository = breakQueueRepository;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _slaConfig = slaConfig ?? new SecurityMasterExceptionSlaConfig();
+    }
+
+    /// <summary>
+    /// Returns all open Security Master exception cases that have breached or are past their SLA deadline.
+    /// </summary>
+    public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAgingExceptionsAsync(
+        CancellationToken ct = default)
+    {
+        if (_breakQueueRepository is null)
+            return [];
+
+        var all = await _breakQueueRepository.GetAllAsync(
+            ReconciliationBreakQueueStatus.Open, ct).ConfigureAwait(false);
+
+        var now = DateTimeOffset.UtcNow;
+        return all
+            .Where(item => item.Team == "Security Master"
+                && item.SlaDueAt.HasValue
+                && item.SlaDueAt.Value < now)
+            .ToList();
     }
 
     public async Task SeedOpenConflictCasesAsync(
@@ -38,7 +76,7 @@ public sealed class SecurityMasterExceptionCaseworkService
         {
             ct.ThrowIfCancellationRequested();
             await _breakQueueRepository
-                .CreateIfMissingAsync(BuildConflictCase(conflict, actor), ct)
+                .CreateIfMissingAsync(BuildConflictCase(conflict, actor, _slaConfig), ct)
                 .ConfigureAwait(false);
         }
     }
@@ -54,7 +92,7 @@ public sealed class SecurityMasterExceptionCaseworkService
         }
 
         var actor = NormalizeActor(request.ResolvedBy);
-        var desired = BuildConflictCase(conflict, actor);
+        var desired = BuildConflictCase(conflict, actor, _slaConfig);
         await _breakQueueRepository.CreateIfMissingAsync(desired, ct).ConfigureAwait(false);
 
         var existing = await _breakQueueRepository.GetByIdAsync(desired.BreakId, ct).ConfigureAwait(false);
@@ -175,10 +213,13 @@ public sealed class SecurityMasterExceptionCaseworkService
 
     private static ReconciliationBreakQueueItem BuildConflictCase(
         SecurityMasterConflict conflict,
-        string? actor)
+        string? actor,
+        SecurityMasterExceptionSlaConfig slaConfig)
     {
         var assignedTo = NormalizeActor(actor) ?? "security-master-steward";
         var route = UiApiRoutes.SecurityMasterConflicts;
+        var slaDueAt = conflict.DetectedAt.AddDays(slaConfig.IdentifierConflictDays);
+        var slaBreached = DateTimeOffset.UtcNow > slaDueAt;
         return new ReconciliationBreakQueueItem(
             BreakId: BuildConflictCaseId(conflict.ConflictId),
             RunId: "security-master-conflicts",
@@ -214,7 +255,10 @@ public sealed class SecurityMasterExceptionCaseworkService
             LastUpstreamSyncAt: conflict.DetectedAt,
             Team: "Security Master",
             Counterparty: conflict.ProviderB,
-            StateTransitions: []);
+            StateTransitions: [],
+            SlaDueAt: slaDueAt,
+            SlaBreached: slaBreached,
+            SlaPolicyId: "security-master-conflict-sla");
     }
 
     private static ReconciliationBreakQueueItem BuildOverrideCase(

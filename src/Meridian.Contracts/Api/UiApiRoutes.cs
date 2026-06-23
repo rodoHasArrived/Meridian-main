@@ -354,6 +354,28 @@ public static class UiApiRoutes
     public const string SecurityMasterImport = "/api/security-master/import";
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
     public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
+
+    // Pricing hierarchy & golden copy (Clearwater pricing model)
+    public const string SecurityMasterPricingHierarchy = "/api/security-master/{securityId:guid}/pricing-hierarchy";
+    public const string SecurityMasterPriceGoldenCopy = "/api/security-master/{securityId:guid}/price-golden-copy";
+    public const string SecurityMasterPriceComparison = "/api/security-master/{securityId:guid}/price-comparison";
+    public const string SecurityMasterRecordRawPrice = "/api/security-master/{securityId:guid}/raw-price";
+
+    // Structured cash flow source assignments
+    public const string SecurityMasterCashFlowSource = "/api/security-master/{securityId:guid}/cashflow-source";
+    public const string SecurityMasterCashFlowProjections = "/api/security-master/{securityId:guid}/cashflow-projections";
+
+    // Data vendor entitlements
+    public const string DataVendorEntitlements = "/api/security-master/data-entitlements";
+    public const string DataVendorEntitlementsExpiring = "/api/security-master/data-entitlements/expiring";
+    public const string DataVendorEntitlementById = "/api/security-master/data-entitlements/{entitlementId:guid}";
+
+    // Data quality reports
+    public const string SecurityMasterQualityReportRun = "/api/security-master/quality-report/run";
+    public const string SecurityMasterQualityReportLatest = "/api/security-master/quality-report/latest";
+
+    // Exception aging / SLA
+    public const string SecurityMasterExceptionsAging = "/api/security-master/exceptions/aging";
     public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
     public const string ReferenceDataEdgarFacts = "/api/reference-data/edgar/facts/{cik}";
     public const string ReferenceDataEdgarSecurityData = "/api/reference-data/edgar/security-data/{cik}";
