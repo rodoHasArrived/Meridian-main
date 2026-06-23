@@ -146,6 +146,57 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_RejectedSignOffBlocksAdditionalRoleDecisionsUntilRemediation()
+    {
+        var workflowId = Guid.Parse("45454545-4545-4545-4545-454545454545");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Pending",
+                secondTaskStatus: "Pending"));
+        var service = new AccountingCloseManagementService(workflowService);
+        var rejectionEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-review-rejection";
+        var approvalEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-review-approval-after-rejection";
+
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Rejected,
+                "controller-reviewer",
+                "Close support packet rejected pending remediation.",
+                [rejectionEvidence]),
+            "controller-reviewer");
+
+        var approvalAfterRejection = async () => await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer-2",
+                "Attempted approval before remediation.",
+                [approvalEvidence]),
+            "controller-reviewer-2");
+
+        await approvalAfterRejection.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*retained rejected sign-off*remediated*");
+
+        var plan = await service.GetPeriodPlanAsync(workflowId);
+        plan.Should().NotBeNull();
+        var rejectedTask = plan!.Tasks.Single(task => task.TaskId == "reconciliation-review");
+        rejectedTask.Status.Should().Be(CloseTaskStatusDto.Blocked);
+        rejectedTask.SignOffs.Should().ContainSingle(signOff =>
+            signOff.Actor == "controller-reviewer" &&
+            signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
+            signOff.EvidenceLinks.Contains(rejectionEvidence));
+    }
+
+    [Fact]
     public void Scenario_MonthEndFxTranslation_ReplayUsesStableAdjustmentIdAndRateLineage()
     {
         var service = new FxTranslationService();

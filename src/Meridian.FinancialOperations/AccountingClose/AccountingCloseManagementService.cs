@@ -337,6 +337,12 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 $"Close task '{taskId}' does not allow sign-off role '{role}'. Required role(s): {string.Join(", ", currentTask.SignOffRequirements.Select(static requirement => requirement.Role))}.");
         }
 
+        if (HasRejectedSignOff(role, currentTask.SignOffs))
+        {
+            throw new InvalidOperationException(
+                $"Close task '{taskId}' has a retained rejected sign-off for role '{role}' and must be remediated before another sign-off decision can be retained.");
+        }
+
         var blockedDependencies = currentTask.Dependencies
             .Select(dependency => currentPlan.Tasks.FirstOrDefault(task =>
                 string.Equals(task.TaskId, dependency.DependsOnTaskId, StringComparison.OrdinalIgnoreCase)))

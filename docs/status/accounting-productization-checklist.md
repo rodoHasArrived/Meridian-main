@@ -177,6 +177,9 @@ the requirement end to end.
   matrix.
 - [x] Rejected close-management task sign-off decisions now block the close task, close-calendar
   milestone, and close-plan validation until the failed retained control is remediated.
+- [x] Close-management sign-off retention now also rejects any later same-role decision while a
+  retained rejection is active, so a second approval cannot overwrite a failed control without a
+  remediation workflow.
 - [x] Close-management dependency projection now requires predecessor tasks to be signed off before
   dependent tasks advance, emits close-plan validation issues for unresolved dependencies, and
   proves both waiting and advanced dependency states in focused Financial Operations tests.
