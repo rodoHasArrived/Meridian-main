@@ -3613,11 +3613,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ["Location"] = "Main",
                 ["Department"] = "FundAccounting"
             }) with
-            {
-                CustomerId = null,
-                VendorId = null,
-                ProjectId = null
-            };
+        {
+            CustomerId = null,
+            VendorId = null,
+            ProjectId = null
+        };
         var profile = CertifiedQuickBooksMappingProfile() with
         {
             ProfileId = "qbo-default-fund-missing-relationship-dimensions",

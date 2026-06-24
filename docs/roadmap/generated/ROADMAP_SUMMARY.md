@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-06-10
+Snapshot date: 2026-06-24
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -30,7 +30,7 @@ Snapshot date: 2026-06-10
 | W4-RPT-001 | Governed report pack readiness | done | green | high | Accounting and Ledger |
 | W5-ACCT-001 | Accounting records and operational evidence | done | green | high | Accounting and Ledger |
 | W5-MASSET-001 | Multi-asset operational coverage proof lane | done | green | high | Accounting and Ledger |
-| W5X-FINOPS-001 | Financial operations control center | planned | green | high | Accounting and Ledger |
+| W5X-FINOPS-001 | Financial operations control center | done | green | high | Accounting and Ledger |
 | W5X-FREX-001 | Shared financial record explorers | done | green | high | Workstation Shell and UX |
 | W6-BTSTUDIO-001 | Backtesting studio evidence loop | planned | green | medium | Strategy Analytics |
 | W7-LIVE-001 | Live-readiness governance | planned | green | medium | Accounting and Ledger |

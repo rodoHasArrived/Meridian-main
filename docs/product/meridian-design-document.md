@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 0.21
+# Meridian Design Document — Version 0.22
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-22
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI.
+**Reviewed:** 2026-06-24
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI. Version 0.22 reconciles the design document with current roadmap and implementation-tracker evidence: W1-W5, `W5X-FREX-001`, and `W5X-FINOPS-001` are completed evidence-backed baselines, while `W6-BTSTUDIO-001` and `W7-LIVE-001` remain planned or gated productization work.
 
 ## 1. Product Vision
 
@@ -17,7 +17,11 @@ the workflow is explicitly fund/private-capital specific.
 
 Meridian should not initially try to replace every external system. Instead, it should become the operational system of record for validated workflows, evidence, reconciliations, decisions, and certified reporting outputs. For ledger records specifically, Meridian is the source of all ledger truth; external accounting systems contribute read-only evidence and reconciliation signals unless an approved publishing workflow explicitly exports Meridian-owned entries.
 
-The current product scope is deliberately narrower than the full long-term domain catalog. Active product work should strengthen data confidence, reconciliation, approvals, accounting records, retained evidence, and governed reporting before expanding Backtesting Studio, live trading, full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
+The current product scope is deliberately narrower than the full long-term domain catalog. Completed
+W1-W5, shared Financial Record Explorer, and W5X Financial Operations control-center work establish
+the current evidence-backed baseline. Active product work should extend that proof layer deliberately
+before expanding Backtesting Studio, live trading, full payments, forecasting, enterprise risk,
+client portal, no-code workflow design, mobile, or other broad platform lanes.
 
 ### Core Vision Statement
 
@@ -347,10 +351,12 @@ The roadmap registry marks W1-W5 as done, with green health and complete evidenc
 | W4 | Governed report pack readiness | Report packs carry approval, provenance, publication, restatement, export, and evidence-vault support. |
 | W5 | Accounting records and operational evidence | Source records, normalized activity, reconciliation cases, ledger evidence, approvals, documents, report packs, exports, and restatement lineage remain linked as audit-ready operational records. |
 | W5 | Multi-asset operational coverage proof lane | Security Master posture, provider evidence, ledger classification, reconciliation signals, and close-readiness blockers are exposed through shared browser and WPF read models. |
+| W5X | Shared financial record explorers | Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers are complete over shared contracts and read models, with endpoint, browser, and WPF proof for saved views, dense-table parity, inspector routing, and cross-explorer proof trails. |
+| W5X | Financial operations control center | Operations Continuity, close readiness, approval policy, close calendar, reconciliation break, checklist, audit-evidence, governed reopen, browser Operations Continuity, WPF Fund Ledger, and direct-lending evidence form the accepted Financial Operations control-center boundary. |
 
 ### Planned and Gated Baselines
 
-W6 and W7 remain planned, not complete:
+The next roadmap baselines remain planned or gated, not complete:
 
 | Wave | Planned Capability | Gate |
 | --- | --- | --- |
@@ -509,10 +515,11 @@ Receive Activity
 
 ### Roadmap Productization
 
-`W5X-FINOPS-001` tracks the planned Financial Operations control center that turns
+`W5X-FINOPS-001` is the completed Financial Operations control-center milestone that turns
 reconciliation, exception management, accounting operations, close support, workflow control, and
-audit evidence into a shared Accounting/Reporting operator surface. This is planned productization,
-not a completion claim; W1-W5 remain the closed evidence baseline.
+audit evidence into a shared Accounting/Reporting operator surface. The accepted boundary is the
+shared Operations Continuity and Fund Ledger read-model surface consumed by browser and WPF
+workstations; later proof-layer expansions remain separate roadmap decisions.
 
 #### W5X-FINOPS Cockpit Design
 
@@ -2842,11 +2849,15 @@ sequence:
 6. Connect the first four explorers through a Proof Trail that can move from Instrument to Position,
    Transaction, Reconciliation, Journal, Report Line, Evidence, and Audit Event.
 
-This is a planned productization target, not a completion claim. The roadmap item
-`W5X-FREX-001` tracks the delivery slice that turns the existing accounting-record and
-multi-asset coverage evidence into these shared explorers.
+This productization target is now complete under roadmap item `W5X-FREX-001`. The completed slice
+turns the existing accounting-record and multi-asset coverage evidence into shared Ledger,
+Portfolio, Security & Instrument, and Report-Line Provenance explorers over the common
+contracts/read-model seam. Endpoint, browser, and WPF proof cover saved-view handling, dense-table
+and inspector parity, Security Master and Asset Operations projections, report-usage projection,
+report-line provenance drill-through, and cross-explorer proof-action routing without browser- or
+WPF-local business rules.
 
-The companion planned roadmap item `W5X-FINOPS-001` turns Financial Operations into the operator
+The companion completed roadmap item `W5X-FINOPS-001` turns Financial Operations into the operator
 control center for reconciliation queues, exception casework, close checklists, workflow controls,
 and audit evidence packet readiness over the same W1-W5 evidence baseline.
 
@@ -3098,6 +3109,7 @@ Current repository evidence already covers:
 * Governed report-pack approval, provenance, and export evidence
 * Accounting record summaries linking source data, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage
 * Multi-asset operational coverage with provider evidence, ledger classification, reconciliation signals, and close blockers
+* Shared financial record explorers for ledger records, portfolio holdings and transactions, Security Master instruments, and report-line provenance over common contracts, saved views, proof ribbons, proof panels, record graphs, evidence links, approval state, reconciliation state, report usage, and audit timelines
 * Shared browser and WPF workstation read models for operator workflows
 * Shared manual journal entry workbench projection of retained private-capital fund events and capital-account activity from treasury-ledger context, plus a first-class private-capital activity review endpoint for reporting and audit consumers
 
@@ -3109,6 +3121,8 @@ The baseline does not yet imply completion of:
 * Full alternative asset operations
 * Full forecasting engine
 * Full enterprise risk engine
+* Follow-on proof-layer expansion beyond the completed W5X Financial Operations control-center boundary
+* Follow-on multi-asset reference-data workbench completion inside the existing Security Master detail/passport flow
 * Complex capital structure modeling
 * Full client portal
 * Full no-code workflow designer

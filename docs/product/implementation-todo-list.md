@@ -27,7 +27,7 @@ Reviewed on 2026-06-16 against:
 Result:
 
 - W1 through W5 roadmap rows are verified as `done` with `evidence_posture: complete`.
-- W5X-FREX-001 is verified as `done` with `evidence_posture: complete`; W5X-FINOPS, W6, and W7 remain `planned` with `evidence_posture: planned_evidence`.
+- W5X-FREX-001 and W5X-FINOPS-001 are verified as `done` with `evidence_posture: complete`; W6 and W7 remain `planned` with `evidence_posture: planned_evidence`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
 ## Verified Complete Items
@@ -50,13 +50,16 @@ Result:
   Evidence: `tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts`; roadmap status `done`; evidence posture `complete`.
 - [x] `W5X-FREX-001`: Shared financial record explorers.
   Evidence: `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.test.tsx`, `tests/fixtures/security-instrument-explorer-parity.json`; roadmap status `done`; evidence posture `complete`.
+- [x] `W5X-FINOPS-001`: Financial operations control center.
+  Evidence: `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs`, `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts`, `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`, `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs`, `tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs`, `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx`, `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts`, `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`, `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`, and `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`; roadmap status `done`; evidence posture `complete`.
 
 ## Evidence-Backed Foundations Not Marked Complete
 
 These are documented as implemented evidence, supported foundations, or design-led foundations in the design document. They should not be marked complete in this tracker until they have roadmap rows or acceptance evidence of their own.
 
 - [ ] Data & Integration: map provider SDK, adapters, provider validation, credential/setup flows, source-module validation, and confidence gates to explicit owner evidence.
-- [ ] Financial Operations: map reconciliation, casework, close, evidence routing, NAV-support posture, and fund-event accounting records to W5X-FINOPS acceptance evidence.
+- [x] Financial Operations: map reconciliation, casework, close, evidence routing, NAV-support posture, and fund-event accounting records to W5X-FINOPS acceptance evidence.
+  Evidence: `W5X-FINOPS-001` is now closed through the shared Operations Continuity lifecycle, close-readiness, approval-policy, close-calendar, break assignment/resolution, checklist, audit-evidence, and governed reopen controls; browser Operations Continuity and WPF Fund Ledger consume the shared state instead of local completion rules.
 - [ ] Portfolio & Investment Operations: map portfolio, fund-structure, brokerage sync, fund accounts, positions, paper sessions, valuation evidence, and ledger-backed workflows to closed roadmap rows.
 - [ ] Reference Data: map Security Master contracts, provider-to-security mapping, trust/conflict summaries, and multi-asset readiness coverage to explicit proof artifacts.
 - [ ] Instrument, Contract & Obligation Management: map Security Master, direct-lending/F# rule kernels, factor/corporate-action evidence, and obligation ledger support to proof artifacts.
@@ -87,15 +90,39 @@ These are documented as implemented evidence, supported foundations, or design-l
 
 ## W5X-FINOPS-001 TODOs: Financial Operations Control Center
 
-- [ ] Define FINOPS command-surface DTOs for reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness.
-- [ ] Build unified queue rows for reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets.
-- [ ] Add deterministic status, owner, due date, severity, SLA, blocker type, and close/report impact fields to shared read models.
-- [ ] Implement close support with period state, lock/reopen posture, NAV-support dependencies, report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps.
-- [ ] Ensure no FINOPS surface can show synthetic completion when required evidence, approvals, or lock state are missing.
-- [ ] Route assignment, escalation, approval, reopen, and evidence-retention actions through shared services.
-- [ ] Add browser tests for FINOPS queue, close blockers, approval requirements, and blocked completion behavior.
-- [ ] Add WPF tests for dense workpaper execution against the same FINOPS DTOs and service decisions.
-- [ ] Update generated roadmap/product docs to state exactly what shipped before moving `W5X-FINOPS-001` out of planned.
+- [x] Define FINOPS command-surface DTOs for reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness.
+- [x] Build unified queue rows for reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets.
+- [x] Add deterministic status, owner, due date, severity, SLA, blocker type, and close/report impact fields to shared read models.
+- [x] Implement close support with period state, lock/reopen posture, NAV-support dependencies, report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps.
+- [x] Ensure no FINOPS surface can show synthetic completion when required evidence, approvals, or lock state are missing.
+- [x] Route assignment, escalation, approval, reopen, and evidence-retention actions through shared services.
+- [x] Add browser tests for FINOPS queue, close blockers, approval requirements, and blocked completion behavior.
+- [x] Add WPF tests for dense workpaper execution against the same FINOPS DTOs and service decisions.
+- [x] Update generated roadmap/product docs to state exactly what shipped before moving `W5X-FINOPS-001` out of planned.
+
+Acceptance evidence produced for this FINOPS slice:
+
+- `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs`
+- `src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs`
+- `src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs`
+- `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs`
+- `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts`
+- `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`
+- `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.Sections.cs`
+- `src/Meridian.Wpf/Views/FundLedgerPage.xaml`
+- `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs`
+- `src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs`
+- `src/Meridian.Wpf/Views/DirectLendingPage.xaml`
+- `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`
+- `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs`
+- `tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs`
+- `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx`
+- `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts`
+- `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`
+- `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`
+- `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`
+- `docs/roadmap/data/roadmap-items.yml`
+- `docs/roadmap/generated/roadmap-register.md`
 
 ## W6 TODOs: Backtesting Studio Evidence Loop
 

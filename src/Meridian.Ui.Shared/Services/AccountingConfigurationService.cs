@@ -3829,20 +3829,20 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         JournalEntryLifecycleActionRequestDto request,
         CancellationToken ct)
     {
-            var submitted = await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
-                request.JournalEntryId,
-                request.FundProfileId,
-                request.Actor,
-                request.Version,
-                request.Notes,
-                request.CorrelationId,
-                request.EvidenceLinks,
-                request.ActionOrigin,
-                request.PeriodIsLocked,
-                request.LedgerBookId,
-                request.TenantId,
-                request.CompanyId,
-                request.ReportGroupPrincipalIds), ct).ConfigureAwait(false);
+        var submitted = await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            request.JournalEntryId,
+            request.FundProfileId,
+            request.Actor,
+            request.Version,
+            request.Notes,
+            request.CorrelationId,
+            request.EvidenceLinks,
+            request.ActionOrigin,
+            request.PeriodIsLocked,
+            request.LedgerBookId,
+            request.TenantId,
+            request.CompanyId,
+            request.ReportGroupPrincipalIds), ct).ConfigureAwait(false);
         var transition = submitted.LifecycleTransitions.Last(static item =>
             item.Action == JournalEntryLifecycleActionDto.Submit &&
             item.ToStatus == ManualJournalEntryStatusDto.Submitted);

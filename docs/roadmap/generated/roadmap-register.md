@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-06-10
+Snapshot date: 2026-06-24
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -253,16 +253,16 @@ Completed the first shared multi-asset operations proof lane by exposing Securit
 | Field | Value |
 | --- | --- |
 | Wave | W5X |
-| Status | planned |
+| Status | done |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-10 |
+| Evidence posture | complete |
+| Last reviewed | 2026-06-24 |
 
 ### Current Summary
 
-Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. It should consume shared contracts/read models rather than creating browser- or WPF-local business rules.
+Closed 2026-06-24. Financial Operations control-center acceptance is promoted through the shared Operations Continuity lifecycle, close-readiness, approval-policy, close-calendar, reconciliation-break, checklist, audit-evidence, and governed reopen controls; browser Operations Continuity screens consume those shared DTOs for queue, approval, close, reopen, checklist, and break actions, while WPF Fund Ledger projects the same Financial Operations queue, accounting-record readiness, private-capital close posture, period-lock/reopen evidence, and retained evidence packages from shared read models. Direct-lending endpoint and WPF dense-panel proof remains attached as supporting FINOPS evidence without creating a separate browser route.
 
 ### Exit Criteria
 
@@ -270,7 +270,7 @@ Planned productization slice that makes Financial Operations the operator contro
 - Reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets can be opened from a unified operator queue with deterministic status, owner, due date, and blocker signals.
 - Close support shows period state, lock or reopen posture, NAV-support or report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps without posting synthetic completion.
 - Workflow controls expose assignment, escalation, approval, reopen, and evidence-retention actions through shared services so browser and WPF surfaces share the same policy decisions.
-- Generated roadmap and product docs state this is a planned productization target, not a claim that the complete Financial Operations control center is shipped.
+- Generated roadmap and product docs state the accepted Financial Operations control-center boundary and distinguish later proof-layer expansions from this completed W5X milestone.
 
 ### Source Modules
 
