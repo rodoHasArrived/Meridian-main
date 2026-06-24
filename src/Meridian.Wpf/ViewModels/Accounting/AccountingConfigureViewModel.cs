@@ -2163,14 +2163,14 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var providerId = ExternalGlMappingProviderId.Trim();
         var profileId = ExternalGlMappingProfileId.Trim();
         var displayName = ExternalGlMappingDisplayName.Trim();
-            var accountMappings = ParseExternalGlAccountMappings(ExternalGlMappingAccountMappingsText);
-            var meridianDimensions = ParseLedgerDimensionSet(
-                ExternalGlMappingMeridianDimensionsText,
-                BuildDefaultMeridianExternalGlDimensions(providerId, profileId));
-            var externalDimensions = ParseLedgerDimensionSet(
-                ExternalGlMappingExternalDimensionsText,
-                BuildDefaultProviderExternalGlDimensions());
-            var retainedEvidence = NormalizeTenantAdministrationEvidence(ExternalGlMappingEvidenceText);
+        var accountMappings = ParseExternalGlAccountMappings(ExternalGlMappingAccountMappingsText);
+        var meridianDimensions = ParseLedgerDimensionSet(
+            ExternalGlMappingMeridianDimensionsText,
+            BuildDefaultMeridianExternalGlDimensions(providerId, profileId));
+        var externalDimensions = ParseLedgerDimensionSet(
+            ExternalGlMappingExternalDimensionsText,
+            BuildDefaultProviderExternalGlDimensions());
+        var retainedEvidence = NormalizeTenantAdministrationEvidence(ExternalGlMappingEvidenceText);
         if (string.IsNullOrWhiteSpace(providerId) ||
             string.IsNullOrWhiteSpace(profileId) ||
             string.IsNullOrWhiteSpace(displayName) ||

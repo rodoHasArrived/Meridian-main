@@ -68,7 +68,93 @@ public sealed class CsvPartnerFileParserTests : IDisposable
         rows[0].RecordIndex.Should().Be(2);
     }
 
-    private static void CreateWorkbook(string path)
+    [Fact]
+    public async Task ParseAsync_AcceptsWorkbookRelationshipTargets_WithXlPrefix()
+    {
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, "prefixed-target.xlsx");
+        CreateWorkbook(path, relationshipTarget: "xl/worksheets/sheet1.xml");
+
+        var rows = await ParseWorkbookRows(path);
+
+        rows.Should().HaveCount(2);
+        rows[0].Fields["symbol"].Should().Be("AAPL");
+    }
+
+    [Theory]
+    [InlineData("../worksheets/sheet1.xml")]
+    [InlineData("/../xl/worksheets/sheet1.xml")]
+    [InlineData("C:/temp/sheet1.xml")]
+    [InlineData("https://example.test/sheet1.xml")]
+    [InlineData("worksheets\\sheet1.xml")]
+    public async Task ParseAsync_RejectsUnsafeWorkbookRelationshipTargets(string target)
+    {
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, $"unsafe-{Guid.NewGuid():N}.xlsx");
+        CreateWorkbook(path, relationshipTarget: target);
+
+        var act = async () => await ParseWorkbookRows(path);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ParseAsync_PreservesTrailingHeadersAsNull_ForShortExcelRows()
+    {
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, "short-row.xlsx");
+        CreateWorkbook(path, thirdRow: """
+            <row r="3"><c r="A3" t="s"><v>11</v></c><c r="B3" t="s"><v>12</v></c><c r="C3"><v>401.25</v></c><c r="D3"><v>20</v></c></row>
+            """);
+
+        var rows = await ParseWorkbookRows(path);
+
+        rows.Should().HaveCount(2);
+        rows[1].Fields.Should().ContainKey("venue").WhoseValue.Should().BeNull();
+        rows[1].Fields.Should().ContainKey("sequence").WhoseValue.Should().BeNull();
+        rows[1].Fields.Should().ContainKey("aggressor").WhoseValue.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ParseAsync_ConvertsExcelTimestampSerials_ToIsoUtcTimestamps()
+    {
+        Directory.CreateDirectory(_root);
+        var path = Path.Combine(_root, "date-serial.xlsx");
+        CreateWorkbook(path, secondRow: """
+            <row r="2"><c r="A2"><v>46023</v></c><c r="B2" t="s"><v>8</v></c><c r="C2"><v>100.5</v></c><c r="D2"><v>10</v></c><c r="E2" t="s"><v>9</v></c><c r="F2"><v>1</v></c><c r="G2" t="s"><v>10</v></c></row>
+            """);
+
+        var rows = await ParseWorkbookRows(path);
+
+        rows[0].Fields["timestamp"].Should().Be("2026-01-01T00:00:00.0000000Z");
+    }
+
+    private static async Task<List<PartnerRecordEnvelope>> ParseWorkbookRows(string path)
+    {
+        var parser = new CsvPartnerFileParser(new PartnerSchemaRegistry());
+        var staged = new EtlStagedFile
+        {
+            OriginalPath = path,
+            StagedPath = path,
+            FileName = Path.GetFileName(path),
+            ChecksumSha256 = "xlsx123",
+            SizeBytes = new FileInfo(path).Length
+        };
+
+        var rows = new List<PartnerRecordEnvelope>();
+        await foreach (var row in parser.ParseAsync(staged, null))
+        {
+            rows.Add(row);
+        }
+
+        return rows;
+    }
+
+    private static void CreateWorkbook(
+        string path,
+        string relationshipTarget = "worksheets/sheet1.xml",
+        string? secondRow = null,
+        string? thirdRow = null)
     {
         using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
         WriteEntry(archive, "xl/workbook.xml", """
@@ -80,9 +166,9 @@ public sealed class CsvPartnerFileParserTests : IDisposable
         WriteEntry(archive, "xl/_rels/workbook.xml.rels", """
             <?xml version="1.0" encoding="UTF-8"?>
             <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml" />
+              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="{0}" />
             </Relationships>
-            """);
+            """.Replace("{0}", relationshipTarget));
         WriteEntry(archive, "xl/sharedStrings.xml", """
             <?xml version="1.0" encoding="UTF-8"?>
             <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
@@ -96,11 +182,13 @@ public sealed class CsvPartnerFileParserTests : IDisposable
             <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
               <sheetData>
                 <row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c><c r="C1" t="s"><v>2</v></c><c r="D1" t="s"><v>3</v></c><c r="E1" t="s"><v>4</v></c><c r="F1" t="s"><v>5</v></c><c r="G1" t="s"><v>6</v></c></row>
-                <row r="2"><c r="A2" t="s"><v>7</v></c><c r="B2" t="s"><v>8</v></c><c r="C2"><v>100.5</v></c><c r="D2"><v>10</v></c><c r="E2" t="s"><v>9</v></c><c r="F2"><v>1</v></c><c r="G2" t="s"><v>10</v></c></row>
-                <row r="3"><c r="A3" t="s"><v>11</v></c><c r="B3" t="s"><v>12</v></c><c r="C3"><v>401.25</v></c><c r="D3"><v>20</v></c><c r="E3" t="s"><v>9</v></c><c r="F3"><v>2</v></c><c r="G3" t="s"><v>13</v></c></row>
+                {0}
+                {1}
               </sheetData>
             </worksheet>
-            """);
+            """
+            .Replace("{0}", secondRow ?? """<row r="2"><c r="A2" t="s"><v>7</v></c><c r="B2" t="s"><v>8</v></c><c r="C2"><v>100.5</v></c><c r="D2"><v>10</v></c><c r="E2" t="s"><v>9</v></c><c r="F2"><v>1</v></c><c r="G2" t="s"><v>10</v></c></row>""")
+            .Replace("{1}", thirdRow ?? """<row r="3"><c r="A3" t="s"><v>11</v></c><c r="B3" t="s"><v>12</v></c><c r="C3"><v>401.25</v></c><c r="D3"><v>20</v></c><c r="E3" t="s"><v>9</v></c><c r="F3"><v>2</v></c><c r="G3" t="s"><v>13</v></c></row>"""));
     }
 
     private static void WriteEntry(ZipArchive archive, string name, string content)

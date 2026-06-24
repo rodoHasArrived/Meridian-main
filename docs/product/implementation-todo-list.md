@@ -2,7 +2,7 @@
 
 **Status:** active execution tracker  
 **Owner:** core-team  
-**Reviewed:** 2026-06-23
+**Reviewed:** 2026-06-24
 **Source:** [Meridian Design Document (Version 0.22)](meridian-design-document.md) and [Roadmap Registry](../roadmap/data/roadmap-items.yml)
 
 This file is the single planning-tooling tracker for implemented design-document items and remaining TODOs. Keep detailed status changes here, then leave the design document to explain the product rationale and link back to this tracker.
@@ -27,7 +27,7 @@ Reviewed on 2026-06-16 against:
 Result:
 
 - W1 through W5 roadmap rows are verified as `done` with `evidence_posture: complete`.
-- W5X-FREX-001 is verified as `done` with `evidence_posture: complete`; W5X-FINOPS remains `planned` with direct-lending operations proof artifacts now attached; W6 and W7 are verified as bounded `done` rows with `evidence_posture: complete`.
+- W5X-FREX-001, W5X-FINOPS-001, W6-BTSTUDIO-001, and W7-LIVE-001 are verified as `done` with `evidence_posture: complete`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
 ## Verified Complete Items
@@ -50,6 +50,8 @@ Result:
   Evidence: `tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts`; roadmap status `done`; evidence posture `complete`.
 - [x] `W5X-FREX-001`: Shared financial record explorers.
   Evidence: `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs`, `src/Meridian.Ui/dashboard/src/components/meridian/financial-record-explorer.test.tsx`, `tests/fixtures/security-instrument-explorer-parity.json`; roadmap status `done`; evidence posture `complete`.
+- [x] `W5X-FINOPS-001`: Financial operations control center.
+  Evidence: `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs`, `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts`, `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`, `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs`, `tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs`, `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx`, `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts`, `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`, `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`, and `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`; roadmap status `done`; evidence posture `complete`.
 - [x] `W6-BTSTUDIO-001`: Backtesting studio evidence loop.
   Evidence: `tests/Meridian.Tests/Application/Backtesting/BacktestStudioRunOrchestratorTests.cs`, `src/Meridian.Backtesting/BacktestStudioContracts.cs`, `src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs`, `src/Meridian.Strategies/Models/StrategyRunEntry.cs`; roadmap status `done`; evidence posture `complete`.
 - [x] `W7-LIVE-001`: Live-readiness governance.
@@ -62,7 +64,7 @@ These are documented as implemented evidence, supported foundations, or design-l
 - [x] Data & Integration: map provider SDK, adapters, provider validation, credential/setup flows, source-module validation, and confidence gates to explicit owner evidence.
   Evidence: `docs/reference/provider-validation-matrix.md`, `docs/reference/provider-capability-matrix.md`, `docs/reference/provider-integration-status.md`, `docs/reference/provider-validation-evidence-schema.md`, `docs/source/data/source-modules.yml`, `build/scripts/docs/validate-source-readmes.py`, `tests/Meridian.Tests/Integration/EndpointTests/ProviderEndpointTests.cs`, `tests/Meridian.Tests/Ui/ProviderReadinessEndpointTests.cs`, `tests/Meridian.Tests/Ui/ProviderConnectionEndpointsTests.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.ProviderIntegrations.cs`, and provider SDK/integration tests under `tests/Meridian.Tests/ProviderSdk/` and `tests/Meridian.Tests/Application/Integrations/`.
 - [x] Financial Operations: map reconciliation, casework, close, evidence routing, NAV-support posture, and fund-event accounting records to W5X-FINOPS acceptance evidence.
-  Evidence: W5X-FINOPS command-center evidence in this tracker maps shared DTOs, the Financial Operations read service, Operations Continuity workflow service, shared endpoints, browser/WPF surfaces, `tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs`, `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`, `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs`, `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`, and `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`; roadmap `W5X-FINOPS-001` remains the feature acceptance gate.
+  Evidence: `W5X-FINOPS-001` is now closed through shared command-center DTOs, the Financial Operations read service, Operations Continuity workflow services, close-readiness, approval-policy, close-calendar, break assignment/resolution, checklist, audit-evidence, governed reopen controls, browser Operations Continuity, WPF Fund Ledger, and direct-lending supporting proof.
 - [x] Portfolio & Investment Operations: map portfolio, fund-structure, brokerage sync, fund accounts, positions, paper sessions, valuation evidence, and ledger-backed workflows to closed roadmap rows.
   Evidence: `W4-RECON-001` and `W5-MASSET-001` closed rows plus `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs`, `tests/Meridian.Tests/Integration/ProviderGoldenPathTransactionLedgerReconciliationTests.cs`, `tests/Meridian.Tests/Infrastructure/Providers/RobinhoodReadOnlyBrokerageSyncAdapterTests.cs`, and `src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts`.
 - [x] Reference Data: map Security Master contracts, provider-to-security mapping, trust/conflict summaries, and multi-asset readiness coverage to explicit proof artifacts.
@@ -117,36 +119,41 @@ Evidence: `tests/Meridian.Tests/Ui/SecurityMasterInstrumentPassportTests.cs`, `t
 - [x] Add WPF tests for dense workpaper execution against the same FINOPS DTOs and service decisions.
 - [x] Update generated roadmap/product docs to state exactly what shipped before moving `W5X-FINOPS-001` out of planned.
 
-Command-center evidence produced for this FINOPS slice:
+Acceptance evidence produced for this FINOPS slice:
 
 - `src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs`
 - `src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs`
 - `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs`
+- `src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs`
+- `src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs`
 - `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs`
 - `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts`
 - `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx`
+- `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts`
 - `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`
+- `src/Meridian.Wpf/ViewModels/FundLedgerViewModel.Sections.cs`
 - `src/Meridian.Wpf/Views/FundLedgerPage.xaml`
-- `tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs`
-- `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`
-- `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
-- `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts`
-- `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`
-- `docs/roadmap/data/roadmap-items.yml`
-- `docs/roadmap/generated/roadmap-register.md`
-
-Direct-lending evidence produced for this FINOPS slice:
-
 - `src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs`
 - `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs`
 - `src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs`
 - `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs`
 - `src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs`
 - `src/Meridian.Wpf/Views/DirectLendingPage.xaml`
+- `tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs`
+- `tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs`
+- `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
+- `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs`
+- `tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs`
+- `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts`
+- `src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx`
+- `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts`
+- `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`
 - `tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs`
 - `tests/Meridian.Tests/Application/DirectLending/PostgresDirectLendingCommandServiceTests.cs`
 - `tests/Meridian.Tests/Application/DirectLending/DirectLendingOutboxDispatcherTests.cs`
 - `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`
+- `docs/roadmap/data/roadmap-items.yml`
+- `docs/roadmap/generated/roadmap-register.md`
 
 ## W6 TODOs: Backtesting Studio Evidence Loop
 

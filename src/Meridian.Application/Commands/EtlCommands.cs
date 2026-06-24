@@ -70,7 +70,7 @@ internal sealed class EtlCommands : ICliCommand
             {
                 Kind = sourceKind,
                 Location = sourcePath,
-                FilePattern = CliArguments.GetValue(args, "--etl-file-pattern") ?? "*.csv",
+                FilePattern = CliArguments.GetValue(args, "--etl-file-pattern"),
                 Username = CliArguments.GetValue(args, "--etl-source-username"),
                 SecretRef = CliArguments.GetValue(args, "--etl-source-secret-ref"),
                 HostKeySha256Fingerprint = CliArguments.GetValue(args, "--etl-source-host-key-sha256"),

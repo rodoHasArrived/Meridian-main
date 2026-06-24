@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Meridian.Contracts.Etl;
@@ -82,7 +83,7 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
 
             var values = SplitCsvLine(line, schema.Delimiter).ToArray();
             headers ??= schema.Columns.Keys.ToArray();
-            yield return BuildEnvelope(file, schemaId, recordIndex, headers, values, line);
+            yield return BuildEnvelope(file, schemaId, recordIndex, headers, values, line, normalizeExcelTimestampSerials: false);
         }
     }
 
@@ -119,7 +120,7 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
                 continue;
 
             headers ??= schema.Columns.Keys.ToArray();
-            yield return BuildEnvelope(file, schemaId, recordIndex, headers, values, string.Join(',', values.Select(EscapeCsvCell)));
+            yield return BuildEnvelope(file, schemaId, recordIndex, headers, values, string.Join(',', values.Select(EscapeCsvCell)), normalizeExcelTimestampSerials: true);
         }
     }
 
@@ -129,12 +130,19 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
         long recordIndex,
         IReadOnlyList<string> headers,
         IReadOnlyList<string> values,
-        string? rawLine)
+        string? rawLine,
+        bool normalizeExcelTimestampSerials)
     {
         var fields = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < headers.Count && i < values.Count; i++)
+        for (var i = 0; i < headers.Count; i++)
         {
-            fields[headers[i]] = values[i];
+            var value = i < values.Count ? values[i] : null;
+            if (normalizeExcelTimestampSerials && IsTimestampHeader(headers[i]))
+            {
+                value = NormalizeExcelTimestampSerial(value);
+            }
+
+            fields[headers[i]] = value;
         }
 
         return new PartnerRecordEnvelope
@@ -175,10 +183,32 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
         if (string.IsNullOrWhiteSpace(target))
             return archive.GetEntry("xl/worksheets/sheet1.xml");
 
-        var normalized = target.StartsWith("/", StringComparison.Ordinal)
-            ? target.TrimStart('/')
-            : $"xl/{target}";
-        return archive.GetEntry(normalized.Replace("//", "/"));
+        var normalized = NormalizeWorkbookRelationshipTarget(target);
+        return normalized is null ? null : archive.GetEntry(normalized);
+    }
+
+    private static string? NormalizeWorkbookRelationshipTarget(string target)
+    {
+        var trimmed = target.Trim();
+        if (trimmed.Length == 0 ||
+            trimmed.Contains('\\', StringComparison.Ordinal) ||
+            Uri.TryCreate(trimmed, UriKind.Absolute, out _) ||
+            (trimmed.Length >= 2 && char.IsLetter(trimmed[0]) && trimmed[1] == ':'))
+        {
+            return null;
+        }
+
+        var relative = trimmed.StartsWith("/", StringComparison.Ordinal)
+            ? trimmed.TrimStart('/')
+            : trimmed.StartsWith("xl/", StringComparison.OrdinalIgnoreCase)
+                ? trimmed
+                : $"xl/{trimmed}";
+
+        var segments = relative.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (segments.Length == 0 || segments.Any(segment => segment is "." or ".."))
+            return null;
+
+        return string.Join('/', segments);
     }
 
     private static string[] ReadSharedStrings(ZipArchive archive)
@@ -219,6 +249,29 @@ public sealed class CsvPartnerFileParser : IPartnerFileParser
         if (type == "s" && int.TryParse(value, out var sharedStringIndex) && sharedStringIndex >= 0 && sharedStringIndex < sharedStrings.Count)
             return sharedStrings[sharedStringIndex];
         return value;
+    }
+
+    private static bool IsTimestampHeader(string header)
+        => string.Equals(header.Trim(), "timestamp", StringComparison.OrdinalIgnoreCase);
+
+    private static string? NormalizeExcelTimestampSerial(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) ||
+            !double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial) ||
+            serial <= 0)
+        {
+            return value;
+        }
+
+        try
+        {
+            var utc = DateTime.SpecifyKind(DateTime.FromOADate(serial), DateTimeKind.Utc);
+            return utc.ToString("O", CultureInfo.InvariantCulture);
+        }
+        catch (ArgumentException)
+        {
+            return value;
+        }
     }
 
     private static int? GetColumnIndex(string? cellReference)
