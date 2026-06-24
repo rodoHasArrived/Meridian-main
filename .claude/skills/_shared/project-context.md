@@ -74,6 +74,7 @@ dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+bash scripts/ci.sh
 pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
@@ -85,6 +86,9 @@ GNU Make targets are optional convenience wrappers. In Windows shells where `whe
 nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
 
 Prefer the narrowest validation command that matches the touched files.
+For completed PR-ready work, use `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate`
+is the authoritative merge result and work should flow through a `codex/<short-task-name>` branch
+and PR targeting `main`.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
 tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under

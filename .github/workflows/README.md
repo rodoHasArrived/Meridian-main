@@ -14,6 +14,7 @@ scope.
 | Lane | Workflow alignment |
 | --- | --- |
 | `bootstrap` | Local-only lane (`make bootstrap`); no dedicated hosted workflow. |
+| `quality-gate` | `Meridian CI` (`meridian-ci.yml`) runs the canonical `bash scripts/ci.sh` PR gate and should be the required status check for `main`. |
 | `verify-fast` | `CI` (`ci.yml`) and browser workstation job names reference this lane. |
 | `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted .NET project/filter slices. |
 | `verify-full` | Local-only broad lane (`make verify-full`) used before PR when needed. |
@@ -23,6 +24,7 @@ scope.
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs the canonical noninteractive `bash scripts/ci.sh` command in a GitHub-hosted Ubuntu runner. This stable `quality-gate` job is the required status check for protected `main` merges after repository rulesets are enabled. | Job logs; no separate artifact upload |
 | CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Restores `Meridian.sln`, verifies formatting and warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, runs every configured non-integration .NET test project through the aggregate `run-dotnet-ci-tests.py` runner so one failing project does not hide later failures, tests and builds the dashboard with lockfile-strict `npm ci`, scans secrets, validates source-doc determinism, and runs nightly/manual verify-full coverage on `main`. | .NET build logs, TRX summaries, browser bundle, and coverage artifacts |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs one selected .NET test project plus a required `dotnet test --filter` on a GitHub-hosted runner when local machine capacity, locks, or long-running suites make local validation impractical. Inputs are validated and limited to repo-relative `tests/` project paths and normal filter expressions for the failing slice, with hang diagnostics enabled for stuck tests. | Targeted TRX and hang diagnostic results |
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, validating the pilot readiness dashboard renderer, and uploading evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
@@ -64,6 +66,7 @@ gh workflow run targeted-test.yml --ref <branch> `
 ```
 
 ```powershell
+bash scripts/ci.sh
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet format whitespace Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 python3 build/scripts/ci/check-warning-suppressions.py

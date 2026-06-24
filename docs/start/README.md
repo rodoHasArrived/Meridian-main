@@ -95,6 +95,15 @@ persisting the password in WPF config files.
 
 Use the narrowest command that covers the surface you touched:
 
+For completed PR-ready work, use the canonical repository gate:
+
+```powershell
+bash scripts/ci.sh
+```
+
+GitHub Actions `Meridian CI / quality-gate` remains the authoritative merge result after the branch
+is pushed and the pull request is opened.
+
 For local .NET tests, use the contention-aware runner when another agent, desktop shell, or test
 lane may be active:
 

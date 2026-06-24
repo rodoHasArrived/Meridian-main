@@ -39,6 +39,15 @@ Canonical ownership rule:
 
 Prefer the narrowest proof lane for the files you change.
 
+For completed PR-ready work, use the canonical repository gate:
+
+```powershell
+bash scripts/ci.sh
+```
+
+GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Do not write
+directly to `main`; use a `codex/<short-task-name>` branch and a pull request targeting `main`.
+
 For local .NET tests, prefer the contention-aware runner over raw `dotnet test`:
 
 ```powershell
