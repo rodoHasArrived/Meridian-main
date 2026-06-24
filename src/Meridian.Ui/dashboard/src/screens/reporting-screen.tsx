@@ -1,4 +1,4 @@
-import { type DragEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { type DragEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, ChevronLeft, ChevronRight, Eye, FileText, Filter, GripVertical, Landmark, Network, PencilLine, Plus, RotateCcw, Send, Trash2, XCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
+import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   apiPostJson,
@@ -33,6 +34,7 @@ import {
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { todayIsoDate } from "@/lib/reporting-periods";
+import { buildReportingHubModel } from "@/lib/reporting-hub";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
@@ -268,6 +270,10 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
 export function ReportingScreen({ data, onRefreshLivePortfolioViews }: ReportingScreenProps) {
   const { pathname } = useLocation();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
+  const hubModel = useMemo(
+    () => buildReportingHubModel(vm.runStatusRows, vm.templateRows),
+    [vm.runStatusRows, vm.templateRows]
+  );
   const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusReportPackProfile = useRef(false);
   const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
@@ -1403,6 +1409,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           <MetricCard key={metric.id} {...metric} />
         ))}
       </section>
+
+      <ReportingHub model={hubModel} />
 
       <section role="region" aria-label="Reporting access audit">
         <Card className="panel-surface" aria-label={vm.accessAudit.ariaLabel}>
