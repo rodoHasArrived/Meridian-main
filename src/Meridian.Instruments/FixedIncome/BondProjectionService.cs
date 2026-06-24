@@ -48,7 +48,13 @@ public sealed class BondProjectionService : IBondReferenceService
             projection.CallDate,
             projection.MaturityDate,
             projection.IsCallable,
-            projection.Version);
+            projection.Version,
+            projection.Par,
+            projection.Subclass,
+            projection.PaymentFrequency,
+            projection.LegalFinalMaturity,
+            projection.PreRefundDate,
+            projection.MandatoryPutDate);
     }
 
     public async Task<BondAccrualConventionDto?> GetAccrualConventionAsync(Guid securityId, CancellationToken ct = default)
@@ -132,7 +138,13 @@ public sealed class BondProjectionService : IBondReferenceService
             projection.CallDate,
             projection.MaturityDate.Value,
             projection.IsCallable ?? false,
-            projection.Version);
+            projection.Version,
+            projection.Par,
+            projection.Subclass,
+            projection.PaymentFrequency,
+            projection.LegalFinalMaturity,
+            projection.PreRefundDate,
+            projection.MandatoryPutDate);
     }
 
     private static BondAccrualConventionDto? MapAccrual(BondProjectionRow projection)
