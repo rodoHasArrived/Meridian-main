@@ -37,6 +37,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   closeManagementLateAdjustments: UI_API_ROUTES.LedgerCloseManagementLateAdjustments,
   closeManagementLateAdjustmentReview: UI_API_ROUTES.LedgerCloseManagementLateAdjustmentReview,
   closeManagementTaskSignOffs: UI_API_ROUTES.LedgerCloseManagementTaskSignOffs,
+  closeManagementEvidenceReview: UI_API_ROUTES.LedgerCloseManagementEvidenceReview,
   closeManagementPeriodLock: UI_API_ROUTES.LedgerCloseManagementPeriodLock,
   manualJournalEntryWorkbench: UI_API_ROUTES.LedgerManualJournalEntryWorkbench,
   privateCapitalActivity: UI_API_ROUTES.LedgerPrivateCapitalActivity,

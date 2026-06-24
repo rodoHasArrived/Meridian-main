@@ -42,7 +42,7 @@ public sealed class AccountingProductionReadinessService
         BuildCloseReportingComponent(components, ledgerBookResult.WorkflowReadiness, rulesStudioResult.DimensionalReportingReadiness);
         var externalGlCounts = await BuildExternalGlComponentAsync(effectiveRequest, fundProfileId, ledgerBookResult.WorkflowReadiness, components, ct).ConfigureAwait(false);
         var migrationRolloutPlan = BuildMigrationRolloutComponent(effectiveRequest, components);
-        var tenantAdministration = BuildTenantAdministrationComponent(effectiveRequest, components);
+        var tenantAdministration = BuildTenantAdministrationComponent(effectiveRequest, fundProfileId, components);
 
         var issues = components
             .SelectMany(static component => component.Issues)
@@ -72,7 +72,10 @@ public sealed class AccountingProductionReadinessService
             migrationRunArtifacts,
             migrationRolloutPlan,
             tenantAdministration,
-            productionGaps);
+            productionGaps,
+            effectiveRequest.WorkflowCertificationArtifacts,
+            effectiveRequest.DimensionalCertificationArtifacts,
+            effectiveRequest.TenantAdminCertificationArtifacts);
     }
 
     private async Task<IReadOnlyList<AccountingMigrationRunArtifactDto>> LoadMigrationRunArtifactsAsync(
@@ -156,6 +159,18 @@ public sealed class AccountingProductionReadinessService
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var workflowArtifacts = request.WorkflowCertificationArtifacts
+            .Concat(profile.WorkflowCertificationArtifacts)
+            .DistinctBy(static item => item.CertificationId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var dimensionalArtifacts = request.DimensionalCertificationArtifacts
+            .Concat(profile.DimensionalCertificationArtifacts)
+            .DistinctBy(static item => item.CertificationId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var tenantAdminArtifacts = request.TenantAdminCertificationArtifacts
+            .Concat(profile.TenantAdminCertificationArtifacts)
+            .DistinctBy(static item => item.CertificationId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
         return request with
         {
@@ -175,7 +190,10 @@ public sealed class AccountingProductionReadinessService
             LedgerLineDimensionsPersistedCertified = request.LedgerLineDimensionsPersistedCertified || profile.LedgerLineDimensionsPersistedCertified,
             TrialBalanceDimensionFiltersCertified = request.TrialBalanceDimensionFiltersCertified || profile.TrialBalanceDimensionFiltersCertified,
             ReportPackageDimensionProvenanceCertified = request.ReportPackageDimensionProvenanceCertified || profile.ReportPackageDimensionProvenanceCertified,
-            DimensionalReportingEvidenceLinks = dimensionalEvidence
+            DimensionalReportingEvidenceLinks = dimensionalEvidence,
+            WorkflowCertificationArtifacts = workflowArtifacts,
+            DimensionalCertificationArtifacts = dimensionalArtifacts,
+            TenantAdminCertificationArtifacts = tenantAdminArtifacts
         };
     }
 
@@ -224,23 +242,102 @@ public sealed class AccountingProductionReadinessService
         };
     }
 
+    private static IReadOnlyList<AccountingWorkflowCertificationArtifactDto> CertifiedWorkflowArtifacts(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        Guid? ledgerBookId)
+        => ledgerBookId.HasValue
+            ? request.WorkflowCertificationArtifacts
+                .Where(artifact =>
+                    artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                    artifact.LedgerBookId == ledgerBookId.Value &&
+                    string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                    ScopeMatches(artifact.TenantId, request.TenantId) &&
+                    ScopeMatches(artifact.CompanyId, request.CompanyId))
+                .ToArray()
+            : [];
+
+    private static IReadOnlyList<AccountingDimensionalCertificationArtifactDto> CertifiedDimensionalArtifacts(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
+        Guid? ledgerBookId)
+        => ledgerBookId.HasValue
+            ? request.DimensionalCertificationArtifacts
+                .Where(artifact =>
+                    artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                    artifact.LedgerBookId == ledgerBookId.Value &&
+                    !string.IsNullOrWhiteSpace(artifact.DimensionScopeEvidenceKey) &&
+                    string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                    ScopeMatches(artifact.TenantId, request.TenantId) &&
+                    ScopeMatches(artifact.CompanyId, request.CompanyId))
+                .ToArray()
+            : [];
+
+    private static IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> CertifiedTenantAdminArtifacts(
+        AccountingProductionReadinessRequestDto request,
+        string fundProfileId)
+        => request.TenantAdminCertificationArtifacts
+            .Where(artifact =>
+                artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+                string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(TrimOrNull(artifact.TenantId), TrimOrNull(request.TenantId), StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(TrimOrNull(artifact.CompanyId), TrimOrNull(request.CompanyId), StringComparison.OrdinalIgnoreCase) &&
+                (!request.LedgerBookId.HasValue || artifact.LedgerBookId == request.LedgerBookId.Value))
+            .ToArray();
+
+    private static bool ScopeMatches(string? artifactScope, string? requestScope)
+        => string.IsNullOrWhiteSpace(requestScope) ||
+           string.Equals(TrimOrNull(artifactScope), TrimOrNull(requestScope), StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasPassedWorkflowLane(
+        IEnumerable<AccountingWorkflowCertificationArtifactDto> artifacts,
+        AccountingWorkflowCertificationLaneKindDto kind)
+        => artifacts.Any(artifact => artifact.Lanes.Any(lane => lane.Kind == kind && lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed));
+
+    private static bool HasPassedDimensionalLane(
+        IEnumerable<AccountingDimensionalCertificationArtifactDto> artifacts,
+        AccountingDimensionalCertificationLaneKindDto kind)
+        => artifacts.Any(artifact => artifact.Lanes.Any(lane => lane.Kind == kind && lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed));
+
+    private static bool HasPassedTenantAdminLane(
+        IEnumerable<AccountingTenantAdminCertificationArtifactDto> artifacts,
+        AccountingTenantAdminCertificationLaneKindDto kind)
+        => artifacts.Any(artifact => artifact.Lanes.Any(lane => lane.Kind == kind && lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed));
+
+    private static IEnumerable<string> ArtifactEvidenceReferences(AccountingWorkflowCertificationArtifactDto artifact)
+        => artifact.EvidenceReferences
+            .Concat(artifact.Lanes.SelectMany(static lane => lane.EvidenceReferences))
+            .Concat(string.IsNullOrWhiteSpace(artifact.CorrelationId) ? [] : [$"correlation:{artifact.CorrelationId}"]);
+
+    private static IEnumerable<string> ArtifactEvidenceReferences(AccountingDimensionalCertificationArtifactDto artifact)
+        => artifact.EvidenceReferences
+            .Concat(artifact.Lanes.SelectMany(static lane => lane.EvidenceReferences))
+            .Concat(string.IsNullOrWhiteSpace(artifact.CorrelationId) ? [] : [$"correlation:{artifact.CorrelationId}"]);
+
+    private static IEnumerable<string> ArtifactEvidenceReferences(AccountingTenantAdminCertificationArtifactDto artifact)
+        => artifact.EvidenceReferences
+            .Concat(artifact.Lanes.SelectMany(static lane => lane.EvidenceReferences))
+            .Concat(string.IsNullOrWhiteSpace(artifact.CorrelationId) ? [] : [$"correlation:{artifact.CorrelationId}"]);
+
     private async Task<LedgerBookComponentResult> BuildLedgerBookComponentAsync(
         AccountingProductionReadinessRequestDto request,
         string fundProfileId,
         ICollection<AccountingProductionReadinessComponentDto> components,
         CancellationToken ct)
     {
-        var workflowEvidence = NormalizeEvidenceReferences(request.LedgerBookWorkflowEvidenceLinks);
+        var workflowArtifacts = CertifiedWorkflowArtifacts(request, fundProfileId, request.LedgerBookId);
+        var workflowEvidence = NormalizeEvidenceReferences(
+            request.LedgerBookWorkflowEvidenceLinks.Concat(workflowArtifacts.SelectMany(ArtifactEvidenceReferences)));
         var workflowReadiness = new AccountingLedgerBookWorkflowReadinessDto(
             request.LedgerBookId,
-            request.PostingRulesLedgerBookNativeCertified,
-            request.JournalLifecycleLedgerBookNativeCertified,
-            request.CloseReportingLedgerBookNativeCertified,
-            request.ClosePlanConfigurationLedgerBookNativeCertified,
-            request.ExternalGlLedgerBookNativeCertified,
-            request.ReconciliationLedgerBookNativeCertified,
-            request.DirectLendingLedgerBookNativeCertified,
-            request.StrategyLedgerReadLedgerBookNativeCertified,
+            request.PostingRulesLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.PostingRules),
+            request.JournalLifecycleLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.JournalLifecycle),
+            request.CloseReportingLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.CloseReporting),
+            request.ClosePlanConfigurationLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration),
+            request.ExternalGlLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.ExternalGl),
+            request.ReconciliationLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.Reconciliation),
+            request.DirectLendingLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection),
+            request.StrategyLedgerReadLedgerBookNativeCertified || HasPassedWorkflowLane(workflowArtifacts, AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads),
             workflowEvidence);
         var workflowIssues = BuildLedgerBookWorkflowIssues(workflowReadiness, request, fundProfileId);
         var service = _services.GetService<ILedgerBookService>();
@@ -304,6 +401,15 @@ public sealed class AccountingProductionReadinessService
         string fundProfileId)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
+        AddLegacyFullTokenWarning(
+            issues,
+            "ledger-books.workflow-legacy-full-token-evidence",
+            AccountingProductionReadinessAreaDto.LedgerBooks,
+            "Ledger-book workflow readiness includes legacy full-token evidence.",
+            "Replace workflow-certification/full or production-certification/full evidence with certified workflow artifacts or lane-specific retained evidence before relying on the control.",
+            readiness.EvidenceReferences,
+            "workflow-certification/full",
+            "production-certification/full");
         if (!readiness.HasLedgerBookScope)
         {
             issues.Add(Issue(
@@ -668,16 +774,20 @@ public sealed class AccountingProductionReadinessService
         CancellationToken ct)
     {
         var retainedPackageEvidence = await LoadCertifiedReportPackageDimensionEvidenceAsync(request, fundProfileId, ct).ConfigureAwait(false);
-        var evidenceReferences = NormalizeEvidenceReferences(request.DimensionalReportingEvidenceLinks.Concat(retainedPackageEvidence));
+        var dimensionalArtifacts = CertifiedDimensionalArtifacts(request, fundProfileId, request.LedgerBookId);
+        var evidenceReferences = NormalizeEvidenceReferences(
+            request.DimensionalReportingEvidenceLinks
+                .Concat(retainedPackageEvidence)
+                .Concat(dimensionalArtifacts.SelectMany(ArtifactEvidenceReferences)));
         return new AccountingDimensionalReportingReadinessDto(
             request.LedgerBookId,
-            request.PeriodReportDimensionQueriesCertified,
-            request.CrossPeriodReportDimensionQueriesCertified,
-            request.JournalQueryDimensionFiltersCertified,
-            request.ExternalExportDimensionMappingCertified,
-            request.LedgerLineDimensionsPersistedCertified,
-            request.TrialBalanceDimensionFiltersCertified,
-            request.ReportPackageDimensionProvenanceCertified || retainedPackageEvidence.Count > 0,
+            request.PeriodReportDimensionQueriesCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.PeriodReports),
+            request.CrossPeriodReportDimensionQueriesCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports),
+            request.JournalQueryDimensionFiltersCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.JournalFilters),
+            request.ExternalExportDimensionMappingCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings),
+            request.LedgerLineDimensionsPersistedCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence),
+            request.TrialBalanceDimensionFiltersCertified || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters),
+            request.ReportPackageDimensionProvenanceCertified || retainedPackageEvidence.Count > 0 || HasPassedDimensionalLane(dimensionalArtifacts, AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance),
             evidenceReferences);
     }
 
@@ -732,6 +842,16 @@ public sealed class AccountingProductionReadinessService
         string fundProfileId)
     {
         var issues = new List<AccountingProductionReadinessIssueDto>();
+        AddLegacyFullTokenWarning(
+            issues,
+            "dimensions.reporting-legacy-full-token-evidence",
+            AccountingProductionReadinessAreaDto.DimensionalAccounting,
+            "Dimensional reporting readiness includes legacy full-token evidence.",
+            "Replace dimensions/report-query-certification/full, dimensions/full, or production-certification/full evidence with certified dimensional artifacts or lane-specific retained evidence.",
+            readiness.EvidenceReferences,
+            "dimensions/report-query-certification/full",
+            "dimensions/full",
+            "production-certification/full");
         if (!readiness.HasLedgerBookScope)
         {
             issues.Add(Issue(
@@ -1350,9 +1470,12 @@ public sealed class AccountingProductionReadinessService
 
     private static AccountingTenantAdministrationReadinessDto BuildTenantAdministrationComponent(
         AccountingProductionReadinessRequestDto request,
+        string fundProfileId,
         ICollection<AccountingProductionReadinessComponentDto> components)
     {
+        var tenantAdminArtifacts = CertifiedTenantAdminArtifacts(request, fundProfileId);
         var evidenceReferences = request.TenantAdministrationEvidenceLinks
+            .Concat(tenantAdminArtifacts.SelectMany(ArtifactEvidenceReferences))
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -1360,29 +1483,38 @@ public sealed class AccountingProductionReadinessService
         var readiness = new AccountingTenantAdministrationReadinessDto(
             TrimOrNull(request.TenantId),
             TrimOrNull(request.CompanyId),
-            request.TenantScopeConfigured,
-            request.AdminRoleProfileConfigured,
-            request.ScopedAccessPoliciesConfigured,
-            request.ReportingGroupsConfigured,
-            request.AccountingAdminSurfaceConfigured,
-            request.BrowserAccountingAdminSurfaceConfigured,
-            request.WpfAccountingAdminSurfaceConfigured,
-            request.ChartAdministrationStudioConfigured,
-            request.RuleTestPromotionStudioConfigured,
-            request.CloseSetupStudioConfigured,
-            request.ProviderMappingStudioConfigured,
-            request.TenantCompanyReportGroupSetupStudioConfigured,
+            request.TenantScopeConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.TenantScope),
+            request.AdminRoleProfileConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile),
+            request.ScopedAccessPoliciesConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies),
+            request.ReportingGroupsConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ReportingGroups),
+            request.AccountingAdminSurfaceConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface),
+            request.BrowserAccountingAdminSurfaceConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.BrowserAccountingAdminSurface),
+            request.WpfAccountingAdminSurfaceConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface),
+            request.ChartAdministrationStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio),
+            request.RuleTestPromotionStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio),
+            request.CloseSetupStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio),
+            request.ProviderMappingStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio),
+            request.TenantCompanyReportGroupSetupStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio),
             evidenceReferences,
-            AuditReviewToolingConfigured: request.AuditReviewToolingConfigured,
-            BulkImportExportSafeguardsConfigured: request.BulkImportExportSafeguardsConfigured,
-            PerformanceValidationConfigured: request.PerformanceValidationConfigured,
-            DisasterRecoveryRunbookConfigured: request.DisasterRecoveryRunbookConfigured,
-            LedgerBookAdministrationStudioConfigured: request.LedgerBookAdministrationStudioConfigured,
-            PostingRuleAuthoringStudioConfigured: request.PostingRuleAuthoringStudioConfigured,
-            ApprovalQueueStudioConfigured: request.ApprovalQueueStudioConfigured,
-            DimensionMappingStudioConfigured: request.DimensionMappingStudioConfigured,
-            ImplementationSandboxConfigured: request.ImplementationSandboxConfigured);
+            AuditReviewToolingConfigured: request.AuditReviewToolingConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.AuditReviewTooling),
+            BulkImportExportSafeguardsConfigured: request.BulkImportExportSafeguardsConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.BulkImportExportSafeguards),
+            PerformanceValidationConfigured: request.PerformanceValidationConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.PerformanceValidation),
+            DisasterRecoveryRunbookConfigured: request.DisasterRecoveryRunbookConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.DisasterRecoveryRunbook),
+            LedgerBookAdministrationStudioConfigured: request.LedgerBookAdministrationStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio),
+            PostingRuleAuthoringStudioConfigured: request.PostingRuleAuthoringStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio),
+            ApprovalQueueStudioConfigured: request.ApprovalQueueStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio),
+            DimensionMappingStudioConfigured: request.DimensionMappingStudioConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio),
+            ImplementationSandboxConfigured: request.ImplementationSandboxConfigured || HasPassedTenantAdminLane(tenantAdminArtifacts, AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox));
         var issues = new List<AccountingProductionReadinessIssueDto>();
+        AddLegacyFullTokenWarning(
+            issues,
+            "tenant-admin.legacy-full-token-evidence",
+            AccountingProductionReadinessAreaDto.TenantAdministration,
+            "Tenant administration readiness includes legacy full-token evidence.",
+            "Replace tenant-admin/full or tenant-administration/full evidence with a certified tenant-administration artifact or lane-specific retained evidence.",
+            evidenceReferences,
+            "tenant-admin/full",
+            "tenant-administration/full");
         if (!readiness.HasTenantScope)
         {
             issues.Add(Issue(
@@ -2964,6 +3096,33 @@ public sealed class AccountingProductionReadinessService
             message,
             suggestedAction,
             evidenceReferences);
+
+    private static void AddLegacyFullTokenWarning(
+        ICollection<AccountingProductionReadinessIssueDto> issues,
+        string code,
+        AccountingProductionReadinessAreaDto area,
+        string message,
+        string suggestedAction,
+        IReadOnlyList<string> evidenceReferences,
+        params string[] tokens)
+    {
+        var legacyReferences = evidenceReferences
+            .Where(reference => tokens.Any(token => reference.Contains(token, StringComparison.OrdinalIgnoreCase)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (legacyReferences.Length == 0)
+        {
+            return;
+        }
+
+        issues.Add(Issue(
+            code,
+            area,
+            AccountingConfigurationValidationSeverityDto.Warning,
+            message,
+            suggestedAction,
+            legacyReferences));
+    }
 
     private static bool HasLedgerBookScopedTenantAdministrationEvidence(
         AccountingProductionReadinessRequestDto request,

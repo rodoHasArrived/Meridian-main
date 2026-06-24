@@ -388,6 +388,68 @@ public sealed record InstrumentPassportOperationsHandoffDto(
     string Status,
     bool IsEnabled);
 
+public sealed record SecurityMasterOperatingModelDto(
+    Guid SecurityId,
+    string? ClientId,
+    string? AccountId,
+    string? FundProfileId,
+    string Status,
+    string Summary,
+    IReadOnlyList<SecurityMasterOperatingModelStageDto> Stages,
+    IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> EntitlementApplicability,
+    IReadOnlyList<SecurityMasterOperatorMetadataDto> OperatorMetadata,
+    SecurityMasterManualChangeApprovalPostureDto ManualChangeApproval,
+    IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Controls,
+    DateTimeOffset RetrievedAtUtc);
+
+public sealed record SecurityMasterOperatingModelStageDto(
+    string StageId,
+    string Title,
+    string Status,
+    string Summary,
+    int EvidenceCount,
+    int BlockingIssueCount);
+
+public sealed record SecurityMasterEntitlementApplicabilityDto(
+    Guid EntitlementId,
+    string VendorName,
+    DataVendorDataType DataType,
+    string Scope,
+    string? ClientId,
+    string? AccountId,
+    string? FundProfileId,
+    Guid? SecurityId,
+    bool IsApplicable,
+    bool IsMostSpecific,
+    DataVendorEntitlementStatus Status,
+    bool RequiresDirectClientContract,
+    string? ContractReference,
+    string Summary);
+
+public sealed record SecurityMasterOperatorMetadataDto(
+    string MetadataId,
+    string VendorName,
+    DataVendorDataType DataType,
+    string SourceCategory,
+    string ExpectedRefreshCadence,
+    int? DefaultMaxDaysStale,
+    bool RequiresDirectClientContract,
+    string? OperatorMetadata,
+    string Summary);
+
+public sealed record SecurityMasterManualChangeApprovalPostureDto(
+    string PolicyKey,
+    OperationsGateKeyDto Gate,
+    string Route,
+    string RequiredPermission,
+    int RequiredDistinctApprovals,
+    bool RequiresIndependentReviewer,
+    string EvidenceRequirement,
+    string Status,
+    int ManualChangeCount,
+    int UnapprovedManualChangeCount,
+    string Summary);
+
 public sealed record InstrumentPassportDto(
     Guid SecurityId,
     SecurityIdentityDrillInDto Identity,
@@ -403,6 +465,7 @@ public sealed record InstrumentPassportDto(
 {
     public IReadOnlyList<InstrumentPassportProviderConfidenceDto> ProviderConfidence { get; init; } = [];
     public InstrumentPassportReferenceDataWorkbenchDto? ReferenceDataWorkbench { get; init; }
+    public SecurityMasterOperatingModelDto? OperatingModel { get; init; }
 }
 
 public sealed record InstrumentPassportPricingDto(

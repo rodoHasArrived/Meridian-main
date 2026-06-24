@@ -21,7 +21,9 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
             $"""
             select entitlement_id, vendor_name, data_type, contract_reference,
                    effective_from, effective_to, aum_threshold_usd, requires_direct_client_contract,
-                   contact_email, renewal_reminder_days, is_active, created_by, created_at
+                   contact_email, renewal_reminder_days, is_active, created_by, created_at,
+                   client_id, account_id, fund_profile_id, security_id, source_category,
+                   expected_refresh_cadence, default_max_days_stale, operator_metadata
             from {Qualified("data_vendor_entitlements")}
             order by vendor_name, data_type;
             """;
@@ -43,7 +45,9 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
             $"""
             select entitlement_id, vendor_name, data_type, contract_reference,
                    effective_from, effective_to, aum_threshold_usd, requires_direct_client_contract,
-                   contact_email, renewal_reminder_days, is_active, created_by, created_at
+                   contact_email, renewal_reminder_days, is_active, created_by, created_at,
+                   client_id, account_id, fund_profile_id, security_id, source_category,
+                   expected_refresh_cadence, default_max_days_stale, operator_metadata
             from {Qualified("data_vendor_entitlements")}
             where is_active = true
               and effective_to is not null
@@ -69,7 +73,9 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
             $"""
             select entitlement_id, vendor_name, data_type, contract_reference,
                    effective_from, effective_to, aum_threshold_usd, requires_direct_client_contract,
-                   contact_email, renewal_reminder_days, is_active, created_by, created_at
+                   contact_email, renewal_reminder_days, is_active, created_by, created_at,
+                   client_id, account_id, fund_profile_id, security_id, source_category,
+                   expected_refresh_cadence, default_max_days_stale, operator_metadata
             from {Qualified("data_vendor_entitlements")}
             where entitlement_id = @entitlement_id;
             """;
@@ -92,10 +98,14 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
             insert into {Qualified("data_vendor_entitlements")}
                 (entitlement_id, vendor_name, data_type, contract_reference,
                  effective_from, effective_to, aum_threshold_usd, requires_direct_client_contract,
-                 contact_email, renewal_reminder_days, is_active, created_by, created_at)
+                 contact_email, renewal_reminder_days, is_active, created_by, created_at,
+                 client_id, account_id, fund_profile_id, security_id, source_category,
+                 expected_refresh_cadence, default_max_days_stale, operator_metadata)
             values (@entitlement_id, @vendor_name, @data_type, @contract_reference,
                     @effective_from, @effective_to, @aum_threshold_usd, @requires_direct_client_contract,
-                    @contact_email, @renewal_reminder_days, @is_active, @created_by, @created_at)
+                    @contact_email, @renewal_reminder_days, @is_active, @created_by, @created_at,
+                    @client_id, @account_id, @fund_profile_id, @security_id, @source_category,
+                    @expected_refresh_cadence, @default_max_days_stale, @operator_metadata)
             on conflict (entitlement_id) do update
                 set vendor_name = excluded.vendor_name,
                     data_type = excluded.data_type,
@@ -106,7 +116,15 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
                     requires_direct_client_contract = excluded.requires_direct_client_contract,
                     contact_email = excluded.contact_email,
                     renewal_reminder_days = excluded.renewal_reminder_days,
-                    is_active = excluded.is_active;
+                    is_active = excluded.is_active,
+                    client_id = excluded.client_id,
+                    account_id = excluded.account_id,
+                    fund_profile_id = excluded.fund_profile_id,
+                    security_id = excluded.security_id,
+                    source_category = excluded.source_category,
+                    expected_refresh_cadence = excluded.expected_refresh_cadence,
+                    default_max_days_stale = excluded.default_max_days_stale,
+                    operator_metadata = excluded.operator_metadata;
             """;
         command.Parameters.AddWithValue("entitlement_id", entitlement.EntitlementId);
         command.Parameters.AddWithValue("vendor_name", entitlement.VendorName);
@@ -121,6 +139,14 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
         command.Parameters.AddWithValue("is_active", entitlement.Status != DataVendorEntitlementStatus.Expired);
         command.Parameters.AddWithValue("created_by", entitlement.CreatedBy);
         command.Parameters.AddWithValue("created_at", entitlement.CreatedAt.UtcDateTime);
+        command.Parameters.AddWithValue("client_id", (object?)entitlement.ClientId ?? DBNull.Value);
+        command.Parameters.AddWithValue("account_id", (object?)entitlement.AccountId ?? DBNull.Value);
+        command.Parameters.AddWithValue("fund_profile_id", (object?)entitlement.FundProfileId ?? DBNull.Value);
+        command.Parameters.AddWithValue("security_id", (object?)entitlement.SecurityId ?? DBNull.Value);
+        command.Parameters.AddWithValue("source_category", (object?)entitlement.SourceCategory ?? DBNull.Value);
+        command.Parameters.AddWithValue("expected_refresh_cadence", (object?)entitlement.ExpectedRefreshCadence ?? DBNull.Value);
+        command.Parameters.AddWithValue("default_max_days_stale", (object?)entitlement.DefaultMaxDaysStale ?? DBNull.Value);
+        command.Parameters.AddWithValue("operator_metadata", (object?)entitlement.OperatorMetadata ?? DBNull.Value);
 
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         return entitlement;
@@ -163,7 +189,17 @@ public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementS
         return new DataVendorEntitlementDto(
             entitlementId, vendorName, dataType, contractRef,
             effectiveFrom, effectiveTo, aumThreshold, requiresDirect,
-            contactEmail, renewalDays, status, createdBy, createdAt);
+            contactEmail, renewalDays, status, createdBy, createdAt)
+        {
+            ClientId = reader.IsDBNull(13) ? null : reader.GetString(13),
+            AccountId = reader.IsDBNull(14) ? null : reader.GetString(14),
+            FundProfileId = reader.IsDBNull(15) ? null : reader.GetString(15),
+            SecurityId = reader.IsDBNull(16) ? null : reader.GetGuid(16),
+            SourceCategory = reader.IsDBNull(17) ? null : reader.GetString(17),
+            ExpectedRefreshCadence = reader.IsDBNull(18) ? null : reader.GetString(18),
+            DefaultMaxDaysStale = reader.IsDBNull(19) ? null : reader.GetInt32(19),
+            OperatorMetadata = reader.IsDBNull(20) ? null : reader.GetString(20)
+        };
     }
 
     private static DataVendorEntitlementStatus DeriveStatus(bool isActive, DateTimeOffset? effectiveTo, int renewalReminderDays)

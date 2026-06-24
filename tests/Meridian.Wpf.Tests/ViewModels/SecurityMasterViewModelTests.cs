@@ -875,6 +875,15 @@ public sealed class SecurityMasterViewModelTests
                 field.Label == "Reference-data workbench" &&
                 field.Value.Contains("Multi-asset reference-data workbench", StringComparison.OrdinalIgnoreCase));
             viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Operating model" &&
+                field.Value.Contains("applicable entitlement", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Entitlement applicability" &&
+                field.Value.Contains("most-specific", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
+                field.Label == "Manual-change approval" &&
+                field.Value.Contains("operations-continuity.security-master-override", StringComparison.OrdinalIgnoreCase));
+            viewModel.InstrumentPassportFields.Should().Contain(field =>
                 field.Label == "Operations handoff" &&
                 field.Value.Contains("enabled", StringComparison.OrdinalIgnoreCase));
         });
@@ -1404,6 +1413,56 @@ public sealed class SecurityMasterViewModelTests
                     IdentifierConflictSummaries: [],
                     OverrideHistory: [])
             ],
+            OperatingModel = new SecurityMasterOperatingModelDto(
+                SecurityId: snapshot.SecurityId,
+                ClientId: null,
+                AccountId: "acct-1",
+                FundProfileId: "fund-alpha",
+                Status: "Ready",
+                Summary: "Security Master operating model has applicable entitlement, source, control, and approval evidence for the selected scope.",
+                Stages:
+                [
+                    new SecurityMasterOperatingModelStageDto(
+                        StageId: "reconcile",
+                        Title: "Reconcile",
+                        Status: "Ready",
+                        Summary: "1 most-specific entitlement record applies to the selected Security Master scope.",
+                        EvidenceCount: 1,
+                        BlockingIssueCount: 0)
+                ],
+                EntitlementApplicability:
+                [
+                    new SecurityMasterEntitlementApplicabilityDto(
+                        EntitlementId: Guid.Parse("508961E3-A4B7-43FC-AE5D-C155BC795A34"),
+                        VendorName: "LSEG/Refinitiv",
+                        DataType: DataVendorDataType.Pricing,
+                        Scope: "FundProfile",
+                        ClientId: null,
+                        AccountId: null,
+                        FundProfileId: "fund-alpha",
+                        SecurityId: null,
+                        IsApplicable: true,
+                        IsMostSpecific: true,
+                        Status: DataVendorEntitlementStatus.Active,
+                        RequiresDirectClientContract: true,
+                        ContractReference: "LSEG-FUND-ALPHA",
+                        Summary: "LSEG/Refinitiv Pricing entitlement applies at FundProfile scope with Active status.")
+                ],
+                OperatorMetadata: [],
+                ManualChangeApproval: new SecurityMasterManualChangeApprovalPostureDto(
+                    PolicyKey: "operations-continuity.security-master-override",
+                    Gate: OperationsGateKeyDto.SecurityMaster,
+                    Route: "/api/workstation/operations-continuity/security-master/overrides/approve",
+                    RequiredPermission: "AdminMaintenance or ModifySecurityMaster",
+                    RequiredDistinctApprovals: 1,
+                    RequiresIndependentReviewer: true,
+                    EvidenceRequirement: "Override id, policy reference, rationale, expiration date, and linked evidence.",
+                    Status: "Ready",
+                    ManualChangeCount: 1,
+                    UnapprovedManualChangeCount: 0,
+                    Summary: "1 manual change event reuses the operations approval policy."),
+                Controls: [],
+                RetrievedAtUtc: snapshot.RetrievedAtUtc),
             ReferenceDataWorkbench = new InstrumentPassportReferenceDataWorkbenchDto(
                 Status: "Ready",
                 Summary: "Multi-asset reference-data workbench is ready for downstream FINOPS use.",

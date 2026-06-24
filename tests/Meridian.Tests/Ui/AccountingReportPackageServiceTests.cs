@@ -1228,6 +1228,12 @@ public sealed class AccountingReportPackageServiceTests
             CancellationToken ct = default)
             => throw new NotSupportedException();
 
+        public Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
+            ReviewCloseEvidenceRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
         public Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
             SignOffCloseTaskRequestDto request,
             string actor,
@@ -1267,6 +1273,12 @@ public sealed class AccountingReportPackageServiceTests
 
         public Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
             ReviewLateAdjustmentRequestDto request,
+            string actor,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
+            ReviewCloseEvidenceRequestDto request,
             string actor,
             CancellationToken ct = default)
             => throw new NotSupportedException();

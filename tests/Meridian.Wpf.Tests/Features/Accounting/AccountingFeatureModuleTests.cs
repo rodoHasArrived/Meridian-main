@@ -12,6 +12,7 @@ using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Features.Accounting;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
@@ -34,6 +35,7 @@ public sealed class AccountingFeatureModuleTests
             "FundBanking",
             "FundCashFinancing",
             "FundAccountingConfigure",
+            "FundAccountingClose",
             "FundTrialBalance",
             "LedgerExplorer",
             "FundReconciliation",
@@ -69,6 +71,7 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingConfigureViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingConfigurePage>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingCloseViewModel>(services, ServiceLifetime.Transient);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingClosePage>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingPostingService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<TrialBalanceProjectionService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<MonthEndCloseStateMachine>(services, ServiceLifetime.Singleton);
@@ -100,11 +103,34 @@ public sealed class AccountingFeatureModuleTests
     [InlineData("AccountingWorkspace", "AccountingShell", "accounting")]
     [InlineData("OperationsContinuity", "FundLedger", "accounting")]
     [InlineData("OperationsClose", "FundLedger", "accounting")]
+    [InlineData("AccountingClose", "FundAccountingClose", "accounting")]
+    [InlineData("CloseManagement", "FundAccountingClose", "accounting")]
     [InlineData("EvidenceWorkbench", "FundAuditTrail", "accounting")]
     [InlineData("AccountingApprovals", "FundAuditTrail", "accounting")]
     [InlineData("LedgerInspector", "RunLedger", "accounting")]
     public void ShellRegistry_ResolvesAccountingAliasesAndRootNavigationTags(string requestedTag, string canonicalTag, string workspaceId)
     {
         DesktopFeatureModuleTestAssertions.AssertRouteResolves(requestedTag, canonicalTag, workspaceId);
+    }
+
+    [Fact]
+    public void AccountingClosePage_BindsGovernedCloseManagementCommandsAndReviewRows()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\AccountingClosePage.xaml"));
+
+        source.Should().Contain("AutomationProperties.AutomationId=\"AccountingClosePage\"");
+        source.Should().Contain("Command=\"{Binding LoadClosePlanCommand}\"");
+        source.Should().Contain("Command=\"{Binding ConfigureClosePlanCommand}\"");
+        source.Should().Contain("Command=\"{Binding SignOffCloseTaskCommand}\"");
+        source.Should().Contain("Command=\"{Binding ReviewLateAdjustmentCommand}\"");
+        source.Should().Contain("Command=\"{Binding LockClosePeriodCommand}\"");
+        source.Should().Contain("ItemsSource=\"{Binding CloseMaterialityRows}\"");
+        source.Should().Contain("ItemsSource=\"{Binding CloseTaskRows}\"");
+        source.Should().Contain("ItemsSource=\"{Binding CloseDependencyRows}\"");
+        source.Should().Contain("ItemsSource=\"{Binding CloseSignOffMatrixRows}\"");
+        source.Should().Contain("ItemsSource=\"{Binding CloseLateAdjustmentRows}\"");
+        source.Should().Contain("ItemsSource=\"{Binding CloseEvidenceReviewRows}\"");
+        source.Should().Contain("ItemsSource=\"{Binding ClosePeriodLockIssueRows}\"");
     }
 }

@@ -2398,6 +2398,26 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Retrieved", passport.RetrievedAtUtc.LocalDateTime.ToString("g"))
         };
 
+        if (passport.OperatingModel is { } operatingModel)
+        {
+            fields.Add(new SecurityMasterPresentationField("Operating model", $"{operatingModel.Status}: {operatingModel.Summary}"));
+            foreach (var stage in operatingModel.Stages)
+            {
+                fields.Add(new SecurityMasterPresentationField(
+                    stage.Title,
+                    $"{stage.Status}: {stage.Summary} Evidence {stage.EvidenceCount}; blockers {stage.BlockingIssueCount}."));
+            }
+
+            var applicableEntitlements = operatingModel.EntitlementApplicability
+                .Count(static item => item.IsApplicable && item.IsMostSpecific);
+            fields.Add(new SecurityMasterPresentationField(
+                "Entitlement applicability",
+                $"{applicableEntitlements} most-specific applicable entitlement(s)."));
+            fields.Add(new SecurityMasterPresentationField(
+                "Manual-change approval",
+                $"{operatingModel.ManualChangeApproval.Status}: {operatingModel.ManualChangeApproval.PolicyKey} via {operatingModel.ManualChangeApproval.Gate}; {operatingModel.ManualChangeApproval.Summary}"));
+        }
+
         if (passport.ReferenceDataWorkbench is { } workbench)
         {
             fields.Add(new SecurityMasterPresentationField("Reference-data workbench", $"{workbench.Status}: {workbench.Summary}"));

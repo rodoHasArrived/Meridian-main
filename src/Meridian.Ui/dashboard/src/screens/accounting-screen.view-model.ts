@@ -16,10 +16,12 @@ import {
   executeAccountingConfigurationPostingRuleTests,
   getAccountingMigrationRunArtifacts,
   getAccountingMigrationWorkerPlans,
+  getAccountingSystemMappingProfiles,
   getLedgerCloseManagementPeriodPlan,
   getAccountingTenantAdministrationProfile,
   getAccountingProductionCertificationProfile,
   getLedgerAccountingReportPackageExport,
+  reviewLedgerCloseManagementEvidence,
   reviewLedgerCloseManagementLateAdjustment,
   signOffLedgerCloseManagementTask,
   getAccountingConfiguration,
@@ -50,7 +52,9 @@ import {
   searchSecurities,
   submitManualJournalEntryApproval,
   upsertAccountingTenantAdministrationProfile,
+  upsertAccountingSystemMappingProfile,
   upsertAccountingProductionCertificationProfile,
+  upsertAccountingConfigurationChartNode,
   upsertAccountingConfigurationPostingRule,
   upsertAccountingConfigurationPostingRuleTestCase,
   validateManualJournalEntryDraft,
@@ -94,11 +98,20 @@ import type {
   AccountingProductionReadinessRequest,
   AccountingProductionCertificationProfile,
   AccountingProductionCertificationProfileUpsertRequest,
+  AccountingDimensionalCertificationArtifact,
+  AccountingDimensionalCertificationLane,
+  AccountingTenantAdminCertificationArtifact,
+  AccountingTenantAdminCertificationLane,
   AccountingTenantAdministrationProfile,
+  AccountingApprovalQueueConfiguration,
+  AccountingDimensionMappingConfiguration,
   AccountingTenantAdministrationProfileUpsertRequest,
+  AccountingWorkflowCertificationArtifact,
+  AccountingWorkflowCertificationLane,
   AccountingReportPackageBundle,
   AccountingReportPackageRequest,
   CertifyAccountingReportPackageRequest,
+  ReportExportArtifact,
   ReportExportArtifactManifest,
   AccountingJournalTemplatePreview,
   AccountingTemplateLineSide,
@@ -115,20 +128,26 @@ import type {
   AccountingReportingSummary,
   AccountingWorkspaceResponse,
   AccountingSystemImportDetail,
+  AccountingSystemMappingProfileUpsertRequest,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
+  ExternalGlMappingProfile,
   AccountingRulesStudioPromotionQueueItem,
   AccountingRulesStudioRuleRow,
   CloseCalendarMilestone,
+  CloseDependency,
   ClosePeriodPlan,
   ClosePeriodLockResult,
+  CloseSignOffRequirement,
   CloseTask,
   UpsertClosePeriodPlanConfigurationRequest,
   CreateLateAdjustmentRequest,
+  ReviewCloseEvidenceRequest,
   ReviewLateAdjustmentRequest,
   SignOffCloseTaskRequest,
   FinancialOperationsCommandCenter,
   LedgerBook,
+  LedgerDimensionSet,
   LedgerJournalLine,
   LedgerTrialBalanceLine,
   LateAdjustmentRequest,
@@ -150,6 +169,7 @@ import type {
   ExecuteAccountingRuleTestCasesRequest,
   ApprovePostingRulePromotionRequest,
   UpsertAccountingRuleTestCaseRequest,
+  UpsertChartOfAccountsNodeRequest,
   UpsertPostingRuleRequest,
   ActivateAccountingConfigurationRequest,
   AttachManualJournalEntryEvidenceRequest,
@@ -244,12 +264,15 @@ export interface AccountingConfigurationServices {
   assessProductionReadiness: (request: AccountingProductionReadinessRequest) => Promise<AccountingProductionReadiness>;
   listMigrationRunArtifacts: (query: { fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingMigrationRunArtifactList>;
   listMigrationWorkerPlans: (query: { fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingMigrationRunWorkerPlanList>;
+  listExternalGlMappingProfiles: (query: { providerId?: string | null; fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<ExternalGlMappingProfile[]>;
+  upsertExternalGlMappingProfile: (request: AccountingSystemMappingProfileUpsertRequest) => Promise<ExternalGlMappingProfile>;
   getProductionCertificationProfile: (query: { tenantId?: string | null; companyId?: string | null; fundProfileId?: string | null; ledgerBookId?: string | null }) => Promise<AccountingProductionCertificationProfile>;
   upsertProductionCertificationProfile: (request: AccountingProductionCertificationProfileUpsertRequest) => Promise<AccountingProductionCertificationProfile>;
   getTenantAdministrationProfile: (query: { tenantId?: string | null; companyId?: string | null }) => Promise<AccountingTenantAdministrationProfile>;
   upsertTenantAdministrationProfile: (request: AccountingTenantAdministrationProfileUpsertRequest) => Promise<AccountingTenantAdministrationProfile>;
   createLedgerBook: (request: CreateLedgerBookRequest) => Promise<LedgerBook>;
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
+  upsertChartNode: (request: UpsertChartOfAccountsNodeRequest) => Promise<AccountingConfigurationWorkspace>;
   upsertRule: (request: UpsertPostingRuleRequest) => Promise<AccountingConfigurationWorkspace>;
   dryRunRule: (request: RuleDryRunRequest) => Promise<RuleDryRunResult>;
   buildJournalCandidate: (request: PostingRuleJournalCandidateRequest) => Promise<PostingRuleJournalCandidateResult>;
@@ -482,6 +505,8 @@ export interface AccountingTenantAdministrationProfileEditorViewModel {
   updatedLabel: string;
   evidenceValue: string;
   controls: AccountingTenantAdministrationProfileControlEditViewModel[];
+  approvalQueueSetup: AccountingApprovalQueueSetupEditorViewModel;
+  dimensionMappingSetup: AccountingDimensionMappingSetupEditorViewModel;
   saveButtonLabel: string;
   saveDisabledReason: string | null;
   saveBusy: boolean;
@@ -489,8 +514,65 @@ export interface AccountingTenantAdministrationProfileEditorViewModel {
   statusText: string | null;
   errorText: string | null;
   errorDetails: string[];
+  sandboxButtonLabel: string;
+  sandboxDisabledReason: string | null;
+  sandboxBusy: boolean;
+  sandboxStatusText: string | null;
+  canRetainSandboxProof: boolean;
   updateControl: (controlId: string, checked: boolean) => void;
+  updateApprovalQueueSetup: (patch: Partial<AccountingApprovalQueueSetupDraft>) => void;
+  updateDimensionMappingSetup: (patch: Partial<AccountingDimensionMappingSetupDraft>) => void;
   updateEvidence: (value: string) => void;
+  retainSandboxProof: () => Promise<void>;
+  save: () => Promise<void>;
+}
+
+export interface AccountingApprovalQueueSetupEditorViewModel {
+  queueIdValue: string;
+  displayNameValue: string;
+  workflowKindValue: string;
+  requiredApprovalRoleValue: string;
+  requiredApprovalCountValue: string;
+  segregationPolicyValue: string;
+  evidenceRequirementValue: string;
+}
+
+export interface AccountingDimensionMappingSetupEditorViewModel {
+  mappingIdValue: string;
+  displayNameValue: string;
+  providerIdValue: string;
+  meridianDimensionsValue: string;
+  providerDimensionsValue: string;
+  evidenceRequirementValue: string;
+}
+
+export interface AccountingExternalGlMappingProfileEditorViewModel {
+  title: string;
+  scopeLabel: string;
+  providerIdValue: string;
+  profileIdValue: string;
+  displayNameValue: string;
+  accountMappingsValue: string;
+  meridianDimensionsValue: string;
+  externalDimensionsValue: string;
+  evidenceValue: string;
+  certified: boolean;
+  mappingRows: AccountingTenantAdministrationControlViewModel[];
+  saveButtonLabel: string;
+  saveDisabledReason: string | null;
+  saveBusy: boolean;
+  canSave: boolean;
+  statusText: string | null;
+  errorText: string | null;
+  errorDetails: string[];
+  updateProviderId: (value: string) => void;
+  updateProfileId: (value: string) => void;
+  updateDisplayName: (value: string) => void;
+  updateAccountMappings: (value: string) => void;
+  updateMeridianDimensions: (value: string) => void;
+  updateExternalDimensions: (value: string) => void;
+  updateEvidence: (value: string) => void;
+  updateCertified: (checked: boolean) => void;
   save: () => Promise<void>;
 }
 
@@ -539,9 +621,30 @@ interface AccountingTenantAdministrationProfileDraft {
   ledgerBookAdministrationStudioConfigured: boolean;
   postingRuleAuthoringStudioConfigured: boolean;
   approvalQueueStudioConfigured: boolean;
+  approvalQueueSetup: AccountingApprovalQueueSetupDraft;
   dimensionMappingStudioConfigured: boolean;
+  dimensionMappingSetup: AccountingDimensionMappingSetupDraft;
   implementationSandboxConfigured: boolean;
   evidenceText: string;
+}
+
+interface AccountingApprovalQueueSetupDraft {
+  queueId: string;
+  displayName: string;
+  workflowKind: string;
+  requiredApprovalRole: string;
+  requiredApprovalCount: string;
+  segregationPolicy: string;
+  evidenceRequirement: string;
+}
+
+interface AccountingDimensionMappingSetupDraft {
+  mappingId: string;
+  displayName: string;
+  providerId: string;
+  meridianDimensionsText: string;
+  providerDimensionsText: string;
+  evidenceRequirement: string;
 }
 
 interface AccountingProductionCertificationProfileDraft {
@@ -560,6 +663,27 @@ interface AccountingProductionCertificationProfileDraft {
   ledgerLineDimensionsPersistedCertified: boolean;
   trialBalanceDimensionFiltersCertified: boolean;
   reportPackageDimensionProvenanceCertified: boolean;
+  evidenceText: string;
+}
+
+interface AccountingExternalGlMappingProfileDraft {
+  providerId: string;
+  profileId: string;
+  displayName: string;
+  accountMappingsText: string;
+  meridianDimensionsText: string;
+  externalDimensionsText: string;
+  evidenceText: string;
+  certified: boolean;
+}
+
+interface AccountingChartAccountDraft {
+  nodeId: string;
+  path: string;
+  accountName: string;
+  accountType: string;
+  parentPath: string;
+  financialAccountId: string;
   evidenceText: string;
 }
 
@@ -589,6 +713,23 @@ export interface AccountingLedgerBookAdminRowViewModel {
   tone: "default" | "success" | "warning" | "danger";
 }
 
+export interface AccountingChartAccountEditorViewModel {
+  nodeIdValue: string;
+  pathValue: string;
+  accountNameValue: string;
+  accountTypeValue: string;
+  parentPathValue: string;
+  financialAccountIdValue: string;
+  evidenceValue: string;
+  saveButtonLabel: string;
+  saveDisabledReason: string | null;
+  statusText: string | null;
+  saveBusy: boolean;
+  canSave: boolean;
+  updateDraft: (patch: Partial<AccountingChartAccountDraft>) => void;
+  save: () => Promise<void>;
+}
+
 export interface AccountingConfigurationViewModel {
   title: string;
   description: string;
@@ -602,9 +743,11 @@ export interface AccountingConfigurationViewModel {
   ledgerBookRows: AccountingLedgerBookAdminRowViewModel[];
   ledgerBookSummaryLabel: string;
   ledgerBookEmptyText: string | null;
+  chartAccountEditor: AccountingChartAccountEditorViewModel;
   productionReadiness: AccountingProductionReadinessViewModel;
   productionCertificationProfile: AccountingProductionCertificationProfileEditorViewModel;
   tenantAdministrationProfile: AccountingTenantAdministrationProfileEditorViewModel;
+  externalGlMappingProfile: AccountingExternalGlMappingProfileEditorViewModel;
   templates: AccountingConfigurationTemplateViewModel[];
   rules: AccountingRulesStudioRuleViewModel[];
   selectedRule: AccountingRulesStudioRuleViewModel | null;
@@ -2376,6 +2519,122 @@ export interface AccountingLateAdjustmentDraftViewModel {
   reason: string;
 }
 
+export interface AccountingCloseDependencyGraphRowViewModel {
+  dependencyId: string;
+  taskId: string;
+  taskLabel: string;
+  dependsOnTaskId: string;
+  predecessorLabel: string;
+  reason: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  blockerLabel: string | null;
+}
+
+export interface AccountingCloseSignOffMatrixRowViewModel {
+  rowId: string;
+  taskId: string;
+  taskLabel: string;
+  roleLabel: string;
+  approvedLabel: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  evidenceRequirementLabel: string;
+  latestSignOffLabel: string | null;
+}
+
+export interface AccountingCloseEvidenceReviewRowViewModel {
+  rowId: string;
+  issueCode: string | null;
+  targetId: string | null;
+  label: string;
+  categoryLabel: string;
+  evidenceLabel: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  detailLabel: string;
+  latestReviewLabel: string | null;
+  reviewDisabledReason: string | null;
+}
+
+export interface AccountingCloseOperatingCoverageRowViewModel {
+  controlId: string;
+  label: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  evidenceLabel: string;
+  blockerLabel: string;
+  requiredAction: string;
+  issueLabels: string[];
+}
+
+export interface AccountingCloseSetupTaskOptionViewModel {
+  taskId: string;
+  displayName: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  ownerLabel: string;
+  dueDateLabel: string;
+  dependencyLabel: string;
+  signOffLabel: string;
+  selected: boolean;
+  selectAriaLabel: string;
+}
+
+export interface AccountingCloseSetupDependencyOptionViewModel {
+  taskId: string;
+  displayName: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  ownerLabel: string;
+  dueDateLabel: string;
+  checked: boolean;
+  toggleAriaLabel: string;
+}
+
+export interface AccountingCloseSetupSignOffRoleOptionViewModel {
+  role: string;
+  label: string;
+  sourceLabel: string;
+  selected: boolean;
+  selectAriaLabel: string;
+}
+
+export type AccountingCloseSignOffDecision = "Approved" | "Rejected";
+
+export interface AccountingCloseSignOffTaskOptionViewModel {
+  taskId: string;
+  displayName: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  ownerLabel: string;
+  signOffLabel: string;
+  selected: boolean;
+  selectAriaLabel: string;
+}
+
+export interface AccountingCloseSignOffRoleOptionViewModel {
+  role: string;
+  label: string;
+  sourceLabel: string;
+  selected: boolean;
+  selectAriaLabel: string;
+}
+
+export interface AccountingCloseSignOffDecisionOptionViewModel {
+  decision: AccountingCloseSignOffDecision;
+  label: string;
+  selected: boolean;
+  selectAriaLabel: string;
+}
+
+export interface AccountingCloseSignOffDraftViewModel {
+  taskId: string;
+  role: string;
+  decision: AccountingCloseSignOffDecision;
+  notes: string;
+}
+
 export interface AccountingCloseSetupDraftViewModel {
   amountThreshold: string;
   percentThreshold: string;
@@ -2389,7 +2648,9 @@ export interface AccountingCloseSetupDraftViewModel {
   taskRequiredApprovalCount: string;
   taskRequiredApprovalRole: string;
   taskRequiredEvidence: string;
+  taskSignOffRequirements: string;
   taskDependsOnTaskIds: string;
+  taskDependencyReason: string;
 }
 
 export interface AccountingReportPackageRowViewModel {
@@ -2414,6 +2675,28 @@ export interface AccountingReportCertificationSafeguardViewModel {
   value: string;
   detail: string;
   tone: AccountingToolingTone;
+}
+
+export type AccountingCloseWorkflowActionId =
+  | "configure-close-plan"
+  | "sign-off-task"
+  | "request-late-adjustment"
+  | "review-evidence"
+  | "build-package"
+  | "certify-package"
+  | "inspect-export"
+  | "lock-period";
+
+export interface AccountingCloseWorkflowStepViewModel {
+  id: string;
+  label: string;
+  statusLabel: string;
+  detail: string;
+  evidenceLabel: string;
+  tone: AccountingToolingTone;
+  actionLabel: string | null;
+  actionId: AccountingCloseWorkflowActionId | null;
+  disabledReason: string | null;
 }
 
 export interface AccountingCloseReportPackageViewModel {
@@ -2450,6 +2733,9 @@ export interface AccountingCloseReportPackageViewModel {
   reviewLateAdjustmentBusy: boolean;
   reviewLateAdjustmentStatusText: string | null;
   reviewLateAdjustmentStatusTone: "neutral" | "success" | "danger";
+  reviewCloseEvidenceBusy: boolean;
+  reviewCloseEvidenceStatusText: string | null;
+  reviewCloseEvidenceStatusTone: "neutral" | "success" | "danger";
   exportManifestBusy: boolean;
   exportManifestStatusText: string | null;
   exportManifestStatusTone: "neutral" | "success" | "danger";
@@ -2466,16 +2752,28 @@ export interface AccountingCloseReportPackageViewModel {
   configureClosePlanDisabledReason: string | null;
   createLateAdjustmentDisabledReason: string | null;
   closeSetupDraft: AccountingCloseSetupDraftViewModel;
+  closeSetupTaskOptions: AccountingCloseSetupTaskOptionViewModel[];
+  closeSetupDependencyOptions: AccountingCloseSetupDependencyOptionViewModel[];
+  closeSetupSignOffRoleOptions: AccountingCloseSetupSignOffRoleOptionViewModel[];
+  closeSignOffDraft: AccountingCloseSignOffDraftViewModel;
+  closeSignOffTaskOptions: AccountingCloseSignOffTaskOptionViewModel[];
+  closeSignOffRoleOptions: AccountingCloseSignOffRoleOptionViewModel[];
+  closeSignOffDecisionOptions: AccountingCloseSignOffDecisionOptionViewModel[];
   lateAdjustmentDraft: AccountingLateAdjustmentDraftViewModel;
   exportManifestButtonLabel: string;
   exportManifestDisabledReason: string | null;
   metrics: AccountingReportPackageHistoryMetricViewModel[];
   closeCalendar: AccountingCloseCalendarMilestoneViewModel[];
   tasks: AccountingClosePlanTaskRowViewModel[];
+  dependencyGraphRows: AccountingCloseDependencyGraphRowViewModel[];
+  signOffMatrixRows: AccountingCloseSignOffMatrixRowViewModel[];
+  evidenceReviewRows: AccountingCloseEvidenceReviewRowViewModel[];
+  operatingCoverageRows: AccountingCloseOperatingCoverageRowViewModel[];
   lateAdjustments: AccountingLateAdjustmentRowViewModel[];
   packageRows: AccountingReportPackageRowViewModel[];
   selectedPackage: AccountingReportPackageRowViewModel | null;
   certificationSafeguards: AccountingReportCertificationSafeguardViewModel[];
+  closeWorkflowSteps: AccountingCloseWorkflowStepViewModel[];
   validationIssues: AccountingConfigurationIssueViewModel[];
   liveRegionText: string;
   refresh: () => Promise<void>;
@@ -2485,9 +2783,17 @@ export interface AccountingCloseReportPackageViewModel {
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
   updateCloseSetupDraft: (patch: Partial<AccountingCloseSetupDraftViewModel>) => void;
+  selectCloseSetupTask: (taskId: string) => void;
+  toggleCloseSetupDependency: (taskId: string) => void;
+  selectCloseSetupSignOffRole: (role: string) => void;
+  updateCloseSignOffDraft: (patch: Partial<AccountingCloseSignOffDraftViewModel>) => void;
+  selectCloseSignOffTask: (taskId: string) => void;
+  selectCloseSignOffRole: (role: string) => void;
+  selectCloseSignOffDecision: (decision: AccountingCloseSignOffDecision) => void;
   updateLateAdjustmentDraft: (patch: Partial<AccountingLateAdjustmentDraftViewModel>) => void;
   createLateAdjustment: () => Promise<void>;
   reviewLateAdjustment: (requestId: string, decision: "Approved" | "Rejected") => Promise<void>;
+  reviewCloseEvidence: (rowId: string) => Promise<void>;
   inspectSelectedPackageExport: () => Promise<void>;
   selectPackage: (packageId: string) => void;
 }
@@ -2511,6 +2817,7 @@ export interface AccountingCloseReportPackageServices {
   createLateAdjustment: (request: CreateLateAdjustmentRequest) => Promise<ClosePeriodPlan>;
   reviewLateAdjustment: (request: ReviewLateAdjustmentRequest) => Promise<ClosePeriodPlan>;
   signOffCloseTask: (request: SignOffCloseTaskRequest) => Promise<ClosePeriodPlan>;
+  reviewCloseEvidence: (request: ReviewCloseEvidenceRequest) => Promise<ClosePeriodPlan>;
   configureClosePlan: (request: UpsertClosePeriodPlanConfigurationRequest) => Promise<ClosePeriodPlan>;
   lockClosePeriod: (request: LockClosePeriodRequest) => Promise<ClosePeriodLockResult>;
   buildPackage: (request: AccountingReportPackageRequest) => Promise<AccountingReportPackageBundle>;
@@ -2598,6 +2905,7 @@ const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageS
   createLateAdjustment: (request) => createLedgerCloseManagementLateAdjustment(request),
   reviewLateAdjustment: (request) => reviewLedgerCloseManagementLateAdjustment(request),
   signOffCloseTask: (request) => signOffLedgerCloseManagementTask(request),
+  reviewCloseEvidence: (request) => reviewLedgerCloseManagementEvidence(request),
   configureClosePlan: (request) => configureLedgerCloseManagementPeriodPlan(request),
   lockClosePeriod: (request) => lockLedgerCloseManagementPeriod(request),
   buildPackage: (request) => buildLedgerAccountingReportPackage(request),
@@ -2611,12 +2919,15 @@ const defaultAccountingConfigurationServices: AccountingConfigurationServices = 
   assessProductionReadiness: (request) => assessAccountingProductionReadiness(request),
   listMigrationRunArtifacts: (query) => getAccountingMigrationRunArtifacts(query),
   listMigrationWorkerPlans: (query) => getAccountingMigrationWorkerPlans(query),
+  listExternalGlMappingProfiles: (query) => getAccountingSystemMappingProfiles(query),
+  upsertExternalGlMappingProfile: (request) => upsertAccountingSystemMappingProfile(request),
   getProductionCertificationProfile: (query) => getAccountingProductionCertificationProfile(query),
   upsertProductionCertificationProfile: (request) => upsertAccountingProductionCertificationProfile(request),
   getTenantAdministrationProfile: (query) => getAccountingTenantAdministrationProfile(query),
   upsertTenantAdministrationProfile: (request) => upsertAccountingTenantAdministrationProfile(request),
   createLedgerBook: (request) => createLedgerBook(request),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
+  upsertChartNode: (request) => upsertAccountingConfigurationChartNode(request),
   dryRunRule: (request) => dryRunAccountingConfigurationPostingRule(request),
   buildJournalCandidate: (request) => buildAccountingPostingRuleJournalCandidate(request),
   runRuleTests: (request) => executeAccountingConfigurationPostingRuleTests(request),
@@ -2978,6 +3289,7 @@ export function useAccountingCloseReportPackageViewModel(
   const [configureClosePlanStatusText, setConfigureClosePlanStatusText] = useState<string | null>(null);
   const [configureClosePlanStatusTone, setConfigureClosePlanStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
   const [closeSetupDraft, setCloseSetupDraft] = useState<AccountingCloseSetupDraftViewModel>(() => createAccountingCloseSetupDraft(null));
+  const [closeSignOffDraft, setCloseSignOffDraft] = useState<AccountingCloseSignOffDraftViewModel>(() => createAccountingCloseSignOffDraft(null));
   const [createLateAdjustmentBusy, setCreateLateAdjustmentBusy] = useState(false);
   const [createLateAdjustmentStatusText, setCreateLateAdjustmentStatusText] = useState<string | null>(null);
   const [createLateAdjustmentStatusTone, setCreateLateAdjustmentStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
@@ -2985,6 +3297,9 @@ export function useAccountingCloseReportPackageViewModel(
   const [reviewLateAdjustmentBusy, setReviewLateAdjustmentBusy] = useState(false);
   const [reviewLateAdjustmentStatusText, setReviewLateAdjustmentStatusText] = useState<string | null>(null);
   const [reviewLateAdjustmentStatusTone, setReviewLateAdjustmentStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [reviewCloseEvidenceBusy, setReviewCloseEvidenceBusy] = useState(false);
+  const [reviewCloseEvidenceStatusText, setReviewCloseEvidenceStatusText] = useState<string | null>(null);
+  const [reviewCloseEvidenceStatusTone, setReviewCloseEvidenceStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
   const [exportManifestBusy, setExportManifestBusy] = useState(false);
   const [exportManifestStatusText, setExportManifestStatusText] = useState<string | null>(null);
   const [exportManifestStatusTone, setExportManifestStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
@@ -3017,6 +3332,7 @@ export function useAccountingCloseReportPackageViewModel(
         return nextPackages[0]?.financialStatements.packageId ?? null;
       });
       setCloseSetupDraft(createAccountingCloseSetupDraft(nextClosePlan));
+      setCloseSignOffDraft(createAccountingCloseSignOffDraft(nextClosePlan));
     } catch (error) {
       setErrorText(formatAccountingWorkflowError(error, "Close/report package detail could not be loaded."));
     } finally {
@@ -3094,13 +3410,22 @@ export function useAccountingCloseReportPackageViewModel(
       return;
     }
 
-    const signOffTarget = resolveCloseTaskSignOffTarget(closePlan);
-    if (!signOffTarget) {
-      setSignOffStatusText("No close checklist task is ready for sign-off.");
+    const signOffValidation = validateCloseSignOffDraft(closePlan, closeSignOffDraft);
+    if (signOffValidation) {
+      setSignOffStatusText(signOffValidation);
       setSignOffStatusTone("danger");
       return;
     }
 
+    const signOffTarget = resolveCloseTaskSignOffDraftTarget(closePlan, closeSignOffDraft);
+    if (!signOffTarget) {
+      setSignOffStatusText("The selected close checklist task is not available for sign-off.");
+      setSignOffStatusTone("danger");
+      return;
+    }
+
+    const notes = closeSignOffDraft.notes.trim()
+      || `${closeSignOffDraft.decision} ${signOffTarget.task.displayName} close checklist task from the Accounting close cockpit.`;
     setSignOffBusy(true);
     setSignOffStatusText(null);
     setSignOffStatusTone("neutral");
@@ -3109,17 +3434,19 @@ export function useAccountingCloseReportPackageViewModel(
         workflowId: workflow.workflowId,
         taskId: signOffTarget.task.taskId,
         role: signOffTarget.role,
-        decision: "Approved",
+        decision: closeSignOffDraft.decision,
         actor: "browser-accounting-controller",
-        notes: `Approved ${signOffTarget.task.displayName} close checklist task from the Accounting close cockpit.`,
+        notes,
         evidenceLinks: [
           `browser://accounting/close/sign-off/${workflow.workflowId}/${signOffTarget.task.taskId}`,
+          `browser://accounting/close/sign-off/${workflow.workflowId}/${signOffTarget.task.taskId}/${signOffTarget.role}`,
           ...signOffTarget.task.evidenceLinks
         ],
-        correlationId: `browser-close-signoff-${workflow.workflowId}-${signOffTarget.task.taskId}`
+        correlationId: `browser-close-signoff-${workflow.workflowId}-${signOffTarget.task.taskId}-${closeSignOffDraft.decision.toLowerCase()}`
       });
       setClosePlan(nextPlan);
-      setSignOffStatusText(`Signed off ${signOffTarget.task.displayName}.`);
+      setCloseSignOffDraft(createAccountingCloseSignOffDraft(nextPlan));
+      setSignOffStatusText(`${closeSignOffDraft.decision} sign-off retained for ${signOffTarget.task.displayName}.`);
       setSignOffStatusTone("success");
     } catch (error) {
       setSignOffStatusText(formatAccountingWorkflowError(error, "Close checklist task could not be signed off."));
@@ -3127,7 +3454,7 @@ export function useAccountingCloseReportPackageViewModel(
     } finally {
       setSignOffBusy(false);
     }
-  }, [closePlan, services, workflow]);
+  }, [closePlan, closeSignOffDraft, services, workflow]);
 
   const lockClosePeriod = useCallback(async () => {
     if (!workflow || !closePlan) {
@@ -3187,6 +3514,27 @@ export function useAccountingCloseReportPackageViewModel(
       return;
     }
 
+    const closeSetupMaterialityValidation = validateCloseSetupMaterialityDraft(closeSetupDraft);
+    if (closeSetupMaterialityValidation) {
+      setConfigureClosePlanStatusText(closeSetupMaterialityValidation);
+      setConfigureClosePlanStatusTone("danger");
+      return;
+    }
+
+    const closeSetupTaskValidation = validateCloseSetupTaskSelection(closePlan, closeSetupDraft);
+    if (closeSetupTaskValidation) {
+      setConfigureClosePlanStatusText(closeSetupTaskValidation);
+      setConfigureClosePlanStatusTone("danger");
+      return;
+    }
+
+    const closeSetupSignOffValidation = validateCloseSetupSignOffDraft(closeSetupDraft);
+    if (closeSetupSignOffValidation) {
+      setConfigureClosePlanStatusText(closeSetupSignOffValidation);
+      setConfigureClosePlanStatusTone("danger");
+      return;
+    }
+
     setConfigureClosePlanBusy(true);
     setConfigureClosePlanStatusText(null);
     setConfigureClosePlanStatusTone("neutral");
@@ -3194,6 +3542,7 @@ export function useAccountingCloseReportPackageViewModel(
       const nextPlan = await services.configureClosePlan(buildClosePlanConfigurationRequest(workflow, closePlan, closeSetupDraft));
       setClosePlan(nextPlan);
       setCloseSetupDraft(createAccountingCloseSetupDraft(nextPlan));
+      setCloseSignOffDraft(createAccountingCloseSignOffDraft(nextPlan, closeSignOffDraft.taskId));
       setConfigureClosePlanStatusText(`Retained close-plan setup for ${nextPlan.periodId}.`);
       setConfigureClosePlanStatusTone("success");
     } catch (error) {
@@ -3202,10 +3551,86 @@ export function useAccountingCloseReportPackageViewModel(
     } finally {
       setConfigureClosePlanBusy(false);
     }
-  }, [closePlan, closeSetupDraft, services, workflow]);
+  }, [closePlan, closeSetupDraft, closeSignOffDraft.taskId, services, workflow]);
 
   const updateCloseSetupDraft = useCallback((patch: Partial<AccountingCloseSetupDraftViewModel>) => {
-    setCloseSetupDraft((current) => ({ ...current, ...patch }));
+    setCloseSetupDraft((current) => {
+      const next = { ...current, ...patch };
+      const updatesLegacySignOff =
+        patch.taskRequiredApprovalRole !== undefined ||
+        patch.taskRequiredApprovalCount !== undefined ||
+        patch.taskRequiredEvidence !== undefined;
+      if (updatesLegacySignOff && patch.taskSignOffRequirements === undefined) {
+        return {
+          ...next,
+          taskSignOffRequirements: buildCloseSetupSingleSignOffRequirementRow(next)
+        };
+      }
+
+      return next;
+    });
+  }, []);
+
+  const selectCloseSetupTask = useCallback((taskId: string) => {
+    setCloseSetupDraft((current) => {
+      if (!closePlan) {
+        return current;
+      }
+
+      return createAccountingCloseSetupDraft(closePlan, taskId);
+    });
+  }, [closePlan]);
+
+  const toggleCloseSetupDependency = useCallback((taskId: string) => {
+    setCloseSetupDraft((current) => {
+      const dependencyIds = parseCloseSetupDependencyIds(current.taskDependsOnTaskIds);
+      const normalizedTaskId = taskId.trim();
+      if (!normalizedTaskId) {
+        return current;
+      }
+
+      const nextDependencyIds = dependencyIds.some((item) => item.toLowerCase() === normalizedTaskId.toLowerCase())
+        ? dependencyIds.filter((item) => item.toLowerCase() !== normalizedTaskId.toLowerCase())
+        : [...dependencyIds, normalizedTaskId];
+
+      return {
+        ...current,
+        taskDependsOnTaskIds: nextDependencyIds.join(", ")
+      };
+    });
+  }, []);
+
+  const selectCloseSetupSignOffRole = useCallback((role: string) => {
+    setCloseSetupDraft((current) => {
+      const normalizedRole = role.trim();
+      if (!normalizedRole) {
+        return current;
+      }
+
+      return {
+        ...current,
+        taskRequiredApprovalRole: normalizedRole
+      };
+    });
+  }, []);
+
+  const updateCloseSignOffDraft = useCallback((patch: Partial<AccountingCloseSignOffDraftViewModel>) => {
+    setCloseSignOffDraft((current) => ({ ...current, ...patch }));
+  }, []);
+
+  const selectCloseSignOffTask = useCallback((taskId: string) => {
+    setCloseSignOffDraft((current) => createAccountingCloseSignOffDraft(closePlan, taskId, current));
+  }, [closePlan]);
+
+  const selectCloseSignOffRole = useCallback((role: string) => {
+    setCloseSignOffDraft((current) => {
+      const normalizedRole = role.trim();
+      return normalizedRole ? { ...current, role: normalizedRole } : current;
+    });
+  }, []);
+
+  const selectCloseSignOffDecision = useCallback((decision: AccountingCloseSignOffDecision) => {
+    setCloseSignOffDraft((current) => ({ ...current, decision }));
   }, []);
 
   const updateLateAdjustmentDraft = useCallback((patch: Partial<AccountingLateAdjustmentDraftViewModel>) => {
@@ -3312,6 +3737,57 @@ export function useAccountingCloseReportPackageViewModel(
     }
   }, [closePlan, services, workflow]);
 
+  const reviewCloseEvidence = useCallback(async (rowId: string) => {
+    if (!workflow || !closePlan) {
+      setReviewCloseEvidenceStatusText("A close plan is required before retaining evidence review.");
+      setReviewCloseEvidenceStatusTone("danger");
+      return;
+    }
+
+    if (closePlan.isPeriodLocked) {
+      setReviewCloseEvidenceStatusText("The period is locked; evidence review changes require a governed reopen workflow.");
+      setReviewCloseEvidenceStatusTone("danger");
+      return;
+    }
+
+    const activeIssue = closePlan.validationIssues.find((issue, index) =>
+      `validation-evidence-${issue.code}-${issue.targetId ?? index}` === rowId) ?? null;
+    if (!activeIssue) {
+      setReviewCloseEvidenceStatusText("Select an active close blocker or evidence issue before retaining review.");
+      setReviewCloseEvidenceStatusTone("danger");
+      return;
+    }
+
+    const targetId = activeIssue.targetId?.trim() || closePlan.closePlanId;
+    const ledgerBookId = closePlan.ledgerBookId ?? "primary";
+    setReviewCloseEvidenceBusy(true);
+    setReviewCloseEvidenceStatusText(null);
+    setReviewCloseEvidenceStatusTone("neutral");
+    try {
+      const nextPlan = await services.reviewCloseEvidence({
+        workflowId: workflow.workflowId,
+        issueCode: activeIssue.code,
+        targetId: activeIssue.targetId ?? null,
+        actor: "browser-accounting-controller",
+        notes: `Reviewed close blocker ${activeIssue.code} for ${targetId} from the Accounting close cockpit. ${activeIssue.message}`,
+        evidenceLinks: [
+          `browser://accounting/close/evidence-review/${workflow.workflowId}/${activeIssue.code}/${targetId}/book/${ledgerBookId}`,
+          `evidence://close-review/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${ledgerBookId}/issue/${activeIssue.code}/target/${targetId}`
+        ],
+        correlationId: `browser-close-evidence-review-${workflow.workflowId}-${activeIssue.code}-${targetId}`,
+        actionOrigin: "HumanOperator"
+      });
+      setClosePlan(nextPlan);
+      setReviewCloseEvidenceStatusText(`Retained close evidence review for ${activeIssue.code}.`);
+      setReviewCloseEvidenceStatusTone("success");
+    } catch (error) {
+      setReviewCloseEvidenceStatusText(formatAccountingWorkflowError(error, "Close evidence review could not be retained."));
+      setReviewCloseEvidenceStatusTone("danger");
+    } finally {
+      setReviewCloseEvidenceBusy(false);
+    }
+  }, [closePlan, services, workflow]);
+
   const inspectSelectedPackageExport = useCallback(async () => {
     const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
     const artifact = selectedBundle?.exportArtifacts?.[0] ?? null;
@@ -3361,6 +3837,7 @@ export function useAccountingCloseReportPackageViewModel(
       configureClosePlanStatusText,
       configureClosePlanStatusTone,
       closeSetupDraft,
+      closeSignOffDraft,
       createLateAdjustmentBusy,
       createLateAdjustmentStatusText,
       createLateAdjustmentStatusTone,
@@ -3368,6 +3845,9 @@ export function useAccountingCloseReportPackageViewModel(
       reviewLateAdjustmentBusy,
       reviewLateAdjustmentStatusText,
       reviewLateAdjustmentStatusTone,
+      reviewCloseEvidenceBusy,
+      reviewCloseEvidenceStatusText,
+      reviewCloseEvidenceStatusTone,
       exportManifestBusy,
       exportManifestStatusText,
       exportManifestStatusTone,
@@ -3379,9 +3859,17 @@ export function useAccountingCloseReportPackageViewModel(
       configureClosePlan,
       signOffNextTask,
       updateCloseSetupDraft,
+      selectCloseSetupTask,
+      toggleCloseSetupDependency,
+      selectCloseSetupSignOffRole,
+      updateCloseSignOffDraft,
+      selectCloseSignOffTask,
+      selectCloseSignOffRole,
+      selectCloseSignOffDecision,
       updateLateAdjustmentDraft,
       createLateAdjustment,
       reviewLateAdjustment,
+      reviewCloseEvidence,
       inspectSelectedPackageExport,
       selectPackage: setSelectedPackageId
     }),
@@ -3404,6 +3892,7 @@ export function useAccountingCloseReportPackageViewModel(
       configureClosePlanStatusText,
       configureClosePlanStatusTone,
       closeSetupDraft,
+      closeSignOffDraft,
       createLateAdjustment,
       createLateAdjustmentBusy,
       createLateAdjustmentStatusText,
@@ -3422,12 +3911,22 @@ export function useAccountingCloseReportPackageViewModel(
       reviewLateAdjustmentBusy,
       reviewLateAdjustmentStatusText,
       reviewLateAdjustmentStatusTone,
+      reviewCloseEvidence,
+      reviewCloseEvidenceBusy,
+      reviewCloseEvidenceStatusText,
+      reviewCloseEvidenceStatusTone,
+      selectCloseSetupTask,
+      selectCloseSignOffDecision,
+      selectCloseSignOffRole,
+      selectCloseSignOffTask,
       selectedPackageId,
       signOffBusy,
       signOffNextTask,
       signOffStatusText,
       signOffStatusTone,
+      toggleCloseSetupDependency,
       updateCloseSetupDraft,
+      updateCloseSignOffDraft,
       updateLateAdjustmentDraft,
       workflow
     ]
@@ -3443,6 +3942,12 @@ export function useAccountingConfigurationViewModel(
   const [productionReadiness, setProductionReadiness] = useState<AccountingProductionReadiness | null>(null);
   const [migrationRunArtifacts, setMigrationRunArtifacts] = useState<AccountingMigrationRunArtifact[]>([]);
   const [migrationWorkerPlans, setMigrationWorkerPlans] = useState<AccountingMigrationRunWorkerPlan[]>([]);
+  const [externalGlMappingProfiles, setExternalGlMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
+  const [externalGlMappingProfileDraft, setExternalGlMappingProfileDraft] = useState<AccountingExternalGlMappingProfileDraft | null>(null);
+  const [externalGlMappingProfileError, setExternalGlMappingProfileError] = useState<ApiErrorDisplay | null>(null);
+  const [externalGlMappingProfileSaveBusy, setExternalGlMappingProfileSaveBusy] = useState(false);
+  const [externalGlMappingProfileSaveError, setExternalGlMappingProfileSaveError] = useState<ApiErrorDisplay | null>(null);
+  const [externalGlMappingProfileSaveMessage, setExternalGlMappingProfileSaveMessage] = useState<string | null>(null);
   const [productionReadinessLoading, setProductionReadinessLoading] = useState(false);
   const [productionReadinessError, setProductionReadinessError] = useState<ApiErrorDisplay | null>(null);
   const [productionCertificationProfile, setProductionCertificationProfile] = useState<AccountingProductionCertificationProfile | null>(null);
@@ -3457,6 +3962,9 @@ export function useAccountingConfigurationViewModel(
   const [tenantAdministrationProfileSaveBusy, setTenantAdministrationProfileSaveBusy] = useState(false);
   const [tenantAdministrationProfileSaveError, setTenantAdministrationProfileSaveError] = useState<ApiErrorDisplay | null>(null);
   const [tenantAdministrationProfileSaveMessage, setTenantAdministrationProfileSaveMessage] = useState<string | null>(null);
+  const [sandboxProofBusy, setSandboxProofBusy] = useState(false);
+  const [sandboxProofError, setSandboxProofError] = useState<ApiErrorDisplay | null>(null);
+  const [sandboxProofMessage, setSandboxProofMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
@@ -3467,6 +3975,10 @@ export function useAccountingConfigurationViewModel(
   const [createLedgerBookBusy, setCreateLedgerBookBusy] = useState(false);
   const [createLedgerBookError, setCreateLedgerBookError] = useState<ApiErrorDisplay | null>(null);
   const [createdLedgerBookName, setCreatedLedgerBookName] = useState<string | null>(null);
+  const [chartAccountDraft, setChartAccountDraft] = useState<AccountingChartAccountDraft>(() => buildDefaultAccountingChartAccountDraft());
+  const [chartAccountSaveBusy, setChartAccountSaveBusy] = useState(false);
+  const [chartAccountSaveError, setChartAccountSaveError] = useState<ApiErrorDisplay | null>(null);
+  const [chartAccountSaveMessage, setChartAccountSaveMessage] = useState<string | null>(null);
   const [journalCandidatePreview, setJournalCandidatePreview] = useState<PostingRuleJournalCandidateResult | null>(null);
   const [journalCandidateBusy, setJournalCandidateBusy] = useState(false);
   const [journalCandidateError, setJournalCandidateError] = useState<ApiErrorDisplay | null>(null);
@@ -3520,6 +4032,9 @@ export function useAccountingConfigurationViewModel(
     setProductionCertificationProfileSaveError(null);
     setTenantAdministrationProfileError(null);
     setTenantAdministrationProfileSaveError(null);
+    setSandboxProofError(null);
+    setExternalGlMappingProfileError(null);
+    setExternalGlMappingProfileSaveError(null);
     try {
       const next = await services.getConfiguration();
       if (!next) {
@@ -3545,6 +4060,18 @@ export function useAccountingConfigurationViewModel(
           throw new Error("Accounting production readiness response was empty.");
         }
         setProductionReadiness(readiness);
+        try {
+          const profiles = await services.listExternalGlMappingProfiles({
+            fundProfileId: next.fundProfileId,
+            ledgerBookId: next.ledgerBookId ?? null
+          });
+          setExternalGlMappingProfiles(profiles);
+          setExternalGlMappingProfileDraft(buildAccountingExternalGlMappingProfileDraft(next, profiles[0] ?? null));
+        } catch (mappingErr) {
+          setExternalGlMappingProfiles([]);
+          setExternalGlMappingProfileDraft(buildAccountingExternalGlMappingProfileDraft(next, null));
+          setExternalGlMappingProfileError(describeApiError(mappingErr, "Retained external GL mapping profiles are unavailable."));
+        }
         try {
           const profile = await services.getProductionCertificationProfile({
             tenantId: readiness.tenantAdministration?.tenantId ?? null,
@@ -3597,6 +4124,8 @@ export function useAccountingConfigurationViewModel(
         setProductionCertificationDraft(null);
         setMigrationRunArtifacts([]);
         setMigrationWorkerPlans([]);
+        setExternalGlMappingProfiles([]);
+        setExternalGlMappingProfileDraft(null);
         setProductionReadinessError(describeApiError(readinessErr, "Accounting production readiness is unavailable."));
       } finally {
         setProductionReadinessLoading(false);
@@ -3613,6 +4142,8 @@ export function useAccountingConfigurationViewModel(
       setProductionReadiness(null);
       setMigrationRunArtifacts([]);
       setMigrationWorkerPlans([]);
+      setExternalGlMappingProfiles([]);
+      setExternalGlMappingProfileDraft(null);
       setProductionCertificationProfile(null);
       setProductionCertificationDraft(null);
       setTenantAdministrationProfile(null);
@@ -3699,6 +4230,26 @@ export function useAccountingConfigurationViewModel(
       productionCertificationProfile,
       productionCertificationDraft
     );
+    const workflowCertificationArtifact = buildAccountingWorkflowCertificationArtifact(
+      productionCertificationProfile,
+      productionCertificationDraft,
+      evidenceReferences,
+      correlationId
+    );
+    const dimensionalCertificationArtifact = buildAccountingDimensionalCertificationArtifact(
+      productionCertificationProfile,
+      productionCertificationDraft,
+      evidenceReferences,
+      correlationId
+    );
+    const tenantAdminCertificationArtifact = buildAccountingTenantAdminCertificationArtifact(
+      productionCertificationProfile,
+      tenantAdministrationProfile,
+      tenantAdministrationDraft,
+      evidenceReferences,
+      workspace?.ledgerBookId ?? null,
+      correlationId
+    );
     const nextProfile: AccountingProductionCertificationProfile = {
       ...productionCertificationProfile,
       postingRulesLedgerBookNativeCertified: productionCertificationDraft.postingRulesLedgerBookNativeCertified,
@@ -3719,7 +4270,19 @@ export function useAccountingConfigurationViewModel(
       updatedAtUtc: new Date().toISOString(),
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
-      correlationId
+      correlationId,
+      workflowCertificationArtifacts: mergeAccountingCertificationArtifacts(
+        productionCertificationProfile.workflowCertificationArtifacts,
+        workflowCertificationArtifact
+      ),
+      dimensionalCertificationArtifacts: mergeAccountingCertificationArtifacts(
+        productionCertificationProfile.dimensionalCertificationArtifacts,
+        dimensionalCertificationArtifact
+      ),
+      tenantAdminCertificationArtifacts: mergeAccountingCertificationArtifacts(
+        productionCertificationProfile.tenantAdminCertificationArtifacts,
+        tenantAdminCertificationArtifact
+      )
     };
 
     setProductionCertificationProfileSaveBusy(true);
@@ -3742,7 +4305,7 @@ export function useAccountingConfigurationViewModel(
     } finally {
       setProductionCertificationProfileSaveBusy(false);
     }
-  }, [productionCertificationDraft, productionCertificationProfile, productionCertificationProfileSaveBusy, refresh, services]);
+  }, [productionCertificationDraft, productionCertificationProfile, productionCertificationProfileSaveBusy, refresh, services, tenantAdministrationDraft, tenantAdministrationProfile, workspace?.ledgerBookId]);
 
   const updateTenantAdministrationControl = useCallback((controlId: string, checked: boolean) => {
     setTenantAdministrationDraft((current) => {
@@ -3803,18 +4366,146 @@ export function useAccountingConfigurationViewModel(
     setTenantAdministrationProfileSaveError(null);
   }, []);
 
+  const updateApprovalQueueSetup = useCallback((patch: Partial<AccountingApprovalQueueSetupDraft>) => {
+    setTenantAdministrationDraft((current) => current ? {
+      ...current,
+      approvalQueueSetup: {
+        ...current.approvalQueueSetup,
+        ...patch
+      },
+      approvalQueueStudioConfigured: true
+    } : current);
+    setTenantAdministrationProfileSaveMessage(null);
+    setTenantAdministrationProfileSaveError(null);
+  }, []);
+
+  const updateDimensionMappingSetup = useCallback((patch: Partial<AccountingDimensionMappingSetupDraft>) => {
+    setTenantAdministrationDraft((current) => current ? {
+      ...current,
+      dimensionMappingSetup: {
+        ...current.dimensionMappingSetup,
+        ...patch
+      },
+      dimensionMappingStudioConfigured: true
+    } : current);
+    setTenantAdministrationProfileSaveMessage(null);
+    setTenantAdministrationProfileSaveError(null);
+  }, []);
+
+  const updateExternalGlMappingProfileDraft = useCallback((patch: Partial<AccountingExternalGlMappingProfileDraft>) => {
+    setExternalGlMappingProfileDraft((current) => current ? { ...current, ...patch } : current);
+    setExternalGlMappingProfileSaveMessage(null);
+    setExternalGlMappingProfileSaveError(null);
+  }, []);
+
+  const saveExternalGlMappingProfile = useCallback(async () => {
+    if (!workspace || !externalGlMappingProfileDraft || externalGlMappingProfileSaveBusy) {
+      return;
+    }
+
+    const providerId = externalGlMappingProfileDraft.providerId.trim();
+    const profileId = externalGlMappingProfileDraft.profileId.trim();
+    const displayName = externalGlMappingProfileDraft.displayName.trim();
+    const accountMappings = parseExternalGlAccountMappings(externalGlMappingProfileDraft.accountMappingsText);
+    const meridianDimensions = parseLedgerDimensionSet(
+      externalGlMappingProfileDraft.meridianDimensionsText,
+      buildDefaultMeridianExternalGlDimensions(providerId, profileId, workspace)
+    );
+    const externalDimensions = parseLedgerDimensionSet(
+      externalGlMappingProfileDraft.externalDimensionsText,
+      buildDefaultProviderExternalGlDimensions(workspace)
+    );
+    const retainedEvidence = splitAccountingEvidenceReferences(externalGlMappingProfileDraft.evidenceText);
+    if (!providerId || !profileId || !displayName || Object.keys(accountMappings).length === 0 || retainedEvidence.length === 0) {
+      setExternalGlMappingProfileSaveError({
+        summary: "Provider, profile id, display name, account mappings, and retained evidence are required before saving an external GL mapping profile.",
+        details: []
+      });
+      setExternalGlMappingProfileSaveMessage(null);
+      return;
+    }
+
+    const correlationId = `browser-external-gl-mapping-profile-${Date.now()}`;
+    const evidenceLinks = withExternalGlMappingProfileEvidence(retainedEvidence, providerId, workspace.fundProfileId, profileId, workspace.ledgerBookId ?? null);
+    const request: AccountingSystemMappingProfileUpsertRequest = {
+      profile: {
+        profileId,
+        providerId,
+        displayName,
+        updatedAtUtc: new Date().toISOString(),
+        accountMappings,
+        dimensionMappings: [
+          buildExternalGlDimensionMappingProfile(providerId, profileId, meridianDimensions, externalDimensions, externalGlMappingProfileDraft.certified)
+        ],
+        certificationState: externalGlMappingProfileDraft.certified ? "Certified" : "ReadyForReview"
+      },
+      actor: "browser-accounting-operator",
+      providerId,
+      fundProfileId: workspace.fundProfileId,
+      ledgerBookId: workspace.ledgerBookId ?? null,
+      tenantId: productionReadiness?.tenantAdministration?.tenantId ?? null,
+      companyId: productionReadiness?.tenantAdministration?.companyId ?? null,
+      correlationId,
+      evidenceLinks,
+      actionOrigin: "HumanOperator"
+    };
+
+    setExternalGlMappingProfileSaveBusy(true);
+    setExternalGlMappingProfileSaveError(null);
+    setExternalGlMappingProfileSaveMessage(null);
+    try {
+      const saved = await services.upsertExternalGlMappingProfile(request);
+      setExternalGlMappingProfiles((current) => [saved, ...current.filter((profile) => profile.profileId !== saved.profileId)]);
+      setExternalGlMappingProfileDraft(buildAccountingExternalGlMappingProfileDraft(workspace, saved));
+      setExternalGlMappingProfileSaveMessage(`External GL mapping profile ${saved.profileId} saved as ${saved.certificationState}; readiness refreshed from retained provider mapping.`);
+      await refresh();
+    } catch (err) {
+      setExternalGlMappingProfileSaveError(describeApiError(err, "External GL mapping profile save failed."));
+    } finally {
+      setExternalGlMappingProfileSaveBusy(false);
+    }
+  }, [externalGlMappingProfileDraft, externalGlMappingProfileSaveBusy, productionReadiness?.tenantAdministration?.companyId, productionReadiness?.tenantAdministration?.tenantId, refresh, services, workspace]);
+
   const saveTenantAdministrationProfile = useCallback(async () => {
     if (!tenantAdministrationProfile || !tenantAdministrationDraft || tenantAdministrationProfileSaveBusy) {
       return;
     }
 
     const correlationId = `browser-accounting-tenant-admin-${Date.now()}`;
+    const retainedEvidenceReferences = splitAccountingTenantAdministrationEvidence(tenantAdministrationDraft.evidenceText);
+    if (retainedEvidenceReferences.length === 0) {
+      setTenantAdministrationProfileSaveError({
+        summary: "Retained setup evidence is required before saving tenant administration controls.",
+        details: []
+      });
+      setTenantAdministrationProfileSaveMessage(null);
+      return;
+    }
+
     const evidenceReferences = withLedgerBookTenantAdministrationEvidence(
-      splitAccountingTenantAdministrationEvidence(tenantAdministrationDraft.evidenceText),
+      retainedEvidenceReferences,
       tenantAdministrationProfile,
       workspace?.ledgerBookId ?? null,
-      tenantAdministrationDraft.ledgerBookAdministrationStudioConfigured
+      tenantAdministrationDraft
     );
+    const approvalQueueConfiguration = buildAccountingApprovalQueueConfiguration(tenantAdministrationDraft.approvalQueueSetup);
+    if (tenantAdministrationDraft.approvalQueueStudioConfigured && !approvalQueueConfiguration) {
+      setTenantAdministrationProfileSaveError({
+        summary: "Complete approval queue id, workflow kind, approval role/count, segregation policy, and evidence requirement before saving approval queue setup.",
+        details: []
+      });
+      setTenantAdministrationProfileSaveMessage(null);
+      return;
+    }
+    const dimensionMappingConfiguration = buildAccountingDimensionMappingConfiguration(tenantAdministrationDraft.dimensionMappingSetup);
+    if (tenantAdministrationDraft.dimensionMappingStudioConfigured && !dimensionMappingConfiguration) {
+      setTenantAdministrationProfileSaveError({
+        summary: "Complete dimension mapping id, display name, provider id, Meridian dimensions, provider dimensions, and evidence requirement before saving dimension mapping setup.",
+        details: []
+      });
+      setTenantAdministrationProfileSaveMessage(null);
+      return;
+    }
     const nextProfile: AccountingTenantAdministrationProfile = {
       ...tenantAdministrationProfile,
       tenantScopeConfigured: tenantAdministrationDraft.tenantScopeConfigured,
@@ -3838,6 +4529,8 @@ export function useAccountingConfigurationViewModel(
       approvalQueueStudioConfigured: tenantAdministrationDraft.approvalQueueStudioConfigured,
       dimensionMappingStudioConfigured: tenantAdministrationDraft.dimensionMappingStudioConfigured,
       implementationSandboxConfigured: tenantAdministrationDraft.implementationSandboxConfigured,
+      approvalQueueConfigurations: approvalQueueConfiguration ? [approvalQueueConfiguration] : [],
+      dimensionMappingConfigurations: dimensionMappingConfiguration ? [dimensionMappingConfiguration] : [],
       updatedAtUtc: new Date().toISOString(),
       updatedBy: "browser-accounting-operator",
       evidenceReferences,
@@ -3865,6 +4558,107 @@ export function useAccountingConfigurationViewModel(
       setTenantAdministrationProfileSaveBusy(false);
     }
   }, [refresh, services, tenantAdministrationDraft, tenantAdministrationProfile, tenantAdministrationProfileSaveBusy, workspace?.ledgerBookId]);
+
+  const retainImplementationSandboxProof = useCallback(async () => {
+    if (!tenantAdministrationProfile || !tenantAdministrationDraft || sandboxProofBusy) {
+      return;
+    }
+
+    const ledgerBookId = workspace?.ledgerBookId?.trim() ?? null;
+    if (!ledgerBookId) {
+      setSandboxProofError({
+        summary: "Select a ledger-book-scoped Accounting Configure workspace before retaining implementation sandbox proof.",
+        details: []
+      });
+      setSandboxProofMessage(null);
+      return;
+    }
+
+    const correlationId = `browser-accounting-sandbox-proof-${Date.now()}`;
+    const approvalQueueConfiguration = buildAccountingApprovalQueueConfiguration(tenantAdministrationDraft.approvalQueueSetup);
+    if (tenantAdministrationDraft.approvalQueueStudioConfigured && !approvalQueueConfiguration) {
+      setSandboxProofError({
+        summary: "Complete approval queue id, workflow kind, approval role/count, segregation policy, and evidence requirement before retaining implementation sandbox proof.",
+        details: []
+      });
+      setSandboxProofMessage(null);
+      return;
+    }
+    const dimensionMappingConfiguration = buildAccountingDimensionMappingConfiguration(tenantAdministrationDraft.dimensionMappingSetup);
+    if (tenantAdministrationDraft.dimensionMappingStudioConfigured && !dimensionMappingConfiguration) {
+      setSandboxProofError({
+        summary: "Complete dimension mapping id, display name, provider id, Meridian dimensions, provider dimensions, and evidence requirement before retaining implementation sandbox proof.",
+        details: []
+      });
+      setSandboxProofMessage(null);
+      return;
+    }
+    const nextDraft: AccountingTenantAdministrationProfileDraft = {
+      ...tenantAdministrationDraft,
+      implementationSandboxConfigured: true,
+      evidenceText: withImplementationSandboxEvidence(
+        splitAccountingTenantAdministrationEvidence(tenantAdministrationDraft.evidenceText),
+        tenantAdministrationProfile,
+        ledgerBookId
+      ).join("\n")
+    };
+    const evidenceReferences = withLedgerBookTenantAdministrationEvidence(
+      splitAccountingTenantAdministrationEvidence(nextDraft.evidenceText),
+      tenantAdministrationProfile,
+      ledgerBookId,
+      nextDraft
+    );
+    const nextProfile: AccountingTenantAdministrationProfile = {
+      ...tenantAdministrationProfile,
+      tenantScopeConfigured: nextDraft.tenantScopeConfigured,
+      adminRoleProfileConfigured: nextDraft.adminRoleProfileConfigured,
+      scopedAccessPoliciesConfigured: nextDraft.scopedAccessPoliciesConfigured,
+      reportingGroupsConfigured: nextDraft.reportingGroupsConfigured,
+      accountingAdminSurfaceConfigured: nextDraft.accountingAdminSurfaceConfigured,
+      browserAccountingAdminSurfaceConfigured: nextDraft.browserAccountingAdminSurfaceConfigured,
+      wpfAccountingAdminSurfaceConfigured: nextDraft.wpfAccountingAdminSurfaceConfigured,
+      chartAdministrationStudioConfigured: nextDraft.chartAdministrationStudioConfigured,
+      ruleTestPromotionStudioConfigured: nextDraft.ruleTestPromotionStudioConfigured,
+      closeSetupStudioConfigured: nextDraft.closeSetupStudioConfigured,
+      providerMappingStudioConfigured: nextDraft.providerMappingStudioConfigured,
+      tenantCompanyReportGroupSetupStudioConfigured: nextDraft.tenantCompanyReportGroupSetupStudioConfigured,
+      auditReviewToolingConfigured: nextDraft.auditReviewToolingConfigured,
+      bulkImportExportSafeguardsConfigured: nextDraft.bulkImportExportSafeguardsConfigured,
+      performanceValidationConfigured: nextDraft.performanceValidationConfigured,
+      disasterRecoveryRunbookConfigured: nextDraft.disasterRecoveryRunbookConfigured,
+      ledgerBookAdministrationStudioConfigured: nextDraft.ledgerBookAdministrationStudioConfigured,
+      postingRuleAuthoringStudioConfigured: nextDraft.postingRuleAuthoringStudioConfigured,
+      approvalQueueStudioConfigured: nextDraft.approvalQueueStudioConfigured,
+      dimensionMappingStudioConfigured: nextDraft.dimensionMappingStudioConfigured,
+      implementationSandboxConfigured: true,
+      approvalQueueConfigurations: approvalQueueConfiguration ? [approvalQueueConfiguration] : [],
+      dimensionMappingConfigurations: dimensionMappingConfiguration ? [dimensionMappingConfiguration] : [],
+      updatedAtUtc: new Date().toISOString(),
+      updatedBy: "browser-accounting-operator",
+      evidenceReferences,
+      correlationId
+    };
+
+    setSandboxProofBusy(true);
+    setSandboxProofError(null);
+    setSandboxProofMessage(null);
+    try {
+      const saved = await services.upsertTenantAdministrationProfile({
+        profile: nextProfile,
+        actor: "browser-accounting-operator",
+        correlationId,
+        evidenceLinks: evidenceReferences
+      });
+      setTenantAdministrationProfile(saved);
+      setTenantAdministrationDraft(buildAccountingTenantAdministrationProfileDraft(saved));
+      setSandboxProofMessage("Implementation sandbox proof retained; readiness refreshed from fixture and ledger-book validation evidence.");
+      await refresh();
+    } catch (err) {
+      setSandboxProofError(describeApiError(err, "Implementation sandbox proof save failed."));
+    } finally {
+      setSandboxProofBusy(false);
+    }
+  }, [refresh, sandboxProofBusy, services, tenantAdministrationDraft, tenantAdministrationProfile, workspace?.ledgerBookId]);
 
   const previewFirstTemplate = useCallback(async () => {
     const template = workspace?.journalTemplates.find((item) => !item.isArchived) ?? null;
@@ -3960,6 +4754,68 @@ export function useAccountingConfigurationViewModel(
     }
   }, [createLedgerBookBusy, services, workspace]);
 
+  const updateChartAccountDraft = useCallback((patch: Partial<AccountingChartAccountDraft>) => {
+    setChartAccountDraft((current) => ({ ...current, ...patch }));
+    setChartAccountSaveError(null);
+    setChartAccountSaveMessage(null);
+  }, []);
+
+  const saveChartAccount = useCallback(async () => {
+    if (!workspace || chartAccountSaveBusy) {
+      return;
+    }
+
+    const nodeId = chartAccountDraft.nodeId.trim();
+    const path = chartAccountDraft.path.trim();
+    const accountName = chartAccountDraft.accountName.trim();
+    const accountType = chartAccountDraft.accountType.trim();
+    if (!nodeId || !path || !accountName || !accountType) {
+      setChartAccountSaveError({
+        summary: "Chart account is missing required fields.",
+        details: ["Node id, path, account name, and account type are required before saving."]
+      });
+      setChartAccountSaveMessage(null);
+      return;
+    }
+
+    setChartAccountSaveBusy(true);
+    setChartAccountSaveError(null);
+    setChartAccountSaveMessage(null);
+    try {
+      const evidenceLinks = parseNonEmptyLines(chartAccountDraft.evidenceText);
+      const refreshed = await services.upsertChartNode({
+        fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
+        actor: "browser-accounting-operator",
+        correlationId: `browser-chart-account-upsert-${nodeId}-${Date.now()}`,
+        evidenceLinks: evidenceLinks.length > 0 ? evidenceLinks : null,
+        node: {
+          nodeId,
+          path,
+          accountName,
+          accountType,
+          parentPath: chartAccountDraft.parentPath.trim() || null,
+          financialAccountId: chartAccountDraft.financialAccountId.trim() || null,
+          isArchived: false
+        }
+      });
+      setWorkspace(refreshed);
+      setChartAccountSaveMessage(`Saved chart account ${path}.`);
+      setChartAccountDraft(buildNextAccountingChartAccountDraft(refreshed));
+      setSelectedRuleId((current) => {
+        if (current && refreshed.postingRules.some((rule) => rule.ruleId === current && !rule.isArchived)) {
+          return current;
+        }
+
+        return refreshed.postingRules.find((rule) => !rule.isArchived)?.ruleId ?? null;
+      });
+    } catch (err) {
+      setChartAccountSaveError(describeApiError(err, "Chart account setup could not be saved."));
+    } finally {
+      setChartAccountSaveBusy(false);
+    }
+  }, [chartAccountDraft, chartAccountSaveBusy, services, workspace]);
+
   const runRuleTests = useCallback(async () => {
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const savedTestCases = workspace?.ruleTestCases ?? [];
@@ -3992,11 +4848,16 @@ export function useAccountingConfigurationViewModel(
       return;
     }
 
-    const selectedRule = workspace.postingRules.find((rule) => rule.ruleId === dryRunPreview.selectedRuleId && !rule.isArchived) ??
-      workspace.postingRules.find((rule) => rule.ruleId === selectedRuleId && !rule.isArchived) ??
-      null;
+    const activeRules = workspace.postingRules.filter((rule) => !rule.isArchived);
+    const selectedRule = activeRules.find((rule) => rule.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
     if (!selectedRule) {
       setJournalCandidateError({ summary: "Dry-run did not select an active posting rule.", details: [] });
+      return;
+    }
+
+    const mismatchReason = resolveDryRunRuleMismatchReason(dryRunPreview, selectedRule, "building a journal candidate");
+    if (mismatchReason) {
+      setJournalCandidateError({ summary: mismatchReason, details: [] });
       return;
     }
 
@@ -4113,6 +4974,12 @@ export function useAccountingConfigurationViewModel(
       return;
     }
 
+    const mismatchReason = resolveDryRunRuleMismatchReason(dryRunPreview, rule, "applying an event predicate");
+    if (mismatchReason) {
+      setApplyEventPredicateError({ summary: mismatchReason, details: [] });
+      return;
+    }
+
     const sourceEventConditionId = `${rule.ruleId}-source-event`;
     const existingConditions = rule.conditions ?? [];
     const eventPredicateRule: PostingRule = {
@@ -4175,6 +5042,12 @@ export function useAccountingConfigurationViewModel(
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
     if (!workspace || !rule || !dryRunPreview || applyThresholdBusy) {
+      return;
+    }
+
+    const mismatchReason = resolveDryRunRuleMismatchReason(dryRunPreview, rule, "applying a threshold");
+    if (mismatchReason) {
+      setApplyThresholdError({ summary: mismatchReason, details: [] });
       return;
     }
 
@@ -4241,6 +5114,12 @@ export function useAccountingConfigurationViewModel(
       return;
     }
 
+    const mismatchReason = resolveDryRunRuleMismatchReason(dryRunPreview, rule, "applying an effective start date");
+    if (mismatchReason) {
+      setApplyEffectiveStartError({ summary: mismatchReason, details: [] });
+      return;
+    }
+
     const effectiveRule: PostingRule = {
       ...rule,
       ruleVersion: `${rule.ruleVersion}.effective`,
@@ -4289,6 +5168,12 @@ export function useAccountingConfigurationViewModel(
     const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
     const generatedPostings = dryRunPreview?.generatedPostingLines ?? [];
     if (!workspace || !rule || !dryRunPreview || generatedPostings.length === 0 || applyScopeBusy) {
+      return;
+    }
+
+    const mismatchReason = resolveDryRunRuleMismatchReason(dryRunPreview, rule, "applying dry-run scope");
+    if (mismatchReason) {
+      setApplyScopeError({ summary: mismatchReason, details: [] });
       return;
     }
 
@@ -4342,6 +5227,12 @@ export function useAccountingConfigurationViewModel(
       return;
     }
 
+    const mismatchReason = resolveDryRunRuleMismatchReason(dryRunPreview, rule, "capturing generated postings");
+    if (mismatchReason) {
+      setCapturePostingsError({ summary: mismatchReason, details: [] });
+      return;
+    }
+
     const capturedRule: PostingRule = {
       ...rule,
       ruleVersion: `${rule.ruleVersion}.postings`,
@@ -4390,6 +5281,12 @@ export function useAccountingConfigurationViewModel(
       ? resolveDryRunFormulaCandidate(rule, dryRunPreview)
       : null;
     if (!workspace || !rule || !dryRunPreview || !formulaCandidate || applyFormulaBusy) {
+      return;
+    }
+
+    const mismatchReason = resolveDryRunRuleMismatchReason(dryRunPreview, rule, "applying formula amounts");
+    if (mismatchReason) {
+      setApplyFormulaError({ summary: mismatchReason, details: [] });
       return;
     }
 
@@ -4448,6 +5345,12 @@ export function useAccountingConfigurationViewModel(
       ? mergeAllocationTargetsFromGeneratedPostings(rule.allocations ?? [], dryRunPreview.generatedPostingLines ?? [])
       : null;
     if (!workspace || !rule || !dryRunPreview || !nextAllocations || applyAllocationBusy) {
+      return;
+    }
+
+    const mismatchReason = resolveDryRunRuleMismatchReason(dryRunPreview, rule, "applying allocation targets");
+    if (mismatchReason) {
+      setApplyAllocationError({ summary: mismatchReason, details: [] });
       return;
     }
 
@@ -4541,7 +5444,17 @@ export function useAccountingConfigurationViewModel(
   const duplicateSelectedRule = useCallback(async () => {
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
-    if (!workspace || !rule || duplicateRuleBusy) {
+    if (duplicateRuleBusy) {
+      return;
+    }
+
+    if (!workspace) {
+      setDuplicateRuleError({ summary: "Load accounting configuration before drafting a posting rule.", details: [] });
+      return;
+    }
+
+    if (!rule) {
+      setDuplicateRuleError({ summary: "Select an active posting rule before drafting a copy.", details: [] });
       return;
     }
 
@@ -4598,7 +5511,17 @@ export function useAccountingConfigurationViewModel(
   const archiveSelectedRule = useCallback(async () => {
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
-    if (!workspace || !rule || archiveRuleBusy) {
+    if (archiveRuleBusy) {
+      return;
+    }
+
+    if (!workspace) {
+      setArchiveRuleError({ summary: "Load accounting configuration before archiving a posting rule.", details: [] });
+      return;
+    }
+
+    if (!rule) {
+      setArchiveRuleError({ summary: "Select an active posting rule before archiving.", details: [] });
       return;
     }
 
@@ -4645,7 +5568,23 @@ export function useAccountingConfigurationViewModel(
   const approveRulePromotion = useCallback(async () => {
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
-    if (!workspace || !rule || approveRulePromotionBusy || isApprovedRulePromotion(rule.promotionApproval)) {
+    if (approveRulePromotionBusy) {
+      return;
+    }
+
+    if (!workspace) {
+      setApproveRulePromotionError({ summary: "Load accounting configuration before approving rule promotion.", details: [] });
+      return;
+    }
+
+    if (!rule) {
+      setApproveRulePromotionError({ summary: "Select an active posting rule before approving promotion.", details: [] });
+      return;
+    }
+
+    const studioRule = workspace.rulesStudio?.rules.find((item) => item.ruleId === rule.ruleId) ?? null;
+    if (studioRule?.isPromotionApproved === true || isApprovedRulePromotion(rule.promotionApproval)) {
+      setApproveRulePromotionError({ summary: "Selected posting rule already has an approved promotion.", details: [] });
       return;
     }
 
@@ -4677,7 +5616,18 @@ export function useAccountingConfigurationViewModel(
   }, [approveRulePromotionBusy, selectedRuleId, services, workspace]);
 
   const activate = useCallback(async () => {
-    if (!workspace || activateBusy) {
+    if (activateBusy) {
+      return;
+    }
+
+    if (!workspace) {
+      setActivateError({ summary: "Load accounting configuration before activation.", details: [] });
+      return;
+    }
+
+    const disabledReason = resolveAccountingConfigurationActivationDisabledReason(workspace, ruleTestSuite);
+    if (disabledReason) {
+      setActivateError({ summary: disabledReason, details: [] });
       return;
     }
 
@@ -4697,7 +5647,7 @@ export function useAccountingConfigurationViewModel(
     } finally {
       setActivateBusy(false);
     }
-  }, [activateBusy, services, workspace]);
+  }, [activateBusy, ruleTestSuite, services, workspace]);
 
   return useMemo(() => {
     const issueCount = workspace?.validationIssues.length ?? 0;
@@ -4707,7 +5657,6 @@ export function useAccountingConfigurationViewModel(
     const activeChartNodeCount = workspace?.chartOfAccounts.filter((item) => !item.isArchived).length ?? 0;
     const hasTemplate = activeTemplateCount > 0;
     const hasChart = activeChartNodeCount > 0;
-    const hasRule = activeRuleCount > 0;
     const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
     const savedRuleTestCases = workspace?.ruleTestCases ?? [];
     const studioSummary = workspace?.rulesStudio?.summary ?? null;
@@ -4715,15 +5664,9 @@ export function useAccountingConfigurationViewModel(
     const studioRuleRowsById = new Map(studioRuleRows.map((row) => [row.ruleId, row]));
     const studioPromotionQueue = workspace?.rulesStudio?.promotionQueue ?? [];
     const studioPromotionQueueById = new Map(studioPromotionQueue.map((item) => [item.ruleId, item]));
-    const promotionApprovalBlockedRules = activeRules.filter((rule) =>
-      rule.requiresPromotionApproval === true && !isApprovedRulePromotion(rule.promotionApproval));
     const savedRuleTestExpectedRuleVersions = new Set(savedRuleTestCases
       .filter((testCase) => Boolean(testCase.expectedRuleId) && Boolean(testCase.expectedRuleVersion))
       .map((testCase) => `${testCase.expectedRuleId}:${testCase.expectedRuleVersion}`));
-    const promotionTestCoverageBlockedRules = activeRules.filter((rule) =>
-      rule.requiresPromotionApproval === true &&
-      !savedRuleTestExpectedRuleVersions.has(`${rule.ruleId}:${rule.ruleVersion ?? "v1"}`));
-    const lastRuleTestSuiteFailed = (ruleTestSuite?.failedCount ?? 0) > 0;
     const resolvedSelectedRuleId = selectedRuleId && activeRules.some((rule) => rule.ruleId === selectedRuleId)
       ? selectedRuleId
       : activeRules[0]?.ruleId ?? null;
@@ -4743,6 +5686,19 @@ export function useAccountingConfigurationViewModel(
         : !workspace.ledgerBookSetupCandidate
           ? "No server-provided ledger-book setup candidate is available for this configuration scope."
           : null;
+    const chartAccountSaveDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before saving a chart account."
+        : !chartAccountDraft.nodeId.trim()
+          ? "Node id is required."
+          : !chartAccountDraft.path.trim()
+            ? "Account path is required."
+            : !chartAccountDraft.accountName.trim()
+              ? "Account name is required."
+              : !chartAccountDraft.accountType.trim()
+                ? "Account type is required."
+                : null;
     const applyThresholdDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -4911,25 +5867,7 @@ export function useAccountingConfigurationViewModel(
           : null;
     const activateDisabledReason = loading
       ? "Accounting configuration is still loading."
-      : !workspace
-        ? "Load accounting configuration before activation."
-        : workspace.status === "Active"
-          ? "Accounting configuration is already active."
-          : criticalIssueCount > 0
-            ? "Resolve critical validation issues before activation."
-            : !hasChart
-              ? "Create at least one active chart account before activation."
-              : !hasTemplate
-                ? "Create at least one active journal template before activation."
-                : !hasRule
-                  ? "Create at least one active posting rule before activation."
-                  : (studioSummary?.pendingPromotionApprovalRules ?? promotionApprovalBlockedRules.length) > 0
-                    ? `Approve promotion for ${studioSummary?.pendingPromotionApprovalRules ?? promotionApprovalBlockedRules.length} required posting rule${(studioSummary?.pendingPromotionApprovalRules ?? promotionApprovalBlockedRules.length) === 1 ? "" : "s"} before activation.`
-                    : (studioSummary?.rulesMissingCurrentVersionRegressionTests ?? promotionTestCoverageBlockedRules.length) > 0
-                      ? `Save regression test cases for ${studioSummary?.rulesMissingCurrentVersionRegressionTests ?? promotionTestCoverageBlockedRules.length} promotion-gated posting rule${(studioSummary?.rulesMissingCurrentVersionRegressionTests ?? promotionTestCoverageBlockedRules.length) === 1 ? "" : "s"} before activation.`
-                      : lastRuleTestSuiteFailed
-                        ? "Resolve failing rule test cases before activation."
-                        : null;
+      : resolveAccountingConfigurationActivationDisabledReason(workspace, ruleTestSuite);
     const statusTone: AccountingConfigurationViewModel["statusTone"] = !workspace
       ? "default"
       : criticalIssueCount > 0
@@ -5072,9 +6010,26 @@ export function useAccountingConfigurationViewModel(
       tenantAdministrationProfileSaveError,
       tenantAdministrationProfileSaveMessage,
       tenantAdministrationProfileSaveBusy,
+      sandboxProofBusy,
+      sandboxProofError,
+      sandboxProofMessage,
       updateTenantAdministrationControl,
+      updateApprovalQueueSetup,
+      updateDimensionMappingSetup,
       updateTenantAdministrationEvidence,
+      retainImplementationSandboxProof,
       saveTenantAdministrationProfile
+    );
+    const externalGlMappingProfileView = buildAccountingExternalGlMappingProfileEditorViewModel(
+      workspace,
+      externalGlMappingProfiles,
+      externalGlMappingProfileDraft,
+      externalGlMappingProfileError,
+      externalGlMappingProfileSaveError,
+      externalGlMappingProfileSaveMessage,
+      externalGlMappingProfileSaveBusy,
+      updateExternalGlMappingProfileDraft,
+      saveExternalGlMappingProfile
     );
     const templates = (workspace?.journalTemplates ?? []).map<AccountingConfigurationTemplateViewModel>((template) => {
       const debitTotal = template.lines.filter((line) => line.side === "Debit").reduce((sum, line) => sum + line.amount, 0);
@@ -5150,9 +6105,26 @@ export function useAccountingConfigurationViewModel(
       ledgerBookRows,
       ledgerBookSummaryLabel,
       ledgerBookEmptyText,
+      chartAccountEditor: {
+        nodeIdValue: chartAccountDraft.nodeId,
+        pathValue: chartAccountDraft.path,
+        accountNameValue: chartAccountDraft.accountName,
+        accountTypeValue: chartAccountDraft.accountType,
+        parentPathValue: chartAccountDraft.parentPath,
+        financialAccountIdValue: chartAccountDraft.financialAccountId,
+        evidenceValue: chartAccountDraft.evidenceText,
+        saveButtonLabel: chartAccountSaveBusy ? "Saving chart account" : "Save chart account",
+        saveDisabledReason: chartAccountSaveDisabledReason,
+        statusText: chartAccountSaveError?.summary ?? chartAccountSaveMessage,
+        saveBusy: chartAccountSaveBusy,
+        canSave: chartAccountSaveDisabledReason === null && !chartAccountSaveBusy,
+        updateDraft: updateChartAccountDraft,
+        save: saveChartAccount
+      },
       productionReadiness: productionReadinessView,
       productionCertificationProfile: productionCertificationProfileView,
       tenantAdministrationProfile: tenantAdministrationProfileView,
+      externalGlMappingProfile: externalGlMappingProfileView,
       templates,
       rules,
       selectedRule: rules.find((rule) => rule.id === resolvedSelectedRuleId) ?? null,
@@ -5327,10 +6299,20 @@ export function useAccountingConfigurationViewModel(
     approveRulePromotionError,
     approvedRulePromotionId,
     buildJournalCandidate,
+    chartAccountDraft,
+    chartAccountSaveBusy,
+    chartAccountSaveError,
+    chartAccountSaveMessage,
     dryRunBusy,
     dryRunError,
     dryRunPreview,
     dryRunSelectedRule,
+    externalGlMappingProfileDraft,
+    externalGlMappingProfileError,
+    externalGlMappingProfileSaveBusy,
+    externalGlMappingProfileSaveError,
+    externalGlMappingProfileSaveMessage,
+    externalGlMappingProfiles,
     error,
     eventPredicateRuleId,
     effectiveStartRuleId,
@@ -5360,10 +6342,15 @@ export function useAccountingConfigurationViewModel(
     ruleTestSuite,
     runRuleTests,
     saveDryRunAsRuleTest,
+    saveExternalGlMappingProfile,
     saveRuleTestBusy,
     saveRuleTestError,
     saveProductionCertificationProfile,
     saveTenantAdministrationProfile,
+    retainImplementationSandboxProof,
+    sandboxProofBusy,
+    sandboxProofError,
+    sandboxProofMessage,
     selectedRuleId,
     scopedRuleId,
     tenantAdministrationDraft,
@@ -5376,9 +6363,111 @@ export function useAccountingConfigurationViewModel(
     updateProductionCertificationControl,
     updateProductionCertificationEvidence,
     updateTenantAdministrationControl,
+    updateDimensionMappingSetup,
     updateTenantAdministrationEvidence,
+    updateChartAccountDraft,
+    updateExternalGlMappingProfileDraft,
+    saveChartAccount,
     workspace
   ]);
+}
+
+function resolveAccountingConfigurationActivationDisabledReason(
+  workspace: AccountingConfigurationWorkspace | null,
+  ruleTestSuite: AccountingRuleTestSuiteResult | null
+): string | null {
+  if (!workspace) {
+    return "Load accounting configuration before activation.";
+  }
+
+  if (workspace.status === "Active") {
+    return "Accounting configuration is already active.";
+  }
+
+  const criticalIssueCount = workspace.validationIssues.filter((issue) => issue.severity === "Critical").length;
+  if (criticalIssueCount > 0) {
+    return "Resolve critical validation issues before activation.";
+  }
+
+  const activeChartNodeCount = workspace.chartOfAccounts.filter((item) => !item.isArchived).length;
+  if (activeChartNodeCount === 0) {
+    return "Create at least one active chart account before activation.";
+  }
+
+  const activeTemplateCount = workspace.journalTemplates.filter((item) => !item.isArchived).length;
+  if (activeTemplateCount === 0) {
+    return "Create at least one active journal template before activation.";
+  }
+
+  const activeRules = workspace.postingRules.filter((item) => !item.isArchived);
+  if (activeRules.length === 0) {
+    return "Create at least one active posting rule before activation.";
+  }
+
+  const pendingPromotionApprovalRuleCount = workspace.rulesStudio?.summary.pendingPromotionApprovalRules ??
+    activeRules.filter((rule) => rule.requiresPromotionApproval === true && !isApprovedRulePromotion(rule.promotionApproval)).length;
+  if (pendingPromotionApprovalRuleCount > 0) {
+    return `Approve promotion for ${pendingPromotionApprovalRuleCount} required posting rule${pendingPromotionApprovalRuleCount === 1 ? "" : "s"} before activation.`;
+  }
+
+  const savedRuleTestExpectedRuleVersions = new Set((workspace.ruleTestCases ?? [])
+    .filter((testCase) => Boolean(testCase.expectedRuleId) && Boolean(testCase.expectedRuleVersion))
+    .map((testCase) => `${testCase.expectedRuleId}:${testCase.expectedRuleVersion}`));
+  const missingRegressionRuleCount = workspace.rulesStudio?.summary.rulesMissingCurrentVersionRegressionTests ??
+    activeRules.filter((rule) =>
+      rule.requiresPromotionApproval === true &&
+      !savedRuleTestExpectedRuleVersions.has(`${rule.ruleId}:${rule.ruleVersion ?? "v1"}`)).length;
+  if (missingRegressionRuleCount > 0) {
+    return `Save regression test cases for ${missingRegressionRuleCount} promotion-gated posting rule${missingRegressionRuleCount === 1 ? "" : "s"} before activation.`;
+  }
+
+  if ((ruleTestSuite?.failedCount ?? 0) > 0) {
+    return "Resolve failing rule test cases before activation.";
+  }
+
+  return null;
+}
+
+function resolveDryRunRuleMismatchReason(
+  dryRunPreview: RuleDryRunResult,
+  selectedRule: PostingRule,
+  action: string
+): string | null {
+  return dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedRule.ruleId
+    ? `Dry-run preview must match the selected posting rule before ${action}.`
+    : null;
+}
+
+function buildDefaultAccountingChartAccountDraft(): AccountingChartAccountDraft {
+  return {
+    nodeId: "assets-cash-operating",
+    path: "Assets:Cash:Operating",
+    accountName: "Operating Cash",
+    accountType: "Asset",
+    parentPath: "Assets:Cash",
+    financialAccountId: "",
+    evidenceText: "browser://accounting/configure/chart-account/setup"
+  };
+}
+
+function buildNextAccountingChartAccountDraft(workspace: AccountingConfigurationWorkspace): AccountingChartAccountDraft {
+  const nextIndex = workspace.chartOfAccounts.filter((node) => !node.isArchived).length + 1;
+  return {
+    nodeId: `chart-account-${nextIndex}`,
+    path: `Assets:Configured Account ${nextIndex}`,
+    accountName: `Configured Account ${nextIndex}`,
+    accountType: "Asset",
+    parentPath: "Assets",
+    financialAccountId: "",
+    evidenceText: `browser://accounting/configure/chart-account/${nextIndex}`
+  };
+}
+
+function parseNonEmptyLines(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 }
 
 function cloneLedgerDimensionSet(dimensions: PostingRule["scope"]): PostingRule["scope"] {
@@ -5392,6 +6481,280 @@ function cloneLedgerDimensionSet(dimensions: PostingRule["scope"]): PostingRule[
   }
 
   return cloned;
+}
+
+function buildAccountingExternalGlMappingProfileEditorViewModel(
+  workspace: AccountingConfigurationWorkspace | null,
+  profiles: ExternalGlMappingProfile[],
+  draft: AccountingExternalGlMappingProfileDraft | null,
+  loadError: ApiErrorDisplay | null,
+  saveError: ApiErrorDisplay | null,
+  saveMessage: string | null,
+  saveBusy: boolean,
+  updateDraft: (patch: Partial<AccountingExternalGlMappingProfileDraft>) => void,
+  save: () => Promise<void>
+): AccountingExternalGlMappingProfileEditorViewModel {
+  const accountMappingCount = draft ? Object.keys(parseExternalGlAccountMappings(draft.accountMappingsText)).length : 0;
+  const missingReason = !workspace
+    ? "Load Accounting Configure before saving provider mappings."
+    : !draft
+      ? "Mapping profile draft is not available."
+      : !draft.providerId.trim()
+        ? "Provider id is required."
+        : !draft.profileId.trim()
+          ? "Mapping profile id is required."
+          : !draft.displayName.trim()
+            ? "Display name is required."
+            : accountMappingCount === 0
+              ? "At least one account mapping is required."
+              : splitAccountingEvidenceReferences(draft.evidenceText).length === 0
+                ? "Retained mapping approval evidence is required."
+                : null;
+  const mappingRows = profiles.map<AccountingTenantAdministrationControlViewModel>((profile) => ({
+    id: profile.profileId,
+    label: `${profile.displayName} (${profile.providerId})`,
+    statusLabel: `${profile.certificationState}; ${Object.keys(profile.accountMappings ?? {}).length} account map${Object.keys(profile.accountMappings ?? {}).length === 1 ? "" : "s"}`,
+    tone: profile.certificationState === "Certified" ? "success" : profile.certificationState === "Rejected" ? "danger" : "warning"
+  }));
+
+  return {
+    title: "External GL provider mapping profile",
+    scopeLabel: workspace
+      ? `Fund ${workspace.fundProfileId} | ledger book ${workspace.ledgerBookId ?? "not selected"}`
+      : "Accounting scope not loaded",
+    providerIdValue: draft?.providerId ?? "",
+    profileIdValue: draft?.profileId ?? "",
+    displayNameValue: draft?.displayName ?? "",
+    accountMappingsValue: draft?.accountMappingsText ?? "",
+    meridianDimensionsValue: draft?.meridianDimensionsText ?? "",
+    externalDimensionsValue: draft?.externalDimensionsText ?? "",
+    evidenceValue: draft?.evidenceText ?? "",
+    certified: draft?.certified ?? false,
+    mappingRows,
+    saveButtonLabel: saveBusy ? "Saving mapping" : "Save provider mapping",
+    saveDisabledReason: missingReason,
+    saveBusy,
+    canSave: missingReason === null && !saveBusy,
+    statusText: saveError?.summary ?? saveMessage ?? loadError?.summary ?? null,
+    errorText: saveError?.summary ?? loadError?.summary ?? null,
+    errorDetails: saveError?.details ?? loadError?.details ?? [],
+    updateProviderId: (value) => updateDraft({ providerId: value }),
+    updateProfileId: (value) => updateDraft({ profileId: value }),
+    updateDisplayName: (value) => updateDraft({ displayName: value }),
+    updateAccountMappings: (value) => updateDraft({ accountMappingsText: value }),
+    updateMeridianDimensions: (value) => updateDraft({ meridianDimensionsText: value }),
+    updateExternalDimensions: (value) => updateDraft({ externalDimensionsText: value }),
+    updateEvidence: (value) => updateDraft({ evidenceText: value }),
+    updateCertified: (checked) => updateDraft({ certified: checked }),
+    save
+  };
+}
+
+function buildAccountingExternalGlMappingProfileDraft(
+  workspace: AccountingConfigurationWorkspace,
+  profile: ExternalGlMappingProfile | null
+): AccountingExternalGlMappingProfileDraft {
+  const providerId = profile?.providerId?.trim() || "quickbooks-fixture";
+  const profileId = profile?.profileId?.trim() || `${providerId}-${workspace.fundProfileId}-ledger-book-mapping`;
+  const accountMappings = Object.entries(profile?.accountMappings ?? {});
+  const retainedDimensionMapping = profile?.dimensionMappings?.[0] ?? null;
+  return {
+    providerId,
+    profileId,
+    displayName: profile?.displayName?.trim() || `${workspace.fundProfileId} external GL mapping`,
+    accountMappingsText: accountMappings.length > 0
+      ? accountMappings.map(([accountPath, externalAccountId]) => `${accountPath}=${externalAccountId}`).join("\n")
+      : "Assets:Cash:Operating=qbo-1000\nIncome:Investment Income=qbo-4000\nExpenses:Operating Expenses=qbo-6000",
+    meridianDimensionsText: formatExternalGlLedgerDimensionSet(
+      retainedDimensionMapping?.meridianDimensions ?? buildDefaultMeridianExternalGlDimensions(providerId, profileId, workspace)
+    ),
+    externalDimensionsText: formatExternalGlLedgerDimensionSet(
+      retainedDimensionMapping?.externalDimensions ?? buildDefaultProviderExternalGlDimensions(workspace)
+    ),
+    evidenceText: `approval:external-gl-mapping:${profileId}`,
+    certified: profile?.certificationState === "Certified"
+  };
+}
+
+function buildDefaultMeridianExternalGlDimensions(
+  providerId: string,
+  profileId: string,
+  workspace: AccountingConfigurationWorkspace
+): LedgerDimensionSet {
+  return {
+    fundId: workspace.fundProfileId,
+    entityId: workspace.ledgerBookSetupCandidate?.fundStructureNodeId ?? workspace.fundProfileId,
+    bookId: workspace.ledgerBookId ?? null,
+    costCenterId: "fund-accounting",
+    externalGlDimensions: {
+      Provider: providerId,
+      MappingProfile: profileId
+    }
+  };
+}
+
+function buildDefaultProviderExternalGlDimensions(workspace: AccountingConfigurationWorkspace): LedgerDimensionSet {
+  const ledgerBookId = workspace.ledgerBookId ?? null;
+  return {
+    fundId: workspace.fundProfileId,
+    entityId: workspace.ledgerBookSetupCandidate?.fundStructureNodeId ?? workspace.fundProfileId,
+    bookId: ledgerBookId ? `Book:${ledgerBookId}` : null,
+    costCenterId: "FundAccounting",
+    externalGlDimensions: {
+      Class: workspace.fundProfileId,
+      Book: ledgerBookId ?? "fund-scope"
+    }
+  };
+}
+
+function parseExternalGlAccountMappings(value: string): Record<string, string> {
+  const mappings: Record<string, string> = {};
+  for (const line of value.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex <= 0 || separatorIndex >= trimmed.length - 1) {
+      continue;
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const mapped = trimmed.slice(separatorIndex + 1).trim();
+    if (key && mapped) {
+      mappings[key] = mapped;
+    }
+  }
+
+  return mappings;
+}
+
+type LedgerDimensionScalarKey = Exclude<keyof LedgerDimensionSet, "externalGlDimensions">;
+
+const LEDGER_DIMENSION_KEYS = new Map<string, LedgerDimensionScalarKey>([
+  ["fundid", "fundId"],
+  ["entityid", "entityId"],
+  ["sleeveid", "sleeveId"],
+  ["strategyid", "strategyId"],
+  ["investorid", "investorId"],
+  ["capitalaccountid", "capitalAccountId"],
+  ["instrumentid", "instrumentId"],
+  ["taxlotid", "taxLotId"],
+  ["costcenterid", "costCenterId"],
+  ["counterpartyid", "counterpartyId"],
+  ["organizationid", "organizationId"],
+  ["portfolioid", "portfolioId"],
+  ["bookid", "bookId"],
+  ["accountid", "accountId"],
+  ["customerid", "customerId"],
+  ["vendorid", "vendorId"],
+  ["projectid", "projectId"]
+]);
+
+const LEDGER_DIMENSION_FORMAT_KEYS: LedgerDimensionScalarKey[] = [
+  "fundId",
+  "entityId",
+  "sleeveId",
+  "strategyId",
+  "investorId",
+  "capitalAccountId",
+  "instrumentId",
+  "taxLotId",
+  "costCenterId",
+  "counterpartyId",
+  "organizationId",
+  "portfolioId",
+  "bookId",
+  "accountId",
+  "customerId",
+  "vendorId",
+  "projectId"
+];
+
+function parseLedgerDimensionSet(value: string, defaults: LedgerDimensionSet): LedgerDimensionSet {
+  const dimensions: LedgerDimensionSet = { ...defaults, externalGlDimensions: { ...(defaults.externalGlDimensions ?? {}) } };
+  for (const line of value.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex <= 0 || separatorIndex >= trimmed.length - 1) {
+      continue;
+    }
+
+    const rawKey = trimmed.slice(0, separatorIndex).trim();
+    const mapped = trimmed.slice(separatorIndex + 1).trim();
+    if (!rawKey || !mapped) {
+      continue;
+    }
+
+    const normalizedKey = rawKey.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    const dimensionKey = LEDGER_DIMENSION_KEYS.get(normalizedKey);
+    if (dimensionKey) {
+      dimensions[dimensionKey] = mapped;
+    } else {
+      dimensions.externalGlDimensions = { ...(dimensions.externalGlDimensions ?? {}), [rawKey]: mapped };
+    }
+  }
+
+  return dimensions;
+}
+
+function formatExternalGlLedgerDimensionSet(dimensions: LedgerDimensionSet): string {
+  const entries: string[] = [];
+  for (const key of LEDGER_DIMENSION_FORMAT_KEYS) {
+    const value = dimensions[key];
+    if (typeof value === "string" && value.trim()) {
+      entries.push(`${key}=${value.trim()}`);
+    }
+  }
+
+  for (const [key, value] of Object.entries(dimensions.externalGlDimensions ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
+    if (value?.trim()) {
+      entries.push(`${key}=${value.trim()}`);
+    }
+  }
+
+  return entries.join("\n");
+}
+
+function buildExternalGlDimensionMappingProfile(
+  providerId: string,
+  profileId: string,
+  meridianDimensions: LedgerDimensionSet,
+  externalDimensions: LedgerDimensionSet,
+  certified: boolean
+): ExternalGlMappingProfile["dimensionMappings"][number] {
+  return {
+    profileId: `${profileId}-dimension-scope`,
+    providerId,
+    displayName: "Canonical fund and ledger-book dimension scope",
+    meridianDimensions,
+    externalDimensions,
+    certificationState: certified ? "Certified" : "ReadyForReview",
+    validationIssues: []
+  };
+}
+
+function withExternalGlMappingProfileEvidence(
+  retainedEvidence: string[],
+  providerId: string,
+  fundProfileId: string,
+  profileId: string,
+  ledgerBookId: string | null
+): string[] {
+  return [...retainedEvidence,
+    `approval:external-gl-mapping:${profileId}`,
+    `evidence://external-gl/mapping-certification/provider/${providerId}/fund/${fundProfileId}/profile/${profileId}`,
+    ledgerBookId ? `evidence://ledger-book/${ledgerBookId}/external-gl/mapping-certification/${profileId}` : null
+  ]
+    .filter((value): value is string => Boolean(value && value.trim()))
+    .map((value) => value.trim())
+    .filter((value, index, values) => values.findIndex((candidate) => candidate.toLowerCase() === value.toLowerCase()) === index)
+    .sort((left, right) => left.localeCompare(right));
 }
 
 function buildAccountingProductionReadinessViewModel(
@@ -5749,7 +7112,10 @@ function buildAccountingProductionCertificationProfileFromReadiness(
     updatedAtUtc: "",
     updatedBy: "not retained",
     evidenceReferences,
-    correlationId: null
+    correlationId: null,
+    workflowCertificationArtifacts: readiness.workflowCertificationArtifacts ?? [],
+    dimensionalCertificationArtifacts: readiness.dimensionalCertificationArtifacts ?? [],
+    tenantAdminCertificationArtifacts: readiness.tenantAdminCertificationArtifacts ?? []
   };
 }
 
@@ -5807,6 +7173,223 @@ function withProductionCertificationControlEvidence(
     .filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
 }
 
+function buildAccountingWorkflowCertificationArtifact(
+  profile: AccountingProductionCertificationProfile,
+  draft: AccountingProductionCertificationProfileDraft,
+  evidenceReferences: string[],
+  correlationId: string
+): AccountingWorkflowCertificationArtifact | null {
+  const ledgerBookId = profile.ledgerBookId?.trim();
+  if (!ledgerBookId) {
+    return null;
+  }
+
+  const lanes: AccountingWorkflowCertificationLane[] = [
+    buildWorkflowCertificationLane(draft.postingRulesLedgerBookNativeCertified, "PostingRules", evidenceReferences, "posting-candidate"),
+    buildWorkflowCertificationLane(draft.journalLifecycleLedgerBookNativeCertified, "JournalLifecycle", evidenceReferences, "journal-lifecycle"),
+    buildWorkflowCertificationLane(draft.closeReportingLedgerBookNativeCertified, "CloseReporting", evidenceReferences, "close-reporting"),
+    buildWorkflowCertificationLane(draft.closePlanConfigurationLedgerBookNativeCertified, "ClosePlanConfiguration", evidenceReferences, "close-plan-configuration"),
+    buildWorkflowCertificationLane(draft.externalGlLedgerBookNativeCertified, "ExternalGl", evidenceReferences, "external-gl"),
+    buildWorkflowCertificationLane(draft.reconciliationLedgerBookNativeCertified, "Reconciliation", evidenceReferences, "reconciliation"),
+    buildWorkflowCertificationLane(draft.directLendingLedgerBookNativeCertified, "DirectLendingProjection", evidenceReferences, "direct-lending"),
+    buildWorkflowCertificationLane(draft.strategyLedgerReadLedgerBookNativeCertified, "StrategyLedgerReads", evidenceReferences, "strategy-ledger")
+  ].filter((lane): lane is AccountingWorkflowCertificationLane => lane !== null);
+
+  if (lanes.length === 0) {
+    return null;
+  }
+
+  return {
+    certificationId: `${correlationId}-workflow`,
+    status: "Certified",
+    tenantId: profile.tenantId ?? null,
+    companyId: profile.companyId ?? null,
+    fundProfileId: profile.fundProfileId,
+    ledgerBookId,
+    certifiedBy: "browser-accounting-operator",
+    certifiedAtUtc: new Date().toISOString(),
+    sourceService: "browser-accounting-configure",
+    lanes,
+    evidenceReferences,
+    issues: [],
+    correlationId
+  };
+}
+
+function buildAccountingDimensionalCertificationArtifact(
+  profile: AccountingProductionCertificationProfile,
+  draft: AccountingProductionCertificationProfileDraft,
+  evidenceReferences: string[],
+  correlationId: string
+): AccountingDimensionalCertificationArtifact | null {
+  const ledgerBookId = profile.ledgerBookId?.trim();
+  if (!ledgerBookId) {
+    return null;
+  }
+
+  const lanes: AccountingDimensionalCertificationLane[] = [
+    buildDimensionalCertificationLane(draft.ledgerLineDimensionsPersistedCertified, "LedgerLinePersistence", evidenceReferences, "ledger-line"),
+    buildDimensionalCertificationLane(draft.trialBalanceDimensionFiltersCertified, "TrialBalanceFilters", evidenceReferences, "trial-balance-filter"),
+    buildDimensionalCertificationLane(draft.periodReportDimensionQueriesCertified, "PeriodReports", evidenceReferences, "period-report"),
+    buildDimensionalCertificationLane(draft.crossPeriodReportDimensionQueriesCertified, "CrossPeriodReports", evidenceReferences, "cross-period"),
+    buildDimensionalCertificationLane(draft.journalQueryDimensionFiltersCertified, "JournalFilters", evidenceReferences, "journal-query"),
+    buildDimensionalCertificationLane(draft.reportPackageDimensionProvenanceCertified, "ReportPackageProvenance", evidenceReferences, "report-package-provenance"),
+    buildDimensionalCertificationLane(draft.externalExportDimensionMappingCertified, "ExternalExportMappings", evidenceReferences, "external-export")
+  ].filter((lane): lane is AccountingDimensionalCertificationLane => lane !== null);
+
+  if (lanes.length === 0) {
+    return null;
+  }
+
+  return {
+    certificationId: `${correlationId}-dimensions`,
+    status: "Certified",
+    tenantId: profile.tenantId ?? null,
+    companyId: profile.companyId ?? null,
+    fundProfileId: profile.fundProfileId,
+    ledgerBookId,
+    dimensionScopeEvidenceKey: "canonical-production",
+    certifiedBy: "browser-accounting-operator",
+    certifiedAtUtc: new Date().toISOString(),
+    sourceService: "browser-accounting-configure",
+    lanes,
+    evidenceReferences,
+    issues: [],
+    correlationId
+  };
+}
+
+function buildWorkflowCertificationLane(
+  certified: boolean,
+  kind: AccountingWorkflowCertificationLane["kind"],
+  evidenceReferences: string[],
+  marker: string
+): AccountingWorkflowCertificationLane | null {
+  if (!certified) {
+    return null;
+  }
+
+  return {
+    kind,
+    status: "Passed",
+    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
+    issues: []
+  };
+}
+
+function buildDimensionalCertificationLane(
+  certified: boolean,
+  kind: AccountingDimensionalCertificationLane["kind"],
+  evidenceReferences: string[],
+  marker: string
+): AccountingDimensionalCertificationLane | null {
+  if (!certified) {
+    return null;
+  }
+
+  return {
+    kind,
+    status: "Passed",
+    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
+    issues: []
+  };
+}
+
+function buildAccountingTenantAdminCertificationArtifact(
+  profile: AccountingProductionCertificationProfile,
+  tenantProfile: AccountingTenantAdministrationProfile | null,
+  draft: AccountingTenantAdministrationProfileDraft | null,
+  evidenceReferences: string[],
+  ledgerBookId: string | null | undefined,
+  correlationId: string
+): AccountingTenantAdminCertificationArtifact | null {
+  if (!tenantProfile || !draft) {
+    return null;
+  }
+
+  const lanes: AccountingTenantAdminCertificationLane[] = [
+    buildTenantAdminCertificationLane(draft.tenantScopeConfigured, "TenantScope", evidenceReferences, "tenant-scope"),
+    buildTenantAdminCertificationLane(draft.adminRoleProfileConfigured, "AdminRoleProfile", evidenceReferences, "admin-role"),
+    buildTenantAdminCertificationLane(draft.scopedAccessPoliciesConfigured, "ScopedAccessPolicies", evidenceReferences, "scoped-access"),
+    buildTenantAdminCertificationLane(draft.reportingGroupsConfigured, "ReportingGroups", evidenceReferences, "reporting-group"),
+    buildTenantAdminCertificationLane(draft.accountingAdminSurfaceConfigured, "AccountingAdminSurface", evidenceReferences, "accounting-admin-surface"),
+    buildTenantAdminCertificationLane(draft.browserAccountingAdminSurfaceConfigured, "BrowserAccountingAdminSurface", evidenceReferences, "browser-accounting-admin"),
+    buildTenantAdminCertificationLane(draft.wpfAccountingAdminSurfaceConfigured, "WpfAccountingAdminSurface", evidenceReferences, "wpf-admin-studio"),
+    buildTenantAdminCertificationLane(draft.chartAdministrationStudioConfigured, "ChartAdministrationStudio", evidenceReferences, "chart-administration"),
+    buildTenantAdminCertificationLane(draft.ruleTestPromotionStudioConfigured, "RuleTestPromotionStudio", evidenceReferences, "rule-test-promotion"),
+    buildTenantAdminCertificationLane(draft.closeSetupStudioConfigured, "CloseSetupStudio", evidenceReferences, "close-setup"),
+    buildTenantAdminCertificationLane(draft.providerMappingStudioConfigured, "ProviderMappingStudio", evidenceReferences, "provider-mapping"),
+    buildTenantAdminCertificationLane(draft.tenantCompanyReportGroupSetupStudioConfigured, "TenantCompanyReportGroupSetupStudio", evidenceReferences, "tenant-company-report-group"),
+    buildTenantAdminCertificationLane(draft.auditReviewToolingConfigured, "AuditReviewTooling", evidenceReferences, "audit-review"),
+    buildTenantAdminCertificationLane(draft.bulkImportExportSafeguardsConfigured, "BulkImportExportSafeguards", evidenceReferences, "bulk-import-export"),
+    buildTenantAdminCertificationLane(draft.performanceValidationConfigured, "PerformanceValidation", evidenceReferences, "performance-validation"),
+    buildTenantAdminCertificationLane(draft.disasterRecoveryRunbookConfigured, "DisasterRecoveryRunbook", evidenceReferences, "disaster-recovery"),
+    buildTenantAdminCertificationLane(draft.ledgerBookAdministrationStudioConfigured, "LedgerBookAdministrationStudio", evidenceReferences, "ledger-book-administration"),
+    buildTenantAdminCertificationLane(draft.postingRuleAuthoringStudioConfigured, "PostingRuleAuthoringStudio", evidenceReferences, "posting-rule-authoring"),
+    buildTenantAdminCertificationLane(draft.approvalQueueStudioConfigured, "ApprovalQueueStudio", evidenceReferences, "approval-queue"),
+    buildTenantAdminCertificationLane(draft.dimensionMappingStudioConfigured, "DimensionMappingStudio", evidenceReferences, "dimension-mapping"),
+    buildTenantAdminCertificationLane(draft.implementationSandboxConfigured, "ImplementationSandbox", evidenceReferences, "implementation-sandbox")
+  ].filter((lane): lane is AccountingTenantAdminCertificationLane => lane !== null);
+
+  if (lanes.length === 0) {
+    return null;
+  }
+
+  return {
+    certificationId: `${correlationId}-tenant-admin`,
+    status: "Certified",
+    tenantId: tenantProfile.tenantId,
+    companyId: tenantProfile.companyId,
+    fundProfileId: profile.fundProfileId,
+    ledgerBookId: ledgerBookId?.trim() || profile.ledgerBookId || null,
+    certifiedBy: "browser-accounting-operator",
+    certifiedAtUtc: new Date().toISOString(),
+    sourceService: "browser-accounting-configure",
+    lanes,
+    evidenceReferences,
+    issues: [],
+    correlationId
+  };
+}
+
+function buildTenantAdminCertificationLane(
+  certified: boolean,
+  kind: AccountingTenantAdminCertificationLane["kind"],
+  evidenceReferences: string[],
+  marker: string
+): AccountingTenantAdminCertificationLane | null {
+  if (!certified) {
+    return null;
+  }
+
+  return {
+    kind,
+    status: "Passed",
+    evidenceReferences: filterCertificationLaneEvidence(evidenceReferences, marker),
+    issues: []
+  };
+}
+
+function filterCertificationLaneEvidence(evidenceReferences: string[], marker: string): string[] {
+  const normalizedMarker = marker.toLowerCase();
+  const scoped = evidenceReferences.filter((reference) => reference.toLowerCase().includes(normalizedMarker));
+  return scoped.length > 0 ? scoped : evidenceReferences;
+}
+
+function mergeAccountingCertificationArtifacts<T extends { certificationId: string }>(
+  current: T[] | null | undefined,
+  next: T | null
+): T[] {
+  if (!next) {
+    return current ?? [];
+  }
+
+  return [
+    ...(current ?? []).filter((artifact) => artifact.certificationId.toLowerCase() !== next.certificationId.toLowerCase()),
+    next
+  ];
+}
+
 function buildAccountingTenantAdministrationProfileEditorViewModel(
   profile: AccountingTenantAdministrationProfile | null,
   draft: AccountingTenantAdministrationProfileDraft | null,
@@ -5814,21 +7397,46 @@ function buildAccountingTenantAdministrationProfileEditorViewModel(
   saveError: ApiErrorDisplay | null,
   saveMessage: string | null,
   saveBusy: boolean,
+  sandboxBusy: boolean,
+  sandboxError: ApiErrorDisplay | null,
+  sandboxMessage: string | null,
   updateControl: (controlId: string, checked: boolean) => void,
+  updateApprovalQueueSetup: (patch: Partial<AccountingApprovalQueueSetupDraft>) => void,
+  updateDimensionMappingSetup: (patch: Partial<AccountingDimensionMappingSetupDraft>) => void,
   updateEvidence: (value: string) => void,
+  retainSandboxProof: () => Promise<void>,
   save: () => Promise<void>
 ): AccountingTenantAdministrationProfileEditorViewModel {
   const hasScope = Boolean(profile?.tenantId?.trim()) && Boolean(profile?.companyId?.trim());
   const controls = buildAccountingTenantAdministrationProfileControls(draft);
   const evidenceValue = draft?.evidenceText ?? "";
   const missingEvidence = splitAccountingTenantAdministrationEvidence(evidenceValue).length === 0;
+  const approvalQueueConfiguration = draft
+    ? buildAccountingApprovalQueueConfiguration(draft.approvalQueueSetup)
+    : null;
+  const dimensionMappingConfiguration = draft
+    ? buildAccountingDimensionMappingConfiguration(draft.dimensionMappingSetup)
+    : null;
   const saveDisabledReason = !profile || !draft
     ? "Load accounting tenant scope before saving setup controls."
     : !hasScope
       ? "Tenant and company scope are required before saving setup controls."
       : missingEvidence
         ? "Retained setup evidence is required before saving tenant administration controls."
-        : null;
+        : draft.approvalQueueStudioConfigured && !approvalQueueConfiguration
+          ? "Complete approval queue id, workflow kind, approval role/count, segregation policy, and evidence requirement before saving approval queue setup."
+          : draft.dimensionMappingStudioConfigured && !dimensionMappingConfiguration
+            ? "Complete dimension mapping id, display name, provider id, Meridian dimensions, provider dimensions, and evidence requirement before saving dimension mapping setup."
+            : null;
+  const sandboxDisabledReason = !profile || !draft
+    ? "Load accounting tenant scope before retaining sandbox proof."
+    : !profile.tenantId?.trim() || !profile.companyId?.trim()
+      ? "Tenant and company scope are required before retaining sandbox proof."
+      : draft.approvalQueueStudioConfigured && !approvalQueueConfiguration
+        ? "Complete approval queue id, workflow kind, approval role/count, segregation policy, and evidence requirement before retaining implementation sandbox proof."
+        : draft.dimensionMappingStudioConfigured && !dimensionMappingConfiguration
+          ? "Complete dimension mapping id, display name, provider id, Meridian dimensions, provider dimensions, and evidence requirement before retaining implementation sandbox proof."
+          : null;
 
   return {
     title: "Tenant administration setup",
@@ -5840,6 +7448,8 @@ function buildAccountingTenantAdministrationProfileEditorViewModel(
       : "No retained profile loaded.",
     evidenceValue,
     controls,
+    approvalQueueSetup: buildAccountingApprovalQueueSetupEditorViewModel(draft),
+    dimensionMappingSetup: buildAccountingDimensionMappingSetupEditorViewModel(draft),
     saveButtonLabel: saveBusy ? "Saving setup controls" : "Save setup controls",
     saveDisabledReason,
     saveBusy,
@@ -5847,8 +7457,16 @@ function buildAccountingTenantAdministrationProfileEditorViewModel(
     statusText: saveError?.summary ?? saveMessage ?? loadError?.summary ?? null,
     errorText: saveError?.summary ?? null,
     errorDetails: saveError?.details ?? [],
+    sandboxButtonLabel: sandboxBusy ? "Retaining sandbox proof" : "Retain sandbox proof",
+    sandboxDisabledReason,
+    sandboxBusy,
+    sandboxStatusText: sandboxError?.summary ?? sandboxMessage,
+    canRetainSandboxProof: sandboxDisabledReason === null && !sandboxBusy,
     updateControl,
+    updateApprovalQueueSetup,
+    updateDimensionMappingSetup,
     updateEvidence,
+    retainSandboxProof,
     save
   };
 }
@@ -5974,6 +7592,152 @@ function buildAccountingTenantAdministrationProfileControls(
   ];
 }
 
+function buildAccountingApprovalQueueSetupEditorViewModel(
+  draft: AccountingTenantAdministrationProfileDraft | null
+): AccountingApprovalQueueSetupEditorViewModel {
+  const setup = draft?.approvalQueueSetup ?? buildDefaultAccountingApprovalQueueSetup();
+  return {
+    queueIdValue: setup.queueId,
+    displayNameValue: setup.displayName,
+    workflowKindValue: setup.workflowKind,
+    requiredApprovalRoleValue: setup.requiredApprovalRole,
+    requiredApprovalCountValue: setup.requiredApprovalCount,
+    segregationPolicyValue: setup.segregationPolicy,
+    evidenceRequirementValue: setup.evidenceRequirement
+  };
+}
+
+function buildDefaultAccountingApprovalQueueSetup(): AccountingApprovalQueueSetupDraft {
+  return {
+    queueId: "accounting-configuration-approval",
+    displayName: "Accounting configuration approval",
+    workflowKind: "ConfigurationPromotion",
+    requiredApprovalRole: "Controller",
+    requiredApprovalCount: "2",
+    segregationPolicy: "Preparer cannot approve own configuration change.",
+    evidenceRequirement: "approval-queue;configuration-approval;segregation-review"
+  };
+}
+
+function buildAccountingApprovalQueueConfiguration(
+  draft: AccountingApprovalQueueSetupDraft
+): AccountingApprovalQueueConfiguration | null {
+  const requiredApprovalCount = Number.parseInt(draft.requiredApprovalCount, 10);
+  if (!draft.queueId.trim() ||
+      !draft.displayName.trim() ||
+      !draft.workflowKind.trim() ||
+      !draft.requiredApprovalRole.trim() ||
+      !Number.isFinite(requiredApprovalCount) ||
+      requiredApprovalCount <= 0 ||
+      !draft.segregationPolicy.trim() ||
+      !draft.evidenceRequirement.trim()) {
+    return null;
+  }
+
+  return {
+    queueId: draft.queueId.trim(),
+    displayName: draft.displayName.trim(),
+    workflowKind: draft.workflowKind.trim(),
+    requiredApprovalRole: draft.requiredApprovalRole.trim(),
+    requiredApprovalCount,
+    segregationPolicy: draft.segregationPolicy.trim(),
+    evidenceRequirement: draft.evidenceRequirement.trim()
+  };
+}
+
+function buildAccountingApprovalQueueSetupDraft(
+  profile: AccountingTenantAdministrationProfile
+): AccountingApprovalQueueSetupDraft {
+  const retained = profile.approvalQueueConfigurations?.[0] ?? null;
+  if (!retained) {
+    return buildDefaultAccountingApprovalQueueSetup();
+  }
+
+  return {
+    queueId: retained.queueId,
+    displayName: retained.displayName,
+    workflowKind: retained.workflowKind,
+    requiredApprovalRole: retained.requiredApprovalRole,
+    requiredApprovalCount: String(retained.requiredApprovalCount),
+    segregationPolicy: retained.segregationPolicy,
+    evidenceRequirement: retained.evidenceRequirement
+  };
+}
+
+function buildAccountingDimensionMappingSetupEditorViewModel(
+  draft: AccountingTenantAdministrationProfileDraft | null
+): AccountingDimensionMappingSetupEditorViewModel {
+  const setup = draft?.dimensionMappingSetup ?? buildDefaultAccountingDimensionMappingSetup();
+  return {
+    mappingIdValue: setup.mappingId,
+    displayNameValue: setup.displayName,
+    providerIdValue: setup.providerId,
+    meridianDimensionsValue: setup.meridianDimensionsText,
+    providerDimensionsValue: setup.providerDimensionsText,
+    evidenceRequirementValue: setup.evidenceRequirement
+  };
+}
+
+function buildDefaultAccountingDimensionMappingSetup(): AccountingDimensionMappingSetupDraft {
+  return {
+    mappingId: "accounting-dimension-map",
+    displayName: "Accounting dimension mapping",
+    providerId: "quickbooks-fixture",
+    meridianDimensionsText: "fundId=fund-alpha\nbookId=book-primary\ncostCenterId=fund-accounting",
+    providerDimensionsText: "Class=fund-alpha\nBook=book-primary\nDepartment=fund-accounting",
+    evidenceRequirement: "dimension-mapping;provider-segment-review;controller-approval"
+  };
+}
+
+function buildAccountingDimensionMappingConfiguration(
+  draft: AccountingDimensionMappingSetupDraft
+): AccountingDimensionMappingConfiguration | null {
+  const meridianDimensions = parseLedgerDimensionSet(draft.meridianDimensionsText, {});
+  const providerDimensions = parseLedgerDimensionSet(draft.providerDimensionsText, {});
+  if (!draft.mappingId.trim() ||
+      !draft.displayName.trim() ||
+      !draft.providerId.trim() ||
+      !hasLedgerDimensionSetValues(meridianDimensions) ||
+      !hasLedgerDimensionSetValues(providerDimensions) ||
+      !draft.evidenceRequirement.trim()) {
+    return null;
+  }
+
+  return {
+    mappingId: draft.mappingId.trim(),
+    displayName: draft.displayName.trim(),
+    providerId: draft.providerId.trim(),
+    meridianDimensions,
+    providerDimensions,
+    evidenceRequirement: draft.evidenceRequirement.trim()
+  };
+}
+
+function buildAccountingDimensionMappingSetupDraft(
+  profile: AccountingTenantAdministrationProfile
+): AccountingDimensionMappingSetupDraft {
+  const retained = profile.dimensionMappingConfigurations?.[0] ?? null;
+  if (!retained) {
+    return buildDefaultAccountingDimensionMappingSetup();
+  }
+
+  return {
+    mappingId: retained.mappingId,
+    displayName: retained.displayName,
+    providerId: retained.providerId,
+    meridianDimensionsText: formatExternalGlLedgerDimensionSet(retained.meridianDimensions),
+    providerDimensionsText: formatExternalGlLedgerDimensionSet(retained.providerDimensions),
+    evidenceRequirement: retained.evidenceRequirement
+  };
+}
+
+function hasLedgerDimensionSetValues(dimensions: LedgerDimensionSet): boolean {
+  return LEDGER_DIMENSION_FORMAT_KEYS.some((key) => {
+    const value = dimensions[key];
+    return typeof value === "string" && value.trim().length > 0;
+  }) || Object.values(dimensions.externalGlDimensions ?? {}).some((value) => value.trim().length > 0);
+}
+
 function buildAccountingTenantAdministrationProfileDraft(
   profile: AccountingTenantAdministrationProfile
 ): AccountingTenantAdministrationProfileDraft {
@@ -5997,7 +7761,9 @@ function buildAccountingTenantAdministrationProfileDraft(
     ledgerBookAdministrationStudioConfigured: profile.ledgerBookAdministrationStudioConfigured ?? false,
     postingRuleAuthoringStudioConfigured: profile.postingRuleAuthoringStudioConfigured ?? false,
     approvalQueueStudioConfigured: profile.approvalQueueStudioConfigured ?? false,
+    approvalQueueSetup: buildAccountingApprovalQueueSetupDraft(profile),
     dimensionMappingStudioConfigured: profile.dimensionMappingStudioConfigured ?? false,
+    dimensionMappingSetup: buildAccountingDimensionMappingSetupDraft(profile),
     implementationSandboxConfigured: profile.implementationSandboxConfigured ?? false,
     evidenceText: profile.evidenceReferences.join("\n")
   };
@@ -6050,25 +7816,50 @@ function withLedgerBookTenantAdministrationEvidence(
   evidenceReferences: string[],
   profile: AccountingTenantAdministrationProfile | null,
   ledgerBookId: string | null | undefined,
-  ledgerBookAdministrationStudioConfigured: boolean
+  draft: Pick<AccountingTenantAdministrationProfileDraft, "ledgerBookAdministrationStudioConfigured" | "implementationSandboxConfigured">
 ): string[] {
   const normalizedBookId = ledgerBookId?.trim();
-  if (!ledgerBookAdministrationStudioConfigured || !profile || !normalizedBookId) {
+  if (!profile || !normalizedBookId) {
     return evidenceReferences;
   }
 
-  const hasBookEvidence = evidenceReferences.some((reference) =>
-    reference.toLowerCase().includes(normalizedBookId.toLowerCase()) &&
-    reference.toLowerCase().includes("ledger-book")
-  );
-  if (hasBookEvidence) {
-    return evidenceReferences;
+  const generated: string[] = [];
+  if (draft.ledgerBookAdministrationStudioConfigured && !hasTenantAdminBookEvidence(evidenceReferences, normalizedBookId, "ledger-book-administration")) {
+    generated.push(`evidence://tenant-admin/${profile.tenantId || "tenant"}/${profile.companyId || "company"}/ledger-book-administration/ledgerBookId=${normalizedBookId}`);
   }
 
-  return [
-    ...evidenceReferences,
-    `evidence://tenant-admin/${profile.tenantId || "tenant"}/${profile.companyId || "company"}/ledger-book-administration/ledgerBookId=${normalizedBookId}`
+  if (draft.implementationSandboxConfigured) {
+    generated.push(...withImplementationSandboxEvidence([], profile, normalizedBookId));
+  }
+
+  return [...evidenceReferences, ...generated]
+    .filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
+}
+
+function hasTenantAdminBookEvidence(evidenceReferences: string[], ledgerBookId: string, marker: string): boolean {
+  const normalizedBookId = ledgerBookId.toLowerCase();
+  const normalizedMarker = marker.toLowerCase();
+  return evidenceReferences.some((reference) => {
+    const normalized = reference.toLowerCase();
+    return normalized.includes(normalizedBookId) && normalized.includes(normalizedMarker);
+  });
+}
+
+function withImplementationSandboxEvidence(
+  evidenceReferences: string[],
+  profile: AccountingTenantAdministrationProfile,
+  ledgerBookId: string
+): string[] {
+  const tenantId = profile.tenantId || "tenant";
+  const companyId = profile.companyId || "company";
+  const generated = [
+    `evidence://tenant-admin/${tenantId}/${companyId}/implementation-sandbox/ledgerBookId=${ledgerBookId}`,
+    `evidence://tenant-admin/${tenantId}/${companyId}/sandbox-validation/ledgerBookId=${ledgerBookId}`,
+    `evidence://tenant-admin/${tenantId}/${companyId}/fixture-validation/ledgerBookId=${ledgerBookId}`,
+    `evidence://tenant-admin/${tenantId}/${companyId}/implementation-fixture/ledgerBookId=${ledgerBookId}`
   ];
+  return [...evidenceReferences, ...generated]
+    .filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
 }
 
 function splitAccountingEvidenceReferences(value: string): string[] {
@@ -11525,10 +13316,14 @@ function buildAccountingCloseReportPackageViewState({
   configureClosePlanStatusText,
   configureClosePlanStatusTone,
   closeSetupDraft,
+  closeSignOffDraft,
   lateAdjustmentDraft,
   reviewLateAdjustmentBusy,
   reviewLateAdjustmentStatusText,
   reviewLateAdjustmentStatusTone,
+  reviewCloseEvidenceBusy,
+  reviewCloseEvidenceStatusText,
+  reviewCloseEvidenceStatusTone,
   exportManifestBusy,
   exportManifestStatusText,
   exportManifestStatusTone,
@@ -11537,12 +13332,20 @@ function buildAccountingCloseReportPackageViewState({
   buildReportPackage,
   certifyPackage,
   lockClosePeriod,
-  configureClosePlan,
-  signOffNextTask,
-  updateCloseSetupDraft,
-  updateLateAdjustmentDraft,
+      configureClosePlan,
+      signOffNextTask,
+      updateCloseSetupDraft,
+      selectCloseSetupTask,
+      toggleCloseSetupDependency,
+      selectCloseSetupSignOffRole,
+      updateCloseSignOffDraft,
+      selectCloseSignOffTask,
+      selectCloseSignOffRole,
+      selectCloseSignOffDecision,
+      updateLateAdjustmentDraft,
   createLateAdjustment,
   reviewLateAdjustment,
+  reviewCloseEvidence,
   inspectSelectedPackageExport,
   selectPackage
 }: {
@@ -11571,10 +13374,14 @@ function buildAccountingCloseReportPackageViewState({
   configureClosePlanStatusText: string | null;
   configureClosePlanStatusTone: "neutral" | "success" | "danger";
   closeSetupDraft: AccountingCloseSetupDraftViewModel;
+  closeSignOffDraft: AccountingCloseSignOffDraftViewModel;
   lateAdjustmentDraft: AccountingLateAdjustmentDraftViewModel;
   reviewLateAdjustmentBusy: boolean;
   reviewLateAdjustmentStatusText: string | null;
   reviewLateAdjustmentStatusTone: "neutral" | "success" | "danger";
+  reviewCloseEvidenceBusy: boolean;
+  reviewCloseEvidenceStatusText: string | null;
+  reviewCloseEvidenceStatusTone: "neutral" | "success" | "danger";
   exportManifestBusy: boolean;
   exportManifestStatusText: string | null;
   exportManifestStatusTone: "neutral" | "success" | "danger";
@@ -11586,9 +13393,17 @@ function buildAccountingCloseReportPackageViewState({
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
   updateCloseSetupDraft: (patch: Partial<AccountingCloseSetupDraftViewModel>) => void;
+  selectCloseSetupTask: (taskId: string) => void;
+  toggleCloseSetupDependency: (taskId: string) => void;
+  selectCloseSetupSignOffRole: (role: string) => void;
+  updateCloseSignOffDraft: (patch: Partial<AccountingCloseSignOffDraftViewModel>) => void;
+  selectCloseSignOffTask: (taskId: string) => void;
+  selectCloseSignOffRole: (role: string) => void;
+  selectCloseSignOffDecision: (decision: AccountingCloseSignOffDecision) => void;
   updateLateAdjustmentDraft: (patch: Partial<AccountingLateAdjustmentDraftViewModel>) => void;
   createLateAdjustment: () => Promise<void>;
   reviewLateAdjustment: (requestId: string, decision: "Approved" | "Rejected") => Promise<void>;
+  reviewCloseEvidence: (rowId: string) => Promise<void>;
   inspectSelectedPackageExport: () => Promise<void>;
   selectPackage: (packageId: string) => void;
 }): AccountingCloseReportPackageViewModel {
@@ -11602,6 +13417,15 @@ function buildAccountingCloseReportPackageViewState({
   const closeCalendar = (closePlan?.closeCalendar ?? []).map(buildCloseCalendarMilestoneRow);
   const locked = closePlan?.isPeriodLocked === true;
   const lateAdjustments = (closePlan?.lateAdjustments ?? []).map((adjustment) => buildLateAdjustmentRow(adjustment, locked));
+  const dependencyGraphRows = closePlan ? buildCloseDependencyGraphRows(closePlan) : [];
+  const signOffMatrixRows = closePlan ? buildCloseSignOffMatrixRows(closePlan) : [];
+  const operatingCoverageRows = closePlan ? buildCloseOperatingCoverageRows(closePlan) : [];
+  const closeSetupTaskOptions = closePlan ? buildCloseSetupTaskOptions(closePlan, closeSetupDraft.taskId) : [];
+  const closeSetupDependencyOptions = closePlan ? buildCloseSetupDependencyOptions(closePlan, closeSetupDraft) : [];
+  const closeSetupSignOffRoleOptions = closePlan ? buildCloseSetupSignOffRoleOptions(closePlan, closeSetupDraft) : [];
+  const closeSignOffTaskOptions = closePlan ? buildCloseSignOffTaskOptions(closePlan, closeSignOffDraft) : [];
+  const closeSignOffRoleOptions = closePlan ? buildCloseSignOffRoleOptions(closePlan, closeSignOffDraft) : [];
+  const closeSignOffDecisionOptions = buildCloseSignOffDecisionOptions(closeSignOffDraft);
   const openTaskCount = closePlan?.tasks.filter((task) => task.status !== "SignedOff").length ?? 0;
   const blockedCalendarCount = closeCalendar.filter((item) => item.statusTone === "danger").length;
   const closeValidationIssues = closePlan?.validationIssues ?? [];
@@ -11616,6 +13440,7 @@ function buildAccountingCloseReportPackageViewState({
     detail: issue.targetId ?? "No target",
     tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
   }));
+  const evidenceReviewRows = buildCloseEvidenceReviewRows(closePlan, selectedBundle, validationIssues, locked);
   const packageCertification = selectedBundle?.certification.state ?? selectedBundle?.financialStatements.certificationState ?? "Draft";
   const certificationTone = accountingCertificationTone(packageCertification);
   const statusTone: AccountingToolingTone = errorText
@@ -11655,15 +13480,16 @@ function buildAccountingCloseReportPackageViewState({
           : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
             ? "Close/report package certification is running."
             : null;
-  const signOffTarget = closePlan ? resolveCloseTaskSignOffTarget(closePlan) : null;
+  const signOffTarget = closePlan ? resolveCloseTaskSignOffDraftTarget(closePlan, closeSignOffDraft) : null;
+  const signOffDraftValidation = closePlan ? validateCloseSignOffDraft(closePlan, closeSignOffDraft) : null;
   const signOffDisabledReason = !workflow
     ? "A close workflow must be loaded before signing off a task."
     : !closePlan
       ? "A close plan must be loaded before signing off a task."
       : locked
         ? "The period is locked; close task sign-off is disabled."
-        : !signOffTarget
-          ? "No close checklist task is ready for sign-off."
+        : signOffDraftValidation
+          ? signOffDraftValidation
           : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
             ? "Close/report package action is running."
             : null;
@@ -11684,9 +13510,12 @@ function buildAccountingCloseReportPackageViewState({
       ? "A close plan must be loaded before configuring close setup."
       : locked
         ? "The period is locked; close setup changes require a governed reopen workflow."
-        : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || configureClosePlanBusy
-          ? "Close/report package action is running."
-          : null;
+        : validateCloseSetupMaterialityDraft(closeSetupDraft)
+          ?? validateCloseSetupTaskSelection(closePlan, closeSetupDraft)
+          ?? validateCloseSetupSignOffDraft(closeSetupDraft)
+          ?? (loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || configureClosePlanBusy
+            ? "Close/report package action is running."
+            : null);
   const createLateAdjustmentAmount = Number(lateAdjustmentDraft.amount);
   const createLateAdjustmentDisabledReason = !workflow
     ? "A close workflow must be loaded before requesting a late adjustment."
@@ -11703,6 +13532,28 @@ function buildAccountingCloseReportPackageViewState({
               : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
                 ? "Close/report package action is running."
                 : null;
+  const reviewLateAdjustmentDisabledReason = !workflow
+    ? "A close workflow must be loaded before reviewing late adjustments."
+    : !closePlan
+      ? "A close plan must be loaded before reviewing late adjustments."
+      : locked
+        ? "The period is locked; late-adjustment review is disabled."
+        : !lateAdjustments.some((adjustment) => adjustment.reviewDisabledReason === null)
+          ? "No submitted late adjustment is ready for review."
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
+            ? "Close/report package action is running."
+            : null;
+  const reviewCloseEvidenceDisabledReason = !workflow
+    ? "A close workflow must be loaded before retaining blocker review."
+    : !closePlan
+      ? "A close plan must be loaded before retaining blocker review."
+      : locked
+        ? "The period is locked; evidence review changes require a governed reopen workflow."
+        : !evidenceReviewRows.some((row) => row.issueCode && !row.reviewDisabledReason)
+          ? "No active close blocker is ready for evidence review."
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || reviewCloseEvidenceBusy
+            ? "Close/report package action is running."
+            : null;
   const selectedExportArtifact = selectedBundle?.exportArtifacts?.[0] ?? null;
   const exportManifestDisabledReason = !selectedBundle
     ? "A report package must be selected before export manifest inspection."
@@ -11711,6 +13562,25 @@ function buildAccountingCloseReportPackageViewState({
       : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || reviewLateAdjustmentBusy || exportManifestBusy
         ? "Close/report package action is running."
         : null;
+  const closeWorkflowSteps = buildAccountingCloseWorkflowSteps({
+    closePlan,
+    selectedBundle,
+    selectedExportArtifact,
+    tasks,
+    lateAdjustments,
+    evidenceReviewRows,
+    validationIssues,
+    packageRows,
+    configureClosePlanDisabledReason,
+    signOffDisabledReason,
+    createLateAdjustmentDisabledReason,
+    reviewLateAdjustmentDisabledReason,
+    reviewCloseEvidenceDisabledReason,
+    buildDisabledReason,
+    certifyDisabledReason,
+    exportManifestDisabledReason,
+    lockClosePeriodDisabledReason
+  });
 
   return {
     title: "Close and report package certification",
@@ -11748,6 +13618,9 @@ function buildAccountingCloseReportPackageViewState({
     reviewLateAdjustmentBusy,
     reviewLateAdjustmentStatusText,
     reviewLateAdjustmentStatusTone,
+    reviewCloseEvidenceBusy,
+    reviewCloseEvidenceStatusText,
+    reviewCloseEvidenceStatusTone,
     exportManifestBusy,
     exportManifestStatusText,
     exportManifestStatusTone,
@@ -11756,7 +13629,7 @@ function buildAccountingCloseReportPackageViewState({
     buildDisabledReason,
     certifyButtonLabel: selectedBundle?.certification.state === "Certified" ? "Certified" : "Certify package",
     certifyDisabledReason,
-    signOffButtonLabel: signOffTarget ? `Sign off ${signOffTarget.task.displayName}` : "Sign off next task",
+    signOffButtonLabel: signOffTarget ? `${closeSignOffDraft.decision} ${signOffTarget.task.displayName}` : "Sign off selected task",
     signOffDisabledReason,
     lockClosePeriodButtonLabel: locked ? "Period locked" : "Lock period",
     lockClosePeriodDisabledReason,
@@ -11764,6 +13637,13 @@ function buildAccountingCloseReportPackageViewState({
     configureClosePlanDisabledReason,
     createLateAdjustmentDisabledReason,
     closeSetupDraft,
+    closeSetupTaskOptions,
+    closeSetupDependencyOptions,
+    closeSetupSignOffRoleOptions,
+    closeSignOffDraft,
+    closeSignOffTaskOptions,
+    closeSignOffRoleOptions,
+    closeSignOffDecisionOptions,
     lateAdjustmentDraft,
     exportManifestButtonLabel: selectedExportArtifact ? `Inspect ${selectedExportArtifact.displayName}` : "Inspect export manifest",
     exportManifestDisabledReason,
@@ -11810,12 +13690,17 @@ function buildAccountingCloseReportPackageViewState({
     ],
     closeCalendar,
     tasks,
+    dependencyGraphRows,
+    signOffMatrixRows,
+    evidenceReviewRows,
+    operatingCoverageRows,
     lateAdjustments,
     packageRows,
     selectedPackage,
     certificationSafeguards: buildAccountingReportCertificationSafeguards(closePlan, selectedBundle, criticalIssueCount),
+    closeWorkflowSteps,
     validationIssues,
-    liveRegionText: `Close report package ${statusLabel}. ${formatCount(openTaskCount, "open task")}. ${formatCount(packageRows.length, "package")}.`,
+    liveRegionText: `Close report package ${statusLabel}. ${formatCount(openTaskCount, "open task")}. ${formatCount(packageRows.length, "package")}. ${formatCount(closeWorkflowSteps.filter((step) => step.tone === "danger" || step.tone === "warning").length, "workflow step")} needs review.`,
     refresh,
     buildReportPackage,
     certifyPackage,
@@ -11823,9 +13708,17 @@ function buildAccountingCloseReportPackageViewState({
     configureClosePlan,
     signOffNextTask,
     updateCloseSetupDraft,
+    selectCloseSetupTask,
+    toggleCloseSetupDependency,
+    selectCloseSetupSignOffRole,
+    updateCloseSignOffDraft,
+    selectCloseSignOffTask,
+    selectCloseSignOffRole,
+    selectCloseSignOffDecision,
     updateLateAdjustmentDraft,
     createLateAdjustment,
     reviewLateAdjustment,
+    reviewCloseEvidence,
     inspectSelectedPackageExport,
     selectPackage
   };
@@ -11945,6 +13838,197 @@ function buildAccountingReportCertificationSafeguards(
   ];
 }
 
+function buildAccountingCloseWorkflowSteps({
+  closePlan,
+  selectedBundle,
+  selectedExportArtifact,
+  tasks,
+  lateAdjustments,
+  evidenceReviewRows,
+  validationIssues,
+  packageRows,
+  configureClosePlanDisabledReason,
+  signOffDisabledReason,
+  createLateAdjustmentDisabledReason,
+  reviewLateAdjustmentDisabledReason,
+  reviewCloseEvidenceDisabledReason,
+  buildDisabledReason,
+  certifyDisabledReason,
+  exportManifestDisabledReason,
+  lockClosePeriodDisabledReason
+}: {
+  closePlan: ClosePeriodPlan | null;
+  selectedBundle: AccountingReportPackageBundle | null;
+  selectedExportArtifact: ReportExportArtifact | null;
+  tasks: AccountingClosePlanTaskRowViewModel[];
+  lateAdjustments: AccountingLateAdjustmentRowViewModel[];
+  evidenceReviewRows: AccountingCloseEvidenceReviewRowViewModel[];
+  validationIssues: AccountingConfigurationIssueViewModel[];
+  packageRows: AccountingReportPackageRowViewModel[];
+  configureClosePlanDisabledReason: string | null;
+  signOffDisabledReason: string | null;
+  createLateAdjustmentDisabledReason: string | null;
+  reviewLateAdjustmentDisabledReason: string | null;
+  reviewCloseEvidenceDisabledReason: string | null;
+  buildDisabledReason: string | null;
+  certifyDisabledReason: string | null;
+  exportManifestDisabledReason: string | null;
+  lockClosePeriodDisabledReason: string | null;
+}): AccountingCloseWorkflowStepViewModel[] {
+  const closeSetupEvidenceCount = closePlan
+    ? closePlan.tasks.reduce((count, task) => count + task.evidenceLinks.length, 0)
+      + closePlan.lateAdjustments.reduce((count, adjustment) => count + adjustment.evidenceLinks.length, 0)
+    : 0;
+  const setupRetained = Boolean(closePlan?.materialityPolicy && closePlan.tasks.length > 0);
+  const openTaskCount = tasks.filter((task) => task.statusTone !== "success").length;
+  const pendingLateAdjustmentCount = lateAdjustments.filter((adjustment) => adjustment.reviewDisabledReason === null).length;
+  const activeReviewRows = evidenceReviewRows.filter((row) => row.issueCode && !row.reviewDisabledReason);
+  const retainedReviewCount = evidenceReviewRows.filter((row) => row.statusLabel === "Review retained").length;
+  const criticalIssueCount = validationIssues.filter((issue) => issue.tone === "danger").length;
+  const certifiedPackage = selectedBundle?.certification.state === "Certified";
+  const readyPackage = selectedBundle?.certification.state === "ReadyForReview";
+  const locked = closePlan?.isPeriodLocked === true;
+
+  return [
+    {
+      id: "close-setup",
+      label: "Close setup",
+      statusLabel: setupRetained ? "Retained" : closePlan ? "Draft loaded" : "Pending",
+      detail: setupRetained
+        ? "Materiality, selected task setup, dependency reasons, and sign-off requirements are retained on the shared close plan."
+        : closePlan
+          ? "Review materiality, dependency graph, and sign-off matrix edits before retaining setup evidence."
+          : "Load a close workflow before close setup can be reviewed.",
+      evidenceLabel: setupRetained
+        ? formatCount(closeSetupEvidenceCount, "evidence link")
+        : closePlan
+          ? "Setup evidence not retained"
+          : "No close plan",
+      tone: setupRetained ? "success" : closePlan ? "warning" : "default",
+      actionLabel: "Retain setup",
+      actionId: "configure-close-plan",
+      disabledReason: configureClosePlanDisabledReason
+    },
+    {
+      id: "checklist-signoff",
+      label: "Checklist sign-off",
+      statusLabel: tasks.length === 0 ? "Pending" : openTaskCount === 0 ? "Signed off" : `${openTaskCount} open`,
+      detail: tasks.length === 0
+        ? "Shared checklist tasks have not loaded."
+        : openTaskCount === 0
+          ? "All loaded checklist tasks report retained sign-off posture."
+          : "Retain the next ready checklist task decision through the shared close-management endpoint.",
+      evidenceLabel: tasks.length === 0
+        ? "No checklist rows"
+        : `${tasks.filter((task) => task.statusTone === "success").length}/${tasks.length} task rows ready`,
+      tone: tasks.length === 0 ? "default" : openTaskCount === 0 ? "success" : "warning",
+      actionLabel: "Sign off task",
+      actionId: "sign-off-task",
+      disabledReason: signOffDisabledReason
+    },
+    {
+      id: "late-adjustments",
+      label: "Late adjustments",
+      statusLabel: lateAdjustments.length === 0 ? "None" : pendingLateAdjustmentCount === 0 ? "Reviewed" : `${pendingLateAdjustmentCount} pending`,
+      detail: lateAdjustments.length === 0
+        ? "No late adjustments are retained on this close plan."
+        : pendingLateAdjustmentCount === 0
+          ? "Loaded late adjustments have retained review decisions or are no longer actionable."
+          : "Review submitted material late adjustments before final close certification.",
+      evidenceLabel: lateAdjustments.length === 0
+        ? "No late-adjustment evidence"
+        : formatCount(lateAdjustments.length, "late adjustment"),
+      tone: pendingLateAdjustmentCount > 0 ? "warning" : "success",
+      actionLabel: pendingLateAdjustmentCount > 0 ? null : "Request adjustment",
+      actionId: pendingLateAdjustmentCount > 0 ? null : "request-late-adjustment",
+      disabledReason: pendingLateAdjustmentCount > 0
+        ? reviewLateAdjustmentDisabledReason
+        : createLateAdjustmentDisabledReason
+    },
+    {
+      id: "blocker-review",
+      label: "Blocker review",
+      statusLabel: activeReviewRows.length > 0 ? `${activeReviewRows.length} unreviewed` : retainedReviewCount > 0 ? "Reviewed" : validationIssues.length > 0 ? "No action" : "Clear",
+      detail: activeReviewRows.length > 0
+        ? "Retain operator review evidence for active blockers without clearing service-owned validation state."
+        : validationIssues.length > 0
+          ? "Validation issues remain, but retained blocker review is already present or not actionable from this row."
+          : "No active close/report blockers are surfaced.",
+      evidenceLabel: retainedReviewCount > 0
+        ? formatCount(retainedReviewCount, "retained review")
+        : validationIssues.length > 0
+          ? formatCount(validationIssues.length, "validation issue")
+          : "No blockers",
+      tone: activeReviewRows.length > 0 || criticalIssueCount > 0 ? "warning" : "success",
+      actionLabel: activeReviewRows.length > 0 ? "Retain review" : null,
+      actionId: activeReviewRows.length > 0 ? "review-evidence" : null,
+      disabledReason: reviewCloseEvidenceDisabledReason
+    },
+    {
+      id: "report-package",
+      label: "Report package",
+      statusLabel: selectedBundle ? formatAccountingCertificationState(selectedBundle.certification.state) : "Not built",
+      detail: selectedBundle
+        ? "The selected report package carries financial statements, investor capital statements, NAV, export artifacts, and retained evidence counts."
+        : "Build the accounting report package after close setup and checklist evidence are available.",
+      evidenceLabel: selectedBundle
+        ? `${formatCount(packageRows.length, "package")} retained`
+        : "No package history",
+      tone: certifiedPackage ? "success" : selectedBundle ? "warning" : "default",
+      actionLabel: selectedBundle ? "Rebuild package" : "Build package",
+      actionId: "build-package",
+      disabledReason: buildDisabledReason
+    },
+    {
+      id: "certification",
+      label: "Certification",
+      statusLabel: certifiedPackage ? "Certified" : readyPackage ? "Ready for review" : selectedBundle ? formatAccountingCertificationState(selectedBundle.certification.state) : "Pending",
+      detail: certifiedPackage
+        ? "The selected report package is certified with retained certification evidence."
+        : readyPackage
+          ? "The selected report package is ready for certification once remaining close blockers are acceptable to the service."
+          : "Certification waits for a ready report package and service-owned validation posture.",
+      evidenceLabel: selectedBundle
+        ? formatCount(selectedBundle.certification.evidenceLinks.length, "certification evidence link")
+        : "No certification evidence",
+      tone: certifiedPackage ? "success" : readyPackage ? "warning" : "default",
+      actionLabel: "Certify package",
+      actionId: "certify-package",
+      disabledReason: certifyDisabledReason
+    },
+    {
+      id: "export-manifest",
+      label: "Export manifest",
+      statusLabel: selectedExportArtifact ? formatAccountingCertificationState(selectedExportArtifact.certificationState) : "Pending",
+      detail: selectedExportArtifact
+        ? "Inspect the retained export manifest before period lock or downstream GL handoff."
+        : "The selected package has no retained export artifact to inspect.",
+      evidenceLabel: selectedExportArtifact
+        ? selectedExportArtifact.artifactId
+        : "No export artifact",
+      tone: selectedExportArtifact ? accountingCertificationTone(selectedExportArtifact.certificationState) : "default",
+      actionLabel: selectedExportArtifact ? "Inspect manifest" : null,
+      actionId: selectedExportArtifact ? "inspect-export" : null,
+      disabledReason: exportManifestDisabledReason
+    },
+    {
+      id: "period-lock",
+      label: "Period lock",
+      statusLabel: locked ? "Locked" : closePlan ? "Open" : "Pending",
+      detail: locked
+        ? "The close period is locked; new close mutations require a governed reopen workflow."
+        : closePlan
+          ? "Period lock submits workflow version, report package, checklist approvals, manifest route, and ledger-book evidence to the shared service."
+          : "Load a close plan before period-lock review.",
+      evidenceLabel: closePlan?.ledgerBookId ? `Book ${closePlan.ledgerBookId}` : "No ledger-book scope",
+      tone: locked ? "success" : criticalIssueCount > 0 ? "warning" : closePlan ? "default" : "default",
+      actionLabel: "Lock period",
+      actionId: "lock-period",
+      disabledReason: lockClosePeriodDisabledReason
+    }
+  ];
+}
+
 function formatAccountingReadinessState(state: string): string {
   const labels: Record<string, string> = {
     NotStarted: "Not started",
@@ -12015,6 +14099,113 @@ function resolveCloseTaskSignOffTarget(closePlan: ClosePeriodPlan): { task: Clos
   return null;
 }
 
+function resolveCloseTaskSignOffDraftTarget(
+  closePlan: ClosePeriodPlan,
+  draft: AccountingCloseSignOffDraftViewModel
+): { task: CloseTask; role: string } | null {
+  const taskId = draft.taskId.trim().toLowerCase();
+  const task = closePlan.tasks.find((item) => item.taskId.toLowerCase() === taskId) ?? null;
+  if (!task || task.status !== "ReadyForSignOff") {
+    return null;
+  }
+
+  const role = draft.role.trim();
+  return role ? { task, role } : null;
+}
+
+function createAccountingCloseSignOffDraft(
+  closePlan: ClosePeriodPlan | null,
+  selectedTaskId?: string,
+  previousDraft?: AccountingCloseSignOffDraftViewModel
+): AccountingCloseSignOffDraftViewModel {
+  const selectedTask = selectedTaskId
+    ? closePlan?.tasks.find((task) => task.taskId.toLowerCase() === selectedTaskId.toLowerCase()) ?? null
+    : null;
+  const target = selectedTask && selectedTask.status === "ReadyForSignOff"
+    ? {
+      task: selectedTask,
+      role: resolvePreferredCloseSignOffRole(selectedTask, previousDraft?.role)
+    }
+    : closePlan
+      ? resolveCloseTaskSignOffTarget(closePlan)
+      : null;
+  const decision = previousDraft?.decision === "Rejected" ? "Rejected" : "Approved";
+
+  return {
+    taskId: target?.task.taskId ?? "",
+    role: target?.role ?? "",
+    decision,
+    notes: previousDraft?.notes ?? ""
+  };
+}
+
+function resolvePreferredCloseSignOffRole(task: CloseTask, preferredRole?: string): string {
+  const normalizedPreferredRole = preferredRole?.trim();
+  if (normalizedPreferredRole && isCloseTaskSignOffRoleAllowed(task, normalizedPreferredRole)) {
+    return normalizedPreferredRole;
+  }
+
+  const unsatisfiedRequirement = (task.signOffRequirements ?? []).find(
+    (requirement) => !requirement.isSatisfied && requirement.approvedCount < requirement.requiredApprovalCount
+  );
+  return unsatisfiedRequirement?.role?.trim()
+    || task.signOffRequirements?.[0]?.role?.trim()
+    || task.signOffs[0]?.role?.trim()
+    || task.owner?.trim()
+    || "controller";
+}
+
+function validateCloseSignOffDraft(
+  closePlan: ClosePeriodPlan,
+  draft: AccountingCloseSignOffDraftViewModel
+): string | null {
+  const taskId = draft.taskId.trim();
+  if (!taskId) {
+    return "Select a close checklist task before signing off.";
+  }
+
+  const task = closePlan.tasks.find((item) => item.taskId.toLowerCase() === taskId.toLowerCase()) ?? null;
+  if (!task) {
+    return `Close checklist task ${taskId} is not loaded in this close plan.`;
+  }
+
+  if (task.status !== "ReadyForSignOff") {
+    return `${task.displayName} is ${formatCloseTaskStatus(task.status).toLowerCase()} and is not ready for sign-off.`;
+  }
+
+  const role = draft.role.trim();
+  if (!role) {
+    return "Select a sign-off role before signing off.";
+  }
+
+  if (!isCloseTaskSignOffRoleAllowed(task, role)) {
+    return `${role} is not retained on the selected task sign-off matrix.`;
+  }
+
+  if (draft.decision !== "Approved" && draft.decision !== "Rejected") {
+    return "Select an approved or rejected close sign-off decision.";
+  }
+
+  return null;
+}
+
+function isCloseTaskSignOffRoleAllowed(task: CloseTask, role: string): boolean {
+  const normalizedRole = role.trim().toLowerCase();
+  if (!normalizedRole) {
+    return false;
+  }
+
+  const retainedRoles = [
+    ...(task.signOffRequirements ?? []).map((requirement) => requirement.role),
+    ...task.signOffs.map((signOff) => signOff.role),
+    task.owner
+  ]
+    .map((item) => item?.trim())
+    .filter((item): item is string => Boolean(item));
+
+  return retainedRoles.length === 0 || retainedRoles.some((item) => item.toLowerCase() === normalizedRole);
+}
+
 function createAccountingLateAdjustmentDraft(currency = "USD"): AccountingLateAdjustmentDraftViewModel {
   return {
     journalEntryId: "",
@@ -12024,9 +14215,15 @@ function createAccountingLateAdjustmentDraft(currency = "USD"): AccountingLateAd
   };
 }
 
-function createAccountingCloseSetupDraft(closePlan: ClosePeriodPlan | null): AccountingCloseSetupDraftViewModel {
+function createAccountingCloseSetupDraft(
+  closePlan: ClosePeriodPlan | null,
+  taskId: string | null = null
+): AccountingCloseSetupDraftViewModel {
   const materiality = closePlan?.materialityPolicy;
-  const task = closePlan?.tasks[0] ?? null;
+  const normalizedTaskId = taskId?.trim().toLowerCase() ?? "";
+  const task = normalizedTaskId
+    ? closePlan?.tasks.find((item) => item.taskId.toLowerCase() === normalizedTaskId) ?? closePlan?.tasks[0] ?? null
+    : closePlan?.tasks[0] ?? null;
   const signOffRequirements = task?.signOffRequirements ?? [];
   const requiredApprovalCount = Math.max(1, ...signOffRequirements.map((requirement) => requirement.requiredApprovalCount));
   const requiredApprovalRole = signOffRequirements[0]?.role?.trim() ?? "";
@@ -12034,6 +14231,7 @@ function createAccountingCloseSetupDraft(closePlan: ClosePeriodPlan | null): Acc
     .map((requirement) => requirement.evidenceRequirement.trim())
     .filter(Boolean)
     .join("; ");
+  const signOffRequirementRows = buildCloseSetupSignOffRequirementRows(signOffRequirements);
 
   return {
     amountThreshold: materiality ? String(materiality.amountThreshold) : "",
@@ -12048,8 +14246,387 @@ function createAccountingCloseSetupDraft(closePlan: ClosePeriodPlan | null): Acc
     taskRequiredApprovalCount: task ? String(requiredApprovalCount) : "1",
     taskRequiredApprovalRole: requiredApprovalRole || task?.owner || "Controller",
     taskRequiredEvidence: requiredEvidence || "Retained close checklist evidence",
-    taskDependsOnTaskIds: task?.dependencies.map((dependency) => dependency.dependsOnTaskId).join(", ") ?? ""
+    taskSignOffRequirements: signOffRequirementRows,
+    taskDependsOnTaskIds: task?.dependencies.map((dependency) => dependency.dependsOnTaskId).join(", ") ?? "",
+    taskDependencyReason: buildCloseSetupDependencyReason(task?.dependencies ?? [])
   };
+}
+
+function validateCloseSetupTaskSelection(
+  closePlan: ClosePeriodPlan,
+  setupDraft: AccountingCloseSetupDraftViewModel
+): string | null {
+  const taskId = setupDraft.taskId.trim();
+  if (!taskId) {
+    return "Select a retained close checklist task before saving close setup.";
+  }
+
+  if (!closePlan.tasks.some((task) => task.taskId.toLowerCase() === taskId.toLowerCase())) {
+    return `Close checklist task ${taskId} is not loaded in this close plan.`;
+  }
+
+  return null;
+}
+
+function validateCloseSetupMaterialityDraft(setupDraft: AccountingCloseSetupDraftViewModel): string | null {
+  if (!setupDraft.amountThreshold.trim()) {
+    return "Enter a materiality amount threshold before saving close setup.";
+  }
+
+  const amountThreshold = Number(setupDraft.amountThreshold);
+  if (!Number.isFinite(amountThreshold) || amountThreshold < 0) {
+    return "Enter a non-negative materiality amount threshold before saving close setup.";
+  }
+
+  if (!setupDraft.percentThreshold.trim()) {
+    return "Enter a materiality percent threshold before saving close setup.";
+  }
+
+  const percentThreshold = Number(setupDraft.percentThreshold);
+  if (!Number.isFinite(percentThreshold) || percentThreshold < 0) {
+    return "Enter a non-negative materiality percent threshold before saving close setup.";
+  }
+
+  const currency = setupDraft.currency.trim();
+  if (!/^[A-Za-z]{3}$/.test(currency)) {
+    return "Enter a three-letter materiality currency before saving close setup.";
+  }
+
+  if (!setupDraft.reviewRole.trim()) {
+    return "Enter a materiality review role before saving close setup.";
+  }
+
+  return null;
+}
+
+function validateCloseSetupSignOffDraft(setupDraft: AccountingCloseSetupDraftViewModel): string | null {
+  const signOffMatrixValidation = validateCloseSetupSignOffRequirementRows(setupDraft.taskSignOffRequirements);
+  if (signOffMatrixValidation) {
+    return signOffMatrixValidation;
+  }
+
+  const requiredApprovalCount = Number.parseInt(setupDraft.taskRequiredApprovalCount, 10);
+  if (!Number.isFinite(requiredApprovalCount) || requiredApprovalCount <= 0) {
+    return "Enter a positive required approval count before saving close setup.";
+  }
+
+  if (!setupDraft.taskRequiredApprovalRole.trim()) {
+    return "Enter an approval role before saving close setup.";
+  }
+
+  if (!setupDraft.taskRequiredEvidence.trim()) {
+    return "Enter required sign-off evidence before saving close setup.";
+  }
+
+  return null;
+}
+
+function validateCloseSetupSignOffRequirementRows(value: string): string | null {
+  for (const entry of splitCloseSetupSignOffRequirementRows(value)) {
+    const requirement = parseCloseSetupSignOffRequirementEntry(entry);
+    if (!requirement.role) {
+      return "Enter a role for every sign-off matrix row before saving close setup.";
+    }
+
+    if (!Number.isFinite(requirement.requiredApprovalCount) || requirement.requiredApprovalCount <= 0) {
+      return `Enter a positive approval count for ${requirement.role} before saving close setup.`;
+    }
+  }
+
+  return null;
+}
+
+function splitCloseSetupSignOffRequirementRows(value: string): string[] {
+  return value
+    .split(/[\r\n;]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parseCloseSetupSignOffRequirementEntry(value: string): { role: string; requiredApprovalCount: number; evidenceRequirement: string } {
+  const parts = value.includes("|")
+    ? value.split("|").map((part) => part.trim())
+    : value.split(":").map((part) => part.trim());
+  const role = parts[0] ?? "";
+  const countText = parts.length > 1 ? parts[1] : "1";
+  const requiredApprovalCount = Number.parseInt(countText, 10);
+  return {
+    role,
+    requiredApprovalCount,
+    evidenceRequirement: parts.slice(2).join(":").trim()
+  };
+}
+
+function parseCloseSetupSignOffRequirementRows(value: string): Array<{ role: string; requiredApprovalCount: number; evidenceRequirement: string }> {
+  return splitCloseSetupSignOffRequirementRows(value)
+    .map((item) => parseCloseSetupSignOffRequirementEntry(item))
+    .filter((requirement, index, requirements) =>
+      requirement.role.length > 0 &&
+      Number.isFinite(requirement.requiredApprovalCount) &&
+      requirement.requiredApprovalCount > 0 &&
+      requirements.findIndex((candidate) => candidate.role.toLowerCase() === requirement.role.toLowerCase()) === index);
+}
+
+function buildCloseSetupSingleSignOffRequirementRow(setupDraft: AccountingCloseSetupDraftViewModel): string {
+  const requiredApprovalCount = Number.parseInt(setupDraft.taskRequiredApprovalCount, 10);
+  const role = setupDraft.taskRequiredApprovalRole.trim() || "Controller";
+  const evidence = setupDraft.taskRequiredEvidence.trim() || "Retained close checklist evidence";
+  return `${role} | ${Number.isFinite(requiredApprovalCount) && requiredApprovalCount > 0 ? requiredApprovalCount : 1} | ${evidence}`;
+}
+
+function parseCloseSetupDependencyIds(value: string): string[] {
+  return value
+    .split(/[,\r\n;]+/)
+    .map((item) => parseCloseSetupDependencyEntry(item).taskId)
+    .filter((item, index, items) => item.length > 0 && items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
+}
+
+function parseCloseSetupDependencyEntry(value: string): { taskId: string; reason: string | null } {
+  const item = value.trim();
+  if (!item) {
+    return { taskId: "", reason: null };
+  }
+
+  const separatorIndex = [item.indexOf(":"), item.indexOf("=")]
+    .filter((index) => index > 0)
+    .sort((left, right) => left - right)[0];
+  if (separatorIndex === undefined) {
+    return { taskId: item, reason: null };
+  }
+
+  const taskId = item.slice(0, separatorIndex).trim();
+  const reason = item.slice(separatorIndex + 1).trim();
+  return {
+    taskId,
+    reason: reason.length > 0 ? reason : null
+  };
+}
+
+function parseCloseSetupDependencyReasonOverrides(value: string): Map<string, string> {
+  const overrides = new Map<string, string>();
+  value
+    .split(/[\r\n;]+/)
+    .map((item) => parseCloseSetupDependencyEntry(item))
+    .forEach((entry) => {
+      if (entry.taskId && entry.reason && !overrides.has(entry.taskId.toLowerCase())) {
+        overrides.set(entry.taskId.toLowerCase(), entry.reason);
+      }
+    });
+  return overrides;
+}
+
+function resolveCloseSetupDependencyReason(
+  dependsOnTaskId: string,
+  dependencyIdReasons: Map<string, string>,
+  dependencyReasonOverrides: Map<string, string>,
+  fallbackReason: string,
+  existingDependencies: CloseDependency[]
+): string {
+  const configuredReason = dependencyIdReasons.get(dependsOnTaskId.toLowerCase())
+    ?? dependencyReasonOverrides.get(dependsOnTaskId.toLowerCase())
+    ?? fallbackReason;
+  return configuredReason
+    || existingDependencies.find((dependency) =>
+      dependency.dependsOnTaskId.toLowerCase() === dependsOnTaskId.toLowerCase()
+    )?.reason
+    || "Configured close-plan dependency.";
+}
+
+function buildCloseSetupDependencyReason(dependencies: CloseDependency[]): string {
+  const reasons = dependencies
+    .map((dependency) => dependency.reason?.trim())
+    .filter((reason): reason is string => Boolean(reason))
+    .filter((reason, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === reason.toLowerCase()) === index);
+  return reasons.length === 1 ? reasons[0] : "";
+}
+
+function buildCloseSetupSignOffRequirementRows(requirements: CloseSignOffRequirement[]): string {
+  return requirements
+    .map((requirement) => {
+      const evidence = requirement.evidenceRequirement.trim() || "Retained close checklist evidence";
+      return `${requirement.role} | ${Math.max(1, requirement.requiredApprovalCount)} | ${evidence}`;
+    })
+    .join("\n");
+}
+
+function buildCloseSetupTaskOptions(
+  closePlan: ClosePeriodPlan,
+  selectedTaskId: string
+): AccountingCloseSetupTaskOptionViewModel[] {
+  const normalizedSelectedTaskId = selectedTaskId.trim().toLowerCase();
+  return closePlan.tasks.map((task) => {
+    const requirements = task.signOffRequirements ?? [];
+    const requiredCount = requirements.reduce((total, requirement) => total + Math.max(0, requirement.requiredApprovalCount), 0);
+    const approvedRequirementCount = requirements.reduce((total, requirement) => total + Math.max(0, requirement.approvedCount), 0);
+    const selected = task.taskId.toLowerCase() === normalizedSelectedTaskId;
+
+    return {
+      taskId: task.taskId,
+      displayName: task.displayName,
+      statusLabel: formatCloseTaskStatus(task.status),
+      statusTone: closeTaskStatusTone(task.status),
+      ownerLabel: task.owner || "Unassigned",
+      dueDateLabel: formatDateOnly(task.dueDate),
+      dependencyLabel: task.dependencies.length > 0
+        ? `${formatCount(task.dependencies.length, "dependency")}: ${task.dependencies.map((dependency) => dependency.dependsOnTaskId).join(", ")}`
+        : "No dependencies",
+      signOffLabel: requirements.length > 0
+        ? `${approvedRequirementCount}/${requiredCount} approvals`
+        : "No sign-off matrix supplied",
+      selected,
+      selectAriaLabel: `${selected ? "Selected" : "Select"} close setup task ${task.displayName}`
+    };
+  });
+}
+
+function buildCloseSetupDependencyOptions(
+  closePlan: ClosePeriodPlan,
+  setupDraft: AccountingCloseSetupDraftViewModel
+): AccountingCloseSetupDependencyOptionViewModel[] {
+  const selectedTaskId = setupDraft.taskId.trim().toLowerCase();
+  if (!selectedTaskId || !closePlan.tasks.some((task) => task.taskId.toLowerCase() === selectedTaskId)) {
+    return [];
+  }
+
+  const selectedDependencyIds = new Set(parseCloseSetupDependencyIds(setupDraft.taskDependsOnTaskIds).map((item) => item.toLowerCase()));
+  return closePlan.tasks
+    .filter((task) => task.taskId.toLowerCase() !== selectedTaskId)
+    .map((task) => {
+      const checked = selectedDependencyIds.has(task.taskId.toLowerCase());
+      return {
+        taskId: task.taskId,
+        displayName: task.displayName,
+        statusLabel: formatCloseTaskStatus(task.status),
+        statusTone: closeTaskStatusTone(task.status),
+        ownerLabel: task.owner || "Unassigned",
+        dueDateLabel: formatDateOnly(task.dueDate),
+        checked,
+        toggleAriaLabel: `${checked ? "Remove" : "Add"} ${task.displayName} as a dependency`
+      };
+    });
+}
+
+function buildCloseSetupSignOffRoleOptions(
+  closePlan: ClosePeriodPlan,
+  setupDraft: AccountingCloseSetupDraftViewModel
+): AccountingCloseSetupSignOffRoleOptionViewModel[] {
+  const selectedTaskId = setupDraft.taskId.trim().toLowerCase();
+  const selectedTask = closePlan.tasks.find((task) => task.taskId.toLowerCase() === selectedTaskId) ?? closePlan.tasks[0] ?? null;
+  if (!selectedTask) {
+    return [];
+  }
+
+  const selectedRole = setupDraft.taskRequiredApprovalRole.trim().toLowerCase();
+  const options: AccountingCloseSetupSignOffRoleOptionViewModel[] = [];
+  const addRole = (role: string | null | undefined, sourceLabel: string) => {
+    const normalizedRole = role?.trim();
+    if (!normalizedRole) {
+      return;
+    }
+
+    if (options.some((option) => option.role.toLowerCase() === normalizedRole.toLowerCase())) {
+      return;
+    }
+
+    const selected = normalizedRole.toLowerCase() === selectedRole;
+    options.push({
+      role: normalizedRole,
+      label: normalizedRole,
+      sourceLabel,
+      selected,
+      selectAriaLabel: `${selected ? "Selected" : "Select"} close sign-off role ${normalizedRole}`
+    });
+  };
+
+  for (const requirement of selectedTask.signOffRequirements ?? []) {
+    addRole(requirement.role, "Required role");
+  }
+
+  for (const signOff of selectedTask.signOffs) {
+    addRole(signOff.role, "Retained sign-off");
+  }
+
+  addRole(selectedTask.owner, "Task owner");
+  addRole(closePlan.materialityPolicy.reviewRole, "Materiality reviewer");
+  addRole(setupDraft.taskRequiredApprovalRole, "Draft role");
+
+  return options;
+}
+
+function buildCloseSignOffTaskOptions(
+  closePlan: ClosePeriodPlan,
+  signOffDraft: AccountingCloseSignOffDraftViewModel
+): AccountingCloseSignOffTaskOptionViewModel[] {
+  const normalizedSelectedTaskId = signOffDraft.taskId.trim().toLowerCase();
+  return closePlan.tasks
+    .filter((task) => task.status === "ReadyForSignOff")
+    .map((task) => {
+      const row = buildClosePlanTaskRow(task);
+      const selected = task.taskId.toLowerCase() === normalizedSelectedTaskId;
+
+      return {
+        taskId: task.taskId,
+        displayName: task.displayName,
+        statusLabel: row.statusLabel,
+        statusTone: row.statusTone,
+        ownerLabel: task.owner || "Unassigned",
+        signOffLabel: row.signOffLabel,
+        selected,
+        selectAriaLabel: `${selected ? "Selected" : "Select"} close task sign-off ${task.displayName}`
+      };
+    });
+}
+
+function buildCloseSignOffRoleOptions(
+  closePlan: ClosePeriodPlan,
+  signOffDraft: AccountingCloseSignOffDraftViewModel
+): AccountingCloseSignOffRoleOptionViewModel[] {
+  const selectedTask = closePlan.tasks.find((task) => task.taskId.toLowerCase() === signOffDraft.taskId.trim().toLowerCase()) ?? null;
+  if (!selectedTask) {
+    return [];
+  }
+
+  const selectedRole = signOffDraft.role.trim().toLowerCase();
+  const options: AccountingCloseSignOffRoleOptionViewModel[] = [];
+  const addRole = (role: string | null | undefined, sourceLabel: string) => {
+    const normalizedRole = role?.trim();
+    if (!normalizedRole || options.some((option) => option.role.toLowerCase() === normalizedRole.toLowerCase())) {
+      return;
+    }
+
+    const selected = normalizedRole.toLowerCase() === selectedRole;
+    options.push({
+      role: normalizedRole,
+      label: normalizedRole,
+      sourceLabel,
+      selected,
+      selectAriaLabel: `${selected ? "Selected" : "Select"} close task sign-off role ${normalizedRole}`
+    });
+  };
+
+  for (const requirement of selectedTask.signOffRequirements ?? []) {
+    addRole(requirement.role, requirement.isSatisfied ? "Satisfied role" : "Required role");
+  }
+
+  for (const signOff of selectedTask.signOffs) {
+    addRole(signOff.role, "Retained sign-off");
+  }
+
+  addRole(selectedTask.owner, "Task owner");
+  addRole(signOffDraft.role, "Draft role");
+
+  return options;
+}
+
+function buildCloseSignOffDecisionOptions(
+  signOffDraft: AccountingCloseSignOffDraftViewModel
+): AccountingCloseSignOffDecisionOptionViewModel[] {
+  return (["Approved", "Rejected"] as const).map((decision) => ({
+    decision,
+    label: decision,
+    selected: signOffDraft.decision === decision,
+    selectAriaLabel: `${signOffDraft.decision === decision ? "Selected" : "Select"} close task sign-off decision ${decision}`
+  }));
 }
 
 function buildClosePlanTaskRow(task: CloseTask): AccountingClosePlanTaskRowViewModel {
@@ -12114,6 +14691,176 @@ function buildCloseTaskSignOffDetail(task: CloseTask): string | null {
   const signedAt = latest.signedAtUtc ? ` on ${formatDateTimeLabel(latest.signedAtUtc)}` : "";
   const notes = latest.notes?.trim();
   return `${latest.approvalState} by ${actor}${signedAt}${notes ? ` | ${notes}` : ""}`;
+}
+
+function buildCloseDependencyGraphRows(closePlan: ClosePeriodPlan): AccountingCloseDependencyGraphRowViewModel[] {
+  const taskById = new Map(closePlan.tasks.map((task) => [task.taskId, task]));
+  return closePlan.tasks.flatMap((task) =>
+    task.dependencies.map((dependency) => {
+      const predecessor = taskById.get(dependency.dependsOnTaskId) ?? null;
+      const isSatisfied = predecessor?.status === "SignedOff";
+      const isMissing = !predecessor;
+      const isBlocked = task.status === "Blocked" || task.status === "WaitingOnDependency";
+
+      return {
+        dependencyId: dependency.dependencyId,
+        taskId: task.taskId,
+        taskLabel: task.displayName,
+        dependsOnTaskId: dependency.dependsOnTaskId,
+        predecessorLabel: predecessor?.displayName ?? dependency.dependsOnTaskId,
+        reason: dependency.reason?.trim() || "Dependency must clear before this task can advance.",
+        statusLabel: isSatisfied
+          ? "Satisfied"
+          : predecessor
+            ? `${formatCloseTaskStatus(predecessor.status)} predecessor`
+            : "Predecessor missing",
+        statusTone: isSatisfied ? "success" : isMissing ? "danger" : isBlocked ? "warning" : "default",
+        blockerLabel: task.blockerReason?.trim() || null
+      };
+    })
+  );
+}
+
+function buildCloseSignOffMatrixRows(closePlan: ClosePeriodPlan): AccountingCloseSignOffMatrixRowViewModel[] {
+  return closePlan.tasks.flatMap((task) => {
+    const requirements = task.signOffRequirements ?? [];
+    if (requirements.length === 0) {
+      const fallbackRows: AccountingCloseSignOffMatrixRowViewModel[] = [{
+        rowId: `${task.taskId}-owner-signoff`,
+        taskId: task.taskId,
+        taskLabel: task.displayName,
+        roleLabel: task.owner || "controller",
+        approvedLabel: `${task.signOffs.filter((signOff) => signOff.approvalState === "Approved").length}/${Math.max(1, task.signOffs.length)}`,
+        statusLabel: task.signOffs.length > 0 ? "Retained sign-off" : "No matrix supplied",
+        statusTone: task.signOffs.length > 0 ? "success" : "default",
+        evidenceRequirementLabel: "No sign-off matrix evidence requirement supplied",
+        latestSignOffLabel: buildCloseTaskSignOffDetail(task)
+      }];
+      return fallbackRows;
+    }
+
+    return requirements.map<AccountingCloseSignOffMatrixRowViewModel>((requirement) => ({
+      rowId: requirement.requirementId,
+      taskId: task.taskId,
+      taskLabel: task.displayName,
+      roleLabel: requirement.role,
+      approvedLabel: `${requirement.approvedCount}/${requirement.requiredApprovalCount}`,
+      statusLabel: requirement.isSatisfied ? "Satisfied" : "Approval required",
+      statusTone: requirement.isSatisfied ? "success" : task.status === "Blocked" ? "danger" : "warning",
+      evidenceRequirementLabel: requirement.evidenceRequirement?.trim() || "Retained close sign-off evidence required",
+      latestSignOffLabel: buildCloseTaskSignOffDetail(task)
+    }));
+  });
+}
+
+function buildCloseOperatingCoverageRows(closePlan: ClosePeriodPlan): AccountingCloseOperatingCoverageRowViewModel[] {
+  return (closePlan.operatingCoverage ?? []).map((item) => ({
+    controlId: item.controlId,
+    label: item.label,
+    statusLabel: formatAccountingReadinessState(item.state),
+    statusTone: accountingReadinessStateTone(item.state),
+    evidenceLabel: formatCount(item.evidenceCount, "evidence link"),
+    blockerLabel: formatCount(item.blockingIssueCount, "blocking issue"),
+    requiredAction: item.requiredAction,
+    issueLabels: (item.blockingIssues ?? []).map((issue) =>
+      `${issue.severity} | ${issue.code}${issue.targetId ? ` | ${issue.targetId}` : ""}`)
+  }));
+}
+
+function buildCloseEvidenceReviewRows(
+  closePlan: ClosePeriodPlan | null,
+  bundle: AccountingReportPackageBundle | null,
+  validationIssues: AccountingConfigurationIssueViewModel[],
+  periodLocked: boolean
+): AccountingCloseEvidenceReviewRowViewModel[] {
+  const rows: AccountingCloseEvidenceReviewRowViewModel[] = [];
+  const reviews = closePlan?.evidenceReviews ?? [];
+
+  closePlan?.tasks.forEach((task) => {
+    rows.push({
+      rowId: `task-evidence-${task.taskId}`,
+      issueCode: null,
+      targetId: task.taskId,
+      label: task.displayName,
+      categoryLabel: "Checklist task",
+      evidenceLabel: formatCount(task.evidenceLinks.length, "evidence link"),
+      statusLabel: task.evidenceLinks.length > 0 ? "Evidence retained" : "Evidence missing",
+      statusTone: task.evidenceLinks.length > 0 ? "success" : "warning",
+      detailLabel: task.blockerReason?.trim() || task.signOffRequirements?.map((item) => item.evidenceRequirement).filter(Boolean).join("; ") || "Checklist evidence is inherited from the close plan.",
+      latestReviewLabel: null,
+      reviewDisabledReason: "Only active close blocker rows can retain review evidence."
+    });
+  });
+
+  closePlan?.lateAdjustments.forEach((adjustment) => {
+    rows.push({
+      rowId: `late-adjustment-evidence-${adjustment.requestId}`,
+      issueCode: null,
+      targetId: adjustment.requestId,
+      label: adjustment.journalEntryId,
+      categoryLabel: "Late adjustment",
+      evidenceLabel: formatCount(adjustment.evidenceLinks.length, "evidence link"),
+      statusLabel: adjustment.approvalState,
+      statusTone: adjustment.approvalState === "Approved"
+        ? "success"
+        : adjustment.approvalState === "Rejected"
+          ? "danger"
+          : "warning",
+      detailLabel: adjustment.reason,
+      latestReviewLabel: null,
+      reviewDisabledReason: "Use the late-adjustment review command for adjustment decisions."
+    });
+  });
+
+  if (bundle) {
+    const evidenceCount = collectAccountingReportPackageEvidenceLinks(bundle).length;
+    rows.push({
+      rowId: `report-package-evidence-${bundle.financialStatements.packageId}`,
+      issueCode: null,
+      targetId: bundle.financialStatements.packageId,
+      label: bundle.financialStatements.packageId,
+      categoryLabel: "Report package",
+      evidenceLabel: formatCount(evidenceCount, "evidence link"),
+      statusLabel: formatAccountingCertificationState(bundle.certification.state),
+      statusTone: accountingCertificationTone(bundle.certification.state),
+      detailLabel: `${formatCount(bundle.investorCapitalStatements.length, "investor statement")}; ${formatCount(bundle.exportArtifacts?.length ?? 0, "export artifact")}`,
+      latestReviewLabel: null,
+      reviewDisabledReason: "Report package certification owns package review decisions."
+    });
+  }
+
+  validationIssues.forEach((issue) => {
+    const latestReview = reviews
+      .filter((review) =>
+        review.issueCode.toLowerCase() === issue.label.split(" | ")[1]?.toLowerCase() &&
+        (review.targetId ?? "").toLowerCase() === (issue.detail === "No target" ? "" : issue.detail).toLowerCase())
+      .sort((left, right) => String(right.reviewedAtUtc).localeCompare(String(left.reviewedAtUtc)))[0] ?? null;
+    const issueCode = issue.label.split(" | ")[1] ?? issue.label;
+    const targetId = issue.detail === "No target" ? null : issue.detail;
+    rows.push({
+      rowId: `validation-evidence-${issue.id}`,
+      issueCode,
+      targetId,
+      label: issue.label,
+      categoryLabel: "Blocker review",
+      evidenceLabel: latestReview
+        ? `${formatCount(latestReview.evidenceLinks.length, "review evidence link")} retained`
+        : issue.detail,
+      statusLabel: latestReview ? "Review retained" : "Review required",
+      statusTone: latestReview ? "success" : issue.tone,
+      detailLabel: issue.message,
+      latestReviewLabel: latestReview
+        ? `${latestReview.reviewedBy} on ${formatDateTimeLabel(latestReview.reviewedAtUtc)} | ${latestReview.notes}`
+        : null,
+      reviewDisabledReason: periodLocked
+        ? "The period is locked; evidence review changes require a governed reopen workflow."
+        : latestReview
+          ? "Close evidence review is already retained for this issue."
+          : null
+    });
+  });
+
+  return rows;
 }
 
 function buildLateAdjustmentRow(
@@ -12232,10 +14979,20 @@ function buildClosePlanConfigurationRequest(
   const percentThreshold = Number(setupDraft.percentThreshold);
   const requiredApprovalCount = Number.parseInt(setupDraft.taskRequiredApprovalCount, 10);
   const editedTaskId = setupDraft.taskId.trim();
-  const editedTaskDependsOnTaskIds = setupDraft.taskDependsOnTaskIds
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
+  const editedTaskDependsOnTaskIds = parseCloseSetupDependencyIds(setupDraft.taskDependsOnTaskIds);
+  const editedTaskSignOffRequirementConfigurations = parseCloseSetupSignOffRequirementRows(setupDraft.taskSignOffRequirements);
+  const editedTaskDependencyIdReasons = new Map(
+    setupDraft.taskDependsOnTaskIds
+      .split(/[,\r\n;]+/)
+      .map((item) => parseCloseSetupDependencyEntry(item))
+      .filter((entry) => entry.taskId && entry.reason)
+      .map((entry) => [entry.taskId.toLowerCase(), entry.reason!])
+  );
+  const editedTaskDependencyReason = setupDraft.taskDependencyReason.trim();
+  const editedTaskDependencyReasonOverrides = parseCloseSetupDependencyReasonOverrides(editedTaskDependencyReason);
+  const editedTaskFallbackDependencyReason = editedTaskDependencyReasonOverrides.size === 0
+    ? editedTaskDependencyReason
+    : "";
   const taskConfigurations = closePlan.tasks.map((task) => {
     const isEditedTask = editedTaskId.length === 0 || task.taskId === editedTaskId;
     const signOffRequirements = task.signOffRequirements ?? [];
@@ -12248,24 +15005,58 @@ function buildClosePlanConfigurationRequest(
       .filter(Boolean)
       .join("; ");
     const fallbackRequiredApprovalRole = signOffRequirements[0]?.role?.trim() || task.owner || "Controller";
+    const fallbackSignOffRequirementConfigurations = signOffRequirements.map((requirement) => ({
+      role: requirement.role,
+      requiredApprovalCount: Math.max(1, requirement.requiredApprovalCount),
+      evidenceRequirement: requirement.evidenceRequirement || "Retained close checklist evidence"
+    }));
+    const editedLegacySignOffRequirement = {
+      role: setupDraft.taskRequiredApprovalRole.trim() || fallbackRequiredApprovalRole,
+      requiredApprovalCount: Number.isFinite(requiredApprovalCount) && requiredApprovalCount > 0
+        ? requiredApprovalCount
+        : fallbackRequiredApprovalCount,
+      evidenceRequirement: setupDraft.taskRequiredEvidence.trim() || requiredEvidence || "Retained close checklist evidence"
+    };
+    const taskSignOffRequirementConfigurations = isEditedTask
+      ? editedTaskSignOffRequirementConfigurations.length > 0
+        ? editedTaskSignOffRequirementConfigurations
+        : [editedLegacySignOffRequirement]
+      : fallbackSignOffRequirementConfigurations.length > 0
+        ? fallbackSignOffRequirementConfigurations
+        : [{
+          role: fallbackRequiredApprovalRole,
+          requiredApprovalCount: fallbackRequiredApprovalCount,
+          evidenceRequirement: requiredEvidence || "Retained close checklist evidence"
+        }];
+    const primaryRequirement = taskSignOffRequirementConfigurations[0] ?? editedLegacySignOffRequirement;
 
     return {
       taskId: task.taskId,
       displayName: isEditedTask ? setupDraft.taskDisplayName.trim() || task.displayName : task.displayName,
       owner: isEditedTask ? setupDraft.taskOwner.trim() || task.owner : task.owner,
       dueDate: isEditedTask ? setupDraft.taskDueDate.trim() || task.dueDate : task.dueDate,
-      requiredApprovalCount: isEditedTask && Number.isFinite(requiredApprovalCount) && requiredApprovalCount > 0
-        ? requiredApprovalCount
-        : fallbackRequiredApprovalCount,
-      requiredApprovalRole: isEditedTask
-        ? setupDraft.taskRequiredApprovalRole.trim() || fallbackRequiredApprovalRole
-        : fallbackRequiredApprovalRole,
-      requiredEvidence: isEditedTask
-        ? setupDraft.taskRequiredEvidence.trim() || requiredEvidence || "Retained close checklist evidence"
-        : requiredEvidence || "Retained close checklist evidence",
+      requiredApprovalCount: primaryRequirement.requiredApprovalCount,
+      requiredApprovalRole: primaryRequirement.role,
+      requiredEvidence: primaryRequirement.evidenceRequirement,
       dependsOnTaskIds: isEditedTask
         ? editedTaskDependsOnTaskIds
-        : task.dependencies.map((dependency) => dependency.dependsOnTaskId)
+        : task.dependencies.map((dependency) => dependency.dependsOnTaskId),
+      dependencyConfigurations: isEditedTask
+        ? editedTaskDependsOnTaskIds.map((dependsOnTaskId) => ({
+          dependsOnTaskId,
+          reason: resolveCloseSetupDependencyReason(
+            dependsOnTaskId,
+            editedTaskDependencyIdReasons,
+            editedTaskDependencyReasonOverrides,
+            editedTaskFallbackDependencyReason,
+            task.dependencies
+          )
+        }))
+        : task.dependencies.map((dependency) => ({
+          dependsOnTaskId: dependency.dependsOnTaskId,
+          reason: dependency.reason
+        })),
+      signOffRequirementConfigurations: taskSignOffRequirementConfigurations
     };
   });
   const evidenceLinks = collectAccountingCloseEvidenceLinks(workflow, closePlan);
@@ -12295,7 +15086,8 @@ function buildClosePlanConfigurationRequest(
     actor: "browser-accounting-controller",
     evidenceLinks: Array.from(new Set(evidenceLinks)),
     correlationId: `browser-close-plan-configuration-${workflow.workflowId}`,
-    actionOrigin: "HumanOperator"
+    actionOrigin: "HumanOperator",
+    expectedConfiguredAtUtc: closePlan.configuration?.configuredAtUtc ?? null
   };
 }
 
@@ -14911,6 +17703,16 @@ export function buildInstrumentPassportViewState({
   const usageSummary = passport?.usage.summary?.trim() || "Downstream usage is unavailable.";
   const pricingStatus = passport?.pricing?.status?.trim() || "Unknown";
   const pricingSummary = passport?.pricing?.summary?.trim() || "Pricing and trading controls are unavailable.";
+  const operatingModel = passport?.operatingModel ?? null;
+  const operatingModelStatus = operatingModel?.status?.trim() || "Unavailable";
+  const operatingModelSummary = operatingModel?.summary?.trim() || "Security Master operating model is unavailable.";
+  const operatingModelStageFields = (operatingModel?.stages ?? []).map((stage) => ({
+    label: stage.title,
+    value: `${stage.status}: ${stage.summary} Evidence ${stage.evidenceCount}; blockers ${stage.blockingIssueCount}.`,
+    tone: stage.status.toLowerCase() === "ready" ? "success" as const : "warning" as const
+  }));
+  const mostSpecificEntitlements = operatingModel?.entitlementApplicability.filter((row) => row.isApplicable && row.isMostSpecific) ?? [];
+  const approvalPosture = operatingModel?.manualChangeApproval ?? null;
   const referenceDataWorkbench = passport?.referenceDataWorkbench ?? null;
   const referenceDataWorkbenchStatus = referenceDataWorkbench?.status?.trim() || "Unavailable";
   const referenceDataWorkbenchSummary = referenceDataWorkbench?.summary?.trim() || "Reference-data workbench is unavailable.";
@@ -14945,6 +17747,24 @@ export function buildInstrumentPassportViewState({
       { label: "Provider confidence", value: `${activeProviderCount} active / ${providerRows.length} total` },
       { label: "Pricing", value: `${pricingStatus}: ${pricingSummary}` },
       { label: "Usage", value: usageSummary },
+      {
+        label: "Operating model",
+        value: `${operatingModelStatus}: ${operatingModelSummary}`,
+        tone: operatingModelStatus.toLowerCase() === "ready" ? "success" : "warning"
+      },
+      ...operatingModelStageFields,
+      {
+        label: "Entitlement applicability",
+        value: `${mostSpecificEntitlements.length} most-specific applicable entitlement(s).`,
+        tone: mostSpecificEntitlements.length > 0 ? "success" : "warning"
+      },
+      {
+        label: "Manual-change approval",
+        value: approvalPosture
+          ? `${approvalPosture.status}: ${approvalPosture.policyKey} via ${approvalPosture.gate}; ${approvalPosture.summary}`
+          : "Unavailable: operations approval policy posture is unavailable.",
+        tone: approvalPosture?.status?.toLowerCase() === "ready" ? "success" : "warning"
+      },
       {
         label: "Reference-data workbench",
         value: `${referenceDataWorkbenchStatus}: ${referenceDataWorkbenchSummary}`,

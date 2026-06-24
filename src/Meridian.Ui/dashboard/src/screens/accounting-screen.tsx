@@ -79,6 +79,7 @@ import type {
   ReferenceDataWorkbenchViewState,
   SecuritySearchResultRowViewModel,
   AccountingCloseReportPackageViewModel,
+  AccountingCloseWorkflowActionId,
   CloseCommandCenterViewState,
   AccountingWorkflowLaunchViewState,
   AccountingToolingTone,
@@ -4342,6 +4343,43 @@ function CloseCommandCenterPanel({
 }
 
 function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseReportPackageViewModel }) {
+  const runCloseWorkflowAction = (actionId: AccountingCloseWorkflowActionId | null) => {
+    if (!actionId) {
+      return;
+    }
+
+    switch (actionId) {
+      case "configure-close-plan":
+        void view.configureClosePlan();
+        return;
+      case "sign-off-task":
+        void view.signOffNextTask();
+        return;
+      case "request-late-adjustment":
+        void view.createLateAdjustment();
+        return;
+      case "review-evidence": {
+        const row = view.evidenceReviewRows.find((item) => item.issueCode && !item.reviewDisabledReason);
+        if (row) {
+          void view.reviewCloseEvidence(row.rowId);
+        }
+        return;
+      }
+      case "build-package":
+        void view.buildReportPackage();
+        return;
+      case "certify-package":
+        void view.certifyPackage();
+        return;
+      case "inspect-export":
+        void view.inspectSelectedPackageExport();
+        return;
+      case "lock-period":
+        void view.lockClosePeriod();
+        return;
+    }
+  };
+
   return (
     <section id="accounting-close-report-package" className="workspace-section-band" aria-labelledby="accounting-close-report-package-heading">
       <span className="sr-only" aria-live="polite">{view.liveRegionText}</span>
@@ -4551,6 +4589,19 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
               {view.reviewLateAdjustmentStatusText}
             </div>
           ) : null}
+          {view.reviewCloseEvidenceStatusText ? (
+            <div
+              role={view.reviewCloseEvidenceStatusTone === "danger" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                view.reviewCloseEvidenceStatusTone === "success" && "border-success/30 bg-success/10 text-success",
+                view.reviewCloseEvidenceStatusTone === "danger" && "border-danger/30 bg-danger/10 text-danger",
+                view.reviewCloseEvidenceStatusTone === "neutral" && "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              {view.reviewCloseEvidenceStatusText}
+            </div>
+          ) : null}
           {view.exportManifestStatusText ? (
             <div
               role={view.exportManifestStatusTone === "danger" ? "alert" : "status"}
@@ -4565,6 +4616,44 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
             </div>
           ) : null}
 
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="End-to-end close workflow controls">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Close workflow control</div>
+              <Badge variant="outline">{view.closeWorkflowSteps.length} steps</Badge>
+            </div>
+            <div role="list" className="mt-3 grid gap-2 lg:grid-cols-2 xl:grid-cols-4">
+              {view.closeWorkflowSteps.map((step) => (
+                <div
+                  key={step.id}
+                  role="listitem"
+                  className={cn("grid min-h-[12rem] gap-3 rounded-md border bg-background/45 px-3 py-3", accountingToolingBorderClass(step.tone))}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <span className="font-semibold text-foreground">{step.label}</span>
+                    <Badge variant={accountingToolingBadgeVariant(step.tone)}>{step.statusLabel}</Badge>
+                  </div>
+                  <div className="grid content-start gap-1 text-xs leading-5 text-muted-foreground">
+                    <span>{step.detail}</span>
+                    <span className="font-mono text-[0.72rem] text-foreground">{step.evidenceLabel}</span>
+                  </div>
+                  {step.actionId ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={step.tone === "danger" ? "default" : "outline"}
+                      className="mt-auto justify-self-start"
+                      disabled={Boolean(step.disabledReason)}
+                      disabledReason={step.disabledReason ?? undefined}
+                      onClick={() => runCloseWorkflowAction(step.actionId)}
+                    >
+                      {step.actionLabel}
+                    </Button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {view.metrics.map((metric) => (
               <div key={metric.id} className={cn("rounded-md border bg-secondary/20 px-3 py-3", accountingToolingBorderClass(metric.tone))}>
@@ -4575,6 +4664,164 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
               </div>
             ))}
+          </div>
+
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="Close operating coverage">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Operating coverage</div>
+              <Badge variant={view.operatingCoverageRows.length > 0 ? "outline" : "warning"}>
+                {view.operatingCoverageRows.length > 0 ? `${view.operatingCoverageRows.length} controls` : "Not supplied"}
+              </Badge>
+            </div>
+            {view.operatingCoverageRows.length > 0 ? (
+              <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                {view.operatingCoverageRows.map((row) => (
+                  <div key={row.controlId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(row.statusTone))}>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="font-semibold text-foreground">{row.label}</span>
+                      <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                    </div>
+                    <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                      <span>{row.evidenceLabel}; {row.blockerLabel}</span>
+                      <span>{row.requiredAction}</span>
+                    </div>
+                    {row.issueLabels.length > 0 ? (
+                      <ul className="mt-2 space-y-1 text-xs text-warning">
+                        {row.issueLabels.map((issue) => (
+                          <li key={`${row.controlId}-${issue}`}>{issue}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Shared close operating coverage was not returned with this close plan.
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="Close sign-off administration">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Task sign-off</div>
+              <Badge variant={view.signOffDisabledReason ? "outline" : view.closeSignOffDraft.decision === "Rejected" ? "danger" : "success"}>
+                {view.closeSignOffDraft.decision}
+              </Badge>
+            </div>
+            <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+              <div className="space-y-2">
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Ready tasks</div>
+                {view.closeSignOffTaskOptions.length > 0 ? (
+                  <div role="list" className="grid gap-2 md:grid-cols-2" aria-label="Close task sign-off selector">
+                    {view.closeSignOffTaskOptions.map((task) => (
+                      <button
+                        key={task.taskId}
+                        type="button"
+                        role="listitem"
+                        aria-label={task.selectAriaLabel}
+                        aria-pressed={task.selected}
+                        className={cn(
+                          "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                          task.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-background/45"
+                        )}
+                        onClick={() => view.selectCloseSignOffTask(task.taskId)}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <span className="font-semibold text-foreground">{task.displayName}</span>
+                          <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
+                        </div>
+                        <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                          <span>{task.taskId}</span>
+                          <span>Owner: {task.ownerLabel}</span>
+                          <span>{task.signOffLabel}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-md border border-border/70 bg-background/45 px-3 py-2 text-sm text-muted-foreground">
+                    No close checklist task is ready for sign-off.
+                  </p>
+                )}
+              </div>
+              <div className="grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3">
+                <div className="grid gap-2 md:grid-cols-[minmax(0,0.6fr)_minmax(0,0.4fr)]">
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Task id</span>
+                    <Input
+                      value={view.closeSignOffDraft.taskId}
+                      onChange={(event) => view.updateCloseSignOffDraft({ taskId: event.target.value })}
+                    />
+                  </label>
+                  <label className="space-y-1 text-sm">
+                    <span className="text-xs font-semibold uppercase text-muted-foreground">Role</span>
+                    <Input
+                      value={view.closeSignOffDraft.role}
+                      onChange={(event) => view.updateCloseSignOffDraft({ role: event.target.value })}
+                    />
+                  </label>
+                </div>
+                <div className="space-y-2" aria-label="Close task sign-off role candidates">
+                  <div className="text-xs font-semibold uppercase text-muted-foreground">Role candidates</div>
+                  {view.closeSignOffRoleOptions.length > 0 ? (
+                    <div role="list" className="grid gap-2 md:grid-cols-2">
+                      {view.closeSignOffRoleOptions.map((role) => (
+                        <button
+                          key={role.role}
+                          type="button"
+                          role="listitem"
+                          aria-label={role.selectAriaLabel}
+                          aria-pressed={role.selected}
+                          className={cn(
+                            "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            role.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
+                          )}
+                          onClick={() => view.selectCloseSignOffRole(role.role)}
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <span className="font-semibold text-foreground">{role.label}</span>
+                            <Badge variant={role.selected ? "success" : "outline"}>{role.sourceLabel}</Badge>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-md border border-border/70 bg-secondary/10 px-3 py-2 text-sm text-muted-foreground">
+                      Select a ready checklist task before choosing a signer role.
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2" aria-label="Close task sign-off decision">
+                  <div className="text-xs font-semibold uppercase text-muted-foreground">Decision</div>
+                  <div role="list" className="grid gap-2 sm:grid-cols-2">
+                    {view.closeSignOffDecisionOptions.map((decision) => (
+                      <button
+                        key={decision.decision}
+                        type="button"
+                        role="listitem"
+                        aria-label={decision.selectAriaLabel}
+                        aria-pressed={decision.selected}
+                        className={cn(
+                          "rounded-md border px-3 py-2 text-left font-semibold transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                          decision.selected ? "border-primary/50 bg-primary/10 text-foreground" : "border-border/70 bg-secondary/10 text-muted-foreground"
+                        )}
+                        onClick={() => view.selectCloseSignOffDecision(decision.decision)}
+                      >
+                        {decision.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Notes</span>
+                  <Input
+                    value={view.closeSignOffDraft.notes}
+                    onChange={(event) => view.updateCloseSignOffDraft({ notes: event.target.value })}
+                  />
+                </label>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3" aria-label="Close setup editor">
@@ -4627,6 +4874,38 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
               </div>
               <div className="grid gap-2 rounded-md border border-border/70 bg-background/45 px-3 py-3">
                 <div className="text-xs font-semibold uppercase text-muted-foreground">Checklist task</div>
+                {view.closeSetupTaskOptions.length > 0 ? (
+                  <div role="list" className="grid gap-2 md:grid-cols-2" aria-label="Close setup task catalog">
+                    {view.closeSetupTaskOptions.map((task) => (
+                      <button
+                        key={task.taskId}
+                        type="button"
+                        role="listitem"
+                        aria-label={task.selectAriaLabel}
+                        aria-pressed={task.selected}
+                        className={cn(
+                          "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                          task.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
+                        )}
+                        onClick={() => view.selectCloseSetupTask(task.taskId)}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <span className="font-semibold text-foreground">{task.displayName}</span>
+                          <Badge variant={accountingToolingBadgeVariant(task.statusTone)}>{task.statusLabel}</Badge>
+                        </div>
+                        <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                          <span>{task.taskId}</span>
+                          <span>Owner: {task.ownerLabel}; Due: {task.dueDateLabel}</span>
+                          <span>{task.dependencyLabel}; {task.signOffLabel}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                    No retained close checklist tasks are available for setup.
+                  </p>
+                )}
                 <div className="grid gap-2 md:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]">
                   <label className="space-y-1 text-sm">
                     <span className="text-xs font-semibold uppercase text-muted-foreground">Task id</span>
@@ -4674,6 +4953,36 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                     />
                   </label>
                 </div>
+                <div className="space-y-2" aria-label="Close setup sign-off role candidates">
+                  <div className="text-xs font-semibold uppercase text-muted-foreground">Sign-off role candidates</div>
+                  {view.closeSetupSignOffRoleOptions.length > 0 ? (
+                    <div role="list" className="grid gap-2 md:grid-cols-2">
+                      {view.closeSetupSignOffRoleOptions.map((role) => (
+                        <button
+                          key={role.role}
+                          type="button"
+                          role="listitem"
+                          aria-label={role.selectAriaLabel}
+                          aria-pressed={role.selected}
+                          className={cn(
+                            "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            role.selected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
+                          )}
+                          onClick={() => view.selectCloseSetupSignOffRole(role.role)}
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <span className="font-semibold text-foreground">{role.label}</span>
+                            <Badge variant={role.selected ? "success" : "outline"}>{role.sourceLabel}</Badge>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-md border border-border/70 bg-secondary/10 px-3 py-2 text-sm text-muted-foreground">
+                      Select a retained checklist task before choosing sign-off roles.
+                    </p>
+                  )}
+                </div>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Required evidence</span>
                   <Input
@@ -4682,10 +4991,59 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                   />
                 </label>
                 <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Sign-off matrix</span>
+                  <textarea
+                    className="min-h-[88px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    value={view.closeSetupDraft.taskSignOffRequirements}
+                    onChange={(event) => view.updateCloseSetupDraft({ taskSignOffRequirements: event.target.value })}
+                  />
+                </label>
+                <div className="space-y-2" aria-label="Close setup dependency candidates">
+                  <div className="text-xs font-semibold uppercase text-muted-foreground">Dependency candidates</div>
+                  {view.closeSetupDependencyOptions.length > 0 ? (
+                    <div role="list" className="grid gap-2 md:grid-cols-2">
+                      {view.closeSetupDependencyOptions.map((dependency) => (
+                        <button
+                          key={dependency.taskId}
+                          type="button"
+                          role="listitem"
+                          aria-label={dependency.toggleAriaLabel}
+                          aria-pressed={dependency.checked}
+                          className={cn(
+                            "rounded-md border px-3 py-2 text-left transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                            dependency.checked ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/10"
+                          )}
+                          onClick={() => view.toggleCloseSetupDependency(dependency.taskId)}
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <span className="font-semibold text-foreground">{dependency.displayName}</span>
+                            <Badge variant={accountingToolingBadgeVariant(dependency.statusTone)}>{dependency.statusLabel}</Badge>
+                          </div>
+                          <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                            <span>{dependency.taskId}</span>
+                            <span>Owner: {dependency.ownerLabel}; Due: {dependency.dueDateLabel}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-md border border-border/70 bg-secondary/10 px-3 py-2 text-sm text-muted-foreground">
+                      Select a retained checklist task with available predecessors before adding dependency links.
+                    </p>
+                  )}
+                </div>
+                <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Depends on task ids</span>
                   <Input
                     value={view.closeSetupDraft.taskDependsOnTaskIds}
                     onChange={(event) => view.updateCloseSetupDraft({ taskDependsOnTaskIds: event.target.value })}
+                  />
+                </label>
+                <label className="space-y-1 text-sm">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">Dependency reason</span>
+                  <Input
+                    value={view.closeSetupDraft.taskDependencyReason}
+                    onChange={(event) => view.updateCloseSetupDraft({ taskDependencyReason: event.target.value })}
                   />
                 </label>
               </div>
@@ -4763,6 +5121,60 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
               ) : (
                 <p className="mt-3 text-sm text-muted-foreground">Close checklist detail is not loaded.</p>
               )}
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                <div className="rounded-md border border-border/70 bg-background/45 px-3 py-3" aria-label="Close dependency graph">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-semibold uppercase text-muted-foreground">Dependency graph</div>
+                    <Badge variant={view.dependencyGraphRows.length > 0 ? "warning" : "outline"}>{view.dependencyGraphRows.length}</Badge>
+                  </div>
+                  {view.dependencyGraphRows.length > 0 ? (
+                    <div role="list" className="mt-3 space-y-2">
+                      {view.dependencyGraphRows.map((dependency) => (
+                        <div key={dependency.dependencyId} role="listitem" className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(dependency.statusTone))}>
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <span className="font-semibold text-foreground">{dependency.taskLabel}</span>
+                            <Badge variant={accountingToolingBadgeVariant(dependency.statusTone)}>{dependency.statusLabel}</Badge>
+                          </div>
+                          <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                            <span>Depends on: {dependency.predecessorLabel}</span>
+                            <span>{dependency.reason}</span>
+                            {dependency.blockerLabel ? <span className="text-warning">{dependency.blockerLabel}</span> : null}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">No close-task dependencies are retained for this plan.</p>
+                  )}
+                </div>
+
+                <div className="rounded-md border border-border/70 bg-background/45 px-3 py-3" aria-label="Close sign-off matrix">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-xs font-semibold uppercase text-muted-foreground">Sign-off matrix</div>
+                    <Badge variant={view.signOffMatrixRows.length > 0 ? "success" : "outline"}>{view.signOffMatrixRows.length}</Badge>
+                  </div>
+                  {view.signOffMatrixRows.length > 0 ? (
+                    <div role="list" className="mt-3 space-y-2">
+                      {view.signOffMatrixRows.map((row) => (
+                        <div key={row.rowId} role="listitem" className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(row.statusTone))}>
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <span className="font-semibold text-foreground">{row.roleLabel}</span>
+                            <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.approvedLabel}</Badge>
+                          </div>
+                          <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                            <span>{row.taskLabel}</span>
+                            <span>{row.statusLabel}</span>
+                            <span>{row.evidenceRequirementLabel}</span>
+                            {row.latestSignOffLabel ? <span>{row.latestSignOffLabel}</span> : null}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">No sign-off matrix rows are retained for this plan.</p>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
@@ -4920,6 +5332,50 @@ function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseRepo
                 </div>
               ) : (
                 <p className="mt-3 text-sm text-muted-foreground">No late adjustments are registered for this close plan.</p>
+              )}
+            </div>
+
+            <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-semibold uppercase text-muted-foreground">Evidence and blockers</div>
+                <Badge variant={view.evidenceReviewRows.length > 0 ? "outline" : "success"}>{view.evidenceReviewRows.length}</Badge>
+              </div>
+              {view.evidenceReviewRows.length > 0 ? (
+                <div role="list" className="mt-3 space-y-2" aria-label="Close evidence and blocker review rows">
+                  {view.evidenceReviewRows.map((row) => (
+                    <div key={row.rowId} role="listitem" className={cn("rounded-md border bg-background/45 px-3 py-2", accountingToolingBorderClass(row.statusTone))}>
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <span className="font-semibold text-foreground">{row.label}</span>
+                        <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                      </div>
+                      <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                        <span>{row.categoryLabel}</span>
+                        <span>{row.evidenceLabel}</span>
+                        <span>{row.detailLabel}</span>
+                        {row.latestReviewLabel ? <span>{row.latestReviewLabel}</span> : null}
+                      </div>
+                      {row.issueCode ? (
+                        <div className="mt-3 flex justify-end">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            disabled={Boolean(row.reviewDisabledReason) || view.reviewCloseEvidenceBusy}
+                            disabledReason={row.reviewDisabledReason ?? undefined}
+                            busy={view.reviewCloseEvidenceBusy}
+                            busyLabel="Retaining evidence review"
+                            onClick={() => void view.reviewCloseEvidence(row.rowId)}
+                          >
+                            <BookCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                            Retain review
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">No retained close evidence or blocker rows are attached.</p>
               )}
             </div>
 
@@ -6935,6 +7391,85 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         </CardContent>
       </Card>
 
+      <Card className="panel-surface" aria-labelledby="accounting-chart-account-editor-heading">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle id="accounting-chart-account-editor-heading">Chart account setup</CardTitle>
+              <CardDescription>Author ledger-book chart nodes through the shared accounting configuration API.</CardDescription>
+            </div>
+            <Button
+              size="sm"
+              disabled={!view.chartAccountEditor.canSave}
+              disabledReason={view.chartAccountEditor.saveDisabledReason}
+              busy={view.chartAccountEditor.saveBusy}
+              busyLabel={view.chartAccountEditor.saveButtonLabel}
+              onClick={() => void view.chartAccountEditor.save()}
+            >
+              {view.chartAccountEditor.saveButtonLabel}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <FormRow label="Node id" labelFor="accounting-chart-node-id">
+              <Input
+                id="accounting-chart-node-id"
+                value={view.chartAccountEditor.nodeIdValue}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ nodeId: event.currentTarget.value })}
+              />
+            </FormRow>
+            <FormRow label="Account path" labelFor="accounting-chart-path">
+              <Input
+                id="accounting-chart-path"
+                value={view.chartAccountEditor.pathValue}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ path: event.currentTarget.value })}
+              />
+            </FormRow>
+            <FormRow label="Account name" labelFor="accounting-chart-account-name">
+              <Input
+                id="accounting-chart-account-name"
+                value={view.chartAccountEditor.accountNameValue}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ accountName: event.currentTarget.value })}
+              />
+            </FormRow>
+            <FormRow label="Account type" labelFor="accounting-chart-account-type">
+              <Input
+                id="accounting-chart-account-type"
+                value={view.chartAccountEditor.accountTypeValue}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ accountType: event.currentTarget.value })}
+              />
+            </FormRow>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <FormRow label="Parent path" labelFor="accounting-chart-parent-path">
+              <Input
+                id="accounting-chart-parent-path"
+                value={view.chartAccountEditor.parentPathValue}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ parentPath: event.currentTarget.value })}
+              />
+            </FormRow>
+            <FormRow label="Financial account id" labelFor="accounting-chart-financial-account-id">
+              <Input
+                id="accounting-chart-financial-account-id"
+                value={view.chartAccountEditor.financialAccountIdValue}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ financialAccountId: event.currentTarget.value })}
+              />
+            </FormRow>
+            <FormRow label="Retained evidence" labelFor="accounting-chart-evidence">
+              <Input
+                id="accounting-chart-evidence"
+                value={view.chartAccountEditor.evidenceValue}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ evidenceText: event.currentTarget.value })}
+              />
+            </FormRow>
+          </div>
+          {view.chartAccountEditor.statusText ? (
+            <p className="text-sm text-muted-foreground">{view.chartAccountEditor.statusText}</p>
+          ) : null}
+        </CardContent>
+      </Card>
+
       <Card className="panel-surface" aria-labelledby="accounting-production-readiness-heading">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -7093,16 +7628,29 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                 <div className="mt-1 font-mono text-xs text-muted-foreground">{view.tenantAdministrationProfile.scopeLabel}</div>
                 <div className="mt-1 text-xs text-muted-foreground">{view.tenantAdministrationProfile.updatedLabel}</div>
               </div>
-              <Button
-                size="sm"
-                disabled={!view.tenantAdministrationProfile.canSave}
-                disabledReason={view.tenantAdministrationProfile.saveDisabledReason}
-                busy={view.tenantAdministrationProfile.saveBusy}
-                busyLabel={view.tenantAdministrationProfile.saveButtonLabel}
-                onClick={() => void view.tenantAdministrationProfile.save()}
-              >
-                {view.tenantAdministrationProfile.saveButtonLabel}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!view.tenantAdministrationProfile.canRetainSandboxProof}
+                  disabledReason={view.tenantAdministrationProfile.sandboxDisabledReason}
+                  busy={view.tenantAdministrationProfile.sandboxBusy}
+                  busyLabel={view.tenantAdministrationProfile.sandboxButtonLabel}
+                  onClick={() => void view.tenantAdministrationProfile.retainSandboxProof()}
+                >
+                  {view.tenantAdministrationProfile.sandboxButtonLabel}
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={!view.tenantAdministrationProfile.canSave}
+                  disabledReason={view.tenantAdministrationProfile.saveDisabledReason}
+                  busy={view.tenantAdministrationProfile.saveBusy}
+                  busyLabel={view.tenantAdministrationProfile.saveButtonLabel}
+                  onClick={() => void view.tenantAdministrationProfile.save()}
+                >
+                  {view.tenantAdministrationProfile.saveButtonLabel}
+                </Button>
+              </div>
             </div>
             <div className="mt-3 grid gap-2 md:grid-cols-5">
               {view.tenantAdministrationProfile.controls.map((control) => (
@@ -7119,6 +7667,117 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                 </label>
               ))}
             </div>
+            <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting approval queue setup editor">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Approval queue setup</div>
+              <div className="grid gap-3 md:grid-cols-3">
+                <FormRow label="Queue id" labelFor="accounting-approval-queue-id">
+                  <Input
+                    id="accounting-approval-queue-id"
+                    value={view.tenantAdministrationProfile.approvalQueueSetup.queueIdValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ queueId: event.currentTarget.value })}
+                  />
+                </FormRow>
+                <FormRow label="Display name" labelFor="accounting-approval-queue-display-name">
+                  <Input
+                    id="accounting-approval-queue-display-name"
+                    value={view.tenantAdministrationProfile.approvalQueueSetup.displayNameValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ displayName: event.currentTarget.value })}
+                  />
+                </FormRow>
+                <FormRow label="Workflow kind" labelFor="accounting-approval-queue-workflow-kind">
+                  <Input
+                    id="accounting-approval-queue-workflow-kind"
+                    value={view.tenantAdministrationProfile.approvalQueueSetup.workflowKindValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ workflowKind: event.currentTarget.value })}
+                  />
+                </FormRow>
+              </div>
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_8rem_minmax(0,1.5fr)]">
+                <FormRow label="Approval role" labelFor="accounting-approval-queue-role">
+                  <Input
+                    id="accounting-approval-queue-role"
+                    value={view.tenantAdministrationProfile.approvalQueueSetup.requiredApprovalRoleValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ requiredApprovalRole: event.currentTarget.value })}
+                  />
+                </FormRow>
+                <FormRow label="Count" labelFor="accounting-approval-queue-count">
+                  <Input
+                    id="accounting-approval-queue-count"
+                    type="number"
+                    min={1}
+                    value={view.tenantAdministrationProfile.approvalQueueSetup.requiredApprovalCountValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ requiredApprovalCount: event.currentTarget.value })}
+                  />
+                </FormRow>
+                <FormRow label="Evidence requirement" labelFor="accounting-approval-queue-evidence">
+                  <Input
+                    id="accounting-approval-queue-evidence"
+                    value={view.tenantAdministrationProfile.approvalQueueSetup.evidenceRequirementValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ evidenceRequirement: event.currentTarget.value })}
+                  />
+                </FormRow>
+              </div>
+              <FormRow label="Segregation policy" labelFor="accounting-approval-queue-segregation">
+                <Input
+                  id="accounting-approval-queue-segregation"
+                  value={view.tenantAdministrationProfile.approvalQueueSetup.segregationPolicyValue}
+                  onChange={(event) => view.tenantAdministrationProfile.updateApprovalQueueSetup({ segregationPolicy: event.currentTarget.value })}
+                />
+              </FormRow>
+            </div>
+            <div className="mt-3 grid gap-3 rounded-md border border-border/70 bg-background/45 px-3 py-3" role="region" aria-label="Accounting dimension mapping setup editor">
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Dimension mapping setup</div>
+              <div className="grid gap-3 md:grid-cols-3">
+                <FormRow label="Mapping id" labelFor="accounting-dimension-mapping-id">
+                  <Input
+                    id="accounting-dimension-mapping-id"
+                    value={view.tenantAdministrationProfile.dimensionMappingSetup.mappingIdValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ mappingId: event.currentTarget.value })}
+                  />
+                </FormRow>
+                <FormRow label="Display name" labelFor="accounting-dimension-mapping-display-name">
+                  <Input
+                    id="accounting-dimension-mapping-display-name"
+                    value={view.tenantAdministrationProfile.dimensionMappingSetup.displayNameValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ displayName: event.currentTarget.value })}
+                  />
+                </FormRow>
+                <FormRow label="Provider id" labelFor="accounting-dimension-mapping-provider-id">
+                  <Input
+                    id="accounting-dimension-mapping-provider-id"
+                    value={view.tenantAdministrationProfile.dimensionMappingSetup.providerIdValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerId: event.currentTarget.value })}
+                  />
+                </FormRow>
+              </div>
+              <div className="grid gap-3 lg:grid-cols-2">
+                <FormRow label="Meridian dimensions" labelFor="accounting-dimension-mapping-meridian-dimensions">
+                  <textarea
+                    id="accounting-dimension-mapping-meridian-dimensions"
+                    value={view.tenantAdministrationProfile.dimensionMappingSetup.meridianDimensionsValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: event.currentTarget.value })}
+                    className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                    placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;costCenterId=fund-accounting"
+                  />
+                </FormRow>
+                <FormRow label="Provider dimensions" labelFor="accounting-dimension-mapping-provider-dimensions">
+                  <textarea
+                    id="accounting-dimension-mapping-provider-dimensions"
+                    value={view.tenantAdministrationProfile.dimensionMappingSetup.providerDimensionsValue}
+                    onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: event.currentTarget.value })}
+                    className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                    placeholder="Class=fund-alpha&#10;Book=book-primary&#10;Department=fund-accounting"
+                  />
+                </FormRow>
+              </div>
+              <FormRow label="Evidence requirement" labelFor="accounting-dimension-mapping-evidence">
+                <Input
+                  id="accounting-dimension-mapping-evidence"
+                  value={view.tenantAdministrationProfile.dimensionMappingSetup.evidenceRequirementValue}
+                  onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ evidenceRequirement: event.currentTarget.value })}
+                />
+              </FormRow>
+            </div>
             <FormRow label="Retained setup evidence" labelFor="accounting-tenant-admin-evidence">
               <Input
                 id="accounting-tenant-admin-evidence"
@@ -7130,6 +7789,116 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
             {view.tenantAdministrationProfile.statusText ? (
               <p className={cn("text-sm", view.tenantAdministrationProfile.errorText ? "text-danger" : "text-muted-foreground")}>
                 {view.tenantAdministrationProfile.statusText}
+              </p>
+            ) : null}
+            {view.tenantAdministrationProfile.sandboxStatusText ? (
+              <p className={cn("text-sm", view.tenantAdministrationProfile.sandboxStatusText.includes("failed") ? "text-danger" : "text-muted-foreground")}>
+                {view.tenantAdministrationProfile.sandboxStatusText}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="rounded-lg border border-border/70 bg-background/35 p-3" role="region" aria-label="Accounting external GL provider mapping editor">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="font-semibold text-foreground">{view.externalGlMappingProfile.title}</div>
+                <div className="mt-1 font-mono text-xs text-muted-foreground">{view.externalGlMappingProfile.scopeLabel}</div>
+              </div>
+              <Button
+                size="sm"
+                disabled={!view.externalGlMappingProfile.canSave}
+                disabledReason={view.externalGlMappingProfile.saveDisabledReason}
+                busy={view.externalGlMappingProfile.saveBusy}
+                busyLabel={view.externalGlMappingProfile.saveButtonLabel}
+                onClick={() => void view.externalGlMappingProfile.save()}
+              >
+                {view.externalGlMappingProfile.saveButtonLabel}
+              </Button>
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <FormRow label="Provider" labelFor="accounting-external-gl-mapping-provider">
+                <Input
+                  id="accounting-external-gl-mapping-provider"
+                  value={view.externalGlMappingProfile.providerIdValue}
+                  onChange={(event) => view.externalGlMappingProfile.updateProviderId(event.currentTarget.value)}
+                />
+              </FormRow>
+              <FormRow label="Profile" labelFor="accounting-external-gl-mapping-profile">
+                <Input
+                  id="accounting-external-gl-mapping-profile"
+                  value={view.externalGlMappingProfile.profileIdValue}
+                  onChange={(event) => view.externalGlMappingProfile.updateProfileId(event.currentTarget.value)}
+                />
+              </FormRow>
+              <FormRow label="Display name" labelFor="accounting-external-gl-mapping-display-name">
+                <Input
+                  id="accounting-external-gl-mapping-display-name"
+                  value={view.externalGlMappingProfile.displayNameValue}
+                  onChange={(event) => view.externalGlMappingProfile.updateDisplayName(event.currentTarget.value)}
+                />
+              </FormRow>
+            </div>
+            <div className="mt-3 grid gap-3 lg:grid-cols-2">
+              <FormRow label="Account mappings" labelFor="accounting-external-gl-account-mappings">
+                <textarea
+                  id="accounting-external-gl-account-mappings"
+                  value={view.externalGlMappingProfile.accountMappingsValue}
+                  onChange={(event) => view.externalGlMappingProfile.updateAccountMappings(event.currentTarget.value)}
+                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                  placeholder="Meridian:Account=external-account-id"
+                />
+              </FormRow>
+              <FormRow label="Retained mapping evidence" labelFor="accounting-external-gl-mapping-evidence">
+                <textarea
+                  id="accounting-external-gl-mapping-evidence"
+                  value={view.externalGlMappingProfile.evidenceValue}
+                  onChange={(event) => view.externalGlMappingProfile.updateEvidence(event.currentTarget.value)}
+                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                  placeholder="approval:external-gl-mapping:profile-id"
+                />
+              </FormRow>
+            </div>
+            <div className="mt-3 grid gap-3 lg:grid-cols-2">
+              <FormRow label="Meridian dimensions" labelFor="accounting-external-gl-meridian-dimensions">
+                <textarea
+                  id="accounting-external-gl-meridian-dimensions"
+                  value={view.externalGlMappingProfile.meridianDimensionsValue}
+                  onChange={(event) => view.externalGlMappingProfile.updateMeridianDimensions(event.currentTarget.value)}
+                  className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                  placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;Provider=quickbooks-fixture"
+                />
+              </FormRow>
+              <FormRow label="External dimensions" labelFor="accounting-external-gl-provider-dimensions">
+                <textarea
+                  id="accounting-external-gl-provider-dimensions"
+                  value={view.externalGlMappingProfile.externalDimensionsValue}
+                  onChange={(event) => view.externalGlMappingProfile.updateExternalDimensions(event.currentTarget.value)}
+                  className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-sm"
+                  placeholder="Class=fund-alpha&#10;Book=book-primary&#10;customerId=qbo-customer"
+                />
+              </FormRow>
+            </div>
+            <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+              <input
+                type="checkbox"
+                checked={view.externalGlMappingProfile.certified}
+                onChange={(event) => view.externalGlMappingProfile.updateCertified(event.currentTarget.checked)}
+              />
+              Certify mapping profile for guarded export readiness
+            </label>
+            {view.externalGlMappingProfile.mappingRows.length > 0 ? (
+              <div className="mt-3 grid gap-2 md:grid-cols-3" role="region" aria-label="Retained external GL mapping profiles">
+                {view.externalGlMappingProfile.mappingRows.map((row) => (
+                  <div key={row.id} className={cn("rounded-md border px-3 py-2", accountingToolingBorderClass(row.tone))}>
+                    <div className="text-sm font-semibold text-foreground">{row.label}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{row.statusLabel}</div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {view.externalGlMappingProfile.statusText ? (
+              <p className={cn("mt-3 text-sm", view.externalGlMappingProfile.errorText ? "text-danger" : "text-muted-foreground")}>
+                {view.externalGlMappingProfile.statusText}
               </p>
             ) : null}
           </div>

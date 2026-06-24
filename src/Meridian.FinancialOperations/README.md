@@ -40,8 +40,10 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   Operations Continuity workflow state, checklist dependencies, approval sign-offs, period-lock
   evidence, file-backed late-adjustment requests, materiality policy validation, and ledger-book
   scoped close-control evidence checks, governed close-plan configuration for materiality, task
-  ownership, due dates, sign-off roles/counts, evidence requirements, and dependencies, including
-  independent-review enforcement for material late-adjustment decisions, plus a governed
+  ownership, due dates, role-scoped sign-off matrix rows, evidence requirements, dependency predecessors, and
+  dependency reasons, including independent-review enforcement for material late-adjustment
+  decisions, service-owned operating coverage rows for close setup, dependency graph, sign-off
+  matrix, late adjustments, blocker review, and period lock, plus a governed
   close-period lock bridge that fails closed on unresolved plan blockers before delegating to the
   Operations Continuity close-package publication gate.
 - `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
@@ -239,10 +241,15 @@ can reach ready-for-review certification; close-backed packages also recheck tha
 the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
+Close blocker/evidence reviews are retained in the same close-management snapshot as explicit
+operator review records; they require human origin, notes, scoped close-review/blocker evidence
+that identifies the active issue, target, workflow or period, and selected ledger book, and they do
+not clear the underlying validation blocker or satisfy period-lock gates.
 Close-period plan configuration is also governed through this service: human-origin commands can
 retain materiality policy setup, task display/owner/due-date overrides, role-scoped approval counts,
-required evidence text, and explicit task dependencies only when retained close-plan setup evidence
-names the workflow or exact period and selected ledger book on the same artifact.
+required evidence text, role-scoped sign-off matrix rows, and explicit task dependencies only when retained close-plan setup evidence
+names the workflow or exact period and selected ledger book on the same artifact; requests that carry
+the loaded configuration timestamp are rejected when a newer retained setup version already exists.
 Task sign-off decisions retain authenticated actor, role, notes, and evidence, reject duplicate
 actor-role decisions, actors who acknowledged the task, roles outside the task's sign-off matrix,
 or incomplete prerequisite tasks, require retained approval/sign-off/control/review evidence that
@@ -261,7 +268,11 @@ the upstream checklist row is marked done, so close cockpit, report certificatio
 consumers cannot treat workflow task completion as retained approval evidence.
 The same close plan carries close-calendar milestone rows derived from checklist due dates,
 dependencies, sign-off counts, evidence, blockers, and period-lock state so accounting/reporting
-surfaces can render calendar posture without reinterpreting workflow checklist rows. The late-adjustment command remains a governed close review artifact; it does not
+surfaces can render calendar posture without reinterpreting workflow checklist rows. It also carries
+service-owned operating coverage rows that summarize close-plan setup, dependency graph,
+sign-off-matrix, late-adjustment, blocker-review, and period-lock readiness from the same validation
+issues and retained evidence used by the lock gate, so browser and WPF clients do not infer close
+operating coverage from scattered task or validation rows. The late-adjustment command remains a governed close review artifact; it does not
 mutate posted journal entries and material adjustments require controller approval before final
 close certification. Late-adjustment requests require retained late-adjustment evidence that
 identifies the journal entry, workflow, or exact close period on the same artifact before a row is

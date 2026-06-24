@@ -240,6 +240,23 @@ public sealed record AccountingMigrationRunExecutionResultDto(
         EvidenceReferences ?? [];
 }
 
+public sealed record AccountingApprovalQueueConfigurationDto(
+    string QueueId,
+    string DisplayName,
+    string WorkflowKind,
+    string RequiredApprovalRole,
+    int RequiredApprovalCount,
+    string SegregationPolicy,
+    string EvidenceRequirement);
+
+public sealed record AccountingDimensionMappingConfigurationDto(
+    string MappingId,
+    string DisplayName,
+    string ProviderId,
+    LedgerDimensionSetDto MeridianDimensions,
+    LedgerDimensionSetDto ProviderDimensions,
+    string EvidenceRequirement);
+
 public sealed record AccountingTenantAdministrationProfileDto(
     string TenantId,
     string CompanyId,
@@ -267,10 +284,18 @@ public sealed record AccountingTenantAdministrationProfileDto(
     bool PostingRuleAuthoringStudioConfigured = false,
     bool ApprovalQueueStudioConfigured = false,
     bool DimensionMappingStudioConfigured = false,
-    bool ImplementationSandboxConfigured = false)
+    bool ImplementationSandboxConfigured = false,
+    IReadOnlyList<AccountingApprovalQueueConfigurationDto>? ApprovalQueueConfigurations = null,
+    IReadOnlyList<AccountingDimensionMappingConfigurationDto>? DimensionMappingConfigurations = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
+
+    public IReadOnlyList<AccountingApprovalQueueConfigurationDto> ApprovalQueueConfigurations { get; init; } =
+        ApprovalQueueConfigurations ?? [];
+
+    public IReadOnlyList<AccountingDimensionMappingConfigurationDto> DimensionMappingConfigurations { get; init; } =
+        DimensionMappingConfigurations ?? [];
 }
 
 public sealed record AccountingTenantAdministrationProfileUpsertRequestDto(
@@ -282,6 +307,196 @@ public sealed record AccountingTenantAdministrationProfileUpsertRequestDto(
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
+}
+
+public enum AccountingCertificationArtifactStatusDto
+{
+    Draft,
+    Certified,
+    Rejected,
+    Superseded
+}
+
+public enum AccountingCertificationArtifactLaneStatusDto
+{
+    NotTested,
+    Passed,
+    Warning,
+    Failed
+}
+
+public enum AccountingWorkflowCertificationLaneKindDto
+{
+    PostingRules,
+    JournalLifecycle,
+    CloseReporting,
+    ClosePlanConfiguration,
+    ExternalGl,
+    Reconciliation,
+    DirectLendingProjection,
+    StrategyLedgerReads
+}
+
+public enum AccountingDimensionalCertificationLaneKindDto
+{
+    LedgerLinePersistence,
+    TrialBalanceFilters,
+    PeriodReports,
+    CrossPeriodReports,
+    JournalFilters,
+    ReportPackageProvenance,
+    ExternalExportMappings
+}
+
+public enum AccountingTenantAdminCertificationLaneKindDto
+{
+    TenantScope,
+    AdminRoleProfile,
+    ScopedAccessPolicies,
+    ReportingGroups,
+    AccountingAdminSurface,
+    BrowserAccountingAdminSurface,
+    WpfAccountingAdminSurface,
+    ChartAdministrationStudio,
+    RuleTestPromotionStudio,
+    CloseSetupStudio,
+    ProviderMappingStudio,
+    TenantCompanyReportGroupSetupStudio,
+    AuditReviewTooling,
+    BulkImportExportSafeguards,
+    PerformanceValidation,
+    DisasterRecoveryRunbook,
+    LedgerBookAdministrationStudio,
+    PostingRuleAuthoringStudio,
+    ApprovalQueueStudio,
+    DimensionMappingStudio,
+    ImplementationSandbox
+}
+
+public sealed record AccountingCertificationArtifactIssueDto(
+    string Code,
+    AccountingConfigurationValidationSeverityDto Severity,
+    string Message,
+    string SuggestedAction,
+    IReadOnlyList<string>? EvidenceReferences = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+}
+
+public sealed record AccountingWorkflowCertificationLaneDto(
+    AccountingWorkflowCertificationLaneKindDto Kind,
+    AccountingCertificationArtifactLaneStatusDto Status,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public IReadOnlyList<AccountingCertificationArtifactIssueDto> Issues { get; init; } =
+        Issues ?? [];
+}
+
+public sealed record AccountingDimensionalCertificationLaneDto(
+    AccountingDimensionalCertificationLaneKindDto Kind,
+    AccountingCertificationArtifactLaneStatusDto Status,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public IReadOnlyList<AccountingCertificationArtifactIssueDto> Issues { get; init; } =
+        Issues ?? [];
+}
+
+public sealed record AccountingTenantAdminCertificationLaneDto(
+    AccountingTenantAdminCertificationLaneKindDto Kind,
+    AccountingCertificationArtifactLaneStatusDto Status,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null)
+{
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public IReadOnlyList<AccountingCertificationArtifactIssueDto> Issues { get; init; } =
+        Issues ?? [];
+}
+
+public sealed record AccountingWorkflowCertificationArtifactDto(
+    string CertificationId,
+    AccountingCertificationArtifactStatusDto Status,
+    string? TenantId,
+    string? CompanyId,
+    string FundProfileId,
+    Guid LedgerBookId,
+    string CertifiedBy,
+    DateTimeOffset CertifiedAtUtc,
+    string SourceService,
+    IReadOnlyList<AccountingWorkflowCertificationLaneDto>? Lanes = null,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null,
+    string? CorrelationId = null)
+{
+    public IReadOnlyList<AccountingWorkflowCertificationLaneDto> Lanes { get; init; } =
+        Lanes ?? [];
+
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public IReadOnlyList<AccountingCertificationArtifactIssueDto> Issues { get; init; } =
+        Issues ?? [];
+}
+
+public sealed record AccountingDimensionalCertificationArtifactDto(
+    string CertificationId,
+    AccountingCertificationArtifactStatusDto Status,
+    string? TenantId,
+    string? CompanyId,
+    string FundProfileId,
+    Guid LedgerBookId,
+    string DimensionScopeEvidenceKey,
+    string CertifiedBy,
+    DateTimeOffset CertifiedAtUtc,
+    string SourceService,
+    IReadOnlyList<AccountingDimensionalCertificationLaneDto>? Lanes = null,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null,
+    string? CorrelationId = null)
+{
+    public IReadOnlyList<AccountingDimensionalCertificationLaneDto> Lanes { get; init; } =
+        Lanes ?? [];
+
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public IReadOnlyList<AccountingCertificationArtifactIssueDto> Issues { get; init; } =
+        Issues ?? [];
+}
+
+public sealed record AccountingTenantAdminCertificationArtifactDto(
+    string CertificationId,
+    AccountingCertificationArtifactStatusDto Status,
+    string TenantId,
+    string CompanyId,
+    string FundProfileId,
+    Guid? LedgerBookId,
+    string CertifiedBy,
+    DateTimeOffset CertifiedAtUtc,
+    string SourceService,
+    IReadOnlyList<AccountingTenantAdminCertificationLaneDto>? Lanes = null,
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<AccountingCertificationArtifactIssueDto>? Issues = null,
+    string? CorrelationId = null)
+{
+    public IReadOnlyList<AccountingTenantAdminCertificationLaneDto> Lanes { get; init; } =
+        Lanes ?? [];
+
+    public IReadOnlyList<string> EvidenceReferences { get; init; } =
+        EvidenceReferences ?? [];
+
+    public IReadOnlyList<AccountingCertificationArtifactIssueDto> Issues { get; init; } =
+        Issues ?? [];
 }
 
 public sealed record AccountingProductionCertificationProfileDto(
@@ -307,10 +522,22 @@ public sealed record AccountingProductionCertificationProfileDto(
     bool LedgerLineDimensionsPersistedCertified = false,
     bool TrialBalanceDimensionFiltersCertified = false,
     bool ReportPackageDimensionProvenanceCertified = false,
-    bool ClosePlanConfigurationLedgerBookNativeCertified = false)
+    bool ClosePlanConfigurationLedgerBookNativeCertified = false,
+    IReadOnlyList<AccountingWorkflowCertificationArtifactDto>? WorkflowCertificationArtifacts = null,
+    IReadOnlyList<AccountingDimensionalCertificationArtifactDto>? DimensionalCertificationArtifacts = null,
+    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? TenantAdminCertificationArtifacts = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
+
+    public IReadOnlyList<AccountingWorkflowCertificationArtifactDto> WorkflowCertificationArtifacts { get; init; } =
+        WorkflowCertificationArtifacts ?? [];
+
+    public IReadOnlyList<AccountingDimensionalCertificationArtifactDto> DimensionalCertificationArtifacts { get; init; } =
+        DimensionalCertificationArtifacts ?? [];
+
+    public IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> TenantAdminCertificationArtifacts { get; init; } =
+        TenantAdminCertificationArtifacts ?? [];
 }
 
 public sealed record AccountingProductionCertificationProfileUpsertRequestDto(
@@ -377,7 +604,10 @@ public sealed record AccountingProductionReadinessRequestDto(
     bool AccountingConfigurationPromotionCertified = false,
     bool CloseReportingEvidenceMigrationCertified = false,
     IReadOnlyList<string>? MigrationEvidenceLinks = null,
-    IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null)
+    IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null,
+    IReadOnlyList<AccountingWorkflowCertificationArtifactDto>? WorkflowCertificationArtifacts = null,
+    IReadOnlyList<AccountingDimensionalCertificationArtifactDto>? DimensionalCertificationArtifacts = null,
+    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? TenantAdminCertificationArtifacts = null)
 {
     public IReadOnlyList<LedgerBookRequiredScopeDto> RequiredLedgerBookScopes { get; init; } =
         RequiredLedgerBookScopes ?? [];
@@ -396,6 +626,15 @@ public sealed record AccountingProductionReadinessRequestDto(
 
     public IReadOnlyList<AccountingMigrationRunArtifactDto> MigrationRunArtifacts { get; init; } =
         MigrationRunArtifacts ?? [];
+
+    public IReadOnlyList<AccountingWorkflowCertificationArtifactDto> WorkflowCertificationArtifacts { get; init; } =
+        WorkflowCertificationArtifacts ?? [];
+
+    public IReadOnlyList<AccountingDimensionalCertificationArtifactDto> DimensionalCertificationArtifacts { get; init; } =
+        DimensionalCertificationArtifacts ?? [];
+
+    public IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> TenantAdminCertificationArtifacts { get; init; } =
+        TenantAdminCertificationArtifacts ?? [];
 }
 
 public sealed record AccountingLedgerBookWorkflowReadinessDto(
@@ -469,9 +708,7 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
         => LedgerBookId.HasValue &&
            EvidenceReferences.Any(reference =>
                IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
-               (reference.Contains("workflow-certification/full", StringComparison.OrdinalIgnoreCase) ||
-                reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
-                aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+               aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase)));
 }
 
 public sealed record AccountingDimensionalReportingReadinessDto(
@@ -555,10 +792,7 @@ public sealed record AccountingDimensionalReportingReadinessDto(
            EvidenceReferences.Any(reference =>
                IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
                ReferencesDimensionScope(reference) &&
-               (reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
-                reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase) ||
-                reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
-                aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+               aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase)));
 }
 
 public sealed record AccountingTenantAdministrationReadinessDto(
@@ -698,9 +932,7 @@ public sealed record AccountingTenantAdministrationReadinessDto(
         => EvidenceReferences.Any(reference =>
             IsTenantCompanyScopedEvidence(reference) &&
             reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) &&
-            (reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase) ||
-             reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
-             aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+            aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase)));
 
     private bool IsTenantCompanyScopedEvidence(string? reference)
     {
@@ -853,7 +1085,10 @@ public sealed record AccountingProductionReadinessDto(
     IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null,
     IReadOnlyList<AccountingMigrationRolloutPlanItemDto>? MigrationRolloutPlan = null,
     AccountingTenantAdministrationReadinessDto? TenantAdministration = null,
-    IReadOnlyList<AccountingProductionGapDto>? ProductionGaps = null)
+    IReadOnlyList<AccountingProductionGapDto>? ProductionGaps = null,
+    IReadOnlyList<AccountingWorkflowCertificationArtifactDto>? WorkflowCertificationArtifacts = null,
+    IReadOnlyList<AccountingDimensionalCertificationArtifactDto>? DimensionalCertificationArtifacts = null,
+    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? TenantAdminCertificationArtifacts = null)
 {
     public IReadOnlyList<AccountingProductionReadinessComponentDto> Components { get; init; } =
         Components ?? [];
@@ -869,6 +1104,15 @@ public sealed record AccountingProductionReadinessDto(
 
     public IReadOnlyList<AccountingProductionGapDto> ProductionGaps { get; init; } =
         ProductionGaps ?? [];
+
+    public IReadOnlyList<AccountingWorkflowCertificationArtifactDto> WorkflowCertificationArtifacts { get; init; } =
+        WorkflowCertificationArtifacts ?? [];
+
+    public IReadOnlyList<AccountingDimensionalCertificationArtifactDto> DimensionalCertificationArtifacts { get; init; } =
+        DimensionalCertificationArtifacts ?? [];
+
+    public IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> TenantAdminCertificationArtifacts { get; init; } =
+        TenantAdminCertificationArtifacts ?? [];
 
     public int CriticalIssueCount => Issues.Count(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
 

@@ -1,0 +1,447 @@
+<Page x:Class="Meridian.Wpf.Views.AccountingClosePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      AutomationProperties.Name="Accounting Close"
+      AutomationProperties.AutomationId="AccountingClosePage">
+    <Page.Resources>
+        <Style x:Key="CloseGridStyle" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="RowHeaderWidth" Value="0" />
+            <Setter Property="MinHeight" Value="180" />
+            <Setter Property="EnableRowVirtualization" Value="True" />
+            <Setter Property="EnableColumnVirtualization" Value="True" />
+            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderSubtleBrush}" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,20,28,32" MaxWidth="1320">
+            <Border Style="{StaticResource WorkspaceContextStripStyle}"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="AccountingCloseActionStrip"
+                    AutomationProperties.Name="Accounting Close Action Strip">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Width="30"
+                            Height="30"
+                            CornerRadius="8"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <TextBlock Text="{StaticResource IconAccounting}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Accounting Close"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       Margin="0,0,10,0" />
+                            <TextBlock Text="{Binding CloseStateText, StringFormat=State: {0}}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding ClosePlanSetupStatusText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   AutomationProperties.AutomationId="AccountingCloseSetupStatusText" />
+                        <TextBlock Text="{Binding ClosePeriodLockStatusText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   AutomationProperties.AutomationId="AccountingCloseLockStatusText" />
+                    </StackPanel>
+
+                    <WrapPanel Grid.Column="2"
+                               MaxWidth="700"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center">
+                        <TextBox Width="270"
+                                 Text="{Binding CloseWorkflowIdText, UpdateSourceTrigger=PropertyChanged}"
+                                 Style="{StaticResource FormTextBoxStyle}"
+                                 ToolTip="Close workflow id"
+                                 AutomationProperties.AutomationId="AccountingCloseWorkflowIdTextBox"
+                                 Margin="0,0,8,8" />
+                        <Button Content="Load"
+                                Command="{Binding LoadClosePlanCommand}"
+                                ToolTip="{Binding ClosePlanSetupStatusText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                AutomationProperties.AutomationId="AccountingCloseLoadPlanButton"
+                                Margin="0,0,8,8" />
+                        <Button Content="Save Setup"
+                                Command="{Binding ConfigureClosePlanCommand}"
+                                ToolTip="{Binding ClosePlanSetupStatusText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                AutomationProperties.AutomationId="AccountingCloseConfigurePlanButton"
+                                Margin="0,0,8,8" />
+                        <Button Content="Sign Off"
+                                Command="{Binding SignOffCloseTaskCommand}"
+                                ToolTip="{Binding CloseTaskSignOffStatusText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Style="{StaticResource GhostButtonStyle}"
+                                AutomationProperties.AutomationId="AccountingCloseTaskSignOffButton"
+                                Margin="0,0,8,8" />
+                        <Button Content="Request Late Adj."
+                                Command="{Binding RequestLateAdjustmentCommand}"
+                                ToolTip="{Binding LateAdjustmentRequestStatusText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Style="{StaticResource GhostButtonStyle}"
+                                AutomationProperties.AutomationId="AccountingCloseLateAdjustmentRequestButton"
+                                Margin="0,0,8,8" />
+                        <Button Content="Review Late Adj."
+                                Command="{Binding ReviewLateAdjustmentCommand}"
+                                ToolTip="{Binding LateAdjustmentReviewStatusText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Style="{StaticResource GhostButtonStyle}"
+                                AutomationProperties.AutomationId="AccountingCloseLateAdjustmentReviewButton"
+                                Margin="0,0,8,8" />
+                        <Button Content="Review Evidence"
+                                Command="{Binding ReviewCloseEvidenceCommand}"
+                                ToolTip="{Binding CloseEvidenceReviewStatusText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Style="{StaticResource GhostButtonStyle}"
+                                AutomationProperties.AutomationId="AccountingCloseEvidenceReviewButton"
+                                Margin="0,0,8,8" />
+                        <Button Content="Lock Period"
+                                Command="{Binding LockClosePeriodCommand}"
+                                ToolTip="{Binding ClosePeriodLockStatusText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                AutomationProperties.AutomationId="AccountingCloseLockPeriodButton"
+                                Margin="0,0,0,8" />
+                    </WrapPanel>
+                </Grid>
+            </Border>
+
+            <UniformGrid Columns="4" Margin="0,0,0,14">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="Setup" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBlock Text="{Binding ClosePlanSetupStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="Task Sign-off" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBlock Text="{Binding CloseTaskSignOffStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="Late Adjustments" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBlock Text="{Binding LateAdjustmentRequestStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding LateAdjustmentReviewStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Lock Review" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBlock Text="{Binding CloseEvidenceReviewStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding ClosePeriodLockStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Border Style="{StaticResource CardStyle}"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="AccountingCloseWorkflowSequence"
+                    AutomationProperties.Name="Accounting Close Workflow Sequence">
+                <StackPanel>
+                    <TextBlock Text="Close Workflow Control" Style="{StaticResource CardHeaderStyle}" />
+                    <TextBlock Text="Follow the shared close-management path from setup retention through sign-off, late adjustments, blocker review, and period lock."
+                               Style="{StaticResource CardDescriptionStyle}"
+                               Margin="0,4,0,12"
+                               TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding CloseWorkflowSteps}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="300"
+                                        MinHeight="184"
+                                        Margin="0,0,10,10"
+                                        Padding="12"
+                                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                        AutomationProperties.Name="{Binding Label}">
+                                    <DockPanel LastChildFill="True">
+                                        <Button DockPanel.Dock="Bottom"
+                                                Content="{Binding ActionLabel}"
+                                                Command="{Binding Command}"
+                                                ToolTip="{Binding DisabledReasonText}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,10,0,0" />
+                                        <StackPanel>
+                                            <DockPanel LastChildFill="False">
+                                                <TextBlock Text="{Binding Label}"
+                                                           DockPanel.Dock="Left"
+                                                           FontSize="13"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                           TextWrapping="Wrap" />
+                                                <Border DockPanel.Dock="Right"
+                                                        Padding="6,2"
+                                                        CornerRadius="6"
+                                                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                        BorderThickness="1"
+                                                        Margin="8,0,0,0">
+                                                    <TextBlock Text="{Binding Status}"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </Border>
+                                            </DockPanel>
+                                            <TextBlock Text="{Binding Detail}"
+                                                       Style="{StaticResource CardDescriptionStyle}"
+                                                       Margin="0,8,0,0"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Evidence}"
+                                                       FontFamily="{StaticResource MeridianDataFontFamily}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       Margin="0,8,0,0"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding DisabledReasonText}"
+                                                       Style="{StaticResource CardDescriptionStyle}"
+                                                       Margin="0,8,0,0"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Grid AutomationProperties.AutomationId="AccountingCloseWorkbench"
+                  AutomationProperties.Name="Accounting Close Workbench">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.9*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="1.45*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Style="{StaticResource CardStyle}"
+                        AutomationProperties.AutomationId="AccountingCloseSetupEditor">
+                    <StackPanel>
+                        <TextBlock Text="Close Plan Setup" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="Edit the loaded shared close plan draft, then retain it through the governed close-management service."
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,4,0,12"
+                                   TextWrapping="Wrap" />
+
+                        <TextBlock Text="Materiality amount" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupAmountThreshold, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseMaterialityAmountTextBox" />
+                        <TextBlock Text="Materiality percent" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupPercentThreshold, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseMaterialityPercentTextBox" />
+                        <TextBlock Text="Currency" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupCurrency, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseCurrencyTextBox" />
+                        <TextBlock Text="Review role" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupReviewRole, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseReviewRoleTextBox" />
+                        <CheckBox Content="Require late-adjustment approval"
+                                  IsChecked="{Binding CloseSetupRequiresLateAdjustmentApproval, Mode=TwoWay}"
+                                  Margin="0,0,0,12"
+                                  AutomationProperties.AutomationId="AccountingCloseLateAdjustmentApprovalCheckBox" />
+
+                        <TextBlock Text="Checklist task" Style="{StaticResource MetricLabelStyle}" />
+                        <ComboBox ItemsSource="{Binding CloseSetupTaskOptions}"
+                                  SelectedValue="{Binding SelectedCloseSetupTaskId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedValuePath="TaskId"
+                                  DisplayMemberPath="DisplayName"
+                                  Style="{StaticResource FormComboBoxStyle}"
+                                  Margin="0,4,0,10"
+                                  AutomationProperties.AutomationId="AccountingCloseSetupTaskSelector" />
+                        <TextBlock Text="Task id" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseTaskIdTextBox" />
+                        <TextBlock Text="Task name" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskDisplayName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseTaskDisplayNameTextBox" />
+                        <TextBlock Text="Owner" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskOwner, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseTaskOwnerTextBox" />
+                        <TextBlock Text="Due date" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskDueDateText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseTaskDueDateTextBox" />
+                        <TextBlock Text="Approval role" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskRequiredApprovalRole, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseApprovalRoleTextBox" />
+                        <TextBlock Text="Approval count" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskRequiredApprovalCount, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseApprovalCountTextBox" />
+                        <TextBlock Text="Required evidence" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskRequiredEvidence, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseRequiredEvidenceTextBox" />
+                        <TextBlock Text="Sign-off matrix" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskSignOffRequirementsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" AcceptsReturn="True" MinHeight="72" TextWrapping="Wrap" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseSignOffMatrixTextBox" />
+                        <TextBlock Text="Dependencies" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskDependsOnTaskIdsText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseDependenciesTextBox" />
+                        <TextBlock Text="Dependency reason" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseSetupTaskDependencyReason, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" AutomationProperties.AutomationId="AccountingCloseDependencyReasonTextBox" />
+
+                        <TextBlock Text="Task Sign-off Decision" Style="{StaticResource CardHeaderStyle}" Margin="0,18,0,4" />
+                        <TextBlock Text="Sign-off task id" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseTaskSignOffTaskId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseSignOffTaskIdTextBox" />
+                        <TextBlock Text="Sign-off role" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseTaskSignOffRole, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseSignOffRoleTextBox" />
+                        <TextBlock Text="Decision" Style="{StaticResource MetricLabelStyle}" />
+                        <ComboBox ItemsSource="{Binding CloseTaskSignOffDecisionOptions}"
+                                  SelectedItem="{Binding CloseTaskSignOffDecision, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource FormComboBoxStyle}"
+                                  Margin="0,4,0,10"
+                                  AutomationProperties.AutomationId="AccountingCloseSignOffDecisionComboBox" />
+                        <TextBlock Text="Notes" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseTaskSignOffNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,0" AutomationProperties.AutomationId="AccountingCloseSignOffNotesTextBox" />
+
+                        <TextBlock Text="Late Adjustment Request" Style="{StaticResource CardHeaderStyle}" Margin="0,18,0,4" />
+                        <TextBlock Text="Journal entry id" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding LateAdjustmentJournalEntryIdText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseLateAdjustmentJournalEntryTextBox" />
+                        <TextBlock Text="Amount" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding LateAdjustmentAmountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseLateAdjustmentAmountTextBox" />
+                        <TextBlock Text="Currency" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding LateAdjustmentCurrency, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseLateAdjustmentCurrencyTextBox" />
+                        <TextBlock Text="Reason" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding LateAdjustmentReason, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,0" AutomationProperties.AutomationId="AccountingCloseLateAdjustmentReasonTextBox" />
+
+                        <TextBlock Text="Late Adjustment Review" Style="{StaticResource CardHeaderStyle}" Margin="0,18,0,4" />
+                        <TextBlock Text="Request id" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding LateAdjustmentReviewRequestId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseLateAdjustmentReviewRequestIdTextBox" />
+                        <TextBlock Text="Decision" Style="{StaticResource MetricLabelStyle}" />
+                        <ComboBox ItemsSource="{Binding CloseReviewDecisionOptions}"
+                                  SelectedItem="{Binding LateAdjustmentReviewDecision, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource FormComboBoxStyle}"
+                                  Margin="0,4,0,10"
+                                  AutomationProperties.AutomationId="AccountingCloseLateAdjustmentReviewDecisionComboBox" />
+                        <TextBlock Text="Review notes" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding LateAdjustmentReviewNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseLateAdjustmentReviewNotesTextBox" />
+
+                        <TextBlock Text="Blocker Evidence Review" Style="{StaticResource CardHeaderStyle}" Margin="0,18,0,4" />
+                        <TextBlock Text="Issue code" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseEvidenceReviewIssueCode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseEvidenceReviewIssueCodeTextBox" />
+                        <TextBlock Text="Target id" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseEvidenceReviewTargetId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" AutomationProperties.AutomationId="AccountingCloseEvidenceReviewTargetIdTextBox" />
+                        <TextBlock Text="Review notes" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBox Text="{Binding CloseEvidenceReviewNotes, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,0" AutomationProperties.AutomationId="AccountingCloseEvidenceReviewNotesTextBox" />
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2"
+                        Style="{StaticResource CardStyle}"
+                        AutomationProperties.AutomationId="AccountingCloseReviewPanel">
+                    <TabControl AutomationProperties.AutomationId="AccountingCloseReviewTabs">
+                        <TabItem Header="Coverage">
+                            <DataGrid ItemsSource="{Binding CloseOperatingCoverageRows}" Style="{StaticResource CloseGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingCloseOperatingCoverageGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Control" Binding="{Binding Name}" Width="220" />
+                                    <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="150" />
+                                    <DataGridTextColumn Header="Required Action" Binding="{Binding Detail}" Width="*" />
+                                    <DataGridTextColumn Header="Evidence / Blockers" Binding="{Binding Evidence}" Width="320" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="Plan">
+                            <StackPanel Margin="0,12,0,0">
+                                <DataGrid ItemsSource="{Binding CloseMaterialityRows}" Style="{StaticResource CloseGridStyle}" AutomationProperties.AutomationId="AccountingCloseMaterialityGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
+                                        <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="260" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <DataGrid ItemsSource="{Binding ClosePeriodLockIssueRows}" Style="{StaticResource CloseGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingCloseBlockerGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Blocker" Binding="{Binding Name}" Width="190" />
+                                        <DataGridTextColumn Header="Severity" Binding="{Binding Status}" Width="110" />
+                                        <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                        <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="260" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </TabItem>
+                        <TabItem Header="Tasks">
+                            <DataGrid ItemsSource="{Binding CloseTaskRows}" Style="{StaticResource CloseGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingCloseTaskGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Task" Binding="{Binding Name}" Width="190" />
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
+                                    <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                    <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="280" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="Dependencies">
+                            <DataGrid ItemsSource="{Binding CloseDependencyRows}" Style="{StaticResource CloseGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingCloseDependencyGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Task" Binding="{Binding Name}" Width="180" />
+                                    <DataGridTextColumn Header="Depends On" Binding="{Binding Status}" Width="180" />
+                                    <DataGridTextColumn Header="Reason" Binding="{Binding Detail}" Width="*" />
+                                    <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="260" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="Sign-off">
+                            <DataGrid ItemsSource="{Binding CloseSignOffMatrixRows}" Style="{StaticResource CloseGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingCloseSignOffMatrixGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Requirement" Binding="{Binding Name}" Width="220" />
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                                    <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                    <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="280" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="Late Adjustments">
+                            <DataGrid ItemsSource="{Binding CloseLateAdjustmentRows}" Style="{StaticResource CloseGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingCloseLateAdjustmentGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Request" Binding="{Binding Name}" Width="180" />
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="130" />
+                                    <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                    <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="280" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                        <TabItem Header="Evidence">
+                            <DataGrid ItemsSource="{Binding CloseEvidenceReviewRows}" Style="{StaticResource CloseGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingCloseEvidenceReviewGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Subject" Binding="{Binding Name}" Width="220" />
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                                    <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                    <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="300" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </TabItem>
+                    </TabControl>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

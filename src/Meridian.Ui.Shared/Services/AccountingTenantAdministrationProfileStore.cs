@@ -159,6 +159,9 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         EnsureTenantCompanyScopedEvidence(request.Profile, tenantId, companyId, evidence);
+        var approvalQueueConfigurations = NormalizeApprovalQueueConfigurations(request.Profile.ApprovalQueueConfigurations);
+        var dimensionMappingConfigurations = NormalizeDimensionMappingConfigurations(request.Profile.DimensionMappingConfigurations);
+        EnsureStudioConfigurations(request.Profile, approvalQueueConfigurations, dimensionMappingConfigurations);
 
         return request.Profile with
         {
@@ -169,8 +172,80 @@ public sealed class FileAccountingTenantAdministrationProfileStore : IAccounting
             EvidenceReferences = evidence,
             CorrelationId = string.IsNullOrWhiteSpace(request.CorrelationId)
                 ? request.Profile.CorrelationId
-                : request.CorrelationId.Trim()
+                : request.CorrelationId.Trim(),
+            ApprovalQueueConfigurations = approvalQueueConfigurations,
+            DimensionMappingConfigurations = dimensionMappingConfigurations
         };
+    }
+
+    private static void EnsureStudioConfigurations(
+        AccountingTenantAdministrationProfileDto profile,
+        IReadOnlyList<AccountingApprovalQueueConfigurationDto> approvalQueueConfigurations,
+        IReadOnlyList<AccountingDimensionMappingConfigurationDto> dimensionMappingConfigurations)
+    {
+        if (profile.ApprovalQueueStudioConfigured && approvalQueueConfigurations.Count == 0)
+        {
+            throw new ArgumentException("Accounting approval queue studio configuration is required when the approval queue studio is configured.");
+        }
+
+        if (profile.DimensionMappingStudioConfigured && dimensionMappingConfigurations.Count == 0)
+        {
+            throw new ArgumentException("Accounting dimension mapping studio configuration is required when the dimension mapping studio is configured.");
+        }
+    }
+
+    private static IReadOnlyList<AccountingApprovalQueueConfigurationDto> NormalizeApprovalQueueConfigurations(
+        IReadOnlyList<AccountingApprovalQueueConfigurationDto>? configurations)
+    {
+        if (configurations is null || configurations.Count == 0)
+        {
+            return [];
+        }
+
+        return configurations
+            .Where(static configuration => configuration is not null)
+            .Select(static configuration =>
+            {
+                var queueId = RequireText(configuration.QueueId, "approval queue id");
+                var requiredApprovalCount = configuration.RequiredApprovalCount <= 0
+                    ? throw new ArgumentException("Accounting approval queue required approval count must be greater than zero.")
+                    : configuration.RequiredApprovalCount;
+                return new AccountingApprovalQueueConfigurationDto(
+                    queueId,
+                    RequireText(configuration.DisplayName, "approval queue display name"),
+                    RequireText(configuration.WorkflowKind, "approval queue workflow kind"),
+                    RequireText(configuration.RequiredApprovalRole, "approval queue approval role"),
+                    requiredApprovalCount,
+                    RequireText(configuration.SegregationPolicy, "approval queue segregation policy"),
+                    RequireText(configuration.EvidenceRequirement, "approval queue evidence requirement"));
+            })
+            .GroupBy(static configuration => configuration.QueueId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static configuration => configuration.QueueId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<AccountingDimensionMappingConfigurationDto> NormalizeDimensionMappingConfigurations(
+        IReadOnlyList<AccountingDimensionMappingConfigurationDto>? configurations)
+    {
+        if (configurations is null || configurations.Count == 0)
+        {
+            return [];
+        }
+
+        return configurations
+            .Where(static configuration => configuration is not null)
+            .Select(static configuration => new AccountingDimensionMappingConfigurationDto(
+                RequireText(configuration.MappingId, "dimension mapping id"),
+                RequireText(configuration.DisplayName, "dimension mapping display name"),
+                RequireText(configuration.ProviderId, "dimension mapping provider id"),
+                configuration.MeridianDimensions ?? throw new ArgumentException("Accounting dimension mapping Meridian dimensions are required."),
+                configuration.ProviderDimensions ?? throw new ArgumentException("Accounting dimension mapping provider dimensions are required."),
+                RequireText(configuration.EvidenceRequirement, "dimension mapping evidence requirement")))
+            .GroupBy(static configuration => configuration.MappingId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static configuration => configuration.MappingId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     internal static string BuildKey(string? tenantId, string? companyId)

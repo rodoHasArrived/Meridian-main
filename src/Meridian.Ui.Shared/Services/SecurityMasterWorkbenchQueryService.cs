@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -29,6 +30,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
     private readonly LedgerReadService _ledgerReadService;
     private readonly IReconciliationRunService? _reconciliationRunService;
     private readonly ReportGenerationService _reportGenerationService;
+    private readonly ISecurityMasterPricingService? _pricingService;
+    private readonly ISecurityMasterCashFlowService? _cashFlowService;
+    private readonly IDataVendorEntitlementService? _entitlementService;
+    private readonly ISecurityMasterDataQualityService? _dataQualityService;
 
     public SecurityMasterWorkbenchQueryService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
@@ -39,7 +44,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         PortfolioReadService portfolioReadService,
         LedgerReadService ledgerReadService,
         ReportGenerationService reportGenerationService,
-        IReconciliationRunService? reconciliationRunService = null)
+        IReconciliationRunService? reconciliationRunService = null,
+        ISecurityMasterPricingService? pricingService = null,
+        ISecurityMasterCashFlowService? cashFlowService = null,
+        IDataVendorEntitlementService? entitlementService = null,
+        ISecurityMasterDataQualityService? dataQualityService = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -50,6 +59,10 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         _ledgerReadService = ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService));
         _reportGenerationService = reportGenerationService ?? throw new ArgumentNullException(nameof(reportGenerationService));
         _reconciliationRunService = reconciliationRunService;
+        _pricingService = pricingService;
+        _cashFlowService = cashFlowService;
+        _entitlementService = entitlementService;
+        _dataQualityService = dataQualityService;
     }
 
     public async Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
@@ -154,7 +167,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
 
         return snapshot with
         {
-            InstrumentPassport = BuildInstrumentPassport(snapshot, trading)
+            InstrumentPassport = await BuildInstrumentPassportAsync(snapshot, trading, fundProfileId, ct).ConfigureAwait(false)
         };
     }
 
@@ -167,9 +180,20 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return snapshot?.InstrumentPassport;
     }
 
-    private static InstrumentPassportDto BuildInstrumentPassport(
+    public async Task<SecurityMasterOperatingModelDto?> GetOperatingModelAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct = default)
+    {
+        var passport = await GetInstrumentPassportAsync(securityId, fundProfileId, ct).ConfigureAwait(false);
+        return passport?.OperatingModel;
+    }
+
+    private async Task<InstrumentPassportDto> BuildInstrumentPassportAsync(
         SecurityMasterTrustSnapshotDto snapshot,
-        TradingParametersDto? tradingParameters)
+        TradingParametersDto? tradingParameters,
+        string? fundProfileId,
+        CancellationToken ct)
     {
         var identifierSummary = snapshot.IdentifierSummary ?? BuildFallbackIdentifierSummary(snapshot.Identity);
         var lifecycleEvents = snapshot.ChangeHistory
@@ -179,6 +203,17 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 .ToArray();
         var pricing = BuildPassportPricing(snapshot.TrustPosture, tradingParameters);
         var providerConfidence = BuildProviderConfidence(snapshot, identifierSummary, lifecycleEvents);
+        var clearwaterEvidence = await BuildClearwaterEvidenceAsync(
+            snapshot.SecurityId,
+            fundProfileId,
+            ct).ConfigureAwait(false);
+        var operatingModel = BuildOperatingModel(
+            snapshot,
+            identifierSummary,
+            fundProfileId,
+            providerConfidence,
+            lifecycleEvents,
+            clearwaterEvidence);
 
         return new InstrumentPassportDto(
             SecurityId: snapshot.SecurityId,
@@ -194,11 +229,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             RetrievedAtUtc: snapshot.RetrievedAtUtc)
         {
             ProviderConfidence = providerConfidence,
+            OperatingModel = operatingModel,
             ReferenceDataWorkbench = BuildReferenceDataWorkbench(
                 snapshot,
                 identifierSummary,
                 providerConfidence,
-                pricing)
+                pricing,
+                operatingModel)
         };
     }
 
@@ -206,7 +243,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         SecurityMasterTrustSnapshotDto snapshot,
         SecurityMasterIdentifierSummaryDto identifierSummary,
         IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
-        InstrumentPassportPricingDto pricing)
+        InstrumentPassportPricingDto pricing,
+        SecurityMasterOperatingModelDto operatingModel)
     {
         var openIdentifierConflictCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
         var activeProviderEvidenceCount = providerConfidence.Count(static row => row.IsActive);
@@ -230,7 +268,7 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             1,
             snapshot.RecommendedActions.Count + snapshot.DownstreamImpact.Links.Count);
 
-        var sections = new[]
+        var sections = new List<InstrumentPassportReferenceDataWorkbenchSectionDto>
         {
             new InstrumentPassportReferenceDataWorkbenchSectionDto(
                 SectionId: "provider-evidence",
@@ -278,6 +316,8 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 BlockingIssueCount: snapshot.RecommendedActions.Count(static action => !action.IsEnabled))
         };
 
+        sections.AddRange(operatingModel.Controls);
+
         var status = sections.Any(static section => section.BlockingIssueCount > 0 || section.Status.Equals("Review", StringComparison.OrdinalIgnoreCase))
             ? "Review"
             : "Ready";
@@ -291,6 +331,514 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             Sections: sections,
             OperationsHandoffs: handoffs);
     }
+
+    private async Task<ClearwaterReferenceDataEvidence> BuildClearwaterEvidenceAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct)
+    {
+        var goldenCopy = _pricingService is null
+            ? null
+            : await _pricingService.GetGoldenCopyPriceAsync(securityId, fundProfileId, ct).ConfigureAwait(false);
+        var hierarchy = _pricingService is null
+            ? null
+            : await _pricingService.GetPricingHierarchyAsync(securityId, fundProfileId, ct).ConfigureAwait(false);
+        var cashFlowSource = _cashFlowService is null
+            ? null
+            : await _cashFlowService.GetCashFlowSourceAsync(securityId, ct).ConfigureAwait(false);
+        var entitlements = _entitlementService is null
+            ? []
+            : await _entitlementService.GetAllAsync(ct).ConfigureAwait(false);
+        var qualityReport = _dataQualityService is null
+            ? null
+            : await _dataQualityService.GetLatestReportAsync(ct).ConfigureAwait(false);
+
+        return new ClearwaterReferenceDataEvidence(
+            securityId,
+            goldenCopy,
+            hierarchy,
+            cashFlowSource,
+            entitlements,
+            qualityReport);
+    }
+
+    private static IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> BuildClearwaterControlSections(
+        ClearwaterReferenceDataEvidence evidence,
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
+    {
+        return
+        [
+            BuildPricingHierarchySection(evidence),
+            BuildCashFlowSourceSection(evidence),
+            BuildVendorEntitlementSection(evidence),
+            BuildDataQualityControlSection(evidence),
+            BuildManualChangeReviewSection(lifecycleEvents)
+        ];
+    }
+
+    private static SecurityMasterOperatingModelDto BuildOperatingModel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        string? fundProfileId,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents,
+        ClearwaterReferenceDataEvidence clearwaterEvidence)
+    {
+        var context = new SecurityMasterOperatingScope(
+            ClientId: null,
+            AccountId: ResolveDominantAccountId(snapshot),
+            FundProfileId: NormalizeSecurityMasterText(fundProfileId),
+            SecurityId: snapshot.SecurityId);
+        var controls = BuildClearwaterControlSections(clearwaterEvidence, lifecycleEvents);
+        var entitlementApplicability = BuildEntitlementApplicability(clearwaterEvidence.VendorEntitlements, context);
+        var operatorMetadata = BuildOperatorMetadata(clearwaterEvidence, entitlementApplicability);
+        var manualChangeApproval = BuildManualChangeApprovalPosture(lifecycleEvents);
+        var stages = BuildOperatingModelStages(snapshot, identifierSummary, providerConfidence, controls, entitlementApplicability, manualChangeApproval);
+        var status = stages.Any(static stage => stage.BlockingIssueCount > 0 || stage.Status.Equals("Review", StringComparison.OrdinalIgnoreCase))
+            || manualChangeApproval.UnapprovedManualChangeCount > 0
+            ? "Review"
+            : "Ready";
+
+        return new SecurityMasterOperatingModelDto(
+            SecurityId: snapshot.SecurityId,
+            ClientId: context.ClientId,
+            AccountId: context.AccountId,
+            FundProfileId: context.FundProfileId,
+            Status: status,
+            Summary: status.Equals("Ready", StringComparison.OrdinalIgnoreCase)
+                ? "Security Master operating model has applicable entitlement, source, control, and approval evidence for the selected scope."
+                : "Security Master operating model needs entitlement, source, control, or approval review for the selected scope.",
+            Stages: stages,
+            EntitlementApplicability: entitlementApplicability,
+            OperatorMetadata: operatorMetadata,
+            ManualChangeApproval: manualChangeApproval,
+            Controls: controls,
+            RetrievedAtUtc: snapshot.RetrievedAtUtc);
+    }
+
+    private static IReadOnlyList<SecurityMasterOperatingModelStageDto> BuildOperatingModelStages(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> controls,
+        IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> entitlementApplicability,
+        SecurityMasterManualChangeApprovalPostureDto manualChangeApproval)
+    {
+        var pricingEvidence = controls.FirstOrDefault(static section => section.SectionId == "pricing-hierarchy");
+        var cashFlowEvidence = controls.FirstOrDefault(static section => section.SectionId == "cash-flow-source-governance");
+        var qualityEvidence = controls.FirstOrDefault(static section => section.SectionId == "data-quality-controls");
+        var entitlementBlockers = entitlementApplicability.Count(static item =>
+            item.IsApplicable
+            && item.IsMostSpecific
+            && item.Status is DataVendorEntitlementStatus.Expired or DataVendorEntitlementStatus.ExpiringSoon or DataVendorEntitlementStatus.PendingRenewal);
+        var mostSpecificEntitlements = entitlementApplicability.Count(static item => item.IsApplicable && item.IsMostSpecific);
+        var activeProviderEvidenceCount = providerConfidence.Count(static row => row.IsActive);
+        var providerBlockingCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
+        var matchBlockers = identifierSummary.HasPrimaryIdentifier && identifierSummary.HasProviderMappings && providerBlockingCount == 0 ? 0 : 1;
+
+        return
+        [
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "receive",
+                Title: "Receive",
+                Status: activeProviderEvidenceCount > 0 && providerBlockingCount == 0 ? "Ready" : "Review",
+                Summary: activeProviderEvidenceCount > 0
+                    ? $"{activeProviderEvidenceCount} active provider evidence row(s) retained on the passport."
+                    : "No active provider evidence rows are retained on the passport.",
+                EvidenceCount: providerConfidence.Count,
+                BlockingIssueCount: activeProviderEvidenceCount == 0 ? 1 : providerBlockingCount),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "validate",
+                Title: "Validate",
+                Status: qualityEvidence?.Status ?? "Review",
+                Summary: qualityEvidence?.Summary ?? "Quality validation evidence is unavailable.",
+                EvidenceCount: qualityEvidence?.EvidenceCount ?? 0,
+                BlockingIssueCount: qualityEvidence?.BlockingIssueCount ?? 1),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "match",
+                Title: "Match",
+                Status: matchBlockers == 0 ? "Ready" : "Review",
+                Summary: identifierSummary.Summary,
+                EvidenceCount: identifierSummary.ActiveIdentifierCount + identifierSummary.ActiveAliasCount + identifierSummary.ProviderMappingCount,
+                BlockingIssueCount: matchBlockers),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "create-enrich",
+                Title: "Create and enrich",
+                Status: manualChangeApproval.UnapprovedManualChangeCount == 0 ? "Ready" : "Review",
+                Summary: manualChangeApproval.Summary,
+                EvidenceCount: manualChangeApproval.ManualChangeCount,
+                BlockingIssueCount: manualChangeApproval.UnapprovedManualChangeCount),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "build-golden-copy",
+                Title: "Build golden copy",
+                Status: pricingEvidence?.Status ?? "Review",
+                Summary: pricingEvidence?.Summary ?? "Golden-copy pricing evidence is unavailable.",
+                EvidenceCount: pricingEvidence?.EvidenceCount ?? 0,
+                BlockingIssueCount: pricingEvidence?.BlockingIssueCount ?? 1),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "reconcile",
+                Title: "Reconcile",
+                Status: entitlementBlockers == 0 && mostSpecificEntitlements > 0 ? "Ready" : "Review",
+                Summary: mostSpecificEntitlements > 0
+                    ? $"{mostSpecificEntitlements} most-specific entitlement record(s) apply to the selected Security Master scope."
+                    : "No applicable vendor entitlement evidence is retained for the selected Security Master scope.",
+                EvidenceCount: mostSpecificEntitlements,
+                BlockingIssueCount: mostSpecificEntitlements == 0 ? 1 : entitlementBlockers),
+            new SecurityMasterOperatingModelStageDto(
+                StageId: "calculate-report",
+                Title: "Calculate and report",
+                Status: cashFlowEvidence?.Status ?? (snapshot.DownstreamImpact.Links.Count > 0 ? "Ready" : "Review"),
+                Summary: cashFlowEvidence?.Summary ?? snapshot.DownstreamImpact.Summary,
+                EvidenceCount: (cashFlowEvidence?.EvidenceCount ?? 0) + snapshot.DownstreamImpact.Links.Count,
+                BlockingIssueCount: cashFlowEvidence?.BlockingIssueCount ?? 0)
+        ];
+    }
+
+    private static IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> BuildEntitlementApplicability(
+        IReadOnlyList<DataVendorEntitlementDto> entitlements,
+        SecurityMasterOperatingScope context)
+    {
+        var rows = entitlements
+            .Select(entitlement => BuildEntitlementApplicabilityRow(entitlement, context))
+            .OrderByDescending(static row => row.IsApplicable)
+            .ThenBy(static row => row.VendorName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static row => row.DataType)
+            .ThenByDescending(GetApplicabilityRank)
+            .ToArray();
+        var bestRanks = rows
+            .Where(static row => row.IsApplicable)
+            .GroupBy(static row => (row.VendorName, row.DataType), new VendorDataTypeComparer())
+            .ToDictionary(static group => group.Key, static group => group.Max(GetApplicabilityRank), new VendorDataTypeComparer());
+
+        return rows
+            .Select(row => row with
+            {
+                IsMostSpecific = row.IsApplicable
+                    && bestRanks.TryGetValue((row.VendorName, row.DataType), out var rank)
+                    && GetApplicabilityRank(row) == rank
+            })
+            .ToArray();
+    }
+
+    private static SecurityMasterEntitlementApplicabilityDto BuildEntitlementApplicabilityRow(
+        DataVendorEntitlementDto entitlement,
+        SecurityMasterOperatingScope context)
+    {
+        var applies =
+            ScopeMatches(entitlement.ClientId, context.ClientId)
+            && ScopeMatches(entitlement.AccountId, context.AccountId)
+            && ScopeMatches(entitlement.FundProfileId, context.FundProfileId)
+            && (!entitlement.SecurityId.HasValue || entitlement.SecurityId == context.SecurityId);
+        var scope = ResolveEntitlementScope(entitlement);
+        return new SecurityMasterEntitlementApplicabilityDto(
+            EntitlementId: entitlement.EntitlementId,
+            VendorName: entitlement.VendorName,
+            DataType: entitlement.DataType,
+            Scope: scope,
+            ClientId: entitlement.ClientId,
+            AccountId: entitlement.AccountId,
+            FundProfileId: entitlement.FundProfileId,
+            SecurityId: entitlement.SecurityId,
+            IsApplicable: applies,
+            IsMostSpecific: false,
+            Status: entitlement.Status,
+            RequiresDirectClientContract: entitlement.RequiresDirectClientContract,
+            ContractReference: entitlement.ContractReference,
+            Summary: applies
+                ? $"{entitlement.VendorName} {entitlement.DataType} entitlement applies at {scope} scope with {entitlement.Status} status."
+                : $"{entitlement.VendorName} {entitlement.DataType} entitlement is configured for {scope} scope and does not match the selected scope.");
+    }
+
+    private static IReadOnlyList<SecurityMasterOperatorMetadataDto> BuildOperatorMetadata(
+        ClearwaterReferenceDataEvidence evidence,
+        IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> entitlementApplicability)
+    {
+        var entitlementMetadata = evidence.VendorEntitlements
+            .Where(entitlement => entitlementApplicability.Any(applicable =>
+                applicable.EntitlementId == entitlement.EntitlementId
+                && applicable.IsApplicable
+                && applicable.IsMostSpecific))
+            .Select(entitlement => new SecurityMasterOperatorMetadataDto(
+                MetadataId: $"entitlement-{entitlement.EntitlementId:N}",
+                VendorName: entitlement.VendorName,
+                DataType: entitlement.DataType,
+                SourceCategory: SecurityMasterText(entitlement.SourceCategory, "Vendor entitlement"),
+                ExpectedRefreshCadence: SecurityMasterText(entitlement.ExpectedRefreshCadence, "Operator configured"),
+                DefaultMaxDaysStale: entitlement.DefaultMaxDaysStale,
+                RequiresDirectClientContract: entitlement.RequiresDirectClientContract,
+                OperatorMetadata: entitlement.OperatorMetadata,
+                Summary: SecurityMasterText(
+                    entitlement.OperatorMetadata,
+                    $"{entitlement.VendorName} {entitlement.DataType} source metadata is configurable by operations.")))
+            .ToList();
+
+        if (evidence.GoldenCopyPrice is not null && entitlementMetadata.All(static item => item.DataType != DataVendorDataType.Pricing))
+        {
+            entitlementMetadata.Add(new SecurityMasterOperatorMetadataDto(
+                MetadataId: "golden-copy-pricing",
+                VendorName: evidence.GoldenCopyPrice.SelectedSource,
+                DataType: DataVendorDataType.Pricing,
+                SourceCategory: "Pricing hierarchy",
+                ExpectedRefreshCadence: evidence.GoldenCopyPrice.IsStaleFallback ? "Stale fallback review" : "Fresh hierarchy selection",
+                DefaultMaxDaysStale: evidence.GoldenCopyPrice.DaysStale,
+                RequiresDirectClientContract: false,
+                OperatorMetadata: null,
+                Summary: $"Golden-copy pricing selected {evidence.GoldenCopyPrice.SelectedSource}."));
+        }
+
+        if (evidence.CashFlowSource is not null && entitlementMetadata.All(static item => item.DataType != DataVendorDataType.CashFlows))
+        {
+            entitlementMetadata.Add(new SecurityMasterOperatorMetadataDto(
+                MetadataId: "cash-flow-source",
+                VendorName: evidence.CashFlowSource.SourceKind.ToString(),
+                DataType: DataVendorDataType.CashFlows,
+                SourceCategory: "Cash-flow source governance",
+                ExpectedRefreshCadence: evidence.CashFlowSource.IsClientOverride ? "Client override confirmation" : "Vendor source refresh",
+                DefaultMaxDaysStale: null,
+                RequiresDirectClientContract: evidence.CashFlowSource.IsClientOverride,
+                OperatorMetadata: evidence.CashFlowSource.ClientConfirmedBy,
+                Summary: $"{evidence.CashFlowSource.SourceKind} cash-flow source metadata is retained for operators."));
+        }
+
+        return entitlementMetadata
+            .OrderBy(static item => item.VendorName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.DataType)
+            .ToArray();
+    }
+
+    private static SecurityMasterManualChangeApprovalPostureDto BuildManualChangeApprovalPosture(
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
+    {
+        var manualEvents = lifecycleEvents.Where(IsManualSecurityChange).ToArray();
+        var unapprovedCount = manualEvents.Count(static item => !IsApprovedManualSecurityChange(item));
+
+        return new SecurityMasterManualChangeApprovalPostureDto(
+            PolicyKey: "operations-continuity.security-master-override",
+            Gate: OperationsGateKeyDto.SecurityMaster,
+            Route: UiApiRoutes.OperationsContinuitySecurityMasterOverrideApprove,
+            RequiredPermission: "AdminMaintenance or ModifySecurityMaster",
+            RequiredDistinctApprovals: 1,
+            RequiresIndependentReviewer: true,
+            EvidenceRequirement: "Override id, policy reference, rationale, expiration date, and linked evidence.",
+            Status: unapprovedCount == 0 ? "Ready" : "Review",
+            ManualChangeCount: manualEvents.Length,
+            UnapprovedManualChangeCount: unapprovedCount,
+            Summary: manualEvents.Length == 0
+                ? "No manual creation, remapping, override, or critical-attribute change is retained on this passport."
+                : $"{manualEvents.Length} manual change event(s) reuse the operations-continuity.security-master-override approval policy; {unapprovedCount} require independent reviewer evidence.");
+    }
+
+    private static int GetApplicabilityRank(SecurityMasterEntitlementApplicabilityDto row) =>
+        row.SecurityId.HasValue ? 4 :
+        !string.IsNullOrWhiteSpace(row.AccountId) ? 3 :
+        !string.IsNullOrWhiteSpace(row.FundProfileId) ? 2 :
+        !string.IsNullOrWhiteSpace(row.ClientId) ? 1 : 0;
+
+    private static bool ScopeMatches(string? configuredScope, string? selectedScope)
+    {
+        var configured = NormalizeSecurityMasterText(configuredScope);
+        if (configured is null)
+            return true;
+
+        var selected = NormalizeSecurityMasterText(selectedScope);
+        return selected is not null && configured.Equals(selected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveEntitlementScope(DataVendorEntitlementDto entitlement)
+    {
+        if (entitlement.SecurityId.HasValue)
+            return "Security";
+        if (!string.IsNullOrWhiteSpace(entitlement.AccountId))
+            return "Account";
+        if (!string.IsNullOrWhiteSpace(entitlement.FundProfileId))
+            return "FundProfile";
+        if (!string.IsNullOrWhiteSpace(entitlement.ClientId))
+            return "Client";
+
+        return "Global";
+    }
+
+    private static string? ResolveDominantAccountId(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var accountIds = snapshot.OpenLotReadModel?.Lots
+            .Select(static lot => NormalizeSecurityMasterText(lot.AccountScopeId))
+            .Where(static value => value is not null)
+            .Select(static value => value!)
+            .GroupBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(static group => group.Count())
+            .ThenBy(static group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.Key)
+            .ToArray();
+
+        return accountIds is { Length: > 0 } ? accountIds[0] : null;
+    }
+
+    private static string? NormalizeSecurityMasterText(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildPricingHierarchySection(
+        ClearwaterReferenceDataEvidence evidence)
+    {
+        var hierarchyCount = evidence.PricingHierarchy?.Entries.Count ?? 0;
+        if (evidence.GoldenCopyPrice is null)
+        {
+            return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "pricing-hierarchy",
+                Title: "Pricing hierarchy and stale fallback",
+                Status: "Review",
+                Summary: hierarchyCount > 0
+                    ? $"{hierarchyCount} pricing source(s) configured, but no market-price golden copy is available."
+                    : "No Clearwater pricing hierarchy or market-price golden copy is available on this passport.",
+                EvidenceCount: hierarchyCount,
+                BlockingIssueCount: 1);
+        }
+
+        var staleLabel = evidence.GoldenCopyPrice.IsStaleFallback
+            ? $"stale fallback, {evidence.GoldenCopyPrice.DaysStale?.ToString(CultureInfo.InvariantCulture) ?? "unknown"} day(s) old"
+            : "fresh hierarchy selection";
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "pricing-hierarchy",
+            Title: "Pricing hierarchy and stale fallback",
+            Status: evidence.GoldenCopyPrice.IsStaleFallback ? "Review" : "Ready",
+            Summary: $"Golden-copy price {evidence.GoldenCopyPrice.GoldenCopyPrice.ToString("0.####", CultureInfo.InvariantCulture)} from {evidence.GoldenCopyPrice.SelectedSource}; {staleLabel}. {hierarchyCount} pricing source(s) configured.",
+            EvidenceCount: hierarchyCount + evidence.GoldenCopyPrice.ComparisonPrices.Count + 1,
+            BlockingIssueCount: evidence.GoldenCopyPrice.IsStaleFallback ? 1 : 0);
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildCashFlowSourceSection(
+        ClearwaterReferenceDataEvidence evidence)
+    {
+        if (evidence.CashFlowSource is null)
+        {
+            return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+                SectionId: "cash-flow-source-governance",
+                Title: "Cash-flow source governance",
+                Status: "Review",
+                Summary: "No Clearwater cash-flow source assignment is available for this security.",
+                EvidenceCount: 0,
+                BlockingIssueCount: 1);
+        }
+
+        var ageDays = evidence.CashFlowSource.LastUpdatedUtc.HasValue
+            ? (int)Math.Max(0, (DateTimeOffset.UtcNow - evidence.CashFlowSource.LastUpdatedUtc.Value).TotalDays)
+            : (int?)null;
+        var isStaleClientOverride = evidence.CashFlowSource.IsClientOverride
+            && (!evidence.CashFlowSource.ClientConfirmedAt.HasValue || ageDays is null or > 7);
+        var confirmation = evidence.CashFlowSource.IsClientOverride
+            ? $" Client confirmation: {SecurityMasterText(evidence.CashFlowSource.ClientConfirmedBy, "not retained")}."
+            : string.Empty;
+
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "cash-flow-source-governance",
+            Title: "Cash-flow source governance",
+            Status: isStaleClientOverride ? "Review" : "Ready",
+            Summary: $"{evidence.CashFlowSource.SourceKind} cash-flow source assigned; last update {FormatAgeDays(ageDays)}.{confirmation}",
+            EvidenceCount: 1,
+            BlockingIssueCount: isStaleClientOverride ? 1 : 0);
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildVendorEntitlementSection(
+        ClearwaterReferenceDataEvidence evidence)
+    {
+        var entitlements = evidence.VendorEntitlements;
+        var directContractCount = entitlements.Count(static item => item.RequiresDirectClientContract);
+        var atRiskCount = entitlements.Count(static item =>
+            item.Status is DataVendorEntitlementStatus.Expired or DataVendorEntitlementStatus.ExpiringSoon or DataVendorEntitlementStatus.PendingRenewal);
+
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "vendor-entitlements",
+            Title: "Vendor licensing and entitlements",
+            Status: entitlements.Count > 0 && atRiskCount == 0 ? "Ready" : "Review",
+            Summary: entitlements.Count > 0
+                ? $"{entitlements.Count} vendor entitlement record(s) retained; {directContractCount} direct-client contract requirement(s); {atRiskCount} renewal or expiry issue(s)."
+                : "No vendor entitlement evidence is retained for CUSIP, SEDOL, pricing, ratings, MSCI, WSO, or cash-flow sources.",
+            EvidenceCount: entitlements.Count,
+            BlockingIssueCount: entitlements.Count == 0 ? 1 : atRiskCount);
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildDataQualityControlSection(
+        ClearwaterReferenceDataEvidence evidence)
+    {
+        var violations = evidence.QualityReport?.Violations
+            .Where(item => item.SecurityId == evidence.SecurityId)
+            .ToArray() ?? [];
+        var blockingCount = violations.Count(static item =>
+            item.Severity is DataQualityRuleSeverity.Error or DataQualityRuleSeverity.HardBlock);
+
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "data-quality-controls",
+            Title: "Data-quality and golden-copy controls",
+            Status: evidence.QualityReport is not null && blockingCount == 0 ? "Ready" : "Review",
+            Summary: evidence.QualityReport is null
+                ? "No retained Security Master quality report is available for completeness, taxonomy, consistency, or staleness checks."
+                : $"{violations.Length} quality violation(s) retained for this security from the {evidence.QualityReport.RunAt:yyyy-MM-dd HH:mm} UTC run.",
+            EvidenceCount: violations.Length,
+            BlockingIssueCount: evidence.QualityReport is null ? 1 : blockingCount);
+    }
+
+    private static InstrumentPassportReferenceDataWorkbenchSectionDto BuildManualChangeReviewSection(
+        IReadOnlyList<SecurityMasterChangeHistoryItemDto> lifecycleEvents)
+    {
+        var manualEvents = lifecycleEvents
+            .Where(IsManualSecurityChange)
+            .ToArray();
+        var unapprovedCount = manualEvents.Count(static item => !IsApprovedManualSecurityChange(item));
+
+        return new InstrumentPassportReferenceDataWorkbenchSectionDto(
+            SectionId: "manual-change-review",
+            Title: "Manual creation and change review",
+            Status: unapprovedCount == 0 ? "Ready" : "Review",
+            Summary: manualEvents.Length == 0
+                ? "No manual creation, remapping, override, or critical-attribute change is retained on this passport."
+                : $"{manualEvents.Length} manual change event(s) retained; {unapprovedCount} require independent review evidence.",
+            EvidenceCount: manualEvents.Length,
+            BlockingIssueCount: unapprovedCount);
+    }
+
+    private static string FormatAgeDays(int? ageDays) =>
+        ageDays.HasValue
+            ? $"{ageDays.Value.ToString(CultureInfo.InvariantCulture)} day(s) ago"
+            : "unknown";
+
+    private static string SecurityMasterText(string? value, string fallback) =>
+        string.IsNullOrWhiteSpace(value)
+            ? fallback
+            : value.Trim();
+
+    private static bool IsManualSecurityChange(SecurityMasterChangeHistoryItemDto item) =>
+        ContainsAnyControlToken(
+            [
+                item.EventType,
+                item.SourceSystem,
+                item.Actor,
+                item.Origin,
+                item.Reason,
+                .. item.ChangedFields
+            ],
+            "manual",
+            "override",
+            "operator",
+            "wpf-ui",
+            "desktop-user",
+            "user",
+            "remap",
+            "amend");
+
+    private static bool IsApprovedManualSecurityChange(SecurityMasterChangeHistoryItemDto item) =>
+        ContainsAnyControlToken(
+            [
+                item.EventType,
+                item.Reason,
+                item.Summary
+            ],
+            "approved",
+            "reviewed",
+            "review",
+            "signoff",
+            "sign-off");
+
+    private static bool ContainsAnyControlToken(IEnumerable<string?> values, params string[] tokens) =>
+        values.Any(value => tokens.Any(token => Contains(value, token)));
 
     private static string BuildTermsAndObligationsSummary(SecurityMasterTrustSnapshotDto snapshot)
     {
@@ -3282,6 +3830,32 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         DateTimeOffset? AsOf,
         string? UpdatedBy,
         string? Reason);
+
+    private sealed record ClearwaterReferenceDataEvidence(
+        Guid SecurityId,
+        SecurityPriceGoldenCopyDto? GoldenCopyPrice,
+        SecurityPricingHierarchyDto? PricingHierarchy,
+        SecurityCashFlowSourceDto? CashFlowSource,
+        IReadOnlyList<DataVendorEntitlementDto> VendorEntitlements,
+        SecurityMasterQualityReportDto? QualityReport);
+
+    private sealed record SecurityMasterOperatingScope(
+        string? ClientId,
+        string? AccountId,
+        string? FundProfileId,
+        Guid SecurityId);
+
+    private sealed class VendorDataTypeComparer : IEqualityComparer<(string VendorName, DataVendorDataType DataType)>
+    {
+        public bool Equals(
+            (string VendorName, DataVendorDataType DataType) x,
+            (string VendorName, DataVendorDataType DataType) y) =>
+            x.DataType == y.DataType
+            && string.Equals(x.VendorName, y.VendorName, StringComparison.OrdinalIgnoreCase);
+
+        public int GetHashCode((string VendorName, DataVendorDataType DataType) obj) =>
+            HashCode.Combine(StringComparer.OrdinalIgnoreCase.GetHashCode(obj.VendorName), obj.DataType);
+    }
 
     private enum ConflictSide : byte
     {

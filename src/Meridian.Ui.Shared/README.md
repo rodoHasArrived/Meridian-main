@@ -412,7 +412,16 @@ certify book-native enterprise setup controls by implication.
 the shared Accounting System store. Reads require accounting access, writes require
 `AdminMaintenance`, reads and writes resolve tenant/company scope from the authenticated workstation
 session before consulting client-supplied identifiers, and production readiness loads the retained
-profile so setup certification is no longer represented only by request-time flags.
+profile. The retained profile also carries approval queue setup rows - queue id, workflow kind,
+required approval role/count, segregation policy, and evidence requirement - so browser and WPF
+Configure can persist operational approval queue definitions through the shared profile store while
+readiness remains evidence-qualified by the approval queue control lane, so setup certification is
+no longer represented only by request-time flags. It also carries structured dimension mapping rows
+with mapping id, provider id, canonical Meridian dimensions, provider dimensions, and evidence
+requirements so dimension-map setup survives shared store normalization and can be rendered by
+operator surfaces without re-parsing evidence strings. The shared store rejects configured
+approval-queue or dimension-mapping studios when the matching typed configuration payload is
+missing, preventing direct API saves from preserving checkbox-only studio posture.
 `/api/accounting-system/production-certification-profile` retains tenant/company/fund/book workflow
 and dimensional reporting certification controls in the same shared store. Reads require accounting
 access, writes require `AdminMaintenance`, endpoint saves resolve tenant/company scope from the
@@ -576,18 +585,20 @@ shared ledger journal evidence. Close-management endpoints under `/api/ledger/cl
 adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
 projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
   lock posture, and validation issues from Operations Continuity, the period-plan configuration route
-  retains governed materiality, task owner/due-date, sign-off count/evidence, and dependency setup
+  retains governed materiality, task owner/due-date, sign-off count/evidence, dependency setup, and dependency reasons
   through the trusted session actor and ledger-book-scoped close-plan evidence, while the task sign-off,
-  period-lock, and late-adjustment routes retain evidence-backed task, lock, review request,
+  evidence-review, period-lock, and late-adjustment routes retain evidence-backed task, blocker-review, lock, review request,
   approval, or rejection decisions without mutating posted journal entries locally. The period-lock
   route stamps the trusted session actor, forces human-operator origin, requires expected workflow
   version, linked report package, and close-package/report-pack/period-lock evidence scoped to the
   workflow or period and selected ledger book, and returns `ClosePeriodLockResultDto` service
   blockers for clients to render. Assistant or automation-origin close sign-off, period-lock,
-  and late-adjustment commands are rejected before retaining decisions. Task sign-off evidence must identify
+  late-adjustment, and evidence-review commands are rejected before retaining decisions. Task sign-off evidence must identify
 the close task, sign-off role, and workflow or close period on the same retained artifact. Late-adjustment request evidence must identify
 the journal entry, workflow, or close period, and late-adjustment review evidence must identify the
-retained request, journal entry, workflow, or close period. Task sign-off requests are rejected when a
+retained request, journal entry, workflow, or close period. Close evidence-review evidence must
+identify an active validation issue, its target, workflow or close period, and selected ledger book;
+retained review rows are returned on the close plan but do not clear the active blocker. Task sign-off requests are rejected when a
 projected dependency task has not been signed off or when the requested role is outside the
 projected role-scoped sign-off requirements, so browser and WPF clients cannot bypass close
 checklist order or approval-count governance.
@@ -1401,6 +1412,11 @@ provider sync cursors and steward sign-off metadata. When the
 Security Master operator override store is registered, the passport also carries the latest override
 audit-history entries for the resolved instrument so controller review can see provider mapping
 confidence and governed override context in the same retained reconciliation record.
+The Security Master instrument passport reference-data workbench also consumes registered
+Clearwater pricing, cash-flow, vendor-entitlement, and data-quality services. Shared clients receive
+sections for pricing hierarchy and stale fallback, cash-flow source governance, direct-client vendor
+contract evidence, retained quality-rule results, and independent review of manual creation,
+remapping, override, or critical-attribute changes instead of reconstructing those controls locally.
 When the Security Master conflict service is registered, resolved provider passports also include
 open identifier conflicts for the resolved instrument, add `SM_IDENTIFIER_CONFLICT`, and cap mapping
 confidence so controller review can distinguish clean resolution from unresolved provider identity

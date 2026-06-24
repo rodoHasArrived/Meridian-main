@@ -636,6 +636,13 @@ public sealed partial class WorkstationEndpointsTests
             CancellationToken ct = default)
             => Task.FromResult<InstrumentPassportDto?>(requestedSecurityId == securityId ? CreatePassport() : null);
 
+        public Task<SecurityMasterOperatingModelDto?> GetOperatingModelAsync(
+            Guid requestedSecurityId,
+            string? fundProfileId,
+            CancellationToken ct = default)
+            => Task.FromResult<SecurityMasterOperatingModelDto?>(
+                requestedSecurityId == securityId ? CreatePassport().OperatingModel : null);
+
         public Task<BulkResolveSecurityMasterConflictsResult> BulkResolveConflictsAsync(
             BulkResolveSecurityMasterConflictsRequest request,
             CancellationToken ct = default)

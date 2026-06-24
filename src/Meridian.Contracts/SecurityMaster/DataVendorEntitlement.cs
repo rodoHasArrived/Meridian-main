@@ -38,7 +38,17 @@ public sealed record DataVendorEntitlementDto(
     int RenewalReminderDays,
     DataVendorEntitlementStatus Status,
     string CreatedBy,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt)
+{
+    public string? ClientId { get; init; }
+    public string? AccountId { get; init; }
+    public string? FundProfileId { get; init; }
+    public Guid? SecurityId { get; init; }
+    public string? SourceCategory { get; init; }
+    public string? ExpectedRefreshCadence { get; init; }
+    public int? DefaultMaxDaysStale { get; init; }
+    public string? OperatorMetadata { get; init; }
+}
 
 public sealed record UpsertDataVendorEntitlementRequest(
     string VendorName,
@@ -52,4 +62,14 @@ public sealed record UpsertDataVendorEntitlementRequest(
     int RenewalReminderDays,
     string Actor,
     // Supply the existing id to renew or edit an entitlement in place; omit to create a new one.
-    Guid? EntitlementId = null);
+    Guid? EntitlementId = null)
+{
+    public string? ClientId { get; init; }
+    public string? AccountId { get; init; }
+    public string? FundProfileId { get; init; }
+    public Guid? SecurityId { get; init; }
+    public string? SourceCategory { get; init; }
+    public string? ExpectedRefreshCadence { get; init; }
+    public int? DefaultMaxDaysStale { get; init; }
+    public string? OperatorMetadata { get; init; }
+}

@@ -14,6 +14,11 @@ public interface ISecurityMasterWorkbenchQueryService
         string? fundProfileId,
         CancellationToken ct = default);
 
+    Task<SecurityMasterOperatingModelDto?> GetOperatingModelAsync(
+        Guid securityId,
+        string? fundProfileId,
+        CancellationToken ct = default);
+
     Task<BulkResolveSecurityMasterConflictsResult> BulkResolveConflictsAsync(
         BulkResolveSecurityMasterConflictsRequest request,
         CancellationToken ct = default);

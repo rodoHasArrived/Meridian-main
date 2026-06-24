@@ -160,6 +160,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();
         services.AddTransient<AccountingCloseViewModel>();
+        services.AddTransient<AccountingClosePage>();
         services.AddTransient<FundStructureSetupViewModel>();
         services.AddTransient<FundAccountsViewModel>();
         services.AddTransient<FundLedgerViewModel>();

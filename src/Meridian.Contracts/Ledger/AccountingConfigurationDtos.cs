@@ -1855,6 +1855,15 @@ public sealed record CloseSignOffRequirementDto(
     bool IsSatisfied,
     string EvidenceRequirement);
 
+public sealed record CloseTaskDependencyConfigurationDto(
+    string DependsOnTaskId,
+    string? Reason = null);
+
+public sealed record CloseTaskSignOffRequirementConfigurationDto(
+    string Role,
+    int RequiredApprovalCount,
+    string? EvidenceRequirement = null);
+
 public sealed record MaterialityPolicyDto(
     string PolicyId,
     decimal AmountThreshold,
@@ -1871,10 +1880,18 @@ public sealed record CloseTaskConfigurationDto(
     int? RequiredApprovalCount = null,
     string? RequiredApprovalRole = null,
     string? RequiredEvidence = null,
-    IReadOnlyList<string>? DependsOnTaskIds = null)
+    IReadOnlyList<string>? DependsOnTaskIds = null,
+    IReadOnlyList<CloseTaskDependencyConfigurationDto>? DependencyConfigurations = null,
+    IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto>? SignOffRequirementConfigurations = null)
 {
     public IReadOnlyList<string> DependsOnTaskIds { get; init; } =
         DependsOnTaskIds ?? [];
+
+    public IReadOnlyList<CloseTaskDependencyConfigurationDto> DependencyConfigurations { get; init; } =
+        DependencyConfigurations ?? [];
+
+    public IReadOnlyList<CloseTaskSignOffRequirementConfigurationDto> SignOffRequirementConfigurations { get; init; } =
+        SignOffRequirementConfigurations ?? [];
 }
 
 public sealed record ClosePeriodPlanConfigurationDto(
@@ -1899,7 +1916,8 @@ public sealed record UpsertClosePeriodPlanConfigurationRequestDto(
     string? Actor = null,
     IReadOnlyList<string>? EvidenceLinks = null,
     string? CorrelationId = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    DateTimeOffset? ExpectedConfiguredAtUtc = null)
 {
     public IReadOnlyList<CloseTaskConfigurationDto> TaskConfigurations { get; init; } =
         TaskConfigurations ?? [];
@@ -2007,6 +2025,50 @@ public sealed record SignOffCloseTaskRequestDto(
         EvidenceLinks ?? [];
 }
 
+public sealed record CloseEvidenceReviewDto(
+    string ReviewId,
+    string IssueCode,
+    string? TargetId,
+    string ReviewedBy,
+    DateTimeOffset ReviewedAtUtc,
+    string Notes,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record CloseOperatingCoverageItemDto(
+    string ControlId,
+    string Label,
+    AccountingReadinessStateDto State,
+    int EvidenceCount,
+    int BlockingIssueCount,
+    string RequiredAction,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto>? BlockingIssues = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+
+    public IReadOnlyList<AccountingConfigurationValidationIssueDto> BlockingIssues { get; init; } =
+        BlockingIssues ?? [];
+}
+
+public sealed record ReviewCloseEvidenceRequestDto(
+    Guid WorkflowId,
+    string IssueCode,
+    string? TargetId,
+    string Actor,
+    string Notes,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
 public sealed record LockClosePeriodRequestDto(
     Guid WorkflowId,
     long ExpectedWorkflowVersion,
@@ -2052,13 +2114,21 @@ public sealed record ClosePeriodPlanDto(
     MaterialityPolicyDto MaterialityPolicy,
     IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null,
     IReadOnlyList<CloseCalendarMilestoneDto>? CloseCalendar = null,
-    ClosePeriodPlanConfigurationDto? Configuration = null)
+    ClosePeriodPlanConfigurationDto? Configuration = null,
+    IReadOnlyList<CloseEvidenceReviewDto>? EvidenceReviews = null,
+    IReadOnlyList<CloseOperatingCoverageItemDto>? OperatingCoverage = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
 
     public IReadOnlyList<CloseCalendarMilestoneDto> CloseCalendar { get; init; } =
         CloseCalendar ?? [];
+
+    public IReadOnlyList<CloseEvidenceReviewDto> EvidenceReviews { get; init; } =
+        EvidenceReviews ?? [];
+
+    public IReadOnlyList<CloseOperatingCoverageItemDto> OperatingCoverage { get; init; } =
+        OperatingCoverage ?? [];
 }
 
 public sealed record ReportCertificationDto(

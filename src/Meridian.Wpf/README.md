@@ -56,7 +56,9 @@ entry drafts through the shared workbench service with selected ledger-book scop
 validation, submit, and lifecycle actions, shows the shared Rules Studio projection for
 effective-dated rule versions, generated posting readiness, saved regression tests, and promotion
 approval queues, runs saved rule-test suites, and approves promotion-gated posting-rule versions
-through the shared accounting configuration service, renders the shared accounting production-readiness
+through the shared accounting configuration service, authors promotion-gated posting-rule drafts
+with active ledger-book scope, template validation, priority, retained evidence, and audit rows
+through that same shared configuration service, renders the shared accounting production-readiness
 assessment across ledger books, Rules Studio, posting execution, dimensions, external GL,
 close/reporting, and tenant-admin blockers, renders tenant-admin control/evidence progress from the
 shared readiness DTO, persists tenant-admin setup controls and retained evidence through the shared
@@ -64,7 +66,13 @@ accounting tenant administration profile store with independent WPF accounting a
 administration, rule-test/promotion setup, close setup, provider mapping,
 tenant/company/report-group setup, ledger-book administration, posting-rule authoring, approval
 queue, dimension mapping, implementation sandbox, audit review, bulk import/export safeguard,
-performance validation, and disaster-recovery runbook controls, renders
+performance validation, and disaster-recovery runbook controls plus editable approval queue setup
+for queue id, workflow kind, role/count, segregation policy, and evidence requirement plus editable
+dimension mapping setup for mapping id, provider id, Meridian/provider dimension rows, and evidence
+requirements. Desktop save readiness and command execution now block chart, posting-rule,
+provider-mapping, production-certification, approval queue, and dimension mapping saves until
+required operator evidence and typed payloads are complete, matching the shared stores'
+fail-closed invariants, renders
 the shared ledger-book-native workflow control count and retained ledger-book-scoped
 workflow evidence for posting rules, JE lifecycle, close/reporting, external GL, reconciliation,
 close-plan setup, direct-lending projections, and strategy ledger reads, renders
@@ -72,6 +80,14 @@ dimensional ledger/query/report/export control counts with retained ledger-book-
 and saves retained tenant/company/fund/book-scoped production-certification controls through the
 shared Accounting System profile store, adding scoped retained evidence markers for checked
 book-native workflow and dimensional controls before persistence,
+authors retained external-GL provider mapping profiles through the shared Accounting System service
+with provider/profile identifiers, account mappings, editable Meridian/provider dimension maps for
+fund/book plus customer/vendor/project-style scope, human-origin certification evidence, retained
+profile rows, and production-readiness refresh, authors retained chart account nodes through the
+shared accounting configuration chart service with active ledger-book scope, parent path, financial
+account id, and retained setup evidence,
+retains selected-ledger-book implementation-sandbox, sandbox-validation, fixture-validation, and
+implementation-fixture proof through the shared tenant administration profile store,
 retained migration-run evidence plus generated migration rollout plan rows with ledger-book scope,
 latest retained run, blocking issue codes, required actions, and canonical dimensions from the shared
 production-readiness payload, renders retained migration worker plans from the shared accounting
@@ -97,19 +113,45 @@ fixture/import-first provider registrations, projects
 close/evidence/reconciliation posture from shared operations continuity when available, and creates
 fund-scoped accounting-basis policy records and multi-basis ledger-book projection candidates
 through Financial Operations services.
-The WPF Accounting close view model can also retain a loaded close-period plan through the shared
-`IAccountingCloseManagementService` when the caller supplies explicit workflow context, exposing
-editable desktop draft fields for materiality thresholds, currency, review role, late-adjustment
-approval posture, primary checklist task owner, due date, required approval role/count, required
-evidence, and dependencies before preserving task/dependency, sign-off, required-evidence, and late-adjustment
-evidence metadata in the same governed close-plan configuration request used by browser close setup. It also exposes a
-governed close-task sign-off command that selects the next unsatisfied task requirement, posts the
-role, approval decision, notes, human actor, correlation id, and task/workflow/period/book evidence
-through the shared close-management service, and reloads the returned plan instead of applying
-desktop-local approval rules, plus a
-governed period-lock command over the same shared service, building human-origin close-package,
-report-pack, manifest, checklist-approval, workflow-version, period, and ledger-book evidence
-requests while rendering service-owned lock blockers instead of applying desktop-local close rules.
+`FundAccountingClose` routes to `AccountingClosePage`, a dedicated WPF close workbench over the
+shared `IAccountingCloseManagementService`. Operators can load a close-period plan by workflow id,
+edit desktop draft fields for materiality thresholds, currency, review role, late-adjustment
+approval posture, select the retained checklist task being edited, and update task owner, due date,
+required approval role/count, required evidence, role-scoped sign-off matrix rows, dependencies, and dependency reasons, then retain task/dependency, sign-off, required-evidence, and
+late-adjustment evidence metadata through the same governed close-plan configuration request used by
+browser close setup, including the loaded configuration timestamp so stale desktop setup edits fail closed
+when a newer retained setup version exists. Dependency reason text can use keyed predecessor entries such as
+`task-pricing: Pricing package must clear`, so desktop setup can preserve a distinct audit rationale for each retained dependency edge.
+Sign-off matrix text uses retained `role | count | evidence` rows and carries unedited task matrices forward in the shared configuration request.
+The workbench exposes governed close-task sign-off, selectable late-adjustment review, selectable blocker/evidence review, and
+period-lock commands over the same shared service, carrying human actor, correlation, workflow,
+period, ledger-book, task, close-package, report-pack, and retained evidence context while reloading
+the returned plan instead of applying desktop-local approval rules. Desktop sign-off administration
+now lets operators select the close task, sign-off role, Approved/Rejected decision, and retained
+notes before calling the shared sign-off service, so WPF can administer matrix rejections as well as
+approvals. Desktop late-adjustment review now lets operators select the retained request id,
+Approved/Rejected decision, and review notes before retaining approval or rejection evidence.
+Desktop blocker/evidence review now lets operators select the active issue code, target id, and
+notes before calling the shared close-management evidence-review command with workflow, period,
+issue, target, ledger-book, correlation id, and human-origin retained close-review evidence;
+returned review rows are displayed beside the blocker without clearing the service-owned validation issue.
+The workbench also renders an ordered close workflow control sequence over setup retention,
+checklist sign-off, late-adjustment request, late-adjustment review, blocker review, and period
+lock, with each step's command, status, evidence, and disabled reason derived from the same loaded
+shared close plan and governed desktop command state.
+The page binds close-plan
+materiality, period-lock, task, dependency, sign-off matrix, late-adjustment, retained-evidence, and
+validation-blocker rows directly from the shared close-plan DTO so desktop review uses the same
+server-owned close-management state as browser. Desktop setup retention now also fails closed before
+calling the shared service when materiality thresholds are negative, materiality currency is
+malformed, review role is blank, the selected close task is missing or unknown, due-date text is not
+`yyyy-MM-dd`, approval count is non-positive, approval role is blank, or required sign-off evidence
+is blank. Desktop operators can now request retained late adjustments from the same close workbench
+with journal-entry id, amount, currency, reason, human-origin stamping, and workflow/period/ledger-book
+evidence before the shared service applies materiality approval rules.
+Accounting Configure implementation-sandbox proof now uses the same retained tenant-administration
+setup payload as the main save path: approval-queue and dimension-mapping configurations are
+validated and preserved with the sandbox evidence before readiness refresh.
 Desktop close-support queue projections consume
 `FinancialOperationsCommandCenterDto.CloseSupportDecision` directly, so period state,
 lock/reopen posture, NAV/report dependencies, unresolved exceptions, approvals, and retained

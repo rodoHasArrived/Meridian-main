@@ -176,6 +176,10 @@ as the critical `configuration.ledger-book-missing` activation blocker instead o
 the generic validation list. Retained migration run artifacts render their canonical fund, book,
 entity, cost-center, counterparty, and external-GL dimensions so dimensional backfill proof is
 visible in the same browser control plane that consumes the shared readiness blocker codes.
+Tenant-administration setup in this browser workstream retains structured approval-queue and
+dimension-mapping configuration in the shared accounting tenant-administration profile, including
+provider id, Meridian/provider dimension rows, and evidence requirements instead of a checkbox-only
+readiness claim.
 Operators
 can apply the selected dry-run source
 event as a required predicate through the same shared upsert route, replacing stale event-kind
@@ -210,7 +214,10 @@ approval state locally. The selected-rule detail also renders a promotion readin
 version history, approval evidence, saved regression coverage, latest suite result, generated
 posting lines, dimensional scope coverage, and the activation gate. Activation controls surface the
 shared readiness blockers for promotion-gated rules, including missing approved promotion evidence,
-missing current-version saved regression coverage, and the latest failing rule-test suite.
+missing current-version saved regression coverage, and the latest failing rule-test suite. Direct
+Rules Studio callbacks for duplicate draft, archive, promotion approval, and activation now return
+the same disabled reasons before shared-service mutation when no active rule is selected, promotion
+is already approved, or activation blockers remain.
 When shared validation reports a missing selected ledger book and the workspace includes a
 server-derived setup candidate, the browser Accounting Configure surface can create the ledger book
 through the shared `/api/ledger/books` endpoint and then refresh the workspace; React does not infer
@@ -225,7 +232,11 @@ shared production-readiness gate for multi-ledger administration. The browser te
 editor persists chart administration, Rules Studio test/promotion, close setup, provider mapping,
 tenant/company/report-group setup, audit review, bulk import/export safeguards, performance
 validation, recovery runbooks, ledger-book administration, posting-rule authoring, approval queues,
-dimension mapping, and sandbox validation as independent shared profile controls.
+dimension mapping, and sandbox validation as independent shared profile controls, and its
+implementation-sandbox proof action retains selected-ledger-book implementation-sandbox,
+sandbox-validation, fixture-validation, and implementation-fixture evidence while carrying the
+current approval-queue and dimension-mapping setup payloads before refreshing readiness; the sandbox
+action is disabled until any configured approval-queue or dimension-mapping setup is complete.
 The same Configure surface also calls the shared `/api/accounting-system/production-readiness`
 assessment for the active fund and ledger-book scope, then renders the service-owned control-plane
 posture for ledger books, Rules Studio, posting rules, JE lifecycle, dimensions, external GL,
@@ -245,8 +256,15 @@ ledger-book administration, posting-rule authoring, approval queues, dimension m
 and retained-evidence controls instead of treating setup readiness as a generic component row, and the
 dashboard route catalog exposes the retained tenant-administration profile endpoint. The Configure
 surface can load, edit, and save that retained profile with browser accounting admin-studio,
-enterprise configuration studio lane coverage, and setup evidence before refreshing
-production-readiness posture from the shared Accounting System service. The Configure surface also
+enterprise configuration studio lane coverage, approval queue setup fields for queue id, workflow
+kind, required role/count, segregation policy, and retained evidence requirement, and setup evidence
+before refreshing production-readiness posture from the shared Accounting System service. The browser
+save model blocks configured approval queue or dimension mapping studios until the typed setup
+payloads are complete, and its save callback now rejects missing retained tenant-admin evidence
+before any shared-service submission, matching the shared store's fail-closed profile invariant. The shared browser
+contract also carries structured tenant-admin dimension mapping rows with mapping/provider ids,
+Meridian dimensions, provider dimensions, and evidence requirements for parity with retained
+Accounting Configure profile data. The Configure surface also
 loads, edits, and saves the retained production-certification profile for ledger-book-native
 workflow controls, including reconciliation, direct-lending, and strategy-ledger-read
 certification, plus dimensional ledger-line, trial-balance, reporting, provenance, and export
@@ -255,7 +273,20 @@ scope plus retained evidence through the shared Accounting System store rather t
 flags. After the operator supplies retained evidence, checked-control saves augment that evidence with
 scoped per-control markers for posting candidates, journal lifecycle, close/reporting, external GL,
 reconciliation, direct lending, strategy ledger reads, and dimensional query/export coverage so the
-shared store can enforce category-specific certification evidence. It also lists retained migration run artifacts from
+shared store can enforce category-specific certification evidence. Production-certification saves also
+retain typed workflow, dimensional, and tenant-administration certification artifacts so enterprise
+configuration studio controls can feed readiness through executable lane rows instead of broad flags.
+The same Configure panel can author retained external-GL provider mapping profiles, including
+provider/profile identifiers, account mappings, editable Meridian and provider dimension maps for
+fund/book plus customer/vendor/project-style scope, human-origin mapping certification evidence,
+and readiness refresh through the shared Accounting System mapping profile endpoint; disabled saves
+fail locally when required identifiers, mappings, or retained evidence are missing.
+The Configure panel also exposes a chart account setup editor that saves chart nodes through the
+shared accounting configuration chart endpoint with the active fund/book scope, parent path,
+financial account id, and retained setup evidence, so browser operators can add operational chart
+accounts without using raw JSON or direct endpoint tooling; required chart identifiers and account
+path/name/type are guarded before endpoint submission.
+It also lists retained migration run artifacts from
 `/api/accounting-system/migration-run-artifacts`, including run kind, certification status,
 fund/book scope, migrated-record and issue counts, and evidence reference counts, so operators can
 inspect migration proof retained in the shared Accounting System store rather than re-entering
@@ -295,18 +326,39 @@ export artifact certification state, restatement state, validation issues, and r
 counts. It renders service-owned close/report readiness rows from the package bundle when present,
 and it scopes retained package history by the loaded close plan's fund, period, and ledger book so
 book-specific close packages do not blend into fund-level history.
-covering close checklist sign-off, period-lock posture, late-adjustment review, report evidence,
-export-artifact certification, restatement workflow state, blocker counts, and retained package
-evidence; older payloads still fall back to the browser's display-only safeguard aggregation. Its package-build
+The cockpit now also renders the close plan's service-owned operating coverage rows for close
+setup, dependency graph, sign-off matrix, late adjustments, blocker review, and period lock, showing
+the backend readiness state, evidence count, blocker count, required action, and blocker issue
+labels before the older task/dependency/matrix detail sections.
+The cockpit also renders an end-to-end close workflow control sequence for setup retention,
+checklist sign-off, late adjustments, blocker review, report package build, certification, export
+manifest inspection, and period lock, with each step's action and disabled state derived from the
+same shared close plan and selected report package state. Pending late-adjustment review and active
+blocker review steps now surface their own review gates in the sequence, while row-level controls
+retain the specific approval/rejection or issue-review commands required by the shared endpoints.
+Its certification safeguard rows cover close checklist sign-off, period-lock posture,
+late-adjustment review, report evidence, export-artifact certification, restatement workflow state,
+blocker counts, and retained package evidence; older payloads still fall back to the browser's
+display-only safeguard aggregation. Its package-build
 command posts workflow, fund, period, package-seed, and evidence context
 to the shared accounting report package endpoint, and its certify command posts the selected
 retained package id, reviewer notes, and evidence links to the shared certification endpoint. Its
-task sign-off command posts the next ready checklist task role, reviewer notes, correlation id, and
-evidence links to the shared close-management endpoint. Its close setup editor lets operators adjust
+task sign-off administration lets operators select the ready checklist task, retained signer role,
+Approved/Rejected decision, and reviewer notes before posting correlation id and evidence links to
+the shared close-management endpoint. Its close setup editor lets operators adjust
 materiality thresholds, currency, review role, late-adjustment approval requirement, and the primary
-checklist task's owner, due date, required approval role/count, evidence requirement, and dependencies
-before posting ledger-book evidence and correlation context to the shared close-plan configuration
-endpoint. Its period-lock action posts the
+checklist task's owner, due date, required approval role/count, evidence requirement, multi-role
+sign-off matrix rows, and dependencies
+with retained dependency reasons before posting ledger-book evidence and correlation context to the shared close-plan configuration
+endpoint, including the loaded configuration timestamp so stale browser setup edits fail closed instead of
+overwriting newer retained setup. Dependency reason text can also use keyed predecessor entries such as
+`task-pricing: Pricing package must clear` so each retained edge can carry its own audit rationale. The setup editor exposes retained checklist tasks, predecessor candidates, and sign-off
+role candidates from required roles, retained sign-offs, task owners, and the materiality reviewer;
+the matrix editor accepts retained `role | count | evidence` rows and preserves unedited task
+matrices in the shared close-plan configuration request;
+it blocks invalid materiality thresholds, malformed currencies, blank materiality review roles,
+missing task ids, non-positive approval counts, blank approval roles, and blank evidence before
+calling the shared endpoint. Its period-lock action posts the
 current workflow version, selected report package, checklist-control approvals, close-package
 manifest context, ledger-book-scoped evidence, and human-operator origin to the shared
 close-management lock endpoint, rendering returned service blockers without attempting a local
@@ -324,6 +376,19 @@ or approval blockers in the browser.
 Close task sign-off rows likewise display retained approval counts, actor, notes, and evidence from
 the shared close plan; React does not decide checklist completion locally, and dependency ordering
 is enforced by the shared task sign-off endpoint.
+The setup editor exposes a retained close-task catalog before the task authoring fields, so
+operators select the task whose owner, due date, approval count/role, evidence requirement, and
+dependency ids are being edited; unknown task ids are blocked in the browser before the shared
+configuration endpoint is called. Dependency authoring also projects known predecessor candidates
+from the loaded close plan as selectable rows, keeping dependency graph edits tied to retained
+task ids while still submitting the shared close-plan configuration contract, and keyed entries in either the dependency-id text or reason text are preserved as per-edge reasons.
+The close cockpit also projects dedicated dependency-graph, sign-off-matrix, and evidence/blocker
+review rows from the loaded close plan and selected report package so operators can audit
+predecessor coverage, required approval roles, retained evidence, and service-owned validation
+blockers without re-deriving close state in React. Active blocker rows can now post a retained
+close evidence-review command with workflow, period, issue, target, ledger-book, notes, and
+close-review evidence; returned review rows are displayed beside the blocker while the underlying
+validation issue remains service-owned.
 Close-calendar rows display milestone due dates, owners, dependency counts, sign-off counts,
 evidence counts, blockers, and period-lock state returned by the shared close plan instead of
 rebuilding calendar posture from checklist rows in React.

@@ -35,6 +35,184 @@ public sealed class AccountingSystemIntegrationServiceTests
 {
     private static readonly Guid ExternalGlLedgerBookId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 
+    private static AccountingWorkflowCertificationArtifactDto BuildWorkflowCertificationArtifact(
+        Guid ledgerBookId,
+        string evidenceReference,
+        string? tenantId = null,
+        string? companyId = null,
+        string fundProfileId = "default-fund")
+        => new(
+            $"workflow-certification-{ledgerBookId:D}",
+            AccountingCertificationArtifactStatusDto.Certified,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
+            "accounting-operator",
+            DateTimeOffset.Parse("2026-01-31T00:00:00Z"),
+            "AccountingProductionReadinessServiceTests",
+            Enum.GetValues<AccountingWorkflowCertificationLaneKindDto>()
+                .Select(kind => new AccountingWorkflowCertificationLaneDto(
+                    kind,
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    [$"{evidenceReference}/{WorkflowLaneEvidenceSegment(kind)}"]))
+                .ToArray(),
+            [evidenceReference],
+            CorrelationId: $"workflow-{ledgerBookId:D}");
+
+    private static AccountingDimensionalCertificationArtifactDto BuildDimensionalCertificationArtifact(
+        Guid ledgerBookId,
+        string evidenceReference,
+        string dimensionScope = "canonical-production",
+        string? tenantId = null,
+        string? companyId = null,
+        string fundProfileId = "default-fund")
+        => new(
+            $"dimension-certification-{ledgerBookId:D}-{dimensionScope}",
+            AccountingCertificationArtifactStatusDto.Certified,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
+            dimensionScope,
+            "accounting-operator",
+            DateTimeOffset.Parse("2026-01-31T00:00:00Z"),
+            "AccountingProductionReadinessServiceTests",
+            Enum.GetValues<AccountingDimensionalCertificationLaneKindDto>()
+                .Select(kind => new AccountingDimensionalCertificationLaneDto(
+                    kind,
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    [$"{evidenceReference}/{DimensionalLaneEvidenceSegment(kind)}"]))
+                .ToArray(),
+            [evidenceReference],
+            CorrelationId: $"dimension-{ledgerBookId:D}");
+
+    private static AccountingTenantAdminCertificationArtifactDto BuildTenantAdminCertificationArtifact(
+        Guid? ledgerBookId,
+        string evidenceReference,
+        string tenantId = "tenant-alpha",
+        string companyId = "company-alpha",
+        string fundProfileId = "default-fund")
+        => new(
+            $"tenant-admin-certification-{tenantId}-{companyId}-{ledgerBookId?.ToString("D") ?? "tenant"}",
+            AccountingCertificationArtifactStatusDto.Certified,
+            tenantId,
+            companyId,
+            fundProfileId,
+            ledgerBookId,
+            "accounting-operator",
+            DateTimeOffset.Parse("2026-01-31T00:00:00Z"),
+            "AccountingProductionReadinessServiceTests",
+            Enum.GetValues<AccountingTenantAdminCertificationLaneKindDto>()
+                .Select(kind => new AccountingTenantAdminCertificationLaneDto(
+                    kind,
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    [$"{evidenceReference}/{TenantAdminLaneEvidenceSegment(kind)}"]))
+                .ToArray(),
+            [evidenceReference],
+            CorrelationId: $"tenant-admin-{tenantId}-{companyId}");
+
+    private static AccountingApprovalQueueConfigurationDto BuildTenantAdministrationApprovalQueueConfiguration()
+        => new(
+            "configuration-promotion-queue",
+            "Configuration promotion queue",
+            "ConfigurationPromotion",
+            "Controller",
+            2,
+            "Preparer cannot approve own configuration change.",
+            "approval-queue;configuration-approval;segregation-review");
+
+    private static AccountingDimensionMappingConfigurationDto BuildTenantAdministrationDimensionMappingConfiguration()
+        => new(
+            "canonical-dimension-map",
+            "Canonical dimension map",
+            "quickbooks-fixture",
+            new LedgerDimensionSetDto(FundId: "default-fund", BookId: ExternalGlLedgerBookId.ToString("D"), CustomerId: "investor-alpha"),
+            new LedgerDimensionSetDto(BookId: $"Book:{ExternalGlLedgerBookId:D}", CustomerId: "qbo-customer-alpha"),
+            "dimension-mapping;external-dimension-mapping;gl-dimension-mapping");
+
+    private static string[] BuildTenantAdministrationControlEvidence(
+        string tenantId = "company-alpha",
+        string companyId = "company-alpha")
+        =>
+        [
+            $"evidence://tenant-admin/{tenantId}/{companyId}/tenant-scope",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/admin-role",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/scoped-access",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/reporting-group",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/accounting-admin-surface",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/browser-admin-studio",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/wpf-admin-studio",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/chart-administration",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/rule-test-promotion",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/close-setup",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/provider-mapping",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/tenant-company-report-group",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/audit-review",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/bulk-import-export",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/performance-validation",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/disaster-recovery",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/ledger-book-administration",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/posting-rule-authoring",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/approval-queue",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/dimension-mapping",
+            $"evidence://tenant-admin/{tenantId}/{companyId}/implementation-sandbox"
+        ];
+
+    private static string WorkflowLaneEvidenceSegment(AccountingWorkflowCertificationLaneKindDto kind)
+        => kind switch
+        {
+            AccountingWorkflowCertificationLaneKindDto.PostingRules => "posting-rules",
+            AccountingWorkflowCertificationLaneKindDto.JournalLifecycle => "journal-lifecycle",
+            AccountingWorkflowCertificationLaneKindDto.CloseReporting => "close-reporting",
+            AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration => "close-plan-configuration",
+            AccountingWorkflowCertificationLaneKindDto.ExternalGl => "external-gl",
+            AccountingWorkflowCertificationLaneKindDto.Reconciliation => "reconciliation",
+            AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection => "direct-lending",
+            AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads => "strategy-ledger",
+            _ => kind.ToString()
+        };
+
+    private static string DimensionalLaneEvidenceSegment(AccountingDimensionalCertificationLaneKindDto kind)
+        => kind switch
+        {
+            AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence => "ledger-line",
+            AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters => "trial-balance-filter",
+            AccountingDimensionalCertificationLaneKindDto.PeriodReports => "period-report",
+            AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports => "cross-period",
+            AccountingDimensionalCertificationLaneKindDto.JournalFilters => "journal-query",
+            AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance => "report-package-provenance",
+            AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings => "external-export",
+            _ => kind.ToString()
+        };
+
+    private static string TenantAdminLaneEvidenceSegment(AccountingTenantAdminCertificationLaneKindDto kind)
+        => kind switch
+        {
+            AccountingTenantAdminCertificationLaneKindDto.TenantScope => "tenant-scope",
+            AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile => "admin-role",
+            AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies => "scoped-access",
+            AccountingTenantAdminCertificationLaneKindDto.ReportingGroups => "reporting-group",
+            AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface => "accounting-admin-surface",
+            AccountingTenantAdminCertificationLaneKindDto.BrowserAccountingAdminSurface => "browser-accounting-admin",
+            AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface => "wpf-admin-studio",
+            AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio => "chart-administration",
+            AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio => "rule-test-promotion",
+            AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio => "close-setup",
+            AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio => "provider-mapping",
+            AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio => "tenant-company-report-group",
+            AccountingTenantAdminCertificationLaneKindDto.AuditReviewTooling => "audit-review",
+            AccountingTenantAdminCertificationLaneKindDto.BulkImportExportSafeguards => "bulk-import-export",
+            AccountingTenantAdminCertificationLaneKindDto.PerformanceValidation => "performance-validation",
+            AccountingTenantAdminCertificationLaneKindDto.DisasterRecoveryRunbook => "disaster-recovery",
+            AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio => "ledger-book-administration",
+            AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio => "posting-rule-authoring",
+            AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio => "approval-queue",
+            AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio => "dimension-mapping",
+            AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox => "implementation-sandbox",
+            _ => kind.ToString()
+        };
+
     [Fact]
     public async Task ImportAsync_WithQuickBooksFixture_ReturnsReadOnlyExternalGlEvidence()
     {
@@ -464,20 +642,12 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification") &&
             component.Issues.Any(issue => issue.Code == "external-gl.ledger-book-native-evidence-missing"));
 
-        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/workflow-certification/full";
+        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/workflow-certification/artifact";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
-                PostingRulesLedgerBookNativeCertified: true,
-                JournalLifecycleLedgerBookNativeCertified: true,
-                CloseReportingLedgerBookNativeCertified: true,
-                ExternalGlLedgerBookNativeCertified: true,
-                ReconciliationLedgerBookNativeCertified: true,
-                DirectLendingLedgerBookNativeCertified: true,
-                StrategyLedgerReadLedgerBookNativeCertified: true,
-                ClosePlanConfigurationLedgerBookNativeCertified: true,
-                LedgerBookWorkflowEvidenceLinks: [certifiedEvidence]));
+                WorkflowCertificationArtifacts: [BuildWorkflowCertificationArtifact(ledgerBookId, certifiedEvidence)]));
 
         certified.LedgerBookWorkflows.Should().NotBeNull();
         certified.LedgerBookWorkflows!.CompletedControlCount.Should().Be(10);
@@ -658,13 +828,17 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         splitRolloutEvidence.DimensionalReporting.Should().NotBeNull();
-        splitRolloutEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(10);
+        splitRolloutEvidence.DimensionalReporting!.CompletedControlCount.Should().BeLessThan(10);
         splitRolloutEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.period-reports-evidence-rollout-scope-mismatch" &&
+            issue.Code == "dimensions.reporting-legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
+        splitRolloutEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         splitRolloutEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.report-package-provenance-evidence-rollout-scope-mismatch" &&
+            issue.Code == "dimensions.report-package-provenance-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         splitRolloutEvidence.Components.Should().Contain(component =>
@@ -690,32 +864,29 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         extendedRolloutTokenEvidence.DimensionalReporting.Should().NotBeNull();
-        extendedRolloutTokenEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(10);
+        extendedRolloutTokenEvidence.DimensionalReporting!.CompletedControlCount.Should().BeLessThan(10);
         extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.period-reports-evidence-rollout-scope-mismatch" &&
+            issue.Code == "dimensions.reporting-legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
+        extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.report-package-provenance-evidence-rollout-scope-mismatch" &&
+            issue.Code == "dimensions.report-package-provenance-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         extendedRolloutTokenEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
 
-        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/report-query-certification/full/dimension-scope/canonical-production";
+        var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/certification-artifact/dimension-scope/canonical-production";
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
-                PeriodReportDimensionQueriesCertified: true,
-                CrossPeriodReportDimensionQueriesCertified: true,
-                JournalQueryDimensionFiltersCertified: true,
-                ExternalExportDimensionMappingCertified: true,
-                LedgerLineDimensionsPersistedCertified: true,
-                TrialBalanceDimensionFiltersCertified: true,
-                ReportPackageDimensionProvenanceCertified: true,
-                DimensionalReportingEvidenceLinks: [certifiedEvidence]));
+                DimensionalCertificationArtifacts: [BuildDimensionalCertificationArtifact(ledgerBookId, certifiedEvidence)]));
 
         certified.DimensionalReporting.Should().NotBeNull();
         certified.DimensionalReporting!.CompletedControlCount.Should().Be(10);
@@ -933,37 +1104,13 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Code == "tenant-admin.implementation-sandbox-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
 
+        var tenantAdminEvidence = "evidence://tenant-admin/tenant-alpha/company-alpha/certification-artifact";
         var readyControls = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
                 TenantId: "tenant-alpha",
                 CompanyId: "company-alpha",
-                TenantScopeConfigured: true,
-                AdminRoleProfileConfigured: true,
-                ScopedAccessPoliciesConfigured: true,
-                ReportingGroupsConfigured: true,
-                AccountingAdminSurfaceConfigured: true,
-                BrowserAccountingAdminSurfaceConfigured: true,
-                WpfAccountingAdminSurfaceConfigured: true,
-                ChartAdministrationStudioConfigured: true,
-                RuleTestPromotionStudioConfigured: true,
-                CloseSetupStudioConfigured: true,
-                ProviderMappingStudioConfigured: true,
-                TenantCompanyReportGroupSetupStudioConfigured: true,
-                AuditReviewToolingConfigured: true,
-                BulkImportExportSafeguardsConfigured: true,
-                PerformanceValidationConfigured: true,
-                DisasterRecoveryRunbookConfigured: true,
-                LedgerBookAdministrationStudioConfigured: true,
-                PostingRuleAuthoringStudioConfigured: true,
-                ApprovalQueueStudioConfigured: true,
-                DimensionMappingStudioConfigured: true,
-                ImplementationSandboxConfigured: true,
-                TenantAdministrationEvidenceLinks:
-                [
-                    "evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full",
-                    "approval:tenant-admin:tenant-alpha:company-alpha"
-                ]));
+                TenantAdminCertificationArtifacts: [BuildTenantAdminCertificationArtifact(null, tenantAdminEvidence)]));
 
         readyControls.TenantAdministration.Should().NotBeNull();
         readyControls.TenantAdministration!.TenantId.Should().Be("tenant-alpha");
@@ -976,7 +1123,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         readyControls.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             component.Status == AccountingProductionReadinessStatusDto.Ready &&
-            component.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"));
+            component.EvidenceReferences.Contains(tenantAdminEvidence));
     }
 
     [Fact]
@@ -1256,6 +1403,30 @@ public sealed class AccountingSystemIntegrationServiceTests
         services.AddSingleton<AccountingProductionReadinessService>();
         await using var provider = services.BuildServiceProvider();
         var store = provider.GetRequiredService<IAccountingTenantAdministrationProfileStore>();
+        var tenantAdminEvidence = new[]
+        {
+            "evidence://tenant-admin/tenant-alpha/company-alpha/tenant-scope",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/admin-role",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/scoped-access",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/reporting-group",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/accounting-admin-surface",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/browser-admin-studio",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/wpf-admin-studio",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/chart-administration",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/rule-test-promotion",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/close-setup",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/provider-mapping",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/tenant-company-report-group",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/audit-review",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/bulk-import-export",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/performance-validation",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/disaster-recovery",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/posting-rule-authoring",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/approval-queue",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/dimension-mapping",
+            "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-sandbox"
+        };
 
         await store.UpsertAsync(new AccountingTenantAdministrationProfileUpsertRequestDto(
             new AccountingTenantAdministrationProfileDto(
@@ -1282,9 +1453,25 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ApprovalQueueStudioConfigured: true,
                 DimensionMappingStudioConfigured: true,
                 ImplementationSandboxConfigured: true,
+                ApprovalQueueConfigurations:
+                [
+                    BuildTenantAdministrationApprovalQueueConfiguration() with
+                    {
+                        QueueId = " configuration-promotion-queue ",
+                        DisplayName = " Configuration promotion queue ",
+                        WorkflowKind = " ConfigurationPromotion ",
+                        RequiredApprovalRole = " Controller ",
+                        SegregationPolicy = " Preparer cannot approve own configuration change. ",
+                        EvidenceRequirement = " approval-queue;configuration-approval;segregation-review "
+                    }
+                ],
+                DimensionMappingConfigurations:
+                [
+                    BuildTenantAdministrationDimensionMappingConfiguration()
+                ],
                 UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                 UpdatedBy: "controller",
-                EvidenceReferences: ["evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"]),
+                EvidenceReferences: tenantAdminEvidence),
             "controller",
             CorrelationId: "tenant-admin-tenant-alpha",
             EvidenceLinks: ["approval:tenant-admin:tenant-alpha:company-alpha"]));
@@ -1298,9 +1485,19 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.TenantAdministration.Should().NotBeNull();
         readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
         readiness.TenantAdministration.HasTenantCompanyScopedEvidence.Should().BeTrue();
-        readiness.TenantAdministration.EvidenceReferences.Should().Contain("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full");
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain(tenantAdminEvidence);
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("approval:tenant-admin:tenant-alpha:company-alpha");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("correlation:tenant-admin-tenant-alpha");
+        var retainedProfile = await store.GetAsync("tenant-alpha", "company-alpha");
+        retainedProfile.Should().NotBeNull();
+        retainedProfile!.ApprovalQueueConfigurations.Should().ContainSingle(queue =>
+            queue.QueueId == "configuration-promotion-queue" &&
+            queue.DisplayName == "Configuration promotion queue" &&
+            queue.WorkflowKind == "ConfigurationPromotion" &&
+            queue.RequiredApprovalRole == "Controller" &&
+            queue.RequiredApprovalCount == 2 &&
+            queue.SegregationPolicy == "Preparer cannot approve own configuration change." &&
+            queue.EvidenceRequirement == "approval-queue;configuration-approval;segregation-review");
         readiness.Issues.Should().NotContain(issue => issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
@@ -4974,9 +5171,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ApprovalQueueStudioConfigured: true,
                     DimensionMappingStudioConfigured: true,
                     ImplementationSandboxConfigured: true,
+                    ApprovalQueueConfigurations: [BuildTenantAdministrationApprovalQueueConfiguration()],
+                    DimensionMappingConfigurations: [BuildTenantAdministrationDimensionMappingConfiguration()],
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "spoofed-profile-updater",
-                    EvidenceReferences: ["evidence://tenant-admin/company-alpha/tenant-admin/full"]),
+                    EvidenceReferences: BuildTenantAdministrationControlEvidence()),
                 "spoofed-browser-user",
                 CorrelationId: "tenant-admin-company-alpha",
                 EvidenceLinks: ["approval:tenant-admin:company-alpha"])));
@@ -5041,6 +5240,8 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ApprovalQueueStudioConfigured: true,
                     DimensionMappingStudioConfigured: true,
                     ImplementationSandboxConfigured: true,
+                    ApprovalQueueConfigurations: [BuildTenantAdministrationApprovalQueueConfiguration()],
+                    DimensionMappingConfigurations: [BuildTenantAdministrationDimensionMappingConfiguration()],
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "spoofed-profile-updater",
                     EvidenceReferences: ["evidence://tenant-admin/company-alpha/tenant-admin/full"]),
@@ -5094,6 +5295,80 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task AccountingSystemTenantAdministrationProfileEndpoint_BlocksConfiguredStudiosWithoutPayloads()
+    {
+        await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        var upsertResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemTenantAdministrationProfile,
+            JsonContent(new AccountingTenantAdministrationProfileUpsertRequestDto(
+                new AccountingTenantAdministrationProfileDto(
+                    "company-alpha",
+                    "company-alpha",
+                    TenantScopeConfigured: true,
+                    AdminRoleProfileConfigured: true,
+                    ScopedAccessPoliciesConfigured: true,
+                    ReportingGroupsConfigured: true,
+                    AccountingAdminSurfaceConfigured: true,
+                    ApprovalQueueStudioConfigured: true,
+                    DimensionMappingStudioConfigured: true,
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller.admin",
+                    EvidenceReferences:
+                    [
+                        "evidence://tenant-admin/company-alpha/company-alpha/tenant-scope",
+                        "evidence://tenant-admin/company-alpha/company-alpha/admin-role",
+                        "evidence://tenant-admin/company-alpha/company-alpha/scoped-access",
+                        "evidence://tenant-admin/company-alpha/company-alpha/reporting-group",
+                        "evidence://tenant-admin/company-alpha/company-alpha/accounting-admin-surface",
+                        "evidence://tenant-admin/company-alpha/company-alpha/approval-queue",
+                        "evidence://tenant-admin/company-alpha/company-alpha/dimension-mapping"
+                    ]),
+                "controller.admin",
+                CorrelationId: "tenant-admin-missing-payloads",
+                EvidenceLinks: ["approval:tenant-admin:company-alpha"])));
+
+        upsertResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await upsertResponse.Content.ReadAsStringAsync();
+        body.Should().Contain("approval queue studio configuration");
+
+        var dimensionPayloadResponse = await client.PostAsync(
+            UiApiRoutes.AccountingSystemTenantAdministrationProfile,
+            JsonContent(new AccountingTenantAdministrationProfileUpsertRequestDto(
+                new AccountingTenantAdministrationProfileDto(
+                    "company-alpha",
+                    "company-alpha",
+                    TenantScopeConfigured: true,
+                    AdminRoleProfileConfigured: true,
+                    ScopedAccessPoliciesConfigured: true,
+                    ReportingGroupsConfigured: true,
+                    AccountingAdminSurfaceConfigured: true,
+                    ApprovalQueueStudioConfigured: true,
+                    DimensionMappingStudioConfigured: true,
+                    ApprovalQueueConfigurations: [BuildTenantAdministrationApprovalQueueConfiguration()],
+                    UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    UpdatedBy: "controller.admin",
+                    EvidenceReferences:
+                    [
+                        "evidence://tenant-admin/company-alpha/company-alpha/tenant-scope",
+                        "evidence://tenant-admin/company-alpha/company-alpha/admin-role",
+                        "evidence://tenant-admin/company-alpha/company-alpha/scoped-access",
+                        "evidence://tenant-admin/company-alpha/company-alpha/reporting-group",
+                        "evidence://tenant-admin/company-alpha/company-alpha/accounting-admin-surface",
+                        "evidence://tenant-admin/company-alpha/company-alpha/approval-queue",
+                        "evidence://tenant-admin/company-alpha/company-alpha/dimension-mapping"
+                    ]),
+                "controller.admin",
+                CorrelationId: "tenant-admin-missing-dimension-payload",
+                EvidenceLinks: ["approval:tenant-admin:company-alpha"])));
+
+        dimensionPayloadResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var dimensionBody = await dimensionPayloadResponse.Content.ReadAsStringAsync();
+        dimensionBody.Should().Contain("dimension mapping studio configuration");
+    }
+
+    [Fact]
     public async Task AccountingSystemTenantAdministrationProfileEndpoint_RejectsMismatchedTenantEvidence()
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
@@ -5126,6 +5401,8 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ApprovalQueueStudioConfigured: true,
                     DimensionMappingStudioConfigured: true,
                     ImplementationSandboxConfigured: true,
+                    ApprovalQueueConfigurations: [BuildTenantAdministrationApprovalQueueConfiguration()],
+                    DimensionMappingConfigurations: [BuildTenantAdministrationDimensionMappingConfiguration()],
                     UpdatedAtUtc: DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
                     UpdatedBy: "spoofed-profile-updater",
                     EvidenceReferences: ["evidence://tenant-admin/tenant-spoof/setup-certified"]),

@@ -2694,6 +2694,9 @@ export interface AccountingSystemMappingProfileUpsertRequest {
   ledgerBookId?: string | null;
   correlationId?: string | null;
   evidenceLinks?: string[];
+  tenantId?: string | null;
+  companyId?: string | null;
+  actionOrigin?: string | null;
 }
 
 export interface AccountingSystemExportPackageRequest {
@@ -2905,6 +2908,27 @@ export interface SignOffCloseTaskRequest {
   correlationId?: string | null;
 }
 
+export interface CloseEvidenceReview {
+  reviewId: string;
+  issueCode: string;
+  targetId?: string | null;
+  reviewedBy: string;
+  reviewedAtUtc: string;
+  notes: string;
+  evidenceLinks: string[];
+}
+
+export interface ReviewCloseEvidenceRequest {
+  workflowId: string;
+  issueCode: string;
+  targetId?: string | null;
+  actor: string;
+  notes: string;
+  evidenceLinks?: string[];
+  correlationId?: string | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
 export interface CloseTaskConfiguration {
   taskId: string;
   displayName?: string | null;
@@ -2914,6 +2938,28 @@ export interface CloseTaskConfiguration {
   requiredApprovalRole?: string | null;
   requiredEvidence?: string | null;
   dependsOnTaskIds?: string[] | null;
+  dependencyConfigurations?: CloseTaskDependencyConfiguration[] | null;
+  signOffRequirementConfigurations?: CloseTaskSignOffRequirementConfiguration[] | null;
+}
+
+export interface CloseTaskDependencyConfiguration {
+  dependsOnTaskId: string;
+  reason?: string | null;
+}
+
+export interface CloseTaskSignOffRequirementConfiguration {
+  role: string;
+  requiredApprovalCount: number;
+  evidenceRequirement?: string | null;
+}
+
+export interface ClosePeriodPlanConfiguration {
+  workflowId: string;
+  materialityPolicy: MaterialityPolicy;
+  taskConfigurations?: CloseTaskConfiguration[] | null;
+  configuredBy?: string | null;
+  configuredAtUtc?: string | null;
+  evidenceLinks?: string[] | null;
 }
 
 export interface UpsertClosePeriodPlanConfigurationRequest {
@@ -2924,6 +2970,7 @@ export interface UpsertClosePeriodPlanConfigurationRequest {
   evidenceLinks?: string[] | null;
   correlationId?: string | null;
   actionOrigin?: OperationsActionOrigin | null;
+  expectedConfiguredAtUtc?: string | null;
 }
 
 export interface LockClosePeriodRequest {
@@ -2948,6 +2995,17 @@ export interface ClosePeriodLockResult {
   issues: AccountingConfigurationValidationIssue[];
 }
 
+export interface CloseOperatingCoverageItem {
+  controlId: string;
+  label: string;
+  state: AccountingReadinessState;
+  evidenceCount: number;
+  blockingIssueCount: number;
+  requiredAction: string;
+  evidenceLinks?: string[] | null;
+  blockingIssues?: AccountingConfigurationValidationIssue[] | null;
+}
+
 export interface ClosePeriodPlan {
   closePlanId: string;
   fundProfileId: string;
@@ -2962,6 +3020,9 @@ export interface ClosePeriodPlan {
   materialityPolicy: MaterialityPolicy;
   validationIssues: AccountingConfigurationValidationIssue[];
   closeCalendar?: CloseCalendarMilestone[] | null;
+  configuration?: ClosePeriodPlanConfiguration | null;
+  evidenceReviews?: CloseEvidenceReview[] | null;
+  operatingCoverage?: CloseOperatingCoverageItem[] | null;
 }
 
 export interface ReportCertification {
@@ -5994,10 +6055,31 @@ export interface AccountingTenantAdministrationProfile {
   approvalQueueStudioConfigured?: boolean;
   dimensionMappingStudioConfigured?: boolean;
   implementationSandboxConfigured?: boolean;
+  approvalQueueConfigurations?: AccountingApprovalQueueConfiguration[] | null;
+  dimensionMappingConfigurations?: AccountingDimensionMappingConfiguration[] | null;
   updatedAtUtc: string;
   updatedBy: string;
   evidenceReferences: string[];
   correlationId?: string | null;
+}
+
+export interface AccountingApprovalQueueConfiguration {
+  queueId: string;
+  displayName: string;
+  workflowKind: string;
+  requiredApprovalRole: string;
+  requiredApprovalCount: number;
+  segregationPolicy: string;
+  evidenceRequirement: string;
+}
+
+export interface AccountingDimensionMappingConfiguration {
+  mappingId: string;
+  displayName: string;
+  providerId: string;
+  meridianDimensions: LedgerDimensionSet;
+  providerDimensions: LedgerDimensionSet;
+  evidenceRequirement: string;
 }
 
 export interface AccountingTenantAdministrationProfileUpsertRequest {
@@ -6031,6 +6113,9 @@ export interface AccountingProductionCertificationProfile {
   updatedBy: string;
   evidenceReferences: string[];
   correlationId?: string | null;
+  workflowCertificationArtifacts?: AccountingWorkflowCertificationArtifact[];
+  dimensionalCertificationArtifacts?: AccountingDimensionalCertificationArtifact[];
+  tenantAdminCertificationArtifacts?: AccountingTenantAdminCertificationArtifact[];
 }
 
 export interface AccountingProductionCertificationProfileUpsertRequest {
@@ -6038,6 +6123,138 @@ export interface AccountingProductionCertificationProfileUpsertRequest {
   actor: string;
   correlationId?: string | null;
   evidenceLinks?: string[] | null;
+}
+
+export type AccountingCertificationArtifactStatus =
+  | "Draft"
+  | "Certified"
+  | "Rejected"
+  | "Superseded";
+
+export type AccountingCertificationArtifactLaneStatus =
+  | "NotTested"
+  | "Passed"
+  | "Warning"
+  | "Failed";
+
+export type AccountingWorkflowCertificationLaneKind =
+  | "PostingRules"
+  | "JournalLifecycle"
+  | "CloseReporting"
+  | "ClosePlanConfiguration"
+  | "ExternalGl"
+  | "Reconciliation"
+  | "DirectLendingProjection"
+  | "StrategyLedgerReads";
+
+export type AccountingDimensionalCertificationLaneKind =
+  | "LedgerLinePersistence"
+  | "TrialBalanceFilters"
+  | "PeriodReports"
+  | "CrossPeriodReports"
+  | "JournalFilters"
+  | "ReportPackageProvenance"
+  | "ExternalExportMappings";
+
+export type AccountingTenantAdminCertificationLaneKind =
+  | "TenantScope"
+  | "AdminRoleProfile"
+  | "ScopedAccessPolicies"
+  | "ReportingGroups"
+  | "AccountingAdminSurface"
+  | "BrowserAccountingAdminSurface"
+  | "WpfAccountingAdminSurface"
+  | "ChartAdministrationStudio"
+  | "RuleTestPromotionStudio"
+  | "CloseSetupStudio"
+  | "ProviderMappingStudio"
+  | "TenantCompanyReportGroupSetupStudio"
+  | "AuditReviewTooling"
+  | "BulkImportExportSafeguards"
+  | "PerformanceValidation"
+  | "DisasterRecoveryRunbook"
+  | "LedgerBookAdministrationStudio"
+  | "PostingRuleAuthoringStudio"
+  | "ApprovalQueueStudio"
+  | "DimensionMappingStudio"
+  | "ImplementationSandbox";
+
+export interface AccountingCertificationArtifactIssue {
+  code: string;
+  severity: AccountingConfigurationValidationSeverity;
+  message: string;
+  suggestedAction: string;
+  evidenceReferences?: string[] | null;
+}
+
+export interface AccountingWorkflowCertificationLane {
+  kind: AccountingWorkflowCertificationLaneKind;
+  status: AccountingCertificationArtifactLaneStatus;
+  evidenceReferences?: string[] | null;
+  issues?: AccountingCertificationArtifactIssue[] | null;
+}
+
+export interface AccountingDimensionalCertificationLane {
+  kind: AccountingDimensionalCertificationLaneKind;
+  status: AccountingCertificationArtifactLaneStatus;
+  evidenceReferences?: string[] | null;
+  issues?: AccountingCertificationArtifactIssue[] | null;
+}
+
+export interface AccountingTenantAdminCertificationLane {
+  kind: AccountingTenantAdminCertificationLaneKind;
+  status: AccountingCertificationArtifactLaneStatus;
+  evidenceReferences?: string[] | null;
+  issues?: AccountingCertificationArtifactIssue[] | null;
+}
+
+export interface AccountingWorkflowCertificationArtifact {
+  certificationId: string;
+  status: AccountingCertificationArtifactStatus;
+  tenantId?: string | null;
+  companyId?: string | null;
+  fundProfileId: string;
+  ledgerBookId: string;
+  certifiedBy: string;
+  certifiedAtUtc: string;
+  sourceService: string;
+  lanes?: AccountingWorkflowCertificationLane[] | null;
+  evidenceReferences?: string[] | null;
+  issues?: AccountingCertificationArtifactIssue[] | null;
+  correlationId?: string | null;
+}
+
+export interface AccountingDimensionalCertificationArtifact {
+  certificationId: string;
+  status: AccountingCertificationArtifactStatus;
+  tenantId?: string | null;
+  companyId?: string | null;
+  fundProfileId: string;
+  ledgerBookId: string;
+  dimensionScopeEvidenceKey: string;
+  certifiedBy: string;
+  certifiedAtUtc: string;
+  sourceService: string;
+  lanes?: AccountingDimensionalCertificationLane[] | null;
+  evidenceReferences?: string[] | null;
+  issues?: AccountingCertificationArtifactIssue[] | null;
+  correlationId?: string | null;
+}
+
+export interface AccountingTenantAdminCertificationArtifact {
+  certificationId: string;
+  status: AccountingCertificationArtifactStatus;
+  tenantId: string;
+  companyId: string;
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  certifiedBy: string;
+  certifiedAtUtc: string;
+  sourceService: string;
+  lanes?: AccountingTenantAdminCertificationLane[] | null;
+  evidenceReferences?: string[] | null;
+  issues?: AccountingCertificationArtifactIssue[] | null;
+  correlationId?: string | null;
 }
 
 export interface AccountingProductionReadiness {
@@ -6059,6 +6276,9 @@ export interface AccountingProductionReadiness {
   migrationRolloutPlan?: AccountingMigrationRolloutPlanItem[];
   tenantAdministration?: AccountingTenantAdministrationReadiness | null;
   productionGaps?: AccountingProductionGap[];
+  workflowCertificationArtifacts?: AccountingWorkflowCertificationArtifact[];
+  dimensionalCertificationArtifacts?: AccountingDimensionalCertificationArtifact[];
+  tenantAdminCertificationArtifacts?: AccountingTenantAdminCertificationArtifact[];
   criticalIssueCount: number;
   warningIssueCount: number;
 }
@@ -7375,6 +7595,7 @@ export interface UpsertChartOfAccountsNodeRequest {
   actor: string;
   correlationId?: string | null;
   evidenceLinks?: string[] | null;
+  ledgerBookId?: string | null;
   companyId?: string | null;
   reportGroupPrincipalIds?: string[] | null;
 }
@@ -9423,6 +9644,73 @@ export interface InstrumentPassportOperationsHandoff {
   isEnabled: boolean;
 }
 
+export interface SecurityMasterOperatingModelStage {
+  stageId: string;
+  title: string;
+  status: string;
+  summary: string;
+  evidenceCount: number;
+  blockingIssueCount: number;
+}
+
+export interface SecurityMasterEntitlementApplicability {
+  entitlementId: string;
+  vendorName: string;
+  dataType: string;
+  scope: string;
+  clientId?: string | null;
+  accountId?: string | null;
+  fundProfileId?: string | null;
+  securityId?: string | null;
+  isApplicable: boolean;
+  isMostSpecific: boolean;
+  status: string;
+  requiresDirectClientContract: boolean;
+  contractReference?: string | null;
+  summary: string;
+}
+
+export interface SecurityMasterOperatorMetadata {
+  metadataId: string;
+  vendorName: string;
+  dataType: string;
+  sourceCategory: string;
+  expectedRefreshCadence: string;
+  defaultMaxDaysStale?: number | null;
+  requiresDirectClientContract: boolean;
+  operatorMetadata?: string | null;
+  summary: string;
+}
+
+export interface SecurityMasterManualChangeApprovalPosture {
+  policyKey: string;
+  gate: string;
+  route: string;
+  requiredPermission: string;
+  requiredDistinctApprovals: number;
+  requiresIndependentReviewer: boolean;
+  evidenceRequirement: string;
+  status: string;
+  manualChangeCount: number;
+  unapprovedManualChangeCount: number;
+  summary: string;
+}
+
+export interface SecurityMasterOperatingModel {
+  securityId: string;
+  clientId?: string | null;
+  accountId?: string | null;
+  fundProfileId?: string | null;
+  status: string;
+  summary: string;
+  stages: SecurityMasterOperatingModelStage[];
+  entitlementApplicability: SecurityMasterEntitlementApplicability[];
+  operatorMetadata: SecurityMasterOperatorMetadata[];
+  manualChangeApproval: SecurityMasterManualChangeApprovalPosture;
+  controls: InstrumentPassportReferenceDataWorkbenchSection[];
+  retrievedAtUtc: string;
+}
+
 export interface InstrumentPassportReferenceDataWorkbench {
   status: string;
   summary: string;
@@ -9455,6 +9743,7 @@ export interface InstrumentPassport {
   retrievedAtUtc: string;
   providerConfidence: InstrumentPassportProviderConfidence[];
   referenceDataWorkbench?: InstrumentPassportReferenceDataWorkbench | null;
+  operatingModel?: SecurityMasterOperatingModel | null;
 }
 
 export interface SessionStatsDto {

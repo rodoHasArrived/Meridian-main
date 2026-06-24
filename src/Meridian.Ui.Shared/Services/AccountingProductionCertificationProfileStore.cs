@@ -142,6 +142,7 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             .Select(static item => item!.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        EnsureCertificationArtifacts(request.Profile, tenantId, companyId, fundProfileId);
         EnsureRolloutScopedEvidence(request.Profile, tenantId, companyId, fundProfileId, evidence);
 
         return request.Profile with
@@ -157,6 +158,103 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
                 : request.CorrelationId.Trim()
         };
     }
+
+    private static void EnsureCertificationArtifacts(
+        AccountingProductionCertificationProfileDto profile,
+        string tenantId,
+        string companyId,
+        string fundProfileId)
+    {
+        foreach (var artifact in profile.WorkflowCertificationArtifacts.Where(static artifact => artifact.Status == AccountingCertificationArtifactStatusDto.Certified))
+        {
+            EnsureArtifactText(artifact.CertificationId, "workflow certification id");
+            EnsureArtifactText(artifact.CertifiedBy, "workflow certified-by");
+            EnsureArtifactText(artifact.SourceService, "workflow source service");
+            if (artifact.CertifiedAtUtc == default)
+            {
+                throw new ArgumentException("Accounting workflow certification artifact certified-at timestamp is required.");
+            }
+
+            if (artifact.LedgerBookId == Guid.Empty ||
+                profile.LedgerBookId.HasValue && artifact.LedgerBookId != profile.LedgerBookId.Value ||
+                !string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) ||
+                !ArtifactScopeMatches(artifact.TenantId, tenantId) ||
+                !ArtifactScopeMatches(artifact.CompanyId, companyId))
+            {
+                throw new ArgumentException("Accounting workflow certification artifact scope must match the selected tenant, company, fund profile, and ledger book.");
+            }
+
+            if (artifact.Lanes.Count == 0 || artifact.Lanes.Any(static lane => lane.Status != AccountingCertificationArtifactLaneStatusDto.Passed))
+            {
+                throw new ArgumentException("Certified accounting workflow artifacts must include passed lane results.");
+            }
+        }
+
+        foreach (var artifact in profile.DimensionalCertificationArtifacts.Where(static artifact => artifact.Status == AccountingCertificationArtifactStatusDto.Certified))
+        {
+            EnsureArtifactText(artifact.CertificationId, "dimensional certification id");
+            EnsureArtifactText(artifact.CertifiedBy, "dimensional certified-by");
+            EnsureArtifactText(artifact.SourceService, "dimensional source service");
+            EnsureArtifactText(artifact.DimensionScopeEvidenceKey, "dimensional scope evidence key");
+            if (artifact.CertifiedAtUtc == default)
+            {
+                throw new ArgumentException("Accounting dimensional certification artifact certified-at timestamp is required.");
+            }
+
+            if (artifact.LedgerBookId == Guid.Empty ||
+                profile.LedgerBookId.HasValue && artifact.LedgerBookId != profile.LedgerBookId.Value ||
+                !string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) ||
+                !ArtifactScopeMatches(artifact.TenantId, tenantId) ||
+                !ArtifactScopeMatches(artifact.CompanyId, companyId))
+            {
+                throw new ArgumentException("Accounting dimensional certification artifact scope must match the selected tenant, company, fund profile, and ledger book.");
+            }
+
+            if (artifact.Lanes.Count == 0 || artifact.Lanes.Any(static lane => lane.Status != AccountingCertificationArtifactLaneStatusDto.Passed))
+            {
+                throw new ArgumentException("Certified accounting dimensional artifacts must include passed lane results.");
+            }
+        }
+
+        foreach (var artifact in profile.TenantAdminCertificationArtifacts.Where(static artifact => artifact.Status == AccountingCertificationArtifactStatusDto.Certified))
+        {
+            EnsureArtifactText(artifact.CertificationId, "tenant administration certification id");
+            EnsureArtifactText(artifact.CertifiedBy, "tenant administration certified-by");
+            EnsureArtifactText(artifact.SourceService, "tenant administration source service");
+            if (artifact.CertifiedAtUtc == default)
+            {
+                throw new ArgumentException("Accounting tenant administration certification artifact certified-at timestamp is required.");
+            }
+
+            if (!string.Equals(NormalizeFundProfileId(artifact.FundProfileId), fundProfileId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(TrimOrNull(artifact.TenantId), tenantId, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(TrimOrNull(artifact.CompanyId), companyId, StringComparison.OrdinalIgnoreCase) ||
+                profile.LedgerBookId.HasValue && artifact.LedgerBookId != profile.LedgerBookId.Value)
+            {
+                throw new ArgumentException("Accounting tenant administration certification artifact scope must match the selected tenant, company, fund profile, and ledger book.");
+            }
+
+            if (artifact.Lanes.Count == 0 || artifact.Lanes.Any(static lane => lane.Status != AccountingCertificationArtifactLaneStatusDto.Passed))
+            {
+                throw new ArgumentException("Certified accounting tenant administration artifacts must include passed lane results.");
+            }
+        }
+    }
+
+    private static void EnsureArtifactText(string? value, string label)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException($"Accounting production certification artifact {label} is required.");
+        }
+    }
+
+    private static bool ArtifactScopeMatches(string? artifactScope, string requiredScope)
+        => string.IsNullOrWhiteSpace(artifactScope) ||
+           string.Equals(TrimOrNull(artifactScope), requiredScope, StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeFundProfileId(string? value)
+        => TrimOrNull(value) ?? "default-fund";
 
     internal static string BuildKey(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId)
     {

@@ -62,6 +62,122 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_ConfigurationRetainsDependencyReason()
+    {
+        var workflowId = Guid.Parse("23232323-2323-2323-2323-232323232323");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Pending",
+                secondTaskStatus: "Pending"));
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var plan = await service.ConfigurePeriodPlanAsync(
+            new UpsertClosePeriodPlanConfigurationRequestDto(
+                workflowId,
+                MaterialityPolicy: new MaterialityPolicyDto(
+                    "close-materiality-2026-03",
+                    AmountThreshold: 25_000m,
+                    PercentThreshold: 0.02m,
+                    Currency: "usd",
+                    ReviewRole: "CFO",
+                    RequiresLateAdjustmentApproval: true),
+                TaskConfigurations:
+                [
+                    new CloseTaskConfigurationDto(
+                        "report-certification",
+                        DependsOnTaskIds: ["reconciliation-review"],
+                        DependencyConfigurations:
+                        [
+                            new CloseTaskDependencyConfigurationDto(
+                                "reconciliation-review",
+                                "NAV package must be signed off before investor statement certification.")
+                        ])
+                ],
+                Actor: "controller-reviewer",
+                EvidenceLinks:
+                [
+                    $"evidence:close-plan:{workflowId:D}:2026-03:book:{ledgerBookId:D}:configuration-approval"
+                ]),
+            "controller-reviewer");
+
+        plan.Should().NotBeNull();
+        var dependency = plan!.Tasks
+            .Single(task => task.TaskId == "report-certification")
+            .Dependencies
+            .Should()
+            .ContainSingle(dependency => dependency.DependsOnTaskId == "reconciliation-review")
+            .Subject;
+        dependency.Reason.Should().Be("NAV package must be signed off before investor statement certification.");
+        plan.Configuration.Should().NotBeNull();
+        plan.Configuration!.TaskConfigurations.Single().DependencyConfigurations.Should().ContainSingle(config =>
+            config.DependsOnTaskId == "reconciliation-review" &&
+            config.Reason == "NAV package must be signed off before investor statement certification.");
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_ConfigurationRejectsStaleSetupVersion()
+    {
+        var workflowId = Guid.Parse("24242424-2424-2424-2424-242424242424");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Pending",
+                secondTaskStatus: "Pending"));
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var retainedPlan = await service.ConfigurePeriodPlanAsync(
+            new UpsertClosePeriodPlanConfigurationRequestDto(
+                workflowId,
+                MaterialityPolicy: new MaterialityPolicyDto(
+                    "close-materiality-2026-03",
+                    AmountThreshold: 25_000m,
+                    PercentThreshold: 0.02m,
+                    Currency: "USD",
+                    ReviewRole: "CFO",
+                    RequiresLateAdjustmentApproval: true),
+                TaskConfigurations:
+                [
+                    new CloseTaskConfigurationDto(
+                        "report-certification",
+                        RequiredApprovalCount: 2,
+                        RequiredApprovalRole: "Controller",
+                        RequiredEvidence: "Controller package sign-off evidence")
+                ],
+                Actor: "controller-reviewer",
+                EvidenceLinks:
+                [
+                    $"evidence:close-plan:{workflowId:D}:2026-03:book:{ledgerBookId:D}:configuration-approval"
+                ]),
+            "controller-reviewer");
+        retainedPlan!.Configuration.Should().NotBeNull();
+        var staleVersion = retainedPlan.Configuration!.ConfiguredAtUtc!.Value.AddTicks(-1);
+
+        var staleWrite = async () => await service.ConfigurePeriodPlanAsync(
+            new UpsertClosePeriodPlanConfigurationRequestDto(
+                workflowId,
+                MaterialityPolicy: retainedPlan.Configuration.MaterialityPolicy with { ReviewRole = "Treasurer" },
+                TaskConfigurations: retainedPlan.Configuration.TaskConfigurations,
+                Actor: "controller-reviewer",
+                EvidenceLinks:
+                [
+                    $"evidence:close-plan:{workflowId:D}:2026-03:book:{ledgerBookId:D}:configuration-approval"
+                ],
+                ExpectedConfiguredAtUtc: staleVersion),
+            "controller-reviewer");
+
+        await staleWrite.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*changed at*reload the close plan*");
+        var currentPlan = await service.GetPeriodPlanAsync(workflowId);
+        currentPlan!.Configuration!.MaterialityPolicy.ReviewRole.Should().Be("CFO");
+    }
+
+    [Fact]
     public async Task Scenario_ClosePlan_MissingRequiredSignOffBlocksPlanValidationUntilEvidenceIsRetained()
     {
         var workflowId = Guid.Parse("25252525-2525-2525-2525-252525252525");
@@ -85,6 +201,14 @@ public sealed class AccountingCloseServicesTests
             issue.Code == "CloseTaskSignOffMissing" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.TargetId == "report-certification");
+        planBeforeSignOff.OperatingCoverage.Should().ContainSingle(item =>
+            item.ControlId == "sign-off-matrix" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssueCount == 2);
+        planBeforeSignOff.OperatingCoverage.Should().ContainSingle(item =>
+            item.ControlId == "period-lock" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.BlockingIssueCount == 2);
 
         var reconciliationEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
         await service.SignOffCloseTaskAsync(
@@ -113,6 +237,177 @@ public sealed class AccountingCloseServicesTests
         planAfterSignOff!.ValidationIssues.Should().NotContain(issue => issue.Code == "CloseTaskSignOffMissing");
         planAfterSignOff.Tasks.Should().OnlyContain(task =>
             task.SignOffRequirements.All(requirement => requirement.IsSatisfied));
+        planAfterSignOff.OperatingCoverage.Should().ContainSingle(item =>
+            item.ControlId == "sign-off-matrix" &&
+            item.State == AccountingReadinessStateDto.ReadyForReview &&
+            item.EvidenceCount == 2 &&
+            item.BlockingIssueCount == 0);
+        planAfterSignOff.OperatingCoverage.Should().ContainSingle(item =>
+            item.ControlId == "period-lock" &&
+            item.State == AccountingReadinessStateDto.ReadyForReview &&
+            item.BlockingIssueCount == 0);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_ConfiguredSignOffMatrixRequiresEveryRoleBeforeValidationClears()
+    {
+        var workflowId = Guid.Parse("28282828-2828-2828-2828-282828282828");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Done",
+                secondTaskStatus: "Done"));
+        var service = new AccountingCloseManagementService(workflowService);
+
+        var configuredPlan = await service.ConfigurePeriodPlanAsync(
+            new UpsertClosePeriodPlanConfigurationRequestDto(
+                workflowId,
+                MaterialityPolicy: new MaterialityPolicyDto(
+                    "close-materiality-2026-03",
+                    AmountThreshold: 25_000m,
+                    PercentThreshold: 0.02m,
+                    Currency: "USD",
+                    ReviewRole: "CFO",
+                    RequiresLateAdjustmentApproval: true),
+                TaskConfigurations:
+                [
+                    new CloseTaskConfigurationDto(
+                        "report-certification",
+                        RequiredApprovalCount: 1,
+                        RequiredApprovalRole: "Controller",
+                        RequiredEvidence: "Controller close package evidence",
+                        SignOffRequirementConfigurations:
+                        [
+                            new CloseTaskSignOffRequirementConfigurationDto(
+                                "Controller",
+                                1,
+                                "Controller close package evidence"),
+                            new CloseTaskSignOffRequirementConfigurationDto(
+                                "CFO",
+                                1,
+                                "CFO final report package evidence")
+                        ])
+                ],
+                Actor: "controller-reviewer",
+                EvidenceLinks:
+                [
+                    $"evidence:close-plan:{workflowId:D}:2026-03:book:{ledgerBookId:D}:matrix-configuration"
+                ]),
+            "controller-reviewer");
+
+        var configuredTask = configuredPlan!.Tasks.Single(task => task.TaskId == "report-certification");
+        configuredTask.SignOffRequirements.Should().HaveCount(2);
+        configuredPlan.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "CloseTaskSignOffMissing" &&
+            issue.TargetId == "report-certification");
+
+        var controllerSignedPlan = await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained controller sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+
+        var controllerSignedTask = controllerSignedPlan!.Tasks.Single(task => task.TaskId == "report-certification");
+        controllerSignedTask.SignOffRequirements.Single(requirement => requirement.Role == "Controller").IsSatisfied.Should().BeTrue();
+        controllerSignedTask.SignOffRequirements.Single(requirement => requirement.Role == "CFO").IsSatisfied.Should().BeFalse();
+        controllerSignedPlan.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "CloseTaskSignOffMissing" &&
+            issue.TargetId == "report-certification");
+
+        var fullySignedPlan = await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "CFO",
+                ManualJournalEntryStatusDto.Approved,
+                "cfo-reviewer",
+                "Retained CFO sign-off.",
+                [$"evidence:close-task:report-certification:CFO:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "cfo-reviewer");
+
+        var fullySignedTask = fullySignedPlan!.Tasks.Single(task => task.TaskId == "report-certification");
+        fullySignedTask.SignOffRequirements.Should().OnlyContain(requirement => requirement.IsSatisfied);
+        fullySignedTask.Status.Should().Be(CloseTaskStatusDto.SignedOff);
+        fullySignedPlan.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "CloseTaskSignOffMissing" &&
+            issue.TargetId == "report-certification");
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_ReviewCloseEvidenceRetainsActiveBlockerWithoutClearingValidation()
+    {
+        var workflowId = Guid.Parse("26262626-2626-2626-2626-262626262626");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Done",
+                secondTaskStatus: "Done"));
+        var service = new AccountingCloseManagementService(workflowService);
+        var issueEvidence = $"evidence:close-review:CloseTaskSignOffMissing:reconciliation-review:{workflowId:D}:2026-03:book:{ledgerBookId:D}:blocker-review";
+
+        var reviewedPlan = await service.ReviewCloseEvidenceAsync(
+            new ReviewCloseEvidenceRequestDto(
+                workflowId,
+                "CloseTaskSignOffMissing",
+                "reconciliation-review",
+                "controller-reviewer",
+                "Controller reviewed the retained blocker evidence while sign-off remains unresolved.",
+                [issueEvidence]),
+            "controller-reviewer");
+
+        reviewedPlan.Should().NotBeNull();
+        reviewedPlan!.EvidenceReviews.Should().ContainSingle(review =>
+            review.IssueCode == "CloseTaskSignOffMissing" &&
+            review.TargetId == "reconciliation-review" &&
+            review.ReviewedBy == "controller-reviewer" &&
+            review.EvidenceLinks.Contains(issueEvidence));
+        reviewedPlan.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "CloseTaskSignOffMissing" &&
+            issue.TargetId == "reconciliation-review" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        reviewedPlan.OperatingCoverage.Should().ContainSingle(item =>
+            item.ControlId == "blocker-evidence-review" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.EvidenceCount == 1 &&
+            item.BlockingIssueCount == 1);
+    }
+
+    [Fact]
+    public async Task Scenario_ClosePlan_ReviewCloseEvidenceRejectsInactiveIssues()
+    {
+        var workflowId = Guid.Parse("27272727-2727-2727-2727-272727272727");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>())
+            .Returns(BuildCloseWorkflow(
+                workflowId,
+                firstTaskStatus: "Done",
+                secondTaskStatus: "Done"));
+        var service = new AccountingCloseManagementService(workflowService);
+        var issueEvidence = $"evidence:close-review:InactiveCloseIssue:reconciliation-review:{workflowId:D}:2026-03:book:{ledgerBookId:D}:blocker-review";
+
+        var action = async () => await service.ReviewCloseEvidenceAsync(
+            new ReviewCloseEvidenceRequestDto(
+                workflowId,
+                "InactiveCloseIssue",
+                "reconciliation-review",
+                "controller-reviewer",
+                "Controller tried to review an inactive issue.",
+                [issueEvidence]),
+            "controller-reviewer");
+
+        await action.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*is not active on workflow*");
     }
 
     [Fact]
@@ -283,6 +578,11 @@ public sealed class AccountingCloseServicesTests
             issue.Code == "LateAdjustmentRequiresApproval" &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
             issue.TargetId == pendingAdjustment.RequestId);
+        planWithPendingAdjustment.OperatingCoverage.Should().ContainSingle(item =>
+            item.ControlId == "late-adjustments" &&
+            item.State == AccountingReadinessStateDto.Blocked &&
+            item.EvidenceCount == 1 &&
+            item.BlockingIssueCount == 1);
 
         var reviewEvidence = $"evidence:late-adjustment-review:{pendingAdjustment.RequestId}:2026-03:book:{ledgerBookId:D}:approval";
         var reviewedPlan = await service.ReviewLateAdjustmentAsync(
@@ -301,6 +601,11 @@ public sealed class AccountingCloseServicesTests
         reviewedPlan.ValidationIssues.Should().NotContain(issue =>
             issue.Code == "LateAdjustmentRequiresApproval" &&
             issue.TargetId == pendingAdjustment.RequestId);
+        reviewedPlan.OperatingCoverage.Should().ContainSingle(item =>
+            item.ControlId == "late-adjustments" &&
+            item.State == AccountingReadinessStateDto.ReadyForReview &&
+            item.EvidenceCount == 2 &&
+            item.BlockingIssueCount == 0);
     }
 
     [Fact]

@@ -236,6 +236,41 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                 "Equity:LP Transfer In",
                 "Expenses:Management Fees"
             ]);
+        harness.ViewModel.ChartAccountNodeId = "wpf-management-fees";
+        harness.ViewModel.ChartAccountPath = "Expenses:Management Fees:Configured";
+        harness.ViewModel.ChartAccountName = "Configured Management Fees";
+        harness.ViewModel.ChartAccountType = "Expense";
+        harness.ViewModel.ChartAccountParentPath = "Expenses:Management Fees";
+        harness.ViewModel.ChartAccountFinancialAccountId = "gl-6100-management-fees";
+        harness.ViewModel.ChartAccountEvidenceText = "evidence://wpf/chart/management-fees";
+        harness.ViewModel.CanSaveChartAccount.Should().BeTrue();
+        harness.ViewModel.SaveChartAccountCommand.CanExecute(null).Should().BeTrue();
+
+        harness.ViewModel.ChartAccountEvidenceText = "   ";
+        harness.ViewModel.CanSaveChartAccount.Should().BeFalse();
+        harness.ViewModel.SaveChartAccountCommand.CanExecute(null).Should()
+            .BeFalse("chart authoring commands must share the retained-evidence guard");
+        harness.ViewModel.ChartAccountEvidenceText = "evidence://wpf/chart/management-fees";
+        harness.ViewModel.SaveChartAccountCommand.CanExecute(null).Should().BeTrue();
+
+        await harness.ViewModel.SaveChartAccountAsync();
+
+        harness.ViewModel.ChartAccountSetupStatusText.Should().Contain("Chart account Expenses:Management Fees:Configured saved");
+        harness.ViewModel.ChartRows.Should().Contain(row =>
+            row.Name == "Expenses:Management Fees:Configured"
+            && row.Status == "Expense"
+            && row.Detail == "Configured Management Fees"
+            && row.Evidence == "Active");
+        var retainedWorkspace = await harness.ConfigurationService.GetWorkspaceAsync(profile.FundProfileId, harness.LedgerBookService.Book.LedgerBookId);
+        retainedWorkspace.ChartOfAccounts.Should().Contain(node =>
+            node.NodeId == "wpf-management-fees"
+            && node.Path == "Expenses:Management Fees:Configured"
+            && node.ParentPath == "Expenses:Management Fees"
+            && node.FinancialAccountId == "gl-6100-management-fees");
+        retainedWorkspace.AuditTrail.Should().Contain(audit =>
+            audit.Action == "chart.upsert"
+            && audit.LedgerBookId == harness.LedgerBookService.Book.LedgerBookId
+            && audit.EvidenceLinks.Contains("evidence://wpf/chart/management-fees"));
         harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-manual-adjustment-v1");
         harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-accrued-balance-v1");
         harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-prepaid-expense-v1");
@@ -258,6 +293,49 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "manual-capital-call-policy-v1"
             && row.Detail.Contains("ManualJournalEntry.CapitalCall", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("generated line", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.PostingRuleDraftRuleId = "wpf-configured-fee-accrual-rule";
+        harness.ViewModel.PostingRuleDraftDisplayName = "WPF configured fee accrual";
+        harness.ViewModel.PostingRuleDraftSourceEventType = "ManualJournalEntry.ManagementFee";
+        harness.ViewModel.PostingRuleDraftTemplateId = "desktop-management-fee-v1";
+        harness.ViewModel.PostingRuleDraftDescription = "Retained management-fee accrual rule from desktop Configure.";
+        harness.ViewModel.PostingRuleDraftPriority = 35;
+        harness.ViewModel.PostingRuleDraftEvidenceText = "evidence://wpf/accounting/rules/management-fee-accrual";
+        harness.ViewModel.CanSavePostingRuleDraft.Should().BeTrue();
+        harness.ViewModel.SavePostingRuleDraftCommand.CanExecute(null).Should().BeTrue();
+
+        harness.ViewModel.PostingRuleDraftTemplateId = "   ";
+        harness.ViewModel.CanSavePostingRuleDraft.Should().BeFalse();
+        harness.ViewModel.SavePostingRuleDraftCommand.CanExecute(null).Should()
+            .BeFalse("posting-rule authoring commands must share the template and evidence guard");
+        harness.ViewModel.PostingRuleDraftTemplateId = "desktop-management-fee-v1";
+        harness.ViewModel.SavePostingRuleDraftCommand.CanExecute(null).Should().BeTrue();
+
+        await harness.ViewModel.SavePostingRuleDraftAsync();
+
+        harness.ViewModel.PostingRuleDraftStatusText.Should().Contain("wpf-configured-fee-accrual-rule");
+        harness.ViewModel.PostingRuleRows.Should().Contain(row =>
+            row.Name == "wpf-configured-fee-accrual-rule"
+            && row.Status == "ManualJournalEntry.ManagementFee"
+            && row.Detail == "WPF configured fee accrual"
+            && row.Evidence == "desktop-management-fee-v1");
+        harness.ViewModel.RulesStudioRuleRows.Should().Contain(row =>
+            row.Name == "wpf-configured-fee-accrual-rule"
+            && row.Detail.Contains("ManualJournalEntry.ManagementFee", StringComparison.OrdinalIgnoreCase));
+        var retainedRuleWorkspace = await harness.ConfigurationService.GetWorkspaceAsync(profile.FundProfileId, harness.LedgerBookService.Book.LedgerBookId);
+        var retainedRule = retainedRuleWorkspace.PostingRules.Should()
+            .ContainSingle(rule => rule.RuleId == "wpf-configured-fee-accrual-rule")
+            .Subject;
+        retainedRule.DisplayName.Should().Be("WPF configured fee accrual");
+        retainedRule.TemplateId.Should().Be("desktop-management-fee-v1");
+        retainedRule.Priority.Should().Be(35);
+        retainedRule.RequiresPromotionApproval.Should().BeTrue();
+        retainedRule.Scope.Should().NotBeNull();
+        retainedRule.Scope!.FundId.Should().Be(profile.FundProfileId);
+        retainedRule.Scope.BookId.Should().Be(harness.LedgerBookService.Book.LedgerBookId.ToString("D"));
+        retainedRuleWorkspace.AuditTrail.Should().Contain(audit =>
+            audit.Action == "posting-rule.upsert"
+            && audit.LedgerBookId == harness.LedgerBookService.Book.LedgerBookId
+            && audit.EvidenceLinks.Contains("evidence://wpf/accounting/rules/management-fee-accrual"));
         harness.ViewModel.RulesStudioPromotionRows.Should().NotBeNull();
         harness.ViewModel.AuditRows.Should().NotBeEmpty();
         harness.ViewModel.ManualJournalDraftRows.Should().ContainSingle(row =>
@@ -385,7 +463,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task ProductionCertificationProfile_SaveAddsScopedControlEvidence()
+    public async Task ProductionCertificationProfile_SaveRetainsOperatorScopedControlEvidence()
     {
         Directory.CreateDirectory(_root);
         var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
@@ -405,37 +483,11 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         await harness.ViewModel.LoadAsync();
         await harness.ViewModel.SeedBaselineConfigurationAsync();
 
-        harness.ViewModel.ProductionCertificationEvidenceText =
-            "evidence://controller-review/alpha-fund/production-certification-kickoff";
-        harness.ViewModel.PostingRulesLedgerBookNativeCertified = true;
-        harness.ViewModel.JournalLifecycleLedgerBookNativeCertified = true;
-        harness.ViewModel.CloseReportingLedgerBookNativeCertified = true;
-        harness.ViewModel.ExternalGlLedgerBookNativeCertified = true;
-        harness.ViewModel.ReconciliationLedgerBookNativeCertified = true;
-        harness.ViewModel.DirectLendingLedgerBookNativeCertified = true;
-        harness.ViewModel.StrategyLedgerReadLedgerBookNativeCertified = true;
-        harness.ViewModel.PeriodReportDimensionQueriesCertified = true;
-        harness.ViewModel.CrossPeriodReportDimensionQueriesCertified = true;
-        harness.ViewModel.JournalQueryDimensionFiltersCertified = true;
-        harness.ViewModel.ExternalExportDimensionMappingCertified = true;
-        harness.ViewModel.LedgerLineDimensionsPersistedCertified = true;
-        harness.ViewModel.TrialBalanceDimensionFiltersCertified = true;
-        harness.ViewModel.ReportPackageDimensionProvenanceCertified = true;
-
-        await harness.ViewModel.SaveProductionCertificationProfileAsync();
-
-        var retained = await harness.ProductionCertificationProfileStore.GetAsync(
-            "alpha-fund",
-            "Alpha Fund LP",
-            "alpha-fund",
-            harness.LedgerBookService.Book.LedgerBookId);
-        retained.Should().NotBeNull();
-        retained!.EvidenceReferences.Should().Contain("evidence://controller-review/alpha-fund/production-certification-kickoff");
-        retained.EvidenceReferences.Should().Contain("correlation:" + retained.CorrelationId);
-
         var scopePrefix =
             $"evidence://tenant/alpha-fund/company/Alpha Fund LP/fund/alpha-fund/ledger-book/{harness.LedgerBookService.Book.LedgerBookId:D}/production-certification";
-        retained.EvidenceReferences.Should().Contain([
+        var operatorEvidence = new[]
+        {
+            "evidence://controller-review/alpha-fund/production-certification-kickoff",
             $"{scopePrefix}/posting-candidate",
             $"{scopePrefix}/journal-lifecycle",
             $"{scopePrefix}/close-reporting",
@@ -450,9 +502,113 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             $"{scopePrefix}/dimensions/ledger-line/dimension-scope/canonical-production",
             $"{scopePrefix}/dimensions/trial-balance-filter/dimension-scope/canonical-production",
             $"{scopePrefix}/dimensions/report-package-provenance/dimension-scope/canonical-production"
-        ]);
+        };
+        harness.ViewModel.ProductionCertificationEvidenceText = string.Join(Environment.NewLine, operatorEvidence);
+        harness.ViewModel.PostingRulesLedgerBookNativeCertified = true;
+        harness.ViewModel.JournalLifecycleLedgerBookNativeCertified = true;
+        harness.ViewModel.CloseReportingLedgerBookNativeCertified = true;
+        harness.ViewModel.ExternalGlLedgerBookNativeCertified = true;
+        harness.ViewModel.ReconciliationLedgerBookNativeCertified = true;
+        harness.ViewModel.DirectLendingLedgerBookNativeCertified = true;
+        harness.ViewModel.StrategyLedgerReadLedgerBookNativeCertified = true;
+        harness.ViewModel.PeriodReportDimensionQueriesCertified = true;
+        harness.ViewModel.CrossPeriodReportDimensionQueriesCertified = true;
+        harness.ViewModel.JournalQueryDimensionFiltersCertified = true;
+        harness.ViewModel.ExternalExportDimensionMappingCertified = true;
+        harness.ViewModel.LedgerLineDimensionsPersistedCertified = true;
+        harness.ViewModel.TrialBalanceDimensionFiltersCertified = true;
+        harness.ViewModel.ReportPackageDimensionProvenanceCertified = true;
+        harness.ViewModel.TenantScopeConfigured = true;
+        harness.ViewModel.AdminRoleProfileConfigured = true;
+        harness.ViewModel.ScopedAccessPoliciesConfigured = true;
+        harness.ViewModel.ReportingGroupsConfigured = true;
+        harness.ViewModel.AccountingAdminSurfaceConfigured = true;
+        harness.ViewModel.WpfAccountingAdminSurfaceConfigured = true;
+        harness.ViewModel.ChartAdministrationStudioConfigured = true;
+        harness.ViewModel.RuleTestPromotionStudioConfigured = true;
+        harness.ViewModel.CloseSetupStudioConfigured = true;
+        harness.ViewModel.ProviderMappingStudioConfigured = true;
+        harness.ViewModel.TenantCompanyReportGroupSetupStudioConfigured = true;
+        harness.ViewModel.LedgerBookAdministrationStudioConfigured = true;
+        harness.ViewModel.PostingRuleAuthoringStudioConfigured = true;
+        harness.ViewModel.ApprovalQueueStudioConfigured = true;
+        harness.ViewModel.DimensionMappingStudioConfigured = true;
+        harness.ViewModel.ImplementationSandboxConfigured = true;
+        harness.ViewModel.CanSaveProductionCertificationProfile.Should().BeTrue();
+        harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should().BeTrue();
+
+        harness.ViewModel.ProductionCertificationEvidenceText = "   ";
+        harness.ViewModel.CanSaveProductionCertificationProfile.Should().BeFalse();
+        harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should()
+            .BeFalse("production certification commands must share the retained-evidence guard");
+        harness.ViewModel.ProductionCertificationEvidenceText = string.Join(Environment.NewLine, operatorEvidence);
+        harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should().BeTrue();
+
+        await harness.ViewModel.SaveProductionCertificationProfileAsync();
+
+        var retained = await harness.ProductionCertificationProfileStore.GetAsync(
+            "alpha-fund",
+            "Alpha Fund LP",
+            "alpha-fund",
+            harness.LedgerBookService.Book.LedgerBookId);
+        retained.Should().NotBeNull();
+        retained!.EvidenceReferences.Should().Contain("evidence://controller-review/alpha-fund/production-certification-kickoff");
+        retained.EvidenceReferences.Should().Contain("correlation:" + retained.CorrelationId);
+
+        retained.EvidenceReferences.Should().Contain(operatorEvidence);
         retained.PostingRulesLedgerBookNativeCertified.Should().BeTrue();
         retained.ReportPackageDimensionProvenanceCertified.Should().BeTrue();
+        retained.WorkflowCertificationArtifacts.Should().ContainSingle();
+        retained.WorkflowCertificationArtifacts[0].Status.Should().Be(AccountingCertificationArtifactStatusDto.Certified);
+        retained.WorkflowCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
+        retained.WorkflowCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
+            AccountingWorkflowCertificationLaneKindDto.PostingRules,
+            AccountingWorkflowCertificationLaneKindDto.JournalLifecycle,
+            AccountingWorkflowCertificationLaneKindDto.CloseReporting,
+            AccountingWorkflowCertificationLaneKindDto.ExternalGl,
+            AccountingWorkflowCertificationLaneKindDto.Reconciliation,
+            AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection,
+            AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads
+        ]);
+        retained.WorkflowCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
+            lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
+        retained.DimensionalCertificationArtifacts.Should().ContainSingle();
+        retained.DimensionalCertificationArtifacts[0].DimensionScopeEvidenceKey.Should().Be("canonical-production");
+        retained.DimensionalCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
+        retained.DimensionalCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
+            AccountingDimensionalCertificationLaneKindDto.PeriodReports,
+            AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports,
+            AccountingDimensionalCertificationLaneKindDto.JournalFilters,
+            AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings,
+            AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence,
+            AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters,
+            AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance
+        ]);
+        retained.DimensionalCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
+            lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
+        retained.TenantAdminCertificationArtifacts.Should().ContainSingle();
+        retained.TenantAdminCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
+        retained.TenantAdminCertificationArtifacts[0].LedgerBookId.Should().Be(harness.LedgerBookService.Book.LedgerBookId);
+        retained.TenantAdminCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
+            AccountingTenantAdminCertificationLaneKindDto.TenantScope,
+            AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile,
+            AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies,
+            AccountingTenantAdminCertificationLaneKindDto.ReportingGroups,
+            AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface,
+            AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface,
+            AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio,
+            AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio,
+            AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio,
+            AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio,
+            AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio,
+            AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio,
+            AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio,
+            AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio,
+            AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio,
+            AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox
+        ]);
+        retained.TenantAdminCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
+            lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
         harness.ViewModel.ProductionCertificationProfileStatusText.Should().Contain("saved");
     }
 
@@ -584,6 +740,39 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.TenantAdministrationProfileScopeText.Should()
             .Be("Tenant alpha-fund; company Alpha Fund LP.");
         harness.ViewModel.CanSaveTenantAdministrationProfile.Should().BeTrue();
+        harness.ViewModel.SaveTenantAdministrationProfileCommand.CanExecute(null).Should().BeTrue();
+
+        harness.ViewModel.ApprovalQueueStudioConfigured = true;
+        harness.ViewModel.ApprovalQueueId = string.Empty;
+        harness.ViewModel.CanSaveTenantAdministrationProfile.Should()
+            .BeFalse("a configured approval queue studio must have a typed queue payload before desktop save is enabled");
+        harness.ViewModel.SaveTenantAdministrationProfileCommand.CanExecute(null).Should()
+            .BeFalse("the command must share the same approval queue payload guard as the desktop save button");
+
+        harness.ViewModel.ApprovalQueueId = "configuration-promotion-queue";
+        harness.ViewModel.ApprovalQueueDisplayName = "Configuration promotion queue";
+        harness.ViewModel.ApprovalQueueWorkflowKind = "ConfigurationPromotion";
+        harness.ViewModel.ApprovalQueueRequiredApprovalRole = "Controller";
+        harness.ViewModel.ApprovalQueueRequiredApprovalCount = 2;
+        harness.ViewModel.ApprovalQueueSegregationPolicy = "Preparer cannot approve own configuration change.";
+        harness.ViewModel.ApprovalQueueEvidenceRequirement = "approval-queue;configuration-approval;segregation-review";
+        harness.ViewModel.DimensionMappingStudioConfigured = true;
+        harness.ViewModel.DimensionMappingId = string.Empty;
+        harness.ViewModel.CanSaveTenantAdministrationProfile.Should()
+            .BeFalse("a configured dimension mapping studio must have a typed mapping payload before desktop save is enabled");
+        harness.ViewModel.SaveTenantAdministrationProfileCommand.CanExecute(null).Should()
+            .BeFalse("the command must share the same dimension mapping payload guard as the desktop save button");
+
+        harness.ViewModel.DimensionMappingId = "qbo-canonical-dimension-map";
+        harness.ViewModel.DimensionMappingDisplayName = "QuickBooks canonical dimension map";
+        harness.ViewModel.DimensionMappingProviderId = "quickbooks-fixture";
+        harness.ViewModel.DimensionMappingMeridianDimensionsText =
+            $"fundId={profile.FundProfileId}\nbookId={harness.LedgerBookService.Book.LedgerBookId:D}\ncustomerId=investor-alpha\nProject=direct-lending";
+        harness.ViewModel.DimensionMappingProviderDimensionsText =
+            $"bookId=Book:{harness.LedgerBookService.Book.LedgerBookId:D}\ncustomerId=qbo-customer-alpha\nProject=qbo-project-credit";
+        harness.ViewModel.DimensionMappingEvidenceRequirement = "dimension-mapping;external-dimension-mapping;gl-dimension-mapping";
+        harness.ViewModel.CanSaveTenantAdministrationProfile.Should().BeTrue();
+        harness.ViewModel.SaveTenantAdministrationProfileCommand.CanExecute(null).Should().BeTrue();
 
         harness.ViewModel.TenantScopeConfigured = true;
         harness.ViewModel.AdminRoleProfileConfigured = true;
@@ -598,7 +787,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.TenantCompanyReportGroupSetupStudioConfigured = true;
         harness.ViewModel.LedgerBookAdministrationStudioConfigured = true;
         harness.ViewModel.TenantAdministrationEvidenceText =
-            "evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup\nEVIDENCE://tenant-admin/alpha-fund/Alpha Fund LP/setup\nevidence://tenant-admin/full/alpha-fund/Alpha Fund LP/control-set\nevidence://tenant-admin/alpha-fund/Alpha Fund LP/operator-surface";
+            "evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup\nEVIDENCE://tenant-admin/alpha-fund/Alpha Fund LP/setup\nevidence://tenant-admin/full/alpha-fund/Alpha Fund LP/control-set\nevidence://tenant-admin/alpha-fund/Alpha Fund LP/operator-surface\nevidence://tenant-admin/alpha-fund/Alpha Fund LP/dimension-mapping";
 
         await harness.ViewModel.SaveTenantAdministrationProfileAsync();
 
@@ -619,8 +808,31 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         retained.UpdatedBy.Should().Be("desktop-controller");
         retained.CorrelationId.Should().StartWith("wpf-accounting-tenant-admin-");
         retained.LedgerBookAdministrationStudioConfigured.Should().BeTrue();
+        retained.ApprovalQueueStudioConfigured.Should().BeTrue();
+        retained.ApprovalQueueConfigurations.Should().ContainSingle(queue =>
+            queue.QueueId == "configuration-promotion-queue" &&
+            queue.DisplayName == "Configuration promotion queue" &&
+            queue.WorkflowKind == "ConfigurationPromotion" &&
+            queue.RequiredApprovalRole == "Controller" &&
+            queue.RequiredApprovalCount == 2 &&
+            queue.SegregationPolicy == "Preparer cannot approve own configuration change." &&
+            queue.EvidenceRequirement == "approval-queue;configuration-approval;segregation-review");
+        retained.DimensionMappingStudioConfigured.Should().BeTrue();
+        retained.DimensionMappingConfigurations.Should().ContainSingle(mapping =>
+            mapping.MappingId == "qbo-canonical-dimension-map" &&
+            mapping.DisplayName == "QuickBooks canonical dimension map" &&
+            mapping.ProviderId == "quickbooks-fixture" &&
+            mapping.MeridianDimensions.FundId == profile.FundProfileId &&
+            mapping.MeridianDimensions.BookId == harness.LedgerBookService.Book.LedgerBookId.ToString("D") &&
+            mapping.MeridianDimensions.CustomerId == "investor-alpha" &&
+            mapping.MeridianDimensions.ExternalGlDimensions["Project"] == "direct-lending" &&
+            mapping.ProviderDimensions.BookId == $"Book:{harness.LedgerBookService.Book.LedgerBookId:D}" &&
+            mapping.ProviderDimensions.CustomerId == "qbo-customer-alpha" &&
+            mapping.ProviderDimensions.ExternalGlDimensions["Project"] == "qbo-project-credit" &&
+            mapping.EvidenceRequirement == "dimension-mapping;external-dimension-mapping;gl-dimension-mapping");
         retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/setup");
         retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/operator-surface");
+        retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/dimension-mapping");
         retained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/ledger-book-administration/ledgerBookId=7e0be005-49e1-46eb-9d4f-89d75e2328bd");
         retained.EvidenceReferences.Should().Contain(item =>
             item.StartsWith("correlation:wpf-accounting-tenant-admin-", StringComparison.OrdinalIgnoreCase));
@@ -632,9 +844,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.TenantAdministrationProfileStatusText.Should()
             .Contain("Tenant administration setup profile saved");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
-            .Contain("14/23 tenant admin control");
+            .Contain("tenant admin control");
         harness.ViewModel.ProductionReadinessTenantAdminText.Should()
-            .Contain("5 retained evidence link");
+            .Contain("6 retained evidence link");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
             row.Name == "Tenant config" && row.Status == "Configured");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
@@ -645,6 +857,11 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "Close setup" && row.Status == "Configured");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
             row.Name == "Provider maps" && row.Status == "Configured");
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Dimension maps" &&
+            row.Status == "Configured" &&
+            row.Detail.Contains("quickbooks-fixture", StringComparison.OrdinalIgnoreCase) &&
+            row.Evidence == "qbo-canonical-dimension-map");
         harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
             row.Name == "Audit review" && row.Status == "Missing");
         harness.ViewModel.ProductionReadinessMigrationPlanRows.Should().Contain(row =>
@@ -661,6 +878,112 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Detail.Contains("external Department=FundAccounting", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("evidence://migration-worker-plan/historical/alpha-fund", StringComparison.OrdinalIgnoreCase)
             && row.Key == "worker-plan-historical-alpha-fund");
+
+        harness.ViewModel.CanRetainImplementationSandboxProof.Should().BeTrue();
+
+        await harness.ViewModel.RetainImplementationSandboxProofAsync();
+
+        var sandboxRetained = await harness.TenantAdministrationProfileStore.GetAsync("alpha-fund", "Alpha Fund LP");
+        sandboxRetained.Should().NotBeNull();
+        sandboxRetained!.ImplementationSandboxConfigured.Should().BeTrue();
+        sandboxRetained.ApprovalQueueStudioConfigured.Should().BeTrue();
+        sandboxRetained.ApprovalQueueConfigurations.Should().ContainSingle(queue =>
+            queue.QueueId == "configuration-promotion-queue"
+            && queue.WorkflowKind == "ConfigurationPromotion"
+            && queue.RequiredApprovalCount == 2);
+        sandboxRetained.DimensionMappingStudioConfigured.Should().BeTrue();
+        sandboxRetained.DimensionMappingConfigurations.Should().ContainSingle(mapping =>
+            mapping.MappingId == "qbo-canonical-dimension-map"
+            && mapping.ProviderId == "quickbooks-fixture"
+            && mapping.EvidenceRequirement.Contains("dimension-mapping", StringComparison.OrdinalIgnoreCase));
+        sandboxRetained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/implementation-sandbox/ledgerBookId=7e0be005-49e1-46eb-9d4f-89d75e2328bd");
+        sandboxRetained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/sandbox-validation/ledgerBookId=7e0be005-49e1-46eb-9d4f-89d75e2328bd");
+        sandboxRetained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/fixture-validation/ledgerBookId=7e0be005-49e1-46eb-9d4f-89d75e2328bd");
+        sandboxRetained.EvidenceReferences.Should().Contain("evidence://tenant-admin/alpha-fund/Alpha Fund LP/implementation-fixture/ledgerBookId=7e0be005-49e1-46eb-9d4f-89d75e2328bd");
+        harness.ViewModel.ImplementationSandboxProofStatusText.Should().Contain("Implementation sandbox proof retained");
+        harness.ViewModel.TenantAdministrationControlRows.Should().Contain(row =>
+            row.Name == "Sandbox proof" && row.Status == "Configured");
+    }
+
+    [Fact]
+    public async Task ExternalGlMappingProfile_SaveRetainsCertifiedProviderMappingAndRefreshesReadiness()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var fundProfile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            SleeveIds: ["sleeve-credit"],
+            VehicleIds: ["vehicle-master"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(fundProfile.FundProfileId);
+        var harness = CreateHarness(fundContext);
+        await harness.ConfigurationService.GetWorkspaceAsync(
+            fundProfile.FundProfileId,
+            harness.LedgerBookService.Book.LedgerBookId,
+            CancellationToken.None);
+
+        await harness.ViewModel.LoadAsync();
+        harness.ViewModel.CanSaveExternalGlMappingProfile.Should().BeTrue();
+        harness.ViewModel.SaveExternalGlMappingProfileCommand.CanExecute(null).Should().BeTrue();
+
+        harness.ViewModel.ExternalGlMappingProviderId = "quickbooks-fixture";
+        harness.ViewModel.ExternalGlMappingProfileId = "qbo-alpha-book-primary";
+        harness.ViewModel.ExternalGlMappingDisplayName = "Alpha QuickBooks guarded export mapping";
+        harness.ViewModel.ExternalGlMappingAccountMappingsText =
+            "Assets:Cash:Operating=qbo-1000\nIncome:Investment Income=qbo-4000";
+        harness.ViewModel.ExternalGlMappingMeridianDimensionsText =
+            $"fundId={fundProfile.FundProfileId}\nbookId={harness.LedgerBookService.Book.LedgerBookId:D}\ncustomerId=investor-alpha\nProject=direct-lending";
+        harness.ViewModel.ExternalGlMappingExternalDimensionsText =
+            $"bookId=Book:{harness.LedgerBookService.Book.LedgerBookId:D}\ncustomerId=qbo-customer-alpha\nProject=qbo-project-credit";
+        harness.ViewModel.ExternalGlMappingEvidenceText =
+            "approval:external-gl-mapping:qbo-alpha-book-primary";
+        harness.ViewModel.ExternalGlMappingProfileCertified = true;
+        harness.ViewModel.SaveExternalGlMappingProfileCommand.CanExecute(null).Should().BeTrue();
+
+        harness.ViewModel.ExternalGlMappingAccountMappingsText = "   ";
+        harness.ViewModel.CanSaveExternalGlMappingProfile.Should().BeFalse();
+        harness.ViewModel.SaveExternalGlMappingProfileCommand.CanExecute(null).Should()
+            .BeFalse("external GL provider mapping commands must share the account-mapping and evidence guard");
+        harness.ViewModel.ExternalGlMappingAccountMappingsText =
+            "Assets:Cash:Operating=qbo-1000\nIncome:Investment Income=qbo-4000";
+        harness.ViewModel.SaveExternalGlMappingProfileCommand.CanExecute(null).Should().BeTrue();
+
+        await harness.ViewModel.SaveExternalGlMappingProfileAsync();
+
+        var retained = await harness.AccountingSystemIntegrationService.ListMappingProfilesAsync(
+            "quickbooks-fixture",
+            fundProfile.FundProfileId,
+            harness.LedgerBookService.Book.LedgerBookId,
+            tenantId: fundProfile.FundProfileId,
+            companyId: fundProfile.LegalEntityName);
+        retained.Should().ContainSingle(profile => profile.ProfileId == "qbo-alpha-book-primary");
+        var profile = retained.Single(profile => profile.ProfileId == "qbo-alpha-book-primary");
+        profile.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+        profile.AccountMappings["Assets:Cash:Operating"].Should().Be("qbo-1000");
+        profile.DimensionMappings.Should().ContainSingle(mapping =>
+            mapping.CertificationState == AccountingCertificationStateDto.Certified &&
+            mapping.MeridianDimensions.FundId == fundProfile.FundProfileId &&
+            mapping.MeridianDimensions.BookId == harness.LedgerBookService.Book.LedgerBookId.ToString("D") &&
+            mapping.MeridianDimensions.CustomerId == "investor-alpha" &&
+            mapping.MeridianDimensions.ExternalGlDimensions["Project"] == "direct-lending" &&
+            mapping.ExternalDimensions.BookId == $"Book:{harness.LedgerBookService.Book.LedgerBookId:D}" &&
+            mapping.ExternalDimensions.CustomerId == "qbo-customer-alpha" &&
+            mapping.ExternalDimensions.ExternalGlDimensions["Project"] == "qbo-project-credit");
+        harness.ViewModel.ExternalGlMappingProfileStatusText.Should()
+            .Contain("External GL mapping profile qbo-alpha-book-primary saved as Certified");
+        harness.ViewModel.ExternalGlMappingProfileRows.Should().Contain(row =>
+            row.Name == "Alpha QuickBooks guarded export mapping" &&
+            row.Status == "Certified" &&
+            row.Detail.Contains("2 account mapping", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ProductionReadinessExternalGlText.Should()
+            .Contain("1 certified mapping profile");
     }
 
     [Fact]
@@ -1203,6 +1526,23 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingPostingCandidateButton");
         xaml.Should().Contain("AccountingConfigurationSetupReadinessGrid");
         xaml.Should().Contain("SetupReadinessRows");
+        xaml.Should().Contain("AccountingChartAccountSetupEditor");
+        xaml.Should().Contain("AccountingChartAccountNodeIdTextBox");
+        xaml.Should().Contain("AccountingChartAccountPathTextBox");
+        xaml.Should().Contain("AccountingChartAccountFinancialAccountIdTextBox");
+        xaml.Should().Contain("AccountingChartAccountSaveButton");
+        xaml.Should().Contain("SaveChartAccountCommand");
+        xaml.Should().Contain("AccountingPostingRuleDraftEditor");
+        xaml.Should().Contain("AccountingPostingRuleDraftRuleIdTextBox");
+        xaml.Should().Contain("AccountingPostingRuleDraftTemplateIdTextBox");
+        xaml.Should().Contain("AccountingPostingRuleDraftEvidenceTextBox");
+        xaml.Should().Contain("AccountingPostingRuleDraftSaveButton");
+        xaml.Should().Contain("SavePostingRuleDraftCommand");
+        xaml.Should().Contain("AccountingDimensionMappingSetupEditor");
+        xaml.Should().Contain("AccountingDimensionMappingIdTextBox");
+        xaml.Should().Contain("AccountingDimensionMappingMeridianDimensionsTextBox");
+        xaml.Should().Contain("AccountingDimensionMappingProviderDimensionsTextBox");
+        xaml.Should().Contain("AccountingDimensionMappingEvidenceRequirementTextBox");
         xaml.Should().Contain("AccountingPostingCandidateGrid");
         xaml.Should().Contain("Posting Candidate Preview");
         xaml.Should().Contain("AccountingRulesStudioRuleGrid");
@@ -1316,6 +1656,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             tenantAdministrationProfileStore,
             migrationRunArtifactStore,
             migrationRunWorkerPlanStore,
+            accountingSystemIntegrationService,
             ledgerBookService);
     }
 
@@ -1329,6 +1670,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         IAccountingTenantAdministrationProfileStore TenantAdministrationProfileStore,
         IAccountingMigrationRunArtifactStore MigrationRunArtifactStore,
         IAccountingMigrationRunWorkerPlanWriter MigrationRunWorkerPlanStore,
+        AccountingSystemIntegrationService AccountingSystemIntegrationService,
         TestLedgerBookService LedgerBookService);
 
 

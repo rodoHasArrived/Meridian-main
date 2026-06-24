@@ -42,6 +42,7 @@ import type {
   CorporateAction,
   CreateLateAdjustmentRequest,
   LockClosePeriodRequest,
+  ReviewCloseEvidenceRequest,
   ReviewLateAdjustmentRequest,
   UpsertClosePeriodPlanConfigurationRequest,
   ExternalGlExportPackage,
@@ -2157,8 +2158,26 @@ export function getLatestAccountingSystemReconciliation(options: ApiRequestOptio
   return getJson<AccountingSystemReconciliationSummary>(ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest, options);
 }
 
-export function getAccountingSystemMappingProfiles(options: ApiRequestOptions = {}) {
-  return getJson<ExternalGlMappingProfile[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles, options);
+export function getAccountingSystemMappingProfiles(
+  query: { providerId?: string | null; fundProfileId?: string | null; ledgerBookId?: string | null } = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.providerId) {
+    params.set("providerId", query.providerId);
+  }
+
+  if (query.fundProfileId) {
+    params.set("fundProfileId", query.fundProfileId);
+  }
+
+  if (query.ledgerBookId) {
+    params.set("ledgerBookId", query.ledgerBookId);
+  }
+
+  const suffix = params.toString();
+  const route = suffix ? `${ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles}?${suffix}` : ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles;
+  return getJson<ExternalGlMappingProfile[]>(route, options);
 }
 
 export function upsertAccountingSystemMappingProfile(
@@ -2265,6 +2284,13 @@ export function signOffLedgerCloseManagementTask(
   options: ApiRequestOptions = {}
 ) {
   return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementTaskSignOffs, request, options);
+}
+
+export function reviewLedgerCloseManagementEvidence(
+  request: ReviewCloseEvidenceRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementEvidenceReview, request, options);
 }
 
 export function lockLedgerCloseManagementPeriod(

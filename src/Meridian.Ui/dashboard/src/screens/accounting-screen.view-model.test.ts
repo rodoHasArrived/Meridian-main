@@ -312,6 +312,70 @@ const instrumentPassport: InstrumentPassport = {
         isEnabled: true
       }
     ]
+  },
+  operatingModel: {
+    securityId: "sec-1",
+    clientId: null,
+    accountId: "acct-1",
+    fundProfileId: "fund-alpha",
+    retrievedAtUtc: "2026-06-03T12:00:00Z",
+    status: "Ready",
+    summary: "Security Master operating model has applicable entitlement, source, control, and approval evidence for the selected scope.",
+    stages: [
+      {
+        stageId: "reconcile",
+        title: "Reconcile",
+        status: "Ready",
+        summary: "1 most-specific entitlement record applies to the selected Security Master scope.",
+        evidenceCount: 1,
+        blockingIssueCount: 0
+      }
+    ],
+    entitlementApplicability: [
+      {
+        entitlementId: "ent-1",
+        vendorName: "LSEG/Refinitiv",
+        dataType: "Pricing",
+        scope: "FundProfile",
+        clientId: null,
+        accountId: null,
+        fundProfileId: "fund-alpha",
+        securityId: null,
+        isApplicable: true,
+        isMostSpecific: true,
+        status: "Active",
+        requiresDirectClientContract: true,
+        contractReference: "LSEG-FUND-ALPHA",
+        summary: "LSEG/Refinitiv Pricing entitlement applies at FundProfile scope with Active status."
+      }
+    ],
+    operatorMetadata: [
+      {
+        metadataId: "entitlement-ent-1",
+        vendorName: "LSEG/Refinitiv",
+        dataType: "Pricing",
+        sourceCategory: "Fund pricing feed",
+        expectedRefreshCadence: "Daily close",
+        defaultMaxDaysStale: 1,
+        requiresDirectClientContract: true,
+        operatorMetadata: "Fund Alpha direct-client pricing metadata.",
+        summary: "Fund Alpha direct-client pricing metadata."
+      }
+    ],
+    manualChangeApproval: {
+      policyKey: "operations-continuity.security-master-override",
+      gate: "SecurityMaster",
+      route: "/api/workstation/operations-continuity/security-master/overrides/approve",
+      requiredPermission: "AdminMaintenance or ModifySecurityMaster",
+      requiredDistinctApprovals: 1,
+      requiresIndependentReviewer: true,
+      evidenceRequirement: "Override id, policy reference, rationale, expiration date, and linked evidence.",
+      status: "Ready",
+      manualChangeCount: 1,
+      unapprovedManualChangeCount: 0,
+      summary: "1 manual change event reuses the operations approval policy."
+    },
+    controls: []
   }
 };
 const cashFlowSchedules: SecurityCashFlowScheduleEvent[] = [
@@ -1002,6 +1066,114 @@ const closePeriodPlan: ClosePeriodPlan = {
       approvedSignOffCount: 1,
       evidenceLinks: ["evidence/nav-package", "evidence/nav-signoff"],
       blockerReason: "Controller sign-off pending."
+    }
+  ],
+  configuration: {
+    workflowId: "workflow-close-1",
+    materialityPolicy: {
+      policyId: "materiality-alpha",
+      amountThreshold: 2500,
+      percentThreshold: 0.5,
+      currency: "USD",
+      reviewRole: "controller",
+      requiresLateAdjustmentApproval: true
+    },
+    taskConfigurations: [
+      {
+        taskId: "task-nav",
+        displayName: "Finalize NAV package",
+        owner: "fund-accounting",
+        dueDate: "2026-06-04",
+        requiredApprovalCount: 1,
+        requiredApprovalRole: "controller",
+        requiredEvidence: "Controller NAV sign-off evidence",
+        dependsOnTaskIds: ["task-reconciliation"],
+        dependencyConfigurations: [
+          {
+            dependsOnTaskId: "task-reconciliation",
+            reason: "Reconciliation must clear before NAV package sign-off."
+          }
+        ]
+      }
+    ],
+    configuredBy: "controller",
+    configuredAtUtc: "2026-06-02T02:30:00Z",
+    evidenceLinks: ["evidence/close-plan-configuration"]
+  },
+  operatingCoverage: [
+    {
+      controlId: "close-plan-setup",
+      label: "Close plan setup",
+      state: "ReadyForReview",
+      evidenceCount: 1,
+      blockingIssueCount: 0,
+      requiredAction: "Review the retained close-plan configuration before period lock.",
+      evidenceLinks: ["evidence/close-plan-configuration"],
+      blockingIssues: []
+    },
+    {
+      controlId: "dependency-graph",
+      label: "Dependency graph",
+      state: "Blocked",
+      evidenceCount: 2,
+      blockingIssueCount: 1,
+      requiredAction: "Complete predecessor close tasks before dependent close work advances.",
+      evidenceLinks: ["evidence/nav-package", "evidence/nav-signoff"],
+      blockingIssues: [
+        {
+          code: "CloseTaskWaitingOnDependency",
+          severity: "Warning",
+          message: "NAV package is waiting on reconciliation.",
+          targetId: "task-nav"
+        }
+      ]
+    },
+    {
+      controlId: "sign-off-matrix",
+      label: "Sign-off matrix",
+      state: "ReadyForReview",
+      evidenceCount: 2,
+      blockingIssueCount: 0,
+      requiredAction: "Review retained sign-off matrix approvals before report certification.",
+      evidenceLinks: ["evidence/nav-signoff"],
+      blockingIssues: []
+    },
+    {
+      controlId: "late-adjustments",
+      label: "Late adjustments",
+      state: "ReadyForReview",
+      evidenceCount: 2,
+      blockingIssueCount: 0,
+      requiredAction: "Review retained late-adjustment decisions before final close.",
+      evidenceLinks: ["evidence/late-adjustment", "evidence/late-adjustment-approval"],
+      blockingIssues: []
+    },
+    {
+      controlId: "blocker-evidence-review",
+      label: "Blocker evidence review",
+      state: "Blocked",
+      evidenceCount: 0,
+      blockingIssueCount: 1,
+      requiredAction: "Review active blocker evidence and remediate critical close validation issues.",
+      evidenceLinks: [],
+      blockingIssues: [
+        {
+          code: "CLOSE_TASK_PENDING",
+          severity: "Warning",
+          message: "NAV package still needs controller sign-off.",
+          targetId: "task-nav"
+        }
+      ]
+    },
+    {
+      controlId: "period-lock",
+      label: "Period lock",
+      state: "ReadyForReview",
+      evidenceCount: 0,
+      blockingIssueCount: 0,
+      requiredAction: "Retain close-package evidence and lock the period.",
+      evidenceLinks: [],
+      blockingIssues: []
     }
   ]
 };
@@ -2064,7 +2236,8 @@ describe("accounting-screen view model", () => {
       buildPackage,
       certifyPackage,
       getExportManifest,
-      listPackages
+      listPackages,
+      reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
     };
 
     const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
@@ -2103,6 +2276,19 @@ describe("accounting-screen view model", () => {
       taskRequiredEvidence: "Controller NAV sign-off evidence",
       taskDependsOnTaskIds: "task-reconciliation"
     });
+    expect(result.current.closeSetupTaskOptions).toEqual([
+      expect.objectContaining({
+        taskId: "task-nav",
+        displayName: "Finalize NAV package",
+        statusLabel: "Ready for sign-off",
+        statusTone: "warning",
+        ownerLabel: "fund-accounting",
+        dueDateLabel: "2026-06-04",
+        dependencyLabel: "1 dependency: task-reconciliation",
+        signOffLabel: "1/1 approvals",
+        selected: true
+      })
+    ]);
     expect(result.current.metrics.find((metric) => metric.id === "calendar")).toMatchObject({
       label: "Calendar",
       value: "1",
@@ -2131,6 +2317,109 @@ describe("accounting-screen view model", () => {
       evidenceLabel: "2 evidence links",
       blockerLabel: "Controller sign-off pending."
     });
+    expect(result.current.dependencyGraphRows).toEqual([
+      expect.objectContaining({
+        dependencyId: "dependency-recon",
+        taskId: "task-nav",
+        taskLabel: "Finalize NAV package",
+        dependsOnTaskId: "task-reconciliation",
+        predecessorLabel: "task-reconciliation",
+        reason: "Reconciliation must clear before NAV package sign-off.",
+        statusLabel: "Predecessor missing",
+        statusTone: "danger",
+        blockerLabel: "Controller sign-off pending."
+      })
+    ]);
+    expect(result.current.signOffMatrixRows).toEqual([
+      expect.objectContaining({
+        rowId: "requirement-task-nav-controller",
+        taskId: "task-nav",
+        taskLabel: "Finalize NAV package",
+        roleLabel: "controller",
+        approvedLabel: "1/1",
+        statusLabel: "Satisfied",
+        statusTone: "success",
+        evidenceRequirementLabel: "Controller NAV sign-off evidence",
+        latestSignOffLabel: "Approved by ops-user on Jun 2, 05:00 UTC | Controller retained NAV package sign-off."
+      })
+    ]);
+    expect(result.current.operatingCoverageRows).toHaveLength(6);
+    expect(result.current.operatingCoverageRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        controlId: "close-plan-setup",
+        label: "Close plan setup",
+        statusLabel: "Ready for review",
+        statusTone: "success",
+        evidenceLabel: "1 evidence link",
+        blockerLabel: "0 blocking issues",
+        requiredAction: "Review the retained close-plan configuration before period lock.",
+        issueLabels: []
+      }),
+      expect.objectContaining({
+        controlId: "dependency-graph",
+        label: "Dependency graph",
+        statusLabel: "Blocked",
+        statusTone: "danger",
+        evidenceLabel: "2 evidence links",
+        blockerLabel: "1 blocking issue",
+        requiredAction: "Complete predecessor close tasks before dependent close work advances.",
+        issueLabels: ["Warning | CloseTaskWaitingOnDependency | task-nav"]
+      }),
+      expect.objectContaining({
+        controlId: "blocker-evidence-review",
+        label: "Blocker evidence review",
+        statusLabel: "Blocked",
+        statusTone: "danger",
+        evidenceLabel: "0 evidence links",
+        blockerLabel: "1 blocking issue",
+        issueLabels: ["Warning | CLOSE_TASK_PENDING | task-nav"]
+      }),
+      expect.objectContaining({
+        controlId: "period-lock",
+        label: "Period lock",
+        statusLabel: "Ready for review",
+        statusTone: "success",
+        requiredAction: "Retain close-package evidence and lock the period."
+      })
+    ]));
+    expect(result.current.evidenceReviewRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rowId: "task-evidence-task-nav",
+        label: "Finalize NAV package",
+        categoryLabel: "Checklist task",
+        evidenceLabel: "2 evidence links",
+        statusLabel: "Evidence retained",
+        statusTone: "success",
+        detailLabel: "Controller sign-off pending."
+      }),
+      expect.objectContaining({
+        rowId: "late-adjustment-evidence-late-adjustment-1",
+        label: "manual-je-late-1",
+        categoryLabel: "Late adjustment",
+        evidenceLabel: "2 evidence links",
+        statusLabel: "Approved",
+        statusTone: "success",
+        detailLabel: "Late custodian fee accrual."
+      }),
+      expect.objectContaining({
+        rowId: "report-package-evidence-accounting-report-package-alpha-202605",
+        label: "accounting-report-package-alpha-202605",
+        categoryLabel: "Report package",
+        evidenceLabel: "7 evidence links",
+        statusLabel: "Ready for review",
+        statusTone: "warning",
+        detailLabel: "1 investor statement; 2 export artifacts"
+      }),
+      expect.objectContaining({
+        rowId: "validation-evidence-CLOSE_TASK_PENDING-task-nav",
+        label: "Warning | CLOSE_TASK_PENDING",
+        categoryLabel: "Blocker review",
+        evidenceLabel: "task-nav",
+        statusLabel: "Review required",
+        statusTone: "warning",
+        detailLabel: "NAV package still needs controller sign-off."
+      })
+    ]));
     expect(result.current.lateAdjustments[0]).toMatchObject({
       journalEntryId: "manual-je-late-1",
       reason: "Late custodian fee accrual.",
@@ -2202,6 +2491,74 @@ describe("accounting-screen view model", () => {
         tone: "success"
       })
     ]);
+    expect(result.current.closeWorkflowSteps).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "close-setup",
+        label: "Close setup",
+        statusLabel: "Retained",
+        actionId: "configure-close-plan",
+        disabledReason: null,
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "checklist-signoff",
+        label: "Checklist sign-off",
+        statusLabel: "1 open",
+        actionId: "sign-off-task",
+        disabledReason: "Select a close checklist task before signing off.",
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "late-adjustments",
+        label: "Late adjustments",
+        statusLabel: "Reviewed",
+        actionId: "request-late-adjustment",
+        disabledReason: "Enter the journal entry id for the late adjustment.",
+        tone: "success"
+      }),
+      expect.objectContaining({
+        id: "blocker-review",
+        label: "Blocker review",
+        statusLabel: "2 unreviewed",
+        actionId: "review-evidence",
+        disabledReason: null,
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "report-package",
+        label: "Report package",
+        statusLabel: "Ready for review",
+        actionId: "build-package",
+        disabledReason: null,
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "certification",
+        label: "Certification",
+        statusLabel: "Ready for review",
+        actionId: "certify-package",
+        disabledReason: null,
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "export-manifest",
+        label: "Export manifest",
+        statusLabel: "Ready for review",
+        actionId: "inspect-export",
+        disabledReason: null,
+        tone: "warning"
+      }),
+      expect.objectContaining({
+        id: "period-lock",
+        label: "Period lock",
+        statusLabel: "Open",
+        actionId: "lock-period",
+        disabledReason: null,
+        tone: "default"
+      })
+    ]));
+    expect(result.current.closeWorkflowSteps).toHaveLength(8);
+    expect(result.current.liveRegionText).toContain("workflow step");
 
     await act(async () => {
       await result.current.inspectSelectedPackageExport();
@@ -2258,6 +2615,7 @@ describe("accounting-screen view model", () => {
       actor: "browser-accounting-controller",
       correlationId: "browser-close-plan-configuration-workflow-close-1",
       actionOrigin: "HumanOperator",
+      expectedConfiguredAtUtc: "2026-06-02T02:30:00Z",
       taskConfigurations: [
         expect.objectContaining({
           taskId: "task-nav",
@@ -2363,6 +2721,370 @@ describe("accounting-screen view model", () => {
     expect(signOffCloseTask).not.toHaveBeenCalled();
   });
 
+  it("selects retained close setup tasks before retaining dependency and sign-off edits", async () => {
+    const multiTaskClosePlan: ClosePeriodPlan = {
+      ...closePeriodPlan,
+      tasks: [
+        ...closePeriodPlan.tasks,
+        {
+          taskId: "task-cash",
+          displayName: "Tie cash controls",
+          status: "SignedOff" as const,
+          owner: "treasury-ops",
+          dueDate: "2026-06-04",
+          dependencies: [],
+          signOffs: [],
+          evidenceLinks: ["evidence/cash-controls"],
+          blockerReason: null,
+          signOffRequirements: [
+            {
+              requirementId: "requirement-task-cash-controller",
+              role: "controller",
+              requiredApprovalCount: 1,
+              approvedCount: 1,
+              isSatisfied: true,
+              evidenceRequirement: "Controller cash control evidence"
+            }
+          ]
+        },
+        {
+          taskId: "task-report",
+          displayName: "Review investor statements",
+          status: "InProgress" as const,
+          owner: "investor-ops",
+          dueDate: "2026-06-05",
+          dependencies: [],
+          signOffs: [],
+          evidenceLinks: ["evidence/investor-statements"],
+          blockerReason: null,
+          signOffRequirements: [
+            {
+              requirementId: "requirement-task-report-cfo",
+              role: "CFO",
+              requiredApprovalCount: 2,
+              approvedCount: 0,
+              isSatisfied: false,
+              evidenceRequirement: "CFO investor statement approval evidence"
+            }
+          ]
+        }
+      ]
+    };
+    const configureClosePlan = vi.fn(async () => multiTaskClosePlan);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => multiTaskClosePlan),
+      createLateAdjustment: vi.fn(async () => multiTaskClosePlan),
+      reviewLateAdjustment: vi.fn(async () => multiTaskClosePlan),
+      signOffCloseTask: vi.fn(async () => multiTaskClosePlan),
+      configureClosePlan,
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: multiTaskClosePlan, transition: null, issues: [] })),
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage]),
+      reviewCloseEvidence: vi.fn(async () => multiTaskClosePlan)
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.closeSetupTaskOptions).toHaveLength(3));
+
+    expect(result.current.closeSetupTaskOptions.map((task) => [task.taskId, task.selected])).toEqual([
+      ["task-nav", true],
+      ["task-cash", false],
+      ["task-report", false]
+    ]);
+    expect(result.current.closeSetupDependencyOptions).toEqual([
+      expect.objectContaining({
+        taskId: "task-cash",
+        displayName: "Tie cash controls",
+        checked: false,
+        toggleAriaLabel: "Add Tie cash controls as a dependency"
+      }),
+      expect.objectContaining({
+        taskId: "task-report",
+        displayName: "Review investor statements",
+        checked: false,
+        toggleAriaLabel: "Add Review investor statements as a dependency"
+      })
+    ]);
+
+    await act(async () => {
+      result.current.selectCloseSetupTask("task-report");
+    });
+
+    expect(result.current.closeSetupDraft).toMatchObject({
+      taskId: "task-report",
+      taskDisplayName: "Review investor statements",
+      taskOwner: "investor-ops",
+      taskDueDate: "2026-06-05",
+      taskRequiredApprovalCount: "2",
+      taskRequiredApprovalRole: "CFO",
+      taskRequiredEvidence: "CFO investor statement approval evidence",
+      taskSignOffRequirements: "CFO | 2 | CFO investor statement approval evidence",
+      taskDependsOnTaskIds: "",
+      taskDependencyReason: ""
+    });
+    expect(result.current.closeSetupTaskOptions.map((task) => [task.taskId, task.selected])).toEqual([
+      ["task-nav", false],
+      ["task-cash", false],
+      ["task-report", true]
+    ]);
+    expect(result.current.closeSetupDependencyOptions).toEqual([
+      expect.objectContaining({
+        taskId: "task-nav",
+        displayName: "Finalize NAV package",
+        checked: false,
+        toggleAriaLabel: "Add Finalize NAV package as a dependency"
+      }),
+      expect.objectContaining({
+        taskId: "task-cash",
+        displayName: "Tie cash controls",
+        checked: false,
+        toggleAriaLabel: "Add Tie cash controls as a dependency"
+      })
+    ]);
+    expect(result.current.closeSetupSignOffRoleOptions).toEqual([
+      expect.objectContaining({
+        role: "CFO",
+        sourceLabel: "Required role",
+        selected: true,
+        selectAriaLabel: "Selected close sign-off role CFO"
+      }),
+      expect.objectContaining({
+        role: "investor-ops",
+        sourceLabel: "Task owner",
+        selected: false,
+        selectAriaLabel: "Select close sign-off role investor-ops"
+      }),
+      expect.objectContaining({
+        role: "controller",
+        sourceLabel: "Materiality reviewer",
+        selected: false
+      })
+    ]);
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ taskOwner: "CFO Office" });
+      result.current.toggleCloseSetupDependency("task-nav");
+      result.current.toggleCloseSetupDependency("task-cash");
+      result.current.updateCloseSetupDraft({
+        taskSignOffRequirements: [
+          "investor-ops | 2 | Investor operations close package evidence",
+          "CFO | 1 | CFO final report package evidence"
+        ].join("\n"),
+        taskDependencyReason: [
+          "task-nav: NAV package must be signed off before investor statement review.",
+          "task-cash: Cash controls must tie out before investor statement review."
+        ].join("\n")
+      });
+      result.current.selectCloseSetupSignOffRole("investor-ops");
+    });
+
+    expect(result.current.closeSetupDraft.taskDependsOnTaskIds).toBe("task-nav, task-cash");
+    expect(result.current.closeSetupDraft.taskDependencyReason).toBe([
+      "task-nav: NAV package must be signed off before investor statement review.",
+      "task-cash: Cash controls must tie out before investor statement review."
+    ].join("\n"));
+    expect(result.current.closeSetupDraft.taskRequiredApprovalRole).toBe("investor-ops");
+    expect(result.current.closeSetupSignOffRoleOptions.find((role) => role.role === "investor-ops")).toMatchObject({
+      selected: true,
+      selectAriaLabel: "Selected close sign-off role investor-ops"
+    });
+    expect(result.current.closeSetupDependencyOptions.find((option) => option.taskId === "task-nav")).toMatchObject({
+      taskId: "task-nav",
+      checked: true,
+      toggleAriaLabel: "Remove Finalize NAV package as a dependency"
+    });
+    expect(result.current.closeSetupDependencyOptions.find((option) => option.taskId === "task-cash")).toMatchObject({
+      taskId: "task-cash",
+      checked: true,
+      toggleAriaLabel: "Remove Tie cash controls as a dependency"
+    });
+
+    await act(async () => {
+      await result.current.configureClosePlan();
+    });
+
+    expect(configureClosePlan).toHaveBeenCalledWith(expect.objectContaining({
+      taskConfigurations: expect.arrayContaining([
+        expect.objectContaining({
+          taskId: "task-report",
+          displayName: "Review investor statements",
+          owner: "CFO Office",
+          dueDate: "2026-06-05",
+          requiredApprovalCount: 2,
+          requiredApprovalRole: "investor-ops",
+          requiredEvidence: "Investor operations close package evidence",
+          dependsOnTaskIds: ["task-nav", "task-cash"],
+          dependencyConfigurations: [
+            {
+              dependsOnTaskId: "task-nav",
+              reason: "NAV package must be signed off before investor statement review."
+            },
+            {
+              dependsOnTaskId: "task-cash",
+              reason: "Cash controls must tie out before investor statement review."
+            }
+          ],
+          signOffRequirementConfigurations: [
+            {
+              role: "investor-ops",
+              requiredApprovalCount: 2,
+              evidenceRequirement: "Investor operations close package evidence"
+            },
+            {
+              role: "CFO",
+              requiredApprovalCount: 1,
+              evidenceRequirement: "CFO final report package evidence"
+            }
+          ]
+        })
+      ])
+    }));
+  });
+
+  it("blocks browser close setup retention when the task id is not in the loaded close plan", async () => {
+    const configureClosePlan = vi.fn(async () => closePeriodPlan);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => closePeriodPlan),
+      createLateAdjustment: vi.fn(async () => closePeriodPlan),
+      reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
+      signOffCloseTask: vi.fn(async () => closePeriodPlan),
+      configureClosePlan,
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage]),
+      reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.closeSetupDraft.taskId).toBe("task-nav"));
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ taskId: "task-missing" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Close checklist task task-missing is not loaded in this close plan.");
+
+    await act(async () => {
+      await result.current.configureClosePlan();
+    });
+
+    expect(result.current.configureClosePlanStatusText).toBe("Close checklist task task-missing is not loaded in this close plan.");
+    expect(result.current.configureClosePlanStatusTone).toBe("danger");
+    expect(configureClosePlan).not.toHaveBeenCalled();
+  });
+
+  it("blocks browser close setup retention when sign-off matrix fields are incomplete", async () => {
+    const configureClosePlan = vi.fn(async () => closePeriodPlan);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => closePeriodPlan),
+      createLateAdjustment: vi.fn(async () => closePeriodPlan),
+      reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
+      signOffCloseTask: vi.fn(async () => closePeriodPlan),
+      configureClosePlan,
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage]),
+      reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.closeSetupDraft.taskId).toBe("task-nav"));
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ taskRequiredApprovalCount: "0" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Enter a positive required approval count before saving close setup.");
+
+    await act(async () => {
+      await result.current.configureClosePlan();
+    });
+
+    expect(result.current.configureClosePlanStatusText).toBe("Enter a positive required approval count before saving close setup.");
+    expect(result.current.configureClosePlanStatusTone).toBe("danger");
+    expect(configureClosePlan).not.toHaveBeenCalled();
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ taskRequiredApprovalCount: "1", taskRequiredApprovalRole: "" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Enter an approval role before saving close setup.");
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ taskRequiredApprovalRole: "Controller", taskRequiredEvidence: "" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Enter required sign-off evidence before saving close setup.");
+  });
+
+  it("blocks browser close setup retention when materiality fields are incomplete", async () => {
+    const configureClosePlan = vi.fn(async () => closePeriodPlan);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => closePeriodPlan),
+      createLateAdjustment: vi.fn(async () => closePeriodPlan),
+      reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
+      signOffCloseTask: vi.fn(async () => closePeriodPlan),
+      configureClosePlan,
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage]),
+      reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.closeSetupDraft.taskId).toBe("task-nav"));
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ amountThreshold: "" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Enter a materiality amount threshold before saving close setup.");
+
+    await act(async () => {
+      await result.current.configureClosePlan();
+    });
+
+    expect(result.current.configureClosePlanStatusText).toBe("Enter a materiality amount threshold before saving close setup.");
+    expect(result.current.configureClosePlanStatusTone).toBe("danger");
+    expect(configureClosePlan).not.toHaveBeenCalled();
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ amountThreshold: "-1" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Enter a non-negative materiality amount threshold before saving close setup.");
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ amountThreshold: "2500", percentThreshold: "not-a-percent" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Enter a non-negative materiality percent threshold before saving close setup.");
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ percentThreshold: "0.5", currency: "US" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Enter a three-letter materiality currency before saving close setup.");
+
+    await act(async () => {
+      result.current.updateCloseSetupDraft({ currency: "USD", reviewRole: "" });
+    });
+
+    expect(result.current.configureClosePlanDisabledReason).toBe("Enter a materiality review role before saving close setup.");
+  });
+
   it("renders service-owned close readiness rows when report packages provide them", async () => {
     const serviceOwnedPackage: AccountingReportPackageBundle = {
       ...accountingReportPackage,
@@ -2420,7 +3142,8 @@ describe("accounting-screen view model", () => {
       buildPackage: vi.fn(async () => serviceOwnedPackage),
       certifyPackage: vi.fn(async () => serviceOwnedPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
-      listPackages: vi.fn(async () => [serviceOwnedPackage])
+      listPackages: vi.fn(async () => [serviceOwnedPackage]),
+      reviewCloseEvidence: vi.fn(async () => closePeriodPlan)
     };
 
     const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
@@ -2443,6 +3166,94 @@ describe("accounting-screen view model", () => {
         tone: "success"
       })
     ]);
+  });
+
+  it("retains active close blocker evidence reviews without clearing the blocker", async () => {
+    const reviewedClosePlan: ClosePeriodPlan = {
+      ...closePeriodPlan,
+      evidenceReviews: [
+        {
+          reviewId: "close-review-workflow-close-1-close-task-pending-task-nav",
+          issueCode: "CLOSE_TASK_PENDING",
+          targetId: "task-nav",
+          reviewedBy: "browser-accounting-controller",
+          reviewedAtUtc: "2026-06-03T13:15:00Z",
+          notes: "Reviewed close blocker CLOSE_TASK_PENDING for task-nav from the Accounting close cockpit.",
+          evidenceLinks: [
+            "browser://accounting/close/evidence-review/workflow-close-1/CLOSE_TASK_PENDING/task-nav/book/book-alpha",
+            "evidence://close-review/workflow/workflow-close-1/period/2026-05/book/book-alpha/issue/CLOSE_TASK_PENDING/target/task-nav"
+          ]
+        }
+      ]
+    };
+    const reviewCloseEvidence = vi.fn(async () => reviewedClosePlan);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => closePeriodPlan),
+      createLateAdjustment: vi.fn(async () => closePeriodPlan),
+      reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
+      signOffCloseTask: vi.fn(async () => closePeriodPlan),
+      configureClosePlan: vi.fn(async () => closePeriodPlan),
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage]),
+      reviewCloseEvidence
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.evidenceReviewRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rowId: "validation-evidence-CLOSE_TASK_PENDING-task-nav",
+        statusLabel: "Review required",
+        reviewDisabledReason: null
+      })
+    ])));
+    expect(result.current.closeWorkflowSteps).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "blocker-review",
+        statusLabel: "2 unreviewed",
+        actionId: "review-evidence",
+        disabledReason: null
+      })
+    ]));
+
+    await act(async () => {
+      await result.current.reviewCloseEvidence("validation-evidence-CLOSE_TASK_PENDING-task-nav");
+    });
+
+    expect(reviewCloseEvidence).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-close-1",
+      issueCode: "CLOSE_TASK_PENDING",
+      targetId: "task-nav",
+      actor: "browser-accounting-controller",
+      notes: expect.stringContaining("Reviewed close blocker CLOSE_TASK_PENDING for task-nav"),
+      correlationId: "browser-close-evidence-review-workflow-close-1-CLOSE_TASK_PENDING-task-nav",
+      actionOrigin: "HumanOperator",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/evidence-review/workflow-close-1/CLOSE_TASK_PENDING/task-nav/book/book-alpha",
+        "evidence://close-review/workflow/workflow-close-1/period/2026-05/book/book-alpha/issue/CLOSE_TASK_PENDING/target/task-nav"
+      ])
+    }));
+    expect(result.current.reviewCloseEvidenceStatusText).toBe("Retained close evidence review for CLOSE_TASK_PENDING.");
+    expect(result.current.reviewCloseEvidenceStatusTone).toBe("success");
+    expect(result.current.validationIssues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "CLOSE_TASK_PENDING-task-nav",
+        label: "Warning | CLOSE_TASK_PENDING"
+      })
+    ]));
+    expect(result.current.evidenceReviewRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        rowId: "validation-evidence-CLOSE_TASK_PENDING-task-nav",
+        statusLabel: "Review retained",
+        statusTone: "success",
+        evidenceLabel: "2 review evidence links retained",
+        latestReviewLabel: "browser-accounting-controller on Jun 3, 13:15 UTC | Reviewed close blocker CLOSE_TASK_PENDING for task-nav from the Accounting close cockpit.",
+        reviewDisabledReason: "Close evidence review is already retained for this issue."
+      })
+    ]));
   });
 
   it("reviews pending late adjustments through the shared close-management endpoint", async () => {
@@ -2486,7 +3297,8 @@ describe("accounting-screen view model", () => {
       buildPackage,
       certifyPackage,
       getExportManifest,
-      listPackages
+      listPackages,
+      reviewCloseEvidence: vi.fn(async () => pendingLateAdjustmentPlan)
     };
 
     const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
@@ -2501,6 +3313,15 @@ describe("accounting-screen view model", () => {
       materialityTone: "warning",
       reviewDisabledReason: null
     });
+    expect(result.current.closeWorkflowSteps).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "late-adjustments",
+        statusLabel: "1 pending",
+        actionId: null,
+        disabledReason: null,
+        tone: "warning"
+      })
+    ]));
 
     await act(async () => {
       await result.current.reviewLateAdjustment("late-adjustment-1", "Approved");
@@ -2525,6 +3346,15 @@ describe("accounting-screen view model", () => {
       decisionLabel: "Approved by browser-accounting-controller on Jun 3, 12:45 UTC",
       reviewDisabledReason: "Late adjustment is already approved."
     });
+    expect(result.current.closeWorkflowSteps).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "late-adjustments",
+        statusLabel: "Reviewed",
+        actionId: "request-late-adjustment",
+        disabledReason: "Enter the journal entry id for the late adjustment.",
+        tone: "success"
+      })
+    ]));
     expect(createLateAdjustment).not.toHaveBeenCalled();
     expect(configureClosePlan).not.toHaveBeenCalled();
     expect(signOffCloseTask).not.toHaveBeenCalled();
@@ -2587,15 +3417,39 @@ describe("accounting-screen view model", () => {
       buildPackage,
       certifyPackage,
       getExportManifest,
-      listPackages
+      listPackages,
+      reviewCloseEvidence: vi.fn(async () => unsignedClosePlan)
     };
 
     const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
 
     await waitFor(() => expect(result.current.tasks).toHaveLength(1));
 
-    expect(result.current.signOffButtonLabel).toBe("Sign off Finalize NAV package");
+    expect(result.current.signOffButtonLabel).toBe("Approved Finalize NAV package");
     expect(result.current.signOffDisabledReason).toBeNull();
+    expect(result.current.closeSignOffDraft).toMatchObject({
+      taskId: "task-nav",
+      role: "controller",
+      decision: "Approved"
+    });
+    expect(result.current.closeSignOffTaskOptions).toEqual([
+      expect.objectContaining({
+        taskId: "task-nav",
+        selected: true,
+        signOffLabel: "0/1 required sign-offs approved"
+      })
+    ]);
+    expect(result.current.closeSignOffRoleOptions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        role: "controller",
+        selected: true,
+        sourceLabel: "Required role"
+      })
+    ]));
+    expect(result.current.closeSignOffDecisionOptions).toEqual([
+      expect.objectContaining({ decision: "Approved", selected: true }),
+      expect.objectContaining({ decision: "Rejected", selected: false })
+    ]);
     expect(result.current.tasks[0]).toMatchObject({
       signOffLabel: "0/1 required sign-offs approved",
       signOffRequirementLabel: "controller: 0/1"
@@ -2612,25 +3466,152 @@ describe("accounting-screen view model", () => {
       decision: "Approved",
       actor: "browser-accounting-controller",
       notes: "Approved Finalize NAV package close checklist task from the Accounting close cockpit.",
-      correlationId: "browser-close-signoff-workflow-close-1-task-nav",
+      correlationId: "browser-close-signoff-workflow-close-1-task-nav-approved",
       evidenceLinks: expect.arrayContaining([
         "browser://accounting/close/sign-off/workflow-close-1/task-nav",
+        "browser://accounting/close/sign-off/workflow-close-1/task-nav/controller",
+        "evidence/nav-signoff",
         "evidence/nav-package"
       ])
     }));
-    expect(result.current.signOffStatusText).toBe("Signed off Finalize NAV package.");
+    expect(result.current.signOffStatusText).toBe("Approved sign-off retained for Finalize NAV package.");
     expect(result.current.signOffStatusTone).toBe("success");
     expect(result.current.tasks[0]).toMatchObject({
       statusLabel: "Signed off",
       signOffLabel: "1/1 required sign-offs approved",
       signOffRequirementLabel: "controller: 1/1"
     });
-    expect(result.current.signOffDisabledReason).toBe("No close checklist task is ready for sign-off.");
+    expect(result.current.signOffDisabledReason).toBe("Select a close checklist task before signing off.");
     expect(createLateAdjustment).not.toHaveBeenCalled();
     expect(reviewLateAdjustment).not.toHaveBeenCalled();
     expect(configureClosePlan).not.toHaveBeenCalled();
     expect(buildPackage).not.toHaveBeenCalled();
     expect(certifyPackage).not.toHaveBeenCalled();
+  });
+
+  it("retains configured rejected close checklist sign-off decisions through the shared close endpoint", async () => {
+    const unsignedClosePlan: ClosePeriodPlan = {
+      ...closePeriodPlan,
+      tasks: closePeriodPlan.tasks.map((task) => ({
+        ...task,
+        signOffs: [],
+        signOffRequirements: task.signOffRequirements?.map((requirement) => ({
+          ...requirement,
+          approvedCount: 0,
+          isSatisfied: false
+        })) ?? null
+      }))
+    };
+    const rejectedClosePlan: ClosePeriodPlan = {
+      ...unsignedClosePlan,
+      tasks: unsignedClosePlan.tasks.map((task) => ({
+        ...task,
+        signOffs: [
+          {
+            signOffId: "signoff-browser-controller-rejected",
+            role: "controller",
+            actor: "browser-accounting-controller",
+            approvalState: "Rejected" as const,
+            signedAtUtc: "2026-06-03T12:30:00Z",
+            evidenceLinks: ["browser://accounting/close/sign-off/workflow-close-1/task-nav/controller"],
+            notes: "Controller rejected NAV package pending retained evidence."
+          }
+        ]
+      }))
+    };
+    const signOffCloseTask = vi.fn(async () => rejectedClosePlan);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => unsignedClosePlan),
+      createLateAdjustment: vi.fn(async () => unsignedClosePlan),
+      reviewLateAdjustment: vi.fn(async () => unsignedClosePlan),
+      signOffCloseTask,
+      configureClosePlan: vi.fn(async () => unsignedClosePlan),
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: unsignedClosePlan, transition: null, issues: [] })),
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage]),
+      reviewCloseEvidence: vi.fn(async () => unsignedClosePlan)
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.closeSignOffDraft.taskId).toBe("task-nav"));
+
+    act(() => {
+      result.current.selectCloseSignOffDecision("Rejected");
+      result.current.updateCloseSignOffDraft({ notes: "Controller rejected NAV package pending retained evidence." });
+    });
+
+    expect(result.current.signOffButtonLabel).toBe("Rejected Finalize NAV package");
+
+    await act(async () => {
+      await result.current.signOffNextTask();
+    });
+
+    expect(signOffCloseTask).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-close-1",
+      taskId: "task-nav",
+      role: "controller",
+      decision: "Rejected",
+      actor: "browser-accounting-controller",
+      notes: "Controller rejected NAV package pending retained evidence.",
+      correlationId: "browser-close-signoff-workflow-close-1-task-nav-rejected",
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/sign-off/workflow-close-1/task-nav",
+        "browser://accounting/close/sign-off/workflow-close-1/task-nav/controller",
+        "evidence/nav-package"
+      ])
+    }));
+    expect(result.current.signOffStatusText).toBe("Rejected sign-off retained for Finalize NAV package.");
+    expect(result.current.tasks[0].signOffDetailLabel).toBe("Rejected by browser-accounting-controller on Jun 3, 12:30 UTC | Controller rejected NAV package pending retained evidence.");
+  });
+
+  it("blocks browser close task sign-off when the selected role is not retained", async () => {
+    const unsignedClosePlan: ClosePeriodPlan = {
+      ...closePeriodPlan,
+      tasks: closePeriodPlan.tasks.map((task) => ({
+        ...task,
+        signOffs: [],
+        signOffRequirements: task.signOffRequirements?.map((requirement) => ({
+          ...requirement,
+          approvedCount: 0,
+          isSatisfied: false
+        })) ?? null
+      }))
+    };
+    const signOffCloseTask = vi.fn(async () => unsignedClosePlan);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan: vi.fn(async () => unsignedClosePlan),
+      createLateAdjustment: vi.fn(async () => unsignedClosePlan),
+      reviewLateAdjustment: vi.fn(async () => unsignedClosePlan),
+      signOffCloseTask,
+      configureClosePlan: vi.fn(async () => unsignedClosePlan),
+      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: unsignedClosePlan, transition: null, issues: [] })),
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage]),
+      reviewCloseEvidence: vi.fn(async () => unsignedClosePlan)
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.closeSignOffDraft.taskId).toBe("task-nav"));
+
+    act(() => {
+      result.current.updateCloseSignOffDraft({ role: "investor-relations" });
+    });
+
+    expect(result.current.signOffDisabledReason).toBe("investor-relations is not retained on the selected task sign-off matrix.");
+
+    await act(async () => {
+      await result.current.signOffNextTask();
+    });
+
+    expect(result.current.signOffStatusText).toBe("investor-relations is not retained on the selected task sign-off matrix.");
+    expect(result.current.signOffStatusTone).toBe("danger");
+    expect(signOffCloseTask).not.toHaveBeenCalled();
   });
 
   it("derives the accounting workstream and selected reconciliation run", () => {
@@ -3303,6 +4284,8 @@ describe("accounting-screen view model", () => {
           summary: "Historical journal worker plan retained for primary book."
         }]
       }),
+      listExternalGlMappingProfiles: vi.fn().mockResolvedValue([]),
+      upsertExternalGlMappingProfile: vi.fn(async (request) => request.profile),
       getProductionCertificationProfile: vi.fn(async () => retainedProductionCertificationProfile),
       upsertProductionCertificationProfile: vi.fn(async (request) => {
         retainedProductionCertificationProfile = request.profile;
@@ -3322,6 +4305,32 @@ describe("accounting-screen view model", () => {
         totalCredits: 250000,
         lines: dryRunResult.generatedLines,
         validationIssues: []
+      }),
+      upsertChartNode: vi.fn(async (request) => {
+        retainedWorkspace = {
+          ...retainedWorkspace,
+          chartOfAccounts: [
+            ...retainedWorkspace.chartOfAccounts.filter((node) => node.nodeId !== request.node.nodeId),
+            request.node
+          ],
+          auditTrail: [
+            ...retainedWorkspace.auditTrail,
+            {
+              auditEventId: `audit-chart-upsert-${retainedWorkspace.auditTrail.length + 1}`,
+              action: "chart.upsert",
+              actor: request.actor,
+              fundProfileId: request.fundProfileId,
+              ledgerBookId: request.ledgerBookId ?? null,
+              correlationId: request.correlationId ?? null,
+              recordedAtUtc: "2026-06-30T12:08:00Z",
+              beforeHash: "before-chart-upsert",
+              afterHash: "after-chart-upsert",
+              validationIssues: [],
+              evidenceLinks: request.evidenceLinks ?? []
+            }
+          ]
+        };
+        return retainedWorkspace;
       }),
       upsertRule,
       dryRunRule: vi.fn().mockResolvedValue(dryRunResult),
@@ -3405,6 +4414,59 @@ describe("accounting-screen view model", () => {
       "External class: FundAlpha"
     ]));
     expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("event.kind Equals TradeExecuted");
+
+    act(() => {
+      result.current.chartAccountEditor.updateDraft({
+        nodeId: "coa-management-fees",
+        path: "Expenses:Management Fees",
+        accountName: "Management Fees",
+        accountType: "Expense",
+        parentPath: "Expenses",
+        financialAccountId: "gl-6100-management-fees",
+        evidenceText: "evidence://chart/management-fees"
+      });
+    });
+    expect(result.current.chartAccountEditor.canSave).toBe(true);
+
+    act(() => {
+      result.current.chartAccountEditor.updateDraft({ path: "   " });
+    });
+    expect(result.current.chartAccountEditor.canSave).toBe(false);
+    expect(result.current.chartAccountEditor.saveDisabledReason).toBe("Account path is required.");
+
+    await act(async () => {
+      await result.current.chartAccountEditor.save();
+    });
+
+    expect(services.upsertChartNode).not.toHaveBeenCalled();
+    expect(result.current.chartAccountEditor.statusText).toBe("Chart account is missing required fields.");
+
+    act(() => {
+      result.current.chartAccountEditor.updateDraft({ path: "Expenses:Management Fees" });
+    });
+    expect(result.current.chartAccountEditor.canSave).toBe(true);
+
+    await act(async () => {
+      await result.current.chartAccountEditor.save();
+    });
+
+    expect(services.upsertChartNode).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      actor: "browser-accounting-operator",
+      evidenceLinks: ["evidence://chart/management-fees"],
+      node: expect.objectContaining({
+        nodeId: "coa-management-fees",
+        path: "Expenses:Management Fees",
+        accountName: "Management Fees",
+        accountType: "Expense",
+        parentPath: "Expenses",
+        financialAccountId: "gl-6100-management-fees",
+        isArchived: false
+      })
+    }));
+    expect(result.current.metricRows.find((row) => row.id === "chart")?.value).toBe("3");
+    expect(result.current.chartAccountEditor.statusText).toBe("Saved chart account Expenses:Management Fees.");
     expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("group-trade-source: Any (required)");
     expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("event.source Equals Broker");
     expect(result.current.selectedRule?.formulaRows.join("\n")).toContain("formula-source: SourceAmount $250,000 USD");
@@ -3606,6 +4668,49 @@ describe("accounting-screen view model", () => {
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/period-report/dimension-scope/canonical-production",
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/cross-period/dimension-scope/canonical-production",
           "evidence://tenant/tenant-alpha/company/company-alpha/fund/fund-alpha/ledger-book/book-primary/production-certification/dimensions/journal-query/dimension-scope/canonical-production"
+        ]),
+        workflowCertificationArtifacts: expect.arrayContaining([
+          expect.objectContaining({
+            status: "Certified",
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha",
+            fundProfileId: "fund-alpha",
+            ledgerBookId: "book-primary",
+            sourceService: "browser-accounting-configure",
+            lanes: expect.arrayContaining([
+              expect.objectContaining({ kind: "PostingRules", status: "Passed" }),
+              expect.objectContaining({ kind: "JournalLifecycle", status: "Passed" }),
+              expect.objectContaining({ kind: "CloseReporting", status: "Passed" }),
+              expect.objectContaining({ kind: "ClosePlanConfiguration", status: "Passed" })
+            ])
+          })
+        ]),
+        dimensionalCertificationArtifacts: expect.arrayContaining([
+          expect.objectContaining({
+            status: "Certified",
+            dimensionScopeEvidenceKey: "canonical-production",
+            sourceService: "browser-accounting-configure",
+            lanes: expect.arrayContaining([
+              expect.objectContaining({ kind: "PeriodReports", status: "Passed" }),
+              expect.objectContaining({ kind: "CrossPeriodReports", status: "Passed" }),
+              expect.objectContaining({ kind: "JournalFilters", status: "Passed" })
+            ])
+          })
+        ]),
+        tenantAdminCertificationArtifacts: expect.arrayContaining([
+          expect.objectContaining({
+            status: "Certified",
+            tenantId: "tenant-alpha",
+            companyId: "company-alpha",
+            fundProfileId: "fund-alpha",
+            ledgerBookId: "book-primary",
+            sourceService: "browser-accounting-configure",
+            lanes: expect.arrayContaining([
+              expect.objectContaining({ kind: "TenantScope", status: "Passed" }),
+              expect.objectContaining({ kind: "AdminRoleProfile", status: "Passed" }),
+              expect.objectContaining({ kind: "ScopedAccessPolicies", status: "Passed" })
+            ])
+          })
         ])
       }),
       evidenceLinks: expect.arrayContaining([
@@ -3640,6 +4745,143 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "implementation-sandbox", checked: false })
     ]));
     expect(result.current.tenantAdministrationProfile.canSave).toBe(true);
+    expect(result.current.tenantAdministrationProfile.canRetainSandboxProof).toBe(true);
+
+    act(() => {
+      result.current.tenantAdministrationProfile.updateEvidence("   ");
+    });
+    expect(result.current.tenantAdministrationProfile.canSave).toBe(false);
+    expect(result.current.tenantAdministrationProfile.saveDisabledReason)
+      .toBe("Retained setup evidence is required before saving tenant administration controls.");
+
+    await act(async () => {
+      await result.current.tenantAdministrationProfile.save();
+    });
+
+    expect(services.upsertTenantAdministrationProfile).not.toHaveBeenCalled();
+    expect(result.current.tenantAdministrationProfile.statusText)
+      .toBe("Retained setup evidence is required before saving tenant administration controls.");
+
+    act(() => {
+      result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup");
+      result.current.tenantAdministrationProfile.updateControl("approval-queue-studio", true);
+      result.current.tenantAdministrationProfile.updateControl("dimension-mapping-studio", true);
+      result.current.tenantAdministrationProfile.updateApprovalQueueSetup({ queueId: "" });
+    });
+    expect(result.current.tenantAdministrationProfile.canSave).toBe(false);
+    expect(result.current.tenantAdministrationProfile.saveDisabledReason)
+      .toBe("Complete approval queue id, workflow kind, approval role/count, segregation policy, and evidence requirement before saving approval queue setup.");
+    expect(result.current.tenantAdministrationProfile.canRetainSandboxProof).toBe(false);
+    expect(result.current.tenantAdministrationProfile.sandboxDisabledReason)
+      .toBe("Complete approval queue id, workflow kind, approval role/count, segregation policy, and evidence requirement before retaining implementation sandbox proof.");
+
+    await act(async () => {
+      await result.current.tenantAdministrationProfile.save();
+    });
+
+    expect(services.upsertTenantAdministrationProfile).not.toHaveBeenCalled();
+    expect(result.current.tenantAdministrationProfile.statusText)
+      .toBe("Complete approval queue id, workflow kind, approval role/count, segregation policy, and evidence requirement before saving approval queue setup.");
+
+    act(() => {
+      result.current.tenantAdministrationProfile.updateApprovalQueueSetup({
+        queueId: "sandbox-configuration-approval",
+        displayName: "Sandbox configuration approval",
+        workflowKind: "ConfigurationPromotion",
+        requiredApprovalRole: "Controller",
+        requiredApprovalCount: "2",
+        segregationPolicy: "Preparer cannot approve own sandbox configuration proof.",
+        evidenceRequirement: "sandbox-proof;configuration-approval;segregation-review"
+      });
+      result.current.tenantAdministrationProfile.updateDimensionMappingSetup({ mappingId: "" });
+    });
+    expect(result.current.tenantAdministrationProfile.canSave).toBe(false);
+    expect(result.current.tenantAdministrationProfile.saveDisabledReason)
+      .toBe("Complete dimension mapping id, display name, provider id, Meridian dimensions, provider dimensions, and evidence requirement before saving dimension mapping setup.");
+    expect(result.current.tenantAdministrationProfile.canRetainSandboxProof).toBe(false);
+    expect(result.current.tenantAdministrationProfile.sandboxDisabledReason)
+      .toBe("Complete dimension mapping id, display name, provider id, Meridian dimensions, provider dimensions, and evidence requirement before retaining implementation sandbox proof.");
+
+    await act(async () => {
+      await result.current.tenantAdministrationProfile.save();
+    });
+
+    expect(services.upsertTenantAdministrationProfile).not.toHaveBeenCalled();
+    expect(result.current.tenantAdministrationProfile.statusText)
+      .toBe("Complete dimension mapping id, display name, provider id, Meridian dimensions, provider dimensions, and evidence requirement before saving dimension mapping setup.");
+
+    act(() => {
+      result.current.tenantAdministrationProfile.updateDimensionMappingSetup({
+        mappingId: "sandbox-qbo-dimension-map",
+        displayName: "Sandbox QuickBooks dimensions",
+        providerId: "quickbooks-fixture",
+        meridianDimensionsText: "fundId=fund-alpha\nbookId=book-primary\ncostCenterId=sandbox-accounting",
+        providerDimensionsText: "Class=fund-alpha\nBook=book-primary\nDepartment=sandbox-accounting",
+        evidenceRequirement: "sandbox-proof;dimension-mapping;controller-approval"
+      });
+    });
+    expect(result.current.tenantAdministrationProfile.canSave).toBe(true);
+    expect(result.current.tenantAdministrationProfile.canRetainSandboxProof).toBe(true);
+
+    await act(async () => {
+      await result.current.tenantAdministrationProfile.retainSandboxProof();
+    });
+
+    expect(services.upsertTenantAdministrationProfile).toHaveBeenCalledWith(expect.objectContaining({
+      actor: "browser-accounting-operator",
+      profile: expect.objectContaining({
+        tenantId: "tenant-alpha",
+        companyId: "company-alpha",
+        approvalQueueStudioConfigured: true,
+        approvalQueueConfigurations: [
+          expect.objectContaining({
+            queueId: "sandbox-configuration-approval",
+            displayName: "Sandbox configuration approval",
+            workflowKind: "ConfigurationPromotion",
+            requiredApprovalRole: "Controller",
+            requiredApprovalCount: 2,
+            segregationPolicy: "Preparer cannot approve own sandbox configuration proof.",
+            evidenceRequirement: "sandbox-proof;configuration-approval;segregation-review"
+          })
+        ],
+        dimensionMappingStudioConfigured: true,
+        dimensionMappingConfigurations: [
+          expect.objectContaining({
+            mappingId: "sandbox-qbo-dimension-map",
+            displayName: "Sandbox QuickBooks dimensions",
+            providerId: "quickbooks-fixture",
+            meridianDimensions: expect.objectContaining({
+              fundId: "fund-alpha",
+              bookId: "book-primary",
+              costCenterId: "sandbox-accounting"
+            }),
+            providerDimensions: expect.objectContaining({
+              externalGlDimensions: expect.objectContaining({
+                Class: "fund-alpha",
+                Book: "book-primary",
+                Department: "sandbox-accounting"
+              })
+            }),
+            evidenceRequirement: "sandbox-proof;dimension-mapping;controller-approval"
+          })
+        ],
+        implementationSandboxConfigured: true,
+        evidenceReferences: expect.arrayContaining([
+          "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-sandbox/ledgerBookId=book-primary",
+          "evidence://tenant-admin/tenant-alpha/company-alpha/sandbox-validation/ledgerBookId=book-primary",
+          "evidence://tenant-admin/tenant-alpha/company-alpha/fixture-validation/ledgerBookId=book-primary",
+          "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-fixture/ledgerBookId=book-primary"
+        ])
+      }),
+      evidenceLinks: expect.arrayContaining([
+        "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-sandbox/ledgerBookId=book-primary",
+        "evidence://tenant-admin/tenant-alpha/company-alpha/sandbox-validation/ledgerBookId=book-primary",
+        "evidence://tenant-admin/tenant-alpha/company-alpha/fixture-validation/ledgerBookId=book-primary",
+        "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-fixture/ledgerBookId=book-primary"
+      ])
+    }));
+    expect(result.current.tenantAdministrationProfile.sandboxStatusText)
+      .toBe("Implementation sandbox proof retained; readiness refreshed from fixture and ledger-book validation evidence.");
 
     act(() => {
       result.current.tenantAdministrationProfile.updateControl("operator-surface", true);
@@ -3657,6 +4899,23 @@ describe("accounting-screen view model", () => {
       result.current.tenantAdministrationProfile.updateControl("approval-queue-studio", true);
       result.current.tenantAdministrationProfile.updateControl("dimension-mapping-studio", true);
       result.current.tenantAdministrationProfile.updateControl("implementation-sandbox", true);
+      result.current.tenantAdministrationProfile.updateApprovalQueueSetup({
+        queueId: "configuration-promotion-queue",
+        displayName: "Configuration promotion queue",
+        workflowKind: "ConfigurationPromotion",
+        requiredApprovalRole: "Controller",
+        requiredApprovalCount: "2",
+        segregationPolicy: "Preparer cannot approve own configuration change.",
+        evidenceRequirement: "approval-queue;configuration-approval;segregation-review"
+      });
+      result.current.tenantAdministrationProfile.updateDimensionMappingSetup({
+        mappingId: "qbo-fund-alpha-dimension-map",
+        displayName: "QuickBooks fund alpha dimensions",
+        providerId: "quickbooks-fixture",
+        meridianDimensionsText: "fundId=fund-alpha\nbookId=book-primary\ncostCenterId=fund-accounting",
+        providerDimensionsText: "Class=fund-alpha\nBook=book-primary\nDepartment=fund-accounting",
+        evidenceRequirement: "dimension-mapping;provider-segment-review;controller-approval"
+      });
       result.current.tenantAdministrationProfile.updateEvidence("evidence://tenant-admin/setup\nevidence://tenant-admin/operator-surface\nevidence://tenant-admin/chart-administration\nevidence://tenant-admin/rules-studio\nevidence://tenant-admin/close-setup\nevidence://tenant-admin/provider-mapping\nevidence://tenant-admin/tenant-company-report-group\nevidence://tenant-admin/audit-review\nevidence://tenant-admin/bulk-import-export\nevidence://tenant-admin/performance-validation\nevidence://tenant-admin/disaster-recovery\nevidence://tenant-admin/ledger-book-administration\nevidence://tenant-admin/posting-rule-authoring\nevidence://tenant-admin/approval-queue\nevidence://tenant-admin/dimension-mapping\nevidence://tenant-admin/implementation-sandbox");
     });
 
@@ -3684,9 +4943,40 @@ describe("accounting-screen view model", () => {
         ledgerBookAdministrationStudioConfigured: true,
         postingRuleAuthoringStudioConfigured: true,
         approvalQueueStudioConfigured: true,
+        approvalQueueConfigurations: [
+          expect.objectContaining({
+            queueId: "configuration-promotion-queue",
+            displayName: "Configuration promotion queue",
+            workflowKind: "ConfigurationPromotion",
+            requiredApprovalRole: "Controller",
+            requiredApprovalCount: 2,
+            segregationPolicy: "Preparer cannot approve own configuration change.",
+            evidenceRequirement: "approval-queue;configuration-approval;segregation-review"
+          })
+        ],
         dimensionMappingStudioConfigured: true,
+        dimensionMappingConfigurations: [
+          expect.objectContaining({
+            mappingId: "qbo-fund-alpha-dimension-map",
+            displayName: "QuickBooks fund alpha dimensions",
+            providerId: "quickbooks-fixture",
+            meridianDimensions: expect.objectContaining({
+              fundId: "fund-alpha",
+              bookId: "book-primary",
+              costCenterId: "fund-accounting"
+            }),
+            providerDimensions: expect.objectContaining({
+              externalGlDimensions: expect.objectContaining({
+                Class: "fund-alpha",
+                Book: "book-primary",
+                Department: "fund-accounting"
+              })
+            }),
+            evidenceRequirement: "dimension-mapping;provider-segment-review;controller-approval"
+          })
+        ],
         implementationSandboxConfigured: true,
-        evidenceReferences: [
+        evidenceReferences: expect.arrayContaining([
           "evidence://tenant-admin/setup",
           "evidence://tenant-admin/operator-surface",
           "evidence://tenant-admin/chart-administration",
@@ -3703,10 +4993,14 @@ describe("accounting-screen view model", () => {
           "evidence://tenant-admin/approval-queue",
           "evidence://tenant-admin/dimension-mapping",
           "evidence://tenant-admin/implementation-sandbox",
-          "evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration/ledgerBookId=book-primary"
-        ]
+          "evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration/ledgerBookId=book-primary",
+          "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-sandbox/ledgerBookId=book-primary",
+          "evidence://tenant-admin/tenant-alpha/company-alpha/sandbox-validation/ledgerBookId=book-primary",
+          "evidence://tenant-admin/tenant-alpha/company-alpha/fixture-validation/ledgerBookId=book-primary",
+          "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-fixture/ledgerBookId=book-primary"
+        ])
       }),
-      evidenceLinks: [
+      evidenceLinks: expect.arrayContaining([
         "evidence://tenant-admin/setup",
         "evidence://tenant-admin/operator-surface",
         "evidence://tenant-admin/chart-administration",
@@ -3723,10 +5017,92 @@ describe("accounting-screen view model", () => {
         "evidence://tenant-admin/approval-queue",
         "evidence://tenant-admin/dimension-mapping",
         "evidence://tenant-admin/implementation-sandbox",
-        "evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration/ledgerBookId=book-primary"
-      ]
+        "evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration/ledgerBookId=book-primary",
+        "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-sandbox/ledgerBookId=book-primary",
+        "evidence://tenant-admin/tenant-alpha/company-alpha/sandbox-validation/ledgerBookId=book-primary",
+        "evidence://tenant-admin/tenant-alpha/company-alpha/fixture-validation/ledgerBookId=book-primary",
+        "evidence://tenant-admin/tenant-alpha/company-alpha/implementation-fixture/ledgerBookId=book-primary"
+      ])
     }));
     expect(result.current.tenantAdministrationProfile.statusText).toBe("Tenant administration setup profile saved; production readiness refreshed from retained controls.");
+    expect(result.current.externalGlMappingProfile.scopeLabel).toBe("Fund fund-alpha | ledger book book-primary");
+    expect(result.current.externalGlMappingProfile.canSave).toBe(true);
+
+    act(() => {
+      result.current.externalGlMappingProfile.updateProviderId("quickbooks-fixture");
+      result.current.externalGlMappingProfile.updateProfileId("qbo-fund-alpha-book-primary");
+      result.current.externalGlMappingProfile.updateDisplayName("Fund Alpha QuickBooks mapping");
+      result.current.externalGlMappingProfile.updateMeridianDimensions("fundId=fund-alpha\nbookId=book-primary\ncustomerId=investor-alpha\nProject=direct-lending");
+      result.current.externalGlMappingProfile.updateExternalDimensions("bookId=Book:book-primary\ncustomerId=qbo-customer-alpha\nProject=qbo-project-credit");
+      result.current.externalGlMappingProfile.updateEvidence("approval:external-gl-mapping:qbo-fund-alpha-book-primary");
+      result.current.externalGlMappingProfile.updateCertified(true);
+      result.current.externalGlMappingProfile.updateAccountMappings("   ");
+    });
+    expect(result.current.externalGlMappingProfile.canSave).toBe(false);
+    expect(result.current.externalGlMappingProfile.saveDisabledReason).toBe("At least one account mapping is required.");
+
+    await act(async () => {
+      await result.current.externalGlMappingProfile.save();
+    });
+
+    expect(services.upsertExternalGlMappingProfile).not.toHaveBeenCalled();
+    expect(result.current.externalGlMappingProfile.statusText)
+      .toBe("Provider, profile id, display name, account mappings, and retained evidence are required before saving an external GL mapping profile.");
+
+    act(() => {
+      result.current.externalGlMappingProfile.updateAccountMappings("Assets:Cash:Operating=qbo-1000\nIncome:Investment Income=qbo-4000");
+    });
+    expect(result.current.externalGlMappingProfile.canSave).toBe(true);
+
+    await act(async () => {
+      await result.current.externalGlMappingProfile.save();
+    });
+
+    expect(services.upsertExternalGlMappingProfile).toHaveBeenCalledWith(expect.objectContaining({
+      actor: "browser-accounting-operator",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      actionOrigin: "HumanOperator",
+      profile: expect.objectContaining({
+        profileId: "qbo-fund-alpha-book-primary",
+        providerId: "quickbooks-fixture",
+        displayName: "Fund Alpha QuickBooks mapping",
+        certificationState: "Certified",
+        accountMappings: expect.objectContaining({
+          "Assets:Cash:Operating": "qbo-1000",
+          "Income:Investment Income": "qbo-4000"
+        }),
+        dimensionMappings: [
+          expect.objectContaining({
+            certificationState: "Certified",
+            meridianDimensions: expect.objectContaining({
+              fundId: "fund-alpha",
+              bookId: "book-primary",
+              customerId: "investor-alpha",
+              externalGlDimensions: expect.objectContaining({
+                Project: "direct-lending"
+              })
+            }),
+            externalDimensions: expect.objectContaining({
+              bookId: "Book:book-primary",
+              customerId: "qbo-customer-alpha",
+              externalGlDimensions: expect.objectContaining({
+                Project: "qbo-project-credit"
+              })
+            })
+          })
+        ]
+      }),
+      evidenceLinks: expect.arrayContaining([
+        "approval:external-gl-mapping:qbo-fund-alpha-book-primary",
+        "evidence://external-gl/mapping-certification/provider/quickbooks-fixture/fund/fund-alpha/profile/qbo-fund-alpha-book-primary",
+        "evidence://ledger-book/book-primary/external-gl/mapping-certification/qbo-fund-alpha-book-primary"
+      ])
+    }));
+    expect(result.current.externalGlMappingProfile.statusText).toBe("External GL mapping profile qbo-fund-alpha-book-primary saved as Certified; readiness refreshed from retained provider mapping.");
     expect(result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "server-readiness",
@@ -4168,12 +5544,15 @@ describe("accounting-screen view model", () => {
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", artifacts: [] }),
       listMigrationWorkerPlans: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-primary", kind: null, plans: [] }),
+      listExternalGlMappingProfiles: vi.fn().mockResolvedValue([]),
+      upsertExternalGlMappingProfile: vi.fn(),
       getProductionCertificationProfile: vi.fn(),
       upsertProductionCertificationProfile: vi.fn(),
       getTenantAdministrationProfile: vi.fn(),
       upsertTenantAdministrationProfile: vi.fn(),
       createLedgerBook: vi.fn(),
       previewTemplate: vi.fn(),
+      upsertChartNode: vi.fn().mockResolvedValue(workspace),
       upsertRule: vi.fn(),
       dryRunRule: vi.fn(),
       buildJournalCandidate: vi.fn(),
@@ -4199,6 +5578,13 @@ describe("accounting-screen view model", () => {
 
     const { result } = renderHook(() => useAccountingConfigurationViewModel(services));
     await waitFor(() => expect(result.current.rules).toHaveLength(1));
+    expect(result.current.activateDisabledReason).toBe("Approve promotion for 1 required posting rule before activation.");
+
+    await act(async () => {
+      await result.current.activate();
+    });
+
+    expect(services.activate).not.toHaveBeenCalled();
     expect(result.current.activateDisabledReason).toBe("Approve promotion for 1 required posting rule before activation.");
     expect(result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -4232,6 +5618,7 @@ describe("accounting-screen view model", () => {
 
     const approvedServices: AccountingConfigurationServices = {
       ...services,
+      approveRulePromotion: vi.fn(),
       getConfiguration: vi.fn().mockResolvedValue({
       ...workspace,
       postingRules: [{
@@ -4252,6 +5639,13 @@ describe("accounting-screen view model", () => {
     const approved = renderHook(() => useAccountingConfigurationViewModel(approvedServices));
     await waitFor(() => expect(approved.result.current.rules).toHaveLength(1));
     expect(approved.result.current.activateDisabledReason).toBe("Save regression test cases for 1 promotion-gated posting rule before activation.");
+
+    await act(async () => {
+      await approved.result.current.approveRulePromotion();
+    });
+
+    expect(approvedServices.approveRulePromotion).not.toHaveBeenCalled();
+    expect(approved.result.current.approveRulePromotionStatusText).toBe("Selected posting rule already has an approved promotion.");
     expect(approved.result.current.selectedRule?.promotionReadiness).toEqual(expect.arrayContaining([
       expect.objectContaining({
         id: "promotion-approval",
@@ -4270,6 +5664,46 @@ describe("accounting-screen view model", () => {
         tone: "warning"
       })
     ]));
+
+    const noRuleServices: AccountingConfigurationServices = {
+      ...services,
+      getConfiguration: vi.fn().mockResolvedValue({
+        ...workspace,
+        postingRules: [],
+        rulesStudio: {
+          summary: {
+            activeRules: 0,
+            templateMappingRules: 0,
+            generatedPostingRules: 0,
+            rulesRequiringPromotionApproval: 0,
+            rulesWithApprovedPromotion: 0,
+            pendingPromotionApprovalRules: 0,
+            savedTestCaseCount: 0,
+            rulesWithSavedRegressionTests: 0,
+            rulesMissingCurrentVersionRegressionTests: 0
+          },
+          rules: [],
+          promotionQueue: []
+        }
+      }),
+      upsertRule: vi.fn(),
+      approveRulePromotion: vi.fn()
+    };
+
+    const noRules = renderHook(() => useAccountingConfigurationViewModel(noRuleServices));
+    await waitFor(() => expect(noRules.result.current.rules).toHaveLength(0));
+
+    await act(async () => {
+      await noRules.result.current.duplicateSelectedRule();
+      await noRules.result.current.archiveSelectedRule();
+      await noRules.result.current.approveRulePromotion();
+    });
+
+    expect(noRuleServices.upsertRule).not.toHaveBeenCalled();
+    expect(noRuleServices.approveRulePromotion).not.toHaveBeenCalled();
+    expect(noRules.result.current.duplicateRuleStatusText).toBe("Select an active posting rule before drafting a copy.");
+    expect(noRules.result.current.archiveRuleStatusText).toBe("Select an active posting rule before archiving.");
+    expect(noRules.result.current.approveRulePromotionStatusText).toBe("Select an active posting rule before approving promotion.");
   });
 
   it("surfaces missing ledger-book setup as configuration setup readiness", async () => {
@@ -4358,12 +5792,15 @@ describe("accounting-screen view model", () => {
       assessProductionReadiness: vi.fn().mockResolvedValue(null),
       listMigrationRunArtifacts: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-missing", artifacts: [] }),
       listMigrationWorkerPlans: vi.fn().mockResolvedValue({ fundProfileId: "fund-alpha", ledgerBookId: "book-missing", kind: null, plans: [] }),
+      listExternalGlMappingProfiles: vi.fn().mockResolvedValue([]),
+      upsertExternalGlMappingProfile: vi.fn(),
       getProductionCertificationProfile: vi.fn(),
       upsertProductionCertificationProfile: vi.fn(),
       getTenantAdministrationProfile: vi.fn(),
       upsertTenantAdministrationProfile: vi.fn(),
       createLedgerBook,
       previewTemplate: vi.fn(),
+      upsertChartNode: vi.fn().mockResolvedValue(workspace),
       upsertRule: vi.fn(),
       dryRunRule: vi.fn(),
       buildJournalCandidate: vi.fn(),
@@ -6934,6 +8371,22 @@ describe("accounting-screen view model", () => {
       {
         label: "Reference-data workbench",
         value: "Ready: Multi-asset reference-data workbench is ready for downstream FINOPS use.",
+        tone: "success"
+      },
+      {
+        label: "Operating model",
+        value: "Ready: Security Master operating model has applicable entitlement, source, control, and approval evidence for the selected scope.",
+        tone: "success"
+      },
+      {
+        label: "Reconcile",
+        value: "Ready: 1 most-specific entitlement record applies to the selected Security Master scope. Evidence 1; blockers 0.",
+        tone: "success"
+      },
+      { label: "Entitlement applicability", value: "1 most-specific applicable entitlement(s).", tone: "success" },
+      {
+        label: "Manual-change approval",
+        value: "Ready: operations-continuity.security-master-override via SecurityMaster; 1 manual change event reuses the operations approval policy.",
         tone: "success"
       },
       {

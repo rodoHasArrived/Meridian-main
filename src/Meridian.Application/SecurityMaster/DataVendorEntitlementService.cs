@@ -44,7 +44,17 @@ public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
             request.RenewalReminderDays,
             status,
             request.Actor,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow)
+        {
+            ClientId = NormalizeOptional(request.ClientId),
+            AccountId = NormalizeOptional(request.AccountId),
+            FundProfileId = NormalizeOptional(request.FundProfileId),
+            SecurityId = request.SecurityId,
+            SourceCategory = NormalizeOptional(request.SourceCategory),
+            ExpectedRefreshCadence = NormalizeOptional(request.ExpectedRefreshCadence),
+            DefaultMaxDaysStale = request.DefaultMaxDaysStale,
+            OperatorMetadata = NormalizeOptional(request.OperatorMetadata)
+        };
 
         return await _store.UpsertAsync(dto, ct).ConfigureAwait(false);
     }
@@ -71,4 +81,7 @@ public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
 
         return DataVendorEntitlementStatus.Active;
     }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

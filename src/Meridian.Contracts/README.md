@@ -30,6 +30,9 @@ or provider implementations.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
   contract used by HTTP endpoints, imports, provider backfills, and workstation commands.
+  Data vendor entitlement payloads carry optional client, account, fund-profile, security, and
+  operator metadata scope so the shared Instrument Passport operating model can identify the
+  most-specific applicable vendor/data-type control without browser-only or WPF-only rules.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
   published under `Meridian.Contracts.Backfill`.
 - `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
@@ -1001,12 +1004,18 @@ review cycle, but their lifecycle transition history remains retained for audit 
 Close and reporting contracts publish `ClosePeriodPlanDto`,
 `ClosePeriodPlanConfigurationDto`, `UpsertClosePeriodPlanConfigurationRequestDto`,
 `SignOffCloseTaskRequestDto`, `LateAdjustmentRequestDto`, `ReviewLateAdjustmentRequestDto`,
-`LockClosePeriodRequestDto`, `ClosePeriodLockResultDto`, and `AccountingReportPackageBundleDto` so
+`ReviewCloseEvidenceRequestDto`, `CloseEvidenceReviewDto`, `LockClosePeriodRequestDto`,
+`ClosePeriodLockResultDto`, `CloseOperatingCoverageItemDto`, and
+`AccountingReportPackageBundleDto` so
 browser and WPF consumers use the same dependency, role-scoped sign-off requirement, governed
-close-plan setup with configurable task approval role/count, close-calendar milestone,
+close-plan setup with configurable task approval role/count plus multi-role sign-off matrix rows,
+dependency reason retention, and optional
+loaded-configuration timestamp guard, close-calendar milestone,
 evidence-backed close task sign-off whose retained artifact identifies the task, sign-off role, and workflow or period, materiality, retained
 late-adjustment approval/rejection with request-, journal-, workflow-, or period-specific evidence
-on the same retained artifact, governed period-lock request/result, financial statement, investor capital
+on the same retained artifact, retained active-blocker evidence reviews that remain separate from
+validation clearing, service-owned operating coverage rows for setup, dependencies, sign-off
+matrix, late adjustments, blocker review, and period lock, governed period-lock request/result, financial statement, investor capital
 statement, realized gain/loss, NAV, export-artifact manifest, certification, validation, and restatement vocabulary.
 Operations Continuity workflow start, summary-list, and workflow projection DTOs can carry an
 optional `LedgerBookId`, and close-plan DTOs preserve that book scope so close/reporting clients can
@@ -1028,6 +1037,14 @@ guards can detect provider-evidence drift beyond row totals or provider-facing r
 Provider rows also publish shared mapping-requirement DTOs for account mapping, journal lineage,
 trial-balance tie-out, and dimension mapping so browser, WPF, and admin setup surfaces can render
 QBO/Xero/NetSuite-specific guarded-export prerequisites without hard-coding provider vocabulary.
+`AccountingTenantAdministrationProfileDto` carries retained enterprise setup controls and now also
+includes `AccountingApprovalQueueConfigurationDto` rows for queue id, display name, workflow kind,
+required approval role/count, segregation policy, and evidence requirement so browser and WPF
+Configure persist approval queue setup through the shared Accounting System profile instead of
+checkbox-only readiness posture. The same profile now carries
+`AccountingDimensionMappingConfigurationDto` rows for mapping id, provider id, Meridian dimensions,
+provider dimensions, and evidence requirements so dimension-map setup is retained as structured
+tenant/company configuration rather than only a certification flag.
 Export packages also retain mapping profile, reconciliation, and balanced-reconciliation lineage so
 Financial Operations can revalidate the current external-GL mapping and latest reconciliation state
 before certification.
