@@ -9,6 +9,9 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Infrastructure;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -117,6 +120,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // The core ConfigStore (Application.UI.ConfigStore) is registered separately by AddMarketDataServices.
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
         builder.Services.AddUiSharedServices(statusHandlers, configPath);
+        builder.Services.RemoveAll<ProviderRegistry>();
+        builder.Services.AddSingleton(_ => CreateTestProviderRegistry());
         builder.Services.RemoveAll<IDirectLendingService>();
         builder.Services.AddSingleton<IDirectLendingService, InMemoryDirectLendingService>();
         builder.Services.RemoveAll<IFundStructureService>();
@@ -231,6 +236,14 @@ public sealed class EndpointTestFixture : IAsyncLifetime
             () => Array.Empty<DepthIntegrityEvent>();
 
         return new StatusEndpointHandlers(metricsProvider, pipelineProvider, integrityProvider);
+    }
+
+    private static ProviderRegistry CreateTestProviderRegistry()
+    {
+        var registry = new ProviderRegistry();
+        registry.Register(new NoOpMarketDataClient(), priorityOverride: 100);
+        registry.Register(new SyntheticHistoricalDataProvider(), priorityOverride: 10);
+        return registry;
     }
 
     private static string GetMinimalConfig()
