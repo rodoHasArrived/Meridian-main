@@ -1218,7 +1218,55 @@ public sealed record ReportWriterGridDefinitionDto(
     int? TopN = null,
     string? SortBy = null,
     bool SortDescending = true,
-    IReadOnlyList<ReportWriterFilterDefinitionDto>? Filters = null);
+    IReadOnlyList<ReportWriterFilterDefinitionDto>? Filters = null,
+    IReadOnlyList<ReportWriterFormatRuleDto>? FormatRules = null,
+    ReportWriterChartDefinitionDto? Chart = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterCellStyleDto>))]
+public enum ReportWriterCellStyleDto
+{
+    None = 0,
+    Success = 1,
+    Warning = 2,
+    Danger = 3,
+    Info = 4
+}
+
+public sealed record ReportWriterFormatRuleDto(
+    string Column,
+    ReportWriterFilterOperatorDto Operator,
+    ReportWriterCellStyleDto Style,
+    string? Value = null,
+    string? Label = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterChartTypeDto>))]
+public enum ReportWriterChartTypeDto
+{
+    Bar = 0,
+    StackedBar = 1,
+    Line = 2,
+    Area = 3,
+    Pie = 4
+}
+
+public sealed record ReportWriterChartDefinitionDto(
+    ReportWriterChartTypeDto Type,
+    string CategoryField,
+    IReadOnlyList<string> ValueColumns,
+    string? Title = null);
+
+public sealed record ReportWriterChartSeriesDto(
+    string Key,
+    string Label,
+    IReadOnlyList<decimal> Values);
+
+public sealed record ReportWriterChartRenderDto(
+    ReportWriterChartTypeDto Type,
+    string Title,
+    string CategoryField,
+    IReadOnlyList<string> Categories,
+    IReadOnlyList<ReportWriterChartSeriesDto> Series,
+    IReadOnlyList<string> Warnings);
 
 public sealed record ReportWriterGridColumnDto(
     string Key,
@@ -1227,7 +1275,8 @@ public sealed record ReportWriterGridColumnDto(
 
 public sealed record ReportWriterGridRowDto(
     string RowKey,
-    IReadOnlyDictionary<string, string> Values);
+    IReadOnlyDictionary<string, string> Values,
+    IReadOnlyDictionary<string, ReportWriterCellStyleDto>? StyleHints = null);
 
 public sealed record ReportWriterMetricLineageDto(
     string Name,
@@ -1277,7 +1326,50 @@ public sealed record ReportWriterGridRenderDto(
     IReadOnlyList<string> Warnings,
     ReportWriterGridLineageDto? Lineage = null,
     IReadOnlyList<ReportWriterGridDataDictionaryFieldDto>? DataDictionary = null,
-    IReadOnlyList<ReportWriterGridValidationCheckDto>? ValidationChecks = null);
+    IReadOnlyList<ReportWriterGridValidationCheckDto>? ValidationChecks = null,
+    ReportWriterChartRenderDto? Chart = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterDiffRowStateDto>))]
+public enum ReportWriterDiffRowStateDto
+{
+    Unchanged = 0,
+    Changed = 1,
+    Added = 2,
+    Removed = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterDiffDirectionDto>))]
+public enum ReportWriterDiffDirectionDto
+{
+    Flat = 0,
+    Up = 1,
+    Down = 2
+}
+
+public sealed record ReportWriterGridDiffCellDto(
+    string Column,
+    string? PriorValue,
+    string? CurrentValue,
+    string? Delta,
+    ReportWriterDiffDirectionDto Direction);
+
+public sealed record ReportWriterGridDiffRowDto(
+    string RowKey,
+    ReportWriterDiffRowStateDto State,
+    IReadOnlyDictionary<string, string> PriorValues,
+    IReadOnlyDictionary<string, string> CurrentValues,
+    IReadOnlyList<ReportWriterGridDiffCellDto> Cells);
+
+public sealed record ReportWriterGridDiffDto(
+    string GridId,
+    string Title,
+    IReadOnlyList<ReportWriterGridColumnDto> Columns,
+    IReadOnlyList<ReportWriterGridDiffRowDto> Rows,
+    IReadOnlyList<string> Warnings,
+    int AddedRowCount,
+    int RemovedRowCount,
+    int ChangedRowCount,
+    int UnchangedRowCount);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportAccessModeDto>))]
 public enum ReportAccessModeDto

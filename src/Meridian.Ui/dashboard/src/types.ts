@@ -4388,6 +4388,10 @@ export type ReportWriterFilterOperator =
   | "IsNotBlank";
 export type ReportAccessMode = "Private" | "Restricted" | "CompanyWide";
 export type ReportAccessPrincipalKind = "User" | "Group" | "Company";
+export type ReportWriterCellStyle = "None" | "Success" | "Warning" | "Danger" | "Info";
+export type ReportWriterChartType = "Bar" | "StackedBar" | "Line" | "Area" | "Pie";
+export type ReportWriterDiffRowState = "Unchanged" | "Changed" | "Added" | "Removed";
+export type ReportWriterDiffDirection = "Flat" | "Up" | "Down";
 
 export interface VersionedReportTemplateId {
   name: string;
@@ -4431,6 +4435,38 @@ export interface ReportWriterGridDefinition {
   sortBy?: string | null;
   sortDescending?: boolean;
   filters?: ReportWriterFilterDefinition[] | null;
+  formatRules?: ReportWriterFormatRule[] | null;
+  chart?: ReportWriterChartDefinition | null;
+}
+
+export interface ReportWriterFormatRule {
+  column: string;
+  operator: ReportWriterFilterOperator;
+  style: ReportWriterCellStyle;
+  value?: string | null;
+  label?: string | null;
+}
+
+export interface ReportWriterChartDefinition {
+  type: ReportWriterChartType;
+  categoryField: string;
+  valueColumns: string[];
+  title?: string | null;
+}
+
+export interface ReportWriterChartSeries {
+  key: string;
+  label: string;
+  values: number[];
+}
+
+export interface ReportWriterChartRender {
+  type: ReportWriterChartType;
+  title: string;
+  categoryField: string;
+  categories: string[];
+  series: ReportWriterChartSeries[];
+  warnings: string[];
 }
 
 export interface ReportWriterGridColumn {
@@ -4442,6 +4478,7 @@ export interface ReportWriterGridColumn {
 export interface ReportWriterGridRow {
   rowKey: string;
   values: Record<string, string>;
+  styleHints?: Record<string, ReportWriterCellStyle> | null;
 }
 
 export interface ReportWriterMetricLineage {
@@ -4499,6 +4536,35 @@ export interface ReportWriterGridRender {
   lineage?: ReportWriterGridLineage | null;
   dataDictionary?: ReportWriterGridDataDictionaryField[] | null;
   validationChecks?: ReportWriterGridValidationCheck[] | null;
+  chart?: ReportWriterChartRender | null;
+}
+
+export interface ReportWriterGridDiffCell {
+  column: string;
+  priorValue?: string | null;
+  currentValue?: string | null;
+  delta?: string | null;
+  direction: ReportWriterDiffDirection;
+}
+
+export interface ReportWriterGridDiffRow {
+  rowKey: string;
+  state: ReportWriterDiffRowState;
+  priorValues: Record<string, string>;
+  currentValues: Record<string, string>;
+  cells: ReportWriterGridDiffCell[];
+}
+
+export interface ReportWriterGridDiff {
+  gridId: string;
+  title: string;
+  columns: ReportWriterGridColumn[];
+  rows: ReportWriterGridDiffRow[];
+  warnings: string[];
+  addedRowCount: number;
+  removedRowCount: number;
+  changedRowCount: number;
+  unchangedRowCount: number;
 }
 
 export interface ReportAccessPrincipal {

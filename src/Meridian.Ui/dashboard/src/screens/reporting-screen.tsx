@@ -1,5 +1,5 @@
-import { type DragEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
-import { CheckCircle2, ChevronLeft, ChevronRight, Eye, FileText, Filter, GripVertical, Landmark, Network, PencilLine, Plus, RotateCcw, Send, Trash2, XCircle } from "lucide-react";
+import { type DragEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { BarChart2, CheckCircle2, ChevronLeft, ChevronRight, Eye, FileText, Filter, GripVertical, Landmark, Network, Palette, PencilLine, Plus, RotateCcw, Send, Trash2, XCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,10 @@ import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
+import { ReportingHub } from "@/components/meridian/reporting-hub";
+import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
+import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   apiPostJson,
@@ -31,6 +35,10 @@ import {
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
+import { todayIsoDate } from "@/lib/reporting-periods";
+import { buildReportingHubModel } from "@/lib/reporting-hub";
+import { cellStyleClassName, resolveCellStyle } from "@/lib/report-writer-grid-format";
+import { buildReportWriterGridDiff } from "@/lib/report-writer-grid-diff";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
@@ -67,8 +75,12 @@ import type {
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
   ReportWriterAggregateFunction,
+  ReportWriterCellStyle,
+  ReportWriterChartDefinition,
+  ReportWriterChartType,
   ReportWriterFilterDefinition,
   ReportWriterFilterOperator,
+  ReportWriterFormatRule,
   ReportWriterGridDefinition,
   ReportWriterGridKind,
   ReportWriterGridRender,
@@ -137,6 +149,22 @@ type ReportingScheduleDraftField =
   | "deliveryMode"
   | "deliveryNote";
 type ExportsReportRunDraftField = "templateRowId" | "asOfDate" | "maxRetries" | "requestedBy" | "datasetSourceId";
+type ReportWriterChartDraftField = "type" | "categoryField" | "valueColumns";
+
+interface ReportWriterChartDraft {
+  enabled: boolean;
+  type: ReportWriterChartType;
+  categoryField: string;
+  valueColumns: string;
+}
+
+interface ReportWriterFormatRuleDraft {
+  id: string;
+  column: string;
+  operator: ReportWriterFilterOperator;
+  value: string;
+  style: ReportWriterCellStyle;
+}
 
 interface ReportWriterDraftSettings {
   name: string;
@@ -266,6 +294,10 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
 export function ReportingScreen({ data, onRefreshLivePortfolioViews }: ReportingScreenProps) {
   const { pathname } = useLocation();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
+  const hubModel = useMemo(
+    () => buildReportingHubModel(vm.runStatusRows, vm.templateRows),
+    [vm.runStatusRows, vm.templateRows]
+  );
   const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusReportPackProfile = useRef(false);
   const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
@@ -276,6 +308,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
   const [exportsRunDraft, setExportsRunDraft] = useState<ExportsReportRunDraftState>(() => buildDefaultExportsReportRunDraft(data?.reporting ?? null));
   const [templateRunDatasetSourceId, setTemplateRunDatasetSourceId] = useState(() => buildDefaultReportWriterDatasetSourceId(data?.reporting ?? null));
+  const [templateRunAsOfDate, setTemplateRunAsOfDate] = useState<string>(() => todayIsoDate());
   const [writerDrafts, setWriterDrafts] = useState<Record<string, ReportWriterDraftState>>({});
   const [writerDraftSettings, setWriterDraftSettings] = useState<Record<string, Partial<ReportWriterDraftSettings>>>({});
   const [writerCustomFormulas, setWriterCustomFormulas] = useState<Record<string, Partial<ReportWriterCustomFormulaDraft>>>({});
@@ -286,6 +319,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(data?.reporting ?? null));
   const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
+  const [writerPreviousPreviewByGridId, setWriterPreviousPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
+  const [writerChartDrafts, setWriterChartDrafts] = useState<Record<string, ReportWriterChartDraft>>({});
+  const [writerFormatRuleDrafts, setWriterFormatRuleDrafts] = useState<Record<string, ReportWriterFormatRuleDraft[]>>({});
   const livePortfolioRefreshInFlight = useRef(false);
   const reportWriterDatasetSources = data?.reporting.reportWriterDatasetSources ?? [];
   const livePortfolioViews = data?.reporting.livePortfolioViews ?? [];
@@ -408,7 +444,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
 
     await executeTemplateRun(template, {
       templateId: template.templateName,
-      asOfDate: new Date().toISOString().slice(0, 10),
+      asOfDate: templateRunAsOfDate,
       maxRetries: 0,
       datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(templateRunDatasetSourceId) : null
     }, template.runActionLabel);
@@ -568,6 +604,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     };
   }
 
+  function getWriterChartDraft(grid: ReportingWriterGridRow): ReportWriterChartDraft {
+    return writerChartDrafts[grid.id] ?? { enabled: false, type: "Bar", categoryField: "", valueColumns: "" };
+  }
+
+  function getWriterFormatRules(grid: ReportingWriterGridRow): ReportWriterFormatRuleDraft[] {
+    return writerFormatRuleDrafts[grid.id] ?? [];
+  }
+
   function updateWriterDraftSetting(
     grid: ReportingWriterGridRow,
     field: ReportWriterDraftSettingsField,
@@ -615,6 +659,46 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     setWriterCustomDatasetText((current) => ({
       ...current,
       [grid.id]: value
+    }));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function updateWriterChartDraft(grid: ReportingWriterGridRow, field: ReportWriterChartDraftField | "enabled", value: string) {
+    setWriterChartDrafts((current) => {
+      const existing = current[grid.id] ?? { enabled: false, type: "Bar" as ReportWriterChartType, categoryField: "", valueColumns: "" };
+      return {
+        ...current,
+        [grid.id]: field === "enabled"
+          ? { ...existing, enabled: value === "true" }
+          : { ...existing, [field]: value }
+      };
+    });
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function addWriterFormatRule(grid: ReportingWriterGridRow) {
+    const id = `rule-${Date.now()}`;
+    setWriterFormatRuleDrafts((current) => ({
+      ...current,
+      [grid.id]: [...(current[grid.id] ?? []), { id, column: "", operator: "GreaterThan" as ReportWriterFilterOperator, value: "", style: "Warning" as ReportWriterCellStyle }]
+    }));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function removeWriterFormatRule(grid: ReportingWriterGridRow, ruleId: string) {
+    setWriterFormatRuleDrafts((current) => ({
+      ...current,
+      [grid.id]: (current[grid.id] ?? []).filter((rule) => rule.id !== ruleId)
+    }));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function updateWriterFormatRule(grid: ReportingWriterGridRow, ruleId: string, field: keyof Omit<ReportWriterFormatRuleDraft, "id">, value: string) {
+    setWriterFormatRuleDrafts((current) => ({
+      ...current,
+      [grid.id]: (current[grid.id] ?? []).map((rule) =>
+        rule.id === ruleId ? { ...rule, [field]: value } : rule
+      )
     }));
     setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
   }
@@ -836,7 +920,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       grid,
       getWriterCurrentZones(grid),
       settings,
-      customDataset?.rows ?? retainedDatasetRows);
+      customDataset?.rows ?? retainedDatasetRows,
+      getWriterChartDraft(grid),
+      getWriterFormatRules(grid));
     setWriterPreviewStatus({
       id: grid.id,
       label: "Preview report-writer grid",
@@ -848,9 +934,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     try {
       const result = await renderReportTemplate(request);
       const renderedGrid = result.grids?.find((item) => item.gridId === grid.gridId) ?? result.grids?.[0] ?? null;
+      const previousPreview = writerPreviewByGridId[grid.id] ?? null;
       setWriterPreviewByGridId((current) => ({
         ...current,
         [grid.id]: renderedGrid
+      }));
+      setWriterPreviousPreviewByGridId((current) => ({
+        ...current,
+        [grid.id]: previousPreview
       }));
       setWriterPreviewStatus({
         id: grid.id,
@@ -1400,6 +1491,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           <MetricCard key={metric.id} {...metric} />
         ))}
       </section>
+
+      <ReportingHub model={hubModel} />
 
       <section role="region" aria-label="Reporting access audit">
         <Card className="panel-surface" aria-label={vm.accessAudit.ariaLabel}>
@@ -2166,23 +2259,30 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                     grid={grid}
                     settings={getWriterDraftSettings(grid)}
                     customFormula={getWriterCustomFormula(grid)}
+                    chartDraft={getWriterChartDraft(grid)}
+                    formatRules={getWriterFormatRules(grid)}
                     datasetSources={reportWriterDatasetSources}
                     isSaving={savingWriterDraftId === grid.id}
                     isPreviewing={previewingWriterDraftId === grid.id}
                     preview={writerPreviewByGridId[grid.id] ?? null}
+                    previousPreview={writerPreviousPreviewByGridId[grid.id] ?? null}
                     getZoneTokens={getWriterZoneTokens}
                     onTokenDragStart={handleWriterTokenDragStart}
                     onZoneDrop={handleWriterZoneDrop}
                     onTokenRemove={removeWriterZoneToken}
                     onTokenMove={moveWriterZoneToken}
                     onReset={resetWriterGrid}
-                  onSettingsChange={updateWriterDraftSetting}
-                  onCustomFormulaChange={updateWriterCustomFormula}
-                  customDatasetText={writerCustomDatasetText[grid.id] ?? ""}
-                  onCustomDatasetChange={updateWriterCustomDataset}
-                  onPreview={previewWriterGrid}
-                  onSave={saveWriterGridDraft}
-                />
+                    onSettingsChange={updateWriterDraftSetting}
+                    onCustomFormulaChange={updateWriterCustomFormula}
+                    customDatasetText={writerCustomDatasetText[grid.id] ?? ""}
+                    onCustomDatasetChange={updateWriterCustomDataset}
+                    onChartDraftChange={updateWriterChartDraft}
+                    onFormatRuleAdd={addWriterFormatRule}
+                    onFormatRuleRemove={removeWriterFormatRule}
+                    onFormatRuleChange={updateWriterFormatRule}
+                    onPreview={previewWriterGrid}
+                    onSave={saveWriterGridDraft}
+                  />
                 ))}
               </div>
               {writerPreviewStatus ? (
@@ -2220,6 +2320,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             <CardDescription>Investor statements, SEC packets, and shadow NAV packs share the same run contract.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
+            <ReportingPeriodSwitcher
+              asOfDate={templateRunAsOfDate}
+              onSelect={setTemplateRunAsOfDate}
+              disabled={Boolean(runningTemplateRunId)}
+            />
+            <p className="text-[11px] leading-4 text-muted-foreground">
+              On-demand template runs use this as-of period. Switch periods to regenerate the same report for a prior month, quarter, or year.
+            </p>
             {vm.templateRows.map((template) => (
               <div key={template.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -4098,11 +4206,14 @@ interface ReportWriterDesignerGridProps {
   grid: ReportingWriterGridRow;
   settings: ReportWriterDraftSettings;
   customFormula: ReportWriterCustomFormulaDraft;
+  chartDraft: ReportWriterChartDraft;
+  formatRules: ReportWriterFormatRuleDraft[];
   datasetSources: ReportWriterDatasetSource[];
   customDatasetText: string;
   isSaving: boolean;
   isPreviewing: boolean;
   preview: ReportWriterGridRender | null;
+  previousPreview: ReportWriterGridRender | null;
   getZoneTokens: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => ReportingWriterToken[];
   onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
   onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
@@ -4112,6 +4223,10 @@ interface ReportWriterDesignerGridProps {
   onSettingsChange: (grid: ReportingWriterGridRow, field: ReportWriterDraftSettingsField, value: string) => void;
   onCustomFormulaChange: (grid: ReportingWriterGridRow, field: ReportWriterCustomFormulaField, value: string) => void;
   onCustomDatasetChange: (grid: ReportingWriterGridRow, value: string) => void;
+  onChartDraftChange: (grid: ReportingWriterGridRow, field: ReportWriterChartDraftField | "enabled", value: string) => void;
+  onFormatRuleAdd: (grid: ReportingWriterGridRow) => void;
+  onFormatRuleRemove: (grid: ReportingWriterGridRow, ruleId: string) => void;
+  onFormatRuleChange: (grid: ReportingWriterGridRow, ruleId: string, field: keyof Omit<ReportWriterFormatRuleDraft, "id">, value: string) => void;
   onPreview: (grid: ReportingWriterGridRow) => void | Promise<void>;
   onSave: (grid: ReportingWriterGridRow) => void | Promise<void>;
 }
@@ -4120,11 +4235,14 @@ function ReportWriterDesignerGrid({
   grid,
   settings,
   customFormula,
+  chartDraft,
+  formatRules,
   datasetSources,
   customDatasetText,
   isSaving,
   isPreviewing,
   preview,
+  previousPreview,
   getZoneTokens,
   onTokenDragStart,
   onZoneDrop,
@@ -4134,6 +4252,10 @@ function ReportWriterDesignerGrid({
   onSettingsChange,
   onCustomFormulaChange,
   onCustomDatasetChange,
+  onChartDraftChange,
+  onFormatRuleAdd,
+  onFormatRuleRemove,
+  onFormatRuleChange,
   onPreview,
   onSave
 }: ReportWriterDesignerGridProps) {
@@ -4481,6 +4603,152 @@ function ReportWriterDesignerGrid({
           </label>
         </div>
       </div>
+      <div className="mt-3 rounded-md border border-border/70 bg-background/25 px-2.5 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <Palette className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+            <div className="eyebrow-label">Conditional formatting</div>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            aria-label={`Add conditional formatting rule for ${grid.title}`}
+            onClick={() => onFormatRuleAdd(grid)}
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            Add rule
+          </Button>
+        </div>
+        {formatRules.length > 0 ? (
+          <div className="mt-2 space-y-2">
+            {formatRules.map((rule) => (
+              <div key={rule.id} className="grid gap-2 md:grid-cols-[1fr_0.8fr_0.8fr_0.8fr_auto] items-end">
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Column</span>
+                  <Select
+                    value={rule.column}
+                    onChange={(event) => onFormatRuleChange(grid, rule.id, "column", event.target.value)}
+                    aria-label={`Formatting rule column for ${grid.title}`}
+                  >
+                    <option value="">Select column</option>
+                    {grid.sourceFields.map((field) => (
+                      <option key={field.id} value={field.fieldName ?? field.label}>{field.label}</option>
+                    ))}
+                  </Select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
+                  <Select
+                    value={rule.operator}
+                    onChange={(event) => onFormatRuleChange(grid, rule.id, "operator", event.target.value)}
+                    aria-label={`Formatting rule operator for ${grid.title}`}
+                  >
+                    <option value="Equals">=</option>
+                    <option value="NotEquals">≠</option>
+                    <option value="GreaterThan">&gt;</option>
+                    <option value="GreaterThanOrEqual">&gt;=</option>
+                    <option value="LessThan">&lt;</option>
+                    <option value="LessThanOrEqual">&lt;=</option>
+                    <option value="Contains">Contains</option>
+                    <option value="IsBlank">Is blank</option>
+                    <option value="IsNotBlank">Is not blank</option>
+                  </Select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Value</span>
+                  <Input
+                    value={rule.value}
+                    onChange={(event) => onFormatRuleChange(grid, rule.id, "value", event.target.value)}
+                    aria-label={`Formatting rule value for ${grid.title}`}
+                    className="font-mono"
+                    disabled={isBlankFilterOperator(rule.operator)}
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Style</span>
+                  <Select
+                    value={rule.style}
+                    onChange={(event) => onFormatRuleChange(grid, rule.id, "style", event.target.value)}
+                    aria-label={`Formatting rule style for ${grid.title}`}
+                  >
+                    <option value="Success">Success</option>
+                    <option value="Warning">Warning</option>
+                    <option value="Danger">Danger</option>
+                    <option value="Info">Info</option>
+                  </Select>
+                </label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  aria-label={`Remove formatting rule from ${grid.title}`}
+                  onClick={() => onFormatRuleRemove(grid, rule.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">No rules. Add a rule to highlight cells by value.</p>
+        )}
+      </div>
+      <div className="mt-3 rounded-md border border-border/70 bg-background/25 px-2.5 py-2">
+        <div className="flex items-center gap-1.5">
+          <BarChart2 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+          <div className="eyebrow-label">Inline chart</div>
+        </div>
+        <label className="mt-2 flex items-center gap-2 cursor-pointer">
+          <Checkbox
+            checked={chartDraft.enabled}
+            onCheckedChange={(checked) => onChartDraftChange(grid, "enabled", String(checked === true))}
+            aria-label={`Enable inline chart for ${grid.title}`}
+          />
+          <span className="text-xs text-foreground">Enable inline chart</span>
+        </label>
+        {chartDraft.enabled ? (
+          <div className="mt-2 grid gap-2 md:grid-cols-[0.6fr_1fr_1.4fr]">
+            <label className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Type</span>
+              <Select
+                value={chartDraft.type}
+                onChange={(event) => onChartDraftChange(grid, "type", event.target.value)}
+                aria-label={`Chart type for ${grid.title}`}
+              >
+                <option value="Bar">Bar</option>
+                <option value="StackedBar">Stacked bar</option>
+                <option value="Line">Line</option>
+                <option value="Area">Area</option>
+                <option value="Pie">Pie</option>
+              </Select>
+            </label>
+            <label className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Category field</span>
+              <Select
+                value={chartDraft.categoryField}
+                onChange={(event) => onChartDraftChange(grid, "categoryField", event.target.value)}
+                aria-label={`Chart category field for ${grid.title}`}
+              >
+                <option value="">Select field</option>
+                {grid.sourceFields.map((field) => (
+                  <option key={field.id} value={field.fieldName ?? field.label}>{field.label}</option>
+                ))}
+              </Select>
+            </label>
+            <label className="space-y-1">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Value columns (comma-separated)</span>
+              <Input
+                value={chartDraft.valueColumns}
+                onChange={(event) => onChartDraftChange(grid, "valueColumns", event.target.value)}
+                aria-label={`Chart value columns for ${grid.title}`}
+                className="font-mono"
+                placeholder="marketValue, pnl"
+              />
+            </label>
+          </div>
+        ) : null}
+      </div>
       <div className="mt-3 flex flex-wrap justify-end gap-2">
         <Button
           type="button"
@@ -4509,17 +4777,21 @@ function ReportWriterDesignerGrid({
         </Button>
       </div>
       {preview ? (
-        <ReportWriterPreviewTable grid={grid} preview={preview} />
+        <ReportWriterPreviewTable grid={grid} preview={preview} previousPreview={previousPreview} />
       ) : null}
     </div>
   );
 }
 
-function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender }) {
+function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender; previousPreview?: ReportWriterGridRender | null }) {
   const rows = preview.rows.slice(0, 5);
   const lineage = preview.lineage;
   const dataDictionary = preview.dataDictionary ?? [];
   const validationChecks = preview.validationChecks ?? [];
+  const comparison = previousPreview ? buildReportWriterGridDiff(previousPreview, preview) : null;
+  const comparisonChangeCount = comparison
+    ? comparison.addedRowCount + comparison.removedRowCount + comparison.changedRowCount
+    : 0;
   return (
     <div className="mt-3 rounded-md border border-border/70 bg-background/35 px-2.5 py-2" aria-label={`${grid.title} live preview`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -4547,7 +4819,10 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
             {rows.length > 0 ? rows.map((row) => (
               <tr key={row.rowKey} className="border-t border-border/50">
                 {preview.columns.map((column) => (
-                  <td key={`${row.rowKey}:${column.key}`} className="px-2 py-1.5 font-mono text-foreground">
+                  <td
+                    key={`${row.rowKey}:${column.key}`}
+                    className={cn("px-2 py-1.5 font-mono text-foreground", cellStyleClassName(resolveCellStyle(row, column.key)))}
+                  >
                     <span className="block truncate" title={row.values[column.key] ?? ""}>{row.values[column.key] ?? ""}</span>
                   </td>
                 ))}
@@ -4562,6 +4837,17 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
           </tbody>
         </table>
       </div>
+      {preview.chart ? <ReportWriterChartPreview chart={preview.chart} /> : null}
+      {comparison ? (
+        <details className="mt-2 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
+          <summary className="cursor-pointer select-none text-[11px] font-semibold text-foreground">
+            Changes since previous preview ({comparisonChangeCount} changed)
+          </summary>
+          <div className="mt-2">
+            <ReportWriterGridDiffView diff={comparison} />
+          </div>
+        </details>
+      ) : null}
       {lineage ? (
         <div className="mt-2 rounded-sm border border-border/60 bg-secondary/25 px-2 py-2 text-xs" aria-label={`${grid.title} preview audit trace`}>
           <div className="eyebrow-label">Audit trace</div>
@@ -5521,9 +5807,11 @@ function buildRenderReportTemplateRequest(
   grid: ReportingWriterGridRow,
   zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
   settings: ReportWriterDraftSettings,
-  customDatasetRows: Record<string, string>[] | null = null
+  customDatasetRows: Record<string, string>[] | null = null,
+  chartDraft?: ReportWriterChartDraft | null,
+  formatRules?: ReportWriterFormatRuleDraft[] | null
 ): RenderReportTemplateRequest {
-  const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings);
+  const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings, chartDraft, formatRules);
   return {
     templateId: {
       name: grid.templateId,
@@ -5543,7 +5831,9 @@ function buildRenderReportTemplateRequest(
 function buildReportWriterGridDefinition(
   grid: ReportingWriterGridRow,
   zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
-  settings: ReportWriterDraftSettings
+  settings: ReportWriterDraftSettings,
+  chartDraft?: ReportWriterChartDraft | null,
+  formatRules?: ReportWriterFormatRuleDraft[] | null
 ): ReportWriterGridDefinition {
   const kind = normalizeReportWriterGridKind(settings.gridKind);
   const metrics = normalizeWriterMetrics(zones.metrics, kind);
@@ -5558,8 +5848,32 @@ function buildReportWriterGridDefinition(
     topN: kind === "TopN" ? parseReportWriterTopN(settings.topN) : null,
     sortBy: kind === "Contribution" ? "contributionAbsPercent" : grid.sortBy,
     sortDescending: grid.sortDescending,
-    filters: buildWriterFilters(settings)
+    filters: buildWriterFilters(settings),
+    formatRules: buildWriterFormatRules(formatRules),
+    chart: buildWriterChartDefinition(chartDraft)
   };
+}
+
+function buildWriterFormatRules(drafts: ReportWriterFormatRuleDraft[] | null | undefined): ReportWriterFormatRule[] | null {
+  if (!drafts || drafts.length === 0) return null;
+  const valid = drafts.filter((d) => d.column.trim().length > 0);
+  if (valid.length === 0) return null;
+  return valid.map((d) => ({
+    column: d.column.trim(),
+    operator: d.operator,
+    value: d.value || null,
+    style: d.style
+  }));
+}
+
+function buildWriterChartDefinition(draft: ReportWriterChartDraft | null | undefined): ReportWriterChartDefinition | null {
+  if (!draft?.enabled || !draft.categoryField.trim()) return null;
+  const valueColumns = draft.valueColumns
+    .split(",")
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0);
+  if (valueColumns.length === 0) return null;
+  return { type: draft.type, categoryField: draft.categoryField.trim(), valueColumns };
 }
 
 function buildReportWriterPreviewRows(
