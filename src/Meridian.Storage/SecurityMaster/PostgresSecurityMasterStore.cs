@@ -794,16 +794,24 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.CommandText =
             $"""
             insert into {Qualified(BondLifecycleProjectionTable)} (
-                security_id, lifecycle_stat, issue_date, call_date, maturity_date, is_callable, version)
+                security_id, lifecycle_stat, issue_date, call_date, maturity_date, is_callable, version,
+                subclass, par, payment_frequency, legal_final_maturity, pre_refund_date, mandatory_put_date)
             values (
-                @security_id, @lifecycle_stat, @issue_date, @call_date, @maturity_date, @is_callable, @version)
+                @security_id, @lifecycle_stat, @issue_date, @call_date, @maturity_date, @is_callable, @version,
+                @subclass, @par, @payment_frequency, @legal_final_maturity, @pre_refund_date, @mandatory_put_date)
             on conflict (security_id) do update set
                 lifecycle_stat = excluded.lifecycle_stat,
                 issue_date = excluded.issue_date,
                 call_date = excluded.call_date,
                 maturity_date = excluded.maturity_date,
                 is_callable = excluded.is_callable,
-                version = excluded.version;
+                version = excluded.version,
+                subclass = excluded.subclass,
+                par = excluded.par,
+                payment_frequency = excluded.payment_frequency,
+                legal_final_maturity = excluded.legal_final_maturity,
+                pre_refund_date = excluded.pre_refund_date,
+                mandatory_put_date = excluded.mandatory_put_date;
             """;
         command.Parameters.AddWithValue("security_id", projection.SecurityId);
         command.Parameters.AddWithValue("lifecycle_stat", projection.LifecycleStat);
@@ -812,6 +820,12 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
         command.Parameters.AddWithValue("is_callable", projection.IsCallable);
         command.Parameters.AddWithValue("version", projection.Version);
+        command.Parameters.AddWithValue("subclass", (object?)projection.Subclass ?? DBNull.Value);
+        command.Parameters.AddWithValue("par", (object?)projection.Par ?? DBNull.Value);
+        command.Parameters.AddWithValue("payment_frequency", (object?)projection.PaymentFrequency ?? DBNull.Value);
+        command.Parameters.AddWithValue("legal_final_maturity", (object?)projection.LegalFinalMaturity?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("pre_refund_date", (object?)projection.PreRefundDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
+        command.Parameters.AddWithValue("mandatory_put_date", (object?)projection.MandatoryPutDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -956,7 +970,12 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             dayCountConvention,
             GetOptionalInt(record.CommonTerms, "settlementCycleDays"),
             GetOptionalString(record.CommonTerms, "holidayCalendarId"),
-            record.Version);
+            record.Version,
+            GetOptionalDecimal(record.AssetSpecificTerms, "par"),
+            GetOptionalString(record.AssetSpecificTerms, "paymentFrequency"),
+            GetOptionalDateOnly(record.AssetSpecificTerms, "legalFinalMaturity"),
+            GetOptionalDateOnly(record.AssetSpecificTerms, "preRefundDate"),
+            GetOptionalDateOnly(record.AssetSpecificTerms, "mandatoryPutDate"));
         return true;
     }
 
@@ -1776,7 +1795,13 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         string? DayCountConvention,
         int? SettlementCycleDays,
         string? HolidayCalendarId,
-        long Version);
+        long Version,
+        // Clearwater extended lifecycle fields.
+        decimal? Par,
+        string? PaymentFrequency,
+        DateOnly? LegalFinalMaturity,
+        DateOnly? PreRefundDate,
+        DateOnly? MandatoryPutDate);
 
     private sealed record OptionProjectionWriteModel(
         string ContractSymbol,

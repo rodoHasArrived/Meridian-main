@@ -28,7 +28,14 @@ public sealed record BondProjectionRow(
     decimal? FixedCouponRate,
     string? FloatingRateIndex,
     decimal? FloatingSpreadBps,
-    long Version);
+    long Version,
+    // Clearwater extended lifecycle fields.
+    string? Subclass = null,
+    decimal? Par = null,
+    string? PaymentFrequency = null,
+    DateOnly? LegalFinalMaturity = null,
+    DateOnly? PreRefundDate = null,
+    DateOnly? MandatoryPutDate = null);
 
 public sealed record BondLifecycleProjectionRow(
     Guid SecurityId,
@@ -37,7 +44,14 @@ public sealed record BondLifecycleProjectionRow(
     DateOnly? CallDate,
     DateOnly MaturityDate,
     bool IsCallable,
-    long Version);
+    long Version,
+    // Clearwater extended lifecycle fields.
+    string? Subclass = null,
+    decimal? Par = null,
+    string? PaymentFrequency = null,
+    DateOnly? LegalFinalMaturity = null,
+    DateOnly? PreRefundDate = null,
+    DateOnly? MandatoryPutDate = null);
 
 public sealed record BondAccrualConventionProjectionRow(
     Guid SecurityId,

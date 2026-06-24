@@ -48,6 +48,7 @@
     <Compile Include="Calculations/Spread.fs" />
     <Compile Include="Calculations/Imbalance.fs" />
     <Compile Include="Calculations/Aggregations.fs" />
+    <Compile Include="Calculations/SecurityCalculations.fs" />
 
     <!-- Canonicalization layer: rule-heavy mapping logic -->
     <Compile Include="Canonicalization/MappingRules.fs" />
