@@ -13,6 +13,7 @@ import { MetricCard } from "@/components/meridian/metric-card";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
+import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   apiPostJson,
@@ -37,6 +38,7 @@ import { cn } from "@/lib/utils";
 import { todayIsoDate } from "@/lib/reporting-periods";
 import { buildReportingHubModel } from "@/lib/reporting-hub";
 import { cellStyleClassName, resolveCellStyle } from "@/lib/report-writer-grid-format";
+import { buildReportWriterGridDiff } from "@/lib/report-writer-grid-diff";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
@@ -297,6 +299,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(data?.reporting ?? null));
   const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
+  const [writerPreviousPreviewByGridId, setWriterPreviousPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
   const livePortfolioRefreshInFlight = useRef(false);
   const reportWriterDatasetSources = data?.reporting.reportWriterDatasetSources ?? [];
   const livePortfolioViews = data?.reporting.livePortfolioViews ?? [];
@@ -859,9 +862,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     try {
       const result = await renderReportTemplate(request);
       const renderedGrid = result.grids?.find((item) => item.gridId === grid.gridId) ?? result.grids?.[0] ?? null;
+      const previousPreview = writerPreviewByGridId[grid.id] ?? null;
       setWriterPreviewByGridId((current) => ({
         ...current,
         [grid.id]: renderedGrid
+      }));
+      setWriterPreviousPreviewByGridId((current) => ({
+        ...current,
+        [grid.id]: previousPreview
       }));
       setWriterPreviewStatus({
         id: grid.id,
@@ -2183,6 +2191,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                     isSaving={savingWriterDraftId === grid.id}
                     isPreviewing={previewingWriterDraftId === grid.id}
                     preview={writerPreviewByGridId[grid.id] ?? null}
+                    previousPreview={writerPreviousPreviewByGridId[grid.id] ?? null}
                     getZoneTokens={getWriterZoneTokens}
                     onTokenDragStart={handleWriterTokenDragStart}
                     onZoneDrop={handleWriterZoneDrop}
@@ -4124,6 +4133,7 @@ interface ReportWriterDesignerGridProps {
   isSaving: boolean;
   isPreviewing: boolean;
   preview: ReportWriterGridRender | null;
+  previousPreview: ReportWriterGridRender | null;
   getZoneTokens: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => ReportingWriterToken[];
   onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
   onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
@@ -4146,6 +4156,7 @@ function ReportWriterDesignerGrid({
   isSaving,
   isPreviewing,
   preview,
+  previousPreview,
   getZoneTokens,
   onTokenDragStart,
   onZoneDrop,
@@ -4530,17 +4541,21 @@ function ReportWriterDesignerGrid({
         </Button>
       </div>
       {preview ? (
-        <ReportWriterPreviewTable grid={grid} preview={preview} />
+        <ReportWriterPreviewTable grid={grid} preview={preview} previousPreview={previousPreview} />
       ) : null}
     </div>
   );
 }
 
-function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender }) {
+function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender; previousPreview?: ReportWriterGridRender | null }) {
   const rows = preview.rows.slice(0, 5);
   const lineage = preview.lineage;
   const dataDictionary = preview.dataDictionary ?? [];
   const validationChecks = preview.validationChecks ?? [];
+  const comparison = previousPreview ? buildReportWriterGridDiff(previousPreview, preview) : null;
+  const comparisonChangeCount = comparison
+    ? comparison.addedRowCount + comparison.removedRowCount + comparison.changedRowCount
+    : 0;
   return (
     <div className="mt-3 rounded-md border border-border/70 bg-background/35 px-2.5 py-2" aria-label={`${grid.title} live preview`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -4587,6 +4602,16 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
         </table>
       </div>
       {preview.chart ? <ReportWriterChartPreview chart={preview.chart} /> : null}
+      {comparison ? (
+        <details className="mt-2 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
+          <summary className="cursor-pointer select-none text-[11px] font-semibold text-foreground">
+            Changes since previous preview ({comparisonChangeCount} changed)
+          </summary>
+          <div className="mt-2">
+            <ReportWriterGridDiffView diff={comparison} />
+          </div>
+        </details>
+      ) : null}
       {lineage ? (
         <div className="mt-2 rounded-sm border border-border/60 bg-secondary/25 px-2 py-2 text-xs" aria-label={`${grid.title} preview audit trace`}>
           <div className="eyebrow-label">Audit trace</div>
