@@ -51,7 +51,7 @@ run_step "Verify .NET formatting" \
 run_step "Validate warning suppression inventory" \
   "$python_cmd" build/scripts/ci/check-warning-suppressions.py
 
-mkdir -p artifacts/build-logs
+mkdir -p artifacts/build-logs artifacts/test-results/dotnet
 run_step "Build web workstation .NET lane" \
   bash -c 'set -euo pipefail; dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore -p:EnableWindowsTargeting=true -p:UseAppHost=false 2>&1 | tee artifacts/build-logs/web-workstation-build.log'
 
