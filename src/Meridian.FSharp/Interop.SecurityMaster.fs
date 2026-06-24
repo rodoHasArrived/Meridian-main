@@ -146,7 +146,13 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    isCallable = terms.IsCallable
                    callDate = terms.CallDate
                    issuerName = terms.IssuerName
-                   seniority = terms.Seniority |})
+                   seniority = terms.Seniority
+                   subclass = terms.Subclass.ToString()
+                   par = terms.Par
+                   paymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.label
+                   legalFinalMaturity = terms.LegalFinalMaturity
+                   preRefundDate = terms.PreRefundDate
+                   mandatoryPutDate = terms.MandatoryPutDate |})
         | SecurityKind.FxSpot terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -233,12 +239,22 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                 {| schemaVersion = schemaVersion
                    borrower = terms.Borrower
                    maturity = terms.Maturity
+                   referenceIndex = terms.ReferenceIndex
+                   spreadBps = terms.SpreadBps
+                   currentCouponRate = terms.CurrentCouponRate
+                   resetFrequency = terms.ResetFrequency
+                   pricingSource = terms.PricingSource
                    covenants =
                         terms.Covenants
                         |> List.map (fun covenant ->
                             {| covenantType = covenant.CovenantType
                                threshold = covenant.Threshold
-                               notes = covenant.Notes |}) |})
+                               notes = covenant.Notes |})
+                   principalSchedule =
+                        terms.PrincipalSchedule
+                        |> List.map (fun entry ->
+                            {| paymentDate = entry.PaymentDate
+                               amount = entry.Amount |}) |})
         | SecurityKind.Commodity terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -266,6 +282,15 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    strike = terms.Strike
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier |})
+        | SecurityKind.InvestmentFund terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   fundType = terms.FundType
+                   fundFamily = terms.FundFamily
+                   navCurrency = terms.NavCurrency
+                   distributionPolicy = terms.DistributionPolicy |> Option.map DistributionPolicy.label
+                   isStableNav = terms.IsStableNav
+                   pricingSource = terms.PricingSource |})
 
     let commonTermsJson =
         JsonSerializer.Serialize(

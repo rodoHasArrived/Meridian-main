@@ -175,6 +175,8 @@ module SecurityMaster =
                 (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
             @ require (terms.Multiplier |> Option.forall (fun m -> m > 0m))
                 (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
+        | SecurityKind.InvestmentFund _ ->
+            []
 
     let private validateIdentifier (identifier: Identifier) =
         []
