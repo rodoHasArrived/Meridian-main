@@ -57,6 +57,9 @@ public static class ReportWriterGridEngine
                 : RenderAggregateRows(grid, filteredRows, dimensions, metrics, formulas, warnings);
         }
 
+        renderedRows = ApplyFormatRules(grid, renderedRows, warnings);
+        var chart = BuildChart(grid, columnList, renderedRows);
+
         var lineage = BuildLineage(rows.Count, filteredRows.Count, renderedRows.Count, dimensions, metrics, formulas, filters);
 
         var dataDictionary = BuildDataDictionary(columnList, renderedRows, lineage);
@@ -71,8 +74,115 @@ public static class ReportWriterGridEngine
             warnings.ToArray(),
             lineage,
             dataDictionary,
-            validationChecks);
+            validationChecks,
+            chart);
     }
+
+    private static IReadOnlyList<ReportWriterGridRowDto> ApplyFormatRules(
+        ReportWriterGridDefinitionDto grid,
+        IReadOnlyList<ReportWriterGridRowDto> rows,
+        ISet<string> warnings)
+    {
+        var rules = NormalizeFormatRules(grid.FormatRules);
+        if (rules.Length == 0 || rows.Count == 0)
+        {
+            return rows;
+        }
+
+        return rows
+            .Select(row =>
+            {
+                Dictionary<string, ReportWriterCellStyleDto>? hints = null;
+                foreach (var rule in rules)
+                {
+                    var probe = new ReportWriterFilterDefinitionDto(rule.Column, rule.Operator, rule.Value, rule.Label);
+                    if (!MatchesFilter(row.Values, probe, warnings))
+                    {
+                        continue;
+                    }
+
+                    hints ??= new Dictionary<string, ReportWriterCellStyleDto>(StringComparer.OrdinalIgnoreCase);
+                    // Later rules win for the same column, mirroring spreadsheet rule precedence.
+                    hints[rule.Column] = rule.Style;
+                }
+
+                return hints is null ? row : row with { StyleHints = hints };
+            })
+            .ToArray();
+    }
+
+    private static ReportWriterChartRenderDto? BuildChart(
+        ReportWriterGridDefinitionDto grid,
+        IReadOnlyList<ReportWriterGridColumnDto> columns,
+        IReadOnlyList<ReportWriterGridRowDto> rows)
+    {
+        var chart = grid.Chart;
+        if (chart is null)
+        {
+            return null;
+        }
+
+        var warnings = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        var title = string.IsNullOrWhiteSpace(chart.Title) ? grid.Title?.Trim() ?? grid.GridId.Trim() : chart.Title.Trim();
+        var categoryField = chart.CategoryField?.Trim() ?? string.Empty;
+        var valueColumns = (chart.ValueColumns ?? [])
+            .Where(static column => !string.IsNullOrWhiteSpace(column))
+            .Select(static column => column.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (categoryField.Length == 0)
+        {
+            warnings.Add($"Chart for grid '{grid.GridId}' has no category field; chart was not rendered.");
+        }
+
+        if (valueColumns.Length == 0)
+        {
+            warnings.Add($"Chart for grid '{grid.GridId}' has no value columns; chart was not rendered.");
+        }
+
+        if (categoryField.Length == 0 || valueColumns.Length == 0)
+        {
+            return new ReportWriterChartRenderDto(chart.Type, title, categoryField, [], [], warnings.ToArray());
+        }
+
+        var labelByKey = columns
+            .GroupBy(static column => column.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.First().Label, StringComparer.OrdinalIgnoreCase);
+        var categories = rows
+            .Select(row => row.Values.TryGetValue(categoryField, out var value) ? value : string.Empty)
+            .ToArray();
+        var series = new List<ReportWriterChartSeriesDto>(valueColumns.Length);
+        foreach (var column in valueColumns)
+        {
+            if (!labelByKey.ContainsKey(column))
+            {
+                warnings.Add($"Chart value column '{column}' is not a rendered grid column; series read raw row values.");
+            }
+
+            var values = rows
+                .Select(row =>
+                    row.Values.TryGetValue(column, out var raw) &&
+                    decimal.TryParse(raw, NumberStyles.Number, CultureInfo.InvariantCulture, out var number)
+                        ? number
+                        : 0m)
+                .ToArray();
+            series.Add(new ReportWriterChartSeriesDto(column, labelByKey.TryGetValue(column, out var label) ? label : column, values));
+        }
+
+        return new ReportWriterChartRenderDto(chart.Type, title, categoryField, categories, series, warnings.ToArray());
+    }
+
+    private static ReportWriterFormatRuleDto[] NormalizeFormatRules(IReadOnlyList<ReportWriterFormatRuleDto>? rules) =>
+        rules?
+            .Where(static rule => !string.IsNullOrWhiteSpace(rule.Column))
+            .Select(static rule => rule with
+            {
+                Column = rule.Column.Trim(),
+                Value = string.IsNullOrWhiteSpace(rule.Value) ? null : rule.Value.Trim(),
+                Label = string.IsNullOrWhiteSpace(rule.Label) ? null : rule.Label.Trim()
+            })
+            .ToArray() ?? [];
 
     private static IReadOnlyList<ReportWriterGridRowDto> RenderDetailRows(
         ReportWriterGridDefinitionDto grid,
