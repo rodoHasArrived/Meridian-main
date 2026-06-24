@@ -15,10 +15,10 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `1db65149c3bf`
+- Source fingerprint: `3b8ba49cf56e`
 - Baseline date for open Gantt tasks: `2026-06-17`
-- Registered WPF screens: `91`
-- Open automated tasks: `76`
+- Registered WPF screens: `92`
+- Open automated tasks: `77`
 
 ## Workspace Summary
 
@@ -26,7 +26,7 @@ This tracker is generated from the live WPF shell registry, the maintained deskt
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Trading | 6 | 5 | 1 | 0 | 1 | 6 | 5 |
 | Portfolio | 9 | 4 | 4 | 1 | 0 | 9 | 9 |
-| Accounting | 13 | 6 | 7 | 0 | 0 | 13 | 13 |
+| Accounting | 14 | 6 | 8 | 0 | 0 | 14 | 14 |
 | Reporting | 8 | 5 | 3 | 0 | 1 | 8 | 7 |
 | Strategy | 13 | 6 | 3 | 3 | 4 | 13 | 9 |
 | Data | 25 | 6 | 9 | 10 | 7 | 25 | 18 |
@@ -68,6 +68,7 @@ gantt
     Fund banking Needs screenshot :active, accounting_fundbanking, 2026-06-17, 3d
     Fund cash and financing Needs screenshot :active, accounting_fundcashfinancing, 2026-06-17, 3d
     Accounting configure Needs screenshot index row :active, accounting_fundaccountingconfigure, 2026-06-17, 3d
+    Accounting close Needs screenshot index row :active, accounting_fundaccountingclose, 2026-06-17, 3d
     Fund trial balance Needs screenshot :active, accounting_fundtrialbalance, 2026-06-17, 3d
     Ledger explorer Needs screenshot index row :active, accounting_ledgerexplorer, 2026-06-17, 3d
     Fund audit trail Needs screenshot :active, accounting_fundaudittrail, 2026-06-17, 3d
@@ -341,6 +342,14 @@ gantt
 - [ ] Add FundAccountingConfigure to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
 - [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +3 more.
 
+#### Accounting close (`FundAccountingClose`)
+
+- Workspace section: `Fund Ops`; visibility: `Secondary`; page class: `AccountingClosePage`.
+- Status: `Needs screenshot index row`.
+- [x] Registered in the WPF shell registry as FundAccountingClose (AccountingClosePage).
+- [ ] Add FundAccountingClose to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs.
+
 #### Fund trial balance (`FundTrialBalance`)
 
 - Workspace section: `Fund Ops`; visibility: `Secondary`; page class: `FundLedgerPage`.
@@ -511,7 +520,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as RunMat (RunMatPage).
 - [ ] Capture a fixture-mode desktop screenshot for RunMat or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +77 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +78 more.
 
 #### Batch backtest (`BatchBacktest`)
 
@@ -593,7 +602,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as Options (OptionsPage).
 - [ ] Capture a fixture-mode desktop screenshot for Options or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +28 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +29 more.
 
 #### Add provider wizard (`AddProviderWizard`)
 
@@ -851,7 +860,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as AdminMaintenance (AdminMaintenancePage).
 - [ ] Capture a fixture-mode desktop screenshot for AdminMaintenance or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +2 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +3 more.
 
 #### Environment designer (`EnvironmentDesigner`)
 

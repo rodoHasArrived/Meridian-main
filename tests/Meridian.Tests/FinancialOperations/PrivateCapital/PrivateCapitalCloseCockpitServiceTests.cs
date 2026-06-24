@@ -662,7 +662,8 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
                 "Close package approved.",
                 [Evidence("close-package", "Close package", "/operations-continuity/close-package/manifest-fund-alpha-2026-06")],
                 CloseControlApprovals(now)),
-            EvidencePackages: [PeriodLockReopenPackage(workflowId, periodLockPackageReady)]);
+            EvidencePackages: [PeriodLockReopenPackage(workflowId, periodLockPackageReady)],
+            LedgerBookId: Guid.Parse("33333333-3333-3333-3333-333333333333"));
     }
 
     private static OperationsTimelineEntryDto GovernedReopenTimelineEntry()

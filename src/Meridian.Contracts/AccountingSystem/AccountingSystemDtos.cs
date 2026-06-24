@@ -708,7 +708,12 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
         => LedgerBookId.HasValue &&
            EvidenceReferences.Any(reference =>
                IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
-               aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase)));
+               (IsLegacyFullWorkflowEvidence(reference) ||
+                aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+
+    private static bool IsLegacyFullWorkflowEvidence(string reference)
+        => reference.Contains("workflow-certification/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record AccountingDimensionalReportingReadinessDto(
@@ -792,7 +797,13 @@ public sealed record AccountingDimensionalReportingReadinessDto(
            EvidenceReferences.Any(reference =>
                IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
                ReferencesDimensionScope(reference) &&
-               aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase)));
+               (IsLegacyFullDimensionEvidence(reference) ||
+                aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+
+    private static bool IsLegacyFullDimensionEvidence(string reference)
+        => reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record AccountingTenantAdministrationReadinessDto(
@@ -931,8 +942,17 @@ public sealed record AccountingTenantAdministrationReadinessDto(
     private bool HasTenantAdministrationEvidence(params string[] aliases)
         => EvidenceReferences.Any(reference =>
             IsTenantCompanyScopedEvidence(reference) &&
-            reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) &&
-            aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase)));
+            IsTenantAdministrationEvidence(reference) &&
+            (IsLegacyFullTenantAdministrationEvidence(reference) ||
+             aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+
+    private static bool IsTenantAdministrationEvidence(string reference)
+        => reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("tenant-administration", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsLegacyFullTenantAdministrationEvidence(string reference)
+        => reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase);
 
     private bool IsTenantCompanyScopedEvidence(string? reference)
     {

@@ -246,6 +246,12 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
             if (!allowedFields.TryGetValue(trimmedKey, out var canonicalName))
             {
+                if (TryNormalizeProviderManagedField(descriptor, trimmedKey, out canonicalName))
+                {
+                    normalized[canonicalName] = value;
+                    continue;
+                }
+
                 unknownFields.Add(trimmedKey);
                 continue;
             }
@@ -259,6 +265,30 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         }
 
         return normalized;
+    }
+
+    private static bool TryNormalizeProviderManagedField(
+        ProviderCredentialCatalogEntry descriptor,
+        string fieldName,
+        out string canonicalName)
+    {
+        canonicalName = fieldName;
+        if (!descriptor.ProviderId.Equals("plaid", StringComparison.OrdinalIgnoreCase) ||
+            !fieldName.StartsWith("AccessToken:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var itemId = fieldName["AccessToken:".Length..].Trim();
+        if (itemId.Length == 0 ||
+            itemId.Length > 128 ||
+            itemId.Any(static ch => !(char.IsLetterOrDigit(ch) || ch is '-' or '_' or '.')))
+        {
+            return false;
+        }
+
+        canonicalName = $"AccessToken:{itemId}";
+        return true;
     }
 
     private static ProviderCredentialStoreStatus BuildStatus(

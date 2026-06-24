@@ -3536,7 +3536,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct, normalizedDraft.TenantId, normalizedDraft.CompanyId).ConfigureAwait(false);
         if (existing is not null)
         {
-            EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing, requireScopeForBookScopedDraft: true);
+            EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing);
         }
         if (existing is not null && existing.Version != request.Draft.Version)
         {
@@ -3615,7 +3615,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
-        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
         if (FindIdempotentLifecycleTransition(
                 draft,
                 JournalEntryLifecycleActionDto.Submit,
@@ -3678,7 +3678,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
-        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
         if (draft.Version != request.Version)
         {
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
@@ -3739,7 +3739,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
-        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft, requireScopeForBookScopedDraft: true);
+        EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
         var idempotent = await TryBuildIdempotentLifecycleResultAsync(fundProfileId, draft, request, ct).ConfigureAwait(false);
         if (idempotent is not null)
         {
@@ -4799,17 +4799,10 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
     private static void EnsureRequestedLedgerBookMatchesDraft(
         Guid? requestedLedgerBookId,
-        ManualJournalEntryDraftDto draft,
-        bool requireScopeForBookScopedDraft = false)
+        ManualJournalEntryDraftDto draft)
     {
         if (!requestedLedgerBookId.HasValue)
         {
-            if (requireScopeForBookScopedDraft && draft.LedgerBookId.HasValue)
-            {
-                throw new InvalidOperationException(
-                    $"Manual journal entry '{draft.JournalEntryId:D}' belongs to ledger book '{draft.LedgerBookId.Value:D}', but the request was not scoped to a ledger book.");
-            }
-
             return;
         }
 

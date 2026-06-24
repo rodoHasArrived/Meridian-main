@@ -239,6 +239,39 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAsync_PlaidItemAccessTokenField_IsProviderManagedAndStoredEncrypted()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "plaid",
+            new Dictionary<string, string?>
+            {
+                ["ClientId"] = "plaid-client",
+                ["Secret"] = "plaid-secret"
+            },
+            Environment: "sandbox",
+            Actor: "test-operator"));
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "plaid",
+            new Dictionary<string, string?>
+            {
+                ["AccessToken:item-1"] = "access-token-1"
+            },
+            Environment: "sandbox",
+            Actor: "test-operator"));
+
+        var read = await store.ReadForProviderAsync("plaid");
+        read.Should().NotBeNull();
+        read!.Get("ClientId").Should().Be("plaid-client");
+        read.Get("Secret").Should().Be("plaid-secret");
+        read.Get("AccessToken:item-1").Should().Be("access-token-1");
+
+        var vaultText = await File.ReadAllTextAsync(store.VaultPath);
+        vaultText.Should().NotContain("access-token-1");
+    }
+
+    [Fact]
     public async Task SaveAsync_KnownCredentialFields_AreCaseInsensitiveAndStoredCanonically()
     {
         var store = new FileProviderCredentialStore(_root);

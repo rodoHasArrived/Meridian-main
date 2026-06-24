@@ -66,8 +66,9 @@ public sealed class CredentialCompatibilityEndpointsTests
     [Fact]
     public async Task LegacyCredentialDelete_RemovesLocalStoreButLeavesEnvironmentFallback()
     {
-        using var env = new EnvironmentScope("POLYGON_API_KEY");
+        using var env = new EnvironmentScope("POLYGON_API_KEY", "DOTNET_ENVIRONMENT");
         Environment.SetEnvironmentVariable("POLYGON_API_KEY", "legacy-polygon-key");
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
         await using var app = await CreateAppAsync(_ => { });
 
         await app.GetTestClient().PostAsync(
@@ -178,6 +179,9 @@ public sealed class CredentialCompatibilityEndpointsTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "credential-test-operator";
             await next();
         });
         app.UseRateLimiter();

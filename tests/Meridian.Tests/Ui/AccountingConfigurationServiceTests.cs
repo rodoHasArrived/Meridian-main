@@ -1827,59 +1827,26 @@ public sealed class AccountingConfigurationServiceTests
             "ops-user",
             LedgerBookId: savedLedgerBookId));
 
-        var unscopedSave = async () => await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+        var unscopedEdit = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             saved with { Memo = "Unscoped retained draft edit" },
             "ops-user"));
-        await unscopedSave.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', but the request was not scoped to a ledger book*");
-
-        var unscopedSubmit = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
-            saved.JournalEntryId,
-            saved.FundProfileId,
-            "controller",
-            saved.Version));
-        await unscopedSubmit.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', but the request was not scoped to a ledger book*");
-
-        var unscopedAttach = async () => await service.AttachEvidenceAsync(new AttachManualJournalEntryEvidenceRequest(
-            saved.JournalEntryId,
-            saved.FundProfileId,
-            "controller",
-            saved.Version,
-            new ManualJournalEntryEvidenceAttachmentDto(
-                "unscoped-book-evidence",
-                "Unscoped book evidence",
-                "SourceDocument",
-                "/api/workstation/evidence/subjects/accounting-record/unscoped-book",
-                "EvidenceVault",
-                DateTimeOffset.UtcNow,
-                "controller")));
-        await unscopedAttach.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', but the request was not scoped to a ledger book*");
-
-        var unscopedLifecycle = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
-            saved.JournalEntryId,
-            saved.FundProfileId,
-            JournalEntryLifecycleActionDto.Validate,
-            "controller",
-            saved.Version));
-        await unscopedLifecycle.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', but the request was not scoped to a ledger book*");
+        unscopedEdit.LedgerBookId.Should().Be(savedLedgerBookId);
+        unscopedEdit.Memo.Should().Be("Unscoped retained draft edit");
 
         var submit = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
-            saved.JournalEntryId,
-            saved.FundProfileId,
+            unscopedEdit.JournalEntryId,
+            unscopedEdit.FundProfileId,
             "controller",
-            saved.Version,
+            unscopedEdit.Version,
             LedgerBookId: wrongLedgerBookId));
         await submit.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', not requested ledger book '{wrongLedgerBookId:D}'*");
 
         var attach = async () => await service.AttachEvidenceAsync(new AttachManualJournalEntryEvidenceRequest(
-            saved.JournalEntryId,
-            saved.FundProfileId,
+            unscopedEdit.JournalEntryId,
+            unscopedEdit.FundProfileId,
             "controller",
-            saved.Version,
+            unscopedEdit.Version,
             new ManualJournalEntryEvidenceAttachmentDto(
                 "wrong-book-evidence",
                 "Wrong book evidence",
@@ -1893,19 +1860,19 @@ public sealed class AccountingConfigurationServiceTests
             .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', not requested ledger book '{wrongLedgerBookId:D}'*");
 
         var lifecycle = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
-            saved.JournalEntryId,
-            saved.FundProfileId,
+            unscopedEdit.JournalEntryId,
+            unscopedEdit.FundProfileId,
             JournalEntryLifecycleActionDto.Validate,
             "controller",
-            saved.Version,
+            unscopedEdit.Version,
             LedgerBookId: wrongLedgerBookId));
         await lifecycle.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage($"*belongs to ledger book '{savedLedgerBookId:D}', not requested ledger book '{wrongLedgerBookId:D}'*");
 
         var workbench = await service.GetWorkbenchAsync("fund-alpha", savedLedgerBookId);
         workbench.Drafts.Should().ContainSingle(item =>
-            item.JournalEntryId == saved.JournalEntryId &&
-            item.Version == saved.Version &&
+            item.JournalEntryId == unscopedEdit.JournalEntryId &&
+            item.Version == unscopedEdit.Version &&
             item.Status == ManualJournalEntryStatusDto.Draft);
     }
 

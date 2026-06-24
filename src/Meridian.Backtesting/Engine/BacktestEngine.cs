@@ -130,7 +130,8 @@ public sealed class BacktestEngine(
 
         // 4. Build per-symbol replay streams (with corporate action adjustments if enabled)
         stageTimer.Transition(BacktestStage.LoadingData);
-        var streams = await BuildSymbolStreamsAsync(universe, request, ct).ConfigureAwait(false);
+        var replaySymbols = ResolveReplaySymbolOrder(universe, request.Symbols);
+        var streams = await BuildSymbolStreamsAsync(replaySymbols, request, ct).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
         stageTimer.Transition(BacktestStage.Replaying);
@@ -213,13 +214,31 @@ public sealed class BacktestEngine(
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
+    private static IReadOnlyList<string> ResolveReplaySymbolOrder(
         IReadOnlySet<string> universe,
+        IReadOnlyList<string>? requestedSymbols)
+    {
+        if (requestedSymbols is { Count: > 0 })
+        {
+            return requestedSymbols
+                .Where(symbol => !string.IsNullOrWhiteSpace(symbol) && universe.Contains(symbol))
+                .Select(static symbol => symbol.Trim().ToUpperInvariant())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        return universe
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
+        IReadOnlyList<string> replaySymbols,
         BacktestRequest request,
         CancellationToken ct)
     {
         var streams = new List<IAsyncEnumerable<MarketEvent>>();
-        foreach (var symbol in universe)
+        foreach (var symbol in replaySymbols)
         {
             var symbolRoot = Path.Combine(request.DataRoot, symbol.ToUpperInvariant());
             if (!Directory.Exists(symbolRoot))

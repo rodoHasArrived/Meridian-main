@@ -147,14 +147,16 @@ public sealed class AccountingProductionReadinessService
             return request;
         }
 
+        var workflowProfileEvidence = BuildProductionProfileWorkflowEvidence(profile);
+        var dimensionalProfileEvidence = BuildProductionProfileDimensionalEvidence(profile);
         var workflowEvidence = request.LedgerBookWorkflowEvidenceLinks
-            .Concat(profile.EvidenceReferences)
+            .Concat(workflowProfileEvidence)
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var dimensionalEvidence = request.DimensionalReportingEvidenceLinks
-            .Concat(profile.EvidenceReferences)
+            .Concat(dimensionalProfileEvidence)
             .Where(static item => !string.IsNullOrWhiteSpace(item))
             .Select(static item => item.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -195,6 +197,124 @@ public sealed class AccountingProductionReadinessService
             DimensionalCertificationArtifacts = dimensionalArtifacts,
             TenantAdminCertificationArtifacts = tenantAdminArtifacts
         };
+    }
+
+    private static IReadOnlyList<string> BuildProductionProfileWorkflowEvidence(
+        AccountingProductionCertificationProfileDto profile)
+    {
+        var evidence = RetainedProductionProfileEvidence(profile).ToList();
+        if (profile.LedgerBookId is not Guid ledgerBookId)
+        {
+            return evidence;
+        }
+
+        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.PostingRulesLedgerBookNativeCertified, "posting-rules");
+        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.JournalLifecycleLedgerBookNativeCertified, "journal-lifecycle");
+        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.CloseReportingLedgerBookNativeCertified, "close-reporting");
+        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.ClosePlanConfigurationLedgerBookNativeCertified, "close-plan-configuration");
+        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.ExternalGlLedgerBookNativeCertified, "external-gl");
+        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.ReconciliationLedgerBookNativeCertified, "reconciliation");
+        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.DirectLendingLedgerBookNativeCertified, "direct-lending");
+        AddProfileEvidence(evidence, profile, ledgerBookId, "workflow-certification", profile.StrategyLedgerReadLedgerBookNativeCertified, "strategy-ledger");
+        return evidence;
+    }
+
+    private static IReadOnlyList<string> BuildProductionProfileDimensionalEvidence(
+        AccountingProductionCertificationProfileDto profile)
+    {
+        var evidence = RetainedProductionProfileEvidence(profile).ToList();
+        if (profile.LedgerBookId is not Guid ledgerBookId)
+        {
+            return evidence;
+        }
+
+        var dimensionScope = ResolveDimensionScopeEvidenceSegment(profile);
+        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.PeriodReportDimensionQueriesCertified, "period-report", dimensionScope);
+        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.CrossPeriodReportDimensionQueriesCertified, "cross-period", dimensionScope);
+        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.JournalQueryDimensionFiltersCertified, "journal-query", dimensionScope);
+        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.ExternalExportDimensionMappingCertified, "external-export", dimensionScope);
+        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.LedgerLineDimensionsPersistedCertified, "ledger-line", dimensionScope);
+        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.TrialBalanceDimensionFiltersCertified, "trial-balance-filter", dimensionScope);
+        AddProfileEvidence(evidence, profile, ledgerBookId, "dimensions", profile.ReportPackageDimensionProvenanceCertified, "report-package-provenance", dimensionScope);
+        return evidence;
+    }
+
+    private static IEnumerable<string> RetainedProductionProfileEvidence(AccountingProductionCertificationProfileDto profile)
+        => profile.EvidenceReferences
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item.Trim())
+            .Where(static item => !IsLegacyFullCertificationEvidence(item));
+
+    private static bool IsLegacyFullCertificationEvidence(string reference)
+        => reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("workflow-certification/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
+           reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase);
+
+    private static void AddProfileEvidence(
+        ICollection<string> evidence,
+        AccountingProductionCertificationProfileDto profile,
+        Guid ledgerBookId,
+        string category,
+        bool certified,
+        string segment,
+        string? dimensionScope = null)
+    {
+        if (!certified)
+        {
+            return;
+        }
+
+        var tenant = Uri.EscapeDataString(TrimOrNull(profile.TenantId) ?? "tenant");
+        var company = Uri.EscapeDataString(TrimOrNull(profile.CompanyId) ?? "company");
+        var fund = Uri.EscapeDataString(NormalizeFundProfileId(profile.FundProfileId));
+        var scopeSuffix = string.IsNullOrWhiteSpace(dimensionScope)
+            ? string.Empty
+            : $"/dimension-scope/{Uri.EscapeDataString(dimensionScope)}";
+        evidence.Add($"evidence://tenant/{tenant}/company/{company}/fund/{fund}/ledger-book/{ledgerBookId:D}/{category}/{segment}/retained-production-profile{scopeSuffix}");
+    }
+
+    private static string ResolveDimensionScopeEvidenceSegment(AccountingProductionCertificationProfileDto profile)
+    {
+        foreach (var reference in profile.EvidenceReferences)
+        {
+            var scope = TryReadEvidenceSegment(reference, "dimension-scope/");
+            if (!string.IsNullOrWhiteSpace(scope))
+            {
+                return scope;
+            }
+
+            scope = TryReadEvidenceSegment(reference, "dimension-scope:");
+            if (!string.IsNullOrWhiteSpace(scope))
+            {
+                return scope;
+            }
+        }
+
+        return "retained-production-profile";
+    }
+
+    private static string? TryReadEvidenceSegment(string? reference, string marker)
+    {
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return null;
+        }
+
+        var index = reference.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (index < 0)
+        {
+            return null;
+        }
+
+        var start = index + marker.Length;
+        var end = start;
+        while (end < reference.Length && !IsEvidenceTokenBoundary(reference[end]))
+        {
+            end++;
+        }
+
+        return end > start ? reference[start..end] : null;
     }
 
     private static AccountingProductionReadinessRequestDto MergeTenantAdministrationProfile(

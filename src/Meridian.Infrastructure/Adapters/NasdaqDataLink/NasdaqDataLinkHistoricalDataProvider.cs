@@ -25,6 +25,7 @@ namespace Meridian.Infrastructure.Adapters.NasdaqDataLink;
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [RequiresCredential("NASDAQ_DATA_LINK_API_KEY",
     EnvironmentVariables = new[] { "NASDAQ_DATA_LINK_API_KEY", "NASDAQ__APIKEY" },
+    Optional = true,
     DisplayName = "API Key",
     Description = "Nasdaq Data Link API key from https://data.nasdaq.com/account/profile")]
 public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataProvider

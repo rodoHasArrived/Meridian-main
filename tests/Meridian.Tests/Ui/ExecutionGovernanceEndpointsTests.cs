@@ -290,23 +290,12 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionAuditTrailService>();
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
-            services.AddSingleton(sp => new BrokerageConfiguration
-            {
-                Gateway = "alpaca",
-                LiveExecutionEnabled = true,
-                MaxPositionSize = 100m
-            });
             services.AddSingleton(sp => new AlpacaBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
                 new Meridian.Core.Config.AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
                 NullLogger<AlpacaBrokerageGateway>.Instance));
             services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
-            services.AddBrokerageExecution(config =>
-            {
-                config.Gateway = "alpaca";
-                config.LiveExecutionEnabled = true;
-                config.MaxPositionSize = 100m;
-            });
+            services.AddBrokerageExecution(config => ConfigureReadyBrokerage(config, "alpaca"));
         });
 
         await app.Services.GetRequiredService<AlpacaBrokerageGateway>().ConnectAsync();
@@ -371,23 +360,12 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionAuditTrailService>();
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
-            services.AddSingleton(sp => new BrokerageConfiguration
-            {
-                Gateway = "robinhood",
-                LiveExecutionEnabled = true,
-                MaxPositionSize = 100m
-            });
             services.AddSingleton(sp => new RobinhoodBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
                 NullLogger<RobinhoodBrokerageGateway>.Instance,
                 accessToken: "test-token"));
             services.AddHostedBrokerageGateways();
-            services.AddBrokerageExecution(config =>
-            {
-                config.Gateway = "robinhood";
-                config.LiveExecutionEnabled = true;
-                config.MaxPositionSize = 100m;
-            });
+            services.AddBrokerageExecution(config => ConfigureReadyBrokerage(config, "robinhood"));
         });
 
         await app.Services.GetRequiredService<RobinhoodBrokerageGateway>().ConnectAsync();
@@ -461,7 +439,7 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
-    public async Task SubmitOrder_WithRestrictedBrokerRoutingMetadataAlias_ReturnsBadRequest()
+    public async Task SubmitOrder_WithRestrictedBrokerRoutingMetadataAlias_ReturnsForbidden()
     {
         var tempRoot = CreateTempRoot();
         await using var app = await CreateAppAsync(services =>
@@ -491,7 +469,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             }
         }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         var result = JsonSerializer.Deserialize<OrderResult>(
             await response.Content.ReadAsStringAsync(),
             JsonOptions());
@@ -531,7 +509,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             }
         }));
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         var result = JsonSerializer.Deserialize<OrderResult>(
             await response.Content.ReadAsStringAsync(),
             JsonOptions());
@@ -560,6 +538,29 @@ public sealed class ExecutionGovernanceEndpointsTests
         app.MapExecutionEndpoints(JsonOptions());
         await app.StartAsync();
         return app;
+    }
+
+    private static void ConfigureReadyBrokerage(BrokerageConfiguration config, string gatewayId)
+    {
+        config.Gateway = gatewayId;
+        config.LiveExecutionEnabled = true;
+        config.MaxPositionSize = 100m;
+        config.ReadOnlyPhaseEnabled = true;
+        config.PaperTradingPhaseEnabled = true;
+        config.ProductionRoutingPhaseEnabled = true;
+        config.ReadOnlyVerificationPassed = true;
+        config.PaperLifecycleTestsPassed = true;
+        config.ReplayEvidencePassed = true;
+        config.BrokerFlows[gatewayId] = new BrokerFlowFlags
+        {
+            ReadOnlyDataEnabled = true,
+            PaperOrderFlowEnabled = true,
+            ProductionOrderRoutingEnabled = true
+        };
+        config.ValidationGates = new BrokerValidationGateOptions
+        {
+            RequireValidationArtifactsForOrderPlacement = false
+        };
     }
 
     private static JsonSerializerOptions JsonOptions() => new()

@@ -249,6 +249,9 @@ public sealed class BrokerageConnectionEndpointsTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "brokerage-test-operator";
             await next();
         });
         app.MapBrokerageConnectionEndpoints(new JsonSerializerOptions

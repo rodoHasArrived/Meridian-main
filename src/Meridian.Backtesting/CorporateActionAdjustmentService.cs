@@ -113,9 +113,6 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
         var actions = await _queryService.GetCorporateActionsAsync(securityId.Value, ct)
             .ConfigureAwait(false);
 
-        if (actions.Count == 0)
-            return null;
-
         return actions.OrderBy(a => a.ExDate).ToList();
     }
 

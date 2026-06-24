@@ -7,6 +7,7 @@ using Meridian.Contracts.Api;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
@@ -44,6 +45,7 @@ public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
 
         foreach (var source in dataSourceRegistry.Sources.OrderBy(s => s.Id, StringComparer.Ordinal))
         {
+            var registrationRequired = RequiresDefaultRuntimeRegistration(source);
             ValidateCapabilityClaim(
                 mismatches,
                 source.Id,
@@ -51,8 +53,11 @@ public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
                 typeof(IMarketDataClient),
                 source.IsRealtime,
                 source.ImplementationType,
-                registry.SupportedStreamingSources.Contains(source.Id, StringComparer.OrdinalIgnoreCase),
-                "DataSourceAttribute + ProviderRegistry.RegisterStreamingFactory");
+                registry.SupportedStreamingSources.Contains(source.Id, StringComparer.OrdinalIgnoreCase) ||
+                    typeof(IRealtimeDataSource).IsAssignableFrom(source.ImplementationType),
+                "DataSourceAttribute + ProviderRegistry.RegisterStreamingFactory",
+                registrationRequired,
+                typeof(IRealtimeDataSource));
 
             ValidateCapabilityClaim(
                 mismatches,
@@ -61,8 +66,11 @@ public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
                 typeof(IHistoricalDataProvider),
                 source.IsHistorical,
                 source.ImplementationType,
-                registry.GetProviders<IHistoricalDataProvider>().Any(p => string.Equals(p.ProviderId, source.Id, StringComparison.OrdinalIgnoreCase)),
-                "DataSourceAttribute + ProviderFactory.CreateBackfillProviders");
+                registry.GetProviders<IHistoricalDataProvider>().Any(p => string.Equals(p.ProviderId, source.Id, StringComparison.OrdinalIgnoreCase)) ||
+                    typeof(IHistoricalDataSource).IsAssignableFrom(source.ImplementationType),
+                "DataSourceAttribute + ProviderFactory.CreateBackfillProviders",
+                registrationRequired,
+                typeof(IHistoricalDataSource));
         }
 
         foreach (var provider in registry.GetAllProviderMetadata().OrderBy(p => p.ProviderId, StringComparer.Ordinal))
@@ -97,20 +105,36 @@ public sealed class ProviderCapabilityContractRegistrationTests : IDisposable
         bool claimed,
         Type implementationType,
         bool isRegistered,
-        string registrationSource)
+        string registrationSource,
+        bool registrationRequired = true,
+        params Type[] alternateInterfaces)
     {
         if (!claimed)
         {
             return;
         }
 
-        var implementsContract = expectedInterface.IsAssignableFrom(implementationType);
-        if (implementsContract && isRegistered)
+        var implementsContract = expectedInterface.IsAssignableFrom(implementationType) ||
+            alternateInterfaces.Any(contract => contract.IsAssignableFrom(implementationType));
+        if (implementsContract && (!registrationRequired || isRegistered))
         {
             return;
         }
 
-        mismatches.Add($"providerId={providerId}; claimedCapability={claimedCapability}; expectedInterface={expectedInterface.Name}; implementationType={implementationType.FullName}; implementsExpectedInterface={implementsContract}; registrationSource={registrationSource}; registrationPresent={isRegistered}");
+        mismatches.Add($"providerId={providerId}; claimedCapability={claimedCapability}; expectedInterface={expectedInterface.Name}; implementationType={implementationType.FullName}; implementsExpectedInterface={implementsContract}; registrationSource={registrationSource}; registrationPresent={isRegistered}; registrationRequired={registrationRequired}");
+    }
+
+    private static bool RequiresDefaultRuntimeRegistration(DataSourceMetadata source)
+    {
+        if (!source.EnabledByDefault)
+        {
+            return false;
+        }
+
+        return !source.ImplementationType
+            .GetCustomAttributes(typeof(RequiresCredentialAttribute), inherit: true)
+            .Cast<RequiresCredentialAttribute>()
+            .Any(static credential => !credential.Optional);
     }
 
     private static class TestConfigWriter

@@ -205,6 +205,11 @@ let ``BondTerms callable bond preserves callDate`` () =
         IssuerName = Some "Corp A"
         Seniority = Some "Senior"
         Subclass = BondSubclass.Corporate
+        Par = None
+        PaymentFrequency = None
+        LegalFinalMaturity = None
+        PreRefundDate = None
+        MandatoryPutDate = None
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -545,6 +550,11 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         IssuerName = Some "Meridian Capital"
         Seniority = Some "Senior Unsecured"
         Subclass = BondSubclass.FloatingRate
+        Par = None
+        PaymentFrequency = None
+        LegalFinalMaturity = None
+        PreRefundDate = None
+        MandatoryPutDate = None
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }

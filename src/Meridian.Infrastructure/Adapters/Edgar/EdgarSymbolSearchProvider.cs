@@ -21,7 +21,7 @@ namespace Meridian.Infrastructure.Adapters.Edgar;
 /// SEC EDGAR API reference: https://www.sec.gov/developer
 /// Polite-use requirements: include a User-Agent header identifying the application.
 /// </remarks>
-[DataSource("edgar-symbols", "EDGAR (Symbol Search)", DataSourceType.Historical, DataSourceCategory.Free,
+[DataSource("edgar-symbols", "EDGAR (Symbol Search)", DataSourceType.Reference, DataSourceCategory.Free,
     Priority = 20, Description = "SEC EDGAR company list — free, no credentials required")]
 [ImplementsAdr("ADR-001", "EDGAR symbol search provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]

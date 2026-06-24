@@ -17,7 +17,9 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// and cross-provider validation.
 /// </summary>
 [DataSource("composite", "Multi-Source (Auto-Failover)", DataSourceType.Historical, DataSourceCategory.Aggregator,
-    Priority = 0, Description = "Composite provider with automatic failover across multiple historical data sources")]
+    Priority = 0,
+    EnabledByDefault = false,
+    Description = "Composite provider with automatic failover across multiple historical data sources")]
 [ImplementsAdr("ADR-001", "Composite historical data provider with failover")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]

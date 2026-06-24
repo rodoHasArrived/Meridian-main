@@ -7,18 +7,18 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "1db65149c3bf",
+  "sourceFingerprint": "3b8ba49cf56e",
   "baselineDate": "2026-06-17",
   "summary": {
-    "screenCount": 91,
+    "screenCount": 92,
     "workspaceCount": 7,
     "screenshotCount": 15,
-    "testReferenceCount": 91,
-    "openTaskCount": 76,
+    "testReferenceCount": 92,
+    "openTaskCount": 77,
     "statusCounts": {
       "needs-screenshot": 70,
       "evidence-current": 15,
-      "needs-screenshot-index": 6
+      "needs-screenshot-index": 7
     },
     "workspaces": [
       {
@@ -43,13 +43,13 @@
       },
       {
         "name": "Accounting",
-        "screenCount": 13,
+        "screenCount": 14,
         "primaryCount": 6,
-        "secondaryCount": 7,
+        "secondaryCount": 8,
         "overflowCount": 0,
         "screenshotCount": 0,
-        "testReferenceCount": 13,
-        "openTaskCount": 13
+        "testReferenceCount": 14,
+        "openTaskCount": 14
       },
       {
         "name": "Reporting",
@@ -1127,6 +1127,42 @@
     },
     {
       "workspace": "Accounting",
+      "pageTag": "FundAccountingClose",
+      "title": "Accounting close",
+      "section": "Fund Ops",
+      "visibilityTier": "Secondary",
+      "order": 57,
+      "pageType": "AccountingClosePage",
+      "screenshotIndexRow": false,
+      "screenshotPath": null,
+      "screenshotExists": false,
+      "refreshedDate": null,
+      "fixtureMode": null,
+      "screenshotGap": "No screenshot index row was found for this registered page tag.",
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs"
+      ],
+      "status": "needs-screenshot-index",
+      "tasks": [
+        {
+          "done": true,
+          "text": "Registered in the WPF shell registry as FundAccountingClose (AccountingClosePage)."
+        },
+        {
+          "done": false,
+          "text": "Add FundAccountingClose to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence."
+        },
+        {
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs."
+        }
+      ],
+      "openTaskCount": 1
+    },
+    {
+      "workspace": "Accounting",
       "pageTag": "FundTrialBalance",
       "title": "Fund trial balance",
       "section": "Fund Ops",
@@ -1999,6 +2035,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
@@ -2092,7 +2129,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +77 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +78 more."
         }
       ],
       "openTaskCount": 1
@@ -2450,6 +2487,7 @@
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkstationOperatingContextServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkstationWorkflowSummaryServiceTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AdminMaintenanceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs",
@@ -2480,7 +2518,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +28 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +29 more."
         }
       ],
       "openTaskCount": 1
@@ -3918,7 +3956,8 @@
         "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
-        "tests/Meridian.Wpf.Tests/ViewModels/AdminMaintenanceViewModelTests.cs"
+        "tests/Meridian.Wpf.Tests/ViewModels/AdminMaintenanceViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs"
       ],
       "status": "needs-screenshot",
       "tasks": [
@@ -3932,7 +3971,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1

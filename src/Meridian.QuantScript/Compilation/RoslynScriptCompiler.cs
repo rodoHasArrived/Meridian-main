@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -18,7 +17,6 @@ namespace Meridian.QuantScript.Compilation;
 /// </summary>
 public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 {
-    private static readonly MetadataReferenceResolver SafeMetadataReferenceResolver = new RestrictedMetadataReferenceResolver();
     private static readonly SourceReferenceResolver SafeSourceReferenceResolver = new RestrictedSourceReferenceResolver();
 
     // Parameter comment convention: // @param Name:Label:Default:Min:Max:Description
@@ -172,30 +170,10 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         if (!_options.Value.EnableUnsafeScripts)
         {
             scriptOptions = scriptOptions
-                .WithMetadataResolver(SafeMetadataReferenceResolver)
                 .WithSourceResolver(SafeSourceReferenceResolver);
         }
 
         return scriptOptions;
-    }
-
-    private sealed class RestrictedMetadataReferenceResolver : MetadataReferenceResolver
-    {
-        public override bool Equals(object? other) => other is RestrictedMetadataReferenceResolver;
-
-        public override int GetHashCode() => typeof(RestrictedMetadataReferenceResolver).GetHashCode();
-
-        public override PortableExecutableReference? ResolveMissingAssembly(
-            MetadataReference definition,
-            AssemblyIdentity referenceIdentity) => null;
-
-        public override ImmutableArray<PortableExecutableReference> ResolveReference(
-            string reference,
-            string? baseFilePath,
-            MetadataReferenceProperties properties)
-        {
-            return ImmutableArray<PortableExecutableReference>.Empty;
-        }
     }
 
     private sealed class RestrictedSourceReferenceResolver : SourceReferenceResolver

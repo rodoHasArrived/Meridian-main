@@ -9,6 +9,7 @@ using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -102,6 +103,7 @@ public sealed class WorkflowLibraryEndpointTests
         builder.Services.AddWorkflowLibrary();
 
         await using var app = builder.Build();
+        app.Use(AddTestTenantContext);
         app.MapWorkstationEndpoints(ServerJsonOptions);
         await app.StartAsync();
 
@@ -365,8 +367,17 @@ public sealed class WorkflowLibraryEndpointTests
         builder.Services.AddWorkflowLibrary();
 
         var app = builder.Build();
+        app.Use(AddTestTenantContext);
         app.MapWorkstationEndpoints(ServerJsonOptions);
         await app.StartAsync();
         return app;
+    }
+
+    private static async Task AddTestTenantContext(HttpContext context, Func<Task> next)
+    {
+        context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+        context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = "workflow-test-operator";
+        await next();
     }
 }

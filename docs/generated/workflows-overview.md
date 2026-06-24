@@ -4,7 +4,7 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `22`
+- Workflow count: `23`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
@@ -20,6 +20,7 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/golden-path-validation.yml` | Golden Path Validation | pull_request, push, workflow_dispatch |
 | `.github/workflows/ibapi-smoke.yml` | IB API Smoke Build | pull_request, push, workflow_dispatch |
 | `.github/workflows/maintenance.yml` | Maintenance | pull_request, push, schedule, workflow_dispatch |
+| `.github/workflows/meridian-ci.yml` | Meridian CI | pull_request, push, merge_group, workflow_dispatch |
 | `.github/workflows/provider-validation.yml` | Provider Validation | workflow_dispatch, schedule |
 | `.github/workflows/publish-smoke.yml` | Publish Smoke | workflow_dispatch |
 | `.github/workflows/roadmap-source-docs.yml` | Roadmap Source Docs | workflow_dispatch, pull_request, push |

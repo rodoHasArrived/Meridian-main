@@ -2878,7 +2878,8 @@ describe("AccountingScreen", () => {
     await user.click(within(cockpit).getByRole("button", { name: "Request late adjustment" }));
 
     expect(await screen.findByText("Late adjustment requested for manual-je-1.")).toBeInTheDocument();
-    expect(within(cockpit).getByText("Accrual invoice received after controller review.")).toBeInTheDocument();
+    const lateAdjustmentRequests = within(cockpit).getByRole("list", { name: "Late adjustment requests" });
+    expect(within(lateAdjustmentRequests).getByText("Accrual invoice received after controller review.")).toBeInTheDocument();
     expect(api.createLedgerCloseManagementLateAdjustment).toHaveBeenCalledWith(expect.objectContaining({
       workflowId: "workflow-approval-1",
       journalEntryId: "manual-je-1",

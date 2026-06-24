@@ -15,7 +15,7 @@ public sealed class ProductionServiceRegistrationPolicyTests
         Action act = () => services.AddMarketDataServices(CompositionOptions.Default);
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*InMemory*Service*");
+            .WithMessage("*persistence-backed governance domain services*");
     }
 
     [Fact]

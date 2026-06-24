@@ -14257,6 +14257,12 @@ function validateCloseSetupTaskSelection(
   setupDraft: AccountingCloseSetupDraftViewModel
 ): string | null {
   const taskId = setupDraft.taskId.trim();
+  if (closePlan.tasks.length === 0) {
+    return taskId
+      ? `Close checklist task ${taskId} is not loaded in this close plan.`
+      : null;
+  }
+
   if (!taskId) {
     return "Select a retained close checklist task before saving close setup.";
   }

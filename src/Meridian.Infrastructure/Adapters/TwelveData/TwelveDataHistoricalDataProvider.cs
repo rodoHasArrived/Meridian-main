@@ -27,6 +27,10 @@ namespace Meridian.Infrastructure.Adapters.TwelveData;
 [ImplementsAdr("ADR-001", "TwelveData historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+[RequiresCredential("TWELVEDATA_API_KEY",
+    EnvironmentVariables = new[] { "TWELVEDATA_API_KEY", "TWELVEDATA__APIKEY" },
+    DisplayName = "API Key",
+    Description = "Twelve Data API key from https://twelvedata.com/account/api-keys")]
 public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://api.twelvedata.com/time_series";

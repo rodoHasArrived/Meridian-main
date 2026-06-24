@@ -35,7 +35,7 @@ public sealed class DataSourceAttribute : Attribute
     public string DisplayName { get; }
 
     /// <summary>
-    /// Type of data provided: Realtime, Historical, or Hybrid.
+    /// Type of data provided: Realtime, Historical, Hybrid, or Reference.
     /// </summary>
     public DataSourceType Type { get; }
 

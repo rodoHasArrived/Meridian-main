@@ -20,6 +20,7 @@ public sealed class AlpacaBrokerageConnectionServiceTests
     public async Task GetStatus_WithApcaAliases_ReturnsConfiguredMaskedPaperStatus()
     {
         using var env = AlpacaEnvScope.Clear();
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Test");
         Environment.SetEnvironmentVariable("APCA_API_KEY_ID", "alias-key-1234");
         Environment.SetEnvironmentVariable("APCA_API_SECRET_KEY", "alias-secret");
         var service = CreateService(new ConstantStubHandler(HttpStatusCode.OK, BuildAccountResponse()), out var store);
@@ -208,7 +209,8 @@ public sealed class AlpacaBrokerageConnectionServiceTests
             "ALPACA_BROKERAGE_CONNECTED_AT",
             "ALPACA_BROKERAGE_VERIFIED_AT",
             "ALPACA_BROKERAGE_ACCOUNT_ID",
-            "ALPACA_BROKERAGE_LAST_ERROR"
+            "ALPACA_BROKERAGE_LAST_ERROR",
+            "DOTNET_ENVIRONMENT"
         ];
 
         private readonly Dictionary<string, (string? Process, string? User)> _values;

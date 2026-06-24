@@ -11,9 +11,11 @@ using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
 using Serilog;
@@ -125,6 +127,9 @@ public sealed class ProviderFactory
         // Tiingo
         TryAddBackfillProvider(providers, () => CreateTiingoBackfillProvider(providersCfg?.Tiingo));
 
+        // Twelve Data
+        TryAddBackfillProvider(providers, CreateTwelveDataBackfillProvider);
+
         // Finnhub
         TryAddBackfillProvider(providers, () => CreateFinnhubBackfillProvider(providersCfg?.Finnhub));
 
@@ -139,6 +144,9 @@ public sealed class ProviderFactory
 
         // Nasdaq Data Link
         TryAddBackfillProvider(providers, () => CreateNasdaqBackfillProvider(providersCfg?.Nasdaq));
+
+        // Robinhood historical bars (unofficial API, explicitly enabled)
+        TryAddBackfillProvider(providers, () => CreateRobinhoodBackfillProvider(providersCfg?.Robinhood));
 
         return providers
             .OrderBy(p => p.Priority)
@@ -256,6 +264,17 @@ public sealed class ProviderFactory
         return new TiingoHistoricalDataProvider(apiToken: token, log: _log);
     }
 
+    private IHistoricalDataProvider? CreateTwelveDataBackfillProvider()
+    {
+        var credentials = CreateCredentialContext<TwelveDataHistoricalDataProvider>(
+            ("TWELVEDATA_API_KEY", null));
+        var apiKey = credentials.Get("TWELVEDATA_API_KEY");
+        if (string.IsNullOrEmpty(apiKey))
+            return null;
+
+        return new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log);
+    }
+
     private IHistoricalDataProvider? CreateFinnhubBackfillProvider(FinnhubBackfillConfig? cfg)
     {
         if (!(cfg?.Enabled ?? true))
@@ -317,6 +336,23 @@ public sealed class ProviderFactory
         return new NasdaqDataLinkHistoricalDataProvider(
             apiKey: apiKey,
             database: cfg?.Database ?? "WIKI",
+            log: _log);
+    }
+
+    private IHistoricalDataProvider? CreateRobinhoodBackfillProvider(RobinhoodConfig? cfg)
+    {
+        if (cfg?.Enabled != true)
+            return null;
+
+        var credentials = CreateCredentialContext<RobinhoodHistoricalDataProvider>(
+            ("ROBINHOOD_ACCESS_TOKEN", null));
+        var accessToken = credentials.Get("ROBINHOOD_ACCESS_TOKEN");
+        if (string.IsNullOrEmpty(accessToken))
+            return null;
+
+        return new RobinhoodHistoricalDataProvider(
+            accessToken: accessToken,
+            priority: cfg.Priority,
             log: _log);
     }
 
