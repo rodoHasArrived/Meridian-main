@@ -63,8 +63,8 @@ run_step "Run .NET non-integration test projects" \
     --summary-output artifacts/test-results/dotnet/ci-dotnet-test-summary.md \
     --json-output artifacts/test-results/dotnet/ci-dotnet-test-summary.json
 
-run_step "Install dashboard dependencies from lockfile" \
-  npm ci --prefix src/Meridian.Ui/dashboard --include=optional
+run_step "Install dashboard dependencies from lockfile" \\
+  npm --prefix src/Meridian.Ui/dashboard ci --include=optional
 
 run_step "Run dashboard tests" \
   npm --prefix src/Meridian.Ui/dashboard run test
