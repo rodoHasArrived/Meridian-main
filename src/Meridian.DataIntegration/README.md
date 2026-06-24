@@ -188,7 +188,7 @@ from Application ETL abstractions/implementations into this module and now use t
 `Meridian.DataIntegration.Etl` namespace. `IEtlJobDefinitionStore` and `ISftpFilePublisher` moved
 to `Meridian.Contracts.Etl`, and the local JSON-backed `EtlJobDefinitionStore` moved to
 `Meridian.Storage.Etl`. Application now keeps composition and concrete runtime adapters for its
-ingestion-job lifecycle and event pipeline while Data Integration owns ETL job orchestration.
+ingestion-job lifecycle and event pipeline while Data Integration owns ETL job orchestration. ETL job orchestration passes the persisted partner schema id into the parser so CSV, XLSX, local, and SFTP ingestion share the same mapped normalization boundary.
 
 `IEventCanonicalizer`, `EventCanonicalizer`, `ICanonicalSecurityIdLookup`,
 `ConditionCodeMapper`, `VenueMicMapper`, `ICanonicalizationMetrics`,

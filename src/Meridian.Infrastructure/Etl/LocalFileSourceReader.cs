@@ -16,8 +16,10 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
 
     public Task<IReadOnlyList<EtlRemoteFile>> ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default)
     {
-        var pattern = string.IsNullOrWhiteSpace(source.FilePattern) ? "*.csv" : source.FilePattern!;
-        var files = Directory.EnumerateFiles(source.Location, pattern, SearchOption.TopDirectoryOnly)
+        var pattern = string.IsNullOrWhiteSpace(source.FilePattern) ? "*.csv;*.xlsx" : source.FilePattern!;
+        var files = ExpandPatterns(pattern)
+            .SelectMany(p => Directory.EnumerateFiles(source.Location, p, SearchOption.TopDirectoryOnly))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
             .Select(path =>
             {
@@ -40,4 +42,7 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
         await using var stream = new FileStream(file.Path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
         return await _stagingStore.StageAsync(jobId, file, stream, ct).ConfigureAwait(false);
     }
+
+    private static IEnumerable<string> ExpandPatterns(string pattern)
+        => pattern.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }
