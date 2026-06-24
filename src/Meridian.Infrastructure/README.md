@@ -82,9 +82,10 @@ mechanics. SFTP source and destination definitions must provide a SHA-256 host-k
 imports and exports fail closed before trusting a remote server identity. SFTP locations are strict
 `sftp://` URIs with a host and absolute remote path; user info, query strings, fragments, traversal
 segments, and files outside the configured source root are rejected before opening a session.
-Publisher uploads use temporary remote names and rename into place so readers do not observe partial
-exports; the SSH.NET transfer calls remain synchronous, with cancellation checked before sessions,
-listing, downloads, and each upload.
+Local and SFTP ETL source readers discover both CSV and XLSX partner files by default, with
+semicolon-delimited file patterns for scoped exchanges. Publisher uploads use temporary remote names
+and rename into place so readers do not observe partial exports; the SSH.NET transfer calls remain
+synchronous, with cancellation checked before sessions, listing, downloads, and each upload.
 
 Broker statement imports hash the source file bytes and persist the resulting content hash with a
 deterministic duplicate key derived from fund account, statement period, and source hash. Source

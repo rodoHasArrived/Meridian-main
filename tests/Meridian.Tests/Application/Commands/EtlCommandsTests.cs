@@ -68,4 +68,21 @@ public sealed class EtlCommandsTests
         definition.Symbols.Should().Equal("AAPL", "MSFT");
         definition.PublishNormalizedExtract.Should().BeTrue();
     }
+
+    [Fact]
+    public void TryBuildDefinition_WithoutFilePattern_LeavesSourcePatternUnset()
+    {
+        var result = EtlCommands.TryBuildDefinition(
+            [
+                "--etl-import",
+                "--etl-source-kind",
+                "local",
+                "--etl-source-path",
+                "input",
+            ],
+            out var definition);
+
+        result.Should().BeTrue();
+        definition.Source.FilePattern.Should().BeNull();
+    }
 }

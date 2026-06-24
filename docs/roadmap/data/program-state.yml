@@ -7,10 +7,10 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-06-10
+  snapshot_date: 2026-06-24
   status: active
-  active_scope: Closed W1-W5 operational record baseline plus W5X productization targets
-  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, retained evidence, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes.
+  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer and Financial Operations control-center milestones
+  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes.
   near_term_release_baseline:
     - W1-DATA-001
     - W2-TRD-001
@@ -20,9 +20,9 @@ program:
     - W4-RPT-001
     - W5-ACCT-001
     - W5-MASSET-001
-  active_productization_targets:
     - W5X-FREX-001
     - W5X-FINOPS-001
+  active_productization_targets: []
   current_focus:
     - Data confidence and retained source evidence
     - Portfolio and accounting reconciliation

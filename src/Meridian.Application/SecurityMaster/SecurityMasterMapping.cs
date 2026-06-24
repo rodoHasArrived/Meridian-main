@@ -312,7 +312,13 @@ internal static class SecurityMasterMapping
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
-                ToFSharpList(GetRequiredArray(json, "covenants").EnumerateArray().Select(ToCovenant)))),
+                ToFSharpList(GetRequiredArray(json, "covenants").EnumerateArray().Select(ToCovenant)),
+                ToOption(GetOptionalString(json, "referenceIndex")),
+                ToOption(GetOptionalDecimal(json, "spreadBps")),
+                ToOption(GetOptionalDecimal(json, "currentCouponRate")),
+                ToOption(GetOptionalString(json, "resetFrequency")),
+                ToFSharpList(GetOptionalArrayItems(json, "principalSchedule").Select(ToPrincipalPaymentEntry)),
+                ToOption(GetOptionalString(json, "pricingSource")))),
             "Commodity" => SecurityKind.NewCommodity(new CommodityTerms(
                 GetRequiredString(json, "commodityType"),
                 ToOption(GetOptionalString(json, "denomination")),
@@ -382,7 +388,12 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "callDate")),
             ToOption(GetOptionalString(json, "issuerName")),
             ToOption(GetOptionalString(json, "seniority")),
-            ParseBondSubclass(GetOptionalString(json, "subclass")));
+            ParseBondSubclass(GetOptionalString(json, "subclass")),
+            ToOption(GetOptionalDecimal(json, "par")),
+            ToPaymentFrequencyOption(GetOptionalString(json, "paymentFrequency")),
+            ToOption(GetOptionalDateOnly(json, "legalFinalMaturity")),
+            ToOption(GetOptionalDateOnly(json, "preRefundDate")),
+            ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")));
     }
 
     private static SwapLeg ToSwapLeg(JsonElement json)
@@ -397,6 +408,11 @@ internal static class SecurityMasterMapping
             GetRequiredString(json, "covenantType"),
             GetRequiredString(json, "threshold"),
             ToOption(GetOptionalString(json, "notes")));
+
+    private static PrincipalPaymentEntry ToPrincipalPaymentEntry(JsonElement json)
+        => new(
+            GetRequiredDateOnly(json, "paymentDate"),
+            GetRequiredDecimal(json, "amount"));
 
     private static Provenance ToProvenance(string sourceSystem, string updatedBy, string? sourceRecordId, string? reason, DateTimeOffset asOf)
         => new(sourceSystem, ToOption(sourceRecordId), asOf, updatedBy, ToOption(reason));
@@ -436,6 +452,20 @@ internal static class SecurityMasterMapping
     private static FSharpOption<DateTimeOffset> ToOption(DateTimeOffset? value)
         => value.HasValue ? FSharpOption<DateTimeOffset>.Some(value.Value) : FSharpOption<DateTimeOffset>.None;
 
+    private static FSharpOption<PaymentFrequency> ToPaymentFrequencyOption(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? FSharpOption<PaymentFrequency>.None
+            : FSharpOption<PaymentFrequency>.Some(value.Trim() switch
+            {
+                "Daily" => PaymentFrequency.Daily,
+                "Weekly" => PaymentFrequency.Weekly,
+                "Monthly" => PaymentFrequency.Monthly,
+                "Quarterly" => PaymentFrequency.Quarterly,
+                "SemiAnnual" => PaymentFrequency.SemiAnnual,
+                "Annual" => PaymentFrequency.Annual,
+                var other => PaymentFrequency.NewOtherFrequency(other)
+            });
+
     private static JsonElement ParseJson(string json)
         => JsonDocument.Parse(json).RootElement.Clone();
 
@@ -471,6 +501,19 @@ internal static class SecurityMasterMapping
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Array
             ? value
             : throw new InvalidOperationException($"Missing required array '{propertyName}'.");
+
+    private static IEnumerable<JsonElement> GetOptionalArrayItems(JsonElement json, string propertyName)
+    {
+        if (!json.TryGetProperty(propertyName, out var value) || value.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+
+        foreach (var item in value.EnumerateArray())
+        {
+            yield return item;
+        }
+    }
 
     private static string GetRequiredString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String

@@ -342,17 +342,17 @@ items:
       - Portfolio
       - Data
     owner_lane: Accounting and Ledger
-    status: planned
+    status: done
     health: green
     priority: high
-    evidence_posture: planned_evidence
-    current_summary: Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. The shared command-center DTO and read service now project unified FINOPS queue rows, deterministic status/owner/due/severity/SLA/blocker/close-report impact labels, close-support decisions, and browser/WPF rendering tests. Direct-lending operations also has attached proof for endpoint parity, a shared operations read model, Security & Instrument Explorer and Financial Operations integration, WPF dense operations panels, and focused residual security tests; the broader FINOPS control center remains planned until generated roadmap/product docs and remaining rollout gates are explicitly promoted.
+    evidence_posture: complete
+    current_summary: Closed 2026-06-24. Financial Operations control-center acceptance is promoted through the shared Operations Continuity lifecycle, close-readiness, approval-policy, close-calendar, reconciliation-break, checklist, audit-evidence, and governed reopen controls; browser Operations Continuity screens consume those shared DTOs for queue, approval, close, reopen, checklist, and break actions, while WPF Fund Ledger projects the same Financial Operations queue, accounting-record readiness, private-capital close posture, period-lock/reopen evidence, and retained evidence packages from shared read models. Direct-lending endpoint and WPF dense-panel proof remains attached as supporting FINOPS evidence without creating a separate browser route.
     exit_criteria:
       - Accounting workspace exposes a financial operations command surface that groups reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness from shared read models.
       - Reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets can be opened from a unified operator queue with deterministic status, owner, due date, and blocker signals.
       - Close support shows period state, lock or reopen posture, NAV-support or report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps without posting synthetic completion.
       - Workflow controls expose assignment, escalation, approval, reopen, and evidence-retention actions through shared services so browser and WPF surfaces share the same policy decisions.
-      - Generated roadmap and product docs state this is a planned productization target, not a claim that the complete Financial Operations control center is shipped.
+      - Generated roadmap and product docs state the accepted Financial Operations control-center boundary and distinguish later proof-layer expansions from this completed W5X milestone.
     source_modules:
       - SRC-CONTRACTS
       - SRC-DESIGN-FINANCIAL-OPERATIONS
@@ -372,19 +372,25 @@ items:
       - type: source
         path: src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs
       - type: source
+        path: src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs
+      - type: source
         path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts
       - type: source
         path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx
       - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts
+      - type: source
         path: src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs
       - type: source
+        path: src/Meridian.Wpf/ViewModels/FundLedgerViewModel.Sections.cs
+      - type: source
         path: src/Meridian.Wpf/Views/FundLedgerPage.xaml
-      - type: test
-        path: tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs
-      - type: test
-        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts
-      - type: test
-        path: tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs
       - type: source
         path: src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs
       - type: source
@@ -398,6 +404,22 @@ items:
       - type: source
         path: src/Meridian.Wpf/Views/DirectLendingPage.xaml
       - type: test
+        path: tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts
+      - type: test
+        path: tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs
+      - type: test
         path: tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs
       - type: test
         path: tests/Meridian.Tests/Application/DirectLending/PostgresDirectLendingCommandServiceTests.cs
@@ -405,7 +427,7 @@ items:
         path: tests/Meridian.Tests/Application/DirectLending/DirectLendingOutboxDispatcherTests.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs
-    last_reviewed: 2026-06-23
+    last_reviewed: 2026-06-24
 
   - id: W6-BTSTUDIO-001
     title: Backtesting studio evidence loop

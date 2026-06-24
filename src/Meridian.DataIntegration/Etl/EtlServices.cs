@@ -146,7 +146,7 @@ public sealed class EtlJobOrchestrator
                 var staged = await reader.StageFileAsync(jobId, definition.Source, file, ct).ConfigureAwait(false);
                 await _auditStore.WriteEventAsync(jobId, new EtlAuditEvent { Stage = "staged", Message = $"Staged {file.Name}." }, ct).ConfigureAwait(false);
 
-                await foreach (var record in _parser.ParseAsync(staged, checkpoint, ct).ConfigureAwait(false))
+                await foreach (var record in _parser.ParseAsync(staged, checkpoint, definition.PartnerSchemaId, ct).ConfigureAwait(false))
                 {
                     processed++;
                     var outcome = await _normalizer.NormalizeAsync(definition, record, ct).ConfigureAwait(false);
