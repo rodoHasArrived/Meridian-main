@@ -12,6 +12,7 @@ import { FinancialRecordExplorerShell } from "@/components/meridian/financial-re
 import { MetricCard } from "@/components/meridian/metric-card";
 import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
+import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   apiPostJson,
@@ -35,6 +36,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { todayIsoDate } from "@/lib/reporting-periods";
 import { buildReportingHubModel } from "@/lib/reporting-hub";
+import { cellStyleClassName, resolveCellStyle } from "@/lib/report-writer-grid-format";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
@@ -4566,7 +4568,10 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
             {rows.length > 0 ? rows.map((row) => (
               <tr key={row.rowKey} className="border-t border-border/50">
                 {preview.columns.map((column) => (
-                  <td key={`${row.rowKey}:${column.key}`} className="px-2 py-1.5 font-mono text-foreground">
+                  <td
+                    key={`${row.rowKey}:${column.key}`}
+                    className={cn("px-2 py-1.5 font-mono text-foreground", cellStyleClassName(resolveCellStyle(row, column.key)))}
+                  >
                     <span className="block truncate" title={row.values[column.key] ?? ""}>{row.values[column.key] ?? ""}</span>
                   </td>
                 ))}
@@ -4581,6 +4586,7 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
           </tbody>
         </table>
       </div>
+      {preview.chart ? <ReportWriterChartPreview chart={preview.chart} /> : null}
       {lineage ? (
         <div className="mt-2 rounded-sm border border-border/60 bg-secondary/25 px-2 py-2 text-xs" aria-label={`${grid.title} preview audit trace`}>
           <div className="eyebrow-label">Audit trace</div>
