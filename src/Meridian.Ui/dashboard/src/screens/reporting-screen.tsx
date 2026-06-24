@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { MetricCard } from "@/components/meridian/metric-card";
+import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   apiPostJson,
@@ -31,6 +32,7 @@ import {
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
+import { todayIsoDate } from "@/lib/reporting-periods";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { FUND_STRUCTURE_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
@@ -276,6 +278,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
   const [exportsRunDraft, setExportsRunDraft] = useState<ExportsReportRunDraftState>(() => buildDefaultExportsReportRunDraft(data?.reporting ?? null));
   const [templateRunDatasetSourceId, setTemplateRunDatasetSourceId] = useState(() => buildDefaultReportWriterDatasetSourceId(data?.reporting ?? null));
+  const [templateRunAsOfDate, setTemplateRunAsOfDate] = useState<string>(() => todayIsoDate());
   const [writerDrafts, setWriterDrafts] = useState<Record<string, ReportWriterDraftState>>({});
   const [writerDraftSettings, setWriterDraftSettings] = useState<Record<string, Partial<ReportWriterDraftSettings>>>({});
   const [writerCustomFormulas, setWriterCustomFormulas] = useState<Record<string, Partial<ReportWriterCustomFormulaDraft>>>({});
@@ -408,7 +411,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
 
     await executeTemplateRun(template, {
       templateId: template.templateName,
-      asOfDate: new Date().toISOString().slice(0, 10),
+      asOfDate: templateRunAsOfDate,
       maxRetries: 0,
       datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(templateRunDatasetSourceId) : null
     }, template.runActionLabel);
@@ -2220,6 +2223,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             <CardDescription>Investor statements, SEC packets, and shadow NAV packs share the same run contract.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
+            <ReportingPeriodSwitcher
+              asOfDate={templateRunAsOfDate}
+              onSelect={setTemplateRunAsOfDate}
+              disabled={Boolean(runningTemplateRunId)}
+            />
+            <p className="text-[11px] leading-4 text-muted-foreground">
+              On-demand template runs use this as-of period. Switch periods to regenerate the same report for a prior month, quarter, or year.
+            </p>
             {vm.templateRows.map((template) => (
               <div key={template.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
