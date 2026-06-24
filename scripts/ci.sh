@@ -128,7 +128,7 @@ run_step "Validate source READMEs" \
 run_step "Scan source TODOs" \
   "$python_cmd" build/scripts/docs/scan-source-todos.py --summary
 
-run_step "Render roadmap/source docs and check drift" \
-  bash -c '"$0" build/scripts/docs/render-roadmap-docs.py --summary && "$0" build/scripts/docs/render-source-docs.py --summary && git diff -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src --exit-code' "$python_cmd"
+run_step "Render roadmap/source docs and check drift" \\
+  bash -c '"$0" build/scripts/docs/render-roadmap-docs.py --summary && "$0" build/scripts/docs/render-source-docs.py --summary && [ -z "$(git status --porcelain -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src)" ]' "$python_cmd"
 
 echo "Meridian CI completed successfully."
