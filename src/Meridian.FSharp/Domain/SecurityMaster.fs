@@ -180,6 +180,21 @@ type BondSubclass =
     | Convertible
     | InflationLinked
     | FloatingRate
+    // --- Scheduled / structured principal ---
+    /// Bond with contractual sinking fund or mandatory principal instalments.
+    | SinkingFund
+    /// Step-rate bond whose coupon increases per a contractual schedule (may be callable at step dates).
+    | StepRate
+    /// Fixed-rate bond that converts to floating at a specified date.
+    | FixedToFloat
+    // --- Short-term / money-market debt ---
+    /// Variable Rate Demand Note — daily or weekly reset rate; investor may tender on demand.
+    | Vrdn
+    /// Auction Rate Security — rate resets at periodic auction; Clearwater may hold at par.
+    | AuctionRate
+    // --- Bank / leveraged finance ---
+    /// Syndicated or bilateral bank loan; floating rate, principal schedule per credit agreement.
+    | BankLoan
     // --- Asset-backed / structured credit ---
     /// Generic asset-backed security (auto loans, credit cards, student loans, etc.).
     | AssetBacked
@@ -219,18 +234,41 @@ type BondTerms = {
     Seniority: string option
     /// Economic subclass of this bond instrument.
     Subclass: BondSubclass
+    // --- Clearwater Security Master required properties ---
+    /// Face/par value of the bond (e.g. 1000 for a $1,000 par bond).
+    /// Used in market value calculation: Par × Factor × Price / 100.
+    Par: decimal option
+    /// Coupon payment frequency (Annual, SemiAnnual, Quarterly, Monthly, etc.).
+    PaymentFrequency: PaymentFrequency option
+    /// Latest contractual date by which principal is legally due under the governing documents.
+    /// May differ from Maturity for pre-refunded or mandatory-put bonds.
+    LegalFinalMaturity: DateOnly option
+    /// Date to which a pre-refunded municipal bond is called using escrowed proceeds.
+    /// When present, cash flows and amortization target this date rather than final maturity.
+    PreRefundDate: DateOnly option
+    /// Date of a mandatory put feature that obligates the holder to tender at a set price.
+    MandatoryPutDate: DateOnly option
 }
 
 [<RequireQualifiedAccess>]
 module BondTerms =
     let fixedRate maturity couponRate dayCount issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Corporate }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount)
+          IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
+          Subclass = BondSubclass.Corporate
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
 
     let floatingRate maturity index spreadBps issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.FloatingRate }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None)
+          IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
+          Subclass = BondSubclass.FloatingRate
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
 
     let zeroCoupon maturity issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Corporate }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon
+          IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
+          Subclass = BondSubclass.Corporate
+          Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -332,10 +370,45 @@ type Covenant = {
     Notes: string option
 }
 
+/// A scheduled principal repayment (amortizing or term-loan instalment).
+type PrincipalPaymentEntry = {
+    PaymentDate: DateOnly
+    Amount: decimal
+}
+
 type DirectLoanTerms = {
     Borrower: string
     Maturity: DateOnly option
     Covenants: Covenant list
+    // --- Clearwater bank loan / direct lending properties ---
+    /// Floating rate reference index (e.g. "SOFR", "LIBOR", "EURIBOR").
+    ReferenceIndex: string option
+    /// Spread over the reference index in basis points (e.g. 350 = SOFR + 3.50%).
+    SpreadBps: decimal option
+    /// Current all-in coupon rate (reference rate + spread, subject to floor/cap).
+    CurrentCouponRate: decimal option
+    /// Rate reset frequency (e.g. "Daily", "Monthly", "Quarterly").
+    ResetFrequency: string option
+    /// Contractual or expected principal instalment schedule.
+    PrincipalSchedule: PrincipalPaymentEntry list
+    /// Pricing source for market value (e.g. "IHSMarkit", "Refinitiv", "Client").
+    PricingSource: string option
+}
+
+/// Terms for mutual funds, ETFs, hedge funds, REITs, and closed-end funds.
+/// These instruments generally do not amortize; market value is units × NAV/price.
+type InvestmentFundTerms = {
+    /// Fund category (e.g. "MutualFund", "ETF", "HedgeFund", "REIT", "ClosedEnd").
+    FundType: string option
+    FundFamily: string option
+    /// Currency of the NAV (may differ from the account base currency).
+    NavCurrency: string option
+    /// Distribution policy (Accumulating, Distributing, etc.).
+    DistributionPolicy: DistributionPolicy option
+    /// True for stable-NAV money market and government liquidity funds.
+    IsStableNav: bool option
+    /// Price/NAV data source (e.g. "iMoneyNet", "Bloomberg", "Client").
+    PricingSource: string option
 }
 
 type CommodityTerms = {
@@ -385,6 +458,9 @@ type SecurityKind =
     | CryptoCurrency of CryptoTerms
     | Cfd of CfdTerms
     | Warrant of WarrantTerms
+    /// Mutual fund, ETF, hedge fund, REIT, or closed-end fund.
+    /// Market value = units × NAV (or market price); no amortization in general.
+    | InvestmentFund of InvestmentFundTerms
 
 type Provenance = {
     SourceSystem: string
@@ -445,6 +521,7 @@ module SecurityMasterRecord =
         | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
         | SecurityKind.Cfd _ -> "Cfd"
         | SecurityKind.Warrant _ -> "Warrant"
+        | SecurityKind.InvestmentFund _ -> "InvestmentFund"
 
     let isActive (record: SecurityMasterRecord) =
         SecurityStatus.isActive record.Status
@@ -513,6 +590,7 @@ module SecurityKind =
         | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
         | SecurityKind.Cfd _ -> "Cfd"
         | SecurityKind.Warrant _ -> "Warrant"
+        | SecurityKind.InvestmentFund _ -> "InvestmentFund"
 
     let underlyingSecurityId kind =
         match kind with
@@ -540,4 +618,5 @@ module SecurityKind =
         | SecurityKind.OtherSecurity _
         | SecurityKind.DirectLoan _
         | SecurityKind.Commodity _
-        | SecurityKind.CryptoCurrency _ -> false
+        | SecurityKind.CryptoCurrency _
+        | SecurityKind.InvestmentFund _ -> false

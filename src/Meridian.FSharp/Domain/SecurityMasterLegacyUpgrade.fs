@@ -232,6 +232,16 @@ module SecurityMasterLegacyUpgrade =
                 RiskCountry = None
                 Taxonomy = None
             }
+        | SecurityKind.InvestmentFund _ ->
+            {
+                AssetClass = AssetClass.Fund
+                Family = None
+                SubType = SecuritySubType.OtherSubType "InvestmentFund"
+                TypeName = "InvestmentFund"
+                IssuerType = None
+                RiskCountry = None
+                Taxonomy = None
+            }
 
     let private termsFromKind (kind: SecurityKind) =
         match kind with
@@ -631,6 +641,17 @@ module SecurityMasterLegacyUpgrade =
                             MarginRequirementPct = None
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
+                        }
+            }
+        | SecurityKind.InvestmentFund terms ->
+            {
+                SecurityTermModules.empty with
+                    Fund =
+                        Some {
+                            FundFamily = terms.FundFamily
+                            WeightedAverageMaturityDays = None
+                            SweepEligible = None
+                            LiquidityFeeEligible = None
                         }
             }
 

@@ -74,7 +74,13 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
                    bacp.fixed_coupon_rate,
                    bacp.floating_rate_index,
                    bacp.floating_spread_bps,
-                   bp.version
+                   bp.version,
+                   blp.subclass,
+                   blp.par,
+                   blp.payment_frequency,
+                   blp.legal_final_maturity,
+                   blp.pre_refund_date,
+                   blp.mandatory_put_date
             from {Qualified("bond_projection")} bp
             join {Qualified("securities")} s on s.security_id = bp.security_id
             left join {Qualified("bond_issuer_projection")} bip on bip.security_id = bp.security_id
@@ -111,7 +117,13 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
                 reader.IsDBNull(15) ? null : reader.GetDecimal(15),
                 reader.IsDBNull(16) ? null : reader.GetString(16),
                 reader.IsDBNull(17) ? null : reader.GetDecimal(17),
-                reader.GetInt64(18)));
+                reader.GetInt64(18),
+                reader.IsDBNull(19) ? null : reader.GetString(19),
+                reader.IsDBNull(20) ? null : reader.GetDecimal(20),
+                reader.IsDBNull(21) ? null : reader.GetString(21),
+                reader.IsDBNull(22) ? null : DateOnly.FromDateTime(reader.GetDateTime(22)),
+                reader.IsDBNull(23) ? null : DateOnly.FromDateTime(reader.GetDateTime(23)),
+                reader.IsDBNull(24) ? null : DateOnly.FromDateTime(reader.GetDateTime(24))));
         }
 
         return results;
@@ -129,7 +141,13 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
                    call_date,
                    maturity_date,
                    is_callable,
-                   version
+                   version,
+                   subclass,
+                   par,
+                   payment_frequency,
+                   legal_final_maturity,
+                   pre_refund_date,
+                   mandatory_put_date
             from {Qualified("bond_lifecycle_projection")}
             where security_id = @security_id;
             """;
@@ -148,7 +166,13 @@ public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProject
             reader.IsDBNull(3) ? null : DateOnly.FromDateTime(reader.GetDateTime(3)),
             DateOnly.FromDateTime(reader.GetDateTime(4)),
             reader.GetBoolean(5),
-            reader.GetInt64(6));
+            reader.GetInt64(6),
+            reader.IsDBNull(7) ? null : reader.GetString(7),
+            reader.IsDBNull(8) ? null : reader.GetDecimal(8),
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            reader.IsDBNull(10) ? null : DateOnly.FromDateTime(reader.GetDateTime(10)),
+            reader.IsDBNull(11) ? null : DateOnly.FromDateTime(reader.GetDateTime(11)),
+            reader.IsDBNull(12) ? null : DateOnly.FromDateTime(reader.GetDateTime(12)));
     }
 
     private async Task<BondAccrualConventionProjectionRow?> GetSingleAccrualAsync(Guid securityId, CancellationToken ct)
