@@ -1,4 +1,5 @@
 using System.Reflection;
+using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Infrastructure.DataSources;
@@ -111,10 +112,10 @@ public sealed class DataSourceRegistry
                 if (type.IsAbstract || type.IsInterface)
                     continue;
 
-                if (!typeof(Meridian.Infrastructure.Adapters.Core.IProviderModule).IsAssignableFrom(type))
+                if (!typeof(IProviderModule).IsAssignableFrom(type))
                     continue;
 
-                if (Activator.CreateInstance(type) is not Meridian.Infrastructure.Adapters.Core.IProviderModule module)
+                if (Activator.CreateInstance(type) is not IProviderModule module)
                     continue;
 
                 var moduleId = module.ModuleId;

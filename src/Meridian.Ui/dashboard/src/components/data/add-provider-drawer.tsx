@@ -190,7 +190,7 @@ export function AddProviderDrawer({ open, catalogue, onClose, onAdd }: Props) {
                         min={1}
                         max={999}
                         value={priority}
-                        onChange={e => setPriority(Number(e.target.value))}
+                        onChange={e => { const v = parseInt(e.target.value, 10); setPriority(isNaN(v) ? 100 : v); }}
                         className="max-w-[8rem]"
                       />
                       <p className="mt-1 text-xs text-muted-foreground">

@@ -51,13 +51,15 @@ export function useProviderSetup(): UseProviderSetupReturn {
         getProviderModules({ signal: controller.signal }),
         getProviderModuleCatalogue({ signal: controller.signal }),
       ]);
-      setModules(mods);
-      setCatalogue(cat);
+      if (!controller.signal.aborted) {
+        setModules(mods);
+        setCatalogue(cat);
+      }
     } catch (err: unknown) {
-      if (err instanceof DOMException && err.name === "AbortError") return;
+      if (controller.signal.aborted) return;
       setError(err instanceof Error ? err.message : "Failed to load provider modules");
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   }, []);
 

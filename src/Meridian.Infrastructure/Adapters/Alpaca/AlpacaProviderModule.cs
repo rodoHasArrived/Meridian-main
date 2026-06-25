@@ -28,6 +28,7 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
 {
     private const string AlpacaBrokerApiBase = "https://broker-api.sandbox.alpaca.markets";
     private const string AlpacaPaperApiBase = "https://paper-api.alpaca.markets";
+    private static readonly HttpClient ProbeClient = new() { Timeout = TimeSpan.FromSeconds(10) };
 
     /// <inheritdoc/>
     public IReadOnlyList<string> CredentialKeyHints => ["keyId", "secretKey"];
@@ -128,14 +129,13 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return ModuleProbeResult.Failure("No credentials available to probe connection");
 
-        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-        client.DefaultRequestHeaders.Add("APCA-API-KEY-ID", keyId);
-        client.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", secretKey);
-
         var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
-            var response = await client.GetAsync($"{AlpacaPaperApiBase}/v2/account", ct).ConfigureAwait(false);
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{AlpacaPaperApiBase}/v2/account");
+            request.Headers.Add("APCA-API-KEY-ID", keyId);
+            request.Headers.Add("APCA-API-SECRET-KEY", secretKey);
+            var response = await ProbeClient.SendAsync(request, ct).ConfigureAwait(false);
             sw.Stop();
             if (response.IsSuccessStatusCode)
                 return ModuleProbeResult.Success(sw.Elapsed.TotalMilliseconds, "Alpaca paper account reachable");

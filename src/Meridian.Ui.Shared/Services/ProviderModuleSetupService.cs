@@ -19,7 +19,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     private readonly ProviderRegistry? _providerRegistry;
     private readonly ILogger<ProviderModuleSetupService> _logger;
     private readonly SemaphoreSlim _configLock = new(1, 1);
-    private readonly IReadOnlyList<IProviderModule> _discoveredModules;
+    private readonly IReadOnlyList<Type> _moduleTypes;
 
     public ProviderModuleSetupService(
         ConfigStore configStore,
@@ -31,7 +31,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         _credentialStore = credentialStore;
         _logger = logger;
         _providerRegistry = providerRegistry;
-        _discoveredModules = DiscoverModules();
+        _moduleTypes = DiscoverModuleTypes();
     }
 
     public async Task<IReadOnlyList<ProviderModuleStatusDto>> GetConfiguredModulesAsync(CancellationToken ct = default)
@@ -42,8 +42,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
         foreach (var (moduleId, settings) in configuredModules)
         {
-            var module = _discoveredModules.FirstOrDefault(m =>
-                string.Equals(m.ModuleId, moduleId, StringComparison.OrdinalIgnoreCase));
+            var module = CreateModuleById(moduleId);
 
             var storedKeys = await _credentialStore.GetStoredKeyNamesAsync(moduleId, ct).ConfigureAwait(false);
             var hintKeys = (module as IProviderModuleCredentialHints)?.CredentialKeyHints ?? [];
@@ -74,14 +73,21 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             .ToHashSet(StringComparer.OrdinalIgnoreCase)
             ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        return _discoveredModules.Select(m => new ProviderModuleCatalogueEntry(
-            ModuleId: m.ModuleId,
-            DisplayName: m.ModuleDisplayName,
-            CapabilityNames: m.Capabilities.Select(c => c.Name).ToList(),
-            CredentialKeyHints: (m as IProviderModuleCredentialHints)?.CredentialKeyHints ?? [],
-            RequiresExternalConfig: m.RequiresExternalConfig,
-            AlreadyConfigured: configured.Contains(m.ModuleId)
-        )).ToList();
+        var entries = new List<ProviderModuleCatalogueEntry>();
+        foreach (var type in _moduleTypes)
+        {
+            var m = TryCreateModule(type);
+            if (m is null)
+                continue;
+            entries.Add(new ProviderModuleCatalogueEntry(
+                ModuleId: m.ModuleId,
+                DisplayName: m.ModuleDisplayName,
+                CapabilityNames: m.Capabilities.Select(c => c.Name).ToList(),
+                CredentialKeyHints: (m as IProviderModuleCredentialHints)?.CredentialKeyHints ?? [],
+                RequiresExternalConfig: m.RequiresExternalConfig,
+                AlreadyConfigured: configured.Contains(m.ModuleId)));
+        }
+        return entries;
     }
 
     public async Task<ProviderModuleSetupResult> UpsertModuleAsync(
@@ -95,18 +101,16 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
         if (request.CredentialValues is { Count: > 0 } creds)
         {
-            var toStore = creds
-                .Where(kv => !string.IsNullOrEmpty(kv.Value))
-                .ToDictionary(kv => kv.Key, kv => kv.Value!, StringComparer.OrdinalIgnoreCase);
-
-            if (toStore.Count > 0)
+            var existing = await _credentialStore.GetCredentialsAsync(request.ModuleId, ct).ConfigureAwait(false);
+            var merged = new Dictionary<string, string>(existing, StringComparer.OrdinalIgnoreCase);
+            foreach (var (key, value) in creds)
             {
-                var existing = await _credentialStore.GetCredentialsAsync(request.ModuleId, ct).ConfigureAwait(false);
-                var merged = new Dictionary<string, string>(existing, StringComparer.OrdinalIgnoreCase);
-                foreach (var (key, value) in toStore)
+                if (string.IsNullOrEmpty(value))
+                    merged.Remove(key);
+                else
                     merged[key] = value;
-                await _credentialStore.SaveCredentialsAsync(request.ModuleId, merged, ct).ConfigureAwait(false);
             }
+            await _credentialStore.SaveCredentialsAsync(request.ModuleId, merged, ct).ConfigureAwait(false);
         }
 
         return await MutateConfigAsync(cfg =>
@@ -180,8 +184,7 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
-        var module = _discoveredModules.FirstOrDefault(m =>
-            string.Equals(m.ModuleId, moduleId, StringComparison.OrdinalIgnoreCase));
+        var module = CreateModuleById(moduleId);
 
         if (module is null)
             return new ProviderModuleTestResult(false, false, false, $"Module '{moduleId}' not found");
@@ -270,40 +273,59 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         return storedKeys.Select(k => new CredentialKeyStatusDto(k, true)).ToList();
     }
 
-    private static IReadOnlyList<IProviderModule> DiscoverModules()
+    private IProviderModule? CreateModuleById(string moduleId)
     {
-        var modules = new List<IProviderModule>();
+        var type = _moduleTypes.FirstOrDefault(t =>
+        {
+            var m = TryCreateModule(t);
+            return m is not null && string.Equals(m.ModuleId, moduleId, StringComparison.OrdinalIgnoreCase);
+        });
+        return type is null ? null : TryCreateModule(type);
+    }
+
+    private static IProviderModule? TryCreateModule(Type type)
+    {
+        try
+        {
+            return Activator.CreateInstance(type) as IProviderModule;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static IReadOnlyList<Type> DiscoverModuleTypes()
+    {
+        var types = new List<Type>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic);
 
         foreach (var assembly in assemblies)
         {
-            IEnumerable<Type> types;
+            IEnumerable<Type> assemblyTypes;
             try
             {
-                types = assembly.GetTypes();
+                assemblyTypes = assembly.GetTypes();
             }
             catch (ReflectionTypeLoadException ex)
             {
-                types = ex.Types.Where(t => t is not null)!;
+                assemblyTypes = ex.Types.Where(t => t is not null)!;
             }
 
-            foreach (var type in types)
+            foreach (var type in assemblyTypes)
             {
                 if (type.IsAbstract || type.IsInterface)
                     continue;
                 if (!typeof(IProviderModule).IsAssignableFrom(type))
                     continue;
 
-                try
-                {
-                    if (Activator.CreateInstance(type) is IProviderModule m)
-                        modules.Add(m);
-                }
-                catch { /* skip uninstantiable types */ }
+                // Verify the type can be instantiated (no ctor args required)
+                if (type.GetConstructor(Type.EmptyTypes) is not null)
+                    types.Add(type);
             }
         }
 
-        return modules;
+        return types;
     }
 }

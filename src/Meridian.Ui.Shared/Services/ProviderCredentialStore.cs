@@ -119,20 +119,24 @@ public sealed class ProviderCredentialStore : IProviderCredentialStore
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
 
-        var json = JsonSerializer.Serialize(store, JsonOptions);
-        await AtomicFileWriter.WriteAsync(_filePath, json, ct).ConfigureAwait(false);
-
-        // Restrict file permissions on Unix (chmod 600: owner read/write only)
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && File.Exists(_filePath))
+        // On Unix: pre-create the destination file with owner-only permissions (chmod 600)
+        // before the first write. AtomicFileWriter copies security metadata from the destination
+        // to its temp file when the destination already exists, so the temp file inherits 600
+        // before the atomic rename — eliminating the brief window where the file is world-readable.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !File.Exists(_filePath))
         {
             try
             {
+                using (File.Open(_filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { }
                 File.SetUnixFileMode(_filePath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
             }
             catch (Exception)
             {
-                // chmod failure is non-fatal
+                // Pre-creation failure is non-fatal; permissions will still be applied post-write.
             }
         }
+
+        var json = JsonSerializer.Serialize(store, JsonOptions);
+        await AtomicFileWriter.WriteAsync(_filePath, json, ct).ConfigureAwait(false);
     }
 }

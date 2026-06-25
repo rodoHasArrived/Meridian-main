@@ -136,16 +136,21 @@ public static class ProviderModuleEndpoints
 
         // POST /api/providers/modules/{moduleId}/test — credential validation + optional probe
         group.MapPost(UiApiRoutes.ProviderModuleTest, async (
+            HttpContext context,
             [FromServices] IProviderModuleSetupService setupService,
             string moduleId,
             CancellationToken ct) =>
         {
+            if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
+                return EndpointHelpers.Forbidden();
+
             var result = await setupService.TestModuleAsync(moduleId, ct).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("TestProviderModule")
         .WithDescription("Validates credentials and optionally probes live connectivity for a provider module.")
         .Produces<ProviderModuleTestResult>(200)
+        .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // POST /api/providers/restart — graceful restart to apply config changes

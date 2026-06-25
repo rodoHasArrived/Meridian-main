@@ -161,7 +161,7 @@ export function EditProviderDrawer({ open, module, onClose, onEdit }: Props) {
                     min={1}
                     max={999}
                     value={priority}
-                    onChange={e => setPriority(Number(e.target.value))}
+                    onChange={e => { const v = parseInt(e.target.value, 10); setPriority(isNaN(v) ? module.priority : v); }}
                     className="max-w-[8rem]"
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
