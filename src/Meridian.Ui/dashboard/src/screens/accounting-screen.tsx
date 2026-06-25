@@ -1553,6 +1553,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
+  const [financialOperationsCommandCenter, setFinancialOperationsCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
+  const [financialOperationsCommandCenterLoading, setFinancialOperationsCommandCenterLoading] = useState(false);
+  const [financialOperationsCommandCenterError, setFinancialOperationsCommandCenterError] = useState<string | null>(null);
   const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const identity = securityMaster.identityView;
@@ -1828,13 +1831,20 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const refreshCloseWorkflow = async () => {
     if (!data) {
       setCloseWorkflow(null);
+      setFinancialOperationsCommandCenter(null);
       return;
     }
 
     setCloseWorkflowLoading(true);
+    setFinancialOperationsCommandCenterLoading(true);
     setCloseWorkflowError(null);
+    setFinancialOperationsCommandCenterError(null);
     try {
-      const rows = await getOperationsContinuityWorkflows(closeWorkflowQuery);
+      const [commandCenter, rows] = await Promise.all([
+        getFinancialOperationsCommandCenter(closeWorkflowQuery),
+        getOperationsContinuityWorkflows(closeWorkflowQuery)
+      ]);
+      setFinancialOperationsCommandCenter(commandCenter);
       const selected = selectCloseWorkflowSummary(rows, closeWorkflowQuery);
       if (!selected) {
         setCloseWorkflow(null);
@@ -1845,9 +1855,12 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       setCloseWorkflow(workflow);
     } catch (error) {
       setCloseWorkflow(null);
+      setFinancialOperationsCommandCenter(null);
       setCloseWorkflowError(formatApprovalError(error, "Close workflow detail could not be loaded."));
+      setFinancialOperationsCommandCenterError(formatApprovalError(error, "Financial Operations command center could not be loaded."));
     } finally {
       setCloseWorkflowLoading(false);
+      setFinancialOperationsCommandCenterLoading(false);
     }
   };
 
