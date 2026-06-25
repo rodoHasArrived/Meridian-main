@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-06-07T13:10:24Z",
+  "generatedAt": "2026-06-25T09:57:48Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "Meridian-main",
+  "repositoryRoot": "Meridian-main-restored-stashes",
   "subsystems": [
     {
       "id": "host-shell",
@@ -1084,6 +1084,8 @@
       ],
       "projectReferences": [
         "Meridian.Backtesting",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
         "Meridian.Platform",
         "Meridian.QuantScript",
         "Meridian.Reporting",
@@ -2130,6 +2132,11 @@
     },
     {
       "from": "Meridian.Wpf",
+      "to": "Meridian.Infrastructure",
+      "reason": "Meridian.Wpf references Meridian.Infrastructure directly via project reference."
+    },
+    {
+      "from": "Meridian.Wpf",
       "to": "Meridian.QuantScript",
       "reason": "Meridian.Wpf references Meridian.QuantScript directly via project reference."
     },
@@ -2181,324 +2188,324 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 147
+    },
+    {
       "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 54
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 105
     },
     {
-      "path": "src/Meridian.Application/README.md",
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 79
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 75
+    },
+    {
+      "path": "src/Meridian.Wpf/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 62
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 57
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 30
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 25
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 21
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 50
-    },
-    {
-      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.DataIntegration/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Domain/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Identity/Meridian.Identity.csproj",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Identity/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/EtlFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Etl/EtlAbstractions.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Pipeline/IngestionJobService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 15
-    },
-    {
-      "path": "src/Meridian.Core/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
       "touches": 5
     },
     {
-      "path": "src/Meridian.Platform/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
       "touches": 5
     },
     {
-      "path": "src/Meridian.Application/Pipeline/DeadLetterSink.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Services/DailySummaryWebhook.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Pipeline/PipelineStatistics.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/ConnectionStatusWebhook.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Domain/Events/IEventQuarantineSink.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/GlobalUsings.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/BackpressureAlertService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/Core/AlertDispatcher.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/Core/HealthCheckAggregator.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/Core/SloDefinitionRegistry.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian/UiServer.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/StartupValidationRunner.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
       "touches": 4
     },
     {
-      "path": "src/Meridian.ProviderSdk/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "path": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Documents/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowServiceCollectionExtensions.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Serialization/WorkstationOperationsJsonContext.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:55:51-07:00",
+      "lastCommit": "2dc164612",
+      "lastSummary": "Restore document intake vault stashed changes",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:54:37-07:00",
+      "lastCommit": "1c90b3e16",
+      "lastSummary": "Restore ETL and roadmap stashed changes",
+      "touches": 40
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/tsconfig.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:54:37-07:00",
+      "lastCommit": "1c90b3e16",
+      "lastSummary": "Restore ETL and roadmap stashed changes",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/test/render.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T02:54:37-07:00",
+      "lastCommit": "1c90b3e16",
+      "lastSummary": "Restore ETL and roadmap stashed changes",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "touches": 53
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "touches": 49
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "touches": 36
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "touches": 14
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
       "touches": 4
     },
     {
-      "path": "src/Meridian.Application/Backfill/HistoricalBackfillService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Platform/Diagnostics/DiagnosticBundleService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/DiagnosticsFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-25T00:20:15-07:00",
+      "lastCommit": "65ab9a75d",
+      "lastSummary": "Restore stashed Meridian work on main integration branch",
       "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/StatusHttpServer.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/StatusWriter.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Commands/SchemaCheckCommand.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/HostStartup.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
     }
   ],
   "recentChangesWindowDays": 14,

@@ -12,11 +12,7 @@ type RenderWithRouterOptions = Omit<RenderOptions, "wrapper"> & {
 };
 
 export function TestMemoryRouter({ children, initialEntries = ["/"] }: TestMemoryRouterProps) {
-  return (
-    <MemoryRouter initialEntries={initialEntries}>
-      {children}
-    </MemoryRouter>
-  );
+  return <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>;
 }
 
 export function renderWithRouter(

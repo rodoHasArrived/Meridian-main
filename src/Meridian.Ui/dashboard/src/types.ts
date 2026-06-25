@@ -1608,6 +1608,7 @@ export interface OperationsCloseWorkflowRequest {
   closePackageEvidenceHash?: string | null;
   closePackageRetainedManifestRoute?: string | null;
   actionOrigin?: OperationsActionOrigin | null;
+  documentSnapshots?: EvidenceDocument[] | null;
 }
 
 export interface OperationsReopenWorkflowRequest {
@@ -1667,6 +1668,7 @@ export interface OperationsClosePackagePublication {
   signOffRationale: string;
   evidenceLinks: OperationsEvidenceLink[];
   checklistControlApprovals: OperationsChecklistControlApproval[];
+  documentSnapshots?: EvidenceDocument[];
 }
 
 export interface OperationsChecklistControlApproval {
@@ -2135,6 +2137,8 @@ export interface EvidenceVaultIdentity {
   artifacts: EvidenceVaultArtifact[];
   requestLists?: EvidenceRequestList[];
   supportRequests: EvidenceSupportRequest[];
+  documents?: EvidenceDocument[];
+  manifestSnapshot?: EvidenceManifest | null;
 }
 
 export interface EvidenceVaultArtifact {
@@ -2150,6 +2154,131 @@ export interface EvidenceVaultArtifact {
   canonicalSubjectId: string | null;
   capture?: EvidenceArtifactCapture | null;
   extractedFields?: EvidenceArtifactExtractionField[];
+  document?: EvidenceDocument | null;
+}
+
+export type EvidenceDocumentClassification =
+  | "Unknown"
+  | "Statement"
+  | "Invoice"
+  | "CapitalNotice"
+  | "CustodianFile"
+  | "BankEvidence"
+  | "ValuationSupport"
+  | "Agreement"
+  | "TaxSupport"
+  | "AuditRequestSupport";
+
+export type EvidenceExtractionStatus = "NotExtracted" | "Extracted" | "NeedsReview" | "Accepted" | "Rejected";
+
+export type EvidenceDocumentIntakeSourceKind = "UploadedContent" | "LocalFile" | "ImportedFileReference";
+
+export type EvidenceDocumentLinkKind =
+  | "Unknown"
+  | "Period"
+  | "Portfolio"
+  | "Account"
+  | "Instrument"
+  | "Journal"
+  | "ReconciliationCase"
+  | "ReportLine"
+  | "CloseTask";
+
+export type EvidenceDocumentReviewStatus = "Unreviewed" | "NeedsReview" | "Accepted" | "Rejected";
+
+export interface EvidenceDocumentLink {
+  linkKind: EvidenceDocumentLinkKind;
+  objectId: string;
+  label?: string | null;
+  route?: string | null;
+  relationship?: string | null;
+}
+
+export interface EvidenceDocumentReviewState {
+  status: EvidenceDocumentReviewStatus;
+  reviewer?: string | null;
+  reviewedAt?: string | null;
+  notes?: string | null;
+}
+
+export interface EvidenceDocumentAuditEvent {
+  recordedAt: string;
+  actor: string;
+  action: string;
+  summary: string;
+  correlationId?: string | null;
+}
+
+export interface EvidenceDocumentIntakeSource {
+  sourceKind: EvidenceDocumentIntakeSourceKind;
+  path?: string | null;
+  uri?: string | null;
+  displayName?: string | null;
+  expectedContentHashSha256?: string | null;
+}
+
+export interface EvidenceDocument {
+  documentId: string;
+  fileName: string;
+  classification: EvidenceDocumentClassification;
+  sourceHashSha256: string;
+  receivedAt: string;
+  sourceChannel: string;
+  actor?: string | null;
+  tenantId?: string | null;
+  scope?: string | null;
+  extractionStatus: EvidenceExtractionStatus;
+  objectLinks: EvidenceDocumentLink[];
+  reviewerState: EvidenceDocumentReviewState;
+  auditTrail: EvidenceDocumentAuditEvent[];
+  contentType?: string | null;
+  sourceSystem?: string | null;
+  sourceReference?: string | null;
+  vaultId?: string | null;
+  artifactId?: string | null;
+  manifestRoute?: string | null;
+  extractorId?: string | null;
+}
+
+export interface EvidenceVaultIntakeRequest {
+  subjectKind: string;
+  subjectId: string;
+  intakeChannel: string;
+  fileName: string;
+  contentBase64?: string | null;
+  contentType?: string | null;
+  sourceSystem?: string | null;
+  sourceReference?: string | null;
+  receivedBy?: string | null;
+  expectedContentHashSha256?: string | null;
+  extractedFields?: EvidenceArtifactExtractionField[] | null;
+  linkage?: EvidenceSubjectLinkage | null;
+  lifecycle?: EvidenceLifecycleMetadata | null;
+  classification?: EvidenceDocumentClassification;
+  actor?: string | null;
+  tenantId?: string | null;
+  scope?: string | null;
+  extractionStatus?: EvidenceExtractionStatus | null;
+  extractorId?: string | null;
+  reviewerState?: EvidenceDocumentReviewState | null;
+  objectLinks?: EvidenceDocumentLink[];
+  intakeSource?: EvidenceDocumentIntakeSource | null;
+}
+
+export interface EvidenceVaultIntakeResponse {
+  intakeId: string;
+  subjectKind: string;
+  subjectId: string;
+  intakeChannel: string;
+  fileName: string;
+  relativePath: string;
+  contentHashSha256: string;
+  sizeBytes: number;
+  capturedAt: string;
+  capture: EvidenceArtifactCapture;
+  extractedFields: EvidenceArtifactExtractionField[];
+  vaultIdentity: EvidenceVaultIdentity;
+  document?: EvidenceDocument | null;
 }
 
 export interface EvidenceSupportRequest {
@@ -2163,6 +2292,28 @@ export interface EvidenceSupportRequest {
   sourceSystem: string | null;
   workItemId: string | null;
   blockedOutput: string | null;
+}
+
+export interface EvidenceRequest {
+  requestId: string;
+  requestKind: string;
+  severity: EvidenceValidationSeverity;
+  status: string;
+  summary: string;
+  targetKind?: string | null;
+  targetId?: string | null;
+  blockedOutput?: string | null;
+}
+
+export interface EvidenceManifest {
+  manifestId: string;
+  frozenAt: string;
+  packageKind: string;
+  packageId: string;
+  contentHashSha256: string;
+  documents: EvidenceDocument[];
+  requests: EvidenceRequest[];
+  objectLinks: EvidenceDocumentLink[];
 }
 
 export interface EvidenceRequestList {
@@ -2197,6 +2348,44 @@ export interface EvidenceVaultRequestListEntry extends EvidenceRequestList {
   manifestRoute: string;
   retainedAt: string;
   supportRequests: EvidenceSupportRequest[];
+}
+
+export interface EvidenceVaultDocumentQuery {
+  classification?: EvidenceDocumentClassification | null;
+  extractionStatus?: EvidenceExtractionStatus | null;
+  reviewStatus?: EvidenceDocumentReviewStatus | null;
+  linkKind?: EvidenceDocumentLinkKind | null;
+  objectId?: string | null;
+  subjectKind?: string | null;
+  subjectId?: string | null;
+  tenantId?: string | null;
+  scope?: string | null;
+  maxResults?: number | null;
+}
+
+export interface EvidenceVaultDocumentEntry {
+  document: EvidenceDocument;
+  vaultId: string;
+  subjectKind: string;
+  subjectId: string;
+  manifestRoute: string;
+  retainedAt: string;
+  storageKind: string;
+  openRequestCount: number;
+  supportRequests: EvidenceSupportRequest[];
+}
+
+export interface EvidenceVaultDocumentReviewRequest {
+  status: EvidenceDocumentReviewStatus;
+  reviewer: string;
+  notes?: string | null;
+  extractionStatus?: EvidenceExtractionStatus | null;
+  correlationId?: string | null;
+}
+
+export interface EvidenceVaultDocumentReviewResponse {
+  entry: EvidenceVaultDocumentEntry;
+  auditEvent: EvidenceDocumentAuditEvent;
 }
 
 export interface EvidenceLifecycleMetadata {

@@ -12,6 +12,7 @@ public static class EvidenceWorkflowServiceCollectionExtensions
         services.TryAddSingleton<EvidenceSubjectResolver>();
         services.TryAddSingleton<EvidencePacketValidationService>();
         services.TryAddSingleton<EvidenceGraphService>();
+        services.TryAddSingleton<IEvidenceDocumentExtractor, ManualEvidenceDocumentExtractor>();
         services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
             new FileEvidenceArtifactStore(
                 FileEvidenceArtifactStore.ResolveDataRoot(sp),

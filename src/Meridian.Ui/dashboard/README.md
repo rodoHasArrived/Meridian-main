@@ -78,6 +78,27 @@ optimistic-concurrency and audit evidence remain server-owned.
 Settings also exposes the Admin Ops task console over shared maintenance, storage, retention,
 cleanup, schedule, and data-package endpoints. React renders returned posture, command results, and
 typed package/schedule evidence without inventing local maintenance policy or retention decisions.
+
+Evidence Workbench consumes the shared Evidence Vault request-list and document queue endpoints. The
+browser renders retained documents with classification, source hash, channel/source, actor,
+tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
+count, and manifest links, while keeping intake and readiness policy in shared contracts/endpoints.
+Selecting a retained document opens a read-only review panel with reviewer notes, source metadata,
+object links, audit events, support-request context, and manifest access without introducing
+browser-owned approval or accounting mutation.
+Operators can also retain an uploaded document, local-file path, or imported-file reference from
+the selected evidence subject, classify it, record actor and tenant/scope metadata, set extraction
+and reviewer state, and attach one linked operational object before the shared vault intake
+endpoint copies the payload and computes the source hash.
+The TypeScript contract also mirrors `EvidenceDocumentIntakeSourceDto` so uploaded, local-file, and
+imported-file reference intake use the same shared source vocabulary when browser controls submit
+documents.
+The TypeScript vault identity mirror includes the public `manifestSnapshot` so browser close,
+report, audit, and tax package views can inspect frozen package documents, support requests, object
+links, and content hash without parsing retained manifest JSON.
+The browser DTO mirror also preserves `documentSnapshots` on Operations Continuity close-package
+requests and publications so close binder documents can be frozen by Financial Operations instead
+of recomputed in React.
 The browser route catalog, endpoint helpers, DTO mirrors, and API client also expose the shared
 v0.19 provider-integration runtime for template catalog/detail, OpenAPI import, setup-save,
 activation-readiness, dry-runs, activation, monitor, sync-run history, sync planning, due-sync
