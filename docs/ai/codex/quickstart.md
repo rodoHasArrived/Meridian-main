@@ -54,6 +54,10 @@ still lives in `../assistant-workflow-contract.md`.
    If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
    the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
    project under `tests/` plus filter.
+   After any timed-out generation, build, or test attempt, run
+   `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+   shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+   `VBCSCompiler` PIDs after confirming their command lines point at this checkout.
 13. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
 
@@ -121,6 +125,8 @@ Local .NET proof lane default: use `python build/python/cli/buildctl.py test` in
 `dotnet test` when another agent, shell, WPF validation, or desktop launch may be active. The
 runner writes `.ai/validation-runs/<run-id>.json`, serializes through `.ai/locks/validation.lock`,
 and uses `MeridianBuildIsolationKey` output roots by default.
+For post-timeout cleanup, inspect `validation-status`, run `dotnet build-server shutdown`, and stop
+only repo-owned abandoned build/test/compiler PIDs before retrying or dispatching hosted proof.
 
 ## Dirty Worktree Protocol
 

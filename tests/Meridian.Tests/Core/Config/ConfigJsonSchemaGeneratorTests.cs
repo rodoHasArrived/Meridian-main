@@ -54,6 +54,36 @@ public sealed class ConfigJsonSchemaGeneratorTests
     }
 
     [Fact]
+    public void GenerateSchema_IncludesApiHostOptions()
+    {
+        var apiHostSchema = GetRootProperty("ApiHost");
+        var apiHostBranch = apiHostSchema["anyOf"]!.AsArray()
+            .Select(static node => node!.AsObject())
+            .First(static node => node["$ref"] is not null);
+
+        apiHostBranch["$ref"]?.GetValue<string>().Should().Be("#/$defs/ApiHostOptions");
+
+        var apiHostDefinition = _generator.GenerateSchema()["$defs"]!["ApiHostOptions"]!.AsObject();
+        var properties = apiHostDefinition["properties"]!.AsObject();
+        properties.Select(static property => property.Key).Should().Contain(
+            "AllowedOrigins",
+            "AllowInsecureTransportForReverseProxy",
+            "DeploymentMode",
+            "ServeWorkstationAssets",
+            "Urls");
+    }
+
+    [Fact]
+    public void GenerateSchema_ApiHostDeploymentModeMatchesHostOptions()
+    {
+        var apiHostDefinition = _generator.GenerateSchema()["$defs"]!["ApiHostOptions"]!.AsObject();
+        var modes = apiHostDefinition["properties"]!["DeploymentMode"]!["enum"]!.AsArray()
+            .Select(static node => node!.GetValue<string>());
+
+        modes.Should().Contain(["LocalWorkstation", "ProductionApi", "Worker", "Migration"]);
+    }
+
+    [Fact]
     public void WriteSchema_WritesSchemaToDisk()
     {
         var tempPath = Path.Combine(Path.GetTempPath(), $"appsettings-schema-{Guid.NewGuid():N}.json");

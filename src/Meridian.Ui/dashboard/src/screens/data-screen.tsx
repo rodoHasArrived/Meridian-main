@@ -373,7 +373,7 @@ export function DataScreen({
                 </CardTitle>
                 <div className="mt-1 text-xs font-medium text-muted-foreground">Provider health</div>
                 <CardDescription className="mt-2">
-                  Provider health, credential verification, routing, and fallback posture. {vm.providerSection.subtitle}
+                  Provider health, credential verification, routing, and backup source status. {vm.providerSection.subtitle}
                 </CardDescription>
                 <p className="mt-2 max-w-3xl text-xs leading-5 text-muted-foreground">
                   {vm.providerSection.readinessSummary}

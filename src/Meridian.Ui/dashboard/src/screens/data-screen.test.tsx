@@ -511,7 +511,7 @@ describe("DataScreen", () => {
     })));
 
     expect(await screen.findByText("Alpaca paper configured")).toBeInTheDocument();
-    const posture = screen.getByRole("region", { name: "Provider setup routing and credential posture" });
+    const posture = screen.getByRole("region", { name: "Provider setup routing and credential status" });
     expect(posture).toHaveTextContent("provider-alpaca");
     expect(posture).toHaveTextContent("provider-alpaca-RealtimeMarketData");
     expect(posture).toHaveTextContent("Configured");
@@ -585,7 +585,7 @@ describe("DataScreen", () => {
     })));
 
     expect(await screen.findByText("Plaid configured")).toBeInTheDocument();
-    const posture = screen.getByRole("region", { name: "Provider setup routing and credential posture" });
+    const posture = screen.getByRole("region", { name: "Provider setup routing and credential status" });
     expect(posture).toHaveTextContent("No routing binding returned");
     expect(posture).toHaveTextContent("Local encrypted store");
     expect(screen.queryByText("client-sandbox-123")).not.toBeInTheDocument();

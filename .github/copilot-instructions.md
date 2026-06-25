@@ -97,6 +97,10 @@ When local machine limits, dependency restore, or MSBuild locks make validation 
 branch and run the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
 broad local scripts. The .NET lane requires a repo-relative test project under `tests/` and a
 non-empty `dotnet_filter`:
+After timed-out generation, build, or test attempts, first run
+`python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server
+shutdown`; stop only abandoned repo-owned `dotnet`, `MSBuild`, `testhost`, `csc`, or
+`VBCSCompiler` PIDs whose command lines clearly point at this checkout.
 
 ```bash
 gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"

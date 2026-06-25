@@ -58,6 +58,10 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 The runner serializes local validation, detects active repo-owned build/test/compiler processes,
 builds before testing to avoid stale `--no-build` assemblies, uses isolated `artifacts/bin` and
 `artifacts/obj` roots by default, and writes run evidence under `.ai/validation-runs/`.
+After a timed-out generation, build, or test attempt, run `python build/python/cli/buildctl.py
+validation-status --summary`, then `dotnet build-server shutdown`. Stop only abandoned repo-owned
+`dotnet`, `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines
+point at this checkout; do not kill unrelated local .NET services.
 
 For local pre-PR proof across the highest-value free tools, use:
 

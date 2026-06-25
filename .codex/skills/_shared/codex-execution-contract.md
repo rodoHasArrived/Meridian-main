@@ -85,8 +85,11 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 - Prefer filtered `dotnet test`, package-local dashboard commands, doc-only checks, and `--no-build`
   after a valid isolated build.
 - When local resource limits, package restore, or MSBuild/output locks make local proof unreliable,
-  push the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
-  project under `tests/` plus filter before retrying broad local scripts.
+  run `python build/python/cli/buildctl.py validation-status --summary`, shut down leftover build
+  servers with `dotnet build-server shutdown`, and stop only abandoned repo-owned `dotnet`,
+  `MSBuild`, `testhost`, `csc`, or `VBCSCompiler` PIDs after confirming their command lines point
+  at this checkout. Then push the branch and dispatch GitHub Actions `Targeted Test` with the same
+  repo-relative .NET test project under `tests/` plus filter before retrying broad local scripts.
   Do not omit the .NET filter; the lane is designed to fail closed rather than run a whole test
   project.
 - Use broad suites only when the changed layer or release risk requires them.

@@ -65,10 +65,11 @@ Latest pass packet: artifacts/provider-validation/_automation/2026-05-17/dk1-pil
     def test_rejects_missing_packet_reference(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            doc = self.write_doc(root, "docs/status/provider-validation-matrix.md", "Paper workflow remains in progress.")
+            doc = self.write_doc(root, "docs/reference/provider-validation-matrix.md", "Paper workflow remains in progress.")
             errors = module.validate_doc(doc)
             self.assertTrue(any("missing latest pass packet reference" in err for err in errors))
 
+<<<<<<< Updated upstream
     def test_allows_archive_migration_stub_without_current_packet_claim(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -84,6 +85,14 @@ This status file has been migrated to docs/reference/provider-validation-matrix.
 """,
             )
             self.assertEqual([], module.validate_doc(doc))
+=======
+    def test_default_docs_validate_active_canonical_status_docs(self) -> None:
+        self.assertEqual(("docs/reference/provider-validation-matrix.md",), module.DEFAULT_DOCS)
+
+    def test_default_docs_do_not_validate_archive_stubs(self) -> None:
+        self.assertNotIn("docs/status/production-status.md", module.DEFAULT_DOCS)
+        self.assertNotIn("docs/status/provider-validation-matrix.md", module.DEFAULT_DOCS)
+>>>>>>> Stashed changes
 
 
 if __name__ == "__main__":
