@@ -18,6 +18,8 @@ public sealed class GapBackfillService
     private readonly string[] _subscribedSymbols;
     private readonly bool _enabled;
     private readonly TimeSpan _minimumGap;
+    private int _gapBackfillsTriggered;
+    private int _gapBackfillsSucceeded;
 
     /// <summary>
     /// Creates a new GapBackfillService.
@@ -42,12 +44,12 @@ public sealed class GapBackfillService
     /// <summary>
     /// Number of gap backfills triggered since startup.
     /// </summary>
-    public int GapBackfillsTriggered { get; private set; }
+    public int GapBackfillsTriggered => Volatile.Read(ref _gapBackfillsTriggered);
 
     /// <summary>
     /// Number of gap backfills that completed successfully.
     /// </summary>
-    public int GapBackfillsSucceeded { get; private set; }
+    public int GapBackfillsSucceeded => Volatile.Read(ref _gapBackfillsSucceeded);
 
     /// <summary>
     /// Subscribes to reconnection events from a <see cref="WebSocketReconnectionHelper"/>
@@ -95,7 +97,7 @@ public sealed class GapBackfillService
             return;
         }
 
-        GapBackfillsTriggered++;
+        Interlocked.Increment(ref _gapBackfillsTriggered);
 
         _log.Information(
             "Auto gap backfill triggered for {Provider}: {SymbolCount} symbols, " +
@@ -127,7 +129,7 @@ public sealed class GapBackfillService
 
             if (result.Success)
             {
-                GapBackfillsSucceeded++;
+                Interlocked.Increment(ref _gapBackfillsSucceeded);
                 _log.Information(
                     "Gap backfill completed for {Provider}: {BarCount} bars fetched for {SymbolCount} symbols",
                     evt.ProviderName, result.BarsWritten, symbols.Length);

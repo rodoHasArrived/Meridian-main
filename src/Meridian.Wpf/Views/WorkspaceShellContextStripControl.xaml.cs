@@ -148,7 +148,7 @@ public partial class WorkspaceShellContextStripControl : UserControl
         AttentionDetailText.Text = BuildActionableAttentionDetail(attentionBadge, ShellContext);
     }
 
-    private static string BuildActionableAttentionDetail(
+    internal static string BuildActionableAttentionDetail(
         WorkspaceShellBadge badge,
         WorkspaceShellContext? shellContext)
     {

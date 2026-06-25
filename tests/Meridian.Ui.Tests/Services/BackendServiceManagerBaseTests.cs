@@ -29,6 +29,8 @@ internal sealed class TestBackendServiceManager : BackendServiceManagerBase
     public bool GracefulStopShouldSucceed { get; set; }
     public int GracefulStopCallCount { get; private set; }
     public int KillCallCount { get; private set; }
+    public TimeSpan StartupHealthTimeoutOverride { get; set; } = TimeSpan.Zero;
+    public TimeSpan StartupHealthPollIntervalOverride { get; set; } = TimeSpan.FromMilliseconds(1);
     public IReadOnlyList<string> ProcessArgumentsToReturn { get; set; } = Array.Empty<string>();
     public IReadOnlyDictionary<string, string?> ProcessEnvironmentVariablesToReturn { get; set; } =
         new Dictionary<string, string?>(StringComparer.Ordinal);
@@ -92,6 +94,10 @@ internal sealed class TestBackendServiceManager : BackendServiceManagerBase
     protected override bool IsProcessRunning(int processId) => _processRunning && processId == _lastPid;
 
     protected override Task<bool> IsHealthyAsync(CancellationToken ct) => Task.FromResult(_healthy);
+
+    protected override TimeSpan StartupHealthTimeout => StartupHealthTimeoutOverride;
+
+    protected override TimeSpan StartupHealthPollInterval => StartupHealthPollIntervalOverride;
 
     protected override void LogInfo(string message, params (string key, string value)[] properties)
     {
@@ -236,6 +242,7 @@ public sealed class BackendServiceManagerBaseTests : IDisposable
         _sut.GracefulStopShouldSucceed = true;
 
         await _sut.InstallAsync();
+        _sut.SetHealthy(true);
         await _sut.StartAsync();
 
         var result = await _sut.StopAsync();
@@ -326,6 +333,7 @@ public sealed class BackendServiceManagerBaseTests : IDisposable
         };
 
         await _sut.InstallAsync();
+        _sut.SetHealthy(true);
         await _sut.StartAsync();
 
         _sut.LastArguments.Should().Equal("--config", "C:\\config\\appsettings.json");

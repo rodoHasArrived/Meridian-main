@@ -69,7 +69,8 @@ public class PackageCommandsTests
     public async Task ExecuteAsync_ImportWithoutPath_ReturnsErrorCode()
     {
         var cmd = new PackageCommands(TestConfig, Logger);
-        var result = await cmd.ExecuteAsync(new[] { "--import-package" });
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => cmd.ExecuteAsync(new[] { "--import-package" }));
         result.ExitCode.Should().Be(2);
     }
 
@@ -77,7 +78,8 @@ public class PackageCommandsTests
     public async Task ExecuteAsync_ListWithoutPath_ReturnsErrorCode()
     {
         var cmd = new PackageCommands(TestConfig, Logger);
-        var result = await cmd.ExecuteAsync(new[] { "--list-package" });
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => cmd.ExecuteAsync(new[] { "--list-package" }));
         result.ExitCode.Should().Be(2);
     }
 
@@ -85,7 +87,8 @@ public class PackageCommandsTests
     public async Task ExecuteAsync_ValidateWithoutPath_ReturnsErrorCode()
     {
         var cmd = new PackageCommands(TestConfig, Logger);
-        var result = await cmd.ExecuteAsync(new[] { "--validate-package" });
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => cmd.ExecuteAsync(new[] { "--validate-package" }));
         result.ExitCode.Should().Be(2);
     }
 
@@ -107,7 +110,8 @@ public class PackageCommandsTests
     {
         var cmd = new PackageCommands(TestConfig, Logger);
 
-        var result = await cmd.ExecuteAsync(new[] { "--package", "--package-format", "csv" });
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => cmd.ExecuteAsync(new[] { "--package", "--package-format", "csv" }));
 
         result.Success.Should().BeFalse();
         result.ExitCode.Should().Be(2);

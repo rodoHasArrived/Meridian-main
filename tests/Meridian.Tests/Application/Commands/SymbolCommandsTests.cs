@@ -58,7 +58,8 @@ public sealed class SymbolCommandsTests
     {
         var cmd = CreateCommand();
         // --symbols-add without a value should return 2 (validation error)
-        var result = await cmd.ExecuteAsync(new[] { "--symbols-add" });
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => cmd.ExecuteAsync(new[] { "--symbols-add" }));
         result.ExitCode.Should().Be(2);
     }
 
@@ -66,7 +67,8 @@ public sealed class SymbolCommandsTests
     public async Task ExecuteAsync_RemoveWithoutValue_ReturnsError()
     {
         var cmd = CreateCommand();
-        var result = await cmd.ExecuteAsync(new[] { "--symbols-remove" });
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => cmd.ExecuteAsync(new[] { "--symbols-remove" }));
         result.ExitCode.Should().Be(2);
     }
 
@@ -74,7 +76,8 @@ public sealed class SymbolCommandsTests
     public async Task ExecuteAsync_StatusWithoutValue_ReturnsError()
     {
         var cmd = CreateCommand();
-        var result = await cmd.ExecuteAsync(new[] { "--symbol-status" });
+        var result = await CommandTestConsole.CaptureErrorAsync(
+            () => cmd.ExecuteAsync(new[] { "--symbol-status" }));
         result.ExitCode.Should().Be(2);
     }
 
