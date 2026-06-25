@@ -117,13 +117,15 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
                 ? new Dictionary<string, ProviderModuleSettings>(cfg.ProviderModules.Modules, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, ProviderModuleSettings>(StringComparer.OrdinalIgnoreCase);
 
+            modules.TryGetValue(request.ModuleId, out var existingSettings);
+
             var settings = new ProviderModuleSettings(
                 Enabled: request.Enabled,
                 Priority: request.Priority,
                 Credentials: null,
                 Settings: request.Settings is { Count: > 0 }
                     ? new Dictionary<string, string?>(request.Settings, StringComparer.OrdinalIgnoreCase)
-                    : null);
+                    : existingSettings?.Settings);
 
             modules[request.ModuleId] = settings;
 
@@ -163,9 +165,8 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
 
-        await _credentialStore.DeleteCredentialsAsync(moduleId, ct).ConfigureAwait(false);
-
-        return await MutateConfigAsync(cfg =>
+        // Remove config first; if SaveAsync fails, credentials remain intact for the still-configured provider
+        var result = await MutateConfigAsync(cfg =>
         {
             if (cfg.ProviderModules?.Modules is null)
                 return cfg;
@@ -176,6 +177,12 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
 
             return cfg with { ProviderModules = new ProviderModulesConfig(modules) };
         }, ct).ConfigureAwait(false);
+
+        if (!result.Success)
+            return result;
+
+        await _credentialStore.DeleteCredentialsAsync(moduleId, ct).ConfigureAwait(false);
+        return result;
     }
 
     public async Task<ProviderModuleTestResult> TestModuleAsync(string moduleId, CancellationToken ct = default)
@@ -188,7 +195,25 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
             return new ProviderModuleTestResult(false, false, false, $"Module '{moduleId}' not found");
 
         var storedCreds = await _credentialStore.GetCredentialsAsync(moduleId, ct).ConfigureAwait(false);
-        var context = ProviderModuleContext.FromCredentials(storedCreds);
+
+        // Merge env-var-mapped credentials from config (same resolution as BuildModuleContexts at startup)
+        var cfgForModule = _configStore.Load();
+        var merged = new Dictionary<string, string?>(storedCreds, StringComparer.OrdinalIgnoreCase);
+        if (cfgForModule.ProviderModules?.Modules.TryGetValue(moduleId, out var moduleCfg) == true
+            && moduleCfg?.Credentials is { } envMap)
+        {
+            foreach (var (key, envVarName) in envMap)
+            {
+                if (!merged.ContainsKey(key) && !string.IsNullOrWhiteSpace(envVarName))
+                {
+                    var envVal = Environment.GetEnvironmentVariable(envVarName);
+                    if (!string.IsNullOrWhiteSpace(envVal))
+                        merged[key] = envVal;
+                }
+            }
+        }
+
+        var context = ProviderModuleContext.FromCredentials(merged);
         module.Configure(context);
 
         var validation = await module.ValidateAsync(ct).ConfigureAwait(false);
