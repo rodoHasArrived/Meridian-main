@@ -15,28 +15,25 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// streaming, historical backfill, symbol search, and brokerage — in a single DI call.
 /// </summary>
 /// <remarks>
-/// This is the first module implementation and serves as the migration target for the
-/// Alpaca adapter family (currently also wired individually in <c>ProviderFeatureRegistration</c>
-/// and <c>ProviderFactory</c>). Once this module is used as the primary registration path,
-/// the per-capability wiring in those classes can be removed incrementally.
-///
-/// Credential resolution falls back to environment variables at construction time
-/// (<c>ALPACA_KEY_ID</c>, <c>ALPACA_SECRET_KEY</c>), so the module registers even when
-/// credentials are not yet configured; providers self-report as unavailable via
-/// <see cref="Infrastructure.Adapters.Core.IHistoricalDataProvider.IsAvailableAsync"/>.
+/// Credentials are resolved in priority order: (1) <see cref="ProviderModuleContext"/>
+/// injected via <see cref="ProviderModuleLoader"/> when a <c>ProviderModules.alpaca</c>
+/// config entry is present, then (2) <c>ALPACA_KEY_ID</c> / <c>ALPACA_SECRET_KEY</c>
+/// environment variables. Providers self-report as unavailable via
+/// <see cref="Infrastructure.Adapters.Core.IHistoricalDataProvider.IsAvailableAsync"/>
+/// when no credentials are found at registration time.
 /// </remarks>
 [ImplementsAdr("ADR-001", "AlpacaProviderModule bundles all Alpaca capability types")]
 [ImplementsAdr("ADR-005", "Module-based provider discovery for Alpaca")]
-public sealed class AlpacaProviderModule : IProviderModule
+public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase
 {
     /// <inheritdoc/>
-    public string ModuleId => "alpaca";
+    public override string ModuleId => "alpaca";
 
     /// <inheritdoc/>
-    public string ModuleDisplayName => "Alpaca Markets";
+    public override string ModuleDisplayName => "Alpaca Markets";
 
     /// <inheritdoc/>
-    public ProviderCapabilities[] Capabilities =>
+    public override ProviderCapabilities[] Capabilities =>
     [
         ProviderCapabilities.Streaming(trades: true, quotes: true),
         ProviderCapabilities.BackfillFullFeatured,
@@ -44,22 +41,14 @@ public sealed class AlpacaProviderModule : IProviderModule
         ProviderCapabilities.Brokerage(streaming: false, backfill: false)
     ];
 
-    /// <summary>
-    /// Validation always passes: providers handle missing credentials gracefully at
-    /// runtime (returning empty data or reporting themselves as unavailable).
-    /// </summary>
-    public ValueTask<ModuleValidationResult> ValidateAsync(CancellationToken ct = default)
-        => ValueTask.FromResult(ModuleValidationResult.Valid);
-
     /// <inheritdoc/>
-    public void Register(IServiceCollection services, DataSourceRegistry registry)
+    public override void Register(IServiceCollection services, DataSourceRegistry registry)
     {
         // ----------------------------------------------------------------
         // Historical backfill provider
-        // Credentials resolved from env vars inside the constructor when
-        // not supplied explicitly (ALPACA_KEY_ID / ALPACA_SECRET_KEY).
-        // Provider self-reports as unavailable via IsAvailableAsync when
-        // credentials are not configured.
+        // Credentials prefer context (from ProviderModules config) then fall
+        // back to env vars. Provider self-reports as unavailable via
+        // IsAvailableAsync when neither source provides credentials.
         // ----------------------------------------------------------------
         services.AddSingleton<AlpacaHistoricalDataProvider>(_ =>
             new AlpacaHistoricalDataProvider());
@@ -68,8 +57,7 @@ public sealed class AlpacaProviderModule : IProviderModule
             sp.GetRequiredService<AlpacaHistoricalDataProvider>());
 
         // ----------------------------------------------------------------
-        // Symbol search provider
-        // Also falls back to env vars; runs in read-only mode without creds.
+        // Symbol search provider — also prefers context over env vars.
         // ----------------------------------------------------------------
         services.AddSingleton<AlpacaSymbolSearchProviderRefactored>(_ =>
             new AlpacaSymbolSearchProviderRefactored());
@@ -79,13 +67,12 @@ public sealed class AlpacaProviderModule : IProviderModule
 
         // ----------------------------------------------------------------
         // Streaming market data client
+        // Credential resolution: context (ProviderModules config) → env vars.
         // AlpacaMarketDataClient requires non-empty credentials in its ctor.
-        // Only register when credentials are discoverable at module-load time;
-        // the factory resolves collectors from the DI container on first use.
         // ----------------------------------------------------------------
-        var streamingCredentials = AlpacaCredentialEnvironment.Resolve();
-        var streamingKeyId = streamingCredentials.KeyId;
-        var streamingSecretKey = streamingCredentials.SecretKey;
+        var envCreds = AlpacaCredentialEnvironment.Resolve();
+        var streamingKeyId = GetKeyId() ?? envCreds.KeyId;
+        var streamingSecretKey = GetSecretKey() ?? envCreds.SecretKey;
 
         if (!string.IsNullOrWhiteSpace(streamingKeyId) && !string.IsNullOrWhiteSpace(streamingSecretKey))
         {
