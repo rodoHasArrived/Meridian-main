@@ -1,4 +1,5 @@
 using Meridian.Wpf.Features.Strategy;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,13 +43,17 @@ public sealed class StrategyFeatureModuleTests
     }
 
     [Fact]
-    public void Register_DoesNotAddFeatureSpecificDescriptorsBecauseStrategyShellUsesSharedShellRegistration()
+    public void Register_AddsStrategyRuntimeServicesWithoutPageDescriptors()
     {
         var services = new ServiceCollection();
 
         new StrategyFeatureModule().Register(services);
 
-        services.Should().BeEmpty();
+        services.Single(service => service.ServiceType == typeof(ISecurityMasterService))
+            .Lifetime
+            .Should()
+            .Be(ServiceLifetime.Singleton);
+        services.Should().NotContain(service => typeof(System.Windows.Controls.Page).IsAssignableFrom(service.ServiceType));
     }
 
     [Theory]

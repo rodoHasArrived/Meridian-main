@@ -12,6 +12,9 @@
             <Setter Property="Padding" Value="14" />
             <Setter Property="Margin" Value="0,0,12,0" />
         </Style>
+        <Style x:Key="MetricValueMonoStyle" TargetType="TextBlock" BasedOn="{StaticResource MetricValueStyle}">
+            <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
+        </Style>
         <Style x:Key="ConfigureGridStyle" TargetType="DataGrid">
             <Setter Property="AutoGenerateColumns" Value="False" />
             <Setter Property="CanUserAddRows" Value="False" />
@@ -986,15 +989,15 @@
 
                                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,10">
                                             <TextBlock Text="Date" Style="{StaticResource MetricLabelStyle}" />
-                                            <TextBox Text="{Binding ManualJournalDraftDateText}" IsReadOnly="True" Margin="0,4,0,0" />
+                                            <TextBox Text="{Binding ManualJournalDraftDateText, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0" />
                                         </StackPanel>
                                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,10">
                                             <TextBlock Text="Reference" Style="{StaticResource MetricLabelStyle}" />
-                                            <TextBox Text="{Binding ManualJournalDraftReferenceText}" IsReadOnly="True" Margin="0,4,0,0" />
+                                            <TextBox Text="{Binding ManualJournalDraftReferenceText, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0" />
                                         </StackPanel>
                                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,10">
                                             <TextBlock Text="Ledger Period" Style="{StaticResource MetricLabelStyle}" />
-                                            <TextBox Text="{Binding ManualJournalDraftPeriodText}" IsReadOnly="True" Margin="0,4,0,8" AutomationProperties.AutomationId="AccountingManualJournalPeriodText" />
+                                            <TextBox Text="{Binding ManualJournalDraftPeriodText, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,8" AutomationProperties.AutomationId="AccountingManualJournalPeriodText" />
                                             <TextBlock Text="Memo" Style="{StaticResource MetricLabelStyle}" />
                                             <TextBox Text="{Binding DraftMemo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
                                         </StackPanel>

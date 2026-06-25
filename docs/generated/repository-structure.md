@@ -2331,10 +2331,15 @@ Meridian-main
 │   │   │   ├── .thumbnail
 │   │   │   ├── ds-base.js
 │   │   │   └── index.html
-│   │   └── security-master-registry
-│   │       ├── .thumbnail
+│   │   ├── security-master-registry
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   └── index.html
+│   │   └── split-pane-reconciliation
 │   │       ├── ds-base.js
-│   │       └── index.html
+│   │       ├── screen.jsx
+│   │       ├── Split Pane Reconciliation.dc.html
+│   │       └── support.js
 │   ├── tests
 │   │   └── test_design_system_governance.py
 │   ├── tokens

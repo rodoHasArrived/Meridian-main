@@ -33,7 +33,7 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         ]);
 
         var hash = ComputeSha256(descriptor);
-        hash.Should().Be("82C1EB677F409BF8714012FD3372559A4EE8421CE2E865F6BBAAD831FDB82B97");
+        hash.Should().Be("4E8F51A2210675DFEDA7DFC634CF639BC37729DDEC313BE213B341D6E16106D3");
     }
 
     [Fact]
@@ -233,16 +233,19 @@ public sealed class WorkstationEndpointContractCompatibilityTests
         var sb = new StringBuilder();
         foreach (var type in types.OrderBy(static t => t.FullName, StringComparer.Ordinal))
         {
-            sb.AppendLine(type.FullName);
+            AppendSnapshotLine(sb, type.FullName!);
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                          .OrderBy(static p => p.Name, StringComparer.Ordinal))
             {
-                sb.Append(property.Name).Append(':').AppendLine(property.PropertyType.FullName ?? property.PropertyType.Name);
+                AppendSnapshotLine(sb, $"{property.Name}:{property.PropertyType.FullName ?? property.PropertyType.Name}");
             }
         }
 
         return sb.ToString();
     }
+
+    private static void AppendSnapshotLine(StringBuilder sb, string value)
+        => sb.Append(value).Append('\n');
 
     private static string ComputeSha256(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 

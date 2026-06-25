@@ -391,7 +391,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding}"
-                                               Foreground="{StaticResource ErrorBrush}"
+                                               Foreground="{StaticResource ErrorColorBrush}"
                                                TextWrapping="Wrap"
                                                Margin="0,0,0,4" />
                                 </DataTemplate>
@@ -1374,7 +1374,7 @@
                             <TextBlock Text="Instrument Passport" Style="{StaticResource CardHeaderStyle}" />
                             <TextBlock Text="{Binding InstrumentPassportSummaryText}" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding InstrumentPassportProviderConfidenceText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,6" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding InstrumentPassportErrorText}" FontSize="11" Foreground="{StaticResource ErrorBrush}" Margin="0,0,0,10" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding InstrumentPassportErrorText}" FontSize="11" Foreground="{StaticResource ErrorColorBrush}" Margin="0,0,0,10" TextWrapping="Wrap" />
                             <ItemsControl ItemsSource="{Binding InstrumentPassportFields}"
                                           AutomationProperties.AutomationId="SecurityMasterInstrumentPassportFields">
                                 <ItemsControl.ItemTemplate>

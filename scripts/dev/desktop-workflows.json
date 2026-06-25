@@ -163,6 +163,12 @@
           "notes": "Capture the Accounting configure screen from the registered WPF shell catalog."
         },
         {
+          "title": "Accounting close",
+          "pageTag": "FundAccountingClose",
+          "captureName": "wpf-fund-accounting-close",
+          "notes": "Capture the Accounting close screen from the registered WPF shell catalog."
+        },
+        {
           "title": "Fund trial balance",
           "pageTag": "FundTrialBalance",
           "captureName": "wpf-fund-trial-balance",
