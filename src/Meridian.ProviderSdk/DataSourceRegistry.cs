@@ -118,8 +118,17 @@ public sealed class DataSourceRegistry
                 if (type.GetConstructor(Type.EmptyTypes) is null)
                     continue;
 
-                if (Activator.CreateInstance(type) is not IProviderModule module)
+                IProviderModule module;
+                try
+                {
+                    if (Activator.CreateInstance(type) is not IProviderModule m)
+                        continue;
+                    module = m;
+                }
+                catch
+                {
                     continue;
+                }
 
                 var moduleId = module.ModuleId;
 
@@ -135,7 +144,14 @@ public sealed class DataSourceRegistry
                     continue;
                 }
 
-                module.Register(services, this);
+                try
+                {
+                    module.Register(services, this);
+                }
+                catch
+                {
+                    continue;
+                }
             }
         }
     }
