@@ -3832,7 +3832,7 @@ describe("AccountingScreen", () => {
     expect(table).toHaveTextContent("24");
     expect(screen.getByRole("tab", { name: /Overview tab for statement run run-42/ })).toBeEnabled();
     expect(screen.getByRole("tab", { name: /Breaks & Cases tab for statement run run-42/ })).toHaveTextContent("2");
-    expect(screen.getByText(/Matching, tolerance, validation, and case-state decisions remain in the shared reconciliation services/)).toBeInTheDocument();
+    expect(screen.getByText(/Matching, tolerance, validation, and case-state decisions remain in reconciliation services/)).toBeInTheDocument();
   });
 
   it("updates reconciliation detail queue selection with accessible expanded state", async () => {

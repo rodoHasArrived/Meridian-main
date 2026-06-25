@@ -1191,6 +1191,8 @@ export interface ReferenceDataEndpointRowViewModel extends ReferenceDataEndpoint
   rowId: string;
   familyLabel: string;
   methodLabel: string;
+  accessLabel: string;
+  displaySummary: string;
   statusLabel: string;
   statusBadgeVariant: "success" | "warning" | "outline" | "danger";
   countLabel: string;
@@ -17584,17 +17586,21 @@ function buildReferenceDataEndpointRows(
     const countLabel = endpoint.responseCount === null ? "-" : formatCount(endpoint.responseCount, "record");
     const latencyLabel = endpoint.durationMs === null ? "-" : `${endpoint.durationMs} ms`;
     const statusLabel = referenceDataStatusLabel(endpoint.status);
+    const accessLabel = endpoint.mutation ? "Write-capable" : "Read-only";
+    const displaySummary = formatFinanceFacingSourceSummary(endpoint.responseSummary, endpoint.errorSummary);
 
     return {
       ...endpoint,
       rowId,
       familyLabel: endpoint.family,
       methodLabel: endpoint.method,
+      accessLabel,
+      displaySummary,
       statusLabel,
       statusBadgeVariant,
       countLabel,
       latencyLabel,
-      ariaLabel: `${endpoint.family} ${endpoint.label}, ${statusLabel}. ${endpoint.responseSummary}`,
+      ariaLabel: `${endpoint.family} ${endpoint.label}, ${statusLabel}. ${displaySummary}`,
       selectAriaLabel: `Inspect ${endpoint.label} reference data source`,
       detailPanelId: "reference-data-endpoint-detail",
       isExpanded: rowId === selectedRowId
@@ -17611,15 +17617,15 @@ function buildReferenceDataEndpointDetailViewState(
     eyebrow: row.familyLabel,
     title: row.label,
     subtitle: `Reference data source: ${row.familyLabel}`,
-    description: row.errorSummary ?? row.responseSummary,
+    description: row.errorSummary ?? row.displaySummary,
     ariaLabel: `${row.label} reference data source detail`,
     statusLabel: row.statusLabel,
     statusBadgeVariant: row.statusBadgeVariant,
     fields: [
       { label: "Family", value: row.familyLabel },
-      { label: "Access", value: row.mutation ? "Write-capable" : "Read-only", tone: row.mutation ? "warning" : "default" },
+      { label: "Access", value: row.accessLabel, tone: row.mutation ? "warning" : "default" },
       { label: "Source family", value: row.familyLabel },
-      { label: "Review scope", value: row.requestLabel },
+      { label: "Review scope", value: formatFinanceFacingSourceSummary(row.requestLabel) },
       { label: "Status", value: row.statusLabel, tone: referenceDataStatusTone(row.status) },
       { label: "Records", value: row.countLabel },
       { label: "Latency", value: row.latencyLabel },
@@ -17629,6 +17635,20 @@ function buildReferenceDataEndpointDetailViewState(
     errorSummary: row.errorSummary,
     errorDetails: row.errorDetails
   };
+}
+
+function formatFinanceFacingSourceSummary(summary: string, errorSummary?: string | null): string {
+  const source = errorSummary?.trim() || summary.trim();
+  const normalized = source
+    .replace(/\b(GET|POST|PUT|PATCH|DELETE)\b\s+/gi, "")
+    .replace(/\bendpoint\b/gi, "source")
+    .replace(/\bpayload\b/gi, "record set")
+    .replace(/\bDTO\b/g, "record")
+    .replace(/\bbackend\b/gi, "service")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return normalized || "Reference data source status is available for review.";
 }
 
 function referenceDataStatusLabel(status: ReferenceDataEndpointProbeResult["status"]): string {
