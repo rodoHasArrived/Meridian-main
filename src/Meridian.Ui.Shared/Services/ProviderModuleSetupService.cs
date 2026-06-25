@@ -115,7 +115,8 @@ public sealed class ProviderModuleSetupService : IProviderModuleSetupService
         // Capture pre-mutation state so we can roll back the config entry if the subsequent
         // credential write fails (keeps config and credential store in sync).
         var preMutationCfg = _configStore.Load();
-        preMutationCfg.ProviderModules?.Modules?.TryGetValue(request.ModuleId, out var preExistingSettings);
+        ProviderModuleSettings? preExistingSettings = null;
+        preMutationCfg.ProviderModules?.Modules?.TryGetValue(request.ModuleId, out preExistingSettings);
 
         // Save config first; only persist credentials if config write succeeds,
         // so a failed config save never leaves orphaned credentials on disk.
