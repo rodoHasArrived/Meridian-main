@@ -883,6 +883,7 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
+│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -3282,6 +3283,7 @@ Meridian-main
 │   │   │   ├── EtlAbstractions.cs
 │   │   │   ├── EtlExportService.cs
 │   │   │   ├── EtlNormalizationService.cs
+│   │   │   ├── EtlPreviewService.cs
 │   │   │   └── EtlServices.cs
 │   │   ├── Filters
 │   │   │   └── MarketEventFilter.cs
@@ -3804,6 +3806,7 @@ Meridian-main
 │   │   │   ├── Sftp
 │   │   │   │   ├── ISftpClientFactory.cs
 │   │   │   │   ├── SftpConnectionOptions.cs
+│   │   │   │   ├── SftpCredentialResolver.cs
 │   │   │   │   └── SftpRemoteLocation.cs
 │   │   │   ├── CsvPartnerFileParser.cs
 │   │   │   ├── LocalFileSourceReader.cs
@@ -6153,7 +6156,8 @@ Meridian-main
 │   │   │   ├── Etl
 │   │   │   │   ├── EtlExportServiceTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
-│   │   │   │   └── EtlNormalizationServiceTests.cs
+│   │   │   │   ├── EtlNormalizationServiceTests.cs
+│   │   │   │   └── EtlPreviewServiceTests.cs
 │   │   │   ├── Historical
 │   │   │   │   ├── HistoricalDataQueryServiceBarsTests.cs
 │   │   │   │   └── HistoricalDataQueryServiceTests.cs
@@ -6270,6 +6274,7 @@ Meridian-main
 │   │   │   │   └── CredentialConfigTests.cs
 │   │   │   ├── Etl
 │   │   │   │   ├── CsvPartnerFileParserTests.cs
+│   │   │   │   ├── SftpCapabilityServiceTests.cs
 │   │   │   │   └── SftpInfrastructureTests.cs
 │   │   │   ├── Http
 │   │   │   │   └── HttpClientConfigurationTests.cs

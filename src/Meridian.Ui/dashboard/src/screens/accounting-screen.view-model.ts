@@ -203,6 +203,9 @@ import type {
   SecurityMasterConflict,
   SecurityMasterEntry,
   InstrumentPassport,
+  InstrumentPassportOperationsReadiness,
+  InstrumentPassportOperationsWorkbenchItem,
+  InstrumentPassportOperationsWorkbenchPanel,
   InstrumentPassportProviderConfidence,
   SecurityMasterOpenLot,
   SecurityMasterOpenLotReadModel,
@@ -1163,6 +1166,26 @@ export interface InstrumentPassportFieldViewModel {
   tone?: "default" | "success" | "warning";
 }
 
+export interface InstrumentPassportOperationsWorkbenchItemViewModel extends InstrumentPassportOperationsWorkbenchItem {
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning" | "outline";
+  evidenceLabel: string;
+  blockerLabel: string;
+}
+
+export interface InstrumentPassportOperationsWorkbenchPanelViewModel extends Omit<InstrumentPassportOperationsWorkbenchPanel, "items"> {
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning" | "outline";
+  items: InstrumentPassportOperationsWorkbenchItemViewModel[];
+}
+
+export interface InstrumentPassportOperationsReadinessViewModel extends InstrumentPassportOperationsReadiness {
+  statusLabel: string;
+  statusBadgeVariant: "success" | "warning" | "outline";
+  evidenceLabel: string;
+  blockerLabel: string;
+}
+
 export interface InstrumentPassportViewState {
   securityId: string;
   title: string;
@@ -1171,6 +1194,12 @@ export interface InstrumentPassportViewState {
   statusBadgeVariant: "success" | "warning" | "outline";
   fields: InstrumentPassportFieldViewModel[];
   providerRows: InstrumentPassportProviderConfidenceRowViewModel[];
+  operationsWorkbenchTitle: string;
+  operationsWorkbenchSummary: string;
+  operationsWorkbenchStatusLabel: string;
+  operationsWorkbenchStatusBadgeVariant: "success" | "warning" | "outline";
+  operationsReadiness: InstrumentPassportOperationsReadinessViewModel[];
+  operationsPanels: InstrumentPassportOperationsWorkbenchPanelViewModel[];
   providerTableLabel: string;
   providerTableCaption: string;
   providerEmptyText: string;
@@ -17749,6 +17778,10 @@ export function buildInstrumentPassportViewState({
   }));
   const enabledHandoffs = referenceDataWorkbench?.operationsHandoffs.filter((handoff) => handoff.isEnabled).length ?? 0;
   const totalHandoffs = referenceDataWorkbench?.operationsHandoffs.length ?? 0;
+  const operationsWorkbench = passport?.operationsWorkbench ?? null;
+  const operationsWorkbenchStatus = operationsWorkbench?.status?.trim() || "Unavailable";
+  const operationsReadiness = buildInstrumentPassportOperationsReadinessRows(passport);
+  const operationsPanels = buildInstrumentPassportOperationsPanelRows(passport);
   const activeProviderCount = providerRows.filter((row) => row.isActive).length;
   const statusBadgeVariant = trustTone.toLowerCase() === "trusted"
     ? "success"
@@ -17802,9 +17835,20 @@ export function buildInstrumentPassportViewState({
         value: `${enabledHandoffs} enabled / ${totalHandoffs} total handoff(s).`,
         tone: enabledHandoffs > 0 ? "success" : "warning"
       },
+      {
+        label: "Operations workbench",
+        value: `${operationsWorkbenchStatus}: ${operationsWorkbench?.summary?.trim() || "Security Master operations workbench is unavailable."}`,
+        tone: operationsWorkbenchStatus.toLowerCase() === "ready" ? "success" : "warning"
+      },
       { label: "Retrieved", value: passport?.retrievedAtUtc ? formatDateTimeLabel(passport.retrievedAtUtc) : "-" }
     ],
     providerRows,
+    operationsWorkbenchTitle: "Operations workbench",
+    operationsWorkbenchSummary: operationsWorkbench?.summary?.trim() || "Operations workbench evidence is unavailable for this passport.",
+    operationsWorkbenchStatusLabel: operationsWorkbenchStatus,
+    operationsWorkbenchStatusBadgeVariant: instrumentPassportStatusVariant(operationsWorkbenchStatus),
+    operationsReadiness,
+    operationsPanels,
     providerTableLabel: `Provider confidence for ${displaySecurityId}`,
     providerTableCaption: `Provider symbol confidence and conflict evidence for ${displaySecurityId}.`,
     providerEmptyText: `No provider confidence rows are available for ${displaySecurityId}.`,
@@ -17819,6 +17863,63 @@ export function buildInstrumentPassportViewState({
           ? `Instrument passport loaded for ${displaySecurityId}.`
           : ""
   };
+}
+
+function buildInstrumentPassportOperationsReadinessRows(
+  passport: InstrumentPassport | null
+): InstrumentPassportOperationsReadinessViewModel[] {
+  return (passport?.operationsWorkbench?.readiness ?? []).map((row) => ({
+    ...row,
+    route: normalizeInstrumentPassportRoute(row.route),
+    statusLabel: row.status,
+    statusBadgeVariant: instrumentPassportStatusVariant(row.status),
+    evidenceLabel: `${row.evidenceCount} evidence`,
+    blockerLabel: `${row.blockingIssueCount} blocker${row.blockingIssueCount === 1 ? "" : "s"}`
+  }));
+}
+
+function buildInstrumentPassportOperationsPanelRows(
+  passport: InstrumentPassport | null
+): InstrumentPassportOperationsWorkbenchPanelViewModel[] {
+  return (passport?.operationsWorkbench?.panels ?? []).map((panel) => ({
+    ...panel,
+    statusLabel: panel.status,
+    statusBadgeVariant: instrumentPassportStatusVariant(panel.status),
+    items: panel.items.map((item) => ({
+      ...item,
+      route: normalizeInstrumentPassportRoute(item.route),
+      statusLabel: item.status,
+      statusBadgeVariant: instrumentPassportStatusVariant(item.status),
+      evidenceLabel: `${item.evidenceCount} evidence`,
+      blockerLabel: `${item.blockingIssueCount} blocker${item.blockingIssueCount === 1 ? "" : "s"}`
+    }))
+  }));
+}
+
+function normalizeInstrumentPassportRoute(route: string | null | undefined): string | null {
+  const trimmed = route?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (trimmed.startsWith("/workstation/")) {
+    return trimmed.slice("/workstation".length);
+  }
+
+  return trimmed.startsWith("/") ? trimmed : null;
+}
+
+function instrumentPassportStatusVariant(status: string | null | undefined): "success" | "warning" | "outline" {
+  const normalized = status?.trim().toLowerCase();
+  if (normalized === "ready" || normalized === "trusted" || normalized === "complete") {
+    return "success";
+  }
+
+  if (normalized === "review" || normalized === "blocked" || normalized === "unavailable") {
+    return "warning";
+  }
+
+  return "outline";
 }
 
 function buildInstrumentPassportProviderRows(

@@ -214,6 +214,12 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             providerConfidence,
             lifecycleEvents,
             clearwaterEvidence);
+        var referenceDataWorkbench = BuildReferenceDataWorkbench(
+            snapshot,
+            identifierSummary,
+            providerConfidence,
+            pricing,
+            operatingModel);
 
         return new InstrumentPassportDto(
             SecurityId: snapshot.SecurityId,
@@ -230,12 +236,13 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         {
             ProviderConfidence = providerConfidence,
             OperatingModel = operatingModel,
-            ReferenceDataWorkbench = BuildReferenceDataWorkbench(
+            ReferenceDataWorkbench = referenceDataWorkbench,
+            OperationsWorkbench = BuildOperationsWorkbench(
                 snapshot,
                 identifierSummary,
                 providerConfidence,
                 pricing,
-                operatingModel)
+                referenceDataWorkbench)
         };
     }
 
@@ -330,6 +337,467 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 : "Multi-asset reference-data workbench needs review before downstream FINOPS use.",
             Sections: sections,
             OperationsHandoffs: handoffs);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchDto BuildOperationsWorkbench(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        InstrumentPassportPricingDto pricing,
+        InstrumentPassportReferenceDataWorkbenchDto referenceDataWorkbench)
+    {
+        var handoffs = referenceDataWorkbench.OperationsHandoffs;
+        var readiness = BuildOperationsReadiness(snapshot, identifierSummary, providerConfidence, pricing, handoffs);
+        var panels = new List<InstrumentPassportOperationsWorkbenchPanelDto>
+        {
+            BuildIdentityPanel(snapshot, identifierSummary, providerConfidence),
+            BuildProviderEvidencePanel(snapshot, providerConfidence),
+            BuildTermsPanel(snapshot, pricing),
+            BuildReadinessPanel(readiness),
+            BuildHandoffPanel(snapshot, handoffs)
+        };
+        var status = panels.Any(PanelNeedsReview) || readiness.Any(static item => !item.IsReady)
+            ? "Review"
+            : "Ready";
+
+        return new InstrumentPassportOperationsWorkbenchDto(
+            Status: status,
+            Summary: status.Equals("Ready", StringComparison.OrdinalIgnoreCase)
+                ? "Security Master operations workbench is ready for downstream portfolio, accounting, reconciliation, close, and reporting use."
+                : "Security Master operations workbench needs review before downstream portfolio, accounting, reconciliation, close, or reporting use.",
+            Panels: panels,
+            Readiness: readiness,
+            Handoffs: handoffs);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildIdentityPanel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence)
+    {
+        var conflictCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
+        var items = new List<InstrumentPassportOperationsWorkbenchItemDto>
+        {
+            new(
+                ItemId: "canonical-id",
+                Label: "Canonical ID",
+                Value: snapshot.SecurityId.ToString("D"),
+                Status: "Ready",
+                Detail: SecurityMasterText(snapshot.Identity.DisplayName, "Security Master identity is retained."),
+                EvidenceCount: 1,
+                BlockingIssueCount: 0),
+            new(
+                ItemId: "primary-identifier",
+                Label: SecurityMasterText(identifierSummary.PrimaryIdentifierKind, "Primary identifier"),
+                Value: SecurityMasterText(identifierSummary.PrimaryIdentifierValue, "Unavailable"),
+                Status: identifierSummary.HasPrimaryIdentifier ? "Ready" : "Review",
+                Detail: identifierSummary.Summary,
+                EvidenceCount: identifierSummary.ActiveIdentifierCount,
+                BlockingIssueCount: identifierSummary.HasPrimaryIdentifier ? 0 : 1),
+            new(
+                ItemId: "aliases-provider-ids",
+                Label: "Aliases and provider IDs",
+                Value: $"{identifierSummary.ActiveAliasCount} alias(es); {identifierSummary.ProviderMappingCount} provider mapping(s)",
+                Status: identifierSummary.HasProviderMappings ? "Ready" : "Review",
+                Detail: $"{identifierSummary.DistinctProviderCount} distinct provider(s) contribute identity evidence.",
+                EvidenceCount: identifierSummary.ActiveAliasCount + identifierSummary.ProviderMappingCount,
+                BlockingIssueCount: identifierSummary.HasProviderMappings ? 0 : 1),
+            new(
+                ItemId: "duplicate-candidates",
+                Label: "Duplicate candidates",
+                Value: conflictCount == 0 ? "No open identifier conflicts" : $"{conflictCount} identifier conflict(s)",
+                Status: conflictCount == 0 ? "Ready" : "Review",
+                Detail: conflictCount == 0
+                    ? "No provider identifier conflicts are blocking canonical identity confidence."
+                    : "Provider identifier conflicts require steward review before downstream consumers trust the asset.",
+                EvidenceCount: providerConfidence.Count,
+                BlockingIssueCount: conflictCount)
+        };
+
+        return BuildOperationsPanel("identity", "Identity", items);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildProviderEvidencePanel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence)
+    {
+        var activeCount = providerConfidence.Count(static row => row.IsActive);
+        var items = providerConfidence
+            .Select((row, index) => new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: $"provider-{index + 1}",
+                Label: row.Provider,
+                Value: $"{row.MappingKind}: {row.Symbol}",
+                Status: row.IdentifierConflictIds.Count == 0 && row.IsActive ? "Ready" : "Review",
+                Detail: BuildProviderEvidenceDetail(row),
+                EvidenceCount: 1 + row.OverrideHistory.Count,
+                BlockingIssueCount: row.IdentifierConflictIds.Count))
+            .ToList();
+
+        if (items.Count == 0)
+        {
+            items.Add(new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: "provider-evidence-missing",
+                Label: "Provider evidence",
+                Value: "Unavailable",
+                Status: "Review",
+                Detail: "No provider, administrator, custodian, or retained source evidence is attached to this passport.",
+                EvidenceCount: 0,
+                BlockingIssueCount: 1));
+        }
+
+        items.Insert(0, new InstrumentPassportOperationsWorkbenchItemDto(
+            ItemId: "active-source-count",
+            Label: "Active sources",
+            Value: $"{activeCount} active / {providerConfidence.Count} total",
+            Status: activeCount > 0 ? "Ready" : "Review",
+            Detail: "Provider, administrator, custodian, and retained source rows are reviewed before downstream handoff.",
+            EvidenceCount: providerConfidence.Count,
+            BlockingIssueCount: activeCount > 0 ? 0 : 1));
+        items.AddRange(BuildSourceEvidenceItems(snapshot));
+        items.AddRange(BuildConflictItems(snapshot, "provider-conflict", IsProviderOrIdentifierConflict));
+
+        return BuildOperationsPanel("provider-evidence", "Provider evidence", items);
+    }
+
+    private static string BuildProviderEvidenceDetail(InstrumentPassportProviderConfidenceDto row)
+    {
+        var freshness = row.FreshnessAsOf.HasValue
+            ? $"Fresh as of {row.FreshnessAsOf.Value.UtcDateTime:yyyy-MM-dd HH:mm 'UTC'} ({row.FreshnessMinutes.GetValueOrDefault()} minute(s) old)."
+            : "Freshness timestamp unavailable.";
+        var overrides = row.OverrideHistory.Count == 0
+            ? "No retained override history."
+            : $"{row.OverrideHistory.Count} retained override event(s).";
+
+        return $"{row.ProviderSource}; {row.ConfidenceReason} {freshness} {overrides}";
+    }
+
+    private static IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> BuildSourceEvidenceItems(
+        SecurityMasterTrustSnapshotDto snapshot)
+    {
+        if (snapshot.ProvenanceCandidates.Count == 0)
+        {
+            return
+            [
+                new InstrumentPassportOperationsWorkbenchItemDto(
+                    ItemId: "source-record-missing",
+                    Label: "Retained source evidence",
+                    Value: "Unavailable",
+                    Status: "Review",
+                    Detail: "Source record unavailable; as of timestamp unavailable; updated by unknown steward. Link provider, administrator, or custodian evidence before downstream handoff.",
+                    EvidenceCount: 0,
+                    BlockingIssueCount: 1,
+                    Route: "/workstation/accounting/security-master#source-missing")
+            ];
+        }
+
+        return snapshot.ProvenanceCandidates
+            .OrderByDescending(static candidate => candidate.IsWinningSource)
+            .ThenByDescending(static candidate => candidate.AsOf)
+            .ThenBy(static candidate => candidate.SourceSystem, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .Select((candidate, index) =>
+            {
+                var isBlockingConflict = candidate.ConflictId.HasValue &&
+                    candidate.ImpactSeverity is not SecurityMasterImpactSeverity.None and not SecurityMasterImpactSeverity.Low;
+                var sourceRecord = SecurityMasterText(candidate.SourceRecordId, "no retained source record id");
+                var updatedBy = SecurityMasterText(candidate.UpdatedBy, "unknown steward");
+                var reason = SecurityMasterText(candidate.Reason, candidate.IsWinningSource ? "winning source" : "source candidate");
+                var asOf = candidate.AsOf.HasValue
+                    ? candidate.AsOf.Value.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)
+                    : "timestamp unavailable";
+                var route = candidate.ConflictId.HasValue
+                    ? $"/workstation/accounting/security-master#conflict-{candidate.ConflictId.Value:D}"
+                    : $"/workstation/accounting/security-master#source-{index + 1}";
+
+                return new InstrumentPassportOperationsWorkbenchItemDto(
+                    ItemId: $"source-record-{index + 1}",
+                    Label: candidate.SourceSystem,
+                    Value: $"{candidate.FieldPath}: {candidate.DisplayValue}",
+                    Status: isBlockingConflict ? "Review" : "Ready",
+                    Detail: $"Source record {sourceRecord}; as of {asOf}; updated by {updatedBy}; {reason}.",
+                    EvidenceCount: 1,
+                    BlockingIssueCount: isBlockingConflict ? 1 : 0,
+                    Route: route);
+            })
+            .ToArray();
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildTermsPanel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        InstrumentPassportPricingDto pricing)
+    {
+        var scheduleEventCount = snapshot.ScheduleBook?.Events.Count ?? 0;
+        var factorCount = snapshot.ScheduleBook?.FactorHistory.Count ?? 0;
+        var hasClassification = !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass)
+            && !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
+        var hasEconomicTerms = snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true
+            || scheduleEventCount > 0
+            || snapshot.CorporateActions.Count > 0
+            || pricing.TradingParameters is not null;
+        var items = new List<InstrumentPassportOperationsWorkbenchItemDto>
+        {
+            new(
+                ItemId: "classification",
+                Label: "Classification",
+                Value: BuildClassificationValue(snapshot),
+                Status: hasClassification ? "Ready" : "Review",
+                Detail: BuildLedgerClassificationSummary(snapshot),
+                EvidenceCount: hasClassification ? 1 : 0,
+                BlockingIssueCount: hasClassification ? 0 : 1),
+            new(
+                ItemId: "economics",
+                Label: "Economics",
+                Value: pricing.Summary,
+                Status: IsReadyStatus(pricing.Status) || hasEconomicTerms ? "Ready" : "Review",
+                Detail: BuildTermsAndObligationsSummary(snapshot),
+                EvidenceCount: (pricing.TradingParameters is null ? 0 : 1) + snapshot.CorporateActions.Count + scheduleEventCount,
+                BlockingIssueCount: IsReadyStatus(pricing.Status) || hasEconomicTerms ? 0 : 1),
+            new(
+                ItemId: "payment-schedule",
+                Label: "Payment schedule",
+                Value: scheduleEventCount > 0 ? $"{scheduleEventCount} projected event(s)" : "No projected events",
+                Status: scheduleEventCount > 0 || snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ? "Ready" : "Review",
+                Detail: snapshot.ScheduleSummary?.Summary ?? "Payment, amortization, PIK, covenant, and paydown schedule evidence is not retained.",
+                EvidenceCount: scheduleEventCount,
+                BlockingIssueCount: scheduleEventCount > 0 || snapshot.ScheduleSummary?.SupportsCashflowSchedule == true ? 0 : 1),
+            new(
+                ItemId: "factors-collateral-covenants",
+                Label: "Factors, collateral, covenants",
+                Value: factorCount > 0 ? $"{factorCount} factor row(s)" : "Review required",
+                Status: factorCount > 0 || snapshot.ScheduleSummary?.SupportsFactorHistory == true ? "Ready" : "Review",
+                Detail: "Structured-asset factor, collateral, covenant, and paydown evidence must be linked when applicable.",
+                EvidenceCount: factorCount,
+                BlockingIssueCount: factorCount > 0 || snapshot.ScheduleSummary?.SupportsFactorHistory == true ? 0 : 1)
+        };
+        items.AddRange(BuildConflictItems(snapshot, "terms-conflict", IsTermsConflict));
+
+        return BuildOperationsPanel("terms", "Terms", items);
+    }
+
+    private static IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> BuildConflictItems(
+        SecurityMasterTrustSnapshotDto snapshot,
+        string itemPrefix,
+        Func<SecurityMasterConflictAssessmentDto, bool> predicate)
+    {
+        return snapshot.ConflictAssessments
+            .Where(predicate)
+            .OrderByDescending(static assessment => assessment.ImpactSeverity)
+            .ThenBy(static assessment => assessment.Conflict.FieldPath, StringComparer.OrdinalIgnoreCase)
+            .Select((assessment, index) =>
+            {
+                var conflict = assessment.Conflict;
+                return new InstrumentPassportOperationsWorkbenchItemDto(
+                    ItemId: $"{itemPrefix}-{index + 1}",
+                    Label: conflict.FieldPath,
+                    Value: $"{conflict.ProviderA}: {conflict.ValueA} / {conflict.ProviderB}: {conflict.ValueB}",
+                    Status: "Review",
+                    Detail: $"{assessment.ImpactSummary} Recommended resolution: {assessment.RecommendedResolution}",
+                    EvidenceCount: 2,
+                    BlockingIssueCount: assessment.ImpactSeverity is SecurityMasterImpactSeverity.None or SecurityMasterImpactSeverity.Low ? 0 : 1,
+                    Route: $"/workstation/accounting/security-master#conflict-{conflict.ConflictId:D}");
+            })
+            .ToArray();
+    }
+
+    private static bool IsProviderOrIdentifierConflict(SecurityMasterConflictAssessmentDto assessment) =>
+        ContainsAnyControlToken(
+            [
+                assessment.Conflict.ConflictKind,
+                assessment.Conflict.FieldPath
+            ],
+            "identifier",
+            "ticker",
+            "cusip",
+            "isin",
+            "figi",
+            "provider",
+            "mapping",
+            "alias");
+
+    private static bool IsTermsConflict(SecurityMasterConflictAssessmentDto assessment) =>
+        ContainsAnyControlToken(
+            [
+                assessment.Conflict.ConflictKind,
+                assessment.Conflict.FieldPath
+            ],
+            "maturity",
+            "coupon",
+            "assettype",
+            "asset type",
+            "classification",
+            "currency",
+            "factor",
+            "collateral",
+            "covenant",
+            "paydown",
+            "amortization",
+            "strike",
+            "expiry",
+            "expiration",
+            "pik");
+
+    private static IReadOnlyList<InstrumentPassportOperationsReadinessDto> BuildOperationsReadiness(
+        SecurityMasterTrustSnapshotDto snapshot,
+        SecurityMasterIdentifierSummaryDto identifierSummary,
+        IReadOnlyList<InstrumentPassportProviderConfidenceDto> providerConfidence,
+        InstrumentPassportPricingDto pricing,
+        IReadOnlyList<InstrumentPassportOperationsHandoffDto> handoffs)
+    {
+        var identifierConflictCount = providerConfidence.Sum(static row => row.IdentifierConflictIds.Count);
+        var activeProviderCount = providerConfidence.Count(static row => row.IsActive);
+        var identityReady = identifierSummary.HasPrimaryIdentifier
+            && identifierSummary.HasProviderMappings
+            && activeProviderCount > 0
+            && identifierConflictCount == 0;
+        var classificationReady = !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass)
+            && !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
+        var termsReady = snapshot.ScheduleBook?.Events.Count > 0
+            || snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true
+            || snapshot.CorporateActions.Count > 0
+            || pricing.TradingParameters is not null;
+        var valuationReady = identityReady && IsReadyStatus(pricing.Status);
+        var reconciliationReady = identityReady && classificationReady && !snapshot.TrustPosture.HasOpenConflicts;
+        var ledgerReady = identityReady && classificationReady && snapshot.DownstreamImpact.LedgerExposureCount > 0;
+        var closeReady = reconciliationReady && ledgerReady && termsReady;
+        var reportReady = identityReady && snapshot.DownstreamImpact.ReportPackExposureCount > 0 && !snapshot.TrustPosture.HasOpenConflicts;
+        var nextAction = handoffs.FirstOrDefault(static handoff => handoff.IsEnabled);
+
+        return
+        [
+            BuildReadiness("valuation", "Valuation-ready", valuationReady, pricing.Summary, activeProviderCount + (pricing.TradingParameters is null ? 0 : 1), identifierConflictCount, "Review pricing source, identifier confidence, and active provider evidence.", nextAction?.Target),
+            BuildReadiness("reconciliation", "Reconciliation-ready", reconciliationReady, snapshot.DownstreamImpact.ReconciliationExposureSummary, snapshot.DownstreamImpact.ReconciliationExposureCount + activeProviderCount, snapshot.TrustPosture.OpenConflictCount, "Resolve identifier, classification, maturity, coupon, currency, or factor conflicts.", nextAction?.Target),
+            BuildReadiness("ledger", "Ledger-ready", ledgerReady, snapshot.DownstreamImpact.LedgerExposureSummary, snapshot.DownstreamImpact.LedgerExposureCount + (classificationReady ? 1 : 0), ledgerReady ? 0 : 1, "Confirm ledger classification and retained Security Master provenance.", nextAction?.Target),
+            BuildReadiness("close", "Close-ready", closeReady, snapshot.DownstreamImpact.Summary, snapshot.DownstreamImpact.Links.Count + (termsReady ? 1 : 0), closeReady ? 0 : 1, "Clear unresolved Security Master blockers before close package use.", nextAction?.Target),
+            BuildReadiness("report", "Report-ready", reportReady, snapshot.DownstreamImpact.ReportPackExposureSummary, snapshot.DownstreamImpact.ReportPackExposureCount, reportReady ? 0 : 1, "Link report-line provenance and resolve open definition conflicts.", nextAction?.Target)
+        ];
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildReadinessPanel(
+        IReadOnlyList<InstrumentPassportOperationsReadinessDto> readiness)
+    {
+        var items = readiness
+            .Select(item => new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: item.ReadinessId,
+                Label: item.Label,
+                Value: item.Status,
+                Status: item.Status,
+                Detail: item.Summary,
+                EvidenceCount: item.EvidenceCount,
+                BlockingIssueCount: item.BlockingIssueCount,
+                Route: item.Route))
+            .ToArray();
+        return BuildOperationsPanel("operations-readiness", "Operations readiness", items);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildHandoffPanel(
+        SecurityMasterTrustSnapshotDto snapshot,
+        IReadOnlyList<InstrumentPassportOperationsHandoffDto> handoffs)
+    {
+        var items = handoffs
+            .Select(handoff => new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: handoff.HandoffId,
+                Label: handoff.Title,
+                Value: handoff.Target,
+                Status: handoff.Status,
+                Detail: BuildHandoffDetail(handoff),
+                EvidenceCount: 1,
+                BlockingIssueCount: handoff.IsEnabled ? 0 : 1,
+                Route: handoff.Route ?? handoff.Target))
+            .ToList();
+
+        if (items.Count == 0)
+        {
+            items.Add(new InstrumentPassportOperationsWorkbenchItemDto(
+                ItemId: "handoff-review",
+                Label: "Review Security Master handoff",
+                Value: "Security Master detail",
+                Status: "Review",
+                Detail: snapshot.DownstreamImpact.Summary,
+                EvidenceCount: snapshot.DownstreamImpact.Links.Count,
+                BlockingIssueCount: 1));
+        }
+
+        return BuildOperationsPanel("handoff", "Handoff", items);
+    }
+
+    private static string BuildHandoffDetail(InstrumentPassportOperationsHandoffDto handoff)
+    {
+        var outputs = handoff.ImpactedOutputs.Count == 0
+            ? "Security Master"
+            : string.Join(", ", handoff.ImpactedOutputs);
+        var linkedCases = handoff.LinkedCases.Count == 0
+            ? "none"
+            : string.Join(", ", handoff.LinkedCases);
+        var owner = SecurityMasterText(handoff.Owner, "Security Master steward");
+        var blocker = SecurityMasterText(handoff.BlockerReason, handoff.Detail);
+
+        return $"{handoff.Detail} Owner: {owner}. Blocker: {blocker}. Impacted outputs: {outputs}. Linked cases: {linkedCases}.";
+    }
+
+    private static InstrumentPassportOperationsReadinessDto BuildReadiness(
+        string readinessId,
+        string label,
+        bool isReady,
+        string summary,
+        int evidenceCount,
+        int blockingIssueCount,
+        string blockedAction,
+        string? route)
+    {
+        return new InstrumentPassportOperationsReadinessDto(
+            ReadinessId: readinessId,
+            Label: label,
+            Status: isReady ? "Ready" : "Review",
+            IsReady: isReady,
+            Summary: SecurityMasterText(summary, isReady ? "Readiness evidence is retained." : blockedAction),
+            EvidenceCount: evidenceCount,
+            BlockingIssueCount: isReady ? 0 : Math.Max(1, blockingIssueCount),
+            NextAction: isReady ? "No blocker." : blockedAction,
+            Route: route);
+    }
+
+    private static InstrumentPassportOperationsWorkbenchPanelDto BuildOperationsPanel(
+        string panelId,
+        string title,
+        IReadOnlyList<InstrumentPassportOperationsWorkbenchItemDto> items)
+    {
+        var blockingCount = items.Sum(static item => item.BlockingIssueCount);
+        var reviewCount = items.Count(static item => !IsReadyStatus(item.Status));
+        var status = blockingCount == 0 && reviewCount == 0 ? "Ready" : "Review";
+        var evidenceCount = items.Sum(static item => item.EvidenceCount);
+
+        return new InstrumentPassportOperationsWorkbenchPanelDto(
+            PanelId: panelId,
+            Title: title,
+            Status: status,
+            Summary: status.Equals("Ready", StringComparison.OrdinalIgnoreCase)
+                ? $"{title} panel has {evidenceCount} retained evidence item(s) and no blocking issue."
+                : $"{title} panel has {blockingCount} blocking issue(s) requiring operator review.",
+            Items: items);
+    }
+
+    private static bool PanelNeedsReview(InstrumentPassportOperationsWorkbenchPanelDto panel) =>
+        !IsReadyStatus(panel.Status) || panel.Items.Any(static item => item.BlockingIssueCount > 0);
+
+    private static bool IsReadyStatus(string? status) =>
+        status?.Equals("Ready", StringComparison.OrdinalIgnoreCase) == true
+        || status?.Equals("Trusted", StringComparison.OrdinalIgnoreCase) == true
+        || status?.Equals("Complete", StringComparison.OrdinalIgnoreCase) == true;
+
+    private static string BuildClassificationValue(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var parts = new[]
+        {
+            snapshot.EconomicDefinition.AssetClass,
+            snapshot.EconomicDefinition.AssetFamily,
+            snapshot.EconomicDefinition.SubType,
+            snapshot.EconomicDefinition.Currency
+        }
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return parts.Length == 0 ? "Unavailable" : string.Join(" / ", parts);
     }
 
     private async Task<ClearwaterReferenceDataEvidence> BuildClearwaterEvidenceAsync(
@@ -887,7 +1355,16 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 Title: link.Label,
                 Detail: link.Summary,
                 Status: link.Severity.ToString(),
-                IsEnabled: link.IsActive)));
+                IsEnabled: link.IsActive)
+            {
+                Owner = ResolveHandoffOwner(link.Target),
+                BlockerReason = link.IsActive
+                    ? link.Summary
+                    : "Downstream impact is not active for the selected Security Master scope.",
+                ImpactedOutputs = ResolveImpactedOutputs(link.Target),
+                LinkedCases = [],
+                Route = ResolveHandoffRoute(link.Target)
+            }));
 
         handoffs.AddRange(snapshot.RecommendedActions.Select((action, index) =>
             new InstrumentPassportOperationsHandoffDto(
@@ -896,7 +1373,14 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 Title: action.Title,
                 Detail: action.Detail,
                 Status: action.IsPrimary ? "Primary" : "Available",
-                IsEnabled: action.IsEnabled)));
+                IsEnabled: action.IsEnabled)
+            {
+                Owner = ResolveActionOwner(action.Kind),
+                BlockerReason = action.Detail,
+                ImpactedOutputs = ResolveImpactedOutputs(action.Kind),
+                LinkedCases = action.ConflictId.HasValue ? [action.ConflictId.Value.ToString("D")] : [],
+                Route = ResolveActionRoute(action)
+            }));
 
         if (handoffs.Count == 0)
         {
@@ -906,7 +1390,14 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
                 Title: "Retain Security Master context",
                 Detail: snapshot.DownstreamImpact.Summary,
                 Status: snapshot.DownstreamImpact.Severity.ToString(),
-                IsEnabled: true));
+                IsEnabled: true)
+            {
+                Owner = "Security Master steward",
+                BlockerReason = snapshot.DownstreamImpact.Summary,
+                ImpactedOutputs = ResolveImpactedOutputs(snapshot.DownstreamImpact),
+                LinkedCases = [],
+                Route = "/workstation/accounting/security-master"
+            });
         }
 
         return handoffs
@@ -914,6 +1405,120 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
             .ThenBy(static handoff => handoff.Title, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    private static string ResolveHandoffOwner(string? target)
+    {
+        return NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        {
+            "portfolio" => "Portfolio operations",
+            "ledger" => "Accounting operations",
+            "reconciliation" => "Reconciliation owner",
+            "reportpack" => "Reporting controller",
+            "securitymasterdetail" => "Security Master steward",
+            _ => "Security Master steward"
+        };
+    }
+
+    private static string ResolveActionOwner(SecurityMasterRecommendedActionKind kind) =>
+        kind switch
+        {
+            SecurityMasterRecommendedActionKind.OpenPortfolioImpact => "Portfolio operations",
+            SecurityMasterRecommendedActionKind.OpenLedgerImpact => "Accounting operations",
+            SecurityMasterRecommendedActionKind.OpenReconciliationImpact => "Reconciliation owner",
+            SecurityMasterRecommendedActionKind.OpenReportPackImpact => "Reporting controller",
+            SecurityMasterRecommendedActionKind.ResolveSelectedConflict or
+            SecurityMasterRecommendedActionKind.BulkResolveLowRiskConflicts or
+            SecurityMasterRecommendedActionKind.EditSelectedSecurity or
+            SecurityMasterRecommendedActionKind.RefreshTrustSnapshot => "Security Master steward",
+            SecurityMasterRecommendedActionKind.BackfillTradingParameters or
+            SecurityMasterRecommendedActionKind.ReviewCorporateActions => "Reference-data steward",
+            _ => "Security Master steward"
+        };
+
+    private static IReadOnlyList<string> ResolveImpactedOutputs(SecurityMasterRecommendedActionKind kind) =>
+        kind switch
+        {
+            SecurityMasterRecommendedActionKind.OpenPortfolioImpact => ["Portfolio"],
+            SecurityMasterRecommendedActionKind.OpenLedgerImpact => ["Ledger", "Accounting"],
+            SecurityMasterRecommendedActionKind.OpenReconciliationImpact => ["Reconciliation", "Close"],
+            SecurityMasterRecommendedActionKind.OpenReportPackImpact => ["Reporting", "Close"],
+            SecurityMasterRecommendedActionKind.BackfillTradingParameters => ["Valuation", "Portfolio"],
+            SecurityMasterRecommendedActionKind.ReviewCorporateActions => ["Valuation", "Ledger", "Close"],
+            SecurityMasterRecommendedActionKind.ResolveSelectedConflict or
+            SecurityMasterRecommendedActionKind.BulkResolveLowRiskConflicts => ["Portfolio", "Accounting", "Reconciliation", "Close", "Reporting"],
+            _ => ["Security Master"]
+        };
+
+    private static IReadOnlyList<string> ResolveImpactedOutputs(string? target) =>
+        NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        {
+            "portfolio" => ["Portfolio"],
+            "ledger" => ["Ledger", "Accounting"],
+            "reconciliation" => ["Reconciliation", "Close"],
+            "reportpack" => ["Reporting", "Close"],
+            _ => ["Security Master"]
+        };
+
+    private static IReadOnlyList<string> ResolveImpactedOutputs(SecurityMasterDownstreamImpactDto impact)
+    {
+        var outputs = new List<string>();
+        if (impact.PortfolioExposureCount > 0)
+        {
+            outputs.Add("Portfolio");
+        }
+
+        if (impact.LedgerExposureCount > 0)
+        {
+            outputs.Add("Ledger");
+            outputs.Add("Accounting");
+        }
+
+        if (impact.ReconciliationExposureCount > 0)
+        {
+            outputs.Add("Reconciliation");
+            outputs.Add("Close");
+        }
+
+        if (impact.ReportPackExposureCount > 0)
+        {
+            outputs.Add("Reporting");
+        }
+
+        return outputs.Count == 0 ? ["Security Master"] : outputs.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static string ResolveActionRoute(SecurityMasterRecommendedActionDto action)
+    {
+        if (!string.IsNullOrWhiteSpace(action.Target) && action.Target.StartsWith('/'))
+        {
+            return action.Target;
+        }
+
+        return action.Kind switch
+        {
+            SecurityMasterRecommendedActionKind.OpenPortfolioImpact => "/workstation/portfolio",
+            SecurityMasterRecommendedActionKind.OpenLedgerImpact => "/workstation/accounting/ledger",
+            SecurityMasterRecommendedActionKind.OpenReconciliationImpact => "/workstation/accounting/reconciliation",
+            SecurityMasterRecommendedActionKind.OpenReportPackImpact => "/workstation/reporting/evidence",
+            SecurityMasterRecommendedActionKind.BackfillTradingParameters => "/workstation/data/backfills",
+            SecurityMasterRecommendedActionKind.ResolveSelectedConflict when action.ConflictId.HasValue =>
+                $"/workstation/accounting/security-master#conflict-{action.ConflictId.Value:D}",
+            SecurityMasterRecommendedActionKind.BulkResolveLowRiskConflicts => "/workstation/accounting/security-master#conflicts",
+            SecurityMasterRecommendedActionKind.ReviewCorporateActions => "/workstation/accounting/security-master#corporate-actions",
+            SecurityMasterRecommendedActionKind.EditSelectedSecurity => "/workstation/accounting/security-master#passport",
+            _ => "/workstation/accounting/security-master"
+        };
+    }
+
+    private static string ResolveHandoffRoute(string? target) =>
+        NormalizeSecurityMasterText(target)?.ToLowerInvariant() switch
+        {
+            "portfolio" => "/workstation/portfolio",
+            "ledger" => "/workstation/accounting/ledger",
+            "reconciliation" => "/workstation/accounting/reconciliation",
+            "reportpack" => "/workstation/reporting/evidence",
+            _ => "/workstation/accounting/security-master"
+        };
 
     private static IReadOnlyList<InstrumentPassportProviderConfidenceDto> BuildProviderConfidence(
         SecurityMasterTrustSnapshotDto snapshot,

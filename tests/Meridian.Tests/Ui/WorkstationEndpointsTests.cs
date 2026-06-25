@@ -4708,7 +4708,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_SecurityMasterInstrumentPassport_ShouldReturnProviderConfidenceRows()
+    public async Task MapWorkstationEndpoints_SecurityMasterInstrumentPassport_ShouldReturnProviderConfidenceAndOperationsWorkbench()
     {
         var securityId = Guid.Parse("69696969-6969-6969-6969-696969696969");
         var effectiveFrom = new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero);
@@ -4778,6 +4778,25 @@ public sealed partial class WorkstationEndpointsTests
             section.SectionId == "identifier-confidence" &&
             section.Summary.Contains("identifier", StringComparison.OrdinalIgnoreCase));
         passport.ReferenceDataWorkbench.OperationsHandoffs.Should().NotBeEmpty();
+        passport.OperationsWorkbench.Should().NotBeNull();
+        passport.OperationsWorkbench!.Panels.Select(panel => panel.PanelId).Should().Contain(
+            [
+                "identity",
+                "provider-evidence",
+                "terms",
+                "operations-readiness",
+                "handoff"
+            ]);
+        passport.OperationsWorkbench.Readiness.Should().Contain(readiness =>
+            readiness.ReadinessId == "valuation" &&
+            readiness.Label == "Valuation-ready");
+        passport.OperationsWorkbench.Readiness.Should().Contain(readiness =>
+            readiness.ReadinessId == "ledger" &&
+            readiness.Label == "Ledger-ready");
+        passport.OperationsWorkbench.Handoffs.Should().Contain(handoff =>
+            handoff.Owner == "Security Master steward" &&
+            handoff.ImpactedOutputs.Contains("Security Master") &&
+            handoff.Route!.StartsWith("/workstation/accounting/security-master", StringComparison.Ordinal));
     }
 
     [Fact]

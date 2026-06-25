@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "5a28b2f29fb9",
+  "sourceFingerprint": "d3aa4b20a734",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 92,
@@ -2987,6 +2987,7 @@
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NotificationServiceTests.cs",
+        "tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs",
         "tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/StorageServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/StrategyBriefingWorkspaceServiceTests.cs",
@@ -3014,7 +3015,8 @@
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DataWorkspaceShellSmokeTests.cs",
         "tests/Meridian.Wpf.Tests/Views/QuantScriptPageTests.cs",
-        "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs"
+        "tests/Meridian.Wpf.Tests/Views/WorkspaceShellHomeTemplateTests.cs",
+        "tests/Meridian.Wpf.Tests/Workstation/EvidenceVaultPresentationModelsTests.cs"
       ],
       "status": "evidence-current",
       "tasks": [
@@ -3028,7 +3030,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +34 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +36 more."
         }
       ],
       "openTaskCount": 0

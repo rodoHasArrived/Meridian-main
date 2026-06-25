@@ -1306,18 +1306,22 @@ the contract-owned type names.
 The file-backed Evidence Vault now stores more than manifest retention: retained local artifact
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
 canonical subject metadata, while route-only artifacts stay as manifest references. Copied vault
-artifacts also preserve optional capture channel/source details, first-class document metadata, and
+artifacts also preserve optional capture channel/source details, typed channel kind for upload,
+email, SFTP, API, portal-download, local-file, and imported-file adapter seams, first-class document metadata, and
 extracted fields with confidence, reviewer state, expected value, validation status, and linked
 record identity so retained document evidence can prove how upload/email/API/portal/SFTP intake was
 reviewed against expected records. `/api/workstation/evidence/vault/intake` is the shared API
 intake route for that same vault model: it accepts bounded base64 document payloads, validates
 optional SHA-256 expectations, stores the artifact under `_vault`, writes a searchable manifest and
 vault identity, and returns the retained artifact hash, capture metadata, document classification,
-source channel, actor, tenant/scope, object links, extraction status, reviewer state, audit trail,
-extraction fields, and manifest route.
+source channel, typed channel kind, actor, tenant/scope, object links, extraction status, reviewer state, audit trail,
+extraction fields, support-only authority flags, and manifest route.
+Accepted intake reviewer state and accepted `/api/workstation/evidence/vault/{vaultId}/documents/{documentId}/review`
+requests fail closed unless they carry at least one human-confirmed field row, so an operator review
+can support accounting-grade evidence without granting approval, posting, certification, or release authority.
 `/api/workstation/evidence/vault/documents` is the read-only document queue over the same vault
 identity index. It filters by document classification, extraction status, reviewer state, subject,
-tenant/scope, and linked period/portfolio/account/instrument/journal/reconciliation/report/close
+tenant/scope, typed channel kind, and linked period/portfolio/account/instrument/journal/reconciliation/report/close
 objects, returning the retained document plus vault id, manifest route, storage kind, and open
 support-request count for browser and WPF surfaces.
 The vault write boundary rejects every retained artifact reference, copied or
@@ -1360,7 +1364,10 @@ server-owned trust snapshot to combine identity, provider mappings, lifecycle ev
 actions, pricing/trading-parameter readiness, downstream usage, and trust posture for browser and
 WPF clients. Each provider mapping also carries a confidence row with source, freshness, confidence
 score, related identifier-conflict IDs, conflict summaries, and override history so clients can show
-provider-to-Security-Master trust without rebuilding mapping logic locally.
+provider-to-Security-Master trust without rebuilding mapping logic locally. The passport also
+composes the Security Master operations workbench with identity confidence, provider evidence,
+terms, readiness, and handoff panels, keeping valuation-ready, ledger-ready, reconciliation-ready,
+close-ready, and report-ready posture server-owned for browser and WPF clients.
 Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
 workflow labels so browser and WPF clients do not surface retained Governance-era wording for
 operator-facing review.
@@ -1512,7 +1519,7 @@ vault lookup, and manifest-export endpoints used by the browser and WPF surfaces
 Direct Evidence Vault intake now also promotes non-ready extraction fields into the same frozen
 support-request and request-list index used by manifest export. Uploaded documents and
 local/imported file references retain copied file bytes, capture metadata, source path or route
-reference, document classification, object links, reviewer state, field review posture, support
+reference, document classification, typed channel kind, object links, reviewer state, field review posture, support
 requests, and close/audit/tax/report-package/event request-list grouping in the vault identity, so
 operators can follow up without interpreting raw intake manifests. Extraction is routed through
 `IEvidenceDocumentExtractor`; the default `ManualEvidenceDocumentExtractor` normalizes

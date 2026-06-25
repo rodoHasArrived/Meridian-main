@@ -4124,6 +4124,7 @@ function InstrumentPassportPanel({ view }: { view: InstrumentPassportViewState }
           </div>
         )}
         {!view.loadingText && !view.errorText && (
+          <>
           <div className="grid gap-4 2xl:grid-cols-[minmax(20rem,0.65fr)_minmax(0,1.35fr)]">
             <EntitySummary
               eyebrow="Passport summary"
@@ -4144,6 +4145,87 @@ function InstrumentPassportPanel({ view }: { view: InstrumentPassportViewState }
               caption={view.providerTableCaption}
             />
           </div>
+          <section className="space-y-3" aria-label={view.operationsWorkbenchTitle}>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground">{view.operationsWorkbenchTitle}</h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{view.operationsWorkbenchSummary}</p>
+              </div>
+              <Badge variant={view.operationsWorkbenchStatusBadgeVariant} dot className="w-fit shrink-0">
+                {view.operationsWorkbenchStatusLabel}
+              </Badge>
+            </div>
+            {view.operationsReadiness.length > 0 ? (
+              <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5" role="list" aria-label="Operations readiness">
+                {view.operationsReadiness.map((item) => (
+                  <div key={item.readinessId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" role="listitem">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs font-semibold text-foreground">{item.label}</span>
+                      <Badge variant={item.statusBadgeVariant}>{item.statusLabel}</Badge>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.summary}</p>
+                    <div className="mt-2 flex flex-wrap gap-2 font-mono text-[11px] text-muted-foreground">
+                      <span>{item.evidenceLabel}</span>
+                      <span>{item.blockerLabel}</span>
+                    </div>
+                    {item.isReady ? null : (
+                      <p className="mt-2 text-xs leading-5 text-warning">{item.nextAction}</p>
+                    )}
+                    {item.route ? (
+                      <Button asChild variant="ghost" size="sm" className="mt-2 h-7 px-2 text-xs">
+                        <Link to={item.route} aria-label={`Follow next action for ${item.label}`}>
+                          Follow
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {view.operationsPanels.length > 0 ? (
+              <div className="grid gap-3 xl:grid-cols-2" role="list" aria-label="Security Master operations workbench panels">
+                {view.operationsPanels.map((panel) => (
+                  <section key={panel.panelId} className="rounded-md border border-border/70 bg-background/35 p-3" role="listitem" aria-label={panel.title}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-semibold text-foreground">{panel.title}</h4>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">{panel.summary}</p>
+                      </div>
+                      <Badge variant={panel.statusBadgeVariant}>{panel.statusLabel}</Badge>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {panel.items.map((item) => (
+                        <div key={item.itemId} className="grid gap-2 rounded-md border border-border/50 bg-secondary/15 px-3 py-2 lg:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)]">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-xs font-semibold text-foreground">{item.label}</span>
+                              <Badge variant={item.statusBadgeVariant}>{item.statusLabel}</Badge>
+                            </div>
+                            <div className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{item.value}</div>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
+                            <div className="mt-1 flex flex-wrap gap-2 font-mono text-[11px] text-muted-foreground">
+                              <span>{item.evidenceLabel}</span>
+                              <span>{item.blockerLabel}</span>
+                            </div>
+                            {item.route ? (
+                              <Button asChild variant="ghost" size="sm" className="mt-2 h-7 px-2 text-xs">
+                                <Link to={item.route} aria-label={`Follow handoff action ${item.label}`}>
+                                  Follow
+                                </Link>
+                              </Button>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            ) : null}
+          </section>
+          </>
         )}
       </CardContent>
     </Card>

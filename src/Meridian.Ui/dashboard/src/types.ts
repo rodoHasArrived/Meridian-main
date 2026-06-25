@@ -9897,6 +9897,50 @@ export interface InstrumentPassportOperationsHandoff {
   detail: string;
   status: string;
   isEnabled: boolean;
+  owner?: string | null;
+  blockerReason?: string | null;
+  impactedOutputs?: string[];
+  linkedCases?: string[];
+  route?: string | null;
+}
+
+export interface InstrumentPassportOperationsWorkbenchItem {
+  itemId: string;
+  label: string;
+  value: string;
+  status: string;
+  detail: string;
+  evidenceCount: number;
+  blockingIssueCount: number;
+  route?: string | null;
+}
+
+export interface InstrumentPassportOperationsWorkbenchPanel {
+  panelId: string;
+  title: string;
+  status: string;
+  summary: string;
+  items: InstrumentPassportOperationsWorkbenchItem[];
+}
+
+export interface InstrumentPassportOperationsReadiness {
+  readinessId: string;
+  label: string;
+  status: string;
+  isReady: boolean;
+  summary: string;
+  evidenceCount: number;
+  blockingIssueCount: number;
+  nextAction: string;
+  route?: string | null;
+}
+
+export interface InstrumentPassportOperationsWorkbench {
+  status: string;
+  summary: string;
+  panels: InstrumentPassportOperationsWorkbenchPanel[];
+  readiness: InstrumentPassportOperationsReadiness[];
+  handoffs: InstrumentPassportOperationsHandoff[];
 }
 
 export interface SecurityMasterOperatingModelStage {
@@ -9999,6 +10043,7 @@ export interface InstrumentPassport {
   providerConfidence: InstrumentPassportProviderConfidence[];
   referenceDataWorkbench?: InstrumentPassportReferenceDataWorkbench | null;
   operatingModel?: SecurityMasterOperatingModel | null;
+  operationsWorkbench?: InstrumentPassportOperationsWorkbench | null;
 }
 
 export interface SessionStatsDto {
