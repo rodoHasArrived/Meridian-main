@@ -700,7 +700,13 @@ public sealed record OperationsCloseWorkflowRequestDto(
     string? ClosePackageManifestId = null,
     string? ClosePackageEvidenceHash = null,
     string? ClosePackageRetainedManifestRoute = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null,
+    EvidenceManifestDto? ManifestSnapshot = null)
+{
+    public IReadOnlyList<EvidenceDocumentDto> DocumentSnapshots { get; init; } =
+        DocumentSnapshots ?? [];
+}
 
 public sealed record OperationsReopenWorkflowRequestDto(
     long ExpectedVersion,
@@ -1041,7 +1047,13 @@ public sealed record OperationsClosePackagePublicationDto(
     string PublishedBy,
     string SignOffRationale,
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
-    IReadOnlyList<OperationsChecklistControlApprovalDto> ChecklistControlApprovals);
+    IReadOnlyList<OperationsChecklistControlApprovalDto> ChecklistControlApprovals,
+    IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null,
+    EvidenceManifestDto? ManifestSnapshot = null)
+{
+    public IReadOnlyList<EvidenceDocumentDto> DocumentSnapshots { get; init; } =
+        DocumentSnapshots ?? [];
+}
 
 public sealed record OperationsChecklistAcknowledgeRequestDto(
     long ExpectedVersion,

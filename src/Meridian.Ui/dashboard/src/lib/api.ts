@@ -62,6 +62,12 @@ import type {
   EvidenceSubject,
   EvidenceTemplate,
   EvidenceVaultIdentity,
+  EvidenceVaultDocumentEntry,
+  EvidenceVaultDocumentQuery,
+  EvidenceVaultDocumentReviewRequest,
+  EvidenceVaultDocumentReviewResponse,
+  EvidenceVaultIntakeRequest,
+  EvidenceVaultIntakeResponse,
   EvidenceVaultLookupRequest,
   EvidenceVaultRequestListEntry,
   EvidenceVaultRequestListQuery,
@@ -512,6 +518,7 @@ import {
   workstationWorkflowPresetEndpoint,
   workstationWorkflowPresetPinEndpoint,
   workstationWorkflowPresetUsedEndpoint,
+  evidenceVaultDocumentReviewEndpoint,
   type LedgerJournalQueryOptions,
   type LedgerTrialBalanceQueryOptions,
   type ReferenceDataEndpointDefinition,
@@ -1688,6 +1695,13 @@ export function searchEvidenceVault(request: EvidenceVaultLookupRequest, options
   return postJson<EvidenceVaultIdentity[]>(WORKSTATION_API_ENDPOINTS.evidenceVaultSearch, request, options);
 }
 
+export function intakeEvidenceVaultDocument(
+  request: EvidenceVaultIntakeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<EvidenceVaultIntakeResponse>(WORKSTATION_API_ENDPOINTS.evidenceVaultIntake, request, options);
+}
+
 export function listEvidenceVaultRequestLists(
   query: EvidenceVaultRequestListQuery = {},
   options: ApiRequestOptions = {}
@@ -1724,6 +1738,71 @@ export function listEvidenceVaultRequestLists(
   const suffix = params.toString();
   return getJson<EvidenceVaultRequestListEntry[]>(
     suffix ? `${WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists}?${suffix}` : WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists,
+    options
+  );
+}
+
+export function listEvidenceVaultDocuments(
+  query: EvidenceVaultDocumentQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.classification) {
+    params.set("classification", query.classification);
+  }
+
+  if (query.extractionStatus) {
+    params.set("extractionStatus", query.extractionStatus);
+  }
+
+  if (query.reviewStatus) {
+    params.set("reviewStatus", query.reviewStatus);
+  }
+
+  if (query.linkKind) {
+    params.set("linkKind", query.linkKind);
+  }
+
+  if (query.objectId) {
+    params.set("objectId", query.objectId);
+  }
+
+  if (query.subjectKind) {
+    params.set("subjectKind", query.subjectKind);
+  }
+
+  if (query.subjectId) {
+    params.set("subjectId", query.subjectId);
+  }
+
+  if (query.tenantId) {
+    params.set("tenantId", query.tenantId);
+  }
+
+  if (query.scope) {
+    params.set("scope", query.scope);
+  }
+
+  if (query.maxResults !== undefined && query.maxResults !== null) {
+    params.set("maxResults", String(query.maxResults));
+  }
+
+  const suffix = params.toString();
+  return getJson<EvidenceVaultDocumentEntry[]>(
+    suffix ? `${WORKSTATION_API_ENDPOINTS.evidenceVaultDocuments}?${suffix}` : WORKSTATION_API_ENDPOINTS.evidenceVaultDocuments,
+    options
+  );
+}
+
+export function reviewEvidenceVaultDocument(
+  vaultId: string,
+  documentId: string,
+  request: EvidenceVaultDocumentReviewRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<EvidenceVaultDocumentReviewResponse>(
+    evidenceVaultDocumentReviewEndpoint(vaultId, documentId),
+    request,
     options
   );
 }

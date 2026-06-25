@@ -85,8 +85,9 @@ required provider capability gaps and degraded provider capability gaps from the
 routing matrix; the server turns those into broker-ingest blocker/review states instead of asking
 clients to infer close readiness from provider metadata. Closed operations workflows also
 publish `OperationsClosePackagePublicationDto` with close-package id, retained manifest id/route,
-evidence hash, sign-off actor/rationale, report pack id, evidence links, and checklist approvals so
-clients can inspect close-package publication without rebuilding package metadata locally.
+evidence hash, sign-off actor/rationale, report pack id, evidence links, checklist approvals, and
+frozen vault document snapshots so clients can inspect close-package publication without rebuilding
+package metadata locally.
 Strategy-run trial-balance and journal DTOs expose the canonical `LedgerDimensionSetDto` beside
 legacy account/entity/sleeve/vehicle scope fields so browser and WPF ledger drill-throughs can use
 the same dimensional accounting vocabulary as rules, drafts, period reports, and external GL
@@ -727,14 +728,29 @@ expected value, validation status, and linked record identity. Keep that metadat
 report, approval, screenshot, statement, audit, tax, close, and validation producers can enforce the
 same retained-artifact, extraction, and request-list vocabulary. Request-list index DTOs should stay
 contract-owned so close, audit, tax, report-package, browser, and WPF review surfaces can query the
-same frozen support posture without parsing manifest JSON.
+same frozen support posture without parsing manifest JSON. `EvidenceVaultIdentityDto.ManifestSnapshot`
+is the public frozen-manifest contract over that retained package, carrying package kind/id,
+content hash, document snapshots, support request snapshots, and linked operational objects for
+close, report, tax, and audit packages.
+`EvidenceDocumentDto`, `EvidenceDocumentLinkDto`, `EvidenceRequestDto`, and `EvidenceManifestDto`
+name the document-intake surface explicitly over the retained vault: document identity carries
+classification, immutable source hash, received timestamp, source channel, actor, tenant/scope,
+extraction status, extractor id, reviewer state, audit trail, and links to period, portfolio, account,
+instrument, journal, reconciliation case, report line, or close task objects. `EvidenceVaultDocumentQueryDto`
+and `EvidenceVaultDocumentEntryDto` provide the shared browser/WPF queue shape for retained
+documents, including vault context, manifest route, open support-request count, and filters for
+classification, extraction state, reviewer state, subject, tenant/scope, and linked object.
 `EvidenceVaultIntakeRequestDto` and `EvidenceVaultIntakeResponseDto` extend that vocabulary to
-API-backed document intake: callers provide the evidence subject, channel, file name, base64
-payload, optional expected SHA-256 hash, source reference, extraction fields, lifecycle metadata,
-and lookup linkage, while the response returns the retained artifact path, content hash, capture
-metadata, extraction review fields, and vault identity. Non-ready extraction fields are part of the
-shared support-request vocabulary so direct intake can freeze close, audit, tax, report-package, or
-event request lists without browser or WPF clients parsing manifest JSON.
+API-backed document intake: callers provide the evidence subject, channel, file name, uploaded
+base64 payload or an `EvidenceDocumentIntakeSourceDto` local/imported file reference, optional
+expected SHA-256 hash, source reference, extraction fields, lifecycle metadata, document
+classification, reviewer state, object links, and lookup linkage, while the response returns the
+retained artifact path, content hash, capture metadata, extraction review fields, document record,
+and vault identity. Non-ready extraction fields are part of the shared support-request vocabulary so
+direct intake can freeze close, audit, tax, report-package, or event request lists without browser or
+WPF clients parsing manifest JSON. Intake and manifest export both populate the same public
+manifest snapshot on the vault identity so browser, WPF, and close binder consumers do not have to
+deserialize the retained manifest payload to discover frozen documents or requests.
 
 Audit Trail Explorer contracts live under `Workstation/AuditTrailExplorerDtos.cs` and normalize
 retained audit records into cross-object timeline rows with object kind, object id, actor,

@@ -142,7 +142,8 @@ submission, reviewer decision, and retained checklist-control approvals visible 
 evidence package before audit release. Package status and required actions remain Financial
 Operations-owned instead of being recalculated by endpoint or browser tables. Close-package evidence
 hashes are computed by the workflow aggregate from the published package identifiers, report pack,
-retained evidence links, and checklist-control approvals; request-supplied hashes are compatibility
+retained evidence links, frozen Evidence Vault document snapshots, document object links, immutable
+document source hashes, and checklist-control approvals; request-supplied hashes are compatibility
 input only and are not trusted as retained audit evidence.
 Private-capital close cockpit proof also lives here. `PrivateCapitalCloseCockpitService` composes
 the shared private-capital activity projection with Operations Continuity workflow detail to derive
