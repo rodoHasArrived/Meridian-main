@@ -51,7 +51,18 @@ Use this lane whenever the task creates or updates an agent or skill package.
 
 1. **Gather inputs:** identify the source of truth, acceptance criteria, and expected evidence. Confirm whether Scenario A (existing docs), B (new docs needed), or C (performance-sensitive) applies.
 2. **Plan mapping:** map each requirement to implementing files and intended validation artifacts. Use `doc_route.py --kind ai` to decide which catalogs need updating.
-3. **Execute & validate:** apply minimal changes in the current protected-rule-compliant workflow. Local work may happen on `main` when the user explicitly requests it or the checkout is intentionally operating there; for PR-ready publishing, use a `codex/<short-task-name>` branch unless GitHub repository rules explicitly allow the requested protected-branch flow. Run required commands and capture outputs. For completed PR-ready work, run `bash scripts/ci.sh`; GitHub Actions `Meridian CI / quality-gate` is the authoritative merge check. If local machine capacity, restore, or MSBuild locks block proof, run `python build/python/cli/buildctl.py validation-status --summary`, then `dotnet build-server shutdown`; stop only abandoned repo-owned `dotnet`/`MSBuild`/`testhost`/compiler PIDs whose command lines clearly point at this checkout, then push the branch and use GitHub Actions `Targeted Test` with the same repo-relative .NET test project under `tests/` plus filter before retrying broad local scripts. For performance-sensitive paths, explicitly address allocation and async blocking risks.
+3. **Execute & validate:** apply minimal changes in the current protected-rule-compliant workflow.
+   Local work may happen on `main` when the user explicitly requests it or the checkout is
+   intentionally operating there; for PR-ready publishing, use a `codex/<short-task-name>` branch
+   unless GitHub repository rules explicitly allow the requested protected-branch flow. Run
+   required commands and capture outputs. For completed PR-ready work, run `bash scripts/ci.sh`;
+   GitHub Actions `Meridian CI / quality-gate` is the authoritative merge check. If local machine
+   capacity, restore, or MSBuild locks block proof, run `python build/python/cli/buildctl.py
+   validation-status --summary`, then `dotnet build-server shutdown`; stop only abandoned
+   repo-owned `dotnet`/`MSBuild`/`testhost`/compiler PIDs whose command lines clearly point at this
+   checkout, then push the branch and use GitHub Actions `Targeted Test` with the same
+   repo-relative .NET test project under `tests/` plus filter before retrying broad local scripts.
+   For performance-sensitive paths, explicitly address allocation and async blocking risks.
 4. **Report & route:** summarize traceability, list validation commands and outcomes, update AI catalogs, and run `score_eval.py` to produce the rubric report.
 
 ## Quality Gates
