@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-07T13:10:24Z",
+  "generatedAt": "2026-06-25T07:18:54Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -1084,6 +1084,8 @@
       ],
       "projectReferences": [
         "Meridian.Backtesting",
+        "Meridian.Identity",
+        "Meridian.Infrastructure",
         "Meridian.Platform",
         "Meridian.QuantScript",
         "Meridian.Reporting",
@@ -2130,6 +2132,11 @@
     },
     {
       "from": "Meridian.Wpf",
+      "to": "Meridian.Infrastructure",
+      "reason": "Meridian.Wpf references Meridian.Infrastructure directly via project reference."
+    },
+    {
+      "from": "Meridian.Wpf",
       "to": "Meridian.QuantScript",
       "reason": "Meridian.Wpf references Meridian.QuantScript directly via project reference."
     },
@@ -2181,324 +2188,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 54
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 52
     },
     {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 50
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 48
     },
     {
-      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 6
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 35
     },
     {
-      "path": "src/Meridian.DataIntegration/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Domain/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Identity/Meridian.Identity.csproj",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Identity/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/EtlFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Canonicalization/CanonicalizingPublisher.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Etl/EtlAbstractions.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Pipeline/IngestionJobService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Etl/EtlServices.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-07T01:12:55-07:00",
-      "lastCommit": "2eaf9a1e7",
-      "lastSummary": "4455",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 15
-    },
-    {
-      "path": "src/Meridian.Core/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Platform/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/Pipeline/DeadLetterSink.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Services/DailySummaryWebhook.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/Pipeline/PipelineStatistics.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/ConnectionStatusWebhook.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Domain/Events/IEventQuarantineSink.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/GlobalUsings.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/BackpressureAlertService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/Core/AlertDispatcher.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/Core/AlertRunbookRegistry.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/Core/HealthCheckAggregator.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/Core/SloDefinitionRegistry.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-06-06T23:56:41-07:00",
-      "lastCommit": "7c191a2d5",
-      "lastSummary": "4986789456",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
       "touches": 13
     },
     {
-      "path": "src/Meridian/UiServer.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 12
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 10
     },
     {
-      "path": "src/Meridian.Application/Composition/Startup/StartupValidationRunner.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 4
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 7
     },
     {
-      "path": "src/Meridian.ProviderSdk/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Application/Backfill/HistoricalBackfillService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
       "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Platform/Diagnostics/DiagnosticBundleService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 2
     },
     {
       "path": "src/Meridian.Application/Composition/Features/DiagnosticsFeatureRegistration.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Core/Config/ConfigJsonSchemaGenerator.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Platform/Diagnostics/PipelineDiagnosticsProjection.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/hooks/use-workstation-data.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api-errors.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api-errors.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T23:33:44-07:00",
+      "lastCommit": "076d46738",
+      "lastSummary": "Fix governance fixtures and diagnostics drift",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/report-writer-grid-diff-view.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:33:27Z",
+      "lastCommit": "a4d453a7e",
+      "lastSummary": "Add report-writer snapshot comparison to browser preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:33:27Z",
+      "lastCommit": "a4d453a7e",
+      "lastSummary": "Add report-writer snapshot comparison to browser preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-diff.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:33:27Z",
+      "lastCommit": "a4d453a7e",
+      "lastSummary": "Add report-writer snapshot comparison to browser preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/report-writer-chart-preview.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:28:29Z",
+      "lastCommit": "d2ba8b1cf",
+      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:28:29Z",
+      "lastCommit": "d2ba8b1cf",
+      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/report-writer-grid-format.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:28:29Z",
+      "lastCommit": "d2ba8b1cf",
+      "lastSummary": "Render conditional formatting and inline charts in report-writer preview",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-hub.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:22:11Z",
+      "lastCommit": "fd1591527",
+      "lastSummary": "Add report hub overview to reporting workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-hub.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:22:11Z",
+      "lastCommit": "fd1591527",
+      "lastSummary": "Add report hub overview to reporting workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-hub.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:22:11Z",
+      "lastCommit": "fd1591527",
+      "lastSummary": "Add report hub overview to reporting workspace",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/reporting-period-switcher.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:15:41Z",
+      "lastCommit": "a188e17bc",
+      "lastSummary": "Add reporting period switcher to browser workstation",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-periods.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:15:41Z",
+      "lastCommit": "a188e17bc",
+      "lastSummary": "Add reporting period switcher to browser workstation",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/reporting-periods.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:15:41Z",
+      "lastCommit": "a188e17bc",
+      "lastSummary": "Add reporting period switcher to browser workstation",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-06-24T15:08:16Z",
+      "lastCommit": "e4921294b",
+      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
+      "touches": 56
+    },
+    {
+      "path": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-06-24T15:08:16Z",
+      "lastCommit": "e4921294b",
+      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Reporting/ReportWriterGridEngine.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-24T15:08:16Z",
+      "lastCommit": "e4921294b",
+      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/StatusHttpServer.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Monitoring/StatusWriter.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Commands/SchemaCheckCommand.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/HostStartup.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-06-06T21:16:30-07:00",
-      "lastCommit": "0ffe68f65",
-      "lastSummary": "1235",
-      "touches": 2
+      "path": "src/Meridian.Reporting/ReportSnapshotDiffEngine.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-06-24T15:08:16Z",
+      "lastCommit": "e4921294b",
+      "lastSummary": "Add conditional formatting, inline charts, and snapshot diff to report writer",
+      "touches": 1
     }
   ],
   "recentChangesWindowDays": 14,
