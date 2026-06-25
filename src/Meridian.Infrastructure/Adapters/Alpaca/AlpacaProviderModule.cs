@@ -24,8 +24,14 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 /// </remarks>
 [ImplementsAdr("ADR-001", "AlpacaProviderModule bundles all Alpaca capability types")]
 [ImplementsAdr("ADR-005", "Module-based provider discovery for Alpaca")]
-public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase
+public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProviderModuleCredentialHints, IProviderModuleConnectionProbe
 {
+    private const string AlpacaBrokerApiBase = "https://broker-api.sandbox.alpaca.markets";
+    private const string AlpacaPaperApiBase = "https://paper-api.alpaca.markets";
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> CredentialKeyHints => ["keyId", "secretKey"];
+
     /// <inheritdoc/>
     public override string ModuleId => "alpaca";
 
@@ -110,5 +116,36 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase
             sp.GetRequiredService<AlpacaBrokerageGateway>());
         services.AddSingleton<IBrokerageActivitySync>(sp =>
             sp.GetRequiredService<AlpacaBrokerageGateway>());
+    }
+
+    /// <inheritdoc/>
+    public async Task<ModuleProbeResult> ProbeConnectionAsync(CancellationToken ct = default)
+    {
+        var envCreds = AlpacaCredentialEnvironment.Resolve();
+        var keyId = GetKeyId() ?? envCreds.KeyId;
+        var secretKey = GetSecretKey() ?? envCreds.SecretKey;
+
+        if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
+            return ModuleProbeResult.Failure("No credentials available to probe connection");
+
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+        client.DefaultRequestHeaders.Add("APCA-API-KEY-ID", keyId);
+        client.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", secretKey);
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        try
+        {
+            var response = await client.GetAsync($"{AlpacaPaperApiBase}/v2/account", ct).ConfigureAwait(false);
+            sw.Stop();
+            if (response.IsSuccessStatusCode)
+                return ModuleProbeResult.Success(sw.Elapsed.TotalMilliseconds, "Alpaca paper account reachable");
+
+            return ModuleProbeResult.Failure($"HTTP {(int)response.StatusCode} from Alpaca API");
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            sw.Stop();
+            return ModuleProbeResult.Failure($"Connection failed: {ex.Message}");
+        }
     }
 }

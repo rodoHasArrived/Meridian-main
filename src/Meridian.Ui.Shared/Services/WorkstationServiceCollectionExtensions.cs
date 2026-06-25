@@ -1,4 +1,6 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Core.Contracts;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Application.DirectLending;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Audit.Compliance;
@@ -403,6 +405,14 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IReconciliationBreakQueueRepository>()));
         services.TryAddSingleton<CollateralIngestionBuffer>();
         services.TryAddSingleton<CollateralExposureService>();
+
+        services.TryAddSingleton<IProviderCredentialStore>(sp =>
+        {
+            var configStore = sp.GetRequiredService<ConfigStore>();
+            var dataRoot = configStore.GetDataRoot();
+            return new ProviderCredentialStore(dataRoot);
+        });
+        services.TryAddSingleton<IProviderModuleSetupService, ProviderModuleSetupService>();
 
         services.AddWorkflowLibrary();
         services.TryAddSingleton<IExtensibilityConfigurationStore>(sp =>
