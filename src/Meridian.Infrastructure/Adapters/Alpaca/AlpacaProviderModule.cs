@@ -28,6 +28,7 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
 {
     private const string AlpacaBrokerApiBase = "https://broker-api.sandbox.alpaca.markets";
     private const string AlpacaPaperApiBase = "https://paper-api.alpaca.markets";
+    private const string AlpacaLiveApiBase = "https://api.alpaca.markets";
     private static readonly HttpClient ProbeClient = new() { Timeout = TimeSpan.FromSeconds(10) };
 
     /// <inheritdoc/>
@@ -136,16 +137,22 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return ModuleProbeResult.Failure("No credentials available to probe connection");
 
+        // Mirror the same endpoint selection the brokerage gateway uses so the probe
+        // validates the same environment the module will connect to after restart.
+        var useSandbox = bool.TryParse(GetSetting("useSandbox"), out var sbProbe) && sbProbe;
+        var probeBase = useSandbox ? AlpacaPaperApiBase : AlpacaLiveApiBase;
+
         var sw = System.Diagnostics.Stopwatch.StartNew();
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{AlpacaPaperApiBase}/v2/account");
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{probeBase}/v2/account");
             request.Headers.Add("APCA-API-KEY-ID", keyId);
             request.Headers.Add("APCA-API-SECRET-KEY", secretKey);
             using var response = await ProbeClient.SendAsync(request, ct).ConfigureAwait(false);
             sw.Stop();
             if (response.IsSuccessStatusCode)
-                return ModuleProbeResult.Success(sw.Elapsed.TotalMilliseconds, "Alpaca paper account reachable");
+                return ModuleProbeResult.Success(sw.Elapsed.TotalMilliseconds,
+                    $"Alpaca {(useSandbox ? "paper" : "live")} account reachable");
 
             return ModuleProbeResult.Failure($"HTTP {(int)response.StatusCode} from Alpaca API");
         }
